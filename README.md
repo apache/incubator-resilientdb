@@ -16,5 +16,9 @@
 ### Steps to Run and Compile
 
 
+-------------- <br/>
+
 ### Relevant Parameters of "config.h"
+* NODE_CNT 
+* THREAD_CNT
 
