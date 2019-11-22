@@ -1,1 +1,1 @@
-ResilientDB: A high-throughput yielding permissioned blockchain fabric.
+# ResilientDB: A High-throughput yielding Permissioned Blockchain Fabric.
