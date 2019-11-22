@@ -20,9 +20,23 @@
 
 ### Relevant Parameters of "config.h"
 <pre>
-* NODE_CNT		Total number of replicas, minimum 4, that is, f=1.  
-* THREAD_CNT		Total number of threads at primary (at least 5)
-* REM_THREAD_CNT	Total number of input threads at a replica (set it to 3)
-* SEND_THREAD_CNT	Total number of output threads at a replica (at least 1)
+* NODE_CNT			Total number of replicas, minimum 4, that is, f=1.  
+* THREAD_CNT			Total number of threads at primary (at least 5)
+* REM_THREAD_CNT		Total number of input threads at a replica (set it to 3)
+* SEND_THREAD_CNT		Total number of output threads at a replica (at least 1)
+* CLIENT_NODE_CNT		Total number of clients (at least 1).  
+* CLIENT_THREAD_CNT		Total number of threads at a client (at least 1)
+* CLIENT_REM_THREAD_CNT		Total number of input threads at a client (set it to 1)
+* SEND_THREAD_CNT		Total number of output threads at a client (set it to 1)
+* MAX_TXN_IN_FLIGHT		Multiple of Batch Size
+* DONE_TIMER			Amount of time to run the system.
+* WARMUP_TIMER			Amount of time to warmup the system (No statistics collected).
+* BATCH_THREADS			Number of threads at primary to batch client transactions.
+* BATCH_SIZE			Number of transactions in a batch (at least 10)
+* TXN_PER_CHKPT			Frequency at which garbage collection is done.
+* USE_CRYPTO			To switch on and off cryptographic signing of messages.
+* CRYPTO_METHOD_RSA		To use RSA based digital signatures.
+* CRYPTO_METHOD_ED25519		To use ED25519 based digital signatures.
+* CRYPTO_METHOD_CMAC_AES	To use CMAC + AES combination for authentication.
 </pre>
 
