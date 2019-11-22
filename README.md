@@ -11,7 +11,7 @@
 7. Each client transaction has an associated **transaction manager**, which stores all the data related to the transaction.
 6. Depending on the type of replica (primary or non-primary), we associate different number of threads and queues with each replica.
 
-
+<br/>
 
 ### Steps to Run and Compile
 
