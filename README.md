@@ -38,5 +38,6 @@
 * CRYPTO_METHOD_RSA		To use RSA based digital signatures.
 * CRYPTO_METHOD_ED25519		To use ED25519 based digital signatures.
 * CRYPTO_METHOD_CMAC_AES	To use CMAC + AES combination for authentication.
+* SYNTH_TABLE_SIZE		The range of keys for clients to select.
 </pre>
 
