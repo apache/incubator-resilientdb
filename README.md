@@ -8,3 +8,6 @@
 3. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
 4. ReslientDB designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
 5. At present, each client only sends YCSB-style transactions for processing, to the primary.
+7. Each client transaction has an associated **transaction manager**, which stores all the data related to the transaction.
+6. Depending on the type of replica (primary or non-primary), we associate different number of threads and queues with each replica.
+
