@@ -20,7 +20,9 @@
 
 ### Relevant Parameters of "config.h"
 <pre>
-* NODE_CNT	Total number of replicas, minimum 4, that is, f=1.  
-* THREAD_CNT	Total number of threads.
+* NODE_CNT		Total number of replicas, minimum 4, that is, f=1.  
+* THREAD_CNT		Total number of threads at primary (at least 5)
+* REM_THREAD_CNT	Total number of input threads at a replica (set it to 3)
+* SEND_THREAD_CNT	Total number of output threads at a replica (at least 1)
 </pre>
 
