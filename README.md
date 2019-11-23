@@ -20,6 +20,8 @@
 
 ### Steps to Run and Compile without Docker <br/>
 
+* We assume dependencies are already installed, that is, there is a folder named **deps** inside your **resilientdb** folder.
+* There also needs to be a folder named **obj**, to store object files.
 * We provide a script **startResilientDB.sh** to compile and run the code. To run **ResilientDB** on a cluster such as AWS, Azure or Google Cloud, you need to specify the **Private IP Addresses** of each replica. 
 * So state the Private IP addresses in the script.
 * Run script as: **./scripts/startResilientDB.sh \<number of servers\> \<number of clients\> \<batch size\>**
