@@ -1,31 +1,59 @@
 # ResilientDB: A High-throughput yielding Permissioned Blockchain Fabric.
 
-### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
+### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
 ### Quick Facts about Version 1.0 of ResilientDB
-1. ResilientDB supports a **Dockerized** implementation, which allows to specify the number of clients and replicas.
+1. ResilientDB supports a **Dockerized** implementation, which allows specifying the number of clients and replicas.
 2. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
 3. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
 4. ReslientDB designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
 5. At present, each client only sends YCSB-style transactions for processing, to the primary.
-7. Each client transaction has an associated **transaction manager**, which stores all the data related to the transaction.
-6. Depending on the type of replica (primary or non-primary), we associate different number of threads and queues with each replica.
+6. Each client transaction has an associated **transaction manager**, which stores all the data related to the transaction.
+7. Depending on the type of replica (primary or non-primary), we associate different a number of threads and queues with each replica.
 
--------------- <br/> 
+---
 
 ### Steps to Run and Compile through Docker
+First, install docker and docker-compose:
+
+- [Install Docker-CE](https://docs.docker.com/install/)
+- [Install Docker-Compose](https://docs.docker.com/compose/install/)
 
 
--------------- <br/>
+Use the Script ``resilientDB-docker``
 
-### Steps to Run and Compile without Docker <br/>
+    Usage:
+     ./resilientDB-docker --clients=1 --replicas=4
+     ./resilientDB-docker -d [default 4 replicas and 1 client]
 
-* We assume dependencies are already installed, that is, there is a folder named **deps** inside your **resilientdb** folder.
-* There also needs to be a folder named **obj**, to store object files.
+## Result
+-   The result will be printed on STDOUT and also ``res.out`` file. It contains the Throughputs and Latencies for the run and summary of each thread in nodes.
+## warning:
+-   Using docker, all replicas and clients will be running on one machine as containers, so a large number of nodes would degrade the performance of your system
+
+---
+
+## Steps to Run and Compile without Docker <br/>
+
+#### We strongly recommend that first try the docker version, Here are the steps to run on a real environment:
+
+* First Step is to untar the dependencies:
+
+        cd deps && \ls | xargs -i tar -xvf {} && cd ..
+* Create **obj** folder inside **resilientdb** folder, to store object files. And **results** to store the results.
+
+        mkdir obj
+        mkdir results
+* Create a folder named **results** inside **resilientdb** to store the results.
+        
 * We provide a script **startResilientDB.sh** to compile and run the code. To run **ResilientDB** on a cluster such as AWS, Azure or Google Cloud, you need to specify the **Private IP Addresses** of each replica. 
-* So state the Private IP addresses in the script.
+* The code will be compiled on the machine that is running the **startResilientDB.sh** and send the binary files over the SSH to the **resilientdb** folder in all other  nodes. the directory which contains the **resilientdb** in nodes should be set as ``home_directory`` in following files as :
+    1. scripts/scp_binaries.sh
+    2. scripts/scp_results.sh
+    3. scripts/simRun.py
+* **change the ``CNODES`` and ``SNODES`` arrays in ``scripts/startResilientDB.sh`` and put IP Addresses.**
 * Run script as: **./scripts/startResilientDB.sh \<number of servers\> \<number of clients\> \<batch size\>**
-* Prior to running the code, create a folder named **results** inside **resilientdb**.
+
 * All the results after running the script will be stored inside the **results** folder.
 
 
@@ -40,7 +68,7 @@
 
 
 
--------------- <br/>
+---
 
 
 ### Relevant Parameters of "config.h"
