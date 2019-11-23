@@ -29,7 +29,7 @@
 * All the results after running the script will be stored inside the **results** folder.
 
 
-##### What is happening behind the scenes?
+#### What is happening behind the scenes?
 
 
 
