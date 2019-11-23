@@ -13,10 +13,26 @@
 
 -------------- <br/> 
 
-### Steps to Run and Compile
+### Steps to Run and Compile through Docker
 
 
 -------------- <br/>
+
+### Steps to Run and Compile without Docker <br/>
+
+* We provide a script **startResilientDB.sh** to compile and run the code. To run **ResilientDB** on a cluster such as AWS, Azure or Google Cloud, you need to specify the **Private IP Addresses** of each replica. 
+* So state the Private IP addresses in the script.
+* Run script as: **./scripts/startResilientDB.sh <number of servers> <number of clients> <batch size>**
+* Prior to running the code, create a folder named **results** inside **resilientdb**.
+* All the results after running the script will be stored inside the **results** folder.
+
+
+
+
+
+
+-------------- <br/>
+
 
 ### Relevant Parameters of "config.h"
 <pre>
