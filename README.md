@@ -27,9 +27,9 @@ Use the Script ``resilientDB-docker``
      ./resilientDB-docker -d [default 4 replicas and 1 client]
 
 ## Result
--   The result will be printed on STDOUT and also ``res.out`` file. It contains the Throughputs and Latencies for the run and summary of each thread in nodes.
+-   The result will be printed on STDOUT and also ``res.out`` file. It contains the Throughputs and Latencies for the run and summary of each thread in replicas.
 ## warning:
--   Using docker, all replicas and clients will be running on one machine as containers, so a large number of nodes would degrade the performance of your system
+-   Using docker, all replicas and clients will be running on one machine as containers, so a large number of replicas would degrade the performance of your system
 
 ---
 
@@ -52,6 +52,7 @@ Use the Script ``resilientDB-docker``
     2. scripts/scp_results.sh
     3. scripts/simRun.py
 * **change the ``CNODES`` and ``SNODES`` arrays in ``scripts/startResilientDB.sh`` and put IP Addresses.**
+* Adjust the parameters in ``config.h`` such as number of replicas and clients
 * Run script as: **./scripts/startResilientDB.sh \<number of servers\> \<number of clients\> \<batch size\>**
 
 * All the results after running the script will be stored inside the **results** folder.
