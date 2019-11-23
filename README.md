@@ -31,6 +31,13 @@
 
 #### What is happening behind the scenes?
 
+* The code is compiled using command: **make clean; make**
+* On compilation, two new files are created: **runcl** and **rundb**.
+* Each machine is going to act as a client needs to execute **runcl**.
+* Each machine is going to act as a replica needs to execute **rundb**. 
+* The script runs each binary as: **./rundb -nid\<numeric identifier\>**
+* This numeric identifier starts from **0** (for the primary) and increases as **1,2,3...** for subsequent replicas and clients.
+
 
 
 -------------- <br/>
