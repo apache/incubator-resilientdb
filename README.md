@@ -95,3 +95,10 @@ Use the Script ``resilientDB-docker``
 * SYNTH_TABLE_SIZE		The range of keys for clients to select.
 </pre>
 
+<br/>
+
+---
+
+* There are several other parameters in *config.h*, which are unusable (or not fully tested) in the current version.
+
+
