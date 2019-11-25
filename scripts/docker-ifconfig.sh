@@ -47,5 +47,5 @@ for server in ${OUTPUT}; do
     fi
 done
 echo "Put Client IP at the bottom"
-echo $CLIENTS >>$file
+echo -e $CLIENTS >>$file
 printf "${GREEN}$file Created!${NC}\n"
