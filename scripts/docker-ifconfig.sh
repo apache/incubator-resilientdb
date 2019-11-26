@@ -20,8 +20,12 @@ if [ -f $file ]; then
 fi
 
 #Command to get just the names of all the servers setup in docker
-OUTPUT="$(docker ps --format '{{.Names}}' | grep -P "c[\d]+|s[\d]+" | sort)"
-#echo "${OUTPUT}"
+if [[ ${os} == "darwin"* ]] ; then
+    OUTPUT="$(docker ps --format '{{.Names}}' | grep -E "c[0-9]+|s[0-9]+" | sort)"
+elif [[ ${os} == "linux-gnu" ]] ; then
+    OUTPUT="$(docker ps --format '{{.Names}}' | grep -P "c[\d]+|s[\d]+" | sort)"
+fi
+echo "${OUTPUT}"
 IPC=""
 echo "Server sequence --> IP"
 CLIENTS=""
