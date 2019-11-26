@@ -3,6 +3,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
+os="${OSTYPE}"
+
 #Check if docker command exists
 if ! hash docker 2>/dev/null; then
     echo "Docker command not found. Please install Docker"
@@ -27,20 +29,34 @@ for server in ${OUTPUT}; do
     #Get just the IP Address of all the servers
     #echo "$server"
     if ! [ "$server" = "${server#c}" ]; then
-        IPC="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
-        IPC="${IPC%\"}"
-        IPC="${IPC#\"}"
+        if [[ ${os} == "darwin"* ]]; then
+
+            IPC="$(docker inspect $server | grep -E '"IPAddress": "([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
+            IPC="${IPC#*\"IPAddress\": \"}"
+            IPC="${IPC%\"*}"
+          elif [[ ${os} == "linux-gnu" ]]; then
+            IPC="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
+            IPC="${IPC%\"}"
+            IPC="${IPC#\"}"
+        fi
         if [ -z "$CLIENTS" ]; then
             CLIENTS="${IPC}"
         else
             CLIENTS="${CLIENTS}\n${IPC}"
         fi
-        echo "$server --> ${IPC}"
+
+      echo "$server --> ${IPC}"
     else
-        IP="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
-        #Remove quotes
-        IP="${IP%\"}"
-        IP="${IP#\"}"
+        if [[ ${os} == "darwin"* ]]; then
+            IP="$(docker inspect $server | grep -E '"IPAddress": "([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
+            #Remove quotes
+            IP="${IP#*\"IPAddress\": \"}"
+            IP="${IP%\"*}"
+        elif [[ ${os} == "linux-gnu" ]]; then
+            IP="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
+            IP="${IP%\"}"
+            IP="${IP#\"}"
+        fi
         echo "$server --> ${IP}"
         #Append in ifconfig,txt
         echo "${IP}" >>$file
