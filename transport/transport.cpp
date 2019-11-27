@@ -23,6 +23,7 @@ void Transport::read_ifconfig(const char *ifaddr_file)
         printf("%ld: %s\n", cnt, ifaddr[cnt]);
         cnt++;
     }
+    cout << "Difference : " << cnt << " and " << g_total_node_cnt << endl;
     assert(cnt == g_total_node_cnt);
 }
 
@@ -493,7 +494,7 @@ uint64_t Transport::simple_recv_msg() {
 		bytes = socket->sock.recv(&buf, NN_MSG, NN_DONTWAIT);
     if(bytes <= 0 ) {
       if(errno != 11)
-        nn::freemsg(buf);	
+        nn::freemsg(buf);
       return 0;
     }
 
@@ -501,7 +502,7 @@ uint64_t Transport::simple_recv_msg() {
 	memcpy(&time,&((char*)buf)[0],sizeof(ts_t));
 	//printf("%d bytes, %f s\n",bytes,((float)(get_sys_clock()-time)) / BILLION);
 
-	nn::freemsg(buf);	
+	nn::freemsg(buf);
 	return bytes;
 }
 */

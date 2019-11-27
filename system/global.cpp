@@ -13,6 +13,8 @@
 #include "client_txn.h"
 #include "../config.h"
 
+//NOTE: modification - set global variables: round and height.
+
 mem_alloc mem_allocator;
 Stats stats;
 SimManager *simulation;

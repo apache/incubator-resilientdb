@@ -417,13 +417,24 @@ void TxnManager::send_pbft_prep_msgs()
 
     vector<string> emptyvec;
     vector<uint64_t> dest;
+    //NOTE: modification - gossiping prepare messages to replicas. Define neighbors here.
+
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
         if (i == g_node_id)
         {
             continue;
         }
-        dest.push_back(i);
+
+        #if TENDERMINT
+          //if(i == (g_node_id + 1) % g_node_cnt || i == (g_node_id - 1) % g_node_cnt){
+          if(i == (g_node_id + 1) % g_node_cnt){
+             cout << "sending the prepare message " << msg->txn_id << " to " << i << endl;
+             dest.push_back(i);
+          }
+        #else
+          dest.push_back(i);
+        #endif
     }
 
     msg_queue.enqueue(get_thd_id(), pmsg, emptyvec, dest);
@@ -448,13 +459,22 @@ void TxnManager::send_pbft_commit_msgs()
 
     vector<string> emptyvec;
     vector<uint64_t> dest;
+    //NOTE: modification - gossiping commit messages to replicas. Define neighbors here.
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
         if (i == g_node_id)
         {
             continue;
         }
-        dest.push_back(i);
+        #if TENDERMINT
+          //if(i == (g_node_id + 1) % g_node_cnt || i == (g_node_id - 1) % g_node_cnt){
+          if(i == (g_node_id + 1) % g_node_cnt){
+             cout << "sending the commit message " << msg->txn_id << " to " << i << endl;
+             dest.push_back(i);
+          }
+        #else
+          dest.push_back(i);
+        #endif
     }
 
     msg_queue.enqueue(get_thd_id(), cmsg, emptyvec, dest);

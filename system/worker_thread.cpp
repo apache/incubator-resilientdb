@@ -266,8 +266,8 @@ void WorkerThread::add_timer(Message *msg, string qryhash)
 
 #if VIEW_CHANGES
 /*
-Each non-primary replica continuously checks the timer for each batch. 
-If there is a timeout then it initiates the view change. 
+Each non-primary replica continuously checks the timer for each batch.
+If there is a timeout then it initiates the view change.
 This requires sending a view change message to each replica.
 */
 void WorkerThread::check_for_timeout()
@@ -326,7 +326,7 @@ void WorkerThread::check_for_timeout()
     }
 }
 
-/* 
+/*
 In case there is a view change, all the threads would need a change of views.
 */
 void WorkerThread::check_switch_view()
@@ -353,7 +353,7 @@ void WorkerThread::check_switch_view()
     }
 }
 
-/* This function causes the forced failure of the primary replica at a 
+/* This function causes the forced failure of the primary replica at a
 desired batch. */
 void WorkerThread::fail_primary(Message *msg, uint64_t batch_to_fail)
 {
@@ -380,7 +380,7 @@ void WorkerThread::store_batch_msg(BatchRequests *breq)
 }
 
 /*
-The client forwarded its request to a non-primary replica. 
+The client forwarded its request to a non-primary replica.
 This maybe a potential case for a malicious primary.
 Hence store the request, start timer and forward it to the primary replica.
 */
@@ -626,8 +626,8 @@ RC WorkerThread::process_new_view_msg(Message *msg)
  * Starting point for each worker thread.
  *
  * Each worker-thread created in the main() starts here. Each worker-thread is alive
- * till the time simulation is not done, and continuousy perform a set of tasks. 
- * Thess tasks involve, dequeuing a message from its queue and then processing it 
+ * till the time simulation is not done, and continuousy perform a set of tasks.
+ * Thess tasks involve, dequeuing a message from its queue and then processing it
  * through call to the relevant function.
  */
 RC WorkerThread::run()
@@ -782,8 +782,8 @@ void WorkerThread::init_txn_man(YCSBClientQueryMessage *clqry)
 }
 
 /**
- * Create an message of type ExecuteMessage, to notify the execute-thread that this 
- * batch of transactions are ready to be executed. This message is placed in one of the 
+ * Create an message of type ExecuteMessage, to notify the execute-thread that this
+ * batch of transactions are ready to be executed. This message is placed in one of the
  * several work-queues for the execute-thread.
  */
 void WorkerThread::send_execute_msg()
@@ -796,8 +796,8 @@ void WorkerThread::send_execute_msg()
  * Execute transactions and send client response.
  *
  * This function is only accessed by the execute-thread, which executes the transactions
- * in a batch, in order. Note that the execute-thread has several queues, and at any 
- * point of time, the execute-thread is aware of which is the next transaction to 
+ * in a batch, in order. Note that the execute-thread has several queues, and at any
+ * point of time, the execute-thread is aware of which is the next transaction to
  * execute. Hence, it only loops on one specific queue.
  *
  * @param msg Execute message that notifies execution of a batch.
@@ -918,7 +918,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
 /**
  * This function helps in periodically sending out CheckpointMessage. At present these
- * messages are including just including information about first and last txn of the 
+ * messages are including just including information about first and last txn of the
  * batch but later we should include a digest. Further, a checkpoint is only sent after
  * transaction id is a multiple of a config.h parameter.
  *
@@ -938,9 +938,9 @@ void WorkerThread::send_checkpoints(uint64_t txn_id)
 /**
  * Checkpoint and Garbage collection.
  *
- * This function waits for 2f+1 messages to mark a checkpoint. Due to different 
- * processing speeds of the replicas, it is possible that a replica may receive 
- * CheckpointMessage from other replicas even before it has finished executing thst 
+ * This function waits for 2f+1 messages to mark a checkpoint. Due to different
+ * processing speeds of the replicas, it is possible that a replica may receive
+ * CheckpointMessage from other replicas even before it has finished executing thst
  * transaction. Hence, we need to be careful when to perform garbage collection.
  * Further, note that the CheckpointMessage messages are handled by a separate thread.
  *
@@ -1052,7 +1052,7 @@ void WorkerThread::algorithm_specific_update(Message *msg, uint64_t idx)
 }
 
 /**
- * This function is used by the non-primary or backup replicas to create and set 
+ * This function is used by the non-primary or backup replicas to create and set
  * transaction managers for each transaction part of the BatchRequests message sent by
  * the primary replica.
  *
@@ -1108,9 +1108,9 @@ void WorkerThread::set_txn_man_fields(BatchRequests *breq, uint64_t bid)
 }
 
 /**
- * This function is used by the primary replicas to create and set 
- * transaction managers for each transaction part of the ClientQueryBatch message sent 
- * by the client. Further, to ensure integrity a hash of the complete batch is 
+ * This function is used by the primary replicas to create and set
+ * transaction managers for each transaction part of the ClientQueryBatch message sent
+ * by the client. Further, to ensure integrity a hash of the complete batch is
  * generated, which is also used in future communication.
  *
  * @param msg Batch of transactions as a ClientQueryBatch message.
@@ -1306,8 +1306,8 @@ bool WorkerThread::checkMsg(Message *msg)
 /**
  * Checks if the incoming PBFTPrepMessage can be accepted.
  *
- * This functions checks if the hash and view of the commit message matches that of 
- * the Pre-Prepare message. Once 2f messages are received it returns a true and 
+ * This functions checks if the hash and view of the commit message matches that of
+ * the Pre-Prepare message. Once 2f messages are received it returns a true and
  * sets the `is_prepared` flag for furtue identification.
  *
  * @param msg PBFTPrepMessage.
@@ -1328,7 +1328,22 @@ bool WorkerThread::prepared(PBFTPrepMessage *msg)
     if (txn_man->get_hash().empty())
     {
         // Store the message.
-        txn_man->info_prepare.push_back(msg->return_node);
+        //NOTE: modification - whether should we pass on the prepare messages.
+        //NOTE: return_node is defined in message.cpp; which should be g_node_id a.k.a. the sender;
+        #if TENDERMINT
+          if (count(txn_man->info_prepare.begin(), txn_man->info_prepare.end(), msg->return_node)){
+            cout << "Debug: Already got the prepare messages. " << endl;
+          }
+          else{
+            txn_man->info_prepare.push_back(msg->return_node);
+            txn_man->send_pbft_prep_msgs();
+            cout << "gossiping prepare works?" << msg->txn_id << endl;
+          }
+        #else
+          cout << "Debug: Tendermint flag failed. " << endl;
+          txn_man->info_prepare.push_back(msg->return_node);
+        #endif
+
         return false;
     }
     else
