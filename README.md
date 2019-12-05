@@ -87,6 +87,7 @@ Use the Script ``resilientDB-docker``
 * WARMUP_TIMER			Amount of time to warmup the system (No statistics collected).
 * BATCH_THREADS			Number of threads at primary to batch client transactions.
 * BATCH_SIZE			Number of transactions in a batch (at least 10)
+* ENABLE_CHAIN			Set it to true if blocks need to be stored in a ledger.
 * TXN_PER_CHKPT			Frequency at which garbage collection is done.
 * USE_CRYPTO			To switch on and off cryptographic signing of messages.
 * CRYPTO_METHOD_RSA		To use RSA based digital signatures.
