@@ -13,6 +13,7 @@
 #include "work_queue.h"
 #include "message.h"
 #include "timer.h"
+#include "chain.h"
 
 void WorkerThread::send_key()
 {
@@ -891,6 +892,11 @@ RC WorkerThread::process_execute_msg(Message *msg)
     // Execute the transaction
     txn_man->run_txn();
 
+ #if ENABLE_CHAIN
+    // Add the block to the blockchain.
+    BlockChain->add_block(txn_man);
+ #endif
+
     // Commit the results.
     txn_man->commit();
 
@@ -998,6 +1004,12 @@ RC WorkerThread::process_pbft_chkpt_msg(Message *msg)
     {
         release_txn_man(i, 0);
         inc_last_deleted_txn();
+
+       #if ENABLE_CHAIN	
+	if((i+1) % get_batch_size() == 0) {
+	    BlockChain->remove_block(i);
+	}	
+       #endif
     }
 
 #if VIEW_CHANGES
@@ -1190,6 +1202,9 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
     txn_man->hashSize = txn_man->hash.length();
 
     breq->copy_from_txn(txn_man);
+
+    // Storing the BatchRequests message.
+    txn_man->set_primarybatch(breq);
 
     // Storing all the signatures.
     vector<string> emptyvec;

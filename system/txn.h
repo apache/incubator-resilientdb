@@ -126,6 +126,11 @@ public:
     void set_hash(string hsh);
     uint64_t get_hashSize();
 
+    // We need to maintain one copy of the whole BatchRequests messages sent 
+    // by the primary. We only maintain in last request of the batch. 
+    BatchRequests *batchreq;  
+    void set_primarybatch(BatchRequests *breq);
+
     vector<string> allsign;
 
     uint64_t get_abort_cnt() { return abort_cnt; }
@@ -151,6 +156,10 @@ public:
     uint64_t commit_rsp_cnt;
     bool committed_local = false;
     vector<uint64_t> info_commit;
+
+    // We need to store all the complete Commit mssg in the last txn of batch.
+    vector<PBFTCommitMessage *> commit_msgs; 
+    void add_commit_msg(PBFTCommitMessage *pcmsg);
 
     uint64_t decr_commit_rsp_cnt();
     uint64_t get_commit_rsp_cnt();

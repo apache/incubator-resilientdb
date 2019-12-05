@@ -13,6 +13,7 @@
 #include "work_queue.h"
 #include "message.h"
 #include "timer.h"
+#include "chain.h"
 
 /**
  * Processes an incoming client batch and sends a Pre-prepare message to al replicas.
@@ -49,9 +50,6 @@ RC WorkerThread::process_client_batch(Message *msg)
 
     // Initialize all transaction mangers and Send BatchRequests message.
     create_and_send_batchreq(clbtch, clbtch->txn_id);
-
-    //bool ready = txn_man->unset_ready();
-    //assert(ready);
 
     return RCOK;
 }
@@ -96,6 +94,9 @@ RC WorkerThread::process_batch(Message *msg)
     // The timer for this client batch stores the hash of last request.
     add_timer(breq, txn_man->get_hash());
 #endif
+
+    // Storing the BatchRequests message.
+    txn_man->set_primarybatch(breq);
 
     // Send Prepare messages.
     txn_man->send_pbft_prep_msgs();
@@ -294,6 +295,8 @@ RC WorkerThread::process_pbft_commit_msg(Message *msg)
     // Check if message is valid.
     PBFTCommitMessage *pcmsg = (PBFTCommitMessage *)msg;
     validate_msg(pcmsg);
+
+    txn_man->add_commit_msg(pcmsg);
 
     // Check if sufficient number of Commit messages have arrived.
     if (committed_local(pcmsg))

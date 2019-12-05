@@ -152,6 +152,8 @@ void TxnManager::init(uint64_t pool_id, Workload *h_wl)
     commit_rsp_cnt = prep_rsp_cnt + 1;
     chkpt_cnt = 2 * g_min_invalid_nodes;
 
+    batchreq = NULL;
+
     txn_stats.init();
 }
 
@@ -329,6 +331,15 @@ uint64_t TxnManager::get_hashSize()
     return hashSize;
 }
 
+
+void TxnManager::set_primarybatch(BatchRequests *breq) 
+{
+	char *buf = create_msg_buffer(breq);
+	Message *deepMsg = deep_copy_msg(buf, breq);
+	batchreq = (BatchRequests *)deepMsg;
+	delete_msg_buffer(buf);
+}	
+
 bool TxnManager::is_chkpt_ready()
 {
     return chkpt_flag;
@@ -384,6 +395,15 @@ void TxnManager::set_committed()
 bool TxnManager::is_committed()
 {
     return committed_local;
+}
+
+
+void TxnManager::add_commit_msg(PBFTCommitMessage *pcmsg) 
+{
+	char *buf = create_msg_buffer(pcmsg);
+	Message *deepMsg = deep_copy_msg(buf, pcmsg);
+	commit_msgs.push_back((PBFTCommitMessage *)deepMsg);
+	delete_msg_buffer(buf);
 }
 
 uint64_t TxnManager::decr_commit_rsp_cnt()
@@ -473,6 +493,16 @@ void TxnManager::release_all_messages(uint64_t txn_id)
     {
         info_prepare.clear();
         info_commit.clear();
+	
+	Message::release_message(batchreq);
+
+	PBFTCommitMessage *cmsg;
+	while(commit_msgs.size()>0)
+	{
+		cmsg = (PBFTCommitMessage *)this->commit_msgs[0];
+		commit_msgs.erase(commit_msgs.begin());
+		Message::release_message(cmsg);
+	}
     }
 }
 

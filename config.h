@@ -178,6 +178,8 @@
 #define SIGN_THD_CNT 1 
 #define CLIENT_BATCH true 
 #define CLIENT_RESPONSE_BATCH true 
+// To Enable or disable the blockchain implementation.
+#define ENABLE_CHAIN true
 // To fail non-primary replicas. 
 #define LOCAL_FAULT false 
 #define NODE_FAIL_CNT 1 
