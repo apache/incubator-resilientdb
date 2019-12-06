@@ -1,4 +1,4 @@
 Fixed Bugs:
-* Docker script fails to run for multiple client #1 (@RohanSogani)	
+* Docker script fails to run for multiple client [#1] (@RohanSogani)	
 
 
