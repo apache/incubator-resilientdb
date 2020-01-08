@@ -14,6 +14,7 @@
 #include "client_query.h"
 #include "crypto.h"
 #include "timer.h"
+#include "chain.h"
 
 void network_test();
 void network_test_recv();
@@ -102,6 +103,11 @@ int main(int argc, char *argv[])
     printf("Initializing transaction table... ");
     fflush(stdout);
     txn_table.init();
+    printf("Done\n");
+
+    printf("Initializing Chain... ");
+    fflush(stdout);
+    BlockChain = new  BChain();
     printf("Done\n");
 
 #if TIMER_ON
