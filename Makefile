@@ -4,16 +4,17 @@ JEMALLOC=deps/jemalloc-5.1.0
 NNMSG=deps/nanomsg-1.1.4
 BOOST=deps/boost_1_67_0
 CRYPTOPP=deps/crypto
+SQLITE=deps/sqlite-autoconf-3290000/build
 
 .SUFFIXES: .o .cpp .h
 
-SRC_DIRS = ./ ./benchmarks/ ./client/ ./transport/ ./system/ ./statistics/ ./blockchain/ 
-DEPS = -I. -I./benchmarks -I./client/ -I./transport -I./system -I./statistics -I./blockchain -I$(JEMALLOC)/include -I$(NNMSG)/include -I$(BOOST) -I$(CRYPTOPP) 
+SRC_DIRS = ./ ./benchmarks/ ./client/ ./transport/ ./system/ ./statistics/ ./blockchain/ ./db/
+DEPS = -I. -I./benchmarks -I./client/ -I./transport -I./system -I./statistics -I./blockchain -I$(JEMALLOC)/include -I$(NNMSG)/include -I$(BOOST) -I$(CRYPTOPP) -I./db -I$(SQLITE)/include
 
 CFLAGS += $(DEPS) -D NOGRAPHITE=1 -Werror -Wno-sizeof-pointer-memaccess
-LDFLAGS = -Wall -L. -L$(NNMSG)/lib -L$(JEMALLOC)/lib -Wl,-rpath,$(JEMALLOC)/lib -pthread -gdwarf-3 -lrt -std=c++0x -L$(CRYPTOPP)
+LDFLAGS = -Wall -L. -L$(NNMSG)/lib -L$(JEMALLOC)/lib -Wl,-rpath,$(JEMALLOC)/lib -pthread -gdwarf-3 -lrt -std=c++0x -L$(CRYPTOPP) -L$(SQLITE)/lib
 LDFLAGS += $(CFLAGS)
-LIBS = -lnanomsg -lanl -ljemalloc -ldl -lcryptopp
+LIBS = -lnanomsg -lanl -ljemalloc -lcryptopp -lsqlite3 -ldl
 
 DB_MAINS = ./client/client_main.cpp  ./unit_tests/unit_main.cpp
 CL_MAINS = ./system/main.cpp ./unit_tests/unit_main.cpp
@@ -55,6 +56,8 @@ rundb : $(OBJS_DB)
 ./obj/%.o: client/%.cpp
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
 ./obj/%.o: %.cpp
+	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
+./obj/%.o: db/%.cpp
 	$(CC) -c $(CFLAGS) $(INCLUDE) -o $@ $<
 
 

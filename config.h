@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_ 
 #define _CONFIG_H_ 
 // Specify the number of servers or replicas 
-#define NODE_CNT 4 
+#define NODE_CNT 4
 // Number of worker threads at primary. For RBFT (6) and other algorithms (5). 
 #define THREAD_CNT 5 
 #define REM_THREAD_CNT 3
@@ -159,7 +159,7 @@
 #define RBFT_ON false 
 // Select the type of RBFT, (1) RBFT+PBFT, and  (2) RBFT+DBFT 
 #define RBFT_ALG RPBFT 
-#define RPBFT 1 
+#define RPBFT 1  
 #define RDBFT 2 
 // Enable or Disable pipeline at primary replica. 
 #define ENABLE_PIPELINE true 
@@ -211,5 +211,11 @@
 #define M100 1	// 100KB. 
 #define M200 2	// 200KB. 
 #define M400 3	// 400KB. 
+
+#define EXT_DB SQL
+#define MEMORY 1
+#define SQL 2
+#define SQL_PERSISTENT 3
+
 #endif
 

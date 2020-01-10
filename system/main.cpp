@@ -47,6 +47,17 @@ int main(int argc, char *argv[])
     stats.init(g_total_thread_cnt);
     printf("Done\n");
 
+    printf("Initializing DB %s... ", db->dbInstance().c_str());
+    fflush(stdout);
+    db->Open("db");
+
+    printf("DB testing\nInsert key K1 with value V1\n");
+    db->Put("K1", "V1");
+    printf("Reading value for key K1 = %s\n", db->Get("K1").c_str());
+
+    printf("Done\n");
+    fflush(stdout);
+
     printf("Initializing transport manager... ");
     fflush(stdout);
     tport_man.init();

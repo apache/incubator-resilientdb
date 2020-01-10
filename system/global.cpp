@@ -363,3 +363,11 @@ uint64_t payload_size = 25600;
 uint64_t payload_size = 51200;
 #endif
 #endif
+
+#if EXT_DB == SQL || EXT_DB == SQL_PERSISTENT
+	DataBase* db = new SQLite();
+#elif EXT_DB == MEMORY
+	DataBase* db = new InMemoryDB();
+#endif
+
+

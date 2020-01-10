@@ -34,6 +34,7 @@
 #include <unordered_map>
 #include "xed25519.h"
 #include "sha.h"
+#include "database.h"
 
 using namespace std;
 
@@ -158,6 +159,8 @@ extern UInt32 g_field_per_tuple;
 extern UInt32 g_init_parallelism;
 extern double g_mpr;
 extern double g_mpitem;
+
+extern DataBase *db;
 
 // Replication
 extern UInt32 g_repl_type;

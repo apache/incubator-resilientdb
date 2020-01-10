@@ -29,7 +29,7 @@ RC YCSBTxnManager::run_txn()
     for (uint i = 0; i < ycsb_query->requests.size(); i++)
     {
         yreq = ycsb_query->requests[i];
-        ClientDataStore[yreq->key] = ClientDataStore[yreq->key] + yreq->value;
+        db->Put(std::to_string(yreq->key), std::to_string(yreq->value));
     }
 
     uint64_t curr_time = get_sys_clock();
