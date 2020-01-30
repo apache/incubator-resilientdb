@@ -2,6 +2,8 @@
 
 nodes=$1
 cnodes=$2
+[ ! -z "$3" ] && max_inf=$3 || max_inf="20000"
+
 consensus="PBFT"
 
 echo -e "#ifndef _CONFIG_H_ " >config.h
@@ -36,7 +38,7 @@ echo -e "#define TIME_ENABLE true " >>config.h
 echo -e "#define TIME_PROF_ENABLE false " >>config.h
 echo -e "#define FIN_BY_TIME true " >>config.h
 echo -e "// Number of transactions each client should send without waiting. " >>config.h
-echo -e "#define MAX_TXN_IN_FLIGHT 20000 " >>config.h
+echo -e "#define MAX_TXN_IN_FLIGHT $max_inf " >>config.h
 echo -e "#define SERVER_GENERATE_QUERIES false  " >>config.h
 echo -e "#define MEM_ALLIGN 8 " >>config.h
 echo -e "#define THREAD_ALLOC false " >>config.h
@@ -184,6 +186,8 @@ echo -e "#define SIGN_THREADS false " >>config.h
 echo -e "#define SIGN_THD_CNT 1 " >>config.h
 echo -e "#define CLIENT_BATCH true " >>config.h
 echo -e "#define CLIENT_RESPONSE_BATCH true " >>config.h
+echo -e "// To Enable or disable the blockchain implementation."
+echo -e "#define ENABLE_CHAIN true"
 echo -e "// To fail non-primary replicas. " >>config.h
 echo -e "#define LOCAL_FAULT false " >>config.h
 echo -e "#define NODE_FAIL_CNT 1 " >>config.h
@@ -215,5 +219,11 @@ echo -e "#define PAYLOAD M100 " >>config.h
 echo -e "#define M100 1	// 100KB. " >>config.h
 echo -e "#define M200 2	// 200KB. " >>config.h
 echo -e "#define M400 3	// 400KB. " >>config.h
+
+echo -e "#define EXT_DB SQL" >> config.h
+echo -e "#define MEMORY 1" >> config.h
+echo -e "#define SQL 2" >> config.h
+echo -e "#define SQL_PERSISTENT 3" >> config.h
+
 echo -e "#endif" >>config.h
 echo -e "" >>config.h

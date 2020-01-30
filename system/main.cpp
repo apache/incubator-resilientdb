@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 
     printf("Initializing DB %s... ", db->dbInstance().c_str());
     fflush(stdout);
-    db->Open("db");
+    db->Open(string("db-") + to_string(g_node_id));
 
     printf("DB testing\nInsert key K1 with value V1\n");
     db->Put("K1", "V1");
