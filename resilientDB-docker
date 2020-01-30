@@ -102,7 +102,7 @@ scripts/docker-ifconfig.sh
 printf "\nChecking Dependencies...\n"
 if [ ! -d "deps/crypto" ]; then
     printf "Installing dependencies..\n"
-    cd deps && $(\ls | xargs -i tar -xvf {}) >/dev/null 2>&1
+    cd deps && $(\ls | xargs -n 1 tar -xvf) >/dev/null 2>&1
     cd ..
 fi
 pwd
