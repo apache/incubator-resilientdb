@@ -186,8 +186,8 @@ echo -e "#define SIGN_THREADS false " >>config.h
 echo -e "#define SIGN_THD_CNT 1 " >>config.h
 echo -e "#define CLIENT_BATCH true " >>config.h
 echo -e "#define CLIENT_RESPONSE_BATCH true " >>config.h
-echo -e "// To Enable or disable the blockchain implementation."
-echo -e "#define ENABLE_CHAIN true"
+echo -e "// To Enable or disable the blockchain implementation." >>config.h
+echo -e "#define ENABLE_CHAIN true" >>config.h
 echo -e "// To fail non-primary replicas. " >>config.h
 echo -e "#define LOCAL_FAULT false " >>config.h
 echo -e "#define NODE_FAIL_CNT 1 " >>config.h
@@ -219,11 +219,11 @@ echo -e "#define PAYLOAD M100 " >>config.h
 echo -e "#define M100 1	// 100KB. " >>config.h
 echo -e "#define M200 2	// 200KB. " >>config.h
 echo -e "#define M400 3	// 400KB. " >>config.h
-
+echo -e "" >>config.h
 echo -e "#define EXT_DB SQL" >> config.h
 echo -e "#define MEMORY 1" >> config.h
 echo -e "#define SQL 2" >> config.h
 echo -e "#define SQL_PERSISTENT 3" >> config.h
-
+echo -e "" >>config.h
 echo -e "#endif" >>config.h
 echo -e "" >>config.h

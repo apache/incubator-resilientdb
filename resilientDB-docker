@@ -12,14 +12,19 @@ if [ -z $1 ];then
     echo -e "      default setup with 4 nodes and 1 client"
     exit
 fi
-string_params=($(echo "$@" | grep -P '\-\-[^\-\= ]+\=[^\-\= ]+' -o))
+
+if [ "$(uname)" == "Darwin" ]; then
+	flags="-oE"
+else
+	flags="-oP"
+fi
+string_params=($(echo "$@" | grep ${flags} '\-\-[^\-\= ]+\=[^\-\= ]+'))
 replicas=0
 clients=0
-for var in "${string_params[@]}"; do
-    key=$(echo "$var" | grep -oP '\-\-\K([^\=\-]+)')
-    value=$(echo "$var" | grep -oP '[^\=\-]*=\K([^\=\-]+)')
-    #!/bin/bash
 
+for var in "${string_params[@]}"; do
+    key=$(echo "$var" | grep ${flags} '\-\-[^\-\=]+' | grep ${flags} '[^\=\-]+')
+    value=$(echo "$var" | grep ${flags} '=([^\=\-]+)' | grep ${flags} '[^\=\-]+')
     case $key in
 
     clients)
@@ -102,7 +107,7 @@ scripts/docker-ifconfig.sh
 printf "\nChecking Dependencies...\n"
 if [ ! -d "deps/crypto" ]; then
     printf "Installing dependencies..\n"
-    cd deps && $(\ls | xargs -n 1 tar -xvf) >/dev/null 2>&1
+    cd deps && $(ls | xargs -n 1 tar -xvf 2>/dev/null)
     cd ..
 fi
 pwd

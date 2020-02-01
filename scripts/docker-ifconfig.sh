@@ -9,6 +9,12 @@ if ! hash docker 2>/dev/null; then
     exit 1
 fi
 
+if [ "$(uname)" == "Darwin" ]; then
+	flags="E"
+else
+	flags="P"
+fi
+
 file="ifconfig.txt"
 
 if [ -f $file ]; then
@@ -18,7 +24,7 @@ if [ -f $file ]; then
 fi
 
 #Command to get just the names of all the servers setup in docker
-OUTPUT="$(docker ps --format '{{.Names}}' | grep -P "c[\d]+|s[\d]+" | sort)"
+OUTPUT="$(docker ps --format '{{.Names}}' | grep -${flags} "c[\d]*|s[\d]*" | sort)"
 #echo "${OUTPUT}"
 IPC=""
 echo "Server sequence --> IP"
@@ -27,9 +33,7 @@ for server in ${OUTPUT}; do
     #Get just the IP Address of all the servers
     #echo "$server"
     if ! [ "$server" = "${server#c}" ]; then
-        IPC="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
-        IPC="${IPC%\"}"
-        IPC="${IPC#\"}"
+        IPC="$(docker inspect $server | grep -${flags}o '"IPAddress": *"([0-9]{1,3}[\.]){3}[0-9]{1,3}"'| grep -${flags}o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
         if [ -z "$CLIENTS" ]; then
             CLIENTS="${IPC}"
         else
@@ -37,10 +41,7 @@ for server in ${OUTPUT}; do
         fi
         echo "$server --> ${IPC}"
     else
-        IP="$(docker inspect $server | grep -Po '"IPAddress": *\K"([0-9]{1,3}[\.]){3}[0-9]{1,3}"')"
-        #Remove quotes
-        IP="${IP%\"}"
-        IP="${IP#\"}"
+        IP="$(docker inspect $server | grep -${flags}o '"IPAddress": *"([0-9]{1,3}[\.]){3}[0-9]{1,3}"'| grep -${flags}o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
         echo "$server --> ${IP}"
         #Append in ifconfig,txt
         echo "${IP}" >>$file
