@@ -217,12 +217,39 @@ void Stats_thd::clear()
 
 void Stats_thd::print_client(FILE *outf, bool prog)
 {
+    string node_id = to_string(g_node_cnt -  g_node_id + 1);
+    string filename = "toInflux_C";
+    filename.append(node_id);
+    filename.append("_.out");
+    filename="./monitor/"+filename;
+    
+    ofstream file;
+    file.open(filename.c_str(), ios_base::out | ios_base::in);  // will not create file
+    fprintf(outf, "filename: %s", filename.c_str());
+    if (!file.is_open())
+    {    
+        file.clear();
+        file.open(filename.c_str(), std::ofstream::app);  // will create if necessary
+        //file << ip_add;
+        file << "tput\n";
+    } 
+    else
+    {
+        file.close();
+        file.open (filename.c_str(),std::ofstream::app);
+    }
+
     double txn_run_avg_time = 0;
     double tput = 0;
     if (txn_cnt > 0)
         txn_run_avg_time = txn_run_time / txn_cnt;
     if (total_runtime > 0)
         tput = txn_cnt / (total_runtime / BILLION);
+
+    file << tput;
+    file << "\n";
+    file.close();
+
     fprintf(outf,
             "total_runtime=%f"
             ",tput=%f"
@@ -737,6 +764,30 @@ void Stats::cpu_util(FILE *outf)
 
 void Stats_thd::print(FILE *outf, bool prog)
 {
+
+    string node_id = to_string(g_node_id +1);
+    string filename = "toInflux_R";
+    filename.append(node_id);
+    filename.append("_.out");
+    filename="./monitor/"+filename;
+
+    ofstream file;
+    file.open(filename.c_str(), ios_base::out | ios_base::in);  // will not create file
+    if (!file.is_open())
+    {    
+        file.clear();
+        file.open(filename.c_str(), std::ofstream::app);  // will create if necessary
+        //file << ip_add;
+        file << "tput\n";
+    } 
+    else
+    {
+        file.close();
+        file.open (filename.c_str(),std::ofstream::app);
+    }
+
+    fprintf(outf, "filename: %s", filename.c_str());
+
     fprintf(outf,
             "\ntotal_runtime=%f\n", total_runtime / BILLION);
     // Execution
@@ -751,6 +802,11 @@ void Stats_thd::print(FILE *outf, bool prog)
     //   txn_run_avg_time = txn_run_time / txn_cnt;
     //   avg_parts_touched = ((double)parts_touched) / txn_cnt;
     // }
+
+    file << tput;
+    file << "\n";
+    file.close(); 
+    
     fprintf(outf, "\ntput=%f\ntxn_cnt=%ld\n", tput, txn_cnt);
 
     double work_queue_wait_avg_time = 0;

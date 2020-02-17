@@ -14,10 +14,14 @@ do
 	else
 		cmd="scp runcl expo@${line}:${home_directory}/resilientdb/"
 	fi
+
+	monitor="scp monitorResults.sh expo@${line}:${home_directory}/resilientdb/"
+	
 	if [ "$ifconfig" -eq 1 ];then
 		# echo "$if_cmd"
 		$($if_cmd) &
 	fi
+	$($monitor) &
 	# echo "$cmd"
 	$($cmd) &
 	i=$(($i+1))

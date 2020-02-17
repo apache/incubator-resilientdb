@@ -18,7 +18,7 @@ wait
 i=0
 while IFS= read -r line
 do
-	cmd="ssh expo@${line} rm ${home_directory}/resilientdb/*.out"
+	cmd="ssh expo@${line} rm ${home_directory}/resilientdb/*.out  & rm ${home_directory}/resilientdb/monitor/*.out"
 	$($cmd) &
 	i=$(($i+1))
 done < "$input"
