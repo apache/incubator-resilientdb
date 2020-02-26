@@ -132,13 +132,13 @@ void TxnManager::init(uint64_t pool_id, Workload *h_wl)
         DEBUG_M("Transaction alloc\n");
         txn_pool.get(pool_id, txn);
     }
-
+#if !BANKING_SMART_CONTRACT
     if (!query)
     {
         DEBUG_M("TxnManager::init Query alloc\n");
         qry_pool.get(pool_id, query);
     }
-
+#endif
     sem_init(&rsp_mutex, 0, 1);
     return_id = UINT64_MAX;
 
@@ -166,7 +166,11 @@ void TxnManager::reset()
     //twopl_wait_start = 0;
 
     assert(txn);
+#if BANKING_SMART_CONTRACT
+    //assert(smart_contract);
+#else
     assert(query);
+#endif
     txn->reset(get_thd_id());
 
     // Stats
@@ -177,9 +181,12 @@ void TxnManager::release(uint64_t pool_id)
 {
 
     uint64_t tid = get_txn_id();
-
+#if BANKING_SMART_CONTRACT
+    delete this->smart_contract;
+#else
     qry_pool.put(pool_id, query);
     query = NULL;
+#endif
     txn_pool.put(pool_id, txn);
     txn = NULL;
 
@@ -198,7 +205,9 @@ void TxnManager::release(uint64_t pool_id)
 
 void TxnManager::reset_query()
 {
+#if !BANKING_SMART_CONTRACT
     ((YCSBQuery *)query)->reset();
+#endif
 }
 
 RC TxnManager::commit()
@@ -282,12 +291,18 @@ uint64_t TxnManager::get_thd_id()
 
 BaseQuery *TxnManager::get_query()
 {
+#if !BANKING_SMART_CONTRACT
     return query;
+#else
+    return NULL;
+#endif
 }
 
 void TxnManager::set_query(BaseQuery *qry)
 {
+#if !BANKING_SMART_CONTRACT
     query = qry;
+#endif
 }
 
 uint64_t TxnManager::incr_rsp(int i)
@@ -331,14 +346,13 @@ uint64_t TxnManager::get_hashSize()
     return hashSize;
 }
 
-
-void TxnManager::set_primarybatch(BatchRequests *breq) 
+void TxnManager::set_primarybatch(BatchRequests *breq)
 {
-	char *buf = create_msg_buffer(breq);
-	Message *deepMsg = deep_copy_msg(buf, breq);
-	batchreq = (BatchRequests *)deepMsg;
-	delete_msg_buffer(buf);
-}	
+    char *buf = create_msg_buffer(breq);
+    Message *deepMsg = deep_copy_msg(buf, breq);
+    batchreq = (BatchRequests *)deepMsg;
+    delete_msg_buffer(buf);
+}
 
 bool TxnManager::is_chkpt_ready()
 {
@@ -397,13 +411,12 @@ bool TxnManager::is_committed()
     return committed_local;
 }
 
-
-void TxnManager::add_commit_msg(PBFTCommitMessage *pcmsg) 
+void TxnManager::add_commit_msg(PBFTCommitMessage *pcmsg)
 {
-	char *buf = create_msg_buffer(pcmsg);
-	Message *deepMsg = deep_copy_msg(buf, pcmsg);
-	commit_msgs.push_back((PBFTCommitMessage *)deepMsg);
-	delete_msg_buffer(buf);
+    char *buf = create_msg_buffer(pcmsg);
+    Message *deepMsg = deep_copy_msg(buf, pcmsg);
+    commit_msgs.push_back((PBFTCommitMessage *)deepMsg);
+    delete_msg_buffer(buf);
 }
 
 uint64_t TxnManager::decr_commit_rsp_cnt()
@@ -493,16 +506,16 @@ void TxnManager::release_all_messages(uint64_t txn_id)
     {
         info_prepare.clear();
         info_commit.clear();
-	
-	Message::release_message(batchreq);
 
-	PBFTCommitMessage *cmsg;
-	while(commit_msgs.size()>0)
-	{
-		cmsg = (PBFTCommitMessage *)this->commit_msgs[0];
-		commit_msgs.erase(commit_msgs.begin());
-		Message::release_message(cmsg);
-	}
+        Message::release_message(batchreq);
+
+        PBFTCommitMessage *cmsg;
+        while (commit_msgs.size() > 0)
+        {
+            cmsg = (PBFTCommitMessage *)this->commit_msgs[0];
+            commit_msgs.erase(commit_msgs.begin());
+            Message::release_message(cmsg);
+        }
     }
 }
 

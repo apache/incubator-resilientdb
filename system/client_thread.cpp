@@ -93,8 +93,9 @@ RC ClientThread::run()
 		}
 		keyMTX.unlock();
 	}
-
+#if !BANKING_SMART_CONTRACT
 	BaseQuery *m_query;
+#endif
 	uint64_t iters = 0;
 	uint32_t num_txns_sent = 0;
 	int txns_sent[g_node_cnt];
@@ -175,7 +176,21 @@ RC ClientThread::run()
 		{
 			continue;
 		}
-
+#if BANKING_SMART_CONTRACT
+		uint64_t source = (uint64_t)rand() % 10000;
+		uint64_t dest = (uint64_t)rand() % 10000;
+		uint64_t amount = (uint64_t)rand() % 10000;
+		BankingSmartContractMessage *clqry = new BankingSmartContractMessage();
+		clqry->rtype = BSC_MSG;
+		clqry->inputs.init(!(addMore % 3) ? 3 : 2);
+		clqry->type = (BSCType)(addMore % 3);
+		clqry->inputs.add(amount);
+		clqry->inputs.add(source);
+		((ClientQueryMessage *)clqry)->client_startts = get_sys_clock();
+		if (addMore % 3 == 0)
+			clqry->inputs.add(dest);
+		clqry->return_node_id = g_node_id;
+#else
 		m_query = client_query_queue.get_next_query(_thd_id);
 		if (last_send_time > 0)
 		{
@@ -190,7 +205,7 @@ RC ClientThread::run()
 		YCSBClientQueryMessage *clqry = (YCSBClientQueryMessage *)msg;
 		clqry->return_node = g_node_id;
 
-		
+#endif
 
 		bmsg->cqrySet.add(clqry);
 		addMore++;
@@ -205,12 +220,9 @@ RC ClientThread::run()
 			Message *deepCMsg = deep_copy_msg(buf, bmsg);
 			ClientQueryBatch *deepCqry = (ClientQueryBatch *)deepCMsg;
 
-			
-
 			client_timer->startTimer(deepCqry->cqrySet[get_batch_size() - 1]->client_startts, deepCqry);
 			delete_msg_buffer(buf);
 #endif // TIMER_ON
-
 
 			vector<string> emptyvec;
 			emptyvec.push_back(bmsg->signature);

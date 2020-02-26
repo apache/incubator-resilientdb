@@ -11,6 +11,7 @@
 #include "work_queue.h"
 #include "crypto.h"
 #include "timer.h"
+#include "smart_contract_txn.h"
 
 void *f(void *);
 void *g(void *);
@@ -51,7 +52,11 @@ int main(int argc, char *argv[])
     tport_man.init();
     printf("Done\n");
     printf("Initializing client manager... ");
+#if BANKING_SMART_CONTRACT
+    Workload *m_wl = new SCWorkload;
+#else
     Workload *m_wl = new YCSBWorkload;
+#endif
     m_wl->Workload::init();
     printf("workload initialized!\n");
 
@@ -276,8 +281,9 @@ void *run_thread(void *id)
     return NULL;
 }
 
-void network_test() {
-  /*
+void network_test()
+{
+    /*
 
 	ts_t start;
 	ts_t end;
@@ -300,8 +306,9 @@ void network_test() {
   */
 }
 
-void network_test_recv() {
-  /*
+void network_test_recv()
+{
+    /*
 	int bytes;
 	while(1) {
 		if( (bytes = tport_man.simple_recv_msg()) > 0)

@@ -24,7 +24,7 @@ public:
 
     uint64_t next_set;
     uint64_t get_next_txn_id();
-    void init_txn_man(YCSBClientQueryMessage *msg);
+
     void release_txn_man(uint64_t txn_id, uint64_t batch_id);
     void algorithm_specific_update(Message *msg, uint64_t idx);
     void create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid);
@@ -36,7 +36,11 @@ public:
     RC process_batch(Message *msg);
     void send_checkpoints(uint64_t txn_id);
     RC process_pbft_chkpt_msg(Message *msg);
-
+#if BANKING_SMART_CONTRACT
+    void init_txn_man(BankingSmartContractMessage *bscm);
+#else
+    void init_txn_man(YCSBClientQueryMessage *msg);
+#endif
 #if EXECUTION_THREAD
     void send_execute_msg();
     RC process_execute_msg(Message *msg);

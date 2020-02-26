@@ -15,6 +15,7 @@
 #include "crypto.h"
 #include "timer.h"
 #include "chain.h"
+#include "smart_contract_txn.h"
 
 void network_test();
 void network_test_recv();
@@ -70,8 +71,12 @@ int main(int argc, char *argv[])
     simulation->init();
     printf("Done\n");
     fflush(stdout);
-
+#if BANKING_SMART_CONTRACT
+    Workload *m_wl = new SCWorkload;
+#else
     Workload *m_wl = new YCSBWorkload;
+#endif
+    
     m_wl->init();
     printf("Workload initialized!\n");
     fflush(stdout);

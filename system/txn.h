@@ -6,6 +6,7 @@
 #include "semaphore.h"
 #include "array.h"
 #include "message.h"
+#include "smart_contract.h"
 
 class Workload;
 class Thread;
@@ -115,8 +116,11 @@ public:
     void set_batch_id(uint64_t batch_id) { txn->batch_id = batch_id; }
 
     Transaction *txn;
-
-    BaseQuery *query;        // Client query.
+#if BANKING_SMART_CONTRACT
+    SmartContract *smart_contract;
+#else
+    BaseQuery *query; // Client query.
+#endif
     uint64_t client_startts; // Client timestamp for this transaction.
     uint64_t client_id;      // Id of client that sent this transaction.
 
@@ -126,9 +130,9 @@ public:
     void set_hash(string hsh);
     uint64_t get_hashSize();
 
-    // We need to maintain one copy of the whole BatchRequests messages sent 
-    // by the primary. We only maintain in last request of the batch. 
-    BatchRequests *batchreq;  
+    // We need to maintain one copy of the whole BatchRequests messages sent
+    // by the primary. We only maintain in last request of the batch.
+    BatchRequests *batchreq;
     void set_primarybatch(BatchRequests *breq);
 
     vector<string> allsign;
@@ -158,7 +162,7 @@ public:
     vector<uint64_t> info_commit;
 
     // We need to store all the complete Commit mssg in the last txn of batch.
-    vector<PBFTCommitMessage *> commit_msgs; 
+    vector<PBFTCommitMessage *> commit_msgs;
     void add_commit_msg(PBFTCommitMessage *pcmsg);
 
     uint64_t decr_commit_rsp_cnt();

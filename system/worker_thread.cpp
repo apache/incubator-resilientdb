@@ -762,6 +762,55 @@ bool WorkerThread::is_cc_new_timestamp()
     return false;
 }
 
+#if BANKING_SMART_CONTRACT
+/**
+ * This function sets up the required fields of the txn manager.
+ *
+ * @param clqry One Client Transaction (or Query).
+*/
+void WorkerThread::init_txn_man(BankingSmartContractMessage *bsc){
+    txn_man->client_id = bsc->return_node_id;
+    txn_man->client_startts = bsc->client_startts;
+    SmartContract *smart_contract;
+    switch (bsc->type)
+    {
+    case BSC_TRANSFER:
+    {
+        TransferMoneySmartContract *tm = new TransferMoneySmartContract();
+        tm->amount = bsc->inputs[1];
+        tm->source_id = bsc->inputs[0];
+        tm->dest_id = bsc->inputs[2];
+        tm->type = BSC_TRANSFER;
+        smart_contract = (SmartContract *)tm;
+        break;
+    }
+    case BSC_DEPOSIT:
+    {
+        DepositMoneySmartContract *dm = new DepositMoneySmartContract();
+
+        dm->amount = bsc->inputs[0];
+        dm->dest_id = bsc->inputs[1];
+        dm->type = BSC_DEPOSIT;
+        smart_contract = (SmartContract *)dm;
+        break;
+    }
+    case BSC_WITHDRAW:
+    {
+        WithdrawMoneySmartContract *wm = new WithdrawMoneySmartContract();
+        wm->amount = bsc->inputs[0];
+        wm->source_id = bsc->inputs[1];
+        wm->type = BSC_WITHDRAW;
+        smart_contract = (SmartContract *)wm;
+        break;
+    }
+    default:
+        assert(0);
+        break;
+    }
+    txn_man->smart_contract = smart_contract;
+}
+#else
+
 /**
  * This function sets up the required fields of the txn manager.
  *
@@ -781,7 +830,7 @@ void WorkerThread::init_txn_man(YCSBClientQueryMessage *clqry)
         query->requests.add(req);
     }
 }
-
+#endif
 /**
  * Create an message of type ExecuteMessage, to notify the execute-thread that this 
  * batch of transactions are ready to be executed. This message is placed in one of the 
@@ -892,10 +941,10 @@ RC WorkerThread::process_execute_msg(Message *msg)
     // Execute the transaction
     txn_man->run_txn();
 
- #if ENABLE_CHAIN
+#if ENABLE_CHAIN
     // Add the block to the blockchain.
     BlockChain->add_block(txn_man);
- #endif
+#endif
 
     // Commit the results.
     txn_man->commit();
@@ -1005,11 +1054,12 @@ RC WorkerThread::process_pbft_chkpt_msg(Message *msg)
         release_txn_man(i, 0);
         inc_last_deleted_txn();
 
-       #if ENABLE_CHAIN	
-	if((i+1) % get_batch_size() == 0) {
-	    BlockChain->remove_block(i);
-	}	
-       #endif
+#if ENABLE_CHAIN
+        if ((i + 1) % get_batch_size() == 0)
+        {
+            BlockChain->remove_block(i);
+        }
+#endif
     }
 
 #if VIEW_CHANGES
@@ -1097,7 +1147,6 @@ void WorkerThread::set_txn_man_fields(BatchRequests *breq, uint64_t bid)
         algorithm_specific_update(breq, i);
 
         init_txn_man(breq->requestMsg[i]);
-
         bool ready = txn_man->set_ready();
         assert(ready);
     }

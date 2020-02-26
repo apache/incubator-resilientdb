@@ -212,10 +212,12 @@
 #define M200 2	// 200KB. 
 #define M400 3	// 400KB. 
 
-#define EXT_DB SQL
+#define EXT_DB MEMORY
 #define MEMORY 1
 #define SQL 2
 #define SQL_PERSISTENT 3
+
+#define BANKING_SMART_CONTRACT false
 
 #endif
 

@@ -159,6 +159,28 @@ public:
     Array<uint64_t> partitions;
 };
 
+#if BANKING_SMART_CONTRACT
+class BankingSmartContractMessage : public ClientQueryMessage
+{
+public:
+    void copy_from_buf(char *buf);
+    void copy_to_buf(char *buf);
+    void copy_from_query(BaseQuery *query);
+    void copy_from_txn(TxnManager *txn);
+    void copy_to_txn(TxnManager *txn);
+    uint64_t get_size();
+    void init();
+    void release();
+    BankingSmartContractMessage();
+    ~BankingSmartContractMessage();
+
+    BSCType type; // Type of Banking Smartcontract
+    string getString();
+    string getRequestString();
+
+    Array<uint64_t> inputs;
+};
+#else
 class YCSBClientQueryMessage : public ClientQueryMessage
 {
 public:
@@ -179,6 +201,7 @@ public:
 
     Array<ycsb_request *> requests;
 };
+#endif
 
 class ClientResponseMessage : public Message
 {
@@ -224,7 +247,11 @@ public:
 
     uint64_t return_node;
     uint64_t batch_size;
+#if BANKING_SMART_CONTRACT
+    Array<BankingSmartContractMessage *> cqrySet;
+#else
     Array<YCSBClientQueryMessage *> cqrySet;
+#endif
 };
 #endif
 
@@ -264,7 +291,11 @@ public:
     void copy_from_buf(char *buf);
     void copy_to_buf(char *buf);
     void copy_from_txn(TxnManager *txn);
+#if BANKING_SMART_CONTRACT
+    void copy_from_txn(TxnManager *txn, BankingSmartContractMessage *clqry);
+#else
     void copy_from_txn(TxnManager *txn, YCSBClientQueryMessage *clqry);
+#endif
     void copy_to_txn(TxnManager *txn);
     uint64_t get_size();
     void init() {}
@@ -278,7 +309,11 @@ public:
     uint64_t view; // primary node id
 
     Array<uint64_t> index;
+#if BANKING_SMART_CONTRACT
+    vector<BankingSmartContractMessage *> requestMsg;
+#else
     vector<YCSBClientQueryMessage *> requestMsg;
+#endif
     uint64_t hashSize; // Representative hash for the batch.
     string hash;
     uint32_t batch_size;

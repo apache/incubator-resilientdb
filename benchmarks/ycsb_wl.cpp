@@ -6,6 +6,7 @@
 #include "mem_alloc.h"
 #include "query.h"
 
+#if !BANKING_SMART_CONTRACT
 int YCSBWorkload::next_tid;
 
 RC YCSBWorkload::init()
@@ -28,3 +29,4 @@ RC YCSBWorkload::get_txn_man(TxnManager *&txn_manager)
   new (txn_manager) YCSBTxnManager();
   return RCOK;
 }
+#endif

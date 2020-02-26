@@ -198,6 +198,9 @@ enum RemReqType
     VIEW_CHANGE,
     NEW_VIEW,
 #endif
+#if BANKING_SMART_CONTRACT
+    BSC_MSG,
+#endif
 
     PBFT_PREP_MSG,   // Prepare
     PBFT_COMMIT_MSG, // Commit
@@ -397,6 +400,15 @@ extern double output_thd_idle_time[SEND_THREAD_CNT];
 // Payload for messages.
 #if PAYLOAD_ENABLE
 extern uint64_t payload_size;
+#endif
+
+#if BANKING_SMART_CONTRACT
+enum BSCType
+{
+    BSC_TRANSFER = 0,
+    BSC_DEPOSIT = 1,
+    BSC_WITHDRAW = 2,
+};
 #endif
 
 #endif

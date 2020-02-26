@@ -6,6 +6,7 @@
 #include "global.h"
 #include "helper.h"
 
+#if !BANKING_SMART_CONTRACT
 class YCSBQuery;
 
 class YCSBQueryMessage;
@@ -36,4 +37,5 @@ private:
     YCSBWorkload *_wl;
 };
 
+#endif
 #endif
