@@ -2,7 +2,7 @@
 
 ### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
-### Quick Facts about Version 1.1 of ResilientDB
+### Quick Facts about Version 2.0 of ResilientDB
 1. ResilientDB supports a **Dockerized** implementation, which allows specifying the number of clients and replicas.
 2. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
 3. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
@@ -10,6 +10,9 @@
 5. At present, each client only sends YCSB-style transactions for processing, to the primary.
 6. Each client transaction has an associated **transaction manager**, which stores all the data related to the transaction.
 7. Depending on the type of replica (primary or non-primary), we associate different a number of threads and queues with each replica.
+8. ResilientDB allows easy implementation of **Smart Contracts**. At present, we provide a comprehensive implementation of **Banking Smart Contracts**.
+9. To facilitate data storage and persistence, ResilientDB provides support for an **in-memory key-value store**. Further, users can take advantage of **SQL query** execution through the fully-integrated APIs for **SQLite**.
+10. With ResilientDB we also provide a seamless **GUI display**. This display generates a status log and also accesses **Grafana to plot the results**. Further details regarding the setup of GUI display are available in the **dashboard** folder.
 
 ---
 
@@ -94,6 +97,11 @@ Use the Script ``resilientDB-docker``
 * CRYPTO_METHOD_ED25519		To use ED25519 based digital signatures.
 * CRYPTO_METHOD_CMAC_AES	To use CMAC + AES combination for authentication.
 * SYNTH_TABLE_SIZE		The range of keys for clients to select.
+* #define EXT_DB MEMORY		To specify the type of memory storage (in-memory of SQLite)..
+* BANKING_SMART_CONTRACT	To allow usage of smart contraacts instead of YCSB bechmarks.
+
+
+
 </pre>
 
 <br/>

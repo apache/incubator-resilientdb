@@ -212,11 +212,14 @@
 #define M200 2	// 200KB. 
 #define M400 3	// 400KB. 
 
+// To allow testing in-memory database or SQLite. 
+// Further, using SQLite a user can also choose to persist the data. 
 #define EXT_DB MEMORY
 #define MEMORY 1
 #define SQL 2
 #define SQL_PERSISTENT 3
 
+// To allow testing of a Banking Smart Contracts. 
 #define BANKING_SMART_CONTRACT false
 
 #endif
