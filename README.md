@@ -97,7 +97,7 @@ Use the Script ``resilientDB-docker``
 * CRYPTO_METHOD_ED25519		To use ED25519 based digital signatures.
 * CRYPTO_METHOD_CMAC_AES	To use CMAC + AES combination for authentication.
 * SYNTH_TABLE_SIZE		The range of keys for clients to select.
-* #define EXT_DB MEMORY		To specify the type of memory storage (in-memory of SQLite)..
+* EXT_DB MEMORY			To specify the type of memory storage (in-memory of SQLite)..
 * BANKING_SMART_CONTRACT	To allow usage of smart contraacts instead of YCSB bechmarks.
 
 
