@@ -1,8 +1,8 @@
 #ifndef NN_HPP_INCLUDED
 #define NN_HPP_INCLUDED
 
-#include <nanomsg/nn.h>
-#include <nanomsg/tcp.h>
+#include <nng/nng.h>
+#include <nng/protocol/pair0/pair.h>
 
 #include <cassert>
 #include <cstring>
@@ -18,161 +18,113 @@
 namespace nn
 {
 
-class exception : public std::exception
-{
-public:
-    exception() : err(nn_errno()) {}
-
-    virtual const char *what() const throw()
+    class exception : public std::exception
     {
-        return nn_strerror(err);
-    }
+    public:
+        exception(int e) : err(e) {}
 
-    int num() const
-    {
-        return err;
-    }
-
-private:
-    int err;
-};
-
-inline const char *symbol(int i, int *value)
-{
-    return nn_symbol(i, value);
-}
-
-inline void *allocmsg(size_t size, int type)
-{
-    void *msg = nn_allocmsg(size, type);
-    if (nn_slow(!msg))
-        throw nn::exception();
-    return msg;
-}
-
-inline int freemsg(void *msg)
-{
-    int rc = nn_freemsg(msg);
-    if (nn_slow(rc != 0))
-        throw nn::exception();
-    return rc;
-}
-
-class socket
-{
-public:
-    inline socket(int domain, int protocol)
-    {
-        s = nn_socket(domain, protocol);
-        if (nn_slow(s < 0))
-            throw nn::exception();
-    }
-
-    inline ~socket()
-    {
-        int rc = nn_close(s);
-        assert(rc == 0);
-    }
-
-    inline void setsockopt(int level, int option, const void *optval,
-                           size_t optvallen)
-    {
-        int rc = nn_setsockopt(s, level, option, optval, optvallen);
-        if (nn_slow(rc != 0))
-            throw nn::exception();
-    }
-
-    inline void getsockopt(int level, int option, void *optval,
-                           size_t *optvallen)
-    {
-        int rc = nn_getsockopt(s, level, option, optval, optvallen);
-        if (nn_slow(rc != 0))
-            throw nn::exception();
-    }
-
-    inline int bind(const char *addr)
-    {
-        int rc = nn_bind(s, addr);
-        if (nn_slow(rc < 0))
-            throw nn::exception();
-        return rc;
-    }
-
-    inline int connect(const char *addr)
-    {
-        int rc = nn_connect(s, addr);
-        if (nn_slow(rc < 0))
-            throw nn::exception();
-        return rc;
-    }
-
-    inline void shutdown(int how)
-    {
-        int rc = nn_shutdown(s, how);
-        if (nn_slow(rc != 0))
-            throw nn::exception();
-    }
-
-    inline int send(const void *buf, size_t len, int flags)
-    {
-        int rc = nn_send(s, buf, len, flags);
-        if (nn_slow(rc < 0))
+        virtual const char *what() const throw()
         {
-            if (nn_slow(nn_errno() != EAGAIN))
-                throw nn::exception();
-            return -1;
+            return nng_strerror(err);
         }
-        return rc;
-    }
 
-    inline int recv(void *buf, size_t len, int flags)
-    {
-        int rc = nn_recv(s, buf, len, flags);
-        if (nn_slow(rc < 0))
+        int num() const
         {
-            if (nn_slow(nn_errno() != EAGAIN))
-                throw nn::exception();
-            return -1;
+            return err;
         }
-        return rc;
-    }
 
-    inline int sendmsg(const struct nn_msghdr *msghdr, int flags)
+    private:
+        int err;
+    };
+
+    inline int freemsg(void *msgm, uint64_t sz)
     {
-        int rc = nn_sendmsg(s, msghdr, flags);
-        if (nn_slow(rc < 0))
-        {
-            if (nn_slow(nn_errno() != EAGAIN))
-                throw nn::exception();
-            return -1;
-        }
-        return rc;
+        nng_free(msgm, sz);
+        return 0;
     }
 
-    inline int recvmsg(struct nn_msghdr *msghdr, int flags)
+    class socket
     {
-        int rc = nn_recvmsg(s, msghdr, flags);
-        if (nn_slow(rc < 0))
+    public:
+        inline socket()
         {
-            if (nn_slow(nn_errno() != EAGAIN))
-                throw nn::exception();
-            return -1;
+            int rc;
+            if ((rc = nng_pair0_open(&s)) != 0)
+            {
+                throw nn::exception(rc);
+            }
         }
-        return rc;
-    }
 
-private:
-    int s;
+        inline ~socket()
+        {
+            int rc = nng_close(s);
+            assert(rc == 0);
+        }
 
-    /*  Prevent making copies of the socket by accident. */
-    socket(const socket &);
-    void operator=(const socket &);
-};
+        inline int bind(const char *addr)
+        {
+            int rc;
+            if ((rc = nng_listen(s, addr, NULL, 0)) != 0)
+            {
+                throw nn::exception(rc);
+            }
+            return rc;
+        }
 
-inline void term()
-{
-    nn_term();
-}
+        inline int connect(const char *addr)
+        {
+            int rc;
+            if ((rc = nng_dial(s, addr, NULL, NNG_FLAG_NONBLOCK)) != 0)
+            {
+                throw nn::exception(rc);
+            }
+            return rc;
+        }
+
+        inline int send(void *buf, size_t len, int flags)
+        {
+            int rc = nng_send(s, buf, len, flags);
+            if (nn_slow(rc != 0))
+            {
+                if (nn_slow(rc != NNG_EAGAIN))
+                    throw nn::exception(rc);
+                return -1;
+            }
+            return rc;
+        }
+
+        inline int recv(void **buf, int flags)
+        {
+            size_t len;
+            int rc = nng_recv(s, buf, &len, flags);
+            if (nn_slow(rc != 0))
+            {
+                if (nn_slow(rc != NNG_EAGAIN))
+                {
+                    throw nn::exception(rc);
+                }
+                return -1;
+            }
+            fflush(stdout);
+            return len;
+        }
+
+        inline void setsockopt_ms(const char *option, int optval)
+        {
+            int rc;
+            if ((rc = nng_setopt_ms(s, option, optval)) != 0)
+            {
+                throw nn::exception(rc);
+            }
+        }
+
+        nng_socket s;
+
+    private:
+        /*  Prevent making copies of the socket by accident. */
+        socket(const socket &);
+        void operator=(const socket &);
+    };
 
 } // namespace nn
 
