@@ -12,10 +12,13 @@ struct mbuf
     uint64_t ptr;
     uint64_t cnt;
     bool wait;
+    uint64_t dest_node_id;
+    bool force = false;
 
     void init(uint64_t dest_id)
     {
-        buffer = (char *)nn_allocmsg(g_msg_size, 0);
+        buffer = (char *)nng_alloc(g_msg_size);
+        dest_node_id = dest_id;
     }
     void reset(uint64_t dest_id)
     {
@@ -39,11 +42,23 @@ struct mbuf
     }
     bool ready()
     {
-        if (cnt == 0)
+        if (simulation->is_warmup_done() && ISSERVER)
+        {
+            if (cnt == MESSAGE_PER_BUFFER || (force && cnt))
+            {
+                force = false;
+                return true;
+            }
             return false;
-        if ((get_sys_clock() - starttime) >= g_msg_time_limit)
-            return true;
-        return false;
+        }
+        else
+        {
+            if (cnt == 0)
+                return false;
+            if ((get_sys_clock() - starttime) >= g_msg_time_limit)
+                return true;
+            return false;
+        }
     }
 };
 

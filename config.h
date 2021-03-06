@@ -31,6 +31,7 @@
 #define FIN_BY_TIME true 
 // Number of transactions each client should send without waiting. 
 #define MAX_TXN_IN_FLIGHT 20000 
+#define MESSAGE_PER_BUFFER 1
 #define SERVER_GENERATE_QUERIES false  
 #define MEM_ALLIGN 8 
 #define THREAD_ALLOC false 

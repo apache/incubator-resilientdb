@@ -2,8 +2,6 @@
 #define _TRANSPORT_H_
 #include "global.h"
 #include "nn.hpp"
-#include <nanomsg/bus.h>
-#include <nanomsg/pair.h>
 #include "query.h"
 
 class Workload;
@@ -15,7 +13,7 @@ class Message;
 class Socket
 {
 public:
-	Socket() : sock(AF_SP, NN_PAIR) {}
+	Socket() : sock() {}
 	~Socket() { delete &sock; }
 	char _pad1[CL_SIZE];
 	nn::socket sock;

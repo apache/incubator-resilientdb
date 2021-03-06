@@ -1,3 +1,4 @@
+#include <nng/nng.h>
 #include "global.h"
 #include "transport.h"
 #include "nn.hpp"
@@ -60,11 +61,8 @@ Socket *Transport::get_socket()
     new (socket) Socket();
     int timeo = 1000;  // timeout in ms
     int stimeo = 1000; // timeout in ms
-    int opt = 0;
-    socket->sock.setsockopt(NN_SOL_SOCKET, NN_RCVTIMEO, &timeo, sizeof(timeo));
-    socket->sock.setsockopt(NN_SOL_SOCKET, NN_SNDTIMEO, &stimeo, sizeof(stimeo));
-    // NN_TCP_NODELAY doesn't cause TCP_NODELAY to be set -- nanomsg issue #118
-    socket->sock.setsockopt(NN_SOL_SOCKET, NN_TCP_NODELAY, &opt, sizeof(opt));
+    socket->sock.setsockopt_ms(NNG_OPT_RECVTIMEO, timeo);
+    socket->sock.setsockopt_ms(NNG_OPT_SENDTIMEO, stimeo);
     return socket;
 }
 
@@ -253,8 +251,7 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
 
     Socket *socket = send_sockets.find(std::make_pair(dest_node_id, send_thread_id))->second;
     // Copy messages to nanomsg buffer
-    void *buf = nn_allocmsg(size, 0);
-    memcpy(buf, sbuf, size);
+
     DEBUG("%ld Sending batch of %d bytes to node %ld on socket %ld\n", send_thread_id, size, dest_node_id, (uint64_t)socket);
 
 #if VIEW_CHANGES || LOCAL_FAULT
@@ -304,7 +301,7 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
         uint64_t time = get_sys_clock();
         while ((rc < 0 && (get_sys_clock() - time < MSG_TIMEOUT || !simulation->is_setup_done())) && (!simulation->is_setup_done() || (simulation->is_setup_done() && !simulation->is_done())))
         {
-            rc = socket->sock.send(&buf, NN_MSG, NN_DONTWAIT);
+            rc = socket->sock.send(sbuf, size, NNG_FLAG_NONBLOCK);
         }
         if (rc < 0)
         {
@@ -328,7 +325,7 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
     int rc = -1;
     while ((rc < 0 && (!simulation->is_setup_done() || (simulation->is_setup_done() && !simulation->is_done()))))
     {
-        rc = socket->sock.send(&buf, NN_MSG, NN_DONTWAIT);
+        rc = socket->sock.send(sbuf, size, NNG_FLAG_NONBLOCK);
     }
 #endif
 
@@ -343,7 +340,7 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
 std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
 {
     int bytes = 0;
-    void *buf;
+    void *buf = NULL;
     std::vector<Message *> *msgs = NULL;
 
     uint64_t ctr, start_ctr;
@@ -389,7 +386,7 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
         if (!ISSERVER)
         {
             socket = recv_sockets[ctr];
-            bytes = socket->sock.recv(&buf, NN_MSG, NN_DONTWAIT);
+            bytes = socket->sock.recv(&buf, NNG_FLAG_ALLOC | NNG_FLAG_NONBLOCK);
 
             ctr = (ctr + g_this_rem_thread_cnt);
 
@@ -412,14 +409,7 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
             {
                 socket = recv_sockets_clients[ctr];
             }
-
-            bytes = socket->sock.recv(&buf, NN_MSG, NN_DONTWAIT);
-        }
-
-        if (bytes <= 0 && errno != 11)
-        {
-            printf("Recv Error %d %s\n", errno, strerror(errno));
-            nn::freemsg(buf);
+            bytes = socket->sock.recv(&buf, NNG_FLAG_ALLOC | NNG_FLAG_NONBLOCK);
         }
 
         if (bytes > 0)
@@ -462,46 +452,7 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
     msgs = Message::create_messages((char *)buf);
     DEBUG("Batch of %d bytes recv from node %ld; Time: %f\n", bytes, msgs->front()->return_node_id, simulation->seconds_from_start(get_sys_clock()));
 
-    nn::freemsg(buf);
+    nn::freemsg(buf, bytes);
 
     return msgs;
 }
-
-/*
-void Transport::simple_send_msg(int size) {
-	void * sbuf = nn_allocmsg(size,0);
-
-	ts_t time = get_sys_clock();
-	memcpy(&((char*)sbuf)[0],&time,sizeof(ts_t));
-
-  int rc = -1;
-  while(rc < 0 ) {
-  if(g_node_id == 0)
-    rc = socket->sock.send(&sbuf,NN_MSG,0);
-  else
-    rc = socket->sock.send(&sbuf,NN_MSG,0);
-	}
-}
-
-uint64_t Transport::simple_recv_msg() {
-	int bytes;
-	void * buf;
-
-  if(g_node_id == 0)
-		bytes = socket->sock.recv(&buf, NN_MSG, NN_DONTWAIT);
-  else
-		bytes = socket->sock.recv(&buf, NN_MSG, NN_DONTWAIT);
-    if(bytes <= 0 ) {
-      if(errno != 11)
-        nn::freemsg(buf);	
-      return 0;
-    }
-
-	ts_t time;
-	memcpy(&time,&((char*)buf)[0],sizeof(ts_t));
-	//printf("%d bytes, %f s\n",bytes,((float)(get_sys_clock()-time)) / BILLION);
-
-	nn::freemsg(buf);	
-	return bytes;
-}
-*/
