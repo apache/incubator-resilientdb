@@ -214,8 +214,35 @@ RC InputThread::client_recv_loop()
             }
             ClientResponseMessage *clrsp = (ClientResponseMessage *)msg;
             // Check if the response is valid.
-            if (clrsp->validate())
+            assert(clrsp->validate());
+            uint64_t response_count = 0;
+
+            if (client_responses_directory.exists(msg->txn_id))
             {
+                ClientResponseMessage *old_clrsp = client_responses_directory.get(msg->txn_id);
+                response_count = client_responses_count.get(msg->txn_id);
+                response_count++;
+                for (uint64_t j = 0; j < get_batch_size(); j++)
+                {
+                    if (old_clrsp->index[j] != clrsp->index[j])
+                        assert(false);
+                    assert(old_clrsp->client_ts[j] == clrsp->client_ts[j]);
+                }
+                client_responses_count.add(msg->txn_id, response_count);
+            }
+            else if (!client_responses_count.exists(msg->txn_id))
+            {
+                client_responses_count.add(msg->txn_id, 1);
+                char *buf = create_msg_buffer(msg);
+                Message *deepMsg = deep_copy_msg(buf, msg);
+                delete_msg_buffer(buf);
+                client_responses_directory.add(msg->txn_id, (ClientResponseMessage *)deepMsg);
+            }
+            // cout << msg->txn_id << "   " << response_count << endl;
+            if (response_count == g_min_invalid_nodes + 1)
+            {
+                // If true, set this as the next transaction completed.
+                set_last_valid_txn(msg->txn_id);
 
 #if TIMER_ON
                 // End the timer.
@@ -252,15 +279,13 @@ RC InputThread::client_recv_loop()
 
                     uint64_t timespan = get_sys_clock() - clrsp->client_ts[k];
                     INC_STATS(get_thd_id(), txn_run_time, timespan);
-                    if (warmup_done)
-                    {
-                        INC_STATS_ARR(get_thd_id(), client_client_latency, timespan);
-                    }
 
                     sumlat = sumlat + timespan;
                     txncmplt++;
                     inf = client_man.dec_inflight(return_node_offset);
                 }
+                Message::release_message(client_responses_directory.get(msg->txn_id));
+                client_responses_directory.remove(msg->txn_id);
 #else // !CLIENT_RESPONSE_BATCH
 
                 rsp_cnts[return_node_offset]++;
@@ -280,6 +305,7 @@ RC InputThread::client_recv_loop()
 #endif // CLIENT_RESPONSE_BATCH
                 assert(inf >= 0);
             }
+            Message::release_message(msg);
             // delete message here
             msgs->erase(msgs->begin());
         }

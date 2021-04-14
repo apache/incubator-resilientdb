@@ -163,18 +163,6 @@ int main(int argc, char *argv[])
 
     printf("Done\n");
 
-#if !RBFT_ON
-    Message *clrsp = Message::create_message(CL_RSP);
-    for (uint64_t i = 0; i < 2 * g_client_node_cnt * g_inflight_max; i++)
-    {
-        for (uint64_t j = 0; j < g_node_cnt; j++)
-        {
-            ((ClientResponseMessage *)clrsp)->txn_id = UINT64_MAX;
-            clrspStore[i][j] = *((ClientResponseMessage *)clrsp);
-        }
-    }
-#endif
-
     // 2. spawn multiple threads
     uint64_t thd_cnt = g_client_thread_cnt;
     uint64_t cthd_cnt = thd_cnt;

@@ -353,6 +353,10 @@ double idle_worker_times[THREAD_CNT] = {0};
 // Statistics to print output_thread_idle_times.
 double output_thd_idle_time[SEND_THREAD_CNT] = {0};
 
+// Maps for client response couting
+SpinLockMap<uint64_t, uint64_t> client_responses_count;
+SpinLockMap<uint64_t, ClientResponseMessage *> client_responses_directory;
+
 // Payload for messages.
 #if PAYLOAD_ENABLE
 #if PAYLOAD == M100

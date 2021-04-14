@@ -365,8 +365,6 @@ char *create_msg_buffer(Message *msg);
 Message *deep_copy_msg(char *buf, Message *msg);
 void delete_msg_buffer(char *buf);
 
-//Arrays that stores messages of each type at client.
-extern vector<vector<ClientResponseMessage>> clrspStore;
 
 class PBFTPrepMessage : public Message
 {
