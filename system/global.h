@@ -35,6 +35,7 @@
 #include "xed25519.h"
 #include "sha.h"
 #include "database.h"
+#include "hash_map.h"
 
 using namespace std;
 
@@ -53,6 +54,7 @@ class QWorkQueue;
 class MessageQueue;
 class Client_query_queue;
 class Client_txn;
+class ClientResponseMessage;
 
 typedef uint32_t UInt32;
 typedef int32_t SInt32;
@@ -396,6 +398,10 @@ extern double idle_worker_times[THREAD_CNT];
 
 // Statistics to print output_thread_idle_times.
 extern double output_thd_idle_time[SEND_THREAD_CNT];
+
+// Maps for client response couting
+extern SpinLockMap<uint64_t, uint64_t> client_responses_count;
+extern SpinLockMap<uint64_t, ClientResponseMessage *> client_responses_directory;
 
 // Payload for messages.
 #if PAYLOAD_ENABLE

@@ -960,66 +960,6 @@ bool ClientResponseMessage::validate()
 	//cout << "IN: " << this->txn_id << " :: " << this->return_node_id << "\n";
 	//fflush(stdout);
 
-	if (this->txn_id <= get_last_valid_txn())
-	{
-		//cout << "TXN: " << this->txn_id << " :: LT: " << get_last_valid_txn() << "\n";
-		//fflush(stdout);
-		return false;
-	}
-
-	uint64_t k = 0;
-	uint64_t relIndex = this->txn_id % indexSize;
-	ClientResponseMessage clrsp;
-	for (uint64_t i = 0; i < g_node_cnt; i++)
-	{
-		clrsp = clrspStore[relIndex][i];
-		//cout << "TXN: " << clrsp.txn_id << "\n";
-		//fflush(stdout);
-
-		if (clrsp.txn_id == this->txn_id)
-		{
-			k++;
-
-#if CLIENT_RESPONSE_BATCH == true
-			for (uint64_t j = 0; j < get_batch_size(); j++)
-			{
-				if (this->index[j] != clrsp.index[j])
-				{
-					cout << "Idx: " << this->index[j] << " :: " << clrsp.index[j] << " :: " << j << "\n";
-					fflush(stdout);
-					assert(false);
-				}
-				assert(this->client_ts[j] == clrsp.client_ts[j]);
-			}
-#else
-			assert(this->client_startts == clrsp.client_startts);
-#endif
-		}
-	}
-
-	//add valid message to message log
-	clrspStore[relIndex][this->return_node_id] = *this;
-
-	k++; // count message just added
-
-#if TESTING_ON
-	if (k < 1)
-#else
-	if (k < g_min_invalid_nodes + 1)
-#endif
-	{
-		return false;
-	}
-
-	// If true, set this as the next transaction completed.
-	set_last_valid_txn(this->txn_id);
-
-	for (uint64_t i = 0; i < g_node_cnt; i++)
-	{
-		clrsp = clrspStore[relIndex][i];
-		clrsp.txn_id = UINT64_MAX;
-		clrspStore[relIndex][i] = clrsp;
-	}
 
 	return true;
 }
@@ -1801,9 +1741,6 @@ void delete_msg_buffer(char *buf)
 {
 	free(buf);
 }
-
-//Arrays that stores messages of each type.
-vector<vector<ClientResponseMessage>> clrspStore(2 * CLIENT_NODE_CNT * MAX_TXN_IN_FLIGHT, vector<ClientResponseMessage>(NODE_CNT));
 
 /**************************/
 

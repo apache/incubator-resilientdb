@@ -39,6 +39,7 @@ echo -e "#define TIME_PROF_ENABLE false " >>config.h
 echo -e "#define FIN_BY_TIME true " >>config.h
 echo -e "// Number of transactions each client should send without waiting. " >>config.h
 echo -e "#define MAX_TXN_IN_FLIGHT $max_inf " >>config.h
+echo -e "#define MESSAGE_PER_BUFFER 1 " >>config.h
 echo -e "#define SERVER_GENERATE_QUERIES false  " >>config.h
 echo -e "#define MEM_ALLIGN 8 " >>config.h
 echo -e "#define THREAD_ALLOC false " >>config.h
@@ -220,7 +221,7 @@ echo -e "#define M100 1	// 100KB. " >>config.h
 echo -e "#define M200 2	// 200KB. " >>config.h
 echo -e "#define M400 3	// 400KB. " >>config.h
 echo -e "" >>config.h
-echo -e "#define EXT_DB SQL" >> config.h
+echo -e "#define EXT_DB MEMORY" >> config.h
 echo -e "#define MEMORY 1" >> config.h
 echo -e "#define SQL 2" >> config.h
 echo -e "#define SQL_PERSISTENT 3" >> config.h
