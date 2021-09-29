@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdint.h>
-#include "global.h"
 
 /************************************************/
 // Debugging
@@ -197,6 +196,9 @@
 #define INC_GLOB_STATS(name, value)                   \
 	if (STATS_ENABLE && simulation->is_warmup_done()) \
 		stats.name += value;
+#define INC_GLOB_STATS_ARR(name, index, value)        \
+	if (STATS_ENABLE && simulation->is_warmup_done()) \
+		stats.name[index] += value;
 
 /************************************************/
 // mem copy helper
@@ -286,29 +288,6 @@ enum Data_type
 	DT_row
 };
 
-// TODO currently, only DR_row supported
-// data item type.
-class itemid_t
-{
-public:
-	itemid_t(){};
-	itemid_t(Data_type type, void *loc)
-	{
-		this->type = type;
-		this->location = loc;
-	};
-	Data_type type;
-	void *location; // points to the table | page | row
-	itemid_t *next;
-	bool valid;
-	void init();
-	bool operator==(const itemid_t &other) const;
-	bool operator!=(const itemid_t &other) const;
-	void operator=(const itemid_t &other);
-};
-
-int get_thdid_from_txnid(uint64_t txnid);
-
 // key_to_part() is only for ycsb
 uint64_t key_to_part(uint64_t key);
 uint64_t get_part_id(void *addr);
@@ -324,6 +303,19 @@ extern timespec *res;
 uint64_t get_wall_clock();
 uint64_t get_server_clock();
 uint64_t get_sys_clock(); // return: in ns
+
+constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+						   '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+std::string hexStr(const char *data, int len);
+
+
+// In resilientDB each message for an instance of consensus 
+// may have specific txn_id in range of its batch size
+uint64_t get_commit_message_txn_id(uint64_t txn_id);
+uint64_t get_prep_message_txn_id(uint64_t txn_id);
+uint64_t get_checkpoint_message_txn_id(uint64_t txn_id);
+uint64_t get_execute_message_txn_id(uint64_t txn_id);
+
 
 class myrand
 {

@@ -23,8 +23,9 @@
 #include <sys/time.h>
 #include <math.h>
 
+#include "./helper.h"
 #include "pthread.h"
-#include "config.h"
+#include "../config.h"
 #include "stats.h"
 #include "pool.h"
 #include "txn_table.h"
@@ -36,6 +37,7 @@
 #include "sha.h"
 #include "database.h"
 #include "hash_map.h"
+#include "hash_set.h"
 
 using namespace std;
 
@@ -54,6 +56,7 @@ class QWorkQueue;
 class MessageQueue;
 class Client_query_queue;
 class Client_txn;
+class CommitCertificateMessage;
 class ClientResponseMessage;
 
 typedef uint32_t UInt32;
@@ -119,7 +122,11 @@ extern UInt32 g_this_rem_thread_cnt;
 extern UInt32 g_this_send_thread_cnt;
 extern UInt32 g_this_total_thread_cnt;
 extern UInt32 g_thread_cnt;
-extern UInt32 g_execute_thd;
+extern UInt32 g_worker_thread_cnt;
+extern UInt32 g_batching_thread_cnt;
+extern UInt32 g_checkpointing_thread_cnt;
+extern UInt32 g_execution_thread_cnt;
+
 extern UInt32 g_sign_thd;
 extern UInt32 g_send_thread_cnt;
 extern UInt32 g_rem_thread_cnt;
@@ -326,8 +333,6 @@ extern uint64_t lastDeletedTxnMan; // index of last deleted txn manager.
 void inc_last_deleted_txn();
 uint64_t get_last_deleted_txn();
 
-extern uint g_batch_threads;
-extern uint g_btorder_thd;
 extern uint64_t expectedExecuteCount;
 extern uint64_t expectedCheckpoint;
 uint64_t get_expectedExecuteCount();
@@ -355,29 +360,28 @@ extern uint64_t ClientDataStore[SYNTH_TABLE_SIZE];
 // Entities related to RBFT protocol.
 
 // Entities pertaining to the current view.
-extern uint32_t local_view[THREAD_CNT + REM_THREAD_CNT];
 uint64_t get_current_view(uint64_t thd_id);
-void set_current_view(uint64_t thd_id, uint64_t view);
+uint64_t get_view(uint64_t thd_id);
 
 #if VIEW_CHANGES
 // For updating view for input threads, batching threads, execute thread
 // and checkpointing thread.
-extern std::mutex newViewMTX[BATCH_THREADS + REM_THREAD_CNT + 2];
-extern bool newView[BATCH_THREADS + REM_THREAD_CNT + 2];
-bool get_newView(uint64_t thd_id);
-void set_newView(uint64_t thd_id, bool val);
+extern std::mutex newViewMTX[THREAD_CNT + REM_THREAD_CNT + SEND_THREAD_CNT];
+extern uint64_t view[THREAD_CNT + REM_THREAD_CNT + SEND_THREAD_CNT];
+void set_view(uint64_t thd_id, uint64_t val);
 #endif
 
 // Size of the batch.
 extern uint64_t g_batch_size;
 uint64_t get_batch_size();
 extern uint64_t batchSet[2 * CLIENT_NODE_CNT * MAX_TXN_IN_FLIGHT];
+uint64_t view_to_primary(uint64_t view, uint64_t node = g_node_id);
 
 // This variable is mainly used by the client to know its current primary.
 extern uint32_t g_view;
 extern std::mutex viewMTX;
-void set_view(uint64_t nview);
-uint64_t get_view();
+void set_client_view(uint64_t nview);
+uint64_t get_client_view();
 
 #if LOCAL_FAULT || VIEW_CHANGES
 // Server parameters for tracking failed replicas
@@ -398,6 +402,7 @@ extern double idle_worker_times[THREAD_CNT];
 
 // Statistics to print output_thread_idle_times.
 extern double output_thd_idle_time[SEND_THREAD_CNT];
+extern double input_thd_idle_time[REM_THREAD_CNT];
 
 // Maps for client response couting
 extern SpinLockMap<uint64_t, uint64_t> client_responses_count;

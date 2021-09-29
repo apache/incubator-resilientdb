@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -g -gdwarf-3 -std=c++0x -rdynamic #
+CFLAGS=-Wall -g -gdwarf-3 -std=c++11 -rdynamic #
 JEMALLOC=deps/jemalloc-5.1.0
 NNMSG=deps/nng-1.3.2
 BOOST=deps/boost_1_67_0
@@ -9,7 +9,7 @@ SQLITE=deps/sqlite-autoconf-3290000/build
 .SUFFIXES: .o .cpp .h
 
 SRC_DIRS = ./ ./benchmarks/ ./client/ ./transport/ ./system/ ./statistics/ ./blockchain/ ./db/ ./smart_contracts/ ./data_structures
-DEPS = -I. -I./benchmarks -I./client/ -I./transport -I./system -I./statistics -I./blockchain -I./smart_contracts  -I./data_structures -I$(JEMALLOC)/include -I$(NNMSG)/include -I$(BOOST) -I$(CRYPTOPP) -I./db -I$(SQLITE)/include
+DEPS = -I. -I./benchmarks -I./client/ -I./transport -I./system -I./statistics -I./blockchain -I./smart_contracts -I./data_structures -I$(JEMALLOC)/include -I$(NNMSG)/include -I$(BOOST) -I$(CRYPTOPP) -I./db -I$(SQLITE)/include
 
 CFLAGS += $(DEPS) -D NOGRAPHITE=1 -Werror -Wno-sizeof-pointer-memaccess
 LDFLAGS = -Wall -L. -L$(NNMSG)/lib -L$(JEMALLOC)/lib -Wl,-rpath,$(JEMALLOC)/lib -pthread -gdwarf-3 -lrt -std=c++0x -L$(CRYPTOPP) -L$(SQLITE)/lib

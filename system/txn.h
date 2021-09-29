@@ -2,7 +2,6 @@
 #define _TXN_H_
 
 #include "global.h"
-#include "helper.h"
 #include "semaphore.h"
 #include "array.h"
 #include "message.h"
@@ -134,8 +133,6 @@ public:
     // by the primary. We only maintain in last request of the batch.
     BatchRequests *batchreq;
     void set_primarybatch(BatchRequests *breq);
-
-    vector<string> allsign;
 
     uint64_t get_abort_cnt() { return abort_cnt; }
     uint64_t abort_cnt;

@@ -11,6 +11,7 @@
 #include "pool.h"
 #include "txn_table.h"
 #include "client_txn.h"
+#include "txn.h"
 #include "../config.h"
 
 mem_alloc mem_allocator;
@@ -63,12 +64,11 @@ UInt32 g_part_cnt = PART_CNT;
 UInt32 g_virtual_part_cnt = VIRTUAL_PART_CNT;
 UInt32 g_core_cnt = CORE_CNT;
 UInt32 g_thread_cnt = THREAD_CNT;
+UInt32 g_worker_thread_cnt = WORKER_THREAD_CNT;
+UInt32 g_batching_thread_cnt = BATCH_THREAD_CNT;
+UInt32 g_checkpointing_thread_cnt = CHECKPOINT_THREAD_CNT;
+UInt32 g_execution_thread_cnt = EXECUTE_THREAD_CNT;
 
-#if EXECUTION_THREAD
-UInt32 g_execute_thd = EXECUTE_THD_CNT;
-#else
-UInt32 g_execute_thd = 0;
-#endif
 
 #if SIGN_THREADS
 UInt32 g_sign_thd = SIGN_THD_CNT;
@@ -121,7 +121,6 @@ UInt64 g_msg_time_limit = MSG_TIME_LIMIT;
 
 double g_mpr = MPR;
 double g_mpitem = MPIR;
-
 
 UInt32 g_repl_type = REPL_TYPE;
 UInt32 g_repl_cnt = REPLICA_CNT;
@@ -193,7 +192,8 @@ uint64_t txn_per_chkpt()
 
 void set_curr_chkpt(uint64_t txn_id)
 {
-	g_last_stable_chkpt = txn_id;
+	if(txn_id > g_last_stable_chkpt)
+		g_last_stable_chkpt  = txn_id;
 }
 
 uint64_t get_curr_chkpt()
@@ -212,8 +212,6 @@ void inc_last_deleted_txn()
 }
 
 // Information about batching threads.
-uint g_batch_threads = BATCH_THREADS;
-uint g_btorder_thd = 1;
 uint64_t expectedExecuteCount = g_batch_size - 2;
 uint64_t expectedCheckpoint = TXN_PER_CHKPT - 5;
 uint64_t get_expectedExecuteCount()
@@ -228,19 +226,24 @@ void set_expectedExecuteCount(uint64_t val)
 
 // Variable used by all threads during setup, to mark they are ready
 std::mutex batchMTX;
+std::mutex next_idx_lock;
 uint commonVar = 0;
 
 // Variable used by Input thread at the primary to linearize batches.
 uint64_t next_idx = 0;
 uint64_t get_and_inc_next_idx()
 {
+	next_idx_lock.lock();
 	uint64_t val = next_idx++;
+	next_idx_lock.unlock();
 	return val;
 }
 
 void set_next_idx(uint64_t val)
 {
+	next_idx_lock.lock();
 	next_idx = val;
+	next_idx_lock.unlock();
 }
 
 // Counters for input threads to access next socket (only used by replicas).
@@ -273,36 +276,35 @@ vector<uint64_t> nodes_to_send(uint64_t beg, uint64_t end)
 // STORAGE OF CLIENT DATA
 uint64_t ClientDataStore[SYNTH_TABLE_SIZE] = {0};
 
-// Entities pertaining to the current view.
-uint32_t local_view[THREAD_CNT + REM_THREAD_CNT] = {0};
+// returns the current view.
 uint64_t get_current_view(uint64_t thd_id)
 {
-	return local_view[thd_id];
-}
-
-void set_current_view(uint64_t thd_id, uint64_t view)
-{
-	local_view[thd_id] = view;
+	return get_view(thd_id);
 }
 
 #if VIEW_CHANGES == true
 // For updating view of different threads.
-std::mutex newViewMTX[BATCH_THREADS + REM_THREAD_CNT + 2];
-bool newView[BATCH_THREADS + REM_THREAD_CNT + 2] = {false};
-bool get_newView(uint64_t thd_id)
+std::mutex newViewMTX[THREAD_CNT + REM_THREAD_CNT + SEND_THREAD_CNT];
+uint64_t newView[THREAD_CNT + REM_THREAD_CNT + SEND_THREAD_CNT] = {0};
+uint64_t get_view(uint64_t thd_id)
 {
-	bool nchange = false;
+	uint64_t nchange = 0;
 	newViewMTX[thd_id].lock();
 	nchange = newView[thd_id];
 	newViewMTX[thd_id].unlock();
 	return nchange;
 }
 
-void set_newView(uint64_t thd_id, bool val)
+void set_view(uint64_t thd_id, uint64_t val)
 {
 	newViewMTX[thd_id].lock();
 	newView[thd_id] = val;
 	newViewMTX[thd_id].unlock();
+}
+#else
+uint64_t get_view(uint64_t thd_id)
+{
+	return 0;
 }
 #endif
 
@@ -314,17 +316,23 @@ uint64_t get_batch_size()
 	return g_batch_size;
 }
 
+
+uint64_t view_to_primary(uint64_t view, uint64_t node)
+{
+	return view;
+}
+
 // This variable is mainly used by the client to know its current primary.
 uint32_t g_view = 0;
 std::mutex viewMTX;
-void set_view(uint64_t nview)
+void set_client_view(uint64_t nview)
 {
 	viewMTX.lock();
 	g_view = nview;
 	viewMTX.unlock();
 }
 
-uint64_t get_view()
+uint64_t get_client_view()
 {
 	uint64_t val;
 	viewMTX.lock();
@@ -352,6 +360,7 @@ double idle_worker_times[THREAD_CNT] = {0};
 
 // Statistics to print output_thread_idle_times.
 double output_thd_idle_time[SEND_THREAD_CNT] = {0};
+double input_thd_idle_time[REM_THREAD_CNT] = {0};
 
 // Maps for client response couting
 SpinLockMap<uint64_t, uint64_t> client_responses_count;
@@ -369,9 +378,7 @@ uint64_t payload_size = 51200;
 #endif
 
 #if EXT_DB == SQL || EXT_DB == SQL_PERSISTENT
-	DataBase* db = new SQLite();
+DataBase *db = new SQLite();
 #elif EXT_DB == MEMORY
-	DataBase* db = new InMemoryDB();
+DataBase *db = new InMemoryDB();
 #endif
-
-

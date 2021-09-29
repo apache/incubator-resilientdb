@@ -154,6 +154,7 @@ void ClientTimer::startTimer(uint64_t timestp, ClientQueryBatch *cqry)
 
 	tlock.lock();
 	txn_map.push_back(tmap);
+	// printf("added  %ld  %ld\n",cqry->txn_id, txn_map.size());
 	tlock.unlock();
 }
 
@@ -170,6 +171,7 @@ void ClientTimer::endTimer(uint64_t timestp)
 			txn_map.erase(txn_map.begin() + i);
 			Message::release_message(tmap->get_msg());
 			mem_allocator.free(tmap, sizeof(Timer));
+			// printf("remvd  %ld  %ld\n",tmap->get_msg()->txn_id, i);
 			break;
 		}
 	}
@@ -208,6 +210,7 @@ bool ClientTimer::checkTimer(ClientQueryBatch *&cbatch)
 
 			// Found so return true.
 			flag = true;
+			printf("resending to primary  %ld\n",tmap->get_msg()->txn_id);
 		}
 	}
 

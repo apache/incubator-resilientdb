@@ -11,6 +11,7 @@
 #include "wl.h"
 #include "message.h"
 #include "timer.h"
+#include "ring_all_comb.h"
 
 void ClientThread::send_key()
 {
@@ -37,11 +38,10 @@ void ClientThread::send_key()
 		keyex->pkeySz = keyex->pkey.size();
 		keyex->return_node = g_node_id;
 
-		vector<string> emptyvec;
 		vector<uint64_t> dest;
 		dest.push_back(i);
 
-		msg_queue.enqueue(get_thd_id(), keyex, emptyvec, dest);
+		msg_queue.enqueue(get_thd_id(), keyex, dest);
 #endif
 
 #if CRYPTO_METHOD_CMAC_AES
@@ -53,7 +53,7 @@ void ClientThread::send_key()
 		keyexCMAC->pkeySz = keyexCMAC->pkey.size();
 		keyexCMAC->return_node = g_node_id;
 		//msg_queue.enqueue(get_thd_id(), keyexCMAC, i);
-		msg_queue.enqueue(get_thd_id(), keyexCMAC, emptyvec, dest);
+		msg_queue.enqueue(get_thd_id(), keyexCMAC, dest);
 		dest.clear();
 #endif
 	}
@@ -67,6 +67,7 @@ void ClientThread::setup()
 	commonVar++;
 	batchMTX.unlock();
 
+
 	if (_thd_id == 0)
 	{
 		while (commonVar < g_client_thread_cnt + g_client_rem_thread_cnt + g_client_send_thread_cnt)
@@ -79,7 +80,6 @@ void ClientThread::setup()
 
 RC ClientThread::run()
 {
-
 	tsetup();
 	printf("Running ClientThread %ld\n", _thd_id);
 
@@ -112,14 +112,16 @@ RC ClientThread::run()
 	ClientQueryBatch *bmsg = (ClientQueryBatch *)mssg;
 	bmsg->init();
 #endif
-	uint32_t next_node_id = get_view();
+
+	uint32_t next_node_id = get_client_view();
 	while (!simulation->is_done())
 	{
 		heartbeat();
 		progress_stats();
 		int32_t inf_cnt;
-		uint32_t next_node = get_view();
-		next_node_id = get_view();
+		uint32_t next_node = get_client_view();
+
+		next_node_id = get_client_view();
 
 #if VIEW_CHANGES
 		//if a request by this client hasnt been completed in time
@@ -127,7 +129,10 @@ RC ClientThread::run()
 		if (client_timer->checkTimer(cbatch))
 		{
 			cout << "TIMEOUT!!!!!!\n";
-			resend_msg(cbatch);
+
+			//TODO for experimental purpose: force one view change
+			if (get_client_view() == 0)
+				resend_msg(cbatch);
 		}
 #endif
 
@@ -219,17 +224,15 @@ RC ClientThread::run()
 			char *buf = create_msg_buffer(bmsg);
 			Message *deepCMsg = deep_copy_msg(buf, bmsg);
 			ClientQueryBatch *deepCqry = (ClientQueryBatch *)deepCMsg;
-
+			uint64_t c_txn_id = get_sys_clock();
+			deepCqry->txn_id = c_txn_id;
 			client_timer->startTimer(deepCqry->cqrySet[get_batch_size() - 1]->client_startts, deepCqry);
 			delete_msg_buffer(buf);
 #endif // TIMER_ON
 
-			vector<string> emptyvec;
-			emptyvec.push_back(bmsg->signature);
-
 			vector<uint64_t> dest;
 			dest.push_back(next_node_id);
-			msg_queue.enqueue(get_thd_id(), bmsg, emptyvec, dest);
+			msg_queue.enqueue(get_thd_id(), bmsg, dest);
 			dest.clear();
 
 			num_txns_sent += g_batch_size;
@@ -250,28 +253,3 @@ RC ClientThread::run()
 	return FINISH;
 }
 
-#if VIEW_CHANGES
-// Resend message to all the servers.
-void ClientThread::resend_msg(ClientQueryBatch *symsg)
-{
-	//cout << "Resend: " << symsg->cqrySet[get_batch_size()-1]->client_startts << "\n";
-	//fflush(stdout);
-
-	vector<string> emptyvec;
-	emptyvec.push_back(symsg->signature); // Sign the message.
-
-	char *buf = create_msg_buffer(symsg);
-	for (uint64_t j = 0; j < g_node_cnt; j++)
-	{
-		vector<uint64_t> dest;
-		dest.push_back(j);
-
-		Message *deepCMsg = deep_copy_msg(buf, symsg);
-		msg_queue.enqueue(get_thd_id(), deepCMsg, emptyvec, dest);
-		dest.clear();
-	}
-	emptyvec.clear();
-	delete_msg_buffer(buf);
-	Message::release_message(symsg);
-}
-#endif // VIEW_CHANGES

@@ -2,7 +2,6 @@
 #define _MESSAGE_H_
 
 #include "global.h"
-#include "helper.h"
 #include "array.h"
 #include <mutex>
 
@@ -364,7 +363,6 @@ public:
 char *create_msg_buffer(Message *msg);
 Message *deep_copy_msg(char *buf, Message *msg);
 void delete_msg_buffer(char *buf);
-
 
 class PBFTPrepMessage : public Message
 {

@@ -2,7 +2,6 @@
 #define _ARR_H_
 
 #include "global.h"
-#include "helper.h"
 #include "mem_alloc.h"
 
 template <class T>

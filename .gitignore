@@ -17,3 +17,4 @@ hostnames.py
 docker-compose.yml
 res.out
 .DS_Store
+exp/

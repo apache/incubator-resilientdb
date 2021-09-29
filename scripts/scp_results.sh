@@ -1,6 +1,6 @@
 #!/bin/bash
-
-home_directory="/home/expo"
+USERNAME=ubuntu
+home_directory="/home/ubuntu"
 nodes=$1
 name=$2
 result_dir=$3
@@ -8,7 +8,7 @@ input="./ifconfig.txt"
 i=0
 while IFS= read -r line
 do
-	cmd="scp expo@${line}:${home_directory}/resilientdb/${name}*.out ${result_dir}"
+	cmd="scp ${USERNAME}@${line}:${home_directory}/resilientdb/${name}*.out ${result_dir}"
 	echo "$cmd"
 	$($cmd) &
 	i=$(($i+1))
@@ -18,7 +18,7 @@ wait
 i=0
 while IFS= read -r line
 do
-	cmd="ssh expo@${line} rm ${home_directory}/resilientdb/*.out  & rm ${home_directory}/resilientdb/monitor/*.out"
+	cmd="ssh ${USERNAME}@${line} rm -f ${home_directory}/resilientdb/*;"
 	$($cmd) &
 	i=$(($i+1))
 done < "$input"

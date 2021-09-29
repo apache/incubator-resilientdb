@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 #else
     Workload *m_wl = new YCSBWorkload;
 #endif
-    
+
     m_wl->init();
     printf("Workload initialized!\n");
     fflush(stdout);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 
     printf("Initializing Chain... ");
     fflush(stdout);
-    BlockChain = new  BChain();
+    BlockChain = new BChain();
     printf("Done\n");
 
 #if TIMER_ON
@@ -296,6 +296,11 @@ int main(int argc, char *argv[])
 
     fflush(stdout);
     printf("PASS! SimTime = %f\n", (float)(endtime - starttime) / BILLION);
+    for (uint64_t i = 0; i < g_send_thread_cnt; i++)
+        printf("Output %ld: %f\n", i + g_thread_cnt + g_rem_thread_cnt, output_thd_idle_time[i] / BILLION);
+    for (uint64_t i = 0; i < g_rem_thread_cnt; i++)
+        printf("Input %ld: %f\n", i + g_thread_cnt, input_thd_idle_time[i] / BILLION);
+
     if (STATS_ENABLE)
         stats.print(false);
 

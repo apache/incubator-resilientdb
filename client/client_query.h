@@ -2,7 +2,6 @@
 #define _CLIENT_QUERY_H_
 
 #include "global.h"
-#include "helper.h"
 #include "query.h"
 
 //class Workload;

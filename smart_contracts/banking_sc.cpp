@@ -1,5 +1,4 @@
 #include "global.h"
-#include "helper.h"
 #include "smart_contract.h"
 #include "smart_contract_txn.h"
 

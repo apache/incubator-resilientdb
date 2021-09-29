@@ -1,7 +1,6 @@
 #ifndef _SC_TXN_H_
 #define _SC_TXN_H_
 #include "global.h"
-#include "helper.h"
 #include "txn.h"
 #include "wl.h"
 

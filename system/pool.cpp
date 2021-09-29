@@ -1,6 +1,5 @@
 #include "pool.h"
 #include "global.h"
-#include "helper.h"
 #include "txn.h"
 #include "mem_alloc.h"
 #include "wl.h"
@@ -176,7 +175,7 @@ void QryPool::get(uint64_t pool_id, BaseQuery *&item)
 void QryPool::put(uint64_t pool_id, BaseQuery *item)
 {
     assert(item);
-    ((YCSBQuery *)item)->reset();
+    ((YCSBQuery *)item)->release();
     DEBUG_R("put 0x%lx\n", (uint64_t)item);
     int tries = 0;
 

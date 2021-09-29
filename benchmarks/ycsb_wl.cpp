@@ -1,5 +1,4 @@
 #include "global.h"
-#include "helper.h"
 #include "ycsb.h"
 #include "wl.h"
 #include "thread.h"

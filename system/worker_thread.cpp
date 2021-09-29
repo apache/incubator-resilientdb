@@ -7,7 +7,6 @@
 #include "query.h"
 #include "ycsb_query.h"
 #include "math.h"
-#include "helper.h"
 #include "msg_thread.h"
 #include "msg_queue.h"
 #include "work_queue.h"
@@ -41,10 +40,10 @@ void WorkerThread::send_key()
         keyex->return_node = g_node_id;
         //msg_queue.enqueue(get_thd_id(), keyex, i);
 
-        vector<string> emptyvec;
         vector<uint64_t> dest;
         dest.push_back(i);
-        msg_queue.enqueue(get_thd_id(), keyex, emptyvec, dest);
+        msg_queue.enqueue(get_thd_id(), keyex, dest);
+        dest.clear();
 
 #endif
 
@@ -56,7 +55,7 @@ void WorkerThread::send_key()
         keyexCMAC->return_node = g_node_id;
         //msg_queue.enqueue(get_thd_id(), keyexCMAC, i);
 
-        msg_queue.enqueue(get_thd_id(), keyexCMAC, emptyvec, dest);
+        msg_queue.enqueue(get_thd_id(), keyexCMAC, dest);
         dest.clear();
 
         cout << "Sending CMAC " << cmacPrivateKeys[i] << endl;
@@ -64,7 +63,26 @@ void WorkerThread::send_key()
 #endif
     }
 }
-
+void WorkerThread::unset_ready_txn(TxnManager *tman)
+{
+    // uint64_t spin_wait_starttime = 0;
+    while (true)
+    {
+        bool ready = tman->unset_ready();
+        if (!ready)
+        {
+            // if (spin_wait_starttime == 0)
+            //     spin_wait_starttime = get_sys_clock();
+            continue;
+        }
+        else
+        {
+            // if (spin_wait_starttime > 0)
+            //     INC_STATS(_thd_id, worker_spin_wait_time, get_sys_clock() - spin_wait_starttime);
+            break;
+        }
+    }
+}
 void WorkerThread::setup()
 {
     // Increment commonVar.
@@ -120,7 +138,7 @@ void WorkerThread::process(Message *msg)
         rc = process_pbft_commit_msg(msg);
         break;
     default:
-        printf("Msg: %d\n", msg->get_rtype());
+        printf("rtype: %d from %ld\n", msg->get_rtype(), msg->return_node_id);
         fflush(stdout);
         assert(false);
         break;
@@ -185,10 +203,9 @@ RC WorkerThread::process_key_exchange(Message *msg)
             Message *rdy = Message::create_message(READY);
             //msg_queue.enqueue(get_thd_id(), rdy, i);
 
-            vector<string> emptyvec;
             vector<uint64_t> dest;
             dest.push_back(i);
-            msg_queue.enqueue(get_thd_id(), rdy, emptyvec, dest);
+            msg_queue.enqueue(get_thd_id(), rdy, dest);
             dest.clear();
         }
 
@@ -258,10 +275,24 @@ void WorkerThread::fail_nonprimary()
 #if TIMER_ON
 void WorkerThread::add_timer(Message *msg, string qryhash)
 {
+    // TODO if condition is for experimental purpose: force one view change
+    if (this->has_view_changed())
+        return;
+
     char *tbuf = create_msg_buffer(msg);
     Message *deepMsg = deep_copy_msg(tbuf, msg);
+    deepMsg->return_node_id = msg->return_node_id;
     server_timer->startTimer(qryhash, deepMsg);
     delete_msg_buffer(tbuf);
+}
+
+void WorkerThread::remove_timer(string qryhash)
+{
+    // TODO if condition is for experimental purpose: force one view change
+    if (this->has_view_changed())
+        return;
+
+    server_timer->endTimer(qryhash);
 }
 #endif
 
@@ -273,27 +304,29 @@ This requires sending a view change message to each replica.
 */
 void WorkerThread::check_for_timeout()
 {
-    if (g_node_id != get_current_view(get_thd_id()) &&
-        server_timer->checkTimer())
+    // TODO if condition is for experimental purpose: force one view change
+    if (this->has_view_changed())
+        return;
+
+    if (g_node_id != get_current_view(get_thd_id()) && server_timer->checkTimer())
     {
         // Pause the timer to avoid causing further view changes.
         server_timer->pauseTimer();
 
-        cout << "Begin Changing View" << endl;
+        // cout << "Begin Changing View" << endl;
         fflush(stdout);
 
         Message *msg = Message::create_message(VIEW_CHANGE);
         TxnManager *local_tman = get_transaction_manager(get_curr_chkpt(), 0);
-        cout << "Initializing" << endl;
+        // cout << "Initializing" << endl;
         fflush(stdout);
 
         ((ViewChangeMsg *)msg)->init(get_thd_id(), local_tman);
 
-        cout << "Going to send" << endl;
+        // cout << "Going to send" << endl;
         fflush(stdout);
 
         //send view change messages
-        vector<string> emptyvec;
         vector<uint64_t> dest;
         for (uint64_t i = 0; i < g_node_cnt; i++)
         {
@@ -312,7 +345,7 @@ void WorkerThread::check_for_timeout()
         char *buf = create_msg_buffer(msg);
         Message *deepCMsg = deep_copy_msg(buf, msg);
         // Send to other replicas.
-        msg_queue.enqueue(get_thd_id(), deepCMsg, emptyvec, dest);
+        msg_queue.enqueue(get_thd_id(), deepCMsg, dest);
         dest.clear();
 
         // process a message for itself
@@ -322,43 +355,20 @@ void WorkerThread::check_for_timeout()
         delete_msg_buffer(buf);
         Message::release_message(msg); // Releasing the message.
 
-        cout << "Sent from here" << endl;
         fflush(stdout);
     }
 }
 
-/* 
-In case there is a view change, all the threads would need a change of views.
-*/
-void WorkerThread::check_switch_view()
-{
-    uint64_t thd_id = get_thd_id();
-    if (thd_id == 0)
-    {
-        return;
-    }
-    else
-    {
-        thd_id--;
-    }
-
-    uint32_t nchange = get_newView(thd_id);
-
-    if (nchange)
-    {
-        cout << "Change: " << thd_id + 1 << "\n";
-        fflush(stdout);
-
-        set_current_view(thd_id + 1, get_current_view(thd_id + 1) + 1);
-        set_newView(thd_id, false);
-    }
-}
 
 /* This function causes the forced failure of the primary replica at a 
-desired batch. */
-void WorkerThread::fail_primary(Message *msg, uint64_t batch_to_fail)
+desired time. */
+void WorkerThread::fail_primary(Message *msg, uint64_t time)
 {
-    if (g_node_id == 0 && msg->txn_id > batch_to_fail)
+    if (!simulation->is_warmup_done())
+        return;
+    uint64_t elapsesd_time = get_sys_clock() - simulation->warmup_end_time;
+    if (g_node_id == 0 && elapsesd_time > time)
+    // if (g_node_id == 0 && msg->txn_id > 9)
     {
         uint64_t count = 0;
         while (true)
@@ -387,8 +397,12 @@ Hence store the request, start timer and forward it to the primary replica.
 */
 void WorkerThread::client_query_check(ClientQueryBatch *clbtch)
 {
-    //cout << "REQUEST: " << clbtch->return_node_id << "\n";
-    //fflush(stdout);
+    // TODO if condition is for experimental purpose: force one view change
+    if (this->has_view_changed())
+        return;
+        
+    // cout << "REQUEST: " << clbtch->return_node_id << "\n";
+    // fflush(stdout);
 
     //start timer when client broadcasts an unexecuted message
     // Last request of the batch.
@@ -396,14 +410,13 @@ void WorkerThread::client_query_check(ClientQueryBatch *clbtch)
     add_timer(clbtch, calculateHash(qry->getString()));
 
     // Forward to the primary.
-    vector<string> emptyvec;
-    emptyvec.push_back(clbtch->signature); // Sign the message.
     vector<uint64_t> dest;
     dest.push_back(get_current_view(get_thd_id()));
 
     char *tbuf = create_msg_buffer(clbtch);
     Message *deepCMsg = deep_copy_msg(tbuf, clbtch);
-    msg_queue.enqueue(get_thd_id(), deepCMsg, emptyvec, dest);
+    msg_queue.enqueue(get_thd_id(), deepCMsg, dest);
+    dest.clear();
     delete_msg_buffer(tbuf);
 }
 
@@ -413,8 +426,7 @@ void WorkerThread::client_query_check(ClientQueryBatch *clbtch)
 
 RC WorkerThread::process_view_change_msg(Message *msg)
 {
-    cout << "PROCESS VIEW CHANGE "
-         << "\n";
+    cout << "PROCESS VIEW CHANGE from" << msg->return_node_id << "\n";
     fflush(stdout);
 
     ViewChangeMsg *vmsg = (ViewChangeMsg *)msg;
@@ -446,34 +458,11 @@ RC WorkerThread::process_view_change_msg(Message *msg)
         //cout << "New primary rules!" << endl;
         //fflush(stdout);
 
-        set_current_view(get_thd_id(), g_node_id);
-
-        // Reset the views for different threads.
-        uint64_t total_thds = g_batch_threads + g_rem_thread_cnt + 2;
+        // Move to next view
+        uint64_t total_thds = g_thread_cnt + g_rem_thread_cnt + g_send_thread_cnt;
         for (uint64_t i = 0; i < total_thds; i++)
         {
-            set_newView(i, true);
-        }
-
-        // Need to ensure that all the threads of the new primary are ready.
-        uint64_t count = 0;
-        bool lflag[total_thds] = {false};
-        while (true)
-        {
-            for (uint64_t i = 0; i < total_thds; i++)
-            {
-                bool nchange = get_newView(i);
-                if (!nchange && !lflag[i])
-                {
-                    count++;
-                    lflag[i] = true;
-                }
-            }
-
-            if (count == total_thds)
-            {
-                break;
-            }
+            set_view(i, vmsg->view);
         }
 
         Message *newViewMsg = Message::create_message(NEW_VIEW);
@@ -492,7 +481,6 @@ RC WorkerThread::process_view_change_msg(Message *msg)
         }
 
         //send new view messages
-        vector<string> emptyvec;
         vector<uint64_t> dest;
         for (uint64_t i = 0; i < g_node_cnt; i++)
         {
@@ -505,7 +493,7 @@ RC WorkerThread::process_view_change_msg(Message *msg)
 
         char *buf = create_msg_buffer(nvmsg);
         Message *deepCMsg = deep_copy_msg(buf, nvmsg);
-        msg_queue.enqueue(get_thd_id(), deepCMsg, emptyvec, dest);
+        msg_queue.enqueue(get_thd_id(), deepCMsg, dest);
         dest.clear();
 
         delete_msg_buffer(buf);
@@ -523,19 +511,19 @@ RC WorkerThread::process_view_change_msg(Message *msg)
 
         // Start the re-directed requests.
         Timer *tmap;
-        Message *msg;
+        Message *retrieved_msg;
         for (uint64_t i = 0; i < server_timer->timerSize(); i++)
         {
             tmap = server_timer->fetchPendingRequests(i);
-            msg = tmap->get_msg();
-
+            retrieved_msg = tmap->get_msg();
             //YCSBClientQueryMessage *yc = ((ClientQueryBatch *)msg)->cqrySet[0];
 
             //cout << "MSG: " << yc->return_node << " :: Key: " << yc->requests[0]->key << "\n";
             //fflush(stdout);
 
-            char *buf = create_msg_buffer(msg);
-            Message *deepCMsg = deep_copy_msg(buf, msg);
+            char *buf = create_msg_buffer(retrieved_msg);
+            Message *deepCMsg = deep_copy_msg(buf, retrieved_msg);
+            deepCMsg->return_node_id = retrieved_msg->return_node_id;
 
             // Assigning an identifier to the batch.
             deepCMsg->txn_id = get_and_inc_next_idx();
@@ -571,35 +559,12 @@ RC WorkerThread::process_new_view_msg(Message *msg)
     }
 
     // Move to the next view.
-    set_current_view(get_thd_id(), nvmsg->view);
-
-    // Reset the views for different threads.
-    uint64_t total_thds = g_batch_threads + g_rem_thread_cnt + 2;
+    uint64_t total_thds = g_thread_cnt + g_rem_thread_cnt + g_send_thread_cnt;
     for (uint64_t i = 0; i < total_thds; i++)
     {
-        set_newView(i, true);
+        set_view(i, nvmsg->view);
     }
 
-    // Need to ensure that all the threads of the new primary are ready.
-    uint64_t count = 0;
-    bool lflag[total_thds] = {false};
-    while (true)
-    {
-        for (uint64_t i = 0; i < total_thds; i++)
-        {
-            bool nchange = get_newView(i);
-            if (!nchange && !lflag[i])
-            {
-                count++;
-                lflag[i] = true;
-            }
-        }
-
-        if (count == total_thds)
-        {
-            break;
-        }
-    }
 
     //cout << "new primary changed view" << endl;
     //fflush(stdout);
@@ -654,10 +619,6 @@ RC WorkerThread::run()
             check_for_timeout();
         }
 
-        if (g_node_id != get_current_view(get_thd_id()))
-        {
-            check_switch_view();
-        }
 #endif
 
         // Dequeue a message from its work_queue.
@@ -673,21 +634,6 @@ RC WorkerThread::run()
             INC_STATS(_thd_id, worker_idle_time, get_sys_clock() - idle_starttime);
             idle_starttime = 0;
         }
-
-#if VIEW_CHANGES
-        // Ensure that thread 0 of the primary never processes ClientQueryBatch.
-        if (g_node_id == get_current_view(get_thd_id()))
-        {
-            if (msg->rtype == CL_BATCH)
-            {
-                if (get_thd_id() == 0)
-                {
-                    work_queue.enqueue(get_thd_id(), msg, false);
-                    continue;
-                }
-            }
-        }
-#endif
 
         // Remove redundant messages.
         if (exception_msg_handling(msg))
@@ -725,8 +671,11 @@ RC WorkerThread::run()
             }
         }
 
+        if (!simulation->is_warmup_done())
+        {
+            stats.set_message_size(msg->rtype, msg->get_size());
+        }
         process(msg);
-
         ready_starttime = get_sys_clock();
         if (txn_man)
         {
@@ -768,7 +717,8 @@ bool WorkerThread::is_cc_new_timestamp()
  *
  * @param clqry One Client Transaction (or Query).
 */
-void WorkerThread::init_txn_man(BankingSmartContractMessage *bsc){
+void WorkerThread::init_txn_man(BankingSmartContractMessage *bsc)
+{
     txn_man->client_id = bsc->return_node_id;
     txn_man->client_startts = bsc->client_startts;
     SmartContract *smart_contract;
@@ -855,8 +805,11 @@ void WorkerThread::send_execute_msg()
  */
 RC WorkerThread::process_execute_msg(Message *msg)
 {
-    //cout << "EXECUTE " << msg->txn_id << " :: " << get_thd_id() <<"\n";
-    //fflush(stdout);
+    // if (msg->txn_id / get_batch_size() % 100 == 0)
+    // {
+    //    cout << "EXECUTE " << msg->txn_id / get_batch_size() << " THREAD: " << get_thd_id() << "\n";
+    //    fflush(stdout);
+    // }
 
     uint64_t ctime = get_sys_clock();
 
@@ -884,6 +837,8 @@ RC WorkerThread::process_execute_msg(Message *msg)
         // Commit the results.
         tman->commit();
 
+        INC_STATS(get_thd_id(), txn_cnt, 1);
+
         crsp->copy_from_txn(tman);
     }
 
@@ -893,18 +848,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
     for (; i < emsg->end_index; i++)
     {
         TxnManager *tman = get_transaction_manager(i, 0);
-        while (true)
-        {
-            bool ready = tman->unset_ready();
-            if (!ready)
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
+        unset_ready_txn(tman);
 
         inc_next_index();
 
@@ -916,6 +860,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
         crsp->copy_from_txn(tman);
 
+        INC_STATS(get_thd_id(), txn_cnt, 1);
         // Making this txn man available.
         bool ready = tman->set_ready();
         assert(ready);
@@ -923,18 +868,7 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
     // Last Transaction of the batch.
     txn_man = get_transaction_manager(i, 0);
-    while (true)
-    {
-        bool ready = txn_man->unset_ready();
-        if (!ready)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
+    unset_ready_txn(txn_man);
 
     inc_next_index();
 
@@ -951,11 +885,12 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
     crsp->copy_from_txn(txn_man);
 
-    vector<string> emptyvec;
     vector<uint64_t> dest;
     dest.push_back(txn_man->client_id);
-    msg_queue.enqueue(get_thd_id(), crsp, emptyvec, dest);
+    msg_queue.enqueue(get_thd_id(), crsp, dest);
     dest.clear();
+
+    INC_STATS(get_thd_id(), txn_cnt, 1);
 
     INC_STATS(_thd_id, tput_msg, 1);
     INC_STATS(_thd_id, msg_cl_out, 1);
@@ -1005,7 +940,7 @@ void WorkerThread::send_checkpoints(uint64_t txn_id)
 RC WorkerThread::process_pbft_chkpt_msg(Message *msg)
 {
     CheckpointMessage *ckmsg = (CheckpointMessage *)msg;
-
+    // printf("CHKPOINT from %ld:    %ld\n", msg->return_node_id, msg->txn_id);
     // Check if message is valid.
     validate_msg(ckmsg);
 
@@ -1030,6 +965,7 @@ RC WorkerThread::process_pbft_chkpt_msg(Message *msg)
 
     // Also update the next checkpoint to the identifier for this message,
     set_curr_chkpt(msg->txn_id);
+    // printf("CHKPOINT Done %ld:    %ld           %ld\n", msg->return_node_id, msg->txn_id,get_curr_chkpt());
 
     // Now we determine what all transaction managers can we release.
     uint64_t del_range = 0;
@@ -1045,8 +981,8 @@ RC WorkerThread::process_pbft_chkpt_msg(Message *msg)
         }
     }
 
-    //printf("Chkpt: %ld :: LD: %ld :: Del: %ld\n",msg->get_txn_id(), get_last_deleted_txn(), del_range);
-    //fflush(stdout);
+    // printf("Chkpt: %ld :: LD: %ld :: Del: %ld   Thread:%ld\n",msg->get_txn_id(), get_last_deleted_txn(), del_range, get_thd_id());
+    // fflush(stdout);
 
     // Release Txn Managers.
     for (uint64_t i = get_last_deleted_txn(); i < del_range; i++)
@@ -1082,6 +1018,7 @@ bool WorkerThread::exception_msg_handling(Message *msg)
 
     // Release Messages that arrive after txn completion, except obviously
     // CL_BATCH as it is never late.
+
     if (msg->rtype != CL_BATCH)
     {
         if (msg->rtype != PBFT_CHKPT_MSG)
@@ -1127,18 +1064,7 @@ void WorkerThread::set_txn_man_fields(BatchRequests *breq, uint64_t bid)
     {
         txn_man = get_transaction_manager(breq->index[i], bid);
 
-        while (true)
-        {
-            bool ready = txn_man->unset_ready();
-            if (!ready)
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
+        unset_ready_txn(txn_man);
 
         txn_man->register_thread(this);
         txn_man->return_id = breq->return_node_id;
@@ -1152,18 +1078,7 @@ void WorkerThread::set_txn_man_fields(BatchRequests *breq, uint64_t bid)
     }
 
     // We need to unset txn_man again for last txn in the batch.
-    while (true)
-    {
-        bool ready = txn_man->unset_ready();
-        if (!ready)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
+    unset_ready_txn(txn_man);
 
     txn_man->set_hash(breq->hash);
 }
@@ -1200,18 +1115,7 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
         txn_man = get_transaction_manager(txn_id, 0);
 
         // Unset this txn man so that no other thread can concurrently use.
-        while (true)
-        {
-            bool ready = txn_man->unset_ready();
-            if (!ready)
-            {
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
+        unset_ready_txn(txn_man);
 
         txn_man->register_thread(this);
         txn_man->return_id = msg->return_node;
@@ -1233,18 +1137,7 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
     }
 
     // Now we need to unset the txn_man again for the last txn of batch.
-    while (true)
-    {
-        bool ready = txn_man->unset_ready();
-        if (!ready)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
+    unset_ready_txn(txn_man);
 
     // Generating the hash representing the whole batch in last txn man.
     txn_man->set_hash(calculateHash(batchStr));
@@ -1256,23 +1149,19 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
     txn_man->set_primarybatch(breq);
 
     // Storing all the signatures.
-    vector<string> emptyvec;
-    TxnManager *tman = get_transaction_manager(txn_man->get_txn_id() - 2, 0);
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
+
         if (i == g_node_id)
         {
             continue;
         }
-        breq->sign(i);
-        tman->allsign.push_back(breq->signature); // Redundant
-        emptyvec.push_back(breq->signature);
     }
 
     // Send the BatchRequests message to all the other replicas.
     vector<uint64_t> dest = nodes_to_send(0, g_node_cnt);
-    msg_queue.enqueue(get_thd_id(), breq, emptyvec, dest);
-    emptyvec.clear();
+    msg_queue.enqueue(get_thd_id(), breq, dest);
+    dest.clear();
 }
 
 /** Validates the contents of a message. */

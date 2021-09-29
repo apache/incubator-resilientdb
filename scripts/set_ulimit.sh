@@ -1,5 +1,5 @@
 #!/bin/bash
-USERNAME=expo
+USERNAME=ubuntu
 HOSTS="$1"
 
 count=0

@@ -4,7 +4,6 @@
 #include "wl.h"
 #include "txn.h"
 #include "global.h"
-#include "helper.h"
 
 #if !BANKING_SMART_CONTRACT
 class YCSBQuery;

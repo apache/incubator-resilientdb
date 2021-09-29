@@ -101,7 +101,7 @@ Message *Message::create_message(RemReqType rtype)
 	case READY:
 		msg = new ReadyServer;
 		break;
-		#if BANKING_SMART_CONTRACT
+#if BANKING_SMART_CONTRACT
 	case BSC_MSG:
 		msg = new BankingSmartContractMessage;
 		break;
@@ -960,7 +960,6 @@ bool ClientResponseMessage::validate()
 	//cout << "IN: " << this->txn_id << " :: " << this->return_node_id << "\n";
 	//fflush(stdout);
 
-
 	return true;
 }
 
@@ -1252,16 +1251,26 @@ bool ClientQueryBatch::validate()
 #if USE_CRYPTO
 	string message = this->getString();
 
-	//cout << "Recv Message: " << message << " :: " << this->return_node_id << endl;
-	//cout << "Recv Signature: " << this->signature << " :: " << signature.size() << endl;
-	//fflush(stdout);
-
+#if VIEW_CHANGES
+	// =====================
+	// Sign Bug for forwarded messages
+	uint64_t source_node_id = this->return_node;
+	if (this->return_node_id < g_node_cnt)
+		source_node_id = this->return_node_id;
+	// =====================
+	if (!validateClientNode(message, this->pubKey, this->signature, source_node_id))
+	{
+		assert(0);
+		return false;
+	}
+#else
 	// make sure signature is valid
 	if (!validateClientNode(message, this->pubKey, this->signature, this->return_node))
 	{
 		assert(0);
 		return false;
 	}
+#endif
 #endif
 	return true;
 }
@@ -1308,7 +1317,7 @@ void BatchRequests::copy_from_txn(TxnManager *txn, BankingSmartContractMessage *
 	uint64_t idx = txnid % get_batch_size();
 
 	// TODO: Some memory is getting consumed while storing client query.
-	char *bfr = (char *)malloc(clqry->get_size() + 1);
+	char *bfr = (char *)malloc(clqry->get_size());
 	clqry->copy_to_buf(bfr);
 	Message *tmsg = Message::create_message(bfr);
 	BankingSmartContractMessage *yqry = (BankingSmartContractMessage *)tmsg;
@@ -1325,7 +1334,7 @@ void BatchRequests::copy_from_txn(TxnManager *txn, YCSBClientQueryMessage *clqry
 	uint64_t idx = txnid % get_batch_size();
 
 	// TODO: Some memory is getting consumed while storing client query.
-	char *bfr = (char *)malloc(clqry->get_size() + 1);
+	char *bfr = (char *)malloc(clqry->get_size());
 	clqry->copy_to_buf(bfr);
 	Message *tmsg = Message::create_message(bfr);
 	YCSBClientQueryMessage *yqry = (YCSBClientQueryMessage *)tmsg;
@@ -1726,7 +1735,7 @@ uint64_t Message::buf_to_string(char *buf, uint64_t ptr, string &str, uint64_t s
 // Message Creation methods.
 char *create_msg_buffer(Message *msg)
 {
-	char *buf = (char *)malloc(msg->get_size() + 1);
+	char *buf = (char *)malloc(msg->get_size());
 	return buf;
 }
 
@@ -1763,7 +1772,7 @@ void PBFTPrepMessage::copy_from_txn(TxnManager *txn)
 {
 	Message::mcopy_from_txn(txn);
 
-	this->view = get_current_view(local_view[txn->get_thd_id()]);
+	this->view = get_current_view(txn->get_thd_id());
 	this->end_index = txn->get_txn_id();
 	this->index = this->end_index + 1 - get_batch_size();
 	this->hash = txn->get_hash();
@@ -1880,7 +1889,7 @@ void PBFTCommitMessage::copy_from_txn(TxnManager *txn)
 {
 	Message::mcopy_from_txn(txn);
 
-	this->view = get_current_view(local_view[txn->get_thd_id()]);
+	this->view = get_current_view(txn->get_thd_id());
 	this->end_index = txn->get_txn_id();
 	this->index = this->end_index + 1 - get_batch_size();
 	this->hash = txn->get_hash();
@@ -1968,6 +1977,7 @@ bool PBFTCommitMessage::validate()
 	string message = this->toString();
 
 #if USE_CRYPTO
+
 	//verify signature of message
 	if (!validateNodeNode(message, this->pubKey, this->signature, this->return_node_id))
 	{
@@ -1975,7 +1985,6 @@ bool PBFTCommitMessage::validate()
 		return false;
 	}
 #endif
-
 	return true;
 }
 
@@ -2017,12 +2026,12 @@ void ViewChangeMsg::init(uint64_t thd_id, TxnManager *txn)
 	this->index = txn->get_txn_id(); // Last checkpoint idx.
 	this->return_node = g_node_id;
 
-	cout << "Checkpoint: " << this->index << "\n";
+	// cout << "Checkpoint: " << this->index << "\n";
 	fflush(stdout);
 
 	// Start collecting from the next batch, but as curr_next_index would
 	// only point to the last request in the batch, so we add required amt
-	uint64_t st = this->index + 4 + get_batch_size();
+	uint64_t st = get_commit_message_txn_id(this->index + get_batch_size());
 
 	bool found;
 	uint64_t j = 0;
@@ -2059,10 +2068,25 @@ void ViewChangeMsg::init(uint64_t thd_id, TxnManager *txn)
 	for (uint64_t i = st; i <= curr_next_index(); i += get_batch_size())
 	{
 		TxnManager *tman = txn_table.get_transaction_manager(thd_id, i, 0);
+		while (true)
+		{
+			bool ready = tman->unset_ready();
+			if (!ready)
+			{
+				printf("trying to get txn_man %ld\n", tman->get_txn_id());
+				continue;
+			}
+			else
+			{
+				break;
+			}
+		}
 		prepView.push_back(get_current_view(thd_id));
 		prepIdx.push_back(i);
 		prepHash.push_back(tman->get_hash());
 		prepHsize.push_back(tman->get_hashSize());
+		bool ready = tman->set_ready();
+		assert(ready);
 	}
 
 	this->numPreMsgs = this->preMsg.size();
@@ -2087,10 +2111,10 @@ void ViewChangeMsg::copy_from_buf(char *buf)
 		preMsg.push_back((BatchRequests *)msg);
 	}
 
-	uint64_t tval;
-	string hsh;
 	for (uint64_t i = 0; i < numPrepMsgs; i++)
 	{
+		uint64_t tval;
+		string hsh;
 		COPY_VAL(tval, buf, ptr);
 		prepView.push_back(tval);
 
@@ -2242,11 +2266,13 @@ bool ViewChangeMsg::validate(uint64_t thd_id)
 	for (uint64_t i = 0; i < preMsg.size(); i++)
 	{
 		bmsg = preMsg[i];
+		/*
 		if (!bmsg->validate(thd_id))
 		{
 			assert(0);
 			return false;
 		}
+		*/
 
 		count = 0;
 		for (uint64_t j = 0; j < prepIdx.size(); j++)
@@ -2277,7 +2303,7 @@ string ViewChangeMsg::toString()
 
 	for (uint i = 0; i < preMsg.size(); i++)
 	{
-		message += preMsg[i]->getString(g_node_id) + '_';
+		message += preMsg[i]->getString(this->return_node) + '_';
 	}
 
 	for (uint64_t i = 0; i < prepIdx.size(); i++)
@@ -2304,11 +2330,12 @@ void NewViewMsg::init(uint64_t thd_id)
 	{
 		vmsg = view_change_msgs[i];
 
-		cout << "View MSG: " << vmsg->index << "\n";
-		fflush(stdout);
+		// cout << "View MSG: " << vmsg->index << "\n";
+		// fflush(stdout);
 
 		char *buf = create_msg_buffer(vmsg);
 		Message *deepCMsg = deep_copy_msg(buf, vmsg);
+		deepCMsg->return_node_id = vmsg->return_node_id;
 		this->viewMsg.push_back((ViewChangeMsg *)deepCMsg);
 		delete_msg_buffer(buf);
 	}
@@ -2325,6 +2352,7 @@ void NewViewMsg::init(uint64_t thd_id)
 		pmsg = vmsg->preMsg[i];
 		char *buf = create_msg_buffer(pmsg);
 		Message *deepCMsg = deep_copy_msg(buf, pmsg);
+		deepCMsg->return_node_id = pmsg->return_node_id;
 		this->preMsg.push_back((BatchRequests *)deepCMsg);
 		delete_msg_buffer(buf);
 	}
@@ -2439,7 +2467,7 @@ string NewViewMsg::toString()
 
 	for (uint64_t i = 0; i < preMsg.size(); i++)
 	{
-		message += preMsg[i]->getString(g_node_id);
+		message += preMsg[i]->getString(this->return_node_id);
 		message += '_';
 	}
 

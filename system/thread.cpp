@@ -4,7 +4,6 @@
 #include "wl.h"
 #include "query.h"
 #include "math.h"
-#include "helper.h"
 #include "msg_queue.h"
 #include "message.h"
 
@@ -20,10 +19,9 @@ void Thread::send_init_done_to_all_nodes()
         {
             printf("Send INIT_DONE to %ld\n", i);
 
-            vector<string> emptyvec;
             vector<uint64_t> dest;
             dest.push_back(i);
-            msg_queue.enqueue(get_thd_id(), Message::create_message(INIT_DONE), emptyvec, dest);
+            msg_queue.enqueue(get_thd_id(), Message::create_message(INIT_DONE), dest);
             dest.clear();
         }
     }
@@ -63,19 +61,27 @@ void Thread::tsetup()
     pthread_barrier_wait(&warmup_bar);
 }
 
+bool Thread::has_view_changed()
+{
+    if (get_current_view(get_thd_id()))
+        return true;
+    return false;
+}
+
 void Thread::progress_stats()
 {
-    if (get_thd_id() == 0)
-    {
 #if TIME_ENABLE
-        uint64_t now_time = get_sys_clock();
+    uint64_t now_time = get_sys_clock();
 #else
-        uint64_t now_time = get_wall_clock();
+    uint64_t now_time = get_wall_clock();
 #endif
-        if (now_time - prog_time >= g_prog_timer)
+
+    if (now_time - prog_time >= g_prog_timer)
+    {
+        prog_time = now_time;
+        if (get_thd_id() == 0)
         {
-            prog_time = now_time;
-            SET_STATS(get_thd_id(), total_runtime, prog_time - simulation->run_starttime);
+            SET_STATS(get_thd_id(), total_runtime, prog_time - simulation->warmup_end_time);
 
             if (ISCLIENT)
             {
@@ -85,6 +91,10 @@ void Thread::progress_stats()
             {
                 stats.print(true);
             }
+            // uint64_t exec_thread = g_thread_cnt - g_checkpointing_thread_cnt - g_execution_thread_cnt;
+            uint64_t exec_thread = g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt - 1;
+            SET_STATS(exec_thread, previous_interval_cross_shard_txn_cnt, stats._stats[exec_thread]->cross_shard_txn_cnt);
+            SET_STATS(exec_thread, previous_interval_txn_cnt, stats._stats[exec_thread]->txn_cnt);
         }
     }
 }
