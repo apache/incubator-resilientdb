@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 // Specify the number of servers or replicas
-#define NODE_CNT 12
+#define NODE_CNT 4
 // Number of worker threads at primary. 
 #define THREAD_CNT 5 // This Should be the sum of following thread count + protocol specifig threads
 #define WORKER_THREAD_CNT 1
@@ -14,13 +14,18 @@
 #define CORE_CNT 8
 #define PART_CNT 1
 // Specify the number of clients.
-#define CLIENT_NODE_CNT 3
+#define CLIENT_NODE_CNT 1
 #define CLIENT_THREAD_CNT 2
 #define CLIENT_REM_THREAD_CNT 1
 #define CLIENT_SEND_THREAD_CNT 1
 #define CLIENT_RUNTIME false
 
 #define MESSAGE_PER_BUFFER 24
+
+// GeoBFT Setting 
+#define GBFT false
+#define GBFT_CLUSTER_SIZE 4
+#define GBFT_CCM_THREAD_CNT 1
 
 #define LOAD_PER_SERVER 1
 #define REPLICA_CNT 0

@@ -138,6 +138,12 @@ Message *Message::create_message(RemReqType rtype)
 		break;
 #endif
 
+#if GBFT
+	case GBFT_COMMIT_CERTIFICATE_MSG:
+		msg = new GeoBFTCommitCertificateMessage;
+		break;
+#endif
+
 	case PBFT_CHKPT_MSG:
 		msg = new CheckpointMessage;
 		break;
@@ -393,6 +399,15 @@ void Message::release_message(Message *msg)
 		delete m_msg;
 		break;
 	}
+#if GBFT
+	case GBFT_COMMIT_CERTIFICATE_MSG:
+	{
+		GeoBFTCommitCertificateMessage *m_msg = (GeoBFTCommitCertificateMessage *)msg;
+		m_msg->release();
+		delete m_msg;
+		break;
+	}
+#endif
 
 	default:
 	{
@@ -1302,8 +1317,12 @@ uint64_t BatchRequests::get_size()
 // Initialization
 void BatchRequests::init(uint64_t thd_id)
 {
-	// Only primary should create this message
+// Only primary should create this message
+#if GBFT
+	assert(is_primary_node(g_node_id));
+#else
 	assert(get_current_view(thd_id) == g_node_id);
+#endif
 	this->view = get_current_view(thd_id);
 
 	this->index.init(get_batch_size());
@@ -1962,8 +1981,12 @@ void PBFTCommitMessage::sign(uint64_t dest_node)
 #if USE_CRYPTO
 	string message = this->toString();
 
-	//cout << "Signing Commit msg: " << message << endl;
+#if GBFT
+	signingClientNode(message, this->signature, this->pubKey, dest_node);
+#else
 	signingNodeNode(message, this->signature, this->pubKey, dest_node);
+#endif
+
 #else
 	this->signature = "0";
 #endif
@@ -1978,13 +2001,21 @@ bool PBFTCommitMessage::validate()
 
 #if USE_CRYPTO
 
-	//verify signature of message
+#if GBFT
+	if (!validateClientNode(message, this->pubKey, this->signature, this->return_node_id))
+	{
+		assert(0);
+		return false;
+	}
+#else
 	if (!validateNodeNode(message, this->pubKey, this->signature, this->return_node_id))
 	{
 		assert(0);
 		return false;
 	}
-#endif
+#endif // GBFT
+
+#endif // USE_CRYPTO
 	return true;
 }
 

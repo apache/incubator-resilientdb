@@ -56,7 +56,7 @@ class QWorkQueue;
 class MessageQueue;
 class Client_query_queue;
 class Client_txn;
-class CommitCertificateMessage;
+class GeoBFTCommitCertificateMessage;
 class ClientResponseMessage;
 
 typedef uint32_t UInt32;
@@ -211,6 +211,9 @@ enum RemReqType
     BSC_MSG,
 #endif
 
+#if GBFT
+    GBFT_COMMIT_CERTIFICATE_MSG,
+#endif
     PBFT_PREP_MSG,   // Prepare
     PBFT_COMMIT_MSG, // Commit
     PBFT_CHKPT_MSG   // Checkpoint and Garbage Collection
@@ -377,11 +380,33 @@ uint64_t get_batch_size();
 extern uint64_t batchSet[2 * CLIENT_NODE_CNT * MAX_TXN_IN_FLIGHT];
 uint64_t view_to_primary(uint64_t view, uint64_t node = g_node_id);
 
+#if GBFT
+extern uint32_t g_view[];
+extern std::mutex viewMTX[];
+uint64_t get_cluster_number(uint64_t i = g_node_id);
+void set_client_view(uint64_t nview, int shard = 0);
+uint64_t get_client_view(int cluster = 0);
+int is_in_same_cluster(uint64_t first_id, uint64_t second_id);
+bool is_local_request(TxnManager *tman);
+bool is_primary_node(uint64_t thd_id, uint64_t node = g_node_id);
+
+
+// void set_view(uint64_t nview, int cluster = 0); 
+// uint64_t get_view(int cluster = 0);
+
+extern uint32_t gbft_last_commited_txn;
+extern UInt32 gbft_cluster_size;
+extern UInt32 gbft_cluster_cnt;
+extern UInt32 gbft_commit_certificate_thread_cnt;
+extern SpinLockSet<string> gbft_ccm_checklist;
+
+#else
 // This variable is mainly used by the client to know its current primary.
 extern uint32_t g_view;
 extern std::mutex viewMTX;
 void set_client_view(uint64_t nview);
 uint64_t get_client_view();
+#endif
 
 #if LOCAL_FAULT || VIEW_CHANGES
 // Server parameters for tracking failed replicas

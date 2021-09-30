@@ -69,6 +69,11 @@ public:
     bool committed_local(PBFTCommitMessage *msg);
     RC process_pbft_commit_msg(Message *msg);
     void unset_ready_txn(TxnManager * tman);
+
+#if GBFT
+    RC process_gbft_commit_certificate_msg(Message * msg);
+#endif
+
 #if TESTING_ON
     void testcases(Message *msg);
 #if TEST_CASE == ONLY_PRIMARY_NO_EXECUTE

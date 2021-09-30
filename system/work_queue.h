@@ -18,15 +18,13 @@ struct work_queue_entry
     uint64_t starttime;
 };
 
-
-
 class QWorkQueue
 {
 public:
     void init();
     void enqueue(uint64_t thd_id, Message *msg, bool busy);
     Message *dequeue(uint64_t thd_id);
-    void push_to_queue(work_queue_entry* entry, boost::lockfree::queue<work_queue_entry *> *queue);
+    void push_to_queue(work_queue_entry *entry, boost::lockfree::queue<work_queue_entry *> *queue);
 
 private:
     boost::lockfree::queue<work_queue_entry *> **execution_queues;
@@ -34,6 +32,9 @@ private:
     boost::lockfree::queue<work_queue_entry *> *new_txn_queue;
     boost::lockfree::queue<work_queue_entry *> *checkpoint_queue;
 
+#if GBFT
+    boost::lockfree::queue<work_queue_entry *> *gbft_ccm_queue;
+#endif
 };
 
 #endif

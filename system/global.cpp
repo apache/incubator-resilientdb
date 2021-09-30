@@ -69,7 +69,6 @@ UInt32 g_batching_thread_cnt = BATCH_THREAD_CNT;
 UInt32 g_checkpointing_thread_cnt = CHECKPOINT_THREAD_CNT;
 UInt32 g_execution_thread_cnt = EXECUTE_THREAD_CNT;
 
-
 #if SIGN_THREADS
 UInt32 g_sign_thd = SIGN_THD_CNT;
 #else
@@ -148,7 +147,11 @@ bool keyAvail = false;
 uint64_t totKey = 0;
 
 uint64_t indexSize = 2 * g_client_node_cnt * g_inflight_max;
+#if GBFT
+uint64_t g_min_invalid_nodes = (gbft_cluster_size - 1) / 3; //min number of valid nodes
+#else
 uint64_t g_min_invalid_nodes = (g_node_cnt - 1) / 3; //min number of valid nodes
+#endif
 
 // Funtion to calculate hash of a string.
 string calculateHash(string str)
@@ -192,8 +195,8 @@ uint64_t txn_per_chkpt()
 
 void set_curr_chkpt(uint64_t txn_id)
 {
-	if(txn_id > g_last_stable_chkpt)
-		g_last_stable_chkpt  = txn_id;
+	if (txn_id > g_last_stable_chkpt)
+		g_last_stable_chkpt = txn_id;
 }
 
 uint64_t get_curr_chkpt()
@@ -231,6 +234,16 @@ uint commonVar = 0;
 
 // Variable used by Input thread at the primary to linearize batches.
 uint64_t next_idx = 0;
+#if GBFT
+uint64_t get_and_inc_next_idx()
+{
+	next_idx_lock.lock();
+	uint64_t val = next_idx;
+	next_idx += gbft_cluster_cnt;
+	next_idx_lock.unlock();
+	return val;
+}
+#else
 uint64_t get_and_inc_next_idx()
 {
 	next_idx_lock.lock();
@@ -238,6 +251,7 @@ uint64_t get_and_inc_next_idx()
 	next_idx_lock.unlock();
 	return val;
 }
+#endif
 
 void set_next_idx(uint64_t val)
 {
@@ -315,13 +329,78 @@ uint64_t get_batch_size()
 {
 	return g_batch_size;
 }
-
-
+#if !GBFT
 uint64_t view_to_primary(uint64_t view, uint64_t node)
 {
 	return view;
 }
+#endif 
 
+#if GBFT
+SpinLockSet<string> gbft_ccm_checklist;
+uint32_t last_commited_txn = 0;
+UInt32 gbft_cluster_size = GBFT_CLUSTER_SIZE;
+UInt32 gbft_cluster_cnt = NODE_CNT / GBFT_CLUSTER_SIZE;
+UInt32 gbft_commit_certificate_thread_cnt = GBFT_CCM_THREAD_CNT;
+
+// This variable is mainly used by the client to know its current primary.
+uint32_t g_view[NODE_CNT / GBFT_CLUSTER_SIZE] = {0};
+std::mutex viewMTX[NODE_CNT / GBFT_CLUSTER_SIZE];
+void set_client_view(uint64_t nview, int cluster)
+{
+	viewMTX[cluster].lock();
+	g_view[cluster] = nview;
+	viewMTX[cluster].unlock();
+}
+
+uint64_t get_client_view(int cluster)
+{
+	uint64_t val;
+	viewMTX[cluster].lock();
+	val = g_view[cluster];
+	viewMTX[cluster].unlock();
+	return val;
+}
+
+bool is_primary_node(uint64_t thd_id, uint64_t node)
+{
+	return view_to_primary(get_current_view(thd_id), node) == node;
+}
+
+uint64_t get_cluster_number(uint64_t i)
+{
+	if (i >= g_node_cnt && i < g_node_cnt + g_client_node_cnt)
+	{
+		int client_number = i - g_node_cnt;
+		return (client_number / (g_client_node_cnt / gbft_cluster_cnt));
+	}
+	else
+		return (i / gbft_cluster_size);
+}
+
+uint64_t view_to_primary(uint64_t view, uint64_t node)
+{
+	return get_cluster_number(node) * gbft_cluster_size + view;
+}
+
+int is_in_same_cluster(uint64_t first_id, uint64_t second_id)
+{
+	return (int)(first_id / gbft_cluster_size) == (int)(second_id / gbft_cluster_size);
+}
+bool is_local_request(TxnManager *tman)
+{
+	uint64_t node_id = tman->client_id;
+	assert(node_id < g_total_node_cnt);
+	int client_number = node_id - g_node_cnt;
+	int primary = client_number / (g_client_node_cnt / gbft_cluster_cnt);
+	if (is_in_same_cluster(primary * gbft_cluster_size, g_node_id))
+	{
+		return true;
+	}
+	return false;
+}
+
+#else
 // This variable is mainly used by the client to know its current primary.
 uint32_t g_view = 0;
 std::mutex viewMTX;
@@ -340,6 +419,7 @@ uint64_t get_client_view()
 	viewMTX.unlock();
 	return val;
 }
+#endif
 
 #if LOCAL_FAULT || VIEW_CHANGES
 // Server parameters for tracking failed replicas

@@ -137,6 +137,11 @@ void WorkerThread::process(Message *msg)
     case PBFT_COMMIT_MSG:
         rc = process_pbft_commit_msg(msg);
         break;
+#if GBFT
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+        rc = process_gbft_commit_certificate_msg(msg);
+        break;
+#endif
     default:
         printf("rtype: %d from %ld\n", msg->get_rtype(), msg->return_node_id);
         fflush(stdout);
@@ -359,7 +364,6 @@ void WorkerThread::check_for_timeout()
     }
 }
 
-
 /* This function causes the forced failure of the primary replica at a 
 desired time. */
 void WorkerThread::fail_primary(Message *msg, uint64_t time)
@@ -400,7 +404,7 @@ void WorkerThread::client_query_check(ClientQueryBatch *clbtch)
     // TODO if condition is for experimental purpose: force one view change
     if (this->has_view_changed())
         return;
-        
+
     // cout << "REQUEST: " << clbtch->return_node_id << "\n";
     // fflush(stdout);
 
@@ -564,7 +568,6 @@ RC WorkerThread::process_new_view_msg(Message *msg)
     {
         set_view(i, nvmsg->view);
     }
-
 
     //cout << "new primary changed view" << endl;
     //fflush(stdout);
@@ -814,9 +817,22 @@ RC WorkerThread::process_execute_msg(Message *msg)
     uint64_t ctime = get_sys_clock();
 
     // This message uses txn man of index calling process_execute.
+#if GBFT
+
+    TxnManager *test = get_transaction_manager(msg->txn_id + 1, 0);
+    bool local_request = is_local_request(test);
+    ClientResponseMessage *crsp = 0;
+    if (local_request)
+    {
+        Message *rsp = Message::create_message(CL_RSP);
+        crsp = (ClientResponseMessage *)rsp;
+        crsp->init();
+    }
+#else
     Message *rsp = Message::create_message(CL_RSP);
     ClientResponseMessage *crsp = (ClientResponseMessage *)rsp;
     crsp->init();
+#endif
 
     ExecuteMessage *emsg = (ExecuteMessage *)msg;
 
@@ -839,7 +855,14 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
         INC_STATS(get_thd_id(), txn_cnt, 1);
 
+#if GBFT
+        if (local_request)
+        {
+            crsp->copy_from_txn(tman);
+        }
+#else
         crsp->copy_from_txn(tman);
+#endif
     }
 
     // Transactions (**95 - **98) of the batch.
@@ -858,7 +881,14 @@ RC WorkerThread::process_execute_msg(Message *msg)
         // Commit the results.
         tman->commit();
 
+#if GBFT
+        if (local_request)
+        {
+            crsp->copy_from_txn(tman);
+        }
+#else
         crsp->copy_from_txn(tman);
+#endif
 
         INC_STATS(get_thd_id(), txn_cnt, 1);
         // Making this txn man available.
@@ -882,13 +912,24 @@ RC WorkerThread::process_execute_msg(Message *msg)
 
     // Commit the results.
     txn_man->commit();
-
+#if GBFT
+    if (local_request)
+    {
+        crsp->copy_from_txn(txn_man);
+        vector<uint64_t> dest;
+        assert(is_local_request(txn_man));
+        dest.push_back(txn_man->client_id);
+        msg_queue.enqueue(get_thd_id(), crsp, dest);
+        dest.clear();
+    }
+#else
     crsp->copy_from_txn(txn_man);
 
     vector<uint64_t> dest;
     dest.push_back(txn_man->client_id);
     msg_queue.enqueue(get_thd_id(), crsp, dest);
     dest.clear();
+#endif
 
     INC_STATS(get_thd_id(), txn_cnt, 1);
 
@@ -1148,18 +1189,26 @@ void WorkerThread::create_and_send_batchreq(ClientQueryBatch *msg, uint64_t tid)
     // Storing the BatchRequests message.
     txn_man->set_primarybatch(breq);
 
+    vector<uint64_t> dest;
+
     // Storing all the signatures.
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
+#if GBFT
 
+        if (!is_in_same_cluster(i, g_node_id))
+        {
+            continue;
+        }
+
+#endif
         if (i == g_node_id)
         {
             continue;
         }
+        dest.push_back(i);
     }
 
-    // Send the BatchRequests message to all the other replicas.
-    vector<uint64_t> dest = nodes_to_send(0, g_node_cnt);
     msg_queue.enqueue(get_thd_id(), breq, dest);
     dest.clear();
 }

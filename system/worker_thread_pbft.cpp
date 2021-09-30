@@ -14,6 +14,7 @@
 #include "timer.h"
 #include "chain.h"
 
+#if CONSENSUS == PBFT && !GBFT
 /**
  * Processes an incoming client batch and sends a Pre-prepare message to al replicas.
  *
@@ -302,3 +303,4 @@ RC WorkerThread::process_pbft_commit_msg(Message *msg)
 
     return RCOK;
 }
+#endif

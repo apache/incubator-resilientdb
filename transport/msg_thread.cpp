@@ -96,6 +96,12 @@ void MessageThread::run()
             case CL_BATCH:
                 msg->pubKey = getOtherRequiredKey(dest_node_id);
                 break;
+#if GBFT
+            case GBFT_COMMIT_CERTIFICATE_MSG:
+                if (((GeoBFTCommitCertificateMessage *)msg)->forwarding_from == (uint64_t)-1)
+                    msg->pubKey = getOtherRequiredKey(dest_node_id);
+                break;
+#endif
             default:
                 msg->pubKey = getCmacRequiredKey(dest_node_id);
             }

@@ -82,12 +82,30 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
         }
         break;
 
-#if CONSENSUS == PBFT
+#if CONSENSUS == PBFT && !GBFT
     case PBFT_COMMIT_MSG:
         for (uint64_t i = 0; i < dest.size(); i++)
         {
             ((PBFTCommitMessage *)msg)->sign(dest[i]);
             entry->allsign.push_back(((PBFTCommitMessage *)msg)->signature);
+        }
+        break;
+#endif
+#if GBFT
+    case PBFT_COMMIT_MSG:
+        ((PBFTCommitMessage *)msg)->sign(dest[0]);
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            entry->allsign.push_back(((PBFTCommitMessage *)msg)->signature);
+        }
+
+        break;
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+        if (((GeoBFTCommitCertificateMessage *)msg)->forwarding_from == (uint64_t)-1)
+            ((GeoBFTCommitCertificateMessage *)msg)->sign(dest[0]);
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            entry->allsign.push_back(((GeoBFTCommitCertificateMessage *)msg)->signature);
         }
         break;
 #endif
@@ -139,6 +157,10 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
     case PBFT_CHKPT_MSG:
     case PBFT_PREP_MSG:
     case PBFT_COMMIT_MSG:
+
+#if GBFT
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+#endif
 
 #if VIEW_CHANGES
     case VIEW_CHANGE:

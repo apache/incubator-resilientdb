@@ -37,6 +37,11 @@ int main(int argc, char *argv[])
 #else
     uint64_t seed = get_sys_clock();
 #endif
+
+#if GBFT
+  next_idx = g_node_id / gbft_cluster_size;
+#endif
+
     srand(seed);
     printf("Random seed: %ld\n", seed);
 

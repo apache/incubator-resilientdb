@@ -254,6 +254,9 @@ public:
     uint64_t commit_msg_size;
     uint64_t prepare_msg_size;
 #endif
+#if GBFT
+    uint64_t gbft_ccm_msg_size;
+#endif
     uint64_t checkpoint_msg_size;
     uint64_t client_response_msg_size;
 

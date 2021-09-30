@@ -22,6 +22,10 @@ void QWorkQueue::init()
     }
     new_txn_queue = new boost::lockfree::queue<work_queue_entry *>(0);
     checkpoint_queue = new boost::lockfree::queue<work_queue_entry *>(0);
+
+#if GBFT
+    gbft_ccm_queue = new boost::lockfree::queue<work_queue_entry *>(0);
+#endif
 }
 
 #if ENABLE_PIPELINE
@@ -39,7 +43,6 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
     entry->starttime = get_sys_clock();
     assert(ISSERVER || ISREPLICA);
     DEBUG("Work Enqueue (%ld,%ld) %d\n", entry->txn_id, entry->batch_id, entry->rtype);
-
 
     if (msg->rtype == CL_QRY || msg->rtype == CL_BATCH)
     {
@@ -68,6 +71,12 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
     {
         push_to_queue(entry, checkpoint_queue);
     }
+#if GBFT
+    else if (msg->rtype == GBFT_COMMIT_CERTIFICATE_MSG)
+    {
+        push_to_queue(entry, gbft_ccm_queue);
+    }
+#endif
     else
     {
         push_to_queue(entry, work_queue);
@@ -85,9 +94,11 @@ Message *QWorkQueue::dequeue(uint64_t thd_id)
     bool valid = false;
     Message *message = NULL;
     work_queue_entry *entry = NULL;
-
+#if GBFT
+    assert(g_thread_cnt == g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt + gbft_commit_certificate_thread_cnt);
+#else
     assert(g_thread_cnt == g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt);
-
+#endif
     // Worker Threads
     if (thd_id < g_worker_thread_cnt)
     {
@@ -109,6 +120,12 @@ Message *QWorkQueue::dequeue(uint64_t thd_id)
         uint64_t queue_id = (get_expectedExecuteCount() / get_batch_size()) % indexSize;
         valid = execution_queues[queue_id]->pop(entry);
     }
+#if GBFT
+    else if (thd_id < g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt + gbft_commit_certificate_thread_cnt)
+    {
+        valid = gbft_ccm_queue->pop(entry);
+    }
+#endif
 
     if (valid)
     {

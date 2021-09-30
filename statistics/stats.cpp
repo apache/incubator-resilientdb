@@ -987,6 +987,11 @@ void Stats::set_message_size(uint64_t rtype, uint64_t size)
         this->prepare_msg_size = size;
         break;
 #endif
+#if GBFT
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+        this->gbft_ccm_msg_size = size;
+        break;
+#endif
 
     default:
         break;
@@ -1001,16 +1006,19 @@ void Stats::print_msg_sizes(FILE *outf)
             "msg_size_commit=%ld\n"
             "msg_size_prepare=%ld\n"
 #endif
-            "msg_size_checkpoint=%ld\n"
-            "msg_size_client_response=%ld\n"
-
-            ,
-            client_batch_msg_size, batch_req_msg_size
-#if CONSENSUS == PBFT
-            ,
-            commit_msg_size, prepare_msg_size
+#if GBFT
+            "msg_size_gbft_ccm=%ld\n"
 #endif
-            ,
+            "msg_size_checkpoint=%ld\n"
+            "msg_size_client_response=%ld\n",
+
+            client_batch_msg_size, batch_req_msg_size,
+#if CONSENSUS == PBFT
+            commit_msg_size, prepare_msg_size,
+#endif
+#if GBFT
+            gbft_ccm_msg_size,
+#endif
             checkpoint_msg_size, client_response_msg_size
 
     );

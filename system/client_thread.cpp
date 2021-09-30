@@ -11,7 +11,6 @@
 #include "wl.h"
 #include "message.h"
 #include "timer.h"
-#include "ring_all_comb.h"
 
 void ClientThread::send_key()
 {
@@ -67,7 +66,6 @@ void ClientThread::setup()
 	commonVar++;
 	batchMTX.unlock();
 
-
 	if (_thd_id == 0)
 	{
 		while (commonVar < g_client_thread_cnt + g_client_rem_thread_cnt + g_client_send_thread_cnt)
@@ -121,7 +119,11 @@ RC ClientThread::run()
 		int32_t inf_cnt;
 		uint32_t next_node = get_client_view();
 
+#if GBFT
+		next_node_id = view_to_primary(get_client_view(get_cluster_number()));
+#else
 		next_node_id = get_client_view();
+#endif
 
 #if VIEW_CHANGES
 		//if a request by this client hasnt been completed in time
@@ -253,3 +255,47 @@ RC ClientThread::run()
 	return FINISH;
 }
 
+#if VIEW_CHANGES
+#if GBFT
+// Resend message to all the servers.
+void ClientThread::resend_msg(ClientQueryBatch *symsg)
+{
+	//cout << "Resend: " << symsg->cqrySet[get_batch_size()-1]->client_startts << "\n";
+	//fflush(stdout);
+
+	char *buf = create_msg_buffer(symsg);
+	uint64_t first_node_in_cluster = get_cluster_number(g_node_id) * gbft_cluster_size;
+	for (uint64_t j = first_node_in_cluster; j < first_node_in_cluster + gbft_cluster_size; j++)
+	{
+		vector<uint64_t> dest;
+		dest.push_back(j);
+
+		Message *deepCMsg = deep_copy_msg(buf, symsg);
+		msg_queue.enqueue(get_thd_id(), deepCMsg, dest);
+		dest.clear();
+	}
+	delete_msg_buffer(buf);
+	Message::release_message(symsg);
+}
+#else
+// Resend message to all the servers.
+void ClientThread::resend_msg(ClientQueryBatch *symsg)
+{
+	//cout << "Resend: " << symsg->cqrySet[get_batch_size()-1]->client_startts << "\n";
+	//fflush(stdout);
+
+	char *buf = create_msg_buffer(symsg);
+	for (uint64_t j = 0; j < g_node_cnt; j++)
+	{
+		vector<uint64_t> dest;
+		dest.push_back(j);
+
+		Message *deepCMsg = deep_copy_msg(buf, symsg);
+		msg_queue.enqueue(get_thd_id(), deepCMsg, dest);
+		dest.clear();
+	}
+	delete_msg_buffer(buf);
+	Message::release_message(symsg);
+}
+#endif
+#endif // VIEW_CHANGES
