@@ -1,6 +1,5 @@
 
 #include "mem_alloc.h"
-#include "helper.h"
 #include "global.h"
 #include "jemalloc/jemalloc.h"
 

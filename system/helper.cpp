@@ -1,38 +1,6 @@
 #include "global.h"
-#include "helper.h"
 #include "mem_alloc.h"
 #include "time.h"
-
-bool itemid_t::operator==(const itemid_t &other) const
-{
-	return (type == other.type && location == other.location);
-}
-
-bool itemid_t::operator!=(const itemid_t &other) const
-{
-	return !(*this == other);
-}
-
-void itemid_t::operator=(const itemid_t &other)
-{
-	this->valid = other.valid;
-	this->type = other.type;
-	this->location = other.location;
-	assert(*this == other);
-	assert(this->valid);
-}
-
-void itemid_t::init()
-{
-	valid = false;
-	location = 0;
-	next = NULL;
-}
-
-int get_thdid_from_txnid(uint64_t txnid)
-{
-	return txnid % g_thread_cnt;
-}
 
 uint64_t get_part_id(void *addr)
 {
@@ -70,7 +38,6 @@ uint64_t merge_idx_key(uint64_t key1, uint64_t key2, uint64_t key3)
 	assert(key1 < (1 << 21) && key2 < (1 << 21) && key3 < (1 << 21));
 	return key1 << 42 | key2 << 21 | key3;
 }
-
 
 void init_client_globals()
 {
@@ -128,6 +95,17 @@ uint64_t get_sys_clock()
 	return 0;
 }
 
+std::string hexStr(const char *data, int len)
+{
+	std::string s(len * 2, ' ');
+	for (int i = 0; i < len; ++i)
+	{
+		s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
+		s[2 * i + 1] = hexmap[data[i] & 0x0F];
+	}
+	return s;
+}
+
 void myrand::init(uint64_t seed)
 {
 	this->seed = seed;
@@ -137,4 +115,29 @@ uint64_t myrand::next()
 {
 	seed = (seed * 1103515247UL + 12345UL) % (1UL << 63);
 	return (seed / 65537) % RAND_MAX;
+}
+
+uint64_t get_commit_message_txn_id(uint64_t txn_id)
+{
+	uint64_t result = txn_id / get_batch_size();
+	result = (result + 1) * get_batch_size();
+	return result - 1;
+}
+uint64_t get_prep_message_txn_id(uint64_t txn_id)
+{
+	uint64_t result = txn_id / get_batch_size();
+	result = (result + 1) * get_batch_size();
+	return result - 1;
+}
+uint64_t get_checkpoint_message_txn_id(uint64_t txn_id)
+{
+	uint64_t result = txn_id / get_batch_size();
+	result = (result + 1) * get_batch_size();
+	return result - 6;
+}
+uint64_t get_execute_message_txn_id(uint64_t txn_id)
+{
+	uint64_t result = txn_id / get_batch_size();
+	result = (result + 1) * get_batch_size();
+	return result - 2;
 }

@@ -1,7 +1,6 @@
 #ifndef _SC_H_
 #define _SC_H_
 #include "global.h"
-#include "helper.h"
 #include "wl.h"
 
 #if BANKING_SMART_CONTRACT

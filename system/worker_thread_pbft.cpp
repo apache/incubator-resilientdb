@@ -7,7 +7,6 @@
 #include "query.h"
 #include "ycsb_query.h"
 #include "math.h"
-#include "helper.h"
 #include "msg_thread.h"
 #include "msg_queue.h"
 #include "work_queue.h"
@@ -15,6 +14,7 @@
 #include "timer.h"
 #include "chain.h"
 
+#if CONSENSUS == PBFT && !GBFT
 /**
  * Processes an incoming client batch and sends a Pre-prepare message to al replicas.
  *
@@ -28,11 +28,10 @@
  */
 RC WorkerThread::process_client_batch(Message *msg)
 {
-    //printf("ClientQueryBatch: %ld, THD: %ld :: CL: %ld :: RQ: %ld\n",msg->txn_id, get_thd_id(), msg->return_node_id, clbtch->cqrySet[0]->requests[0]->key);
-    //fflush(stdout);
-
     ClientQueryBatch *clbtch = (ClientQueryBatch *)msg;
 
+    // printf("ClientQueryBatch: %ld, THD: %ld :: CL: %ld :: RQ: %ld\n", msg->txn_id, get_thd_id(), msg->return_node_id, clbtch->cqrySet[0]->requests[0]->key);
+    // fflush(stdout);
     // Authenticate the client signature.
     validate_msg(clbtch);
 
@@ -41,11 +40,12 @@ RC WorkerThread::process_client_batch(Message *msg)
     if (g_node_id != get_current_view(get_thd_id()))
     {
         client_query_check(clbtch);
+        cout << "returning...   " << get_current_view(get_thd_id()) << endl;
         return RCOK;
     }
 
     // Partial failure of Primary 0.
-    fail_primary(msg, 9);
+    fail_primary(msg, 10 * BILLION);
 #endif
 
     // Initialize all transaction mangers and Send BatchRequests message.
@@ -73,8 +73,8 @@ RC WorkerThread::process_batch(Message *msg)
 
     BatchRequests *breq = (BatchRequests *)msg;
 
-    //printf("BatchRequests: TID:%ld : VIEW: %ld : THD: %ld\n",breq->txn_id, breq->view, get_thd_id());
-    //fflush(stdout);
+    // printf("BatchRequests: TID:%ld : VIEW: %ld : THD: %ld\n",breq->txn_id, breq->view, get_thd_id());
+    // fflush(stdout);
 
     // Assert that only a non-primary replica has received this message.
     assert(g_node_id != get_current_view(get_thd_id()));
@@ -143,7 +143,7 @@ RC WorkerThread::process_batch(Message *msg)
         {
 #if TIMER_ON
             // End the timer for this client batch.
-            server_timer->endTimer(txn_man->hash);
+            remove_timer(txn_man->hash);
 #endif
             // Proceed to executing this batch of transactions.
             send_execute_msg();
@@ -167,18 +167,7 @@ RC WorkerThread::process_batch(Message *msg)
 
     // UnSetting the ready for the txn id representing this batch.
     txn_man = get_transaction_manager(msg->txn_id, 0);
-    while (true)
-    {
-        bool ready = txn_man->unset_ready();
-        if (!ready)
-        {
-            continue;
-        }
-        else
-        {
-            break;
-        }
-    }
+    unset_ready_txn(txn_man);
 
     return RCOK;
 }
@@ -303,7 +292,7 @@ RC WorkerThread::process_pbft_commit_msg(Message *msg)
     {
 #if TIMER_ON
         // End the timer for this client batch.
-        server_timer->endTimer(txn_man->hash);
+        remove_timer(txn_man->hash);
 #endif
 
         // Add this message to execute thread's queue.
@@ -314,3 +303,4 @@ RC WorkerThread::process_pbft_commit_msg(Message *msg)
 
     return RCOK;
 }
+#endif

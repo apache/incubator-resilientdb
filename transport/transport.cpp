@@ -88,6 +88,7 @@ uint64_t Transport::get_port_id(uint64_t src_node_id, uint64_t dest_node_id, uin
     //  port_id *= max_send_thread_cnt;
     port_id += send_thread_id * g_total_node_cnt * g_total_node_cnt;
     DEBUG("%ld\n", port_id);
+    port_id = port_id % TPORT_WINDOW;
     port_id += TPORT_PORT;
     DEBUG("%ld\n", port_id);
     printf("Port ID:  %ld, %ld -> %ld : %ld\n", send_thread_id, src_node_id, dest_node_id, port_id);
@@ -160,6 +161,12 @@ Socket *Transport::connect(uint64_t dest_id, uint64_t port_id)
 
 void Transport::init()
 {
+
+    /*
+        * S, R number of seding and receving threads 
+        * Create S listening sockets for each node in the system, put them in queues for receiveing threads
+        * Crate S sending sockets pair with dest_id and put them in hash map that keys are (node_id, thd_id) and value is socket
+    */
     _sock_cnt = get_socket_count();
 
     rr = 0;
@@ -193,9 +200,10 @@ void Transport::init()
         }
         else
         {
-            for (uint64_t server_thread_id = g_thread_cnt + g_rem_thread_cnt; server_thread_id < g_thread_cnt + g_rem_thread_cnt + g_send_thread_cnt; server_thread_id++)
+            // for on SEND_THREAD_CNT
+            for (uint64_t server_thread_id = 0; server_thread_id < g_send_thread_cnt; server_thread_id++)
             {
-                uint64_t port_id = get_port_id(node_id, g_node_id, server_thread_id % g_send_thread_cnt);
+                uint64_t port_id = get_port_id(node_id, g_node_id, server_thread_id);
                 Socket *sock = bind(port_id);
                 // Sockets for clients and servers in different sets.
                 if (!ISSERVER)
@@ -204,14 +212,7 @@ void Transport::init()
                 }
                 else
                 {
-                    if (node_id % (g_this_rem_thread_cnt - 1) == 0)
-                    {
-                        recv_sockets_servers1.push_back(sock);
-                    }
-                    else
-                    {
-                        recv_sockets_servers2.push_back(sock);
-                    }
+                    recv_sockets_servers[node_id % (g_rem_thread_cnt - 1)].push_back(sock);
                 }
                 DEBUG("Socket insert: {%ld}: %ld\n", node_id, (uint64_t)sock);
             }
@@ -251,8 +252,8 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
 
     Socket *socket = send_sockets.find(std::make_pair(dest_node_id, send_thread_id))->second;
     // Copy messages to nanomsg buffer
-
     DEBUG("%ld Sending batch of %d bytes to node %ld on socket %ld\n", send_thread_id, size, dest_node_id, (uint64_t)socket);
+    INC_GLOB_STATS_ARR(bytes_sent, dest_node_id, size);
 
 #if VIEW_CHANGES || LOCAL_FAULT
     bool failednode = false;
@@ -288,18 +289,17 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
     if (!failednode)
     {
 
-        uint64_t ptr = 0;
-        RemReqType rtype;
-        //COPY_VAL(rtype,(char*)buf,ptr);
-        ptr += sizeof(rtype);
-        ptr += sizeof(rtype);
-        ptr += sizeof(rtype);
-        memcpy(&rtype, &((char *)buf)[ptr], sizeof(rtype));
-        //cout << rtype << endl;
+        // uint64_t ptr = 0;
+        // RemReqType rtype;
+        // ptr += sizeof(rtype);
+        // ptr += sizeof(rtype);
+        // ptr += sizeof(rtype);
+        // memcpy(&rtype, &((char *)buf)[ptr], sizeof(rtype));
+        // cout << rtype << endl;
 
         int rc = -1;
         uint64_t time = get_sys_clock();
-        while ((rc < 0 && (get_sys_clock() - time < MSG_TIMEOUT || !simulation->is_setup_done())) && (!simulation->is_setup_done() || (simulation->is_setup_done() && !simulation->is_done())))
+        while ((rc < 0 && (get_sys_clock() - time < MSG_TIMEOUT || !simulation->is_setup_done())) && (!simulation->is_setup_done() || !simulation->is_done()))
         {
             rc = socket->sock.send(sbuf, size, NNG_FLAG_NONBLOCK);
         }
@@ -323,7 +323,7 @@ void Transport::send_msg(uint64_t send_thread_id, uint64_t dest_node_id, void *s
     }
 #else
     int rc = -1;
-    while ((rc < 0 && (!simulation->is_setup_done() || (simulation->is_setup_done() && !simulation->is_done()))))
+    while (rc < 0 && (!simulation->is_setup_done() || !simulation->is_done()))
     {
         rc = socket->sock.send(sbuf, size, NNG_FLAG_NONBLOCK);
     }
@@ -367,15 +367,12 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
         // One thread manages client sockets, while others handles server sockets.
         if (thd_id % g_this_rem_thread_cnt == 0)
         {
-            ctr = get_next_socket(thd_id, recv_sockets_servers1.size());
-        }
-        else if (thd_id % g_this_rem_thread_cnt == 1)
-        {
-            ctr = get_next_socket(thd_id, recv_sockets_servers2.size());
+            ctr = get_next_socket(thd_id, recv_sockets_clients.size());
         }
         else
         {
-            ctr = get_next_socket(thd_id, recv_sockets_clients.size());
+            uint64_t abs_tid = thd_id % (g_rem_thread_cnt - 1);
+            ctr = get_next_socket(thd_id, recv_sockets_servers[abs_tid].size());
         }
     }
     start_ctr = ctr;
@@ -399,15 +396,12 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
         { // Only servers.
             if (thd_id % g_this_rem_thread_cnt == 0)
             {
-                socket = recv_sockets_servers1[ctr];
-            }
-            else if (thd_id % g_this_rem_thread_cnt == 1)
-            {
-                socket = recv_sockets_servers2[ctr];
+                socket = recv_sockets_clients[ctr];
             }
             else
             {
-                socket = recv_sockets_clients[ctr];
+                uint64_t abs_tid = thd_id % (g_rem_thread_cnt - 1);
+                socket = recv_sockets_servers[abs_tid][ctr];
             }
             bytes = socket->sock.recv(&buf, NNG_FLAG_ALLOC | NNG_FLAG_NONBLOCK);
         }
@@ -422,15 +416,12 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
             {
                 if (thd_id % g_this_rem_thread_cnt == 0)
                 {
-                    ctr = get_next_socket(thd_id, recv_sockets_servers1.size());
-                }
-                else if (thd_id % g_this_rem_thread_cnt == 1)
-                {
-                    ctr = get_next_socket(thd_id, recv_sockets_servers2.size());
+                    ctr = get_next_socket(thd_id, recv_sockets_clients.size());
                 }
                 else
                 {
-                    ctr = get_next_socket(thd_id, recv_sockets_clients.size());
+                    uint64_t abs_tid = thd_id % (g_rem_thread_cnt - 1);
+                    ctr = get_next_socket(thd_id, recv_sockets_servers[abs_tid].size());
                 }
                 if (ctr == start_ctr)
                     break;

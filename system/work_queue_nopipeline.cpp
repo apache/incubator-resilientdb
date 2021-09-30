@@ -75,8 +75,8 @@ Message *QWorkQueue::dequeue(uint64_t thd_id)
     }
 
 #if EXECUTION_THREAD
-    UInt32 tcount = g_thread_cnt - g_btorder_thd - g_execute_thd;
-    if (thd_id >= tcount + g_btorder_thd)
+    UInt32 tcount = g_thread_cnt - g_checkpointing_thread_cnt - g_execution_thread_cnt;
+    if (thd_id >= tcount + g_checkpointing_thread_cnt)
     {
         valid = work_queue[indexSize + 1]->pop(entry);
     }

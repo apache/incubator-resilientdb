@@ -2,7 +2,6 @@
 #define _MESSAGE_H_
 
 #include "global.h"
-#include "helper.h"
 #include "array.h"
 #include <mutex>
 
@@ -365,7 +364,6 @@ char *create_msg_buffer(Message *msg);
 Message *deep_copy_msg(char *buf, Message *msg);
 void delete_msg_buffer(char *buf);
 
-
 class PBFTPrepMessage : public Message
 {
 public:
@@ -405,14 +403,46 @@ public:
     bool validate();
 
     uint64_t view;        // primary node id
-    uint64_t index;       // position in sequence of requests
+    uint64_t index;       // position in sequence of requests x00
     string hash;          //request message digest
     uint64_t hashSize;    //size of hash (for removing from buf)
     uint64_t return_node; //id of node that sent this message
 
-    uint64_t end_index;
+    uint64_t end_index; // x99
     uint64_t batch_size;
 };
+/****************************************/
+/*	GEO BFT SPECIFIC		*/
+/****************************************/
+
+#if GBFT
+class GeoBFTCommitCertificateMessage : public Message
+{
+public:
+    void copy_from_buf(char *buf);
+    void copy_to_buf(char *buf);
+    void copy_from_txn(TxnManager *txn);
+    void copy_to_txn(TxnManager *txn);
+    uint64_t get_size();
+    void init() {}
+    void release();
+
+    void sign(uint64_t dest_node_id);
+    bool validate();
+    string toString();
+
+    uint64_t forwarding_from = (uint64_t)-1;
+    uint64_t view;
+    Array<uint64_t> index;
+    uint64_t hashSize;
+    string hash;
+
+    Array<uint64_t> signSize;
+    Array<uint64_t> signOwner;
+    vector<YCSBClientQueryMessage *> requestMsg;
+    vector<string> signatures;
+};
+#endif // GBFT
 
 /****************************************/
 /*	VIEW CHANGE SPECIFIC		*/

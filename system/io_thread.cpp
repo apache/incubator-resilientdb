@@ -1,5 +1,4 @@
 #include "global.h"
-#include "helper.h"
 #include "thread.h"
 #include "io_thread.h"
 #include "query.h"
@@ -138,9 +137,6 @@ RC InputThread::run()
 
 RC InputThread::client_recv_loop()
 {
-    int rsp_cnts[g_node_cnt];
-    memset(rsp_cnts, 0, g_node_cnt * sizeof(int));
-
     run_starttime = get_sys_clock();
     uint64_t return_node_offset;
     uint64_t inf;
@@ -205,7 +201,8 @@ RC InputThread::client_recv_loop()
             //cout<<"Node: "<<msg->return_node_id <<" :: Txn: "<< msg->txn_id <<"\n";
             //fflush(stdout);
 
-            return_node_offset = get_view();
+            return_node_offset = get_client_view();
+
             if (msg->rtype != CL_RSP)
             {
                 cout << "Mtype: " << msg->rtype << " :: Nd: " << msg->return_node_id << "\n";
@@ -248,47 +245,47 @@ RC InputThread::client_recv_loop()
                 // End the timer.
                 client_timer->endTimer(clrsp->client_ts[get_batch_size() - 1]);
 #endif
-                //cout << "validated: " << clrsp->txn_id << "\n";
-                //fflush(stdout);
+                // cout << "validated: " << clrsp->txn_id << "   " << clrsp->return_node_id << "\n";
+                // fflush(stdout);
 
 #if VIEW_CHANGES
                 //cout << "View: " << clrsp->view << "\n";
                 //fflush(stdout);
 
                 // This should happen only once after the view change.
-                if (get_view() != clrsp->view)
+                if (get_client_view() != clrsp->view)
                 {
                     // Extract the number of pending requests.
-                    uint64_t pending = client_man.get_inflight(get_view());
+                    uint64_t pending = client_man.get_inflight(get_client_view());
                     for (uint64_t j = 0; j < pending; j++)
                     {
                         client_man.inc_inflight(clrsp->view);
                     }
 
                     // Move to new view.
-                    set_view(clrsp->view);
-                    return_node_offset = get_view();
+                    set_client_view(clrsp->view);
+                    return_node_offset = get_client_view();
                 }
 #endif
 
 #if CLIENT_RESPONSE_BATCH == true
                 for (uint64_t k = 0; k < g_batch_size; k++)
                 {
-                    rsp_cnts[return_node_offset]++;
-                    INC_STATS(get_thd_id(), txn_cnt, 1);
 
-                    uint64_t timespan = get_sys_clock() - clrsp->client_ts[k];
-                    INC_STATS(get_thd_id(), txn_run_time, timespan);
-
-                    sumlat = sumlat + timespan;
-                    txncmplt++;
+                    if (simulation->is_warmup_done())
+                    {
+                        INC_STATS(get_thd_id(), txn_cnt, 1);
+                        uint64_t timespan = get_sys_clock() - clrsp->client_ts[k];
+                        INC_STATS(get_thd_id(), txn_run_time, timespan);
+                        sumlat = sumlat + timespan;
+                        txncmplt++;
+                    }
                     inf = client_man.dec_inflight(return_node_offset);
                 }
                 Message::release_message(client_responses_directory.get(msg->txn_id));
                 client_responses_directory.remove(msg->txn_id);
 #else // !CLIENT_RESPONSE_BATCH
 
-                rsp_cnts[return_node_offset]++;
                 INC_STATS(get_thd_id(), txn_cnt, 1);
                 uint64_t timespan = get_sys_clock() - clrsp->client_startts;
                 INC_STATS(get_thd_id(), txn_run_time, timespan);
@@ -312,13 +309,8 @@ RC InputThread::client_recv_loop()
         delete msgs;
     }
 
-    printf("AVG: %f\n", (sumlat / (txncmplt * BILLION)));
-    fflush(stdout);
-    printf("TXNCOMP: %ld\n", txncmplt);
-    fflush(stdout);
-
-    printf("FINISH %ld:%ld\n", _node_id, _thd_id);
-    fflush(stdout);
+    printf("AVG Latency: %f\n", (sumlat / (txncmplt * BILLION)));
+    printf("TXN_CNT: %ld\n", txncmplt);
     return FINISH;
 }
 
@@ -336,19 +328,6 @@ RC InputThread::server_recv_loop()
     {
         heartbeat();
 
-#if VIEW_CHANGES
-        if (g_node_id != get_current_view(get_thd_id()))
-        {
-            uint64_t tid = get_thd_id() - 1;
-            uint32_t nchange = get_newView(tid);
-
-            if (nchange)
-            {
-                set_current_view(get_thd_id(), get_current_view(get_thd_id()) + 1);
-                set_newView(tid, false);
-            }
-        }
-#endif
 
         msgs = tport_man.recv_msg(get_thd_id());
 
@@ -360,7 +339,7 @@ RC InputThread::server_recv_loop()
             }
             continue;
         }
-        if (idle_starttime > 0)
+        if (idle_starttime > 0 && simulation->is_warmup_done())
         {
             starttime += get_sys_clock() - idle_starttime;
             idle_starttime = 0;
@@ -386,7 +365,8 @@ RC InputThread::server_recv_loop()
         }
         delete msgs;
     }
-    cout << "Input: " << _thd_id << " :: " << (starttime * 1.0) / BILLION << "\n";
+    // cout << "Input: " << _thd_id << " :: " << (starttime * 1.0) / BILLION << "\n";
+    input_thd_idle_time[_thd_id - g_thread_cnt] = starttime;
     fflush(stdout);
     return FINISH;
 }
@@ -433,7 +413,7 @@ RC OutputThread::run()
         messager->run();
     }
 
-    printf("Output %ld: %f\n", _thd_id, output_thd_idle_time[_thd_id % g_send_thread_cnt] / BILLION);
+    // printf("Output %ld: %f\n", _thd_id, output_thd_idle_time[_thd_id % g_send_thread_cnt] / BILLION);
     fflush(stdout);
     return FINISH;
 }

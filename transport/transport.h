@@ -47,8 +47,7 @@ private:
 
 	// To be used replicas.
 	std::vector<Socket *> recv_sockets_clients;
-	std::vector<Socket *> recv_sockets_servers1;
-	std::vector<Socket *> recv_sockets_servers2;
+	std::vector<Socket *> recv_sockets_servers[REM_THREAD_CNT - 1];
 
 	uint64_t _node_cnt;
 	uint64_t _sock_cnt;

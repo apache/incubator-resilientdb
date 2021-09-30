@@ -29,7 +29,7 @@ void MessageQueue::init()
         sthd_m_cache.push_back(NULL);
 }
 
-void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &ndsign, const vector<uint64_t> &dest)
+void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t> &dest)
 {
 
     msg_entry *entry = (msg_entry *)mem_allocator.alloc(sizeof(struct msg_entry));
@@ -38,6 +38,7 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &
     entry->msg = msg;
     if (msg == NULL)
     {
+        assert(0);
         return;
     }
 
@@ -57,12 +58,13 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &
 
     case CL_BATCH:
         ((ClientQueryBatch *)msg)->sign(dest[0]);
-        entry->allsign.push_back(ndsign[0]);
+        entry->allsign.push_back(msg->signature);
         break;
     case BATCH_REQ:
-        for (uint64_t i = 0; i < ndsign.size(); i++)
+        for (uint64_t i = 0; i < dest.size(); i++)
         {
-            entry->allsign.push_back(ndsign[i]);
+            ((BatchRequests *)msg)->sign(dest[i]);
+            entry->allsign.push_back(msg->signature);
         }
         break;
     case PBFT_CHKPT_MSG:
@@ -80,6 +82,7 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &
         }
         break;
 
+#if CONSENSUS == PBFT && !GBFT
     case PBFT_COMMIT_MSG:
         for (uint64_t i = 0; i < dest.size(); i++)
         {
@@ -87,6 +90,25 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &
             entry->allsign.push_back(((PBFTCommitMessage *)msg)->signature);
         }
         break;
+#endif
+#if GBFT
+    case PBFT_COMMIT_MSG:
+        ((PBFTCommitMessage *)msg)->sign(dest[0]);
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            entry->allsign.push_back(((PBFTCommitMessage *)msg)->signature);
+        }
+
+        break;
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+        if (((GeoBFTCommitCertificateMessage *)msg)->forwarding_from == (uint64_t)-1)
+            ((GeoBFTCommitCertificateMessage *)msg)->sign(dest[0]);
+        for (uint64_t i = 0; i < dest.size(); i++)
+        {
+            entry->allsign.push_back(((GeoBFTCommitCertificateMessage *)msg)->signature);
+        }
+        break;
+#endif
 
 #if VIEW_CHANGES
     case VIEW_CHANGE:
@@ -130,10 +152,15 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<string> &
         INC_STATS(thd_id, msg_queue_enq_cnt, 1);
         break;
     }
+
     case BATCH_REQ:
     case PBFT_CHKPT_MSG:
     case PBFT_PREP_MSG:
     case PBFT_COMMIT_MSG:
+
+#if GBFT
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+#endif
 
 #if VIEW_CHANGES
     case VIEW_CHANGE:
@@ -248,6 +275,7 @@ vector<uint64_t> MessageQueue::dequeue(uint64_t thd_id, vector<string> &allsign,
         INC_STATS(thd_id, msg_queue_cnt, 1);
         msg->mq_time = curr_time - entry->starttime;
         DEBUG_M("MessageQueue::enqueue msg_entry free\n");
+        entry->allsign.clear();
         mem_allocator.free(entry, sizeof(struct msg_entry));
     }
     else

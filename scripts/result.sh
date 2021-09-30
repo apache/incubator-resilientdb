@@ -1,6 +1,9 @@
 #!/bin/bash
 unset GREP_OPTIONS
 # Black='\033[1;90m'      # Black
+# Nc='\033[0m'
+# Red='\033[1;91m' # Red
+
 # Green='\033[1;92m'      # Green
 # Yellow='\033[1;93m'     # Yellow
 # Blue='\033[1;94m'       # Blue
@@ -35,7 +38,7 @@ cd results/
 echo "Throughputs:"
 for i in $(seq 0 $(($total_nodes))); do
 	if [ "$i" -lt "$snodes" ]; then
-		temp=$(tail -74 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'tput=.{1,13}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
+		temp=$(tail -10 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'tput[\s]+=.{1,13}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
 		temp2=$(tail -74 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'msg_send_cnt=.{1,13}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
 		if [ ! -z "$temp" ]; then
 			avg_thp=$(($avg_thp + $temp))
@@ -44,7 +47,7 @@ for i in $(seq 0 $(($total_nodes))); do
 			#msg_cnt=$(($msg_cnt + 1))
 		fi
 	else
-		temp=$(tail -4 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'tput=.{1,13}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
+		temp=$(tail -10 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'tput=.{1,13}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
 		client_thp=$(($client_thp + $temp))
 	fi
 	echo -e "$i: ${Red}${temp}${Nc}"
@@ -52,7 +55,7 @@ done
 
 echo "Latencies:"
 for i in $(seq $snodes $(($total_nodes))); do
-	temp=$(tail -11 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 'AVG: .{1,13}' | grep -o ${flags} '\d+\.\d+')
+	temp=$(tail -11 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} '^Latency=.{1,13}' | grep -o ${flags} '\d+\.\d+')
 	avg_lt=$(echo "$avg_lt + $temp" | bc)
 	lt_cnt=$(($lt_cnt + 1))
 	echo -e "latency $i: ${Red}${temp}${Nc}"
@@ -71,7 +74,7 @@ done
 
 echo "Memory:"
 for i in $(seq 0 $total_nodes); do
-	mem=$(tail -5 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 's_mem_usage=.{1,7}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
+	mem=$(tail -10 s${snodes}_c${cnodes}_results_${protocol}_b${bsize}_run${run}_node${i}.out | grep -o ${flags} 's_mem_usage=.{1,7}' | grep -o ${flags} '=\d+' | grep -o ${flags} '\d+')
 	[ ! -z "$mem" ] || mem=0
 	echo "$i: $(($mem / 1000)) MB"
 done

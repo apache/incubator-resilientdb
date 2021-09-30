@@ -1,6 +1,7 @@
 #ifndef _STATS_H_
 #define _STATS_H_
 #include "stats_array.h"
+#include "../config.h"
 
 class StatValue
 {
@@ -41,6 +42,9 @@ public:
 
     // Execution
     uint64_t txn_cnt;
+    uint64_t cross_shard_txn_cnt;
+    uint64_t previous_interval_txn_cnt;
+    uint64_t previous_interval_cross_shard_txn_cnt;
     uint64_t remote_txn_cnt;
     uint64_t local_txn_cnt;
     uint64_t local_txn_start_cnt;
@@ -52,6 +56,7 @@ public:
     uint64_t local_txn_abort_cnt;
     uint64_t remote_txn_abort_cnt;
     double txn_run_time;
+    double cross_txn_run_time;
     uint64_t multi_part_txn_cnt;
     double multi_part_txn_run_time;
     uint64_t single_part_txn_cnt;
@@ -121,26 +126,6 @@ public:
     double msg_unpack_time;
     double mbuf_send_intv_time;
     double msg_copy_output_time;
-
-    uint64_t bytes_received;
-    uint64_t bytes_sent;
-    uint64_t client_batch_msg_size;
-    uint64_t batch_req_msg_size;
-#if CONSENSUS == PBFT
-    uint64_t commit_msg_size;
-    uint64_t prepare_msg_size;
-#endif
-    uint64_t checkpoint_msg_size;
-    uint64_t client_response_msg_size;
-#if GBFT
-    uint64_t ccm_msg_size;
-#endif
-#if CONSENSUS == HOTSTUFF
-    uint64_t vote_msg_size;
-#endif
-#if STEWARD
-    uint64_t acc_cert_msg_size;
-#endif
 
 #if TIME_PROF_ENABLE
     double *io_thread_idle_time;
@@ -256,8 +241,25 @@ public:
     void mem_util(FILE *outf);
     void cpu_util(FILE *outf);
     void print_prof(FILE *outf);
+    void print_msg_sizes(FILE *outf);
+    void set_message_size(uint64_t rtype, uint64_t size);
 
     clock_t lastCPU, lastSysCPU, lastUserCPU;
+    uint64_t bytes_sent[NODE_CNT + CLIENT_NODE_CNT];
+    uint64_t bytes_received[NODE_CNT + CLIENT_NODE_CNT];
+
+    uint64_t client_batch_msg_size;
+    uint64_t batch_req_msg_size;
+#if CONSENSUS == PBFT
+    uint64_t commit_msg_size;
+    uint64_t prepare_msg_size;
+#endif
+#if GBFT
+    uint64_t gbft_ccm_msg_size;
+#endif
+    uint64_t checkpoint_msg_size;
+    uint64_t client_response_msg_size;
+
 
 private:
     uint64_t thd_cnt;

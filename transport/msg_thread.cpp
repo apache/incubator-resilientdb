@@ -68,7 +68,7 @@ void MessageThread::run()
         }
         return;
     }
-    if (idle_starttime > 0)
+    if (idle_starttime > 0 && simulation->is_warmup_done())
     {
         output_thd_idle_time[td_id] += get_sys_clock() - idle_starttime;
         idle_starttime = 0;
@@ -96,6 +96,12 @@ void MessageThread::run()
             case CL_BATCH:
                 msg->pubKey = getOtherRequiredKey(dest_node_id);
                 break;
+#if GBFT
+            case GBFT_COMMIT_CERTIFICATE_MSG:
+                if (((GeoBFTCommitCertificateMessage *)msg)->forwarding_from == (uint64_t)-1)
+                    msg->pubKey = getOtherRequiredKey(dest_node_id);
+                break;
+#endif
             default:
                 msg->pubKey = getCmacRequiredKey(dest_node_id);
             }
@@ -107,9 +113,17 @@ void MessageThread::run()
         if (!sbuf->fits(msg->get_size()))
         {
             assert(sbuf->cnt > 0);
+            cout << "not fitting " << sbuf->cnt << endl;
             send_batch(dest_node_id);
         }
-
+#if VIEW_CHANGES
+        if (msg->rtype == VIEW_CHANGE)
+            sbuf->force = true;
+        if (msg->rtype == NEW_VIEW)
+            sbuf->force = true;
+#endif
+        if (msg->rtype == PBFT_CHKPT_MSG)
+            sbuf->force = true;
         msg->copy_to_buf(&(sbuf->buffer[sbuf->ptr]));
 
         sbuf->cnt += 1;

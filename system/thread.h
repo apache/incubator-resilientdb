@@ -21,6 +21,9 @@ public:
     uint64_t get_thd_id();
     uint64_t get_node_id();
     void tsetup();
+    
+    // TODO for experimental purpose: force one view change
+    bool has_view_changed();
 
     void init(uint64_t thd_id, uint64_t node_id, Workload *workload);
     // the following function must be in the form void* (*)(void*)

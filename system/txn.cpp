@@ -1,4 +1,3 @@
-#include "helper.h"
 #include "txn.h"
 #include "wl.h"
 #include "query.h"
@@ -137,6 +136,7 @@ void TxnManager::init(uint64_t pool_id, Workload *h_wl)
     {
         DEBUG_M("TxnManager::init Query alloc\n");
         qry_pool.get(pool_id, query);
+        this->query->init();
     }
 #endif
     sem_init(&rsp_mutex, 0, 1);
@@ -151,6 +151,7 @@ void TxnManager::init(uint64_t pool_id, Workload *h_wl)
     prep_rsp_cnt = 2 * g_min_invalid_nodes;
     commit_rsp_cnt = prep_rsp_cnt + 1;
     chkpt_cnt = 2 * g_min_invalid_nodes;
+    chkpt_flag = false;
 
     batchreq = NULL;
 
@@ -197,7 +198,8 @@ void TxnManager::release(uint64_t pool_id)
 
     prep_rsp_cnt = 2 * g_min_invalid_nodes;
     commit_rsp_cnt = prep_rsp_cnt + 1;
-    chkpt_cnt = 2 * g_min_invalid_nodes + 1;
+    chkpt_cnt = 2 * g_min_invalid_nodes;
+    chkpt_flag = false;
     release_all_messages(tid);
 
     txn_stats.init();
@@ -254,10 +256,8 @@ void TxnManager::commit_stats()
         return;
     }
 
-    INC_STATS(get_thd_id(), txn_cnt, 1);
     INC_STATS(get_thd_id(), txn_run_time, timespan_long);
     INC_STATS(get_thd_id(), single_part_txn_cnt, 1);
-
     txn_stats.commit_stats(get_thd_id(), get_txn_id(), get_batch_id(), timespan_long, timespan_short);
 }
 
@@ -415,6 +415,7 @@ void TxnManager::add_commit_msg(PBFTCommitMessage *pcmsg)
 {
     char *buf = create_msg_buffer(pcmsg);
     Message *deepMsg = deep_copy_msg(buf, pcmsg);
+    deepMsg->return_node_id = pcmsg->return_node_id;
     commit_msgs.push_back((PBFTCommitMessage *)deepMsg);
     delete_msg_buffer(buf);
 }
@@ -448,7 +449,6 @@ void TxnManager::send_pbft_prep_msgs()
     }
 #endif
 
-    vector<string> emptyvec;
     vector<uint64_t> dest;
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
@@ -456,10 +456,16 @@ void TxnManager::send_pbft_prep_msgs()
         {
             continue;
         }
+#if GBFT
+        if (!is_in_same_cluster(i, g_node_id))
+        {
+            continue;
+        }
+#endif
         dest.push_back(i);
     }
 
-    msg_queue.enqueue(get_thd_id(), pmsg, emptyvec, dest);
+    msg_queue.enqueue(get_thd_id(), pmsg, dest);
     dest.clear();
 }
 
@@ -479,7 +485,6 @@ void TxnManager::send_pbft_commit_msgs()
     }
 #endif
 
-    vector<string> emptyvec;
     vector<uint64_t> dest;
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
@@ -487,10 +492,16 @@ void TxnManager::send_pbft_commit_msgs()
         {
             continue;
         }
+#if GBFT
+        if (!is_in_same_cluster(i, g_node_id))
+        {
+            continue;
+        }
+#endif
         dest.push_back(i);
     }
 
-    msg_queue.enqueue(get_thd_id(), cmsg, emptyvec, dest);
+    msg_queue.enqueue(get_thd_id(), cmsg, dest);
     dest.clear();
 }
 
@@ -498,11 +509,8 @@ void TxnManager::send_pbft_commit_msgs()
 
 void TxnManager::release_all_messages(uint64_t txn_id)
 {
-    if ((txn_id + 3) % get_batch_size() == 0)
-    {
-        allsign.clear();
-    }
-    else if ((txn_id + 1) % get_batch_size() == 0)
+#if GBFT
+    if ((txn_id + 1) % get_batch_size() == 0 && is_local_request(this))
     {
         info_prepare.clear();
         info_commit.clear();
@@ -517,6 +525,23 @@ void TxnManager::release_all_messages(uint64_t txn_id)
             Message::release_message(cmsg);
         }
     }
+#else
+    if ((txn_id + 1) % get_batch_size() == 0)
+    {
+        info_prepare.clear();
+        info_commit.clear();
+
+        Message::release_message(batchreq);
+
+        PBFTCommitMessage *cmsg;
+        while (commit_msgs.size() > 0)
+        {
+            cmsg = (PBFTCommitMessage *)this->commit_msgs[0];
+            commit_msgs.erase(commit_msgs.begin());
+            Message::release_message(cmsg);
+        }
+    }
+#endif
 }
 
 #endif // !TESTING
@@ -529,7 +554,6 @@ void TxnManager::send_checkpoint_msgs()
     Message *msg = Message::create_message(this, PBFT_CHKPT_MSG);
     CheckpointMessage *ckmsg = (CheckpointMessage *)msg;
 
-    vector<string> emptyvec;
     vector<uint64_t> dest;
     for (uint64_t i = 0; i < g_node_cnt; i++)
     {
@@ -537,9 +561,15 @@ void TxnManager::send_checkpoint_msgs()
         {
             continue;
         }
+#if GBFT
+        if (!is_in_same_cluster(i, g_node_id))
+        {
+            continue;
+        }
+#endif
         dest.push_back(i);
     }
 
-    msg_queue.enqueue(get_thd_id(), ckmsg, emptyvec, dest);
+    msg_queue.enqueue(get_thd_id(), ckmsg, dest);
     dest.clear();
 }

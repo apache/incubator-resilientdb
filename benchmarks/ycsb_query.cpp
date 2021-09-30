@@ -3,7 +3,6 @@
 #include "mem_alloc.h"
 //#include "wl.h"
 #include "ycsb.h"
-#include "helper.h"
 #include "message.h"
 
 uint64_t YCSBQueryGenerator::the_n = 0;

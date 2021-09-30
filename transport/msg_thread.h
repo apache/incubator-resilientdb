@@ -2,7 +2,6 @@
 #define _MSG_THREAD_H_
 
 #include "global.h"
-#include "helper.h"
 #include "nn.hpp"
 
 struct mbuf
@@ -28,6 +27,7 @@ struct mbuf
         ((uint32_t *)buffer)[0] = dest_id;
         ((uint32_t *)buffer)[1] = g_node_id;
         ptr = sizeof(uint32_t) * 3;
+        dest_node_id = dest_id;
     }
     void copy(char *p, uint64_t s)
     {
@@ -44,10 +44,10 @@ struct mbuf
     {
         if (simulation->is_warmup_done() && ISSERVER)
         {
-            if (cnt == MESSAGE_PER_BUFFER || (force && cnt))
-            {
+            if (cnt == MESSAGE_PER_BUFFER || (force && cnt)){
                 force = false;
                 return true;
+
             }
             return false;
         }

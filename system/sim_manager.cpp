@@ -1,5 +1,4 @@
 #include "global.h"
-#include "helper.h"
 #include "sim_manager.h"
 
 void SimManager::init()

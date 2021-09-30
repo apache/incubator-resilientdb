@@ -2,7 +2,6 @@
 #define _TXN_TABLE_H_
 
 #include "global.h"
-#include "helper.h"
 #include <map>
 #include <utility>
 

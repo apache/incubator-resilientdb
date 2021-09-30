@@ -2,7 +2,6 @@
 #define _QUERY_H_
 
 #include "global.h"
-#include "helper.h"
 #include "array.h"
 
 class Workload;

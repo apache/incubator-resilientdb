@@ -41,24 +41,22 @@ public:
 #else
     void init_txn_man(YCSBClientQueryMessage *msg);
 #endif
-#if EXECUTION_THREAD
     void send_execute_msg();
     RC process_execute_msg(Message *msg);
-#endif
 
 #if TIMER_ON
     void add_timer(Message *msg, string qryhash);
+    void remove_timer(string qryhash);
 #endif
 
 #if VIEW_CHANGES
     void client_query_check(ClientQueryBatch *clbtch);
     void check_for_timeout();
-    void check_switch_view();
     void store_batch_msg(BatchRequests *breq);
     RC process_view_change_msg(Message *msg);
     RC process_new_view_msg(Message *msg);
     void reset();
-    void fail_primary(Message *msg, uint64_t batch_to_fail);
+    void fail_primary(Message *msg, uint64_t time);
 #endif
 
 #if LOCAL_FAULT
@@ -70,6 +68,11 @@ public:
 
     bool committed_local(PBFTCommitMessage *msg);
     RC process_pbft_commit_msg(Message *msg);
+    void unset_ready_txn(TxnManager * tman);
+
+#if GBFT
+    RC process_gbft_commit_certificate_msg(Message * msg);
+#endif
 
 #if TESTING_ON
     void testcases(Message *msg);

@@ -1,5 +1,4 @@
 #include "global.h"
-#include "helper.h"
 #include "stats.h"
 #include "mem_alloc.h"
 #include "client_txn.h"
@@ -51,6 +50,9 @@ void Stats_thd::clear()
 
     // Execution
     txn_cnt = 0;
+    cross_shard_txn_cnt = 0;
+    previous_interval_txn_cnt = 0;
+    previous_interval_cross_shard_txn_cnt = 0;
     remote_txn_cnt = 0;
     local_txn_cnt = 0;
     local_txn_start_cnt = 0;
@@ -62,6 +64,7 @@ void Stats_thd::clear()
     local_txn_abort_cnt = 0;
     remote_txn_abort_cnt = 0;
     txn_run_time = 0;
+    cross_txn_run_time = 0;
     multi_part_txn_cnt = 0;
     multi_part_txn_run_time = 0;
     single_part_txn_cnt = 0;
@@ -217,26 +220,26 @@ void Stats_thd::clear()
 
 void Stats_thd::print_client(FILE *outf, bool prog)
 {
-    string node_id = to_string(g_node_cnt -  g_node_id + 1);
+    string node_id = to_string(g_node_cnt - g_node_id + 1);
     string filename = "toInflux_C";
     filename.append(node_id);
     filename.append("_.out");
-    filename="./monitor/"+filename;
-    
+    filename = "./monitor/" + filename;
+
     ofstream file;
-    file.open(filename.c_str(), ios_base::out | ios_base::in);  // will not create file
-    fprintf(outf, "filename: %s", filename.c_str());
+    file.open(filename.c_str(), ios_base::out | ios_base::in); // will not create file
+    fprintf(outf, "filename: %s\n", filename.c_str());
     if (!file.is_open())
-    {    
+    {
         file.clear();
-        file.open(filename.c_str(), std::ofstream::app);  // will create if necessary
+        file.open(filename.c_str(), std::ofstream::app); // will create if necessary
         //file << ip_add;
         file << "tput\n";
-    } 
+    }
     else
     {
         file.close();
-        file.open (filename.c_str(),std::ofstream::app);
+        file.open(filename.c_str(), std::ofstream::app);
     }
 
     double txn_run_avg_time = 0;
@@ -251,14 +254,15 @@ void Stats_thd::print_client(FILE *outf, bool prog)
     file.close();
 
     fprintf(outf,
-            "total_runtime=%f"
-            ",tput=%f"
-            ",txn_cnt=%ld"
-            ",txn_sent_cnt=%ld"
-            ",txn_run_time=%f"
-            ",txn_run_avg_time=%f"
-            ",cl_send_intv=%f",
-            total_runtime / BILLION, tput, txn_cnt, txn_sent_cnt, txn_run_time / BILLION, txn_run_avg_time / BILLION, cl_send_intv / BILLION);
+            "\ntotal_runtime=%f"
+            "\ntput=%f"
+            "\ntxn_cnt=%ld"
+            "\ntxn_sent_cnt=%ld"
+            "\ntxn_run_time=%f"
+            "\ncross_txn_run_time=%f"
+            "\ntxn_run_avg_time=%f"
+            "\ncl_send_intv=%f",
+            total_runtime / BILLION, tput, txn_cnt, txn_sent_cnt, txn_run_time / BILLION, cross_txn_run_time / BILLION, txn_run_avg_time / BILLION, cl_send_intv / BILLION);
     // IO
     double mbuf_send_intv_time_avg = 0;
     double msg_unpack_time_avg = 0;
@@ -285,29 +289,29 @@ void Stats_thd::print_client(FILE *outf, bool prog)
         msg_send_time_avg = msg_send_time / msg_send_cnt;
     }
     fprintf(outf,
-            ",msg_queue_delay_time=%f"
-            ",msg_queue_cnt=%ld"
-            ",msg_queue_enq_cnt=%ld"
-            ",msg_queue_delay_time_avg=%f"
-            ",msg_send_time=%f"
-            ",msg_send_time_avg=%f"
-            ",msg_recv_time=%f"
-            ",msg_recv_time_avg=%f"
-            ",msg_recv_idle_time=%f"
-            ",msg_batch_cnt=%ld"
-            ",msg_batch_size_msgs=%ld"
-            ",msg_batch_size_msgs_avg=%f"
-            ",msg_batch_size_bytes=%ld"
-            ",msg_batch_size_bytes_avg=%f"
-            ",msg_batch_size_bytes_to_server=%ld"
-            ",msg_batch_size_bytes_to_client=%ld"
-            ",msg_send_cnt=%ld"
-            ",msg_recv_cnt=%ld"
-            ",msg_unpack_time=%f"
-            ",msg_unpack_time_avg=%f"
-            ",mbuf_send_intv_time=%f"
-            ",mbuf_send_intv_time_avg=%f"
-            ",msg_copy_output_time=%f",
+            "\nmsg_queue_delay_time=%f"
+            "\nmsg_queue_cnt=%ld"
+            "\nmsg_queue_enq_cnt=%ld"
+            "\nmsg_queue_delay_time_avg=%f"
+            "\nmsg_send_time=%f"
+            "\nmsg_send_time_avg=%f"
+            "\nmsg_recv_time=%f"
+            "\nmsg_recv_time_avg=%f"
+            "\nmsg_recv_idle_time=%f"
+            "\nmsg_batch_cnt=%ld"
+            "\nmsg_batch_size_msgs=%ld"
+            "\nmsg_batch_size_msgs_avg=%f"
+            "\nmsg_batch_size_bytes=%ld"
+            "\nmsg_batch_size_bytes_avg=%f"
+            "\nmsg_batch_size_bytes_to_server=%ld"
+            "\nmsg_batch_size_bytes_to_client=%ld"
+            "\nmsg_send_cnt=%ld"
+            "\nmsg_recv_cnt=%ld"
+            "\nmsg_unpack_time=%f"
+            "\nmsg_unpack_time_avg=%f"
+            "\nmbuf_send_intv_time=%f"
+            "\nmbuf_send_intv_time_avg=%f"
+            "\nmsg_copy_output_time=%f",
             msg_queue_delay_time / BILLION, msg_queue_cnt, msg_queue_enq_cnt, msg_queue_delay_time_avg / BILLION, msg_send_time / BILLION, msg_send_time_avg / BILLION, msg_recv_time / BILLION, msg_recv_time_avg / BILLION, msg_recv_idle_time / BILLION, msg_batch_cnt, msg_batch_size_msgs, msg_batch_size_msgs_avg, msg_batch_size_bytes, msg_batch_size_bytes_avg, msg_batch_size_bytes_to_server, msg_batch_size_bytes_to_client, msg_send_cnt, msg_recv_cnt, msg_unpack_time / BILLION, msg_unpack_time_avg / BILLION, mbuf_send_intv_time / BILLION, mbuf_send_intv_time_avg / BILLION, msg_copy_output_time / BILLION);
 
 #if TIME_PROF_ENABLE
@@ -319,22 +323,22 @@ void Stats_thd::print_client(FILE *outf, bool prog)
 
     if (!prog)
     {
-        client_client_latency.quicksort(0, client_client_latency.cnt - 1);
-        fprintf(outf,
-                ",ccl0=%f"
-                ",ccl1=%f"
-                ",ccl10=%f"
-                ",ccl25=%f"
-                ",ccl50=%f"
-                ",ccl75=%f"
-                ",ccl90=%f"
-                ",ccl95=%f"
-                ",ccl96=%f"
-                ",ccl97=%f"
-                ",ccl98=%f"
-                ",ccl99=%f"
-                ",ccl100=%f",
-                (double)client_client_latency.get_idx(0) / BILLION, (double)client_client_latency.get_percentile(1) / BILLION, (double)client_client_latency.get_percentile(10) / BILLION, (double)client_client_latency.get_percentile(25) / BILLION, (double)client_client_latency.get_percentile(50) / BILLION, (double)client_client_latency.get_percentile(75) / BILLION, (double)client_client_latency.get_percentile(90) / BILLION, (double)client_client_latency.get_percentile(95) / BILLION, (double)client_client_latency.get_percentile(96) / BILLION, (double)client_client_latency.get_percentile(97) / BILLION, (double)client_client_latency.get_percentile(98) / BILLION, (double)client_client_latency.get_percentile(99) / BILLION, (double)client_client_latency.get_idx(client_client_latency.cnt - 1) / BILLION);
+        // client_client_latency.quicksort(0, client_client_latency.cnt - 1);
+        // fprintf(outf,
+        //         ",ccl0=%f"
+        //         ",ccl1=%f"
+        //         ",ccl10=%f"
+        //         ",ccl25=%f"
+        //         ",ccl50=%f"
+        //         ",ccl75=%f"
+        //         ",ccl90=%f"
+        //         ",ccl95=%f"
+        //         ",ccl96=%f"
+        //         ",ccl97=%f"
+        //         ",ccl98=%f"
+        //         ",ccl99=%f"
+        //         ",ccl100=%f",
+        //         (double)client_client_latency.get_idx(0) / BILLION, (double)client_client_latency.get_percentile(1) / BILLION, (double)client_client_latency.get_percentile(10) / BILLION, (double)client_client_latency.get_percentile(25) / BILLION, (double)client_client_latency.get_percentile(50) / BILLION, (double)client_client_latency.get_percentile(75) / BILLION, (double)client_client_latency.get_percentile(90) / BILLION, (double)client_client_latency.get_percentile(95) / BILLION, (double)client_client_latency.get_percentile(96) / BILLION, (double)client_client_latency.get_percentile(97) / BILLION, (double)client_client_latency.get_percentile(98) / BILLION, (double)client_client_latency.get_percentile(99) / BILLION, (double)client_client_latency.get_idx(client_client_latency.cnt - 1) / BILLION);
     }
 
     //client_client_latency.print(outf);
@@ -351,6 +355,9 @@ void Stats_thd::combine(Stats_thd *stats)
     client_client_latency.append(stats->client_client_latency);
     // Execution
     txn_cnt += stats->txn_cnt;
+    cross_shard_txn_cnt += stats->cross_shard_txn_cnt;
+    previous_interval_txn_cnt += stats->previous_interval_txn_cnt;
+    previous_interval_cross_shard_txn_cnt += stats->previous_interval_cross_shard_txn_cnt;
     remote_txn_cnt += stats->remote_txn_cnt;
     local_txn_cnt += stats->local_txn_cnt;
     local_txn_start_cnt += stats->local_txn_start_cnt;
@@ -362,6 +369,7 @@ void Stats_thd::combine(Stats_thd *stats)
     local_txn_abort_cnt += stats->local_txn_abort_cnt;
     remote_txn_abort_cnt += stats->remote_txn_abort_cnt;
     txn_run_time += stats->txn_run_time;
+    cross_txn_run_time += stats->cross_txn_run_time;
     multi_part_txn_cnt += stats->multi_part_txn_cnt;
     multi_part_txn_run_time += stats->multi_part_txn_run_time;
     single_part_txn_cnt += stats->single_part_txn_cnt;
@@ -582,20 +590,30 @@ void Stats::print_client(bool prog)
     totals->print_client(outf, prog);
     mem_util(outf);
     cpu_util(outf);
+    double tput = 0;
+    if (totals->total_runtime > 0)
+    {
+        tput = totals->txn_cnt / (totals->total_runtime / BILLION);
+    }
+    fprintf(outf, "\ntotal_runtime=%f\n", totals->total_runtime / BILLION);
+    fprintf(outf, "tput=%f\ttxn_cnt=%ld\n", tput, totals->txn_cnt);
+    fprintf(outf, "Latency=%f\n", (totals->txn_run_time / BILLION) / totals->txn_cnt);
+    fprintf(outf, "CLatency=%f\n", (totals->cross_txn_run_time / BILLION) / totals->cross_shard_txn_cnt);
+    fflush(outf);
 
-    if (prog)
-    {
-        fprintf(outf, "\n");
-        //for (uint32_t k = 0; k < g_node_id; ++k) {
-        for (uint32_t k = 0; k < g_servers_per_client; ++k)
-        {
-            printf("tif_node%u=%d, ", k, client_man.get_inflight(k));
-        }
-        printf("\n");
-    }
-    else
-    {
-    }
+    // if (prog)
+    // {
+    //     fprintf(outf, "\n");
+    //     //for (uint32_t k = 0; k < g_node_id; ++k) {
+    //     for (uint32_t k = 0; k < g_servers_per_client; ++k)
+    //     {
+    //         printf("tif_node%u=%d, ", k, client_man.get_inflight(k));
+    //     }
+    //     printf("\n");
+    // }
+    // else
+    // {
+    // }
     fflush(stdout);
 }
 
@@ -623,14 +641,48 @@ void Stats::print(bool prog)
     //else
     outf = stdout;
     if (prog)
-        fprintf(outf, "[prog] ");
+        fprintf(outf, "[prog] \n");
     else
         fprintf(outf, "[summary] ");
-    totals->print(outf, prog);
-    mem_util(outf);
-    cpu_util(outf);
+    if (!prog || STATS_DETAILED)
+    {
+        totals->print(outf, prog);
+        mem_util(outf);
+        cpu_util(outf);
+        print_msg_sizes(outf);
+    }
 
-    fprintf(outf, "\n");
+    double tput = 0, interval_tput = 0;
+    if (STAT_BAND_WIDTH_ENABLE)
+    {
+        fprintf(outf, "\nnodes:        ");
+        for (uint64_t i = 0; i < g_total_node_cnt; i++)
+        {
+            fprintf(outf, "%ld   \t", i);
+        }
+        fprintf(outf, "\nmb_received:  ");
+        for (uint64_t i = 0; i < g_total_node_cnt; i++)
+        {
+            fprintf(outf, "%ld \t", (bytes_received[i] / 1024 / 1024));
+        }
+        fprintf(outf, "\nmb_sent:      ");
+        for (uint64_t i = 0; i < g_total_node_cnt; i++)
+        {
+            fprintf(outf, "%ld \t", (bytes_sent[i] / 1024 / 1024));
+        }
+    }
+    if (totals->total_runtime > 0)
+    {
+        tput = totals->txn_cnt / (totals->total_runtime / BILLION);
+        interval_tput = (totals->txn_cnt - totals->previous_interval_txn_cnt) / (PROG_TIMER / BILLION);
+    }
+    fprintf(outf, "total_runtime=%f\n", totals->total_runtime / BILLION);
+    fprintf(outf, "--------------------------------\n");
+    fprintf(outf, "interval_tput=%f\ttxn_cnt=%ld\n", interval_tput, totals->txn_cnt - totals->previous_interval_txn_cnt);
+    // fprintf(outf, "previous txn_count    %ld\n", totals->previous_interval_txn_cnt);
+    fprintf(outf, "--------------------------------\n");
+    fprintf(outf, "tput         =%f\ttxn_cnt=%ld\n", tput, totals->txn_cnt);
+    fprintf(outf, "=======================================================\n");
     fflush(outf);
     if (!prog)
     {
@@ -765,25 +817,25 @@ void Stats::cpu_util(FILE *outf)
 void Stats_thd::print(FILE *outf, bool prog)
 {
 
-    string node_id = to_string(g_node_id +1);
+    string node_id = to_string(g_node_id + 1);
     string filename = "toInflux_R";
     filename.append(node_id);
     filename.append("_.out");
-    filename="./monitor/"+filename;
+    filename = "./monitor/" + filename;
 
     ofstream file;
-    file.open(filename.c_str(), ios_base::out | ios_base::in);  // will not create file
+    file.open(filename.c_str(), ios_base::out | ios_base::in); // will not create file
     if (!file.is_open())
-    {    
+    {
         file.clear();
-        file.open(filename.c_str(), std::ofstream::app);  // will create if necessary
+        file.open(filename.c_str(), std::ofstream::app); // will create if necessary
         //file << ip_add;
         file << "tput\n";
-    } 
+    }
     else
     {
         file.close();
-        file.open (filename.c_str(),std::ofstream::app);
+        file.open(filename.c_str(), std::ofstream::app);
     }
 
     fprintf(outf, "filename: %s", filename.c_str());
@@ -805,8 +857,8 @@ void Stats_thd::print(FILE *outf, bool prog)
 
     file << tput;
     file << "\n";
-    file.close(); 
-    
+    file.close();
+
     fprintf(outf, "\ntput=%f\ntxn_cnt=%ld\n", tput, txn_cnt);
 
     double work_queue_wait_avg_time = 0;
@@ -881,51 +933,6 @@ void Stats_thd::print(FILE *outf, bool prog)
             ,
             msg_send_time / BILLION, msg_send_time_avg / BILLION, msg_recv_time / BILLION, msg_recv_time_avg / BILLION, msg_recv_idle_time / BILLION, msg_send_cnt, msg_recv_cnt);
 
-    fprintf(outf,
-            "bytes_received=%ld\n"
-            "bytes_sent=%ld\n",
-            bytes_received, bytes_sent);
-
-    fprintf(outf,
-            "msg_size_client_batch=%ld\n"
-            "msg_size_batch_req=%ld\n"
-#if CONSENSUS == PBFT
-            "msg_size_commit=%ld\n"
-            "msg_size_prepare=%ld\n"
-#endif
-            "msg_size_checkpoint=%ld\n"
-            "msg_size_client_response=%ld\n"
-#if GBFT
-            "msg_size_ccm=%ld\n"
-#endif
-#if CONSENSUS == HOTSTUFF
-            "msg_size_vote=%ld\n"
-#endif
-#if STEWARD
-            "acc_cert_msg_size=%ld\n"
-#endif
-            ,
-            client_batch_msg_size, batch_req_msg_size
-#if CONSENSUS == PBFT
-            ,
-            commit_msg_size, prepare_msg_size
-#endif
-            ,
-            checkpoint_msg_size, client_response_msg_size
-#if GBFT
-            ,
-            ccm_msg_size
-#endif
-#if CONSENSUS == HOTSTUFF
-            ,
-            vote_msg_size
-#endif
-#if STEWARD
-            ,
-            acc_cert_msg_size
-#endif
-    );
-
 #if TIME_PROF_ENABLE
     for (uint64_t i = 0; i < (g_rem_thread_cnt + g_send_thread_cnt); ++i)
     {
@@ -956,25 +963,17 @@ void Stats_thd::print(FILE *outf, bool prog)
             txn_table_new_cnt, txn_table_get_cnt, txn_table_release_cnt, txn_table_cflt_cnt, txn_table_cflt_size, txn_table_get_time / BILLION, txn_table_release_time / BILLION, txn_table_min_ts_time / BILLION, txn_table_get_avg_time / BILLION, txn_table_release_avg_time / BILLION);
 }
 
-void Stats_thd::set_message_size(uint64_t rtype, uint64_t size)
+void Stats::set_message_size(uint64_t rtype, uint64_t size)
 {
     switch (rtype)
     {
     case CL_RSP:
         this->client_response_msg_size = size;
         break;
-#if CLIENT_BATCH
     case CL_BATCH:
-#else
-    case CL_QRY:
-#endif
         this->client_batch_msg_size = size;
         break;
-#if BATCH_ENABLE == BSET
     case BATCH_REQ:
-#else
-    case PBFT_PRE:
-#endif
         this->batch_req_msg_size = size;
         break;
     case PBFT_CHKPT_MSG:
@@ -989,28 +988,38 @@ void Stats_thd::set_message_size(uint64_t rtype, uint64_t size)
         break;
 #endif
 #if GBFT
-    case COMMIT_CERTIFICATE_MSG:
-        this->ccm_msg_size = size;
+    case GBFT_COMMIT_CERTIFICATE_MSG:
+        this->gbft_ccm_msg_size = size;
         break;
 #endif
-#if STEWARD
-    case STW_ACC_CERT:
-        this->acc_cert_msg_size = size;
-        break;
-#endif
-#if CONSENSUS == HOTSTUFF
-    case PREP_VOTE: // 27
-    case PRE_COMMIT:
-    case COMMIT_VOTE:
-    case COMMIT:
-    case DECIDE_VOTE:
-    case DECIDE:
-    case SEND_NEXT_VIEW:
-    case NEXT_VIEW:
-        this->vote_msg_size = size;
-        break;
-#endif
+
     default:
         break;
     }
+}
+void Stats::print_msg_sizes(FILE *outf)
+{
+    fprintf(outf,
+            "\nmsg_size_client_batch=%ld\n"
+            "msg_size_batch_req=%ld\n"
+#if CONSENSUS == PBFT
+            "msg_size_commit=%ld\n"
+            "msg_size_prepare=%ld\n"
+#endif
+#if GBFT
+            "msg_size_gbft_ccm=%ld\n"
+#endif
+            "msg_size_checkpoint=%ld\n"
+            "msg_size_client_response=%ld\n",
+
+            client_batch_msg_size, batch_req_msg_size,
+#if CONSENSUS == PBFT
+            commit_msg_size, prepare_msg_size,
+#endif
+#if GBFT
+            gbft_ccm_msg_size,
+#endif
+            checkpoint_msg_size, client_response_msg_size
+
+    );
 }

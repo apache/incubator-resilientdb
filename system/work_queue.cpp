@@ -5,38 +5,27 @@
 #include "client_query.h"
 #include <boost/lockfree/queue.hpp>
 
+void QWorkQueue::push_to_queue(work_queue_entry *entry, boost::lockfree::queue<work_queue_entry *> *queue)
+{
+    assert(entry->rtype < 100);
+    while (!queue->push(entry) && !simulation->is_done())
+    {
+    }
+}
 void QWorkQueue::init()
 {
-
-    last_sched_dq = NULL;
-    sched_ptr = 0;
-    seq_queue = new boost::lockfree::queue<work_queue_entry *>(0);
-
-    // Queue for worker thread 0.
-    uint64_t effective_queue_cnt = 1;
-
-#if EXECUTION_THREAD
-    effective_queue_cnt += indexSize;
-#endif
-
-    // A queue for checkpoint messages.
-    effective_queue_cnt++;
-
-    cout << "Total queues: " << effective_queue_cnt << "\n";
-    fflush(stdout);
-
-    work_queue = new boost::lockfree::queue<work_queue_entry *> *[effective_queue_cnt];
-    for (uint64_t i = 0; i < effective_queue_cnt; i++)
+    work_queue = new boost::lockfree::queue<work_queue_entry *>(0);
+    execution_queues = new boost::lockfree::queue<work_queue_entry *> *[indexSize];
+    for (uint64_t i = 0; i < indexSize; i++)
     {
-        work_queue[i] = new boost::lockfree::queue<work_queue_entry *>(0);
+        execution_queues[i] = new boost::lockfree::queue<work_queue_entry *>(0);
     }
-
     new_txn_queue = new boost::lockfree::queue<work_queue_entry *>(0);
-    sched_queue = new boost::lockfree::queue<work_queue_entry *> *[g_node_cnt];
-    for (uint64_t i = 0; i < g_node_cnt; i++)
-    {
-        sched_queue[i] = new boost::lockfree::queue<work_queue_entry *>(0);
-    }
+    checkpoint_queue = new boost::lockfree::queue<work_queue_entry *>(0);
+
+#if GBFT
+    gbft_ccm_queue = new boost::lockfree::queue<work_queue_entry *>(0);
+#endif
 }
 
 #if ENABLE_PIPELINE
@@ -57,52 +46,40 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
 
     if (msg->rtype == CL_QRY || msg->rtype == CL_BATCH)
     {
-        if (g_node_id == get_current_view(thd_id))
-        {
-            //cout << "Placing \n";
-            while (!new_txn_queue->push(entry) && !simulation->is_done())
-            {
-            }
-        }
-        else
-        {
-            assert(entry->rtype < 100);
-            while (!work_queue[0]->push(entry) && !simulation->is_done())
-            {
-            }
-        }
+        // Client Requests to batching queues
+        push_to_queue(entry, new_txn_queue);
     }
     else if (msg->rtype == BATCH_REQ)
     {
-        // Queue for Thread for ordered sending of batches.
-        assert(entry->rtype < 100);
-        if (g_node_id != get_current_view(thd_id))
+        // The Primary should not receive pre-prepare message
+        if (g_node_id == view_to_primary(get_current_view(thd_id)))
         {
-            while (!work_queue[0]->push(entry) && !simulation->is_done())
-            {
-            }
+            assert(0);
+        }
+        else
+        {
+            push_to_queue(entry, work_queue);
         }
     }
     else if (msg->rtype == EXECUTE_MSG)
     {
-        uint64_t bid = ((msg->txn_id + 2) - get_batch_size()) / get_batch_size();
-        uint64_t qid = bid % indexSize;
-        while (!work_queue[qid + 1]->push(entry) && !simulation->is_done())
-        {
-        }
+        // Execution Map using [indexSize] queues
+        uint64_t queue_id = (msg->txn_id / get_batch_size()) % indexSize;
+        push_to_queue(entry, execution_queues[queue_id]);
     }
     else if (msg->rtype == PBFT_CHKPT_MSG)
     {
-        while (!work_queue[indexSize + 1]->push(entry) && !simulation->is_done())
-        {
-        }
+        push_to_queue(entry, checkpoint_queue);
     }
+#if GBFT
+    else if (msg->rtype == GBFT_COMMIT_CERTIFICATE_MSG)
+    {
+        push_to_queue(entry, gbft_ccm_queue);
+    }
+#endif
     else
     {
-        assert(entry->rtype < 100);
-        while (!work_queue[0]->push(entry) && !simulation->is_done())
-        {
-        }
+        push_to_queue(entry, work_queue);
     }
 
     INC_STATS(thd_id, work_queue_enqueue_time, get_sys_clock() - starttime);
@@ -112,57 +89,59 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
 Message *QWorkQueue::dequeue(uint64_t thd_id)
 {
     uint64_t starttime = get_sys_clock();
+
     assert(ISSERVER || ISREPLICA);
-    Message *msg = NULL;
-    work_queue_entry *entry = NULL;
-
     bool valid = false;
-
-    // Thread 0 only looks at work queue
-    if (thd_id == 0)
+    Message *message = NULL;
+    work_queue_entry *entry = NULL;
+#if GBFT
+    assert(g_thread_cnt == g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt + gbft_commit_certificate_thread_cnt);
+#else
+    assert(g_thread_cnt == g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt);
+#endif
+    // Worker Threads
+    if (thd_id < g_worker_thread_cnt)
     {
-        valid = work_queue[0]->pop(entry);
+        valid = work_queue->pop(entry);
     }
-
-    UInt32 tcount = g_thread_cnt - g_execute_thd - g_btorder_thd;
-
-    if (thd_id >= tcount && thd_id < (tcount + g_execute_thd))
+    // Batching Threads
+    else if (thd_id < g_worker_thread_cnt + g_batching_thread_cnt)
     {
-        // Thread for handling execute messages.
-        uint64_t bid = ((get_expectedExecuteCount() + 2) - get_batch_size()) / get_batch_size();
-        uint64_t qid = bid % indexSize;
-        valid = work_queue[qid + 1]->pop(entry);
+        valid = new_txn_queue->pop(entry);
     }
-    else if (thd_id >= tcount + g_execute_thd)
+    // Checkpointing Threads
+    else if (thd_id < g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt)
     {
-        // Thread for handling checkpoint messages.
-        valid = work_queue[indexSize + 1]->pop(entry);
+        valid = checkpoint_queue->pop(entry);
     }
-
-    if (!valid)
+    // Execution Threads
+    else if (thd_id < g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt)
     {
-        // Allowing new transactions to be accessed by batching threads.
-        if (thd_id > 0 && thd_id <= tcount - 1)
-        {
-            valid = new_txn_queue->pop(entry);
-        }
+        uint64_t queue_id = (get_expectedExecuteCount() / get_batch_size()) % indexSize;
+        valid = execution_queues[queue_id]->pop(entry);
     }
+#if GBFT
+    else if (thd_id < g_worker_thread_cnt + g_batching_thread_cnt + g_checkpointing_thread_cnt + g_execution_thread_cnt + gbft_commit_certificate_thread_cnt)
+    {
+        valid = gbft_ccm_queue->pop(entry);
+    }
+#endif
 
     if (valid)
     {
-        msg = entry->msg;
-        assert(msg);
+        message = entry->msg;
+        assert(message);
         uint64_t queue_time = get_sys_clock() - entry->starttime;
         INC_STATS(thd_id, work_queue_wait_time, queue_time);
         INC_STATS(thd_id, work_queue_cnt, 1);
 
-        msg->wq_time = queue_time;
+        message->wq_time = queue_time;
         DEBUG("Work Dequeue (%ld,%ld)\n", entry->txn_id, entry->batch_id);
         mem_allocator.free(entry, sizeof(work_queue_entry));
         INC_STATS(thd_id, work_queue_dequeue_time, get_sys_clock() - starttime);
     }
 
-    return msg;
+    return message;
 }
 
 #endif // ENABLE_PIPELINE == true

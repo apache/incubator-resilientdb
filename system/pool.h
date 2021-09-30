@@ -2,7 +2,6 @@
 #define _TXN_POOL_H_
 
 #include "global.h"
-#include "helper.h"
 #include <boost/lockfree/queue.hpp>
 #include <mutex>
 

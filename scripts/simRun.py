@@ -16,7 +16,7 @@ from hostnames import *
 import socket
 
 dashboard = None
-home_directory = "/home/expo"
+home_directory = "/home/ubuntu"
 PATH = os.getcwd()
 #result_dir = PATH + "/results/"
 result_dir = home_directory+"/resilientdb/results/"
@@ -76,3 +76,4 @@ if dashboard is not None:
 
 # collecting the output
 os.system("./scp_results.sh {} {} {}".format(nds, resfile, result_dir))
+os.system("cp config.h {}".format(result_dir + "config_" + resfile))
