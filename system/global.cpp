@@ -34,7 +34,6 @@ bool volatile warmup_done = false;
 bool volatile enable_thread_mem_pool = false;
 pthread_barrier_t warmup_bar;
 
-UInt32 g_ts_alloc = TS_ALLOC;
 bool g_key_order = KEY_ORDER;
 bool g_ts_batch_alloc = TS_BATCH_ALLOC;
 UInt32 g_ts_batch_num = TS_BATCH_NUM;
@@ -69,11 +68,7 @@ UInt32 g_batching_thread_cnt = BATCH_THREAD_CNT;
 UInt32 g_checkpointing_thread_cnt = CHECKPOINT_THREAD_CNT;
 UInt32 g_execution_thread_cnt = EXECUTE_THREAD_CNT;
 
-#if SIGN_THREADS
-UInt32 g_sign_thd = SIGN_THD_CNT;
-#else
-UInt32 g_sign_thd = 0;
-#endif
+
 
 UInt32 g_rem_thread_cnt = REM_THREAD_CNT;
 UInt32 g_send_thread_cnt = SEND_THREAD_CNT;

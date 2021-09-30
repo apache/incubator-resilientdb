@@ -1,8 +1,8 @@
 #!/bin/bash
 unset GREP_OPTIONS
 # Black='\033[1;90m'      # Black
-Nc='\033[0m'
-Red='\033[1;91m' # Red
+# Nc='\033[0m'
+# Red='\033[1;91m' # Red
 
 # Green='\033[1;92m'      # Green
 # Yellow='\033[1;93m'     # Yellow

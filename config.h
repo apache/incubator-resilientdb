@@ -66,8 +66,6 @@
 #define NETWORK_DELAY_TEST false
 #define NETWORK_DELAY 0UL
 #define MAX_QUEUE_LEN NODE_CNT * 2
-#define PRIORITY_WORK_QUEUE false
-#define PRIORITY PRIORITY_ACTIVE
 #define MSG_SIZE_MAX 1048576
 #define MSG_TIME_LIMIT 0
 #define KEY_ORDER false
@@ -77,7 +75,6 @@
 #define INDEX_STRUCT IDX_HASH
 #define BTREE_ORDER 16
 #define TS_TWR false
-#define TS_ALLOC TS_CLOCK
 #define TS_BATCH_ALLOC false
 #define TS_BATCH_NUM 1
 #define HIS_RECYCLE_LEN 10
@@ -94,7 +91,6 @@
 #define FIRST_PART_LOCAL true
 #define MAX_TUPLE_SIZE 1024
 #define GEN_BY_MPR false
-#define SKEW_METHOD ZIPF
 #define DATA_PERC 100
 #define ACCESS_PERC 0.03
 #define INIT_PARALLELISM 8
@@ -104,51 +100,26 @@
 #define WRITE_PERC 0.9
 #define TXN_WRITE_PERC 0.5
 #define TUP_WRITE_PERC 0.5
-#define SCAN_PERC 0
-#define SCAN_LEN 20
 #define PART_PER_TXN PART_CNT
 #define PERC_MULTI_PART MPR
 #define REQ_PER_QUERY 1
 #define FIELD_PER_TUPLE 10
-#define CREATE_TXN_FILE false
-#define SINGLE_THREAD_WL_GEN true
 #define STRICT_PPT 1
 #define MPR 1.0
 #define MPIR 0.01
-#define WL_VERB true
-#define IDX_VERB false
-#define VERB_ALLOC true
-#define DEBUG_LOCK false
-#define DEBUG_TIMESTAMP false
-#define DEBUG_SYNTH false
-#define DEBUG_ASSERT false
 #define DEBUG_DISTR false
 #define DEBUG_ALLOC false
 #define DEBUG_RACE false
-#define DEBUG_TIMELINE false
-#define DEBUG_BREAKDOWN false
 #define DEBUG_LATENCY false
 #define DEBUG_QUECC false
 #define DEBUG_WLOAD false
-#define MODE NORMAL_MODE
 #define DBTYPE REPLICATED
 #define IDX_HASH 1
 #define IDX_BTREE 2
 #define YCSB 1
 #define TEST 4
-#define TS_MUTEX 1
-#define TS_CAS 2
-#define TS_HW 3
-#define TS_CLOCK 4
 #define ZIPF 1
-#define HOT 2
-#define PRIORITY_FCFS 1
-#define PRIORITY_ACTIVE 2
-#define PRIORITY_HOME 3
-#define AA1 1
 #define AP 2
-#define LOAD_MAX 1
-#define LOAD_RATE 2
 #define TCP 1
 #define IPC 2
 #define BILLION 1000000000UL
@@ -166,17 +137,10 @@
 #define WARMUP_TIMER  5 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT
-#define DBFT 1
 #define PBFT 2
 #define ZYZZYVA 3
-#define HOTSTUFF 4
-// Switching on RBFT consensus.
-// Status: Partial implementation, only for PBFT.
-#define RBFT_ON false
-// Select the type of RBFT, (1) RBFT+PBFT, and  (2) RBFT+DBFT
-#define RBFT_ALG RPBFT
-#define RPBFT 1
-#define RDBFT 2
+
+
 // Enable or Disable pipeline at primary replica.
 #define ENABLE_PIPELINE true
 // Size of each batch.
@@ -187,7 +151,6 @@
 // Number of transactions to wait for period checkpointing.
 #define TXN_PER_CHKPT 6 * BATCH_SIZE
 #define SIGN_THREADS false
-#define SIGN_THD_CNT 1
 #define CLIENT_BATCH true
 #define CLIENT_RESPONSE_BATCH true
 // To Enable or disable the blockchain implementation.
@@ -235,3 +198,4 @@
 #define BANKING_SMART_CONTRACT false
 
 #endif
+

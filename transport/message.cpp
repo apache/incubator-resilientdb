@@ -1525,13 +1525,11 @@ bool BatchRequests::validate(uint64_t thd_id)
 	//fflush(stdout);
 
 	//is the view the same as the view observed by this message
-#if !RBFT_ON
 	if (this->view != get_current_view(thd_id))
 	{
 		assert(0);
 		return false;
 	}
-#endif
 
 	return true;
 }

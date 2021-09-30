@@ -131,7 +131,6 @@ extern UInt32 g_sign_thd;
 extern UInt32 g_send_thread_cnt;
 extern UInt32 g_rem_thread_cnt;
 
-extern UInt32 g_ts_alloc;
 extern bool g_key_order;
 extern bool g_ts_batch_alloc;
 extern UInt32 g_ts_batch_num;
