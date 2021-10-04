@@ -1,8 +1,20 @@
 # ResilientDB: A High-throughput yielding Permissioned Blockchain Fabric.
 
-### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
+ ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
-### Quick Facts about Version 2.0 of ResilientDB
+### Release Notes Version 3.0 of ResilientDB
+1. Implementation of **GeoBFT** protcol inside resilientDB 
+    - [link](http://www.vldb.org/pvldb/vol13/p868-gupta.pdf) to the publication
+    - Config Required to adjust [`GBFT, GBFT_CLUSTER_SIZE, GBFT_CCM_THREAD_CNT`]
+2. Work Queues and multi-threaded structure have be re-written
+3. Minor Changes:
+    - Statistics
+    - Client Memory issue update
+    - Execution Queues
+    - Result Scripts
+
+
+### Release Notes Version 2.0 of ResilientDB
 1. ResilientDB supports a **Dockerized** implementation, which allows specifying the number of clients and replicas.
 2. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
 3. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
