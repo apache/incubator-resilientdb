@@ -24,7 +24,7 @@ if [ -f $file ]; then
 fi
 
 #Command to get just the names of all the servers setup in docker
-OUTPUT="$(docker ps --format '{{.Names}}' | grep -${flags} "c[\d]*|s[\d]*" | sort -V)"
+OUTPUT="$(docker ps --format '{{.Names}}' | grep -${flags} "(^c[0-9]+)|(^s[0-9]+)" | sort -V)"
 #echo "${OUTPUT}"
 IPC=""
 echo "Server sequence --> IP"
