@@ -1,0 +1,73 @@
+g_done_timer 60000000000
+g_thread_cnt 5
+g_zipf_theta 0.500000
+g_node_id 1
+g_client_rem_thread_cnt 1
+g_client_send_thread_cnt 1
+g_max_txn_per_part 4000
+g_load_per_server 1
+g_inflight_max 20000
+g_mpr 1.000000
+g_mpitem 0.010000
+g_part_per_txn 1
+g_req_per_query 1
+g_client_node_cnt 1
+g_rem_thread_cnt 2
+g_send_thread_cnt 1
+g_client_thread_cnt 2
+g_part_cnt 1
+g_node_cnt 4
+g_thread_cnt 5
+g_query_intvl 1
+g_prt_lat_distr 0
+g_part_alloc 0
+g_mem_pad 1
+g_perc_multi_part 1.000000
+g_tup_read_perc 0.500000
+g_tup_write_perc 0.500000
+g_txn_read_perc 0.500000
+g_txn_write_perc 0.500000
+g_synth_table_size 524288
+g_field_per_tuple 10
+g_data_perc 100.000000
+g_access_perc 0.030000
+g_strict_ppt 1
+g_network_delay 0
+g_total_thread_cnt 8
+g_total_client_thread_cnt 4
+g_total_node_cnt 5
+g_seq_batch_time_limit 5000000
+Random seed: 84593125862980
+Initializing stats... Done
+Initializing DB InMemory... 
+In-Memory DB configuration OK
+DB testing
+Insert key K1 with value V1
+Reading value for key K1 = V1
+Done
+Initializing simulation... Done
+Workload initialized!
+Initializing work queue... Done
+Initializing message queue... Done
+Initializing transaction manager pool... Done
+Initializing transaction pool... Done
+Initializing txn node table pool... Done
+Initializing query pool... Done
+Initializing transaction table... Done
+Initializing Chain... Done
+___________________________________ED25519GenerateKeys
+_____________ED25519 PUBLIC KEY: cDa
+¢&Á iã™èùBø„]+"°vßü	–èS
+___________________________________CMACGenerateKeys
+_____________CMAC PRIV KEY: 2B99C49BE72E94C77AF0AC1CF245078E
+_____________CMAC PRIV KEY: 05219A03EB177A11611F5DBD84E16227
+_____________CMAC PRIV KEY: C46AE5AB40EA81D12885383967F81378
+_____________CMAC PRIV KEY: 972E1758D8F2C07C9594B44C72D5C882
+Initialization Time = 59168565
+Setup 1:0
+Setup 1:1
+Setup 1:3
+Setup 1:4
+Setup 1:6
+Setup 1:5
+Setup 1:2

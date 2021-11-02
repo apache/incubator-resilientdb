@@ -1,0 +1,287 @@
+g_done_timer 60000000000
+g_thread_cnt 5
+g_zipf_theta 0.500000
+g_node_id 0
+g_client_rem_thread_cnt 1
+g_client_send_thread_cnt 1
+g_max_txn_per_part 4000
+g_load_per_server 1
+g_inflight_max 20000
+g_mpr 1.000000
+g_mpitem 0.010000
+g_part_per_txn 1
+g_req_per_query 1
+g_client_node_cnt 1
+g_rem_thread_cnt 2
+g_send_thread_cnt 1
+g_client_thread_cnt 2
+g_part_cnt 1
+g_node_cnt 4
+g_thread_cnt 5
+g_query_intvl 1
+g_prt_lat_distr 0
+g_part_alloc 0
+g_mem_pad 1
+g_perc_multi_part 1.000000
+g_tup_read_perc 0.500000
+g_tup_write_perc 0.500000
+g_txn_read_perc 0.500000
+g_txn_write_perc 0.500000
+g_synth_table_size 524288
+g_field_per_tuple 10
+g_data_perc 100.000000
+g_access_perc 0.030000
+g_strict_ppt 1
+g_network_delay 0
+g_total_thread_cnt 8
+g_total_client_thread_cnt 4
+g_total_node_cnt 5
+g_seq_batch_time_limit 5000000
+Random seed: 240727356869766
+Initializing stats... Done
+Initializing DB InMemory... 
+In-Memory DB configuration OK
+DB testing
+Insert key K1 with value V1
+Reading value for key K1 = V1
+Done
+Initializing transport manager... Tport Init 0: 11
+Reading ifconfig file: ./ifconfig.txt
+0: 172.22.0.4
+1: 172.22.0.2
+2: 172.22.0.6
+3: 172.22.0.3
+4: 172.22.0.5
+Port ID:  0, 1 -> 0 : 10001
+Sock Binding to tcp://172.22.0.4:10001 0
+Port ID:  0, 0 -> 1 : 10005
+Sock Connecting to tcp://172.22.0.4;172.22.0.2:10005 0 -> 1
+Port ID:  0, 2 -> 0 : 10002
+Sock Binding to tcp://172.22.0.4:10002 0
+Port ID:  0, 0 -> 2 : 10010
+Sock Connecting to tcp://172.22.0.4;172.22.0.6:10010 0 -> 2
+Port ID:  0, 3 -> 0 : 10003
+Sock Binding to tcp://172.22.0.4:10003 0
+Port ID:  0, 0 -> 3 : 10015
+Sock Connecting to tcp://172.22.0.4;172.22.0.3:10015 0 -> 3
+Port ID:  0, 4 -> 0 : 10004
+Sock Binding to tcp://172.22.0.4:10004 0
+Port ID:  0, 0 -> 4 : 10020
+Sock Connecting to tcp://172.22.0.4;172.22.0.5:10020 0 -> 4
+Done
+Initializing simulation... Done
+Workload initialized!
+Initializing work queue... Done
+Initializing message queue... Done
+Initializing transaction manager pool... Done
+Initializing transaction pool... Done
+Initializing txn node table pool... Done
+Initializing query pool... Done
+Initializing transaction table... Done
+Initializing Chain... Done
+___________________________________ED25519GenerateKeys
+_____________ED25519 PUBLIC KEY: ‰ïÊΩ:H'º|S!éûéŒ èë"[lJqJÉ0òiÚ]
+___________________________________CMACGenerateKeys
+_____________CMAC PRIV KEY: 711F142BCF2515703860A2E27D63A19F
+_____________CMAC PRIV KEY: 607A98BA2DE0CFB1D9FA01080446698B
+_____________CMAC PRIV KEY: 1BC82A670371C560ED18B98653BA62DB
+_____________CMAC PRIV KEY: FBD96ABAC49E10BCFAC01C2821C887D8
+Initialization Time = 157657260
+Setup 0:0
+Setup 0:1
+Setup 0:3
+Setup 0:4
+Setup 0:5
+Setup 0:2
+Setup 0:6
+Setup 0:7
+Running 0:1
+Running 0:4
+Running 0:2
+Send INIT_DONE to 1
+Running 0:3
+Send INIT_DONE to 2
+Send INIT_DONE to 3
+Send INIT_DONE to 4
+Sending ED25519: ‰ïÊΩ:H'º|S!éûéŒ èë"[lJqJÉ0òiÚ]
+Sending CMAC 711F142BCF2515703860A2E27D63A19F
+Sending ED25519: ‰ïÊΩ:H'º|S!éûéŒ èë"[lJqJÉ0òiÚ]
+Sending CMAC 607A98BA2DE0CFB1D9FA01080446698B
+Sending ED25519: ‰ïÊΩ:H'º|S!éûéŒ èë"[lJqJÉ0òiÚ]
+Sending CMAC 1BC82A670371C560ED18B98653BA62DB
+Sending ED25519: ‰ïÊΩ:H'º|S!éûéŒ èë"[lJqJÉ0òiÚ]
+Sending CMAC FBD96ABAC49E10BCFAC01C2821C887D8
+Running 0:0
+Received INIT_DONE from node 1
+Received INIT_DONE from node 2
+Received INIT_DONE from node 3
+Received INIT_DONE from node 4
+Running 0:6
+Running 0:5
+Running 0:7
+Starttime set to 240732268953493
+Running WorkerThread 3
+Running InputThread 6
+Running WorkerThread 1
+Running OutputThread 7
+Running WorkerThread 2
+Running WorkerThread 4
+Running WorkerThread 0
+Running InputThread 5
+[prog] 
+total_runtime=0.015894
+--------------------------------
+interval_tput=316.000000	txn_cnt=1581
+--------------------------------
+tput         =99474.070960	txn_cnt=1581
+=======================================================
+
+[prog] 
+total_runtime=5.050174
+--------------------------------
+interval_tput=7306.000000	txn_cnt=36534
+--------------------------------
+tput         =7547.263991	txn_cnt=38115
+=======================================================
+
+[prog] 
+total_runtime=10.084557
+--------------------------------
+interval_tput=4300.000000	txn_cnt=21500
+--------------------------------
+tput         =5911.513847	txn_cnt=59615
+=======================================================
+
+[prog] 
+total_runtime=15.100719
+--------------------------------
+interval_tput=3280.000000	txn_cnt=16400
+--------------------------------
+tput         =5033.866385	txn_cnt=76015
+=======================================================
+
+[prog] 
+total_runtime=20.125996
+--------------------------------
+interval_tput=3600.000000	txn_cnt=18000
+--------------------------------
+tput         =4671.321704	txn_cnt=94015
+=======================================================
+
+[prog] 
+total_runtime=25.133176
+--------------------------------
+interval_tput=3720.000000	txn_cnt=18600
+--------------------------------
+tput         =4480.731025	txn_cnt=112615
+=======================================================
+
+[prog] 
+total_runtime=30.133182
+--------------------------------
+interval_tput=4300.000000	txn_cnt=21500
+--------------------------------
+tput         =4450.741435	txn_cnt=134115
+=======================================================
+
+[prog] 
+total_runtime=35.133182
+--------------------------------
+interval_tput=3920.000000	txn_cnt=19600
+--------------------------------
+tput         =4375.208642	txn_cnt=153715
+=======================================================
+
+[prog] 
+total_runtime=40.154681
+--------------------------------
+interval_tput=4100.000000	txn_cnt=20500
+--------------------------------
+tput         =4338.597511	txn_cnt=174215
+=======================================================
+
+[prog] 
+total_runtime=45.179939
+--------------------------------
+interval_tput=4460.000000	txn_cnt=22300
+--------------------------------
+tput         =4349.607492	txn_cnt=196515
+=======================================================
+
+[prog] 
+total_runtime=50.196153
+--------------------------------
+interval_tput=5220.000000	txn_cnt=26100
+--------------------------------
+tput         =4434.901580	txn_cnt=222615
+=======================================================
+
+[prog] 
+total_runtime=55.221436
+--------------------------------
+interval_tput=3260.000000	txn_cnt=16300
+--------------------------------
+tput         =4326.490137	txn_cnt=238915
+=======================================================
+
+FINISH: 0
+FINISH: 0
+FINISH: 0
+FINISH: 0
+FINISH: 0
+PASS! SimTime = 69.755341
+Output 7: 62.808222
+Input 5: 63.202727
+Input 6: 62.525864
+[summary] filename: ./monitor/toInflux_R1_.out
+total_runtime=60.000000
+
+tput=4266.916701
+txn_cnt=256015
+,work_queue_wait_time=396.963898
+,work_queue_cnt=20992
+,work_queue_enq_cnt=20843
+,work_queue_wait_avg_time=0.018910
+,work_queue_enqueue_time=0.023058
+,work_queue_dequeue_time=23.463881
+,worker_idle_time=289.366432
+,worker_release_msg_time=0.302973
+idle_time_worker 0=59.172030
+idle_time_worker 1=57.618312
+idle_time_worker 2=57.653342
+idle_time_worker 3=57.907110
+idle_time_worker 4=57.015637
+msg_send_time=6.269895
+msg_send_time_avg=0.003798
+msg_recv_time=28.741880
+msg_recv_time_avg=0.007128
+msg_recv_idle_time=87.680471
+msg_send_cnt=1651
+msg_recv_cnt=4032
+txn_table_new_cnt=246100
+txn_table_get_cnt=518079
+txn_table_release_cnt=258600
+txn_table_cflt_cnt=0
+txn_table_cflt_size=0
+txn_table_get_time=1.026250
+txn_table_release_time=1.617967
+txn_table_min_ts_time=0.000000
+txn_table_get_avg_time=0.000002
+txn_table_release_avg_time=0.000006
+virt_mem_usage=2304908
+phys_mem_usage=64620
+,cpu_ttl=0.000041
+msg_size_client_batch=4604
+msg_size_batch_req=0
+msg_size_commit=220
+msg_size_prepare=216
+msg_size_checkpoint=164
+msg_size_client_response=0
+total_runtime=60.000000
+--------------------------------
+interval_tput=3420.000000	txn_cnt=17100
+--------------------------------
+tput         =4266.916701	txn_cnt=256015
+=======================================================
+
+

@@ -1,0 +1,52 @@
+Running client...
+
+g_done_timer 60000000000
+g_thread_cnt 5
+g_zipf_theta 0.500000
+g_node_id 4
+g_client_rem_thread_cnt 1
+g_client_send_thread_cnt 1
+g_max_txn_per_part 4000
+g_load_per_server 1
+g_inflight_max 20000
+g_mpr 1.000000
+g_mpitem 0.010000
+g_part_per_txn 1
+g_req_per_query 1
+g_client_node_cnt 1
+g_rem_thread_cnt 2
+g_send_thread_cnt 1
+g_client_thread_cnt 2
+g_part_cnt 1
+g_node_cnt 4
+g_thread_cnt 5
+g_query_intvl 1
+g_prt_lat_distr 0
+g_part_alloc 0
+g_mem_pad 1
+g_perc_multi_part 1.000000
+g_tup_read_perc 0.500000
+g_tup_write_perc 0.500000
+g_txn_read_perc 0.500000
+g_txn_write_perc 0.500000
+g_synth_table_size 524288
+g_field_per_tuple 10
+g_data_perc 100.000000
+g_access_perc 0.030000
+g_strict_ppt 1
+g_network_delay 0
+g_total_thread_cnt 8
+g_total_client_thread_cnt 4
+g_total_node_cnt 5
+g_seq_batch_time_limit 5000000
+Node 4: servicing 4 total nodes starting with node 0
+Random seed: 80948680717005
+Initializing stats... Done
+Initializing transport manager... Tport Init 4: 14
+Reading ifconfig file: ./ifconfig.txt
+0: 10.22.0.2
+1: 10.22.0.3
+2: 10.22.0.4
+3: 10.22.0.5
+4: 10.22.0.6
+Port ID:  0, 0 -> 4 : 10020
