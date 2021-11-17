@@ -134,7 +134,7 @@
 #define REPLICATED 1
 // To select the amount of time to warmup and run.
 #define DONE_TIMER 1 * 60 * BILLION
-#define WARMUP_TIMER  5 * BILLION
+#define WARMUP_TIMER  30 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT
 #define PBFT 2
