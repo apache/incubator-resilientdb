@@ -1,0 +1,6 @@
+[submodule "deps/SimpleAmqpClient"]
+	path = deps/SimpleAmqpClient
+	url = https://github.com/alanxz/SimpleAmqpClient.git
+[submodule "deps/rabbitmq-c"]
+	path = deps/rabbitmq-c
+	url = https://github.com/alanxz/rabbitmq-c.git
