@@ -12,8 +12,12 @@ using namespace std;
 using namespace AmqpClient;
 
 void consumeMessage() {
-  Channel::ptr_t connection =
-      Channel::Create("localhost", 5673, "guest", "guest");
+  Channel::OpenOpts openOpts = Channel::OpenOpts();
+  openOpts.host = "localhost";
+  openOpts.port = 5673;
+  Channel::OpenOpts::BasicAuth basicAuth = Channel::OpenOpts::BasicAuth("guest","guest");
+  openOpts.auth = basicAuth;
+  Channel::ptr_t connection = Channel::Open(openOpts);
   std::string consumer_tag = connection->BasicConsume("custom_queue", "");
   Envelope::ptr_t envelope = connection->BasicConsumeMessage(consumer_tag);
   cout << envelope->Message()->Body();
@@ -21,8 +25,12 @@ void consumeMessage() {
 }
 
 void publishMessage() {
-  Channel::ptr_t connection =
-      Channel::Create("localhost", 5673, "guest", "guest");
+  Channel::OpenOpts openOpts = Channel::OpenOpts();
+  openOpts.host = "localhost";
+  openOpts.port = 5673;
+  Channel::OpenOpts::BasicAuth basicAuth = Channel::OpenOpts::BasicAuth("guest","guest");
+  openOpts.auth = basicAuth;
+  Channel::ptr_t connection = Channel::Open(openOpts);
   string producerMessage = "this is a test message 2";
   connection->BasicPublish("TestExchange", "TQ1",
                            BasicMessage::Create(producerMessage));
@@ -72,8 +80,12 @@ class Processor {
   void init() { timer.start(1000, std::bind(&Processor::process, this)); }
 
   void process() {
-    Channel::ptr_t connection =
-        Channel::Create("localhost", 5673, "guest", "guest");
+    Channel::OpenOpts openOpts = Channel::OpenOpts();
+    openOpts.host = "localhost";
+    openOpts.port = 5673;
+    Channel::OpenOpts::BasicAuth basicAuth = Channel::OpenOpts::BasicAuth("guest","guest");
+    openOpts.auth = basicAuth;
+    Channel::ptr_t connection = Channel::Open(openOpts);
     std::string consumer_tag = connection->BasicConsume("custom_queue", "");
     Envelope::ptr_t envelope = connection->BasicConsumeMessage(consumer_tag);
     cout << envelope->Message()->Body() << endl;
