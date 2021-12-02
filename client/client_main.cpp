@@ -12,6 +12,9 @@
 #include "crypto.h"
 #include "timer.h"
 #include "smart_contract_txn.h"
+#include <SimpleAmqpClient/SimpleAmqpClient.h>
+
+using namespace AmqpClient;
 
 void *f(void *);
 void *g(void *);
@@ -292,6 +295,31 @@ void network_test()
         fflush(stdout);
 	}
   */
+}
+
+void consumeMessage() {
+  Channel::OpenOpts openOpts = Channel::OpenOpts();
+  openOpts.host = "localhost";
+  openOpts.port = 5673;
+  Channel::OpenOpts::BasicAuth basicAuth = Channel::OpenOpts::BasicAuth("guest","guest");
+  openOpts.auth = basicAuth;
+  Channel::ptr_t connection = Channel::Open(openOpts);
+  std::string consumer_tag = connection->BasicConsume("custom_queue", "");
+  Envelope::ptr_t envelope = connection->BasicConsumeMessage(consumer_tag);
+  cout << envelope->Message()->Body();
+  connection->BasicConsumeMessage(consumer_tag, envelope, 10);  // 10 ms timeout
+}
+
+void publishMessage() {
+  Channel::OpenOpts openOpts = Channel::OpenOpts();
+  openOpts.host = "localhost";
+  openOpts.port = 5673;
+  Channel::OpenOpts::BasicAuth basicAuth = Channel::OpenOpts::BasicAuth("guest","guest");
+  openOpts.auth = basicAuth;
+  Channel::ptr_t connection = Channel::Open(openOpts);
+  string producerMessage = "this is a test message 2";
+  connection->BasicPublish("TestExchange", "TQ1",
+                           BasicMessage::Create(producerMessage));
 }
 
 void network_test_recv()
