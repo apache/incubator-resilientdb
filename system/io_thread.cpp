@@ -63,7 +63,11 @@ void InputThread::setup()
     std::vector<Message *> *msgs;
     while (!simulation->is_setup_done())
     {
-        msgs = tport_man.recv_msg(get_thd_id());
+        if(ISSERVER)
+            msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
+        else
+            msgs = tport_man.recv_msg(get_thd_id());
+
         if (msgs == NULL)
             continue;
 
@@ -151,7 +155,7 @@ RC InputThread::client_recv_loop()
     while (!simulation->is_done())
     {
         heartbeat();
-        msgs = tport_man.recv_msg(get_thd_id());
+        msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
         if (msgs == NULL)
         {
 
