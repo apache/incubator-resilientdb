@@ -92,6 +92,8 @@ void SimManager::process_setup_msg()
     if (rsp_left == 0)
     {
         set_setup_done();
+        for(uint i = 0; i < SEND_THREAD_CNT; i++)
+            semamanager.post(SpecialSemaphore(SETUP_DONE), false, false);
     }
 }
 

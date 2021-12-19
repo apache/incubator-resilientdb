@@ -6,6 +6,7 @@
 #include "client_query.h"
 #include "transport.h"
 #include "work_queue.h"
+#include "sema_manager.h"
 
 #include "msg_queue.h"
 #include "pool.h"
@@ -29,6 +30,8 @@ QWorkQueue work_queue;
 
 MessageQueue msg_queue;
 Client_txn client_man;
+
+SemaphoreManager semamanager;
 
 bool volatile warmup_done = false;
 bool volatile enable_thread_mem_pool = false;
@@ -220,6 +223,10 @@ uint64_t get_expectedExecuteCount()
 void set_expectedExecuteCount(uint64_t val)
 {
 	expectedExecuteCount = val;
+	semamanager.emheap.pop();	//remvoe the last executed msg from the heap
+	if(val == semamanager.emheap.top()){	//check whether the next msg to execute has been in the heap 
+		semamanager.post(SpecialSemaphore(EXECUTE), false, false);
+	}
 }
 
 // Variable used by all threads during setup, to mark they are ready

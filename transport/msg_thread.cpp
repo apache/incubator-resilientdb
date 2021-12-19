@@ -57,6 +57,17 @@ void MessageThread::run()
     // Relative Id of the server's output thread.
     UInt32 td_id = _thd_id % g_this_send_thread_cnt;
 
+    if(ISSERVER){
+        if (simulation->is_warmup_done()){
+            idle_starttime = get_sys_clock();
+        }
+        // Wait until there is a msg in the queue (the value of the semaphore is not zero), then decrease the value by 1
+        semamanager.wait(td_id, true);
+        if (idle_starttime > 0 && simulation->is_warmup_done()){
+            output_thd_idle_time[td_id] += get_sys_clock() - idle_starttime;
+        }    
+    } 
+
     dest = msg_queue.dequeue(get_thd_id(), allsign, msg);
 
     if (!msg)

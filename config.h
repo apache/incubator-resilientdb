@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 // Specify the number of servers or replicas
-#define NODE_CNT 4
+#define NODE_CNT 7
 // Number of worker threads at primary. 
 #define THREAD_CNT 5 // This Should be the sum of following thread count + protocol specifig threads
 #define WORKER_THREAD_CNT 1
