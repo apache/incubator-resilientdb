@@ -155,7 +155,7 @@ RC InputThread::client_recv_loop()
     while (!simulation->is_done())
     {
         heartbeat();
-        msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
+        msgs = tport_man.recv_msg(get_thd_id());
         if (msgs == NULL)
         {
 
@@ -333,7 +333,7 @@ RC InputThread::server_recv_loop()
         heartbeat();
 
 
-        msgs = tport_man.recv_msg(get_thd_id());
+        msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
 
         if (msgs == NULL)
         {
