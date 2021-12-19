@@ -197,12 +197,13 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
             while (!m_queue[j]->push(entry2) && !simulation->is_done())
             {
             }
+
+            if(ISSERVER)
+                // After a msg is enqueued, increase the value of output_semaphore by 1
+                semamanager.post(j, true);
+
             INC_STATS(thd_id, msg_queue_enq_cnt, 1);
         }
-
-        if(ISSERVER)
-            // After a msg is enqueued, increase the value of output_semaphore by 1
-            semamanager.post(j, true);
 
         // Putting in queue of the last output thread.
         for (uint64_t i = 0; i < dest.size(); i++)
