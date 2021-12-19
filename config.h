@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 // Specify the number of servers or replicas
-#define NODE_CNT 7
+#define NODE_CNT 4
 // Number of worker threads at primary. 
 #define THREAD_CNT 5 // This Should be the sum of following thread count + protocol specifig threads
 #define WORKER_THREAD_CNT 1
@@ -133,8 +133,8 @@
 #define PARTITIONED 0
 #define REPLICATED 1
 // To select the amount of time to warmup and run.
-#define DONE_TIMER 1 * 15 * BILLION
-#define WARMUP_TIMER  5 * BILLION
+#define DONE_TIMER 1 * 60 * BILLION
+#define WARMUP_TIMER  30 * BILLION
 // Select the consensus algorithm to run.
 #define CONSENSUS PBFT
 #define PBFT 2
