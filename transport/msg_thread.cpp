@@ -73,17 +73,9 @@ void MessageThread::run()
     if (!msg)
     {
         check_and_send_batches();
-        if (idle_starttime == 0)
-        {
-            idle_starttime = get_sys_clock();
-        }
         return;
     }
-    if (idle_starttime > 0 && simulation->is_warmup_done())
-    {
-        output_thd_idle_time[td_id] += get_sys_clock() - idle_starttime;
-        idle_starttime = 0;
-    }
+
     assert(msg);
 
     for (uint64_t i = 0; i < dest.size(); i++)
