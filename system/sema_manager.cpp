@@ -47,6 +47,9 @@ void SemaphoreManager::init(){
 #endif
 
     init_msg_cnt = new uint64_t[SEND_THREAD_CNT];
+    for(uint i = 0; i < SEND_THREAD_CNT; i++){
+        init_msg_cnt[i] = 0;
+    }
     for(uint i = 0; i < g_node_cnt; i++){
         if(i == g_node_id)
             continue;
