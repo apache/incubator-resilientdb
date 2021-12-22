@@ -50,7 +50,7 @@ void SemaphoreManager::init(){
     for(uint i = 0; i < SEND_THREAD_CNT; i++){
         init_msg_cnt[i] = 0;
     }
-    for(uint i = 0; i < g_node_cnt; i++){
+    for(uint i = 0; i < g_total_node_cnt; i++){
         if(i == g_node_id)
             continue;
         init_msg_cnt[i%SEND_THREAD_CNT] += 3;
