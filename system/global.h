@@ -30,6 +30,7 @@
 #include "pool.h"
 #include "txn_table.h"
 #include "sim_manager.h"
+#include "sema_manager.h"
 #include <mutex>
 
 #include <unordered_map>
@@ -44,6 +45,7 @@ using namespace std;
 class mem_alloc;
 class Stats;
 class SimManager;
+class SemaphoreManager;
 class Query_queue;
 class Transport;
 class Remote_query;
@@ -72,6 +74,7 @@ typedef uint64_t ts_t; // time stamp type
 extern mem_alloc mem_allocator;
 extern Stats stats;
 extern SimManager *simulation;
+extern SemaphoreManager semamanager;
 extern Query_queue query_queue;
 extern Client_query_queue client_query_queue;
 extern Transport tport_man;

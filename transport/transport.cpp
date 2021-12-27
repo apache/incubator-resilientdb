@@ -372,6 +372,8 @@ std::vector<Message *> *Transport::recv_msg(uint64_t thd_id)
         else
         {
             uint64_t abs_tid = thd_id % (g_rem_thread_cnt - 1);
+            if(!recv_sockets_servers[abs_tid].size())
+                return msgs;
             ctr = get_next_socket(thd_id, recv_sockets_servers[abs_tid].size());
         }
     }

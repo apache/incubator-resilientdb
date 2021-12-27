@@ -149,6 +149,12 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
         while (!m_queue[rand]->push(entry) && !simulation->is_done())
         {
         }
+
+        if(ISSERVER){
+            // After a msg is enqueued, increase the value of output_semaphore by 1
+            semamanager.post(rand, true);
+        }
+
         INC_STATS(thd_id, msg_queue_enq_cnt, 1);
         break;
     }
@@ -191,6 +197,11 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
             while (!m_queue[j]->push(entry2) && !simulation->is_done())
             {
             }
+
+            if(ISSERVER)
+                // After a msg is enqueued, increase the value of output_semaphore by 1
+                semamanager.post(j, true);
+
             INC_STATS(thd_id, msg_queue_enq_cnt, 1);
         }
 
@@ -203,6 +214,11 @@ void MessageQueue::enqueue(uint64_t thd_id, Message *msg, const vector<uint64_t>
         while (!m_queue[j]->push(entry) && !simulation->is_done())
         {
         }
+
+        if(ISSERVER)
+            // After a msg is enqueued, increase the value of output_semaphore by 1
+            semamanager.post(j, true);
+
         INC_STATS(thd_id, msg_queue_enq_cnt, 1);
 
         delete_msg_buffer(buf);

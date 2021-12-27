@@ -63,7 +63,11 @@ void InputThread::setup()
     std::vector<Message *> *msgs;
     while (!simulation->is_setup_done())
     {
-        msgs = tport_man.recv_msg(get_thd_id());
+        if(ISSERVER)
+            msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
+        else
+            msgs = tport_man.recv_msg(get_thd_id());
+
         if (msgs == NULL)
             continue;
 
@@ -329,7 +333,7 @@ RC InputThread::server_recv_loop()
         heartbeat();
 
 
-        msgs = tport_man.recv_msg(get_thd_id());
+        msgs = tport_man.recv_msg(get_thd_id() - g_thread_cnt);
 
         if (msgs == NULL)
         {
@@ -365,6 +369,9 @@ RC InputThread::server_recv_loop()
         }
         delete msgs;
     }
+
+    semamanager.post_all();
+
     // cout << "Input: " << _thd_id << " :: " << (starttime * 1.0) / BILLION << "\n";
     input_thd_idle_time[_thd_id - g_thread_cnt] = starttime;
     fflush(stdout);
@@ -395,9 +402,28 @@ void OutputThread::setup()
     commonVar++;
     batchMTX.unlock();
     messager->idle_starttime = 0;
-    while (!simulation->is_setup_done())
-    {
-        messager->run();
+
+    if(ISSERVER){
+        uint64_t td_id = io_thd_id % g_this_send_thread_cnt;
+        while (!simulation->is_setup_done())
+        {
+            // One replica needs to send 1 INIT_DONE and 2 KEYEX msgs to any other replica
+            if(semamanager.get_init_msg_cnt(td_id) == 0){   
+                // After sending all the msgs, a replica waits until it has received
+                // INIT_DONE msgs from all other replicas and clients.
+                // Otherwise, a deadlock may appear
+                semamanager.wait(SpecialSemaphore(SETUP_DONE), false, false);
+                break;
+            }
+            messager->run();
+            semamanager.dec_init_msg_cnt(td_id);
+        }
+    }
+    else{
+        while (!simulation->is_setup_done())
+        {
+            messager->run();
+        }
     }
 }
 

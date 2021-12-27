@@ -48,6 +48,7 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
     {
         // Client Requests to batching queues
         push_to_queue(entry, new_txn_queue);
+        semamanager.post(g_thread_cnt - g_checkpointing_thread_cnt - g_execution_thread_cnt - 1);
     }
     else if (msg->rtype == BATCH_REQ)
     {
@@ -59,6 +60,7 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
         else
         {
             push_to_queue(entry, work_queue);
+            semamanager.post(0);
         }
     }
     else if (msg->rtype == EXECUTE_MSG)
@@ -66,10 +68,17 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
         // Execution Map using [indexSize] queues
         uint64_t queue_id = (msg->txn_id / get_batch_size()) % indexSize;
         push_to_queue(entry, execution_queues[queue_id]);
+        semamanager.post(g_thread_cnt - 1);
+        semamanager.emheap.push(msg->txn_id);
+        //if the next msg to execute is enqueued
+        if(msg->txn_id == get_expectedExecuteCount()){
+            semamanager.post(SpecialSemaphore(EXECUTE), false, false);
+        }
     }
     else if (msg->rtype == PBFT_CHKPT_MSG)
     {
         push_to_queue(entry, checkpoint_queue);
+        semamanager.post(g_thread_cnt - g_execution_thread_cnt - 1);
     }
 #if GBFT
     else if (msg->rtype == GBFT_COMMIT_CERTIFICATE_MSG)
@@ -80,6 +89,7 @@ void QWorkQueue::enqueue(uint64_t thd_id, Message *msg, bool busy)
     else
     {
         push_to_queue(entry, work_queue);
+        semamanager.post(0);
     }
 
     INC_STATS(thd_id, work_queue_enqueue_time, get_sys_clock() - starttime);
