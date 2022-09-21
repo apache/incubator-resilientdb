@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/client/libresdb_client.a
+bazel-out/darwin_arm64-fastbuild/bin/client/_objs/resdb_client/resdb_client.pic.o

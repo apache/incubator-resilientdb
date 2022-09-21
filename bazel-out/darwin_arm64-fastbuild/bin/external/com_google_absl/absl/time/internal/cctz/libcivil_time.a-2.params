@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/libcivil_time.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/civil_time/civil_time_detail.pic.o

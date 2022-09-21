@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/librecovery.a
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/recovery/recovery.pic.o

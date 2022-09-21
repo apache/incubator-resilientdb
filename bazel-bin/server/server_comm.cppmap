@@ -1,0 +1,10 @@
+module "//server:server_comm" {
+  export *
+  textual header "../../../../server/server_comm.h"
+  use "//client:resdb_client"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//client:resdb_client" "../../../../bazel-out/darwin_arm64-fastbuild/bin/client/resdb_client.cppmap"
+extern module "//proto:resdb_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

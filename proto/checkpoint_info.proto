@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package resdb;
+
+message HashInfo {
+    bytes last_hash = 1; // the last updated checkpoint hash value.
+    bytes current_hash = 2; // the current request value hash.
+    bytes last_block_hash = 3; // the hash value of last block.
+}
+
+message CheckPointData {
+  uint64 seq = 1;
+  bytes hash = 2;
+}

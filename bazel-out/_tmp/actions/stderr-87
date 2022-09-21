@@ -1,0 +1,193 @@
+In file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:17:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:532:46: [0m[0;1;31merror: [0m[1mdeclaration conflicts with target of using declaration already in scope[0m
+inline _LIBCPP_INLINE_VISIBILITY float       hypot(       float x,       float y,       float z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                             ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:1: [0m[0;1;30mnote: [0mtarget of using declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:9: [0m[0;1;30mnote: [0musing declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m        ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:532:108: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+inline _LIBCPP_INLINE_VISIBILITY float       hypot(       float x,       float y,       float z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                                                                                           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:387:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::sqrt _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:533:46: [0m[0;1;31merror: [0m[1mdeclaration conflicts with target of using declaration already in scope[0m
+inline _LIBCPP_INLINE_VISIBILITY double      hypot(      double x,      double y,      double z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                             ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:1: [0m[0;1;30mnote: [0mtarget of using declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:9: [0m[0;1;30mnote: [0musing declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m        ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:533:108: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+inline _LIBCPP_INLINE_VISIBILITY double      hypot(      double x,      double y,      double z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                                                                                           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:387:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::sqrt _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:534:46: [0m[0;1;31merror: [0m[1mdeclaration conflicts with target of using declaration already in scope[0m
+inline _LIBCPP_INLINE_VISIBILITY long double hypot( long double x, long double y, long double z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                             ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:1: [0m[0;1;30mnote: [0mtarget of using declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:9: [0m[0;1;30mnote: [0musing declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m        ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:534:108: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+inline _LIBCPP_INLINE_VISIBILITY long double hypot( long double x, long double y, long double z ) { return sqrt(x*x + y*y + z*z); }
+[0;1;32m                                                                                                           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:387:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::sqrt _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:545:1: [0m[0;1;31merror: [0m[1mdeclaration conflicts with target of using declaration already in scope[0m
+hypot(_A1 __lcpp_x, _A2 __lcpp_y, _A3 __lcpp_z) _NOEXCEPT
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:1: [0m[0;1;30mnote: [0mtarget of using declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:9: [0m[0;1;30mnote: [0musing declaration[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m        ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:551:12: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+    return hypot((__result_type)__lcpp_x, (__result_type)__lcpp_y, (__result_type)__lcpp_z);
+[0;1;32m           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:423:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::hypot _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:572:12: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+    return isnan(__lcpp_x);
+[0;1;32m           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:325:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::isnan _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:592:12: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+    return isinf(__lcpp_x);
+[0;1;32m           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:324:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::isinf _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:612:12: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+    return isfinite(__lcpp_x);
+[0;1;32m           ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:323:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::isfinite _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:663:16: [0m[0;1;31merror: [0m[1mno member named 'nextafter' in the global namespace[0m
+  if (__r >= ::nextafter(static_cast<_RealT>(_MaxVal), INFINITY)) {
+[0;1;32m             ~~^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:663:56: [0m[0;1;31merror: [0m[1muse of undeclared identifier 'INFINITY'[0m
+  if (__r >= ::nextafter(static_cast<_RealT>(_MaxVal), INFINITY)) {
+[0;1;32m                                                       ^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:1190:40: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+        {rehash(static_cast<size_type>(ceil(__n / max_load_factor())));}
+[0;1;32m                                       ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:1869:48: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+                                     size_type(ceil(float(size() + 1) / max_load_factor()))));
+[0;1;32m                                               ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:1945:34: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+                       size_type(ceil(float(size() + 1) / max_load_factor()))));
+[0;1;32m                                 ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:2045:38: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+                           size_type(ceil(float(size() + 1) / max_load_factor()))));
+[0;1;32m                                     ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:2097:38: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+                           size_type(ceil(float(size() + 1) / max_load_factor()))));
+[0;1;32m                                     ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0mIn file included from durable_layer/rocksdb_durable.cpp:1:
+In file included from ./durable_layer/rocksdb_durable.h:6:
+In file included from ./config/resdb_config_utils.h:3:
+In file included from ./config/resdb_config.h:3:
+In file included from bazel-out/darwin_arm64-fastbuild/bin/proto/replica_info.pb.h:23:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/io/coded_stream.h:147:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/common.h:49:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/stringpiece.h:151:
+In file included from external/com_github_protocolbuffers_protobuf/src/google/protobuf/stubs/hash.h:38:
+In file included from /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/unordered_map:437:
+[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__hash_table:2321:68: [0m[0;1;31merror: [0m[1mreference to unresolved using declaration[0m
+                  __is_hash_power2(__bc) ? __next_hash_pow2(size_t(ceil(float(size()) / max_load_factor()))) :
+[0;1;32m                                                                   ^
+[0m[1m/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/cmath:348:1: [0m[0;1;30mnote: [0musing declaration annotated with 'using_if_exists' here[0m
+using ::ceil _LIBCPP_USING_IF_EXISTS;
+[0;1;32m^
+[0m[0;1;31mfatal error: [0m[1mtoo many errors emitted, stopping now [-ferror-limit=][0m
+20 errors generated.

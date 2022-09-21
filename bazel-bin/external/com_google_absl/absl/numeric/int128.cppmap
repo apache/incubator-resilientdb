@@ -1,0 +1,14 @@
+module "@com_google_absl//absl/numeric:int128" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/numeric/int128.h"
+  private textual header "../../../../../../../external/com_google_absl/absl/numeric/int128_have_intrinsic.inc"
+  private textual header "../../../../../../../external/com_google_absl/absl/numeric/int128_no_intrinsic.inc"
+  use "@com_google_absl//absl/numeric:bits"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/base:core_headers"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/numeric:bits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/numeric/bits.cppmap"
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

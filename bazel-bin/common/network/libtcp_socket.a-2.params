@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/common/network/libtcp_socket.a
+bazel-out/darwin_arm64-fastbuild/bin/common/network/_objs/tcp_socket/tcp_socket.pic.o

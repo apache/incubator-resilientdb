@@ -1,0 +1,13 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/libtime_zone.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_fixed.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_format.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_if.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_impl.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_info.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_libc.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_lookup.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/time_zone_posix.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/_objs/time_zone/zone_info_source.pic.o

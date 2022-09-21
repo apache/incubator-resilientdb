@@ -1,0 +1,8 @@
+module "@com_google_absl//absl/base:config" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/base/config.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/options.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/policy_checks.h"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

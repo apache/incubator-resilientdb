@@ -1,0 +1,9 @@
+module "@com_google_absl//absl/time/internal/cctz:civil_time" {
+  export *
+  textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/include/cctz/civil_time.h"
+  textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/include/cctz/civil_time_detail.h"
+  use "@com_google_absl//absl/base:config"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:config" "../../../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "crosstool" "../../../../../../../../../external/local_config_cc/module.modulemap"

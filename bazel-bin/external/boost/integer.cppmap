@@ -1,0 +1,21 @@
+module "@boost//:integer" {
+  export *
+  textual header "../../../../../external/boost/boost/integer.hpp"
+  textual header "../../../../../external/boost/boost/integer/common_factor.hpp"
+  textual header "../../../../../external/boost/boost/integer/common_factor_ct.hpp"
+  textual header "../../../../../external/boost/boost/integer/common_factor_rt.hpp"
+  textual header "../../../../../external/boost/boost/integer/extended_euclidean.hpp"
+  textual header "../../../../../external/boost/boost/integer/integer_log2.hpp"
+  textual header "../../../../../external/boost/boost/integer/integer_mask.hpp"
+  textual header "../../../../../external/boost/boost/integer/mod_inverse.hpp"
+  textual header "../../../../../external/boost/boost/integer/static_log2.hpp"
+  textual header "../../../../../external/boost/boost/integer/static_min_max.hpp"
+  textual header "../../../../../external/boost/boost/integer_fwd.hpp"
+  textual header "../../../../../external/boost/boost/integer_traits.hpp"
+  use "@boost//:cstdint"
+  use "@boost//:static_assert"
+  use "crosstool"
+}
+extern module "@boost//:cstdint" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/cstdint.cppmap"
+extern module "@boost//:static_assert" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/static_assert.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

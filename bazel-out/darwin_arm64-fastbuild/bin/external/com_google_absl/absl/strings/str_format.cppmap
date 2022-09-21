@@ -1,0 +1,8 @@
+module "@com_google_absl//absl/strings:str_format" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/strings/str_format.h"
+  use "@com_google_absl//absl/strings:str_format_internal"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/strings:str_format_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/str_format_internal.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

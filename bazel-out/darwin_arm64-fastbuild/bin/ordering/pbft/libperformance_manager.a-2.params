@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libperformance_manager.a
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/performance_manager/performance_manager.pic.o

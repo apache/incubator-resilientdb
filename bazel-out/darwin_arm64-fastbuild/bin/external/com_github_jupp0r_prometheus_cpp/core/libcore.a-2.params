@@ -1,0 +1,17 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/libcore.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/check_names.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/counter.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/builder.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/ckms_quantiles.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/time_window_quantiles.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/utils.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/family.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/gauge.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/histogram.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/registry.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/serializer.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/summary.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/core/_objs/core/text_serializer.pic.o

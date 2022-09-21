@@ -1,0 +1,7 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/boost/libchrono.a
+bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/chrono/chrono.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/chrono/process_cpu_clocks.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/chrono/thread_clock.pic.o

@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libconsensus_service_pbft.a
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/consensus_service_pbft/consensus_service_pbft.pic.o

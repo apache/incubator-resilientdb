@@ -1,0 +1,17 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/libstrings.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/ascii.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/charconv.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/escaping.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/charconv_bigint.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/charconv_parse.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/memutil.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/match.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/numbers.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/str_cat.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/str_replace.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/str_split.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/string_view.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/strings/substitute.pic.o

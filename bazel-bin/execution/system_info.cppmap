@@ -1,0 +1,10 @@
+module "//execution:system_info" {
+  export *
+  textual header "../../../../execution/system_info.h"
+  use "//config:resdb_config"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//config:resdb_config" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//proto:resdb_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

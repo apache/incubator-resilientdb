@@ -1,0 +1,10 @@
+module "@com_google_absl//absl/strings:cordz_statistics" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/cordz_statistics.h"
+  use "@com_google_absl//absl/strings:cordz_update_tracker"
+  use "@com_google_absl//absl/base:config"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/strings:cordz_update_tracker" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/cordz_update_tracker.cppmap"
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

@@ -1,0 +1,23 @@
+module "@com_google_absl//absl/status:statusor" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/status/statusor.h"
+  private textual header "../../../../../../../external/com_google_absl/absl/status/internal/statusor_internal.h"
+  use "@com_google_absl//absl/status:status"
+  use "@com_google_absl//absl/base:base"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:raw_logging_internal"
+  use "@com_google_absl//absl/meta:type_traits"
+  use "@com_google_absl//absl/strings:strings"
+  use "@com_google_absl//absl/types:variant"
+  use "@com_google_absl//absl/utility:utility"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/status:status" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/status/status.cppmap"
+extern module "@com_google_absl//absl/base:base" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/base.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:raw_logging_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/raw_logging_internal.cppmap"
+extern module "@com_google_absl//absl/meta:type_traits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/meta/type_traits.cppmap"
+extern module "@com_google_absl//absl/strings:strings" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/strings.cppmap"
+extern module "@com_google_absl//absl/types:variant" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/types/variant.cppmap"
+extern module "@com_google_absl//absl/utility:utility" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/utility/utility.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libcheckpoint_collector.a
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/checkpoint_collector/checkpoint_collector.pic.o

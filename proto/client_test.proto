@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package resdb;
+
+message ClientTestRequest {
+    string value = 1;
+}
+
+message ClientTestResponse {
+    string value = 1;
+}

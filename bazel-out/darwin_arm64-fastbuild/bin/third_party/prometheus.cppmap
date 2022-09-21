@@ -1,0 +1,7 @@
+module "//third_party:prometheus" {
+  export *
+  use "@com_github_jupp0r_prometheus_cpp//pull:pull"
+  use "crosstool"
+}
+extern module "@com_github_jupp0r_prometheus_cpp//pull:pull" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/pull.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

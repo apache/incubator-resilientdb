@@ -1,0 +1,7 @@
+module "//third_party:leveldb" {
+  export *
+  use "@com_google_leveldb//:leveldb"
+  use "crosstool"
+}
+extern module "@com_google_leveldb//:leveldb" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_leveldb/leveldb.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

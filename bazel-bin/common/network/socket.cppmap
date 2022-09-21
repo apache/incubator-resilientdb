@@ -1,0 +1,8 @@
+module "//common/network:socket" {
+  export *
+  textual header "../../../../../common/network/socket.h"
+  use "//common:comm"
+  use "crosstool"
+}
+extern module "//common:comm" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/common/comm.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

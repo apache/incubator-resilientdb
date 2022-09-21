@@ -1,0 +1,150 @@
+syntax = "proto3";
+
+import "proto/replica_info.proto";
+import "proto/signature_info.proto";
+
+package resdb;
+
+// Network message used to deliver Requests between replicas and client.
+message ResDBMessage {
+    bytes data = 1;
+    SignatureInfo signature = 2;
+}
+
+// The request message containing requested numbers
+message Request {
+    enum Type {
+        TYPE_NONE = 0;
+        TYPE_HEART_BEAT = 1;
+        TYPE_CLIENT_REQUEST = 2;
+        TYPE_PRE_PREPARE = 3;
+        TYPE_PREPARE = 4;
+        TYPE_COMMIT = 5;
+        TYPE_CLIENT_CERT = 6;
+        TYPE_RESPONSE = 7;
+        TYPE_RECOVERY_DATA = 8;
+        TYPE_RECOVERY_DATA_RESP = 9;
+        TYPE_CHECKPOINT = 10;
+        TYPE_QUERY = 11;
+        TYPE_REPLICA_STATE = 12; // get replica state.
+        TYPE_NEW_TXNS = 14; // new transactions sent by proxy, 
+                            //with batch transactions.
+        TYPE_GEO_REQUEST = 15;
+
+        NUM_OF_TYPE = 16; // the total number of types.
+                       // Used to create the collector.
+    };
+    int32 type = 1;
+    bytes data = 2;
+    ReplicaInfo client_info = 3;
+    uint64 current_view = 4;
+    uint64 seq = 5;
+    bytes hash = 6;
+    int32 sender_id = 7;
+    int64 proxy_id = 8; // the replica which receives the client request.
+    bool is_system_request = 9; // whether is system information related 
+                                 // request, like CMD:ADDREPLICA.
+    uint64 current_executed_seq = 10;
+    bool need_response = 11;
+    int32 ret = 12;
+    SignatureInfo data_signature = 13;
+    RegionInfo region_info = 14;
+}
+
+// The response message containing response
+message ResponseData {
+    bytes data = 1;
+    SignatureInfo signature = 2; // signature for each resp.
+}
+
+message Response {
+    enum Result {
+        OK = 0;
+        ERROR = -1;
+    };
+    Result result = 1;
+    repeated ResponseData resp = 2; // signature for each resp.
+}
+
+message BatchClientRequest {
+  message ClientRequest {
+    Request request = 1;
+    SignatureInfo signature = 2;
+    int32 id = 3;
+  };
+  repeated ClientRequest client_requests = 1;
+  uint64 createtime = 2;
+  uint64 local_id = 3;
+}
+
+message BatchClientResponse {
+  repeated bytes response = 1;
+  repeated SignatureInfo signatures = 2;
+  int32 proxy_id = 3;
+  uint64 seq = 4;
+  uint64 current_view = 5;
+  uint64 createtime = 6;
+  uint64 local_id = 7;
+}
+
+message HeartBeatInfo{
+  repeated CertificateKey public_keys = 1;
+}
+
+message ClientCertInfo {
+  CertificateKey public_key = 1;
+  ReplicaInfo client_info = 2;
+}
+
+message ClientCertResponse {
+  repeated CertificateKey public_keys = 1;
+  repeated ReplicaInfo replicas = 2;
+}
+
+
+message NewReplicaRequest {
+  ReplicaInfo replica_info = 1;
+}
+
+message SystemInfoRequest {
+  enum Type {
+      NONE = 0;
+      ADD_REPLICA = 1;
+  };
+  Type type = 1;
+  bytes request = 2;
+}
+
+message RecoveryRequest {
+  uint64 min_seq = 1;
+  uint64 max_seq = 2;
+}
+
+message RecoveryResponse {
+  repeated Request request = 1;
+}
+
+message RequestWithProof {
+  message RequestData {
+      Request request = 1;
+      SignatureInfo signature = 2;
+  };
+  // The committed request.
+  Request request = 1;
+  // proof from distinct replicas.
+  repeated RequestData proofs = 2;
+  uint64 seq = 3;
+}
+
+message RequestSet {
+  repeated RequestWithProof requests = 1;
+}
+
+message QueryRequest {
+  uint64 min_seq = 1;
+  uint64 max_seq = 2;
+}
+message QueryResponse {
+  repeated Request transactions = 1;
+}
+

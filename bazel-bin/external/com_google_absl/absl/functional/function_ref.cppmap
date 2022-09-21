@@ -1,0 +1,13 @@
+module "@com_google_absl//absl/functional:function_ref" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/functional/function_ref.h"
+  private textual header "../../../../../../../external/com_google_absl/absl/functional/internal/function_ref.h"
+  use "@com_google_absl//absl/base:base_internal"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/meta:type_traits"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:base_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/base_internal.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/meta:type_traits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/meta/type_traits.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

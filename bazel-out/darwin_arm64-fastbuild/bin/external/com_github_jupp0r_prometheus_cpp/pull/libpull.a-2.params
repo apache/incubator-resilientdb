@@ -1,0 +1,9 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/libpull.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/_objs/pull/basic_auth.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/_objs/pull/endpoint.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/_objs/pull/exposer.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/_objs/pull/handler.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_jupp0r_prometheus_cpp/pull/_objs/pull/metrics_collector.pic.o

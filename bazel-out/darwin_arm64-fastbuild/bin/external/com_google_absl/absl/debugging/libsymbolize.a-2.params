@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/libsymbolize.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/_objs/symbolize/symbolize.pic.o

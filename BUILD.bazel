@@ -1,0 +1,16 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+
+make(
+    name = "cryptopp",
+    lib_source = "@cryptopp//:all_srcs",
+    out_static_libs = ["libcryptopp.a"],
+)
+
+cc_library(
+    name = "cryptopp_lib",
+    deps = [
+        ":cryptopp",
+    ],
+)

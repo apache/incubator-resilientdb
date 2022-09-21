@@ -1,0 +1,14 @@
+module "@com_google_absl//absl/strings:cordz_functions" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/cordz_functions.h"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:raw_logging_internal"
+  use "@com_google_absl//absl/profiling:exponential_biased"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:raw_logging_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/raw_logging_internal.cppmap"
+extern module "@com_google_absl//absl/profiling:exponential_biased" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/profiling/exponential_biased.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

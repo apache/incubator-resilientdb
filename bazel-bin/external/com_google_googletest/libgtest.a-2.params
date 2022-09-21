@@ -1,0 +1,17 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/libgtest.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gmock-cardinalities.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gmock-internal-utils.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gmock-matchers.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gmock-spec-builders.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gmock.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-death-test.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-filepath.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-matchers.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-port.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-printers.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-test-part.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest-typed-test.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_googletest/_objs/gtest/gtest.pic.o

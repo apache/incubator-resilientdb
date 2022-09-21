@@ -1,0 +1,14 @@
+module "@boost//:ref" {
+  export *
+  textual header "../../../../../external/boost/boost/ref.hpp"
+  use "@boost//:config"
+  use "@boost//:core"
+  use "@boost//:detail"
+  use "@boost//:utility"
+  use "crosstool"
+}
+extern module "@boost//:config" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/config.cppmap"
+extern module "@boost//:core" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/core.cppmap"
+extern module "@boost//:detail" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/detail.cppmap"
+extern module "@boost//:utility" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/utility.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

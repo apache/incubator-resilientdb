@@ -1,0 +1,22 @@
+module "//ordering/pbft:consensus_service_pbft" {
+  export *
+  textual header "../../../../../ordering/pbft/consensus_service_pbft.h"
+  use "//ordering/pbft:checkpoint"
+  use "//ordering/pbft:commitment"
+  use "//ordering/pbft:performance_manager"
+  use "//ordering/pbft:query"
+  use "//ordering/pbft:recovery"
+  use "//ordering/pbft:transaction_manager"
+  use "//crypto:signature_verifier"
+  use "//server:consensus_service"
+  use "crosstool"
+}
+extern module "//ordering/pbft:checkpoint" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/checkpoint.cppmap"
+extern module "//ordering/pbft:commitment" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/commitment.cppmap"
+extern module "//ordering/pbft:performance_manager" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/performance_manager.cppmap"
+extern module "//ordering/pbft:query" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/query.cppmap"
+extern module "//ordering/pbft:recovery" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/recovery.cppmap"
+extern module "//ordering/pbft:transaction_manager" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/transaction_manager.cppmap"
+extern module "//crypto:signature_verifier" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/crypto/signature_verifier.cppmap"
+extern module "//server:consensus_service" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/server/consensus_service.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

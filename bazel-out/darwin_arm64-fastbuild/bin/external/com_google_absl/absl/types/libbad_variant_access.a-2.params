@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/types/libbad_variant_access.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/types/_objs/bad_variant_access/bad_variant_access.pic.o

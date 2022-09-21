@@ -1,0 +1,8 @@
+module "//ordering/pbft:transaction_utils" {
+  export *
+  textual header "../../../../../ordering/pbft/transaction_utils.h"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//proto:resdb_proto" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

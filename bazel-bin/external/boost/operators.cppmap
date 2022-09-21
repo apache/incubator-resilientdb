@@ -1,0 +1,6 @@
+module "@boost//:operators" {
+  export *
+  textual header "../../../../../external/boost/boost/operators.hpp"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

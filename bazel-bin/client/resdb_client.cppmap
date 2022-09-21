@@ -1,0 +1,18 @@
+module "//client:resdb_client" {
+  export *
+  textual header "../../../../client/resdb_client.h"
+  use "//common:comm"
+  use "//common/data_comm:data_comm"
+  use "//common/network:tcp_socket"
+  use "//config:resdb_config"
+  use "//crypto:signature_verifier"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//common:comm" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/comm.cppmap"
+extern module "//common/data_comm:data_comm" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/data_comm/data_comm.cppmap"
+extern module "//common/network:tcp_socket" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/network/tcp_socket.cppmap"
+extern module "//config:resdb_config" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//crypto:signature_verifier" "../../../../bazel-out/darwin_arm64-fastbuild/bin/crypto/signature_verifier.cppmap"
+extern module "//proto:resdb_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

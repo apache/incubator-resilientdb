@@ -1,0 +1,10 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/libstr_format_internal.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/arg.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/bind.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/extension.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/float_conversion.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/output.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/str_format_internal/parser.pic.o

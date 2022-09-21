@@ -1,0 +1,14 @@
+module "@com_google_absl//absl/base:base_internal" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/hide_ptr.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/identity.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/inline_variable.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/invoke.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/scheduling_mode.h"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/meta:type_traits"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/meta:type_traits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/meta/type_traits.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

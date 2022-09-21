@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/kv_server/libkv_server_executor.a
+bazel-out/darwin_arm64-fastbuild/bin/kv_server/_objs/kv_server_executor/kv_server_executor.pic.o

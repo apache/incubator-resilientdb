@@ -1,0 +1,10 @@
+module "//statistic:prometheus_handler" {
+  export *
+  textual header "../../../../statistic/prometheus_handler.h"
+  use "//common:comm"
+  use "//third_party:prometheus"
+  use "crosstool"
+}
+extern module "//common:comm" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/comm.cppmap"
+extern module "//third_party:prometheus" "../../../../bazel-out/darwin_arm64-fastbuild/bin/third_party/prometheus.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

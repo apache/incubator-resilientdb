@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package resdb;
+
+message RocksDBInfo {
+  bool enable_rocksdb = 1;
+  uint32 num_threads = 2;
+  uint32 write_buffer_size_mb = 3;
+  uint32 write_batch_size = 4;
+  optional string path = 5;
+}
+
+message LevelDBInfo {
+  bool enable_leveldb = 1;
+  uint32 num_threads = 2;
+  uint32 write_buffer_size_mb = 3;
+  uint32 write_batch_size = 4;
+  optional string path = 5;
+}

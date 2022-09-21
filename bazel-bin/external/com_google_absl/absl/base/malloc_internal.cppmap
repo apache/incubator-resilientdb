@@ -1,0 +1,19 @@
+module "@com_google_absl//absl/base:malloc_internal" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/direct_mmap.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/low_level_alloc.h"
+  use "@com_google_absl//absl/base:base"
+  use "@com_google_absl//absl/base:base_internal"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:dynamic_annotations"
+  use "@com_google_absl//absl/base:raw_logging_internal"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:base" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/base.cppmap"
+extern module "@com_google_absl//absl/base:base_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/base_internal.cppmap"
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:dynamic_annotations" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/dynamic_annotations.cppmap"
+extern module "@com_google_absl//absl/base:raw_logging_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/raw_logging_internal.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

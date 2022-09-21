@@ -1,0 +1,12 @@
+module "//application/utils:server_factory" {
+  export *
+  textual header "../../../../../application/utils/server_factory.h"
+  use "//config:resdb_config_utils"
+  use "//ordering/pbft:consensus_service_pbft"
+  use "//server:resdb_server"
+  use "crosstool"
+}
+extern module "//config:resdb_config_utils" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config_utils.cppmap"
+extern module "//ordering/pbft:consensus_service_pbft" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/consensus_service_pbft.cppmap"
+extern module "//server:resdb_server" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/server/resdb_server.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

@@ -1,0 +1,8 @@
+module "//ordering/pbft:lock_free_collector_pool" {
+  export *
+  textual header "../../../../../ordering/pbft/lock_free_collector_pool.h"
+  use "//ordering/pbft:transaction_collector"
+  use "crosstool"
+}
+extern module "//ordering/pbft:transaction_collector" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/transaction_collector.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

@@ -1,0 +1,22 @@
+module "//server:consensus_service" {
+  export *
+  textual header "../../../../server/consensus_service.h"
+  use "//server:resdb_replica_client"
+  use "//server:resdb_service"
+  use "//common:comm"
+  use "//common/queue:blocking_queue"
+  use "//config:resdb_config"
+  use "//proto:broadcast_proto"
+  use "//proto:resdb_proto"
+  use "//statistic:stats"
+  use "crosstool"
+}
+extern module "//server:resdb_replica_client" "../../../../bazel-out/darwin_arm64-fastbuild/bin/server/resdb_replica_client.cppmap"
+extern module "//server:resdb_service" "../../../../bazel-out/darwin_arm64-fastbuild/bin/server/resdb_service.cppmap"
+extern module "//common:comm" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/comm.cppmap"
+extern module "//common/queue:blocking_queue" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/queue/blocking_queue.cppmap"
+extern module "//config:resdb_config" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//proto:broadcast_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/broadcast_proto.cppmap"
+extern module "//proto:resdb_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "//statistic:stats" "../../../../bazel-out/darwin_arm64-fastbuild/bin/statistic/stats.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

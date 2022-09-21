@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package resdb;
+
+message LoggingInfo {
+    enum Type{
+      NONE = 0;
+      ASSIGN = 1;
+      ADD = 2;
+      FETCH = 3;
+      COMMIT = 4;
+      CLEAR = 5;
+};
+    Type type = 1;
+    int64 seq = 2;
+    bytes request  = 3;
+    bytes signature = 4;
+}

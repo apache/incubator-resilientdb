@@ -1,0 +1,16 @@
+module "@com_google_absl//absl/container:inlined_vector" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/container/inlined_vector.h"
+  use "@com_google_absl//absl/container:inlined_vector_internal"
+  use "@com_google_absl//absl/algorithm:algorithm"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:throw_delegate"
+  use "@com_google_absl//absl/memory:memory"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/container:inlined_vector_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/container/inlined_vector_internal.cppmap"
+extern module "@com_google_absl//absl/algorithm:algorithm" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/algorithm/algorithm.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:throw_delegate" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/throw_delegate.cppmap"
+extern module "@com_google_absl//absl/memory:memory" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/memory/memory.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

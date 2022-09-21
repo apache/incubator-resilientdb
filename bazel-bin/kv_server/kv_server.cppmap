@@ -1,0 +1,13 @@
+module "//kv_server:kv_server" {
+  export *
+  use "//kv_server:kv_server_executor"
+  use "//application/utils:server_factory"
+  use "//config:resdb_config_utils"
+  use "@bazel_tools//tools/cpp:malloc"
+  use "crosstool"
+}
+extern module "//kv_server:kv_server_executor" "../../../../bazel-out/darwin_arm64-fastbuild/bin/kv_server/kv_server_executor.cppmap"
+extern module "//application/utils:server_factory" "../../../../bazel-out/darwin_arm64-fastbuild/bin/application/utils/server_factory.cppmap"
+extern module "//config:resdb_config_utils" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config_utils.cppmap"
+extern module "@bazel_tools//tools/cpp:malloc" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/bazel_tools/tools/cpp/malloc.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

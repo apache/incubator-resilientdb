@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo "start to run all unit test..."
+
+sh format.sh
+
+git commit -a -m "format code"
+
+bazel test ...
+if [ $? -ne 0 ]; then
+  echo "> Unit tests DID NOT pass ! Please fix it first."
+  exit 1
+fi
+
+exit 0

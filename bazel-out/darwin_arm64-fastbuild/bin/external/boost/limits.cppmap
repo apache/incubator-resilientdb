@@ -1,0 +1,6 @@
+module "@boost//:limits" {
+  export *
+  textual header "../../../../../external/boost/boost/limits.hpp"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

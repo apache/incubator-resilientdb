@@ -1,0 +1,16 @@
+module "//ordering/pbft:checkpoint_collector" {
+  export *
+  textual header "../../../../../ordering/pbft/checkpoint_collector.h"
+  use "//ordering/pbft:transaction_collector"
+  use "//ordering/pbft:transaction_utils"
+  use "//config:resdb_config"
+  use "//ordering/status/checkpoint:check_point_info"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//ordering/pbft:transaction_collector" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/transaction_collector.cppmap"
+extern module "//ordering/pbft:transaction_utils" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/transaction_utils.cppmap"
+extern module "//config:resdb_config" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//ordering/status/checkpoint:check_point_info" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/status/checkpoint/check_point_info.cppmap"
+extern module "//proto:resdb_proto" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/libcordz_handle.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/cordz_handle/cordz_handle.pic.o

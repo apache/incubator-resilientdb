@@ -1,0 +1,8 @@
+module "//config:resdb_config_utils" {
+  export *
+  textual header "../../../../config/resdb_config_utils.h"
+  use "//config:resdb_config"
+  use "crosstool"
+}
+extern module "//config:resdb_config" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

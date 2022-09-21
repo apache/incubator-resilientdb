@@ -1,0 +1,10 @@
+module "@boost//:cstdint" {
+  export *
+  textual header "../../../../../external/boost/boost/cstdint.hpp"
+  use "@boost//:config"
+  use "@boost//:limits"
+  use "crosstool"
+}
+extern module "@boost//:config" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/config.cppmap"
+extern module "@boost//:limits" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/limits.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

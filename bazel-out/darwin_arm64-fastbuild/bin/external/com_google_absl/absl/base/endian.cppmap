@@ -1,0 +1,13 @@
+module "@com_google_absl//absl/base:endian" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/endian.h"
+  textual header "../../../../../../../external/com_google_absl/absl/base/internal/unaligned_access.h"
+  use "@com_google_absl//absl/base:base"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/base:core_headers"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:base" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/base.cppmap"
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

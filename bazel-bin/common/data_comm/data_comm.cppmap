@@ -1,0 +1,6 @@
+module "//common/data_comm:data_comm" {
+  export *
+  textual header "../../../../../common/data_comm/data_comm.h"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

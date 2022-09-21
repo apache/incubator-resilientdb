@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/libspinlock_wait.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/spinlock_wait/spinlock_wait.pic.o

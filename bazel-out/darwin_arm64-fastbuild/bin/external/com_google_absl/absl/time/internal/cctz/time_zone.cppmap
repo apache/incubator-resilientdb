@@ -1,0 +1,18 @@
+module "@com_google_absl//absl/time/internal/cctz:time_zone" {
+  export *
+  textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/include/cctz/time_zone.h"
+  textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/include/cctz/zone_info_source.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_fixed.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_if.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_impl.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_info.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_libc.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/time_zone_posix.h"
+  private textual header "../../../../../../../../../external/com_google_absl/absl/time/internal/cctz/src/tzfile.h"
+  use "@com_google_absl//absl/time/internal/cctz:civil_time"
+  use "@com_google_absl//absl/base:config"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/time/internal/cctz:civil_time" "../../../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/time/internal/cctz/civil_time.cppmap"
+extern module "@com_google_absl//absl/base:config" "../../../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "crosstool" "../../../../../../../../../external/local_config_cc/module.modulemap"

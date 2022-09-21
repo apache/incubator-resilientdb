@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libtransaction_utils.a
+bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/transaction_utils/transaction_utils.pic.o

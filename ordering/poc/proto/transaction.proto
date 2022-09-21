@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "proto/signature_info.proto";
+
+package resdb;
+
+message Transaction {
+  bytes data = 1;
+  KeyInfo public_key = 2;
+  bytes signature = 3;  
+}
+

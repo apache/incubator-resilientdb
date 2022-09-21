@@ -1,0 +1,20 @@
+module "//execution:transaction_executor" {
+  export *
+  textual header "../../../../execution/transaction_executor.h"
+  use "//execution:system_info"
+  use "//execution:transaction_executor_impl"
+  use "//common:comm"
+  use "//common/queue:lock_free_queue"
+  use "//config:resdb_config"
+  use "//proto:resdb_proto"
+  use "//statistic:stats"
+  use "crosstool"
+}
+extern module "//execution:system_info" "../../../../bazel-out/darwin_arm64-fastbuild/bin/execution/system_info.cppmap"
+extern module "//execution:transaction_executor_impl" "../../../../bazel-out/darwin_arm64-fastbuild/bin/execution/transaction_executor_impl.cppmap"
+extern module "//common:comm" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/comm.cppmap"
+extern module "//common/queue:lock_free_queue" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/queue/lock_free_queue.cppmap"
+extern module "//config:resdb_config" "../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//proto:resdb_proto" "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "//statistic:stats" "../../../../bazel-out/darwin_arm64-fastbuild/bin/statistic/stats.cppmap"
+extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

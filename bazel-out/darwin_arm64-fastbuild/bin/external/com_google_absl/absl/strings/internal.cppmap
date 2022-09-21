@@ -1,0 +1,20 @@
+module "@com_google_absl//absl/strings:internal" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/char_map.h"
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/escaping.h"
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/ostringstream.h"
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/resize_uninitialized.h"
+  textual header "../../../../../../../external/com_google_absl/absl/strings/internal/utf8.h"
+  use "@com_google_absl//absl/base:config"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:endian"
+  use "@com_google_absl//absl/base:raw_logging_internal"
+  use "@com_google_absl//absl/meta:type_traits"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/base:config" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/config.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:endian" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/endian.cppmap"
+extern module "@com_google_absl//absl/base:raw_logging_internal" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/raw_logging_internal.cppmap"
+extern module "@com_google_absl//absl/meta:type_traits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/meta/type_traits.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

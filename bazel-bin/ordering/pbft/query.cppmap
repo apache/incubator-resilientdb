@@ -1,0 +1,12 @@
+module "//ordering/pbft:query" {
+  export *
+  textual header "../../../../../ordering/pbft/query.h"
+  use "//ordering/pbft:transaction_manager"
+  use "//config:resdb_config"
+  use "//proto:resdb_proto"
+  use "crosstool"
+}
+extern module "//ordering/pbft:transaction_manager" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/transaction_manager.cppmap"
+extern module "//config:resdb_config" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/config/resdb_config.cppmap"
+extern module "//proto:resdb_proto" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/resdb_proto.cppmap"
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

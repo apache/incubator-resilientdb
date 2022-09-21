@@ -1,0 +1,15 @@
+module "@com_google_absl//absl/types:span" {
+  export *
+  textual header "../../../../../../../external/com_google_absl/absl/types/span.h"
+  private textual header "../../../../../../../external/com_google_absl/absl/types/internal/span.h"
+  use "@com_google_absl//absl/algorithm:algorithm"
+  use "@com_google_absl//absl/base:core_headers"
+  use "@com_google_absl//absl/base:throw_delegate"
+  use "@com_google_absl//absl/meta:type_traits"
+  use "crosstool"
+}
+extern module "@com_google_absl//absl/algorithm:algorithm" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/algorithm/algorithm.cppmap"
+extern module "@com_google_absl//absl/base:core_headers" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/core_headers.cppmap"
+extern module "@com_google_absl//absl/base:throw_delegate" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/throw_delegate.cppmap"
+extern module "@com_google_absl//absl/meta:type_traits" "../../../../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/meta/type_traits.cppmap"
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

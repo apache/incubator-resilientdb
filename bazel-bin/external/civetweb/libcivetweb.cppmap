@@ -1,0 +1,9 @@
+module "@civetweb//:libcivetweb" {
+  export *
+  textual header "../../../../../external/civetweb/include/civetweb.h"
+  private textual header "../../../../../external/civetweb/src/response.inl"
+  textual header "../../../../../external/civetweb/src/handle_form.inl"
+  textual header "../../../../../external/civetweb/src/md5.inl"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

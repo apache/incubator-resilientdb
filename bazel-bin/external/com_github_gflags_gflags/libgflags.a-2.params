@@ -1,0 +1,7 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_gflags_gflags/libgflags.a
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_gflags_gflags/_objs/gflags/gflags.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_gflags_gflags/_objs/gflags/gflags_completions.pic.o
+bazel-out/darwin_arm64-fastbuild/bin/external/com_github_gflags_gflags/_objs/gflags/gflags_reporting.pic.o

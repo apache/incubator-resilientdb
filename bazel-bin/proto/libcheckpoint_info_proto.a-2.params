@@ -1,0 +1,5 @@
+-static
+-s
+-o
+bazel-out/darwin_arm64-fastbuild/bin/proto/libcheckpoint_info_proto.a
+bazel-out/darwin_arm64-fastbuild/bin/proto/_objs/checkpoint_info_proto/checkpoint_info.pb.pic.o

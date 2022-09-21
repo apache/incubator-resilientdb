@@ -1,0 +1,7 @@
+module "@boost//:assert" {
+  export *
+  textual header "../../../../../external/boost/boost/assert.hpp"
+  textual header "../../../../../external/boost/boost/assert/source_location.hpp"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

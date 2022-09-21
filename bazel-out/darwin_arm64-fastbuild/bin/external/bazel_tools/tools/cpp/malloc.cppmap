@@ -1,0 +1,5 @@
+module "@bazel_tools//tools/cpp:malloc" {
+  export *
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../../../external/local_config_cc/module.modulemap"

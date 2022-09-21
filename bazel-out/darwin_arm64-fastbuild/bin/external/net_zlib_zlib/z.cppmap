@@ -1,0 +1,16 @@
+module "@net_zlib_zlib//:z" {
+  export *
+  textual header "../../../../../external/net_zlib_zlib/crc32.h"
+  textual header "../../../../../external/net_zlib_zlib/deflate.h"
+  textual header "../../../../../external/net_zlib_zlib/gzguts.h"
+  textual header "../../../../../external/net_zlib_zlib/inffast.h"
+  textual header "../../../../../external/net_zlib_zlib/inffixed.h"
+  textual header "../../../../../external/net_zlib_zlib/inflate.h"
+  textual header "../../../../../external/net_zlib_zlib/inftrees.h"
+  textual header "../../../../../external/net_zlib_zlib/trees.h"
+  textual header "../../../../../external/net_zlib_zlib/zconf.h"
+  textual header "../../../../../external/net_zlib_zlib/zlib.h"
+  textual header "../../../../../external/net_zlib_zlib/zutil.h"
+  use "crosstool"
+}
+extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"
