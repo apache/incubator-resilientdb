@@ -37,6 +37,13 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
+  if (config_.GetSelfInfo().id() != transaction_manager_->GetCurrentPrimary()) {
+    LOG(ERROR) << "current node is not primary. primary:"
+               << transaction_manager_->GetCurrentPrimary()
+               << " seq:" << client_request->seq();
+    return -2;
+  }
+
   global_stats_->IncClientRequest();
   auto seq = transaction_manager_->AssignNextSeq();
   if (!seq.ok()) {
@@ -65,6 +72,12 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "client request doesn't contain signature, reject";
+    return -2;
+  }
+
+  if (request->sender_id() != transaction_manager_->GetCurrentPrimary()) {
+    LOG(ERROR) << "the request is not from primary. sender:"
+               << request->sender_id() << " seq:" << request->seq();
     return -2;
   }
 

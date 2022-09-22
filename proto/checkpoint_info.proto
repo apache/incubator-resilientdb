@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "proto/signature_info.proto";
+
 package resdb;
 
 message HashInfo {
@@ -11,4 +13,11 @@ message HashInfo {
 message CheckPointData {
   uint64 seq = 1;
   bytes hash = 2;
+  SignatureInfo hash_signature = 3;
+}
+
+message StableCheckPoint {
+  uint64 seq = 1;
+  bytes hash = 2;
+  repeated SignatureInfo signatures = 3;
 }

@@ -7,7 +7,8 @@ message RocksDBInfo {
   uint32 num_threads = 2;
   uint32 write_buffer_size_mb = 3;
   uint32 write_batch_size = 4;
-  optional string path = 5;
+  string path = 5;
+  bool generate_unique_pathnames = 6;
 }
 
 message LevelDBInfo {
@@ -15,5 +16,6 @@ message LevelDBInfo {
   uint32 num_threads = 2;
   uint32 write_buffer_size_mb = 3;
   uint32 write_batch_size = 4;
-  optional string path = 5;
+  string path = 5;
+  bool generate_unique_pathnames = 6;
 }

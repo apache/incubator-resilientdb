@@ -36,7 +36,7 @@ class ResDBConfig {
   // The total number of replicas.
   size_t GetReplicaNum() const;
   // The minimum number of messages that replicas have to receive after jumping
-  // to the next status..
+  // to the next status.. 2f+1
   int GetMinDataReceiveNum() const;
   // The max malicious replicas to be tolerated (the number of f).
   size_t GetMaxMaliciousReplicaNum() const;
@@ -91,6 +91,10 @@ class ResDBConfig {
   uint32_t GetInputWorkerNum() const;
   uint32_t GetOutputWorkerNum() const;
 
+  // ViewChange Timeout
+  uint32_t GetViewchangeCommitTimeout() const;
+  void SetViewchangeCommitTimeout(uint64_t timeout_ms);
+
  private:
   ResConfigData config_data_;
   std::vector<ReplicaInfo> replicas_;
@@ -108,6 +112,8 @@ class ResDBConfig {
   uint32_t max_process_txn_ = 2048;
   uint32_t client_batch_wait_time_ms_ = 100;  // milliseconds, 0.1s
   uint32_t client_batch_num_ = 100;
+  uint64_t viewchange_commit_timeout_ms_ =
+      60000;  // default 60s to change viewchange
 
   uint32_t worker_num_ = 96;
   uint32_t input_worker_num_ = 1;

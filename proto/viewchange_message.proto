@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "proto/resdb.proto";
+import "proto/signature_info.proto";
+import "proto/checkpoint_info.proto";
+
+package resdb;
+
+message PreparedProof {
+  Request request = 1;
+  SignatureInfo signature = 2;
+}
+
+message PreparedMessage {
+  uint64 seq = 1;
+  repeated PreparedProof proof = 2;
+}
+
+message ViewChangeMessage {
+  uint64 view_number = 1;
+  StableCheckPoint stable_ckpt = 2;
+  repeated PreparedMessage prepared_msg = 3;
+}
+
+message NewViewMessage {
+  uint64 view_number = 1;
+  repeated Request request = 2;
+  repeated ViewChangeMessage viewchange_messages = 3;
+}
+

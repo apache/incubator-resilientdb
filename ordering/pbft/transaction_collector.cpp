@@ -8,6 +8,8 @@ namespace resdb {
 
 uint64_t TransactionCollector::Seq() { return seq_; }
 
+TransactionStatue TransactionCollector::GetStatus() const { return status_; }
+
 int TransactionCollector::SetContextList(
     uint64_t seq, std::vector<std::unique_ptr<Context>> context) {
   if (seq != seq_) {
@@ -32,6 +34,17 @@ std::vector<std::unique_ptr<Context>> TransactionCollector::FetchContextList(
   return std::move(context_list_);
 }
 
+std::vector<RequestInfo> TransactionCollector::GetPreparedProof() {
+  std::vector<RequestInfo> prepared_info;
+  for (const auto& proof : prepared_proof_) {
+    RequestInfo info;
+    info.signature = proof->signature;
+    info.request = std::make_unique<Request>(*proof->request);
+    prepared_info.push_back(std::move(info));
+  }
+  return prepared_info;
+}
+
 int TransactionCollector::AddRequest(
     std::unique_ptr<Request> request, const SignatureInfo& signature,
     bool is_main_request,
@@ -39,6 +52,7 @@ int TransactionCollector::AddRequest(
                        std::atomic<TransactionStatue>* status)>
         call_back) {
   if (request == nullptr) {
+    LOG(ERROR) << "request empty";
     return -2;
   }
 
@@ -77,25 +91,16 @@ int TransactionCollector::AddRequest(
     call_back(*main_request->request.get(), 1, nullptr, &status_);
     return 0;
   } else {
-    if (need_data_collection_) {
-      auto request_info = std::make_unique<RequestInfo>();
-      request_info->signature = signature;
-      Request* raw_request = request.get();
-      request_info->request = std::move(request);
-
-      std::unique_lock<std::mutex> lk(mutex_);
-      if (senders_[type].test(sender_id)) {
-        LOG(ERROR) << "type:" << type << " sender id existed:";
-        return 0;
+    if (enable_viewchange_) {
+      if (status_.load() == READY_PREPARE) {
+        auto request_info = std::make_unique<RequestInfo>();
+        request_info->signature = signature;
+        request_info->request = std::move(request);
+        prepared_proof_.push_back(std::move(request_info));
       }
-      senders_[type][sender_id] = 1;
-      data_[type][hash].push_back(std::move(request_info));
-      auto& it = data_[type][hash];
-      call_back(*raw_request, senders_[type].count(), &it, &status_);
-    } else {
-      senders_[type][sender_id] = 1;
-      call_back(*request, senders_[type].count(), nullptr, &status_);
     }
+    senders_[type][sender_id] = 1;
+    call_back(*request, senders_[type].count(), nullptr, &status_);
     if (status_.load() == TransactionStatue::READY_EXECUTE) {
       Commit();
     }

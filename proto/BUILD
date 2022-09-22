@@ -119,12 +119,28 @@ proto_library(
     name = "checkpoint_info_proto",
     srcs = ["checkpoint_info.proto"],
     deps = [
+        ":signature_info_proto",
     ],
 )
 
 cc_proto_library(
     name = "checkpoint_info_cc_proto",
     deps = [":checkpoint_info_proto"],
+)
+
+proto_library(
+    name = "viewchange_message_proto",
+    srcs = ["viewchange_message.proto"],
+    deps = [
+        ":checkpoint_info_proto",
+        ":resdb_proto",
+        ":signature_info_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "viewchange_message_cc_proto",
+    deps = [":viewchange_message_proto"],
 )
 
 proto_library(

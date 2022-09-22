@@ -86,6 +86,15 @@ void ConsensusService::HeartBeat() {
     if (client == nullptr) {
       continue;
     }
+
+    // If it is not a client node, broadcost the current primary to the client.
+    if (config_.GetPublicKeyCertificateInfo()
+            .public_key()
+            .public_key_info()
+            .type() == CertificateKeyInfo::REPLICA) {
+      hb_info.set_primary(GetPrimary());
+      hb_info.set_version(GetVersion());
+    }
     LOG(ERROR) << " server:" << config_.GetSelfInfo().id() << " sends HB"
                << " is ready:" << is_ready_
                << " client size:" << client_replicas.size()
@@ -174,7 +183,17 @@ int ConsensusService::ProcessHeartBeat(std::unique_ptr<Context> context,
     return -1;
   }
 
-  LOG(ERROR) << "receive public size:" << hb_info.public_keys().size();
+  LOG(INFO) << "receive public size:" << hb_info.public_keys().size()
+            << " primary:" << hb_info.primary()
+            << " version:" << hb_info.version();
+
+  if (config_.GetPublicKeyCertificateInfo()
+          .public_key()
+          .public_key_info()
+          .type() == CertificateKeyInfo::CLIENT) {
+    // TODO count 2f+1 before setting a new primary
+    SetPrimary(hb_info.primary(), hb_info.version());
+  }
 
   int replica_num = 0;
   // Update the public keys received from others.
@@ -276,5 +295,11 @@ void ConsensusService::AddNewClient(const ReplicaInfo& info) {
   clients_.push_back(info);
   bc_client_->UpdateClientReplicas(clients_);
 }
+
+void ConsensusService::SetPrimary(uint32_t primary, uint64_t version) {}
+
+uint32_t ConsensusService::GetPrimary() { return 1; }
+
+uint32_t ConsensusService::GetVersion() { return 1; }
 
 }  // namespace resdb

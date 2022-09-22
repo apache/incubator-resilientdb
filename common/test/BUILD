@@ -12,6 +12,7 @@ cc_library(
 
 cc_library(
     name = "test_main",
+    defines = ["TEST_MODE"],
     deps = [
         ":test",
         "@com_google_googletest//:gtest_main",

@@ -10,7 +10,7 @@ class LockFreeCollectorPool {
  public:
   LockFreeCollectorPool(const std::string& name, uint32_t size,
                         TransactionExecutor* executor,
-                        bool need_data_collection = false);
+                        bool enable_viewchange = false);
 
   TransactionCollector* GetCollector(uint64_t seq);
   void Update(uint64_t seq);
@@ -21,7 +21,7 @@ class LockFreeCollectorPool {
   uint32_t mask_;
   TransactionExecutor* executor_;
   std::vector<std::unique_ptr<TransactionCollector>> collector_;
-  bool need_data_collection_;
+  bool enable_viewchange_;
 };
 
 }  // namespace resdb

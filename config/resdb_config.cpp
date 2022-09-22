@@ -148,4 +148,12 @@ uint32_t ResDBConfig::GetInputWorkerNum() const { return input_worker_num_; }
 
 uint32_t ResDBConfig::GetOutputWorkerNum() const { return output_worker_num_; }
 
+uint32_t ResDBConfig::GetViewchangeCommitTimeout() const {
+  return viewchange_commit_timeout_ms_;
+}
+
+void ResDBConfig::SetViewchangeCommitTimeout(uint64_t timeout_ms) {
+  viewchange_commit_timeout_ms_ = timeout_ms;
+}
+
 }  // namespace resdb

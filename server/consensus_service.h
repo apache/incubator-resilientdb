@@ -59,6 +59,9 @@ class ConsensusService : public ResDBService {
   virtual std::vector<ReplicaInfo> GetReplicas() = 0;
   virtual std::vector<ReplicaInfo> GetClientReplicas();
   virtual void AddNewReplica(const ReplicaInfo& info);
+  virtual uint32_t GetPrimary();
+  virtual uint32_t GetVersion();
+  virtual void SetPrimary(uint32_t primary, uint64_t version);
   void AddNewClient(const ReplicaInfo& info);
 
   ResDBReplicaClient* GetBroadCastClient();

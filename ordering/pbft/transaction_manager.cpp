@@ -7,12 +7,12 @@ namespace resdb {
 TransactionManager::TransactionManager(
     const ResDBConfig& config,
     std::unique_ptr<TransactionExecutorImpl> executor_impl,
-    CheckPointInfo* checkpoint_info, SystemInfo* system_info)
+    CheckPointManager* checkpoint_manager, SystemInfo* system_info)
     : config_(config),
       queue_("executed"),
-      txn_db_(std::make_unique<TxnMemoryDB>()),
+      txn_db_(checkpoint_manager->GetTxnDB()),
       system_info_(system_info),
-      checkpoint_info_(checkpoint_info),
+      checkpoint_manager_(checkpoint_manager),
       transaction_executor_(std::make_unique<TransactionExecutor>(
           config,
           [&](std::unique_ptr<Request> request,
@@ -22,15 +22,15 @@ TransactionManager::TransactionManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             queue_.Push(std::move(resp_msg));
-            if (checkpoint_info_) {
-              checkpoint_info_->AddCommitData(*request);
+            if (checkpoint_manager_) {
+              checkpoint_manager_->AddCommitData(std::move(request));
             }
-            txn_db_->Put(std::move(request));
             collector_pool_->Update(seq);
           },
           system_info_, std::move(executor_impl))),
       collector_pool_(std::make_unique<LockFreeCollectorPool>(
-          "txn", config_.GetMaxProcessTxn(), transaction_executor_.get())) {
+          "txn", config_.GetMaxProcessTxn(), transaction_executor_.get(),
+          config_.GetConfigData().enable_viewchange())) {
   global_stats_ = Stats::GetGlobalStats();
 }
 
@@ -46,6 +46,8 @@ uint64_t TransactionManager ::GetCurrentView() const {
   return system_info_->GetCurrentView();
 }
 
+void TransactionManager::SetNextSeq(uint64_t seq) { next_seq_ = seq; }
+
 absl::StatusOr<uint64_t> TransactionManager::AssignNextSeq() {
   std::unique_lock<std::mutex> lk(seq_mutex_);
   uint32_t max_executed_seq = transaction_executor_->GetMaxPendingExecutedSeq();
@@ -59,14 +61,6 @@ absl::StatusOr<uint64_t> TransactionManager::AssignNextSeq() {
 
 std::vector<ReplicaInfo> TransactionManager::GetReplicas() {
   return system_info_->GetReplicas();
-}
-
-uint64_t TransactionManager::GetStableCheckPointSeq() {
-  return checkpoint_info_->GetStableCheckPointSeq();
-}
-
-uint64_t TransactionManager::GetMaxCheckPointRequestSeq() {
-  return checkpoint_info_->GetMaxCheckPointRequestSeq();
 }
 
 // Check if the request is valid.
@@ -137,8 +131,6 @@ CollectorResultCode TransactionManager::AddConsensusMsg(
   if (request == nullptr || !IsValidMsg(*request)) {
     return CollectorResultCode::INVALID;
   }
-  // Log data to disk before processing.
-
   int type = request->type();
   uint64_t seq = request->seq();
   int resp_received_count = 0;
@@ -217,17 +209,12 @@ Request* TransactionManager::GetRequest(uint64_t seq) {
   return txn_db_->Get(seq);
 }
 
-// Commit the request received from the recovery data with 2f+1 proofs.
-int TransactionManager::CommittedRequestWithProof(
-    const RequestWithProof& request) {
-  // Save the proof locally.
-  if (SaveCommittedRequest(request) != 0) {
-    return -2;
-  }
+std::vector<RequestInfo> TransactionManager::GetPreparedProof(uint64_t seq) {
+  return collector_pool_->GetCollector(seq)->GetPreparedProof();
+}
 
-  // Execute the request.
-  return transaction_executor_->Commit(
-      std::make_unique<Request>(request.request()));
+TransactionStatue TransactionManager::GetTransactionState(uint64_t seq) {
+  return collector_pool_->GetCollector(seq)->GetStatus();
 }
 
 int TransactionManager::GetReplicaState(ReplicaState* state) {

@@ -55,11 +55,11 @@ class AtomicUniquePtr {
 class TransactionCollector {
  public:
   TransactionCollector(uint64_t seq, TransactionExecutor* executor,
-                       bool need_data_collection = false)
+                       bool enable_viewchange = false)
       : seq_(seq),
         executor_(executor),
         status_(TransactionStatue::None),
-        need_data_collection_(need_data_collection) {}
+        enable_viewchange_(enable_viewchange) {}
 
   ~TransactionCollector() = default;
 
@@ -81,6 +81,9 @@ class TransactionCollector {
                                     std::atomic<TransactionStatue>* status)>
                      call_back);
 
+  std::vector<RequestInfo> GetPreparedProof();
+  TransactionStatue GetStatus() const;
+
   uint64_t Seq();
 
  private:
@@ -93,10 +96,11 @@ class TransactionCollector {
   std::vector<std::unique_ptr<Context>> context_list_;
   std::map<std::string, std::list<std::unique_ptr<RequestInfo>>>
       data_[Request::NUM_OF_TYPE];
+  std::vector<std::unique_ptr<RequestInfo>> prepared_proof_;
   AtomicUniquePtr<RequestInfo> atomic_mian_request_;
   std::atomic<TransactionStatue> status_ = TransactionStatue::None;
   std::bitset<128> senders_[Request::NUM_OF_TYPE];
-  bool need_data_collection_;
+  bool enable_viewchange_;
   std::mutex mutex_;
 };
 

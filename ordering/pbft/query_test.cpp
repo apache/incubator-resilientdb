@@ -33,7 +33,9 @@ class QueryTest : public Test {
                  GenerateReplicaInfo(4, "127.0.0.1", 1237)},
                 GenerateReplicaInfo(1, "127.0.0.1", 1234)),
         system_info_(config_),
-        transaction_manager_(config_, nullptr, nullptr, &system_info_),
+        checkpoint_manager_(config_, &replica_client_, nullptr),
+        transaction_manager_(config_, nullptr, &checkpoint_manager_,
+                             &system_info_),
         query_(config_, &transaction_manager_),
         commitment_(config_, &transaction_manager_, &replica_client_,
                     &verifier_) {}
@@ -107,6 +109,7 @@ class QueryTest : public Test {
   Stats* global_stats_;
   ResDBConfig config_;
   SystemInfo system_info_;
+  CheckPointManager checkpoint_manager_;
   TransactionManager transaction_manager_;
   Query query_;
   MockResDBReplicaClient replica_client_;

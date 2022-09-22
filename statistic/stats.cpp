@@ -15,6 +15,9 @@ Stats* Stats::GetGlobalStats(int seconds) {
 
 Stats::Stats(int sleep_time) {
   monitor_sleep_time_ = sleep_time;
+#ifdef TEST_MODE
+  monitor_sleep_time_ = 1;
+#endif
   num_call_ = 0;
   num_commit_ = 0;
   run_time_ = 0;

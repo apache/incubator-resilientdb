@@ -12,22 +12,26 @@ using rocksdb::WriteOptions;
 
 RocksDurable::RocksDurable(char* cert_file,
                            std::optional<ResConfigData> config_data) {
+  std::string directory_id = "";
+
+  path_ = "/tmp/nexres-rocksdb";
+  LOG(ERROR) << "Default database path: " << path_;
+
   if (cert_file == NULL) {
-    LOG(ERROR) << "No cert file provided, generating default path";
-    path_ = "/tmp/nexres-rocksdb-0";
-    LOG(ERROR) << "Database path: " << path_;
+    LOG(ERROR) << "No cert file provided";
   } else {
     LOG(ERROR) << "Cert file: " << cert_file;
     std::string str(cert_file);
-    path_ = "/tmp/nexres-rocksdb-";
-    std::string directory_id = "";
-    for (int i = 0; i < (int)str.size(); i++)
-      if (str[i] >= '1' && str[i] <= '9')
-        directory_id += std::string(1, cert_file[i]);
 
-    if (directory_id == "") directory_id = "0";
-    path_ += directory_id;
-    LOG(ERROR) << "Database path: " << path_;
+    for (int i = 0; i < (int)str.size(); i++) {
+      if (str[i] >= '0' && str[i] <= '9') {
+        directory_id += std::string(1, cert_file[i]);
+      }
+    }
+
+    if (directory_id == "") {
+      directory_id = "0";
+    }
   }
 
   if (config_data.has_value()) {
@@ -39,6 +43,11 @@ RocksDurable::RocksDurable(char* cert_file,
       LOG(ERROR) << "Custom path for RocksDB provided in config: "
                  << config.path();
       path_ = config.path();
+    }
+    if (config.generate_unique_pathnames()) {
+      LOG(ERROR) << "Adding number to generate unique pathname: "
+                 << directory_id;
+      path_ += directory_id;
     }
   }
   LOG(ERROR) << "RocksDB Settings: " << num_threads_ << " "
@@ -54,12 +63,14 @@ RocksDurable::RocksDurable(char* cert_file,
   db_status_ = rocksdb::DB::Open(options, path_, &db);
   if (db_status_.ok()) {
     db_ = std::unique_ptr<rocksdb::DB>(db);
+    LOG(ERROR) << "Successfully opened RocksDB in path: " << path_;
+  } else {
+    LOG(ERROR) << "RocksDB status fail";
   }
-  LOG(ERROR) << "Successfully opened RocksDB";
 }
 
 RocksDurable::RocksDurable(void) {
-  path_ = "/tmp/nexres-rocksdb-0";
+  path_ = "/tmp/nexres-rocksdb-test";
   LOG(ERROR) << "No constructor params given, generating default path "
              << path_;
   rocksdb::Options options;

@@ -57,6 +57,7 @@ cc_library(
     srcs = ["transaction_manager.cpp"],
     hdrs = ["transaction_manager.h"],
     deps = [
+        ":checkpoint_manager",
         ":lock_free_collector_pool",
         ":transaction_collector",
         ":transaction_utils",
@@ -109,42 +110,58 @@ cc_test(
 )
 
 cc_library(
-    name = "recovery",
-    srcs = ["recovery.cpp"],
-    hdrs = ["recovery.h"],
+    name = "checkpoint_manager",
+    srcs = ["checkpoint_manager.cpp"],
+    hdrs = ["checkpoint_manager.h"],
     deps = [
-        ":transaction_manager",
         ":transaction_utils",
         "//config:resdb_config",
-        "//proto:resdb_cc_proto",
+        "//crypto:signature_verifier",
+        "//database:txn_memory_db",
+        "//proto:checkpoint_info_cc_proto",
         "//server:resdb_replica_client",
+        "//server:server_comm",
+    ],
+)
+
+cc_test(
+    name = "checkpoint_manager_test",
+    srcs = ["checkpoint_manager_test.cpp"],
+    deps = [
+        ":checkpoint_manager",
+        "//common/test:test_main",
+        "//config:resdb_config_utils",
+        "//crypto:mock_signature_verifier",
+        "//server:mock_resdb_replica_client",
+        "//statistic:stats",
     ],
 )
 
 cc_library(
-    name = "checkpoint_collector",
-    srcs = ["checkpoint_collector.cpp"],
-    hdrs = ["checkpoint_collector.h"],
+    name = "viewchange_manager",
+    srcs = ["viewchange_manager.cpp"],
+    hdrs = ["viewchange_manager.h"],
     deps = [
-        ":transaction_collector",
-        ":transaction_utils",
-        "//config:resdb_config",
-        "//ordering/status/checkpoint:check_point_info",
-        "//proto:resdb_cc_proto",
-    ],
-)
-
-cc_library(
-    name = "checkpoint",
-    srcs = ["checkpoint.cpp"],
-    hdrs = ["checkpoint.h"],
-    deps = [
-        ":checkpoint_collector",
+        ":checkpoint_manager",
         ":transaction_manager",
         ":transaction_utils",
         "//config:resdb_config",
-        "//proto:resdb_cc_proto",
+        "//execution:system_info",
+        "//proto:viewchange_message_cc_proto",
         "//server:resdb_replica_client",
+    ],
+)
+
+cc_test(
+    name = "viewchange_manager_test",
+    srcs = ["viewchange_manager_test.cpp"],
+    deps = [
+        ":viewchange_manager",
+        "//common/test:test_main",
+        "//config:resdb_config_utils",
+        "//crypto:mock_signature_verifier",
+        "//execution:system_info",
+        "//server:mock_resdb_replica_client",
     ],
 )
 
@@ -200,12 +217,12 @@ cc_library(
     hdrs = ["consensus_service_pbft.h"],
     visibility = ["//visibility:public"],
     deps = [
-        ":checkpoint",
+        ":checkpoint_manager",
         ":commitment",
         ":performance_manager",
         ":query",
-        ":recovery",
         ":transaction_manager",
+        ":viewchange_manager",
         "//crypto:signature_verifier",
         "//server:consensus_service",
     ],

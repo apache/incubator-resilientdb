@@ -10,6 +10,7 @@
 #include "common/test/test_macros.h"
 #include "config/resdb_config_utils.h"
 #include "crypto/mock_signature_verifier.h"
+#include "ordering/pbft/checkpoint_manager.h"
 #include "ordering/pbft/transaction_manager.h"
 #include "server/mock_resdb_replica_client.h"
 
@@ -32,8 +33,9 @@ class CommitmentTest : public Test {
                  GenerateReplicaInfo(4, "127.0.0.1", 1237)},
                 GenerateReplicaInfo(1, "127.0.0.1", 1234)),
         system_info_(config_),
+        checkpoint_manager_(config_, &replica_client_, &verifier_),
         transaction_manager_(std::make_unique<TransactionManager>(
-            config_, nullptr, nullptr, &system_info_)),
+            config_, nullptr, &checkpoint_manager_, &system_info_)),
         commitment_(
             std::make_unique<Commitment>(config_, transaction_manager_.get(),
                                          &replica_client_, &verifier_)) {}
@@ -91,6 +93,7 @@ class CommitmentTest : public Test {
   Stats* global_stats_;
   ResDBConfig config_;
   SystemInfo system_info_;
+  CheckPointManager checkpoint_manager_;
   MockResDBReplicaClient replica_client_;
   MockSignatureVerifier verifier_;
   std::unique_ptr<TransactionManager> transaction_manager_;
@@ -119,6 +122,11 @@ TEST_F(CommitmentTest, NoSignature) {
             -2);
 }
 
+TEST_F(CommitmentTest, NoPrimary) {
+  system_info_.SetPrimary(3);
+  EXPECT_EQ(AddProposeMsg(Request::TYPE_PRE_PREPARE, 1), -2);
+}
+
 TEST_F(CommitmentTest, NewRequest) {
   auto context = std::make_unique<Context>();
   context->signature.set_signature("signature");
@@ -139,7 +147,7 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
   config_.SetMaxProcessTxn(2);
   commitment_ = nullptr;
   transaction_manager_ = std::make_unique<TransactionManager>(
-      config_, nullptr, nullptr, &system_info_);
+      config_, nullptr, &checkpoint_manager_, &system_info_);
   commitment_ = std::make_unique<Commitment>(
       config_, transaction_manager_.get(), &replica_client_, &verifier_);
   std::promise<bool> done;
@@ -162,6 +170,7 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
 }
 
 TEST_F(CommitmentTest, ProposeMsgWithoutSignature) {
+  system_info_.SetPrimary(3);
   EXPECT_CALL(replica_client_, BroadCast).Times(0);
   EXPECT_CALL(verifier_,
               VerifyMessage(::testing::_, EqualsProto(SignatureInfo())))
@@ -170,6 +179,7 @@ TEST_F(CommitmentTest, ProposeMsgWithoutSignature) {
 }
 
 TEST_F(CommitmentTest, ProposeMsg) {
+  system_info_.SetPrimary(3);
   BatchClientRequest request;
   request.SerializeToString(&data_);
   EXPECT_CALL(replica_client_, BroadCast).Times(1);
@@ -180,6 +190,7 @@ TEST_F(CommitmentTest, ProposeMsg) {
 }
 
 TEST_F(CommitmentTest, ProposeMsgOnlyBCOnce) {
+  system_info_.SetPrimary(3);
   BatchClientRequest request;
   request.SerializeToString(&data_);
   EXPECT_CALL(replica_client_, BroadCast).Times(1);

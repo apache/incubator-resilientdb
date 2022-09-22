@@ -22,6 +22,7 @@ message ResConfigData{
   int32 self_region_id = 2;
   optional RocksDBInfo rocksdb_info = 3;
   optional LevelDBInfo leveldb_info = 4;
+  optional bool enable_viewchange = 5;
 }
 
 message ReplicaStates {

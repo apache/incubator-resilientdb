@@ -11,10 +11,10 @@
 #include "config/resdb_config.h"
 #include "database/txn_memory_db.h"
 #include "execution/transaction_executor_impl.h"
+#include "ordering/pbft/checkpoint_manager.h"
 #include "ordering/pbft/lock_free_collector_pool.h"
 #include "ordering/pbft/transaction_collector.h"
 #include "ordering/pbft/transaction_utils.h"
-#include "ordering/status/checkpoint/check_point_info.h"
 #include "proto/checkpoint_info.pb.h"
 #include "proto/resdb.pb.h"
 #include "server/server_comm.h"
@@ -26,13 +26,14 @@ class TransactionManager {
  public:
   TransactionManager(const ResDBConfig& config,
                      std::unique_ptr<TransactionExecutorImpl> data_impl,
-                     CheckPointInfo* checkpoint_info, SystemInfo* system_info);
+                     CheckPointManager* checkpoint_manager,
+                     SystemInfo* system_info);
 
   absl::StatusOr<uint64_t> AssignNextSeq();
 
   int64_t GetCurrentPrimary() const;
-  uint64_t GetCurrentView() const;
   uint64_t GetMinExecutCandidateSeq();
+  void SetNextSeq(uint64_t seq);
 
   // Add commit messages and return the number of messages have been received.
   // The commit messages only include post(pre-prepare), prepare and commit
@@ -56,27 +57,17 @@ class TransactionManager {
   // Get the transactions that have been execuited.
   Request* GetRequest(uint64_t seq);
 
-  // =============  Recovery ==================
-  // Commit the request which contains 2f+1 proofs to recover the commit
-  // message gap.
-  int CommittedRequestWithProof(const RequestWithProof& request);
+  // Get the proof info containing the request and signatures
+  // if the request has been prepared, having received 2f+1
+  // pre-prepare messages.
+  std::vector<RequestInfo> GetPreparedProof(uint64_t seq);
+  TransactionStatue GetTransactionState(uint64_t seq);
 
   // =============  System information ========
   // Obtain the current replica list.
   std::vector<ReplicaInfo> GetReplicas();
 
-  // ============= Checkpoint infomation ======
-  // Get the max sequence of the stable checkpoint received from other replicas.
-  uint64_t GetStableCheckPointSeq();
-
-  // Get the max sequence of the checkpoint. The max sequence is the largest
-  // sequence with which the request has been executed. This sequence may be
-  // larger than the sequence in checkpoint data which contains a consistant
-  // sequence window of executed requests.
-  uint64_t GetMaxCheckPointRequestSeq();
-
-  // Get the checkpoint data which contains the
-  CheckPointData GetCheckPointData();
+  uint64_t GetCurrentView() const;
 
   // Replica State
   int GetReplicaState(ReplicaState* state);
@@ -96,9 +87,9 @@ class TransactionManager {
   uint64_t next_seq_ = 1;
 
   LockFreeQueue<BatchClientResponse> queue_;
-  std::unique_ptr<TxnMemoryDB> txn_db_;
+  TxnMemoryDB* txn_db_;
   SystemInfo* system_info_;
-  CheckPointInfo* checkpoint_info_;
+  CheckPointManager* checkpoint_manager_;
   std::unique_ptr<TransactionExecutor> transaction_executor_;
   std::map<uint64_t, std::vector<std::unique_ptr<RequestInfo>>>
       committed_proof_;

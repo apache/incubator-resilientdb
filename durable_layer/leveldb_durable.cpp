@@ -10,25 +10,26 @@ using leveldb::WriteOptions;
 
 LevelDurable::LevelDurable(char* cert_file,
                            std::optional<ResConfigData> config_data) {
+  std::string directory_id = "";
+
+  path_ = "/tmp/nexres-leveldb";
+  LOG(ERROR) << "Default database path: " << path_;
+
   if (cert_file == NULL) {
-    LOG(ERROR) << "No cert file provided, generating default path";
-    path_ = "/tmp/nexres-leveldb-0";
-    LOG(ERROR) << "Database path: " << path_;
+    LOG(ERROR) << "No cert file provided";
   } else {
     LOG(ERROR) << "Cert file: " << cert_file;
     std::string str(cert_file);
-    path_ = "/tmp/nexres-leveldb-";
-    std::string directory_id = "";
+
     for (int i = 0; i < (int)str.size(); i++) {
-      if (str[i] >= '1' && str[i] <= '9') {
+      if (str[i] >= '0' && str[i] <= '9') {
         directory_id += std::string(1, cert_file[i]);
       }
     }
+
     if (directory_id == "") {
-        directory_id = "0";
-      }
-    path_ += directory_id;
-    LOG(ERROR) << "Database path: " << path_;
+      directory_id = "0";
+    }
   }
 
   if (config_data.has_value()) {
@@ -39,6 +40,11 @@ LevelDurable::LevelDurable(char* cert_file,
       LOG(ERROR) << "Custom path for LevelDB provided in config: "
                  << config.path();
       path_ = config.path();
+    }
+    if (config.generate_unique_pathnames()) {
+      LOG(ERROR) << "Adding number to generate unique pathname: "
+                 << directory_id;
+      path_ += directory_id;
     }
   }
   LOG(ERROR) << "LevelDB Settings: " << write_buffer_size_ << " "
@@ -52,13 +58,14 @@ LevelDurable::LevelDurable(char* cert_file,
   status_ = leveldb::DB::Open(options, path_, &db);
   if (status_.ok()) {
     db_ = std::unique_ptr<leveldb::DB>(db);
+    LOG(ERROR) << "Successfully opened LevelDB in path: " << path_;
+  } else {
+    LOG(ERROR) << "LevelDB status fail";
   }
-
-  LOG(ERROR) << "Successfully opened LevelDB";
 }
 
 LevelDurable::LevelDurable(void) {
-  path_ = "/tmp/nexres-leveldb-0";
+  path_ = "/tmp/nexres-leveldb-test";
   LOG(ERROR) << "No constructor params given, generating default path "
              << path_;
   leveldb::Options options;

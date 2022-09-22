@@ -30,8 +30,10 @@ message Request {
         TYPE_NEW_TXNS = 14; // new transactions sent by proxy, 
                             //with batch transactions.
         TYPE_GEO_REQUEST = 15;
+        TYPE_VIEWCHANGE = 16;
+        TYPE_NEWVIEW= 17;
 
-        NUM_OF_TYPE = 16; // the total number of types.
+        NUM_OF_TYPE = 18; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -89,6 +91,8 @@ message BatchClientResponse {
 
 message HeartBeatInfo{
   repeated CertificateKey public_keys = 1;
+  uint32 primary = 2;
+  uint64 version= 3;
 }
 
 message ClientCertInfo {
