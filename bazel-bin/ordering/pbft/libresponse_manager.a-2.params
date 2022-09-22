@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libresponse_manager.a
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/response_manager/response_manager.pic.o

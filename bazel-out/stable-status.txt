@@ -1,3 +1,0 @@
-BUILD_EMBED_LABEL 
-BUILD_HOST junchaos-MacBook-Pro.local
-BUILD_USER junchaochen

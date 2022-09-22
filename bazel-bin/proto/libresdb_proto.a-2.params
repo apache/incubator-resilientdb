@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/proto/libresdb_proto.a
-bazel-out/darwin_arm64-fastbuild/bin/proto/_objs/resdb_proto/resdb.pb.pic.o

@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/liblock_free_collector_pool.a
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/lock_free_collector_pool/lock_free_collector_pool.pic.o

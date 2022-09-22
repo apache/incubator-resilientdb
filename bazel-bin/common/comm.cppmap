@@ -1,9 +1,0 @@
-module "//common:comm" {
-  export *
-  use "//common:absl"
-  use "//common:glog"
-  use "crosstool"
-}
-extern module "//common:absl" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/absl.cppmap"
-extern module "//common:glog" "../../../../bazel-out/darwin_arm64-fastbuild/bin/common/glog.cppmap"
-extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

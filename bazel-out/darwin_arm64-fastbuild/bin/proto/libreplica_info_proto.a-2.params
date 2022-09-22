@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/proto/libreplica_info_proto.a
-bazel-out/darwin_arm64-fastbuild/bin/proto/_objs/replica_info_proto/replica_info.pb.pic.o

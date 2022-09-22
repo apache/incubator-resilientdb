@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/profiling/libexponential_biased.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/profiling/_objs/exponential_biased/exponential_biased.pic.o

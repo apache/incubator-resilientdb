@@ -1,8 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_snappy/libsnappy.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_snappy/_objs/snappy/snappy.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_snappy/_objs/snappy/snappy-c.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_snappy/_objs/snappy/snappy-sinksource.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_snappy/_objs/snappy/snappy-stubs-internal.pic.o

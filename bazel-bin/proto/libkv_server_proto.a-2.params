@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/proto/libkv_server_proto.a
-bazel-out/darwin_arm64-fastbuild/bin/proto/_objs/kv_server_proto/kv_server.pb.pic.o

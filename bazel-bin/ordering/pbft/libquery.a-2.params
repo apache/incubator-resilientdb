@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libquery.a
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/query/query.pic.o

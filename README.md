@@ -3,26 +3,11 @@
  ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
 
-## System Design:
-
-High Level Design: 
-
-[ResDBServer](https://docs.google.com/presentation/d/1i5sKocV4LQrngwNVLTTLRtshVIKICt3_tqMH4e5QgYQ/edit#slide=id.p)
-
-[ConsensusService-PBFT](https://docs.google.com/presentation/d/1HjXVlCGbjkSzs6d7o4bT_wT-cllSCx1RkvVUskTaZJA/edit#slide=id.p)
-
-[Full Design Doc](https://docs.google.com/document/d/1YA-vIMhSUnq6necRPY3t3thh4Zc2OuP9_GUwwuzSo-w/edit#)
-
-## User Development guide
-https://docs.google.com/presentation/d/1YIX6dG6cuc5EhXdytrJXoxMhGLP2BxLCmnVMhiC4WBc/edit#slide=id.p
-
----
-
 ## Steps to Run KVServer
 
 Install dependences.
 
-    sh INSTALL
+    sh INSTALL.sh
 
 
 Start local KVServers:

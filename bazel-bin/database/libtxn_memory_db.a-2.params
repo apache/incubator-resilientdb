@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/database/libtxn_memory_db.a
-bazel-out/darwin_arm64-fastbuild/bin/database/_objs/txn_memory_db/txn_memory_db.pic.o

@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/config/libresdb_config_utils.a
-bazel-out/darwin_arm64-fastbuild/bin/config/_objs/resdb_config_utils/resdb_config_utils.pic.o

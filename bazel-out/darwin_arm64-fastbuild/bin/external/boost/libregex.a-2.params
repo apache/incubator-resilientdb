@@ -1,9 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/libregex.a
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/regex/posix_api.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/regex/regex.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/regex/regex_debug.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/regex/static_mutex.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/regex/wide_posix_api.pic.o

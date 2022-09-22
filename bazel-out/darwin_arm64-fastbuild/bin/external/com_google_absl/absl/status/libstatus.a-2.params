@@ -1,6 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/status/libstatus.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/status/_objs/status/status.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/status/_objs/status/status_payload_printer.pic.o

@@ -1,6 +1,0 @@
-module "//common/queue:blocking_queue" {
-  export *
-  textual header "../../../../../common/queue/blocking_queue.h"
-  use "crosstool"
-}
-extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

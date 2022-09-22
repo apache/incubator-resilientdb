@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/types/libbad_optional_access.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/types/_objs/bad_optional_access/bad_optional_access.pic.o

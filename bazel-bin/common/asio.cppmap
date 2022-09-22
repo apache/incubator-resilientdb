@@ -1,7 +1,0 @@
-module "//common:asio" {
-  export *
-  use "@boost//:asio"
-  use "crosstool"
-}
-extern module "@boost//:asio" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/boost/asio.cppmap"
-extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/statistic/libstats.a
-bazel-out/darwin_arm64-fastbuild/bin/statistic/_objs/stats/stats.pic.o

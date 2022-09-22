@@ -1,9 +1,0 @@
-module "@com_github_protocolbuffers_protobuf//:protoc" {
-  export *
-  use "@com_github_protocolbuffers_protobuf//:protoc_lib"
-  use "@bazel_tools//tools/cpp:malloc"
-  use "crosstool"
-}
-extern module "@com_github_protocolbuffers_protobuf//:protoc_lib" "../../../../../bazel-out/darwin_arm64-opt-exec-2B5CBBC6/bin/external/com_github_protocolbuffers_protobuf/protoc_lib.cppmap"
-extern module "@bazel_tools//tools/cpp:malloc" "../../../../../bazel-out/darwin_arm64-opt-exec-2B5CBBC6/bin/external/bazel_tools/tools/cpp/malloc.cppmap"
-extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

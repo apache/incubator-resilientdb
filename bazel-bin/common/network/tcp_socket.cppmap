@@ -1,8 +1,0 @@
-module "//common/network:tcp_socket" {
-  export *
-  textual header "../../../../../common/network/tcp_socket.h"
-  use "//common/network:socket"
-  use "crosstool"
-}
-extern module "//common/network:socket" "../../../../../bazel-out/darwin_arm64-fastbuild/bin/common/network/socket.cppmap"
-extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

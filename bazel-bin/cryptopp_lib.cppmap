@@ -1,5 +1,0 @@
-module "//:cryptopp_lib" {
-  export *
-  use "crosstool"
-}
-extern module "crosstool" "../../../external/local_config_cc/module.modulemap"

@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/server/libconsensus_service.a
-bazel-out/darwin_arm64-fastbuild/bin/server/_objs/consensus_service/consensus_service.pic.o

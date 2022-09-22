@@ -1,6 +1,0 @@
-module "@boost//:cerrno" {
-  export *
-  textual header "../../../../../external/boost/boost/cerrno.hpp"
-  use "crosstool"
-}
-extern module "crosstool" "../../../../../external/local_config_cc/module.modulemap"

@@ -1,7 +1,0 @@
-module "//third_party:rocksdb" {
-  export *
-  use "@com_github_facebook_rocksdb//:rocksdb"
-  use "crosstool"
-}
-extern module "@com_github_facebook_rocksdb//:rocksdb" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_github_facebook_rocksdb/rocksdb.cppmap"
-extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

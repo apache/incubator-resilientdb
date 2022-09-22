@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/server/libasync_replica_client.a
-bazel-out/darwin_arm64-fastbuild/bin/server/_objs/async_replica_client/async_replica_client.pic.o

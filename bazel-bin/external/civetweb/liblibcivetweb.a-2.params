@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/civetweb/liblibcivetweb.a
-bazel-out/darwin_arm64-fastbuild/bin/external/civetweb/_objs/libcivetweb/civetweb.pic.o

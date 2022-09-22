@@ -1,7 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/libdebugging_internal.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/address_is_readable.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/elf_mem_image.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/debugging/_objs/debugging_internal/vdso_support.pic.o

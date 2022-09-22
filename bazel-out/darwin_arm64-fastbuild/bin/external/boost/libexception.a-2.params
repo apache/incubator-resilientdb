@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/libexception.a
-bazel-out/darwin_arm64-fastbuild/bin/external/boost/_objs/exception/clone_current_exception_non_intrusive.pic.o

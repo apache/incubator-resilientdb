@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/common/logging/liblogging.a
-bazel-out/darwin_arm64-fastbuild/bin/common/logging/_objs/logging/logging.pic.o

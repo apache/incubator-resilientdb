@@ -1,8 +1,0 @@
-module "//proto:durable_proto" {
-  export *
-  textual header "../../../../bazel-out/darwin_arm64-fastbuild/bin/proto/durable.pb.h"
-  use "@com_github_protocolbuffers_protobuf//:protobuf"
-  use "crosstool"
-}
-extern module "@com_github_protocolbuffers_protobuf//:protobuf" "../../../../bazel-out/darwin_arm64-fastbuild/bin/external/com_github_protocolbuffers_protobuf/protobuf.cppmap"
-extern module "crosstool" "../../../../external/local_config_cc/module.modulemap"

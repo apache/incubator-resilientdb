@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/execution/libtransaction_executor.a
-bazel-out/darwin_arm64-fastbuild/bin/execution/_objs/transaction_executor/transaction_executor.pic.o

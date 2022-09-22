@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/libcommitment.a
-bazel-out/darwin_arm64-fastbuild/bin/ordering/pbft/_objs/commitment/commitment.pic.o

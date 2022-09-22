@@ -1,9 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/libbase.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/base/cycleclock.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/base/spinlock.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/base/sysinfo.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/base/thread_identity.pic.o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/base/_objs/base/unscaledcycleclock.pic.o

@@ -1,5 +1,0 @@
--static
--s
--o
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/libcordz_functions.a
-bazel-out/darwin_arm64-fastbuild/bin/external/com_google_absl/absl/strings/_objs/cordz_functions/cordz_functions.pic.o
