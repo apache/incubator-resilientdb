@@ -1,5 +1,6 @@
 !/bin/sh
 
+sudo apt update
 sudo apt install apt-transport-https curl gnupg -y
 sudo apt install protobuf-compiler -y
 
