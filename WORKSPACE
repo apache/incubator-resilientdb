@@ -77,6 +77,7 @@ all_content = """filegroup(name = "all_srcs", srcs = glob(["**"]), visibility = 
 http_archive(
     name = "cryptopp",
     build_file_content = all_content,
+    sha256 = "5107c913c4682a07260f6a766aa1df8ec92a96c48d73994e023db3ac485bf532",
     strip_prefix = "cryptopp-CRYPTOPP_8_6_0",
     urls = ["https://github.com/weidai11/cryptopp/archive/refs/tags/CRYPTOPP_8_6_0.zip"],
 )
