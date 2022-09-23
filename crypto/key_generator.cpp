@@ -12,9 +12,6 @@
 #include <cryptopp/xed25519.h>
 #include <glog/logging.h>
 
-//#include <cryptopp/modes.h>
-//#include <iomanip>
-
 namespace resdb {
 
 namespace {
