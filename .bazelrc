@@ -1,1 +1,1 @@
-build --cxxopt='-std=c++17' --copt=-O3 --linkopt=-Wl --linkopt=-Wc++11-narrowing --linkopt=-Wunused-command-line-argument
+build --cxxopt='-std=c++17' --copt=-O3 --jobs=40
