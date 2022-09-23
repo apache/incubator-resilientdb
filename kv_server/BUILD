@@ -1,5 +1,16 @@
 package(default_visibility = ["//visibility:public"])
 
+# if enable storage layer add the flag below to bazel command
+# --define=enable_my_flag=true
+# example: bazel build :kv_server_executor_test --define=enable_my_flag=true
+
+config_setting(
+    name = "durable_layer",
+    values = {
+         "define":"enable_my_flag=true"
+    }
+)
+
 cc_library(
     name = "kv_server_executor",
     srcs = ["kv_server_executor.cpp"],
@@ -7,11 +18,22 @@ cc_library(
     deps = [
         "//common:comm",
         "//config:resdb_config_utils",
-        "//durable_layer:leveldb_durable",
-        "//durable_layer:rocksdb_durable",
         "//execution:transaction_executor_impl",
         "//proto:kv_server_cc_proto",
-    ],
+    ] +
+    select({
+          ":durable_layer":[
+            "//durable_layer:leveldb_durable",
+            "//durable_layer:rocksdb_durable"
+          ],
+            "//conditions:default": [],
+    }),
+    defines = select({
+          ":durable_layer":[
+            'EnableStorage'
+          ],
+           "//conditions:default": [],
+    }),
 )
 
 cc_test(
