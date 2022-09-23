@@ -16,7 +16,7 @@ Start local KVServers:
     sh example/start_kv_server.sh
 - This script will start 4 local kv servers and 1 local client proxy. The client proxy is the proxy transferring the messages between servers and the user client.
 
-Build KVServer Toos:
+Build KVServer Tools:
 
     bazel build example/kv_server_tools
     
