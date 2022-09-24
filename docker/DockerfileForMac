@@ -1,0 +1,8 @@
+FROM ubuntu:20.04
+
+RUN apt-get update
+RUN apt install sudo vim git wget g++ -y
+RUN adduser --disabled-password ubuntu 
+RUN adduser ubuntu sudo
+RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN su - ubuntu
