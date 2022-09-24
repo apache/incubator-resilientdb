@@ -35,3 +35,23 @@ Run tools to set value by key(for example, set the value with key "test" and val
 You will see this if success:
 
     client set ret = 0
+
+## Run on MacOS
+
+Build a docker image if first time and run the image
+	cd docker
+	docker build . -f DockerfileForMac -t=nexres
+	docker run -i -t --name nexres nexres "/bin/bash"
+	exit
+Start the image if the second time:
+	get your image id by:
+		docker ps -a
+		docker start fcbe927b4242
+		docker exec -it fcbe927b4242 /bin/bash
+
+Change to user to ubuntu
+su - ubuntu
+git clone https://github.com/resilientdb/resilientdb.git
+cd resilientdb/
+sh INSTALL_MAC.sh
+sh example/start_kv_server.sh
