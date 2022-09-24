@@ -38,7 +38,7 @@ You will see this if success:
 
 ## Run on MacOS
 
-Build a docker image if first time and launch the docker image
+Build a docker image if first time and launch the docker image (you can change the name (nexres) as you want):
 
     cd docker
     docker build . -f DockerfileForMac -t=nexres
