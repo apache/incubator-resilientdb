@@ -5,25 +5,11 @@
 
 namespace resdb {
 
-#define CPU_FREQ 2.2
-#define TIME_ENABLE true
-
 uint64_t get_server_clock() {
-#if defined(__i386__)
-  uint64_t ret;
-  __asm__ __volatile__("rdtsc" : "=A"(ret));
-#elif defined(__x86_64__)
-  unsigned hi, lo;
-  __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-  uint64_t ret = ((uint64_t)lo) | (((uint64_t)hi) << 32);
-  ret = (uint64_t)((double)ret / CPU_FREQ);
-#else
-  timespec *tp = new timespec;
-  clock_gettime(CLOCK_REALTIME, tp);
-  uint64_t ret = tp->tv_sec * 1000000000 + tp->tv_nsec;
-  delete tp;
-#endif
-  return ret;
+  struct timeval tv;
+  struct timezone tz;
+  gettimeofday(&tv, &tz);
+  return tp->tv_sec * 1000000000 + tp->tv_usec*1000;
 }
 
 uint64_t get_sys_clock() {

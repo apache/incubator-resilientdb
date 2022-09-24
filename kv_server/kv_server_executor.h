@@ -5,10 +5,8 @@
 #include <unordered_map>
 
 #include "config/resdb_config_utils.h"
-#ifdef EnableStorage
 #include "durable_layer/leveldb_durable.h"
 #include "durable_layer/rocksdb_durable.h"
-#endif
 #include "execution/transaction_executor_impl.h"
 
 namespace resdb {
@@ -27,12 +25,10 @@ class KVServerExecutor : public TransactionExecutorImpl {
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;
-#ifdef EnableStorage
   LevelDurable l_storage_layer_;
   RocksDurable r_storage_layer_;
   bool equip_rocksdb_ = false;
   bool equip_leveldb_ = false;
-#endif
 };
 
 }  // namespace resdb
