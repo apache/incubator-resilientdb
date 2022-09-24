@@ -111,8 +111,11 @@ Start the example server and run the client commands:
   * output_worker_num                         The number of coroutine workers to handler outcomming messages to the network, default = 1.
   
   All the parameters will be migrated into ResConfigData.proto in the future.
-  
+</pre>
+
 ### Key Parameters of "ResConfigData.proto"
+<pre>
   * self_region_id                            The region id of the replica, default is 0, all the replicas will run in the same region.
   * region                                    A list of regions containing all the information of the replicas in different regions.
   * enable_viewchange                         If true, will trigger viewchange check per "viewchange_commit_timeout_ms".
+  </pre>
