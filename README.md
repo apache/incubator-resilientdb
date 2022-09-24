@@ -38,6 +38,14 @@ You will see this if success:
 
 ## Run on MacOS
 
+Install docker: See more [here](https://docs.docker.com/desktop/mac/apple-silicon/)
+
+&ensp;  &ensp;  Download the [binary](https://desktop.docker.com/mac/main/arm64/Docker.dmg?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-mac-arm64)
+
+Open your terminal and install requirements:
+    
+    softwareupdate --install-rosetta
+
 Build a docker image if first time and launch the docker image (you can change the name (nexres) as you want):
 
     cd docker
