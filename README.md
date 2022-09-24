@@ -8,7 +8,7 @@ Nexres aims at *Making Permissioned Blockchain Systems Fast Again*. Nexres makes
 2. Nexres expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
 3. Nexres uses coroutine as its network infrastructure. 
 4. The main implementation of Nexres including the network and pbft protocol are lock free by using boost::lockfreequeue.
-5. Nexres designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
+5. Nexres designates one of its replicas as the **primary**, which is also responsible for initiating the consensus.
 6. To facilitate data storage and persistence, Nexres provides support for an **in-memory key-value store**, Rocksdb and LevelDB and expose SDKs to store key-value pairs.
 7. We also provide prometheus metrics to display the performance and latency.
 8. We support docker environment with ubuntu for **MacOS M1** and source code for native ubuntu. Nexres can only run on **ubuntu 20.04**.
