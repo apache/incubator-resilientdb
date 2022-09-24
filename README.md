@@ -3,7 +3,7 @@
  Nexres aims at *Making Permissioned Blockchain Systems Fast Again*. Nexres makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
 ## Docs
-[Nexres Introduction](https://docs.google.com/presentation/d/1QurZA4w_PTxAtb_5FpuXJhsQVAIA2t5kvx1X2ETIl7w/edit#slide=id.g157a547244b_0_237)
+[Nexres Introduction](https://docs.google.com/presentation/d/1QurZA4w_PTxAtb_5FpuXJhsQVAIA2t5kvx1X2ETIl7w/edit#slide=id.p)
 
 ---
 ## Steps to Run KVServer
