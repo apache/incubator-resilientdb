@@ -93,3 +93,26 @@ Start the example server and run the client commands:
 	sh example/start_kv_server.sh
 	bazel build example/kv_server_tools
 	bazel-bin/example/kv_server_tools example/kv_client_config.config get test
+	
+	
+	
+---
+
+
+### Key Parameters of "resdb_config.h" 
+<pre>
+
+  * max_process_txn                           Water mark that number of replicas inflight, default = 2048;
+  * client_batch_num                          Batch size of the client transactions. Before sending to the primary replica, we will collect client_batch_num of transactions from all the users. default = 100;
+  * is_enable_checkpoint                      Enable checkpoint which will create stable checkpoint periodically. 
+  * viewchange_commit_timeout_ms              The commitment timeout which will trigger viewchange default = 60s. Only for is_enable_checkpoint is true.
+  * worker_num                                The number of worker threads to address the requests, default = 96.
+  * input_worker_num                          The number of coroutine workers to handler incomming messages from the network, default = 1.
+  * output_worker_num                         The number of coroutine workers to handler outcomming messages to the network, default = 1.
+  
+  All the parameters will be migrated into ResConfigData.proto in the future.
+  
+### Key Parameters of "ResConfigData.proto"
+  * self_region_id                            The region id of the replica, default is 0, all the replicas will run in the same region.
+  * region                                    A list of regions containing all the information of the replicas in different regions.
+  * enable_viewchange                         If true, will trigger viewchange check per "viewchange_commit_timeout_ms".
