@@ -38,20 +38,35 @@ You will see this if success:
 
 ## Run on MacOS
 
-Build a docker image if first time and run the image
-	cd docker
-	docker build . -f DockerfileForMac -t=nexres
-	docker run -i -t --name nexres nexres "/bin/bash"
-	exit
-Start the image if the second time:
-	get your image id by:
-		docker ps -a
-		docker start fcbe927b4242
-		docker exec -it fcbe927b4242 /bin/bash
+Build a docker image if first time and launch the docker image
 
-Change to user to ubuntu
-su - ubuntu
-git clone https://github.com/resilientdb/resilientdb.git
-cd resilientdb/
-sh INSTALL_MAC.sh
-sh example/start_kv_server.sh
+    cd docker
+    docker build . -f DockerfileForMac -t=nexres
+    docker run -i -t --name nexres nexres "/bin/bash"
+    exit
+	
+	
+Once the docker images starts, get your image id:
+
+	docker ps -a
+
+Start the docker images and login (fcbe927b4242 is the image id I got from the last command):
+
+	docker start fcbe927b4242
+	docker exec -it fcbe927b4242 /bin/bash
+
+Change to user to ubuntu and clone the repo. **(Please fork your own one)**
+
+	su - ubuntu
+	git clone https://github.com/resilientdb/resilientdb.git
+	
+Run the install script:
+
+	cd resilientdb/
+	sh INSTALL_MAC.sh
+
+Start the example server and run the client commands:
+
+	sh example/start_kv_server.sh
+	bazel build example/kv_server_tools
+	bazel-bin/example/kv_server_tools example/kv_client_config.config get test
