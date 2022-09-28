@@ -65,8 +65,7 @@ Build a docker image if first time and launch the docker image (you can change t
 
     cd docker
     docker build . -f DockerfileForMac -t=nexres
-    docker run -i -t --name nexres nexres "/bin/bash"
-    exit
+    docker run --name nexres nexres 
 	
 	
 Once the docker images starts, get your image id:
