@@ -82,6 +82,7 @@ Change to user to ubuntu and clone the repo. **(Please fork your own one)**
 
 	su - ubuntu
 	git clone https://github.com/resilientdb/resilientdb.git
+	git checkout -b nexres remotes/origin/nexres
 	
 Run the install script:
 
