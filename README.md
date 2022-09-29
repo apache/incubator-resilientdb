@@ -41,7 +41,7 @@ Run tools to get value by key(for example, get the value with key "test"):
     
 You will see this if success:
 
-    client get value = xxx
+    client get value =
 
 Run tools to set value by key(for example, set the value with key "test" and value "test_value"):
 
