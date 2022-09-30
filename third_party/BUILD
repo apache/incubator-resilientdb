@@ -55,3 +55,31 @@ cc_library(
         "@com_google_leveldb//:leveldb",
     ],
 )
+
+cc_library(
+    name = "pistache",
+    deps = [
+        "@com_google_pistache//:pistache",
+    ],
+)
+
+cc_library(
+    name = "date",
+    deps = [
+        "@com_google_date//:date",
+    ],
+)
+
+cc_library(
+    name = "crow",
+    deps = [
+        "@com_crowcpp_crow//:crow",
+    ],
+)
+
+cc_library(
+    name = "asio",
+    deps = [
+        "@com_chriskohlhoff_asio//:asio",
+    ],
+)
