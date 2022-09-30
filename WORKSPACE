@@ -180,6 +180,48 @@ http_archive(
 )
 
 bind(
+    name = "date",
+    actual = "@com_google_date//:date",
+)
+
+http_archive(
+    name = "com_google_date",
+    build_file = "//third_party:date.BUILD",
+    sha256 = "093f06859112120a58a820a81dc7f9048075e95a6634fa1f466a9a9bdda1e18e",
+    strip_prefix = "date-master",
+    url = "https://github.com/HowardHinnant/date/archive/refs/heads/master.zip",
+)
+
+http_archive(
+    name = "com_google_pistache",
+    build_file = "//third_party:pistache.BUILD",
+    sha256 = "0414c0a3b9e4ae01bae7c18d1b31f9ec9c041693959a66967a0d14a060481b0a",
+    strip_prefix = "pistache-master",
+    url = "https://github.com/pistacheio/pistache/archive/refs/heads/master.zip",
+)
+
+http_archive(
+    name = "com_crowcpp_crow",
+    build_file = "//third_party:crow.BUILD",
+    sha256 = "b0da80870073112ef18e862cfd07936dd44c9a3311b64e471546fd9848aeeda7",
+    strip_prefix = "Crow-master",
+    url = "https://github.com/CrowCpp/Crow/archive/refs/heads/master.zip",
+)
+
+bind(
+    name = "asio",
+    actual = "@com_chriskohlhoff_asio//:asio",
+)
+
+http_archive(
+    name = "com_chriskohlhoff_asio",
+    build_file = "//third_party:asio.BUILD",
+    sha256 = "dbb066e63c1af407993cbfa6c1019671d4f7e020c182dde504a82e1104072627",
+    strip_prefix = "asio-master",
+    url = "https://github.com/chriskohlhoff/asio/archive/refs/heads/master.zip",
+)
+
+bind(
     name = "snappy",
     actual = "@com_google_snappy//:snappy",
 )
