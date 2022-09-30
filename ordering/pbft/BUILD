@@ -64,7 +64,6 @@ cc_library(
         "//config:resdb_config",
         "//database:txn_memory_db",
         "//execution:transaction_executor_impl",
-        "//ordering/status/checkpoint:check_point_info",
         "//proto:resdb_cc_proto",
         "//server:server_comm",
     ],

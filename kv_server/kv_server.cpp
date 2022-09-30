@@ -14,7 +14,7 @@ using resdb::Stats;
 
 void ShowUsage() {
   printf(
-      "<config> <private_key> <cert_file> <durability_option> [logging_dir]\n");
+      "<config> <private_key> <cert_file> [logging_dir]\n");
 }
 
 int main(int argc, char** argv) {
@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
   char* cert_file = argv[3];
   char* logging_dir = nullptr;
 
-  if (argc >= 7) {
+  if (argc >= 6) {
     logging_dir = argv[5];
   }
 
-  if (argc >= 6) {
+  if (argc >= 5) {
     auto monitor_port = Stats::GetGlobalStats(5);
     monitor_port->SetPrometheus(argv[4]);
   }

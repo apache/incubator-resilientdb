@@ -11,6 +11,7 @@ class ResDBKVClient : public ResDBUserClient {
 
   int Set(const std::string& key, const std::string& data);
   std::unique_ptr<std::string> Get(const std::string& key);
+  std::unique_ptr<std::string> GetValues();
 };
 
 }  // namespace resdb

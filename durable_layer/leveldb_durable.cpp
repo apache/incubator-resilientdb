@@ -2,6 +2,11 @@
 
 #include <assert.h>
 #include <glog/logging.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+
+#include <vector>
 
 using leveldb::DB;
 using leveldb::Options;
@@ -94,6 +99,16 @@ std::string LevelDurable::getDurable(const std::string& key) {
   std::string value = "";
   status_ = db_->Get(leveldb::ReadOptions(), key, &value);
   return value;
+}
+
+std::string LevelDurable::getAllValues() {
+  std::string values = "[\n";
+  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    values.append(it->value().ToString());
+  }
+  values.append("]\n");
+  return values;
 }
 
 LevelDurable::~LevelDurable() { db_.reset(); }

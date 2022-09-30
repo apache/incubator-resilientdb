@@ -44,7 +44,7 @@ ResDBTxnClient::GetTxn(uint64_t min_seq, uint64_t max_seq) {
           if (ret) {
             return;
           }
-          client->SetRecvTimeout(1000000);
+          client->SetRecvTimeout(1000);
           ret = client->RecvRawMessageStr(&response_str);
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);

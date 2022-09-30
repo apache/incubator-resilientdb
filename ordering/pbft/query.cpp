@@ -34,7 +34,7 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
     LOG(ERROR) << "parse data fail";
     return -2;
   }
-  LOG(ERROR) << "request:" << query.DebugString();
+  // LOG(ERROR) << "request:" << query.DebugString();
 
   QueryResponse response;
 
@@ -49,7 +49,7 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
   }
 
   if (context != nullptr && context->client != nullptr) {
-    LOG(ERROR) << "send response:" << response.DebugString();
+    // LOG(ERROR) << "send response:" << response.DebugString();
     int ret = context->client->SendRawMessage(response);
     if (ret) {
       LOG(ERROR) << "send resp fail ret:" << ret;

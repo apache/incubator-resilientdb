@@ -1,6 +1,9 @@
 #include "kv_server/kv_server_executor.h"
 
 #include <glog/logging.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 #include "proto/kv_server.pb.h"
 
@@ -28,8 +31,10 @@ std::unique_ptr<std::string> KVServerExecutor::ExecuteData(
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
-  } else {
+  } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::GETVALUES) {
+    kv_response.set_value(GetValues());
   }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
@@ -51,11 +56,27 @@ void KVServerExecutor::Set(const std::string& key, const std::string& value) {
 }
 
 std::string KVServerExecutor::Get(const std::string& key) {
-  if (equip_rocksdb_)
+  if (equip_rocksdb_) {
     return r_storage_layer_.getDurable(key);
-  else if (equip_leveldb_)
+  } else if (equip_leveldb_) {
     return l_storage_layer_.getDurable(key);
-  else
+  } else {
     return kv_map_[key];
+  }
+}
+
+std::string KVServerExecutor::GetValues() {
+  if (equip_rocksdb_) {
+    return r_storage_layer_.getAllValues();
+  } else if (equip_leveldb_) {
+    return l_storage_layer_.getAllValues();
+  } else {
+    std::string values = "[\n";
+    for (auto kv : kv_map_) {
+      values.append(kv.second);
+    }
+    values.append("]\n");
+    return values;
+  }
 }
 }  // namespace resdb

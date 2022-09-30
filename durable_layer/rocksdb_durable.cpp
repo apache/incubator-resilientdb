@@ -2,6 +2,9 @@
 
 #include <assert.h>
 #include <glog/logging.h>
+#include <rapidjson/document.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 using rocksdb::DB;
 using rocksdb::Options;
@@ -101,6 +104,17 @@ std::string RocksDurable::getDurable(const std::string& key) {
   std::string value = "";
   db_->Get(ReadOptions(), key, &value);
   return value;
+}
+
+std::string RocksDurable::getAllValues(void) {
+  std::string values = "[\n";
+  rocksdb::Iterator* itr = db_->NewIterator(ReadOptions());
+  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
+    values.append(itr->value().ToString());
+  }
+  values.append("]\n");
+  printf("gets here\n");
+  return values;
 }
 
 RocksDurable::~RocksDurable() { db_.reset(); }

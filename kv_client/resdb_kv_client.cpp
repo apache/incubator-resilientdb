@@ -30,4 +30,16 @@ std::unique_ptr<std::string> ResDBKVClient::Get(const std::string& key) {
   return std::make_unique<std::string>(response.value());
 }
 
+std::unique_ptr<std::string> ResDBKVClient::GetValues() {
+  KVRequest request;
+  request.set_cmd(KVRequest::GETVALUES);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<std::string>(response.value());
+}
+
 }  // namespace resdb

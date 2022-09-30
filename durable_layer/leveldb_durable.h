@@ -23,6 +23,7 @@ class LevelDurable {
   ~LevelDurable();
   void setDurable(const std::string& key, const std::string& value);
   std::string getDurable(const std::string& key);
+  std::string getAllValues();
 
  private:
   std::unique_ptr<leveldb::DB> db_ = nullptr;

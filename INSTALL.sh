@@ -18,3 +18,5 @@ bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
 
 # for jemalloc
 sudo apt-get install autoconf automake libtool -y
+
+sudo apt install rapidjson-dev -y

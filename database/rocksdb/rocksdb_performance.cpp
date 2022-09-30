@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <glog/logging.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -14,6 +15,7 @@
 
 #include "rocksdb/db.h"
 #include "rocksdb/env.h"
+#include "rocksdb/iterator.h"
 #include "rocksdb/options.h"
 #include "rocksdb/write_batch.h"
 
@@ -83,7 +85,20 @@ int main(int argc, char** argv) {
   auto stop = high_resolution_clock::now();
   auto duration = duration_cast<milliseconds>(stop - start);
 
-  printf("%ld milliseconds for %d writes\n", duration.count(), num_pairs);
+  LOG(INFO) << duration.count() << " milliseconds for " << num_pairs
+            << " writes";
+
+  start = high_resolution_clock::now();
+  rocksdb::Iterator* itr = db->NewIterator(ReadOptions());
+  itr->SeekToFirst();
+  while (itr->Valid()) {
+    itr->Next();
+  }
+  delete itr;
+  stop = high_resolution_clock::now();
+  duration = duration_cast<milliseconds>(stop - start);
+
+  LOG(INFO) << duration.count() << " milliseconds for iterating";
 
   const int NUM_READ_SETS = 11;
   ReadOptions roptions = ReadOptions();
@@ -100,8 +115,8 @@ int main(int argc, char** argv) {
     stop = high_resolution_clock::now();
     duration = duration_cast<milliseconds>(stop - start);
 
-    printf("%ld milliseconds for %d reads (set #%d)\n", duration.count(),
-           num_pairs / 10, i);
+    LOG(INFO) << duration.count() << " milliseconds for " << num_pairs / 10
+              << " reads (set #" << i << ")";
   }
   db.reset();
 }

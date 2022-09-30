@@ -6,6 +6,7 @@
 #include "config/resdb_config_utils.h"
 #include "rocksdb/db.h"
 #include "rocksdb/env.h"
+#include "rocksdb/iterator.h"
 #include "rocksdb/options.h"
 #include "rocksdb/write_batch.h"
 
@@ -19,6 +20,7 @@ class RocksDurable {
   ~RocksDurable();
   void setDurable(const std::string& key, const std::string& value);
   std::string getDurable(const std::string& key);
+  std::string getAllValues(void);
 
  private:
   std::unique_ptr<rocksdb::DB> db_ = nullptr;
