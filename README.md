@@ -1,22 +1,22 @@
-# Nexres: A High-throughput yielding Permissioned Blockchain Fabric.
+# Next Generation ResilientDB (NexRes): A High-throughput yielding Permissioned Blockchain Fabric.
 
 Nexres aims at *Making Permissioned Blockchain Systems Fast Again*. Nexres makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
  
 
-### Release Notes Version alpha of Nexres
+### Release Notes Version alpha of NexRes
 1. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
-2. Nexres expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
-3. Nexres uses coroutine as its network infrastructure. 
-4. The main implementation of Nexres including the network and pbft protocol are lock free by using boost::lockfreequeue.
-5. Nexres designates one of its replicas as the **primary**, which is also responsible for initiating the consensus.
-6. To facilitate data storage and persistence, Nexres provides support for an **in-memory key-value store**, Rocksdb and LevelDB and expose SDKs to store key-value pairs.
+2. NexRes expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
+3. NexRes uses coroutine as its network infrastructure. 
+4. The main implementation of NexRes including the network and pbft protocol are lock free by using boost::lockfreequeue.
+5. NexRes designates one of its replicas as the **primary**, which is also responsible for initiating the consensus.
+6. To facilitate data storage and persistence, NexRes provides support for an **in-memory key-value store**, Rocksdb and LevelDB and expose SDKs to store key-value pairs.
 7. We also provide prometheus metrics to display the performance and latency.
-8. We support docker environment with ubuntu for **MacOS M1** and source code for native ubuntu. Nexres can only run on **ubuntu 20.04**.
+8. We support docker environment with ubuntu for **MacOS M1** and source code for native ubuntu. NexRes can only run on **ubuntu 20.04**.
 
 
 
 ## Docs
-[Nexres Introduction](https://docs.google.com/presentation/d/1QurZA4w_PTxAtb_5FpuXJhsQVAIA2t5kvx1X2ETIl7w/edit#slide=id.p)
+[NexRes Introduction](https://docs.google.com/presentation/d/1QurZA4w_PTxAtb_5FpuXJhsQVAIA2t5kvx1X2ETIl7w/edit#slide=id.p)
 
 ---
 ## Steps to Run KVServer
