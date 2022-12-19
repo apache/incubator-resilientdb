@@ -192,6 +192,7 @@ http_archive(
     url = "https://github.com/HowardHinnant/date/archive/refs/heads/master.zip",
 )
 
+'''
 http_archive(
     name = "com_google_pistache",
     build_file = "//third_party:pistache.BUILD",
@@ -207,6 +208,8 @@ http_archive(
     strip_prefix = "Crow-master",
     url = "https://github.com/CrowCpp/Crow/archive/refs/heads/master.zip",
 )
+
+'''
 
 bind(
     name = "asio",

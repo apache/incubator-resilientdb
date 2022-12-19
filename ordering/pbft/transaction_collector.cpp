@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "ordering/pbft/transaction_collector.h"
 
 #include <glog/logging.h>
@@ -68,8 +93,8 @@ int TransactionCollector::AddRequest(
   }
 
   if (seq_ != static_cast<uint64_t>(request->seq())) {
-    LOG(ERROR) << "data invalid, seq not the same:" << seq
-               << " collect seq:" << seq_;
+    // LOG(ERROR) << "data invalid, seq not the same:" << seq
+    //           << " collect seq:" << seq_;
     return -2;
   }
 
@@ -95,9 +120,14 @@ int TransactionCollector::AddRequest(
       if (status_.load() == READY_PREPARE) {
         auto request_info = std::make_unique<RequestInfo>();
         request_info->signature = signature;
-        request_info->request = std::move(request);
+        request_info->request = std::make_unique<Request>(*request);
         prepared_proof_.push_back(std::move(request_info));
       }
+    }
+    if (request->has_data_signature() &&
+        request->data_signature().node_id() > 0) {
+      std::lock_guard<std::mutex> lk(mutex_);
+      commit_certs_.push_back(request->data_signature());
     }
     senders_[type][sender_id] = 1;
     call_back(*request, senders_[type].count(), nullptr, &status_);
@@ -125,6 +155,13 @@ int TransactionCollector::Commit() {
 
   is_committed_ = true;
   if (executor_ && main_request->request) {
+    if (!commit_certs_.empty()) {
+      for (const auto& sig : commit_certs_) {
+        *main_request->request->mutable_committed_certs()
+             ->add_committed_certs() = sig;
+        // LOG(ERROR) << "add sig:" << sig.DebugString();
+      }
+    }
     executor_->Commit(std::move(main_request->request));
   }
   return 0;

@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "config/resdb_config.h"
 
 #include <glog/logging.h>
@@ -36,6 +61,43 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
                 << region.replica_info_size();
       break;
     }
+  }
+  if (config_data_.view_change_timeout_ms() == 0) {
+    config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
+  }
+  if (config_data_.client_batch_num() == 0) {
+    config_data_.set_client_batch_num(client_batch_num_);
+  }
+  if (config_data_.worker_num() == 0) {
+    config_data_.set_worker_num(worker_num_);
+  }
+  if (config_data_.input_worker_num() == 0) {
+    config_data_.set_input_worker_num(input_worker_num_);
+  }
+  if (config_data_.output_worker_num() == 0) {
+    config_data_.set_output_worker_num(output_worker_num_);
+  }
+  if (config_data_.tcp_batch_num() == 0) {
+    config_data_.set_tcp_batch_num(100);
+  }
+}
+
+void ResDBConfig::SetConfigData(const ResConfigData& config_data) {
+  config_data_ = config_data;
+  replicas_.clear();
+  for (const auto& region : config_data.region()) {
+    if (region.region_id() == config_data.self_region_id()) {
+      LOG(INFO) << "get region info:" << region.DebugString();
+      for (const auto& replica : region.replica_info()) {
+        replicas_.push_back(replica);
+      }
+      LOG(INFO) << "get region config server size:"
+                << region.replica_info_size();
+      break;
+    }
+  }
+  if (config_data_.view_change_timeout_ms() == 0) {
+    config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
 }
 
@@ -114,7 +176,9 @@ void ResDBConfig::SetSignatureVerifierEnabled(bool enable_sv) {
 }
 
 // Performance setting
-bool ResDBConfig::IsPerformanceRunning() { return is_performance_running_; }
+bool ResDBConfig::IsPerformanceRunning() {
+  return is_performance_running_ || GetConfigData().is_performance_running();
+}
 
 void ResDBConfig::RunningPerformance(bool is_performance_running) {
   is_performance_running_ = is_performance_running;
@@ -126,9 +190,17 @@ void ResDBConfig::SetTestMode(bool is_test_mode) {
 
 bool ResDBConfig::IsTestMode() const { return is_test_mode_; }
 
-uint32_t ResDBConfig::GetMaxProcessTxn() const { return max_process_txn_; }
+uint32_t ResDBConfig::GetMaxProcessTxn() const {
+  if (config_data_.max_process_txn()) {
+    return config_data_.max_process_txn();
+  }
+  return max_process_txn_;
+}
 
-void ResDBConfig::SetMaxProcessTxn(uint32_t num) { max_process_txn_ = num; }
+void ResDBConfig::SetMaxProcessTxn(uint32_t num) {
+  config_data_.set_max_process_txn(num);
+  max_process_txn_ = num;
+}
 
 uint32_t ResDBConfig::ClientBatchWaitTimeMS() const {
   return client_batch_wait_time_ms_;
@@ -138,15 +210,27 @@ void ResDBConfig::SetClientBatchWaitTimeMS(uint32_t wait_time_ms) {
   client_batch_wait_time_ms_ = wait_time_ms;
 }
 
-uint32_t ResDBConfig::ClientBatchNum() const { return client_batch_num_; }
+uint32_t ResDBConfig::ClientBatchNum() const {
+  return config_data_.client_batch_num();
+}
 
-void ResDBConfig::SetClientBatchNum(uint32_t num) { client_batch_num_ = num; }
+void ResDBConfig::SetClientBatchNum(uint32_t num) {
+  config_data_.set_client_batch_num(num);
+}
 
-uint32_t ResDBConfig::GetWorkerNum() const { return worker_num_; }
+uint32_t ResDBConfig::GetWorkerNum() const { return config_data_.worker_num(); }
 
-uint32_t ResDBConfig::GetInputWorkerNum() const { return input_worker_num_; }
+uint32_t ResDBConfig::GetInputWorkerNum() const {
+  return config_data_.input_worker_num();
+}
 
-uint32_t ResDBConfig::GetOutputWorkerNum() const { return output_worker_num_; }
+uint32_t ResDBConfig::GetOutputWorkerNum() const {
+  return config_data_.output_worker_num();
+}
+
+uint32_t ResDBConfig::GetTcpBatchNum() const {
+  return config_data_.tcp_batch_num();
+}
 
 uint32_t ResDBConfig::GetViewchangeCommitTimeout() const {
   return viewchange_commit_timeout_ms_;

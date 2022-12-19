@@ -23,6 +23,18 @@ message ResConfigData{
   optional RocksDBInfo rocksdb_info = 3;
   optional LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
+  optional int32 view_change_timeout_ms = 10;
+  optional bool not_need_signature = 6; // when delivering messages, it should be signed or not.
+  optional bool is_performance_running = 7; // if it is running a performance benchmark.
+  optional int32 max_process_txn = 8; // max client transactions in flight.
+  optional int32 client_batch_num=11; // batch size of transaction for each client request
+  optional int32 worker_num =12; // batch size of transaction for each client request
+  optional int32 input_worker_num =13; 
+  optional int32 output_worker_num =14;
+  optional int32 tcp_batch_num = 15;
+
+// for hotstuff.
+  optional bool use_chain_hotstuff = 9;
 }
 
 message ReplicaStates {

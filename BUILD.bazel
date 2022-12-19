@@ -11,6 +11,6 @@ make(
 cc_library(
     name = "cryptopp_lib",
     deps = [
-	":cryptopp",
+        ":cryptopp",
     ],
 )

@@ -126,6 +126,7 @@ cc_library(
 cc_test(
     name = "checkpoint_manager_test",
     srcs = ["checkpoint_manager_test.cpp"],
+    tags = ["manual"],
     deps = [
         ":checkpoint_manager",
         "//common/test:test_main",
@@ -226,3 +227,4 @@ cc_library(
         "//server:consensus_service",
     ],
 )
+

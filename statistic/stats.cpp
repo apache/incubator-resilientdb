@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "statistic/stats.h"
 
 #include <glog/logging.h>
@@ -29,6 +54,8 @@ Stats::Stats(int sleep_time) {
   run_req_run_time_ = 0;
   seq_gap_ = 0;
   total_request_ = 0;
+  total_geo_request_ = 0;
+  geo_request_ = 0;
 
   stop_ = false;
   begin_ = false;
@@ -53,7 +80,7 @@ Stats::~Stats() {
 }
 
 void Stats::MonitorGlobal() {
-  LOG(ERROR) << "monitor:" << name_;
+  LOG(ERROR) << "monitor:" << name_ << " sleep time:" << monitor_sleep_time_;
 
   uint64_t seq_fail = 0;
   uint64_t client_call = 0, socket_recv = 0;
@@ -63,7 +90,7 @@ void Stats::MonitorGlobal() {
   uint64_t send_broad_cast_msg_per_rep = 0;
   uint64_t server_call = 0, server_process = 0;
   uint64_t seq_gap = 0;
-  uint64_t total_request = 0;
+  uint64_t total_request = 0, total_geo_request = 0, geo_request = 0;
 
   // ====== for client proxy ======
   uint64_t run_req_num = 0, run_req_run_time = 0;
@@ -79,7 +106,8 @@ void Stats::MonitorGlobal() {
   uint64_t last_broad_cast_msg = 0, last_send_broad_cast_msg = 0;
   uint64_t last_send_broad_cast_msg_per_rep = 0;
   uint64_t last_server_call = 0, last_server_process = 0;
-  uint64_t last_total_request = 0;
+  uint64_t last_total_request = 0, last_total_geo_request = 0,
+           last_geo_request = 0;
   uint64_t time = 0;
 
   while (!stop_) {
@@ -102,6 +130,8 @@ void Stats::MonitorGlobal() {
     server_process = server_process_;
     seq_gap = seq_gap_;
     total_request = total_request_;
+    total_geo_request = total_geo_request_;
+    geo_request = geo_request_;
 
     run_req_num = run_req_num_;
     run_req_run_time = run_req_run_time_;
@@ -130,10 +160,10 @@ void Stats::MonitorGlobal() {
                << num_propose - last_num_propose
                << " "
                   "prepare:"
-               << (num_prepare - last_num_prepare) / 32
+               << (num_prepare - last_num_prepare)
                << " "
                   "commit:"
-               << (num_commit - last_num_commit) / 32
+               << (num_commit - last_num_commit)
                << " "
                   "pending execute:"
                << pending_execute - last_pending_execute
@@ -145,6 +175,11 @@ void Stats::MonitorGlobal() {
                << execute_done - last_execute_done << " seq gap:" << seq_gap
                << " total request:" << total_request - last_total_request
                << " txn:" << (total_request - last_total_request) / 5
+               << " total geo request:"
+               << total_geo_request - last_total_geo_request
+               << " total geo request per:"
+               << (total_geo_request - last_total_geo_request) / 5
+               << " geo request:" << (geo_request - last_geo_request)
                << " "
                   "seq fail:"
                << seq_fail - last_seq_fail << " time:" << time
@@ -178,6 +213,8 @@ void Stats::MonitorGlobal() {
     last_run_req_num = run_req_num;
     last_run_req_run_time = run_req_run_time;
     last_total_request = total_request;
+    last_total_geo_request = total_geo_request;
+    last_geo_request = geo_request;
   }
 }
 
@@ -246,6 +283,10 @@ void Stats::IncTotalRequest(uint32_t num) {
   }
   total_request_ += num;
 }
+
+void Stats::IncTotalGeoRequest(uint32_t num) { total_geo_request_ += num; }
+
+void Stats::IncGeoRequest() { geo_request_++; }
 
 void Stats::ServerCall() {
   if (prometheus_) {

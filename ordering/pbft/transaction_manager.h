@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -28,6 +53,7 @@ class TransactionManager {
                      std::unique_ptr<TransactionExecutorImpl> data_impl,
                      CheckPointManager* checkpoint_manager,
                      SystemInfo* system_info);
+  ~TransactionManager();
 
   absl::StatusOr<uint64_t> AssignNextSeq();
 
@@ -78,9 +104,6 @@ class TransactionManager {
 
   bool MayConsensusChangeStatus(int type, int received_count,
                                 std::atomic<TransactionStatue>* status);
-  void SaveCommittedRequest(const Request& request,
-                            TransactionCollector::CollectorDataType* data);
-  int SaveCommittedRequest(const RequestWithProof& proof_data);
 
  private:
   ResDBConfig config_;
@@ -90,12 +113,12 @@ class TransactionManager {
   TxnMemoryDB* txn_db_;
   SystemInfo* system_info_;
   CheckPointManager* checkpoint_manager_;
-  std::unique_ptr<TransactionExecutor> transaction_executor_;
   std::map<uint64_t, std::vector<std::unique_ptr<RequestInfo>>>
       committed_proof_;
   std::map<uint64_t, Request> committed_data_;
 
   std::mutex data_mutex_, seq_mutex_;
+  std::unique_ptr<TransactionExecutor> transaction_executor_;
   std::unique_ptr<LockFreeCollectorPool> collector_pool_;
 
   Stats* global_stats_;

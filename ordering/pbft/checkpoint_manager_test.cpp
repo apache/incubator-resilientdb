@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "ordering/pbft/checkpoint_manager.h"
 
 #include <glog/logging.h>
@@ -22,6 +47,23 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
+
+class MyCheckPointManager : public CheckPointManager {
+ public:
+  MyCheckPointManager(const ResDBConfig& config,
+                      ResDBReplicaClient* replica_client,
+                      SignatureVerifier* verifier,
+                      std::function<void(int64_t)> call_back = nullptr)
+      : CheckPointManager(config, replica_client, verifier),
+        call_back_(call_back) {}
+
+  void UpdateStableCheckPointCallback(int64_t stable_checkpoint) {
+    if (call_back_) {
+      call_back_(stable_checkpoint);
+    }
+  }
+  std::function<void(int64_t)> call_back_;
+};
 
 class CheckPointManagerTest : public Test {
  public:
@@ -115,9 +157,16 @@ TEST_F(CheckPointManagerTest, SendCheckPointTwo) {
 }
 
 TEST_F(CheckPointManagerTest, StableCkpt) {
-  sleep(1);
   config_.SetViewchangeCommitTimeout(100);
-  CheckPointManager manager(config_, &replica_client_, nullptr);
+  std::promise<bool> ckp_done;
+  std::future<bool> ckp_done_future = ckp_done.get_future();
+  MyCheckPointManager manager(config_, &replica_client_, nullptr,
+                              [&](int64_t seq) {
+                                if (seq > 0) {
+                                  ckp_done.set_value(true);
+                                }
+                              });
+  sleep(1);
   for (int i = 1; i <= 4; ++i) {
     CheckPointData checkpoint_data;
     std::unique_ptr<Request> checkpoint_request =
@@ -129,13 +178,21 @@ TEST_F(CheckPointManagerTest, StableCkpt) {
                                         std::move(checkpoint_request)),
               0);
   }
-  sleep(4);
+  ckp_done_future.get();
   EXPECT_EQ(manager.GetStableCheckpoint(), 5);
 }
 
 TEST_F(CheckPointManagerTest, StableCkptNotEnought) {
   config_.SetViewchangeCommitTimeout(1000);
-  CheckPointManager manager(config_, &replica_client_, nullptr);
+  std::promise<bool> ckp_done;
+  std::future<bool> ckp_done_future = ckp_done.get_future();
+  MyCheckPointManager manager(config_, &replica_client_, nullptr,
+                              [&](int64_t seq) {
+                                if (seq > 0) {
+                                  ckp_done.set_value(true);
+                                }
+                              });
+  sleep(2);
   for (int i = 1; i <= 4; ++i) {
     CheckPointData checkpoint_data;
     std::unique_ptr<Request> checkpoint_request =
@@ -163,7 +220,7 @@ TEST_F(CheckPointManagerTest, StableCkptNotEnought) {
               0);
   }
 
-  sleep(2);
+  ckp_done_future.get();
   EXPECT_EQ(manager.GetStableCheckpoint(), 5);
 }
 

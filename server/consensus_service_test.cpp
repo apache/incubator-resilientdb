@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "server/consensus_service.h"
 
 #include <gtest/gtest.h>
@@ -62,6 +87,14 @@ class ConsensusServiceTest : public Test {
                    GenerateReplicaInfo("127.0.0.1", 1235)}),
         self_info_(GenerateReplicaInfo("127.0.0.1", 10000)),
         config_(replicas_, self_info_, KeyInfo(), CertificateInfo()) {
+    ResConfigData data;
+    auto region = data.add_region();
+    region->set_region_id(1);
+    for (ReplicaInfo info : config_.GetReplicaInfos()) {
+      *region->add_replica_info() = info;
+    }
+    config_.SetConfigData(data);
+
     Stats::GetGlobalStats(1);
 
     impl_ = std::make_unique<MockConsensusService>(config_);
@@ -87,7 +120,7 @@ TEST_F(ConsensusServiceTest, SendHB) {
           Invoke([&](const std::vector<ReplicaInfo>& replicas, bool) {
             auto client = std::make_unique<MockResDBReplicaClient>(replicas);
             EXPECT_CALL(*client, SendHeartBeat)
-                .WillRepeatedly(Invoke([&](const HeartBeatInfo& hb_info) {
+                .WillRepeatedly(Invoke([&](const Request& hb_info) {
                   hb.set_value(true);
                   return 0;
                 }));
@@ -124,7 +157,57 @@ TEST_F(ConsensusServiceTest, SendHBToClient) {
             EXPECT_TRUE(find);
             auto client = std::make_unique<MockResDBReplicaClient>(replicas);
             EXPECT_CALL(*client, SendHeartBeat)
-                .WillRepeatedly(Invoke([&](const HeartBeatInfo& hb_info) {
+                .WillRepeatedly(Invoke([&](const Request& hb_info) {
+                  hb.set_value(true);
+                  return 0;
+                }));
+            return client;
+          }));
+  impl_->Start();
+  hb_done.get();
+}
+
+TEST_F(ConsensusServiceTest, SendHBToClientWithTworegion) {
+  ResConfigData data;
+  auto region = data.add_region();
+  region->set_region_id(1);
+  *region->add_replica_info() = GenerateReplicaInfo("127.0.0.1", 1234);
+  *region->add_replica_info() = GenerateReplicaInfo("127.0.0.1", 1235);
+
+  region = data.add_region();
+  region->set_region_id(2);
+  *region->add_replica_info() = GenerateReplicaInfo("127.0.0.1", 1234);
+  *region->add_replica_info() = GenerateReplicaInfo("127.0.0.1", 1235);
+  config_.SetConfigData(data);
+  impl_ = std::make_unique<MockConsensusService>(config_);
+
+  std::promise<bool> hb;
+  std::future<bool> hb_done = hb.get_future();
+
+  EXPECT_CALL(*impl_, GetClientReplicas)
+      .Times(AtLeast(1))
+      .WillRepeatedly(Invoke([&]() {
+        ReplicaInfo client_info;
+        client_info.set_ip("127.0.0.1");
+        client_info.set_port(54321);
+        return std::vector<ReplicaInfo>({client_info});
+      }));
+
+  EXPECT_CALL(*impl_, GetReplicaClient)
+      .Times(AtLeast(1))
+      .WillRepeatedly(
+          Invoke([&](const std::vector<ReplicaInfo>& replicas, bool) {
+            EXPECT_EQ(replicas.size(), 5);
+            bool find = false;
+            for (auto& info : replicas) {
+              if (info.ip() == "127.0.0.1" && info.port() == 54321) {
+                find = true;
+              }
+            }
+            EXPECT_TRUE(find);
+            auto client = std::make_unique<MockResDBReplicaClient>(replicas);
+            EXPECT_CALL(*client, SendHeartBeat)
+                .WillRepeatedly(Invoke([&](const Request& hb_info) {
                   hb.set_value(true);
                   return 0;
                 }));

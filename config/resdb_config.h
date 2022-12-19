@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include "proto/replica_info.pb.h"
@@ -19,6 +44,8 @@ class ResDBConfig {
   ResDBConfig(const ResConfigData& config_data, const ReplicaInfo& self_info,
               const KeyInfo& private_key,
               const CertificateInfo& public_key_cert_info);
+
+  void SetConfigData(const ResConfigData& config_data);
 
   // Get the private key.
   KeyInfo GetPrivateKey() const;
@@ -90,6 +117,7 @@ class ResDBConfig {
   uint32_t GetWorkerNum() const;
   uint32_t GetInputWorkerNum() const;
   uint32_t GetOutputWorkerNum() const;
+  uint32_t GetTcpBatchNum() const;
 
   // ViewChange Timeout
   uint32_t GetViewchangeCommitTimeout() const;
@@ -115,7 +143,7 @@ class ResDBConfig {
   uint64_t viewchange_commit_timeout_ms_ =
       60000;  // default 60s to change viewchange
 
-  uint32_t worker_num_ = 96;
+  uint32_t worker_num_ = 64;
   uint32_t input_worker_num_ = 1;
   uint32_t output_worker_num_ = 1;
 };

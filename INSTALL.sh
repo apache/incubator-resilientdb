@@ -2,7 +2,8 @@
 
 sudo apt update
 sudo apt install apt-transport-https curl gnupg -y
-sudo apt install protobuf-compiler -y
+sudo apt-get install protobuf-compiler -y
+sudo apt-get install rapidjson-dev -y
 
 curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
 sudo mv bazel.gpg /etc/apt/trusted.gpg.d/ 
@@ -18,5 +19,3 @@ bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
 
 # for jemalloc
 sudo apt-get install autoconf automake libtool -y
-
-sudo apt install rapidjson-dev -y
