@@ -37,7 +37,7 @@ namespace resdb {
 template <typename T>
 class LockFreeQueue {
  public:
-  LockFreeQueue(const std::string& name = "") : name_(name), queue_(409600) {}
+  LockFreeQueue(const std::string& name = "") : name_(name), queue_(4096) {}
   void Push(std::unique_ptr<T> data) {
     T* ptr = data.release();
     while (!queue_.push(ptr)) {

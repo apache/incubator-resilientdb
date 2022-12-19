@@ -180,8 +180,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
         return -2;
       }
       *commit_request->mutable_data_signature() = *signature_or;
-      // LOG(ERROR) << "sign hash"
-      //           << commit_request->data_signature().DebugString();
     }
     replica_client_->BroadCast(*commit_request);
   }
@@ -218,7 +216,6 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_sender_id(config_.GetSelfInfo().id());
     request.set_current_view(batch_resp->current_view());
     request.set_proxy_id(batch_resp->proxy_id());
-    // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_client_->SendMessage(request, request.proxy_id());
   }

@@ -64,7 +64,6 @@ cc_library(
         "//config:resdb_config",
         "//database:txn_memory_db",
         "//execution:transaction_executor_impl",
-        "//ordering/status/checkpoint:check_point_info",
         "//proto:resdb_cc_proto",
         "//server:server_comm",
     ],
@@ -229,11 +228,3 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "pre_very_consensus_service_pbft",
-    hdrs = ["pre_very_consensus_service_pbft.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":consensus_service_pbft",
-    ],
-)

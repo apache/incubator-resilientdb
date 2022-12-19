@@ -47,7 +47,6 @@ TransactionExecutor::TransactionExecutor(
   if (executor_impl_ && executor_impl_->IsOutOfOrder()) {
     execute_OOO_thread_ =
         std::thread(&TransactionExecutor::ExecuteMessageOutOfOrder, this);
-    LOG(ERROR) << " is out of order:" << executor_impl_->IsOutOfOrder();
   }
 }
 
@@ -83,8 +82,6 @@ uint64_t TransactionExecutor::GetMaxPendingExecutedSeq() {
 int TransactionExecutor::Commit(std::unique_ptr<Request> message) {
   global_stats_->IncPendingExecute();
   if (executor_impl_ && executor_impl_->IsOutOfOrder()) {
-    // LOG(ERROR)<<"add out of order exe:"<<message->seq()<<" from
-    // proxy:"<<message->proxy_id();
     std::unique_ptr<Request> msg = std::make_unique<Request>(*message);
     execute_OOO_queue_.Push(std::move(message));
     commit_queue_.Push(std::move(msg));
@@ -189,8 +186,6 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
     response = executor_impl_->ExecuteBatch(batch_request);
   }
 
-  // global_stats_->IncTotalRequest(batch_request.client_requests_size());
-  // global_stats_->IncExecuteDone();
 }
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
@@ -208,9 +203,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     *batch_request.mutable_committed_certs() = request->committed_certs();
   }
 
-  // LOG(INFO) << " get request batch size:"
-  //         << batch_request.client_requests_size()<<" proxy
-  //         id:"<<request->proxy_id()<<" need execute:"<<need_execute;
   std::unique_ptr<BatchClientResponse> batch_response =
       std::make_unique<BatchClientResponse>();
 

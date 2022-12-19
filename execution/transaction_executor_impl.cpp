@@ -31,7 +31,6 @@ namespace resdb {
 TransactionExecutorImpl::TransactionExecutorImpl(bool is_out_of_order,
                                                  bool need_response)
     : is_out_of_order_(is_out_of_order), need_response_(need_response) {
-  LOG(ERROR) << " is out of order:" << is_out_of_order;
 }
 
 bool TransactionExecutorImpl::IsOutOfOrder() { return is_out_of_order_; }

@@ -4,7 +4,6 @@ cc_library(
     hdrs = ["sdk_transaction.h"],
 )
 
-'''
 cc_library(
     name = "pistache_service",
     srcs = ["pistache_service.cpp"],
@@ -48,4 +47,3 @@ cc_binary(
         ":crow_service",
     ],
 )
-'''

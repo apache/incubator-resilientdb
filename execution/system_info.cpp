@@ -32,7 +32,6 @@ namespace resdb {
 SystemInfo::SystemInfo(const ResDBConfig& config)
     : primary_id_(config.GetReplicaInfos()[0].id()), view_(1) {
   SetReplicas(config.GetReplicaInfos());
-  LOG(ERROR) << "get primary id:" << primary_id_;
 }
 
 uint32_t SystemInfo::GetPrimaryId() const { return primary_id_; }
