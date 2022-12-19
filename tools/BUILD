@@ -60,3 +60,11 @@ py_binary(
         "//proto:replica_info_py_proto",
     ],
 )
+
+py_binary(
+    name = "generate_mulregion_config",
+    srcs = ["generate_mulregion_config.py"],
+    deps = [
+        "//proto:replica_info_py_proto",
+    ],
+)

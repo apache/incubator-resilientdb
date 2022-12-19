@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "ordering/pbft/performance_manager.h"
 
 #include <glog/logging.h>
@@ -7,6 +32,7 @@
 namespace resdb {
 PerformanceManager::PerformanceManager(const ResDBConfig& config,
                                        ResDBReplicaClient* replica_client,
+                                       SystemInfo* system_info,
                                        SignatureVerifier* verifier)
     : config_(config),
       replica_client_(replica_client),
@@ -15,6 +41,7 @@ PerformanceManager::PerformanceManager(const ResDBConfig& config,
       context_pool_(std::make_unique<LockFreeCollectorPool>(
           "context", config_.GetMaxProcessTxn(), nullptr)),
       batch_queue_("client request"),
+      system_info_(system_info),
       verifier_(verifier) {
   stop_ = false;
   eval_started_ = false;
@@ -43,7 +70,7 @@ PerformanceManager::~PerformanceManager() {
 }
 
 // use system info
-int PerformanceManager::GetPrimary() { return 1; }
+int PerformanceManager::GetPrimary() { return system_info_->GetPrimaryId(); }
 
 std::unique_ptr<Request> PerformanceManager::GenerateClientRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -83,7 +110,7 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   // messages.
   // The callback will be triggered if it received f+1 messages.
   if (request->ret() == -2) {
-    LOG(INFO) << "get response fail:" << request->ret();
+    // LOG(INFO) << "get response fail:" << request->ret();
     send_num_--;
     return 0;
   }
@@ -181,8 +208,7 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   while (!stop_) {
     if (send_num_ > config_.GetMaxProcessTxn()) {
-      LOG(INFO) << "send num too high, wait:" << send_num_;
-      usleep(100);
+      usleep(100000);
       continue;
     }
     if (batch_req.size() < config_.ClientBatchNum()) {
@@ -237,6 +263,15 @@ int PerformanceManager::DoBatch(
 
   batch_request.set_createtime(get_sys_clock());
   batch_request.SerializeToString(new_request->mutable_data());
+  if (verifier_) {
+    auto signature_or = verifier_->SignMessage(new_request->data());
+    if (!signature_or.ok()) {
+      LOG(ERROR) << "Sign message fail";
+      return -2;
+    }
+    *new_request->mutable_data_signature() = *signature_or;
+  }
+
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
 

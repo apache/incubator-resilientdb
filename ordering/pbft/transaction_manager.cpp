@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "ordering/pbft/transaction_manager.h"
 
 #include <glog/logging.h>
@@ -25,13 +50,20 @@ TransactionManager::TransactionManager(
             if (checkpoint_manager_) {
               checkpoint_manager_->AddCommitData(std::move(request));
             }
-            collector_pool_->Update(seq);
           },
           system_info_, std::move(executor_impl))),
       collector_pool_(std::make_unique<LockFreeCollectorPool>(
           "txn", config_.GetMaxProcessTxn(), transaction_executor_.get(),
           config_.GetConfigData().enable_viewchange())) {
   global_stats_ = Stats::GetGlobalStats();
+  transaction_executor_->SetSeqUpdateNotifyFunc(
+      [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
+}
+
+TransactionManager::~TransactionManager() {
+  if (transaction_executor_) {
+    transaction_executor_->Stop();
+  }
 }
 
 std::unique_ptr<BatchClientResponse> TransactionManager::GetResponseMsg() {
@@ -151,36 +183,6 @@ CollectorResultCode TransactionManager::AddConsensusMsg(
     return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
-}
-
-// Save the committed request with its 2f+1 proof.
-void TransactionManager::SaveCommittedRequest(
-    const Request& request,
-    TransactionCollector::CollectorDataType* proof_data) {
-  if (!config_.IsCheckPointEnabled()) {
-    return;
-  }
-}
-
-int TransactionManager::SaveCommittedRequest(
-    const RequestWithProof& proof_data) {
-  uint64_t seq = proof_data.seq();
-  if (committed_data_.find(seq) != committed_data_.end()) {
-    LOG(ERROR) << "seq data:" << seq << "  has been set";
-    return -2;
-  }
-  std::unique_lock<std::mutex> lk(data_mutex_);
-  committed_proof_[seq].clear();
-  for (auto& data : proof_data.proofs()) {
-    std::unique_ptr<RequestInfo> info = std::make_unique<RequestInfo>();
-    info->request = std::make_unique<Request>(data.request());
-    info->signature = data.signature();
-    committed_proof_[seq].push_back(std::move(info));
-  }
-  committed_data_[seq] = proof_data.request();
-  LOG(INFO) << "add committed data:" << seq
-            << " size:" << committed_proof_[seq].size();
-  return 0;
 }
 
 RequestSet TransactionManager::GetRequestSet(uint64_t min_seq,

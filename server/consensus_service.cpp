@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "server/consensus_service.h"
 
 #include <glog/logging.h>
@@ -73,16 +98,17 @@ void ConsensusService::HeartBeat() {
   while (IsRunning()) {
     auto keys = verifier_->GetAllPublicKeys();
 
-    std::vector<ReplicaInfo> replicas = GetReplicas();
+    std::vector<ReplicaInfo> replicas = GetAllReplicas();
+    LOG(ERROR) << "all replicas:" << replicas.size();
     std::vector<ReplicaInfo> client_replicas = GetClientReplicas();
     HeartBeatInfo hb_info;
     for (const auto& key : keys) {
       *hb_info.add_public_keys() = key;
     }
-    for (auto& client_rep : client_replicas) {
-      replicas.push_back(client_rep);
+    for (const auto& client : client_replicas) {
+      replicas.push_back(client);
     }
-    auto client = GetReplicaClient(replicas);
+    auto client = GetReplicaClient(replicas, false);
     if (client == nullptr) {
       continue;
     }
@@ -99,7 +125,14 @@ void ConsensusService::HeartBeat() {
                << " is ready:" << is_ready_
                << " client size:" << client_replicas.size()
                << " svr size:" << replicas.size();
-    int ret = client->SendHeartBeat(hb_info);
+
+    Request request;
+    request.set_type(Request::TYPE_HEART_BEAT);
+    request.mutable_region_info()->set_region_id(
+        config_.GetConfigData().self_region_id());
+    hb_info.SerializeToString(request.mutable_data());
+
+    int ret = client->SendHeartBeat(request);
     if (ret <= 0) {
       LOG(ERROR) << " server:" << config_.GetSelfInfo().id()
                  << " sends HB fail:" << ret;
@@ -167,7 +200,6 @@ int ConsensusService::Process(std::unique_ptr<Context> context,
 // cert notification from clients. Otherwise, forward to the worker.
 int ConsensusService::Dispatch(std::unique_ptr<Context> context,
                                std::unique_ptr<Request> request) {
-  std::vector<ReplicaInfo> replicas = GetReplicas();
   if (request->type() == Request::TYPE_HEART_BEAT) {
     return ProcessHeartBeat(std::move(context), std::move(request));
   }
@@ -185,14 +217,18 @@ int ConsensusService::ProcessHeartBeat(std::unique_ptr<Context> context,
 
   LOG(INFO) << "receive public size:" << hb_info.public_keys().size()
             << " primary:" << hb_info.primary()
-            << " version:" << hb_info.version();
+            << " version:" << hb_info.version()
+            << " from region:" << request->region_info().region_id();
 
-  if (config_.GetPublicKeyCertificateInfo()
-          .public_key()
-          .public_key_info()
-          .type() == CertificateKeyInfo::CLIENT) {
-    // TODO count 2f+1 before setting a new primary
-    SetPrimary(hb_info.primary(), hb_info.version());
+  if (request->region_info().region_id() ==
+      config_.GetConfigData().self_region_id()) {
+    if (config_.GetPublicKeyCertificateInfo()
+            .public_key()
+            .public_key_info()
+            .type() == CertificateKeyInfo::CLIENT) {
+      // TODO count 2f+1 before setting a new primary
+      SetPrimary(hb_info.primary(), hb_info.version());
+    }
   }
 
   int replica_num = 0;
@@ -203,6 +239,13 @@ int ConsensusService::ProcessHeartBeat(std::unique_ptr<Context> context,
                  << public_key.public_key_info().node_id();
       continue;
     }
+    if (request->region_info().region_id() !=
+        config_.GetConfigData().self_region_id()) {
+      // LOG(ERROR) << "key from other region:"
+      //           << request->region_info().region_id();
+      continue;
+    }
+
     ReplicaInfo info;
     info.set_ip(public_key.public_key_info().ip());
     info.set_port(public_key.public_key_info().port());
@@ -242,6 +285,17 @@ std::vector<ReplicaInfo> ConsensusService::GetClientReplicas() {
   return clients_;
 }
 
+std::vector<ReplicaInfo> ConsensusService::GetAllReplicas() {
+  auto config_data = config_.GetConfigData();
+  std::vector<ReplicaInfo> ret;
+  for (const auto& r : config_data.region()) {
+    for (const auto& replica : r.replica_info()) {
+      ret.push_back(replica);
+    }
+  }
+  return ret;
+}
+
 void ConsensusService::BroadCast(const Request& request) {
   int ret = bc_client_->SendMessage(request);
   if (ret < 0) {
@@ -270,23 +324,14 @@ void ConsensusService::SendMessage(const google::protobuf::Message& message,
   }
 }
 
-void ConsensusService::SendMessage(const google::protobuf::Message& message,
-                                   const ReplicaInfo& client_info) {
-  auto client = GetReplicaClient({client_info});
-  if (client == nullptr) {
-    return;
-  }
-  int ret = client->SendMessage(message);
-  if (ret < 0) {
-    LOG(ERROR) << "send message fail";
-  }
-}
-
 std::unique_ptr<ResDBReplicaClient> ConsensusService::GetReplicaClient(
     const std::vector<ReplicaInfo>& replicas, bool is_use_long_conn) {
   return std::make_unique<ResDBReplicaClient>(
-      replicas, verifier_ == nullptr ? nullptr : verifier_.get(),
-      is_use_long_conn, config_.GetOutputWorkerNum());
+      replicas,
+      verifier_ == nullptr || config_.GetConfigData().not_need_signature()
+          ? nullptr
+          : verifier_.get(),
+      is_use_long_conn, config_.GetOutputWorkerNum(), config_.GetTcpBatchNum());
 }
 
 void ConsensusService::AddNewReplica(const ReplicaInfo& info) {}

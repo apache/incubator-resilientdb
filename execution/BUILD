@@ -64,4 +64,59 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "geo_transaction_executor",
+    srcs = ["geo_transaction_executor.cpp"],
+    hdrs = ["geo_transaction_executor.h"],
+    deps = [
+        ":system_info",
+        ":transaction_executor",
+        "//ordering/pbft:transaction_utils",
+        "//server:resdb_replica_client",
+    ],
+)
 
+cc_library(
+    name = "geo_global_executor",
+    srcs = ["geo_global_executor.cpp"],
+    hdrs = ["geo_global_executor.h"],
+    deps = [
+        ":transaction_executor_impl",
+        "//application/geo_pbft:geo_pbft_executor_impl",
+        "//common/queue:lock_free_queue",
+        "//config:resdb_config",
+        "//statistic:stats",
+    ],
+)
+
+cc_test(
+    name = "geo_global_executor_test",
+    srcs = ["geo_global_executor_test.cpp"],
+    deps = [
+        ":geo_global_executor",
+        ":mock_transaction_executor_impl",
+        "//common/test:test_main",
+        "//config:resdb_config_utils",
+    ],
+)
+
+cc_library(
+    name = "mock_geo_global_executor",
+    hdrs = ["mock_geo_global_executor.h"],
+    deps = [
+        ":geo_global_executor",
+    ],
+)
+
+cc_test(
+    name = "geo_transaction_executor_test",
+    srcs = ["geo_transaction_executor_test.cpp"],
+    deps = [
+        ":geo_transaction_executor",
+        ":mock_transaction_executor_impl",
+        "//common/test",
+        "//common/test:test_main",
+        "//config:resdb_config_utils",
+        "//server:mock_resdb_replica_client",
+    ],
+)

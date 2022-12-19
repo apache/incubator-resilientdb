@@ -11,6 +11,10 @@ message ResDBMessage {
     SignatureInfo signature = 2;
 }
 
+message Certs {
+    repeated SignatureInfo committed_certs= 1;
+}
+
 // The request message containing requested numbers
 message Request {
     enum Type {
@@ -49,8 +53,10 @@ message Request {
     uint64 current_executed_seq = 10;
     bool need_response = 11;
     int32 ret = 12;
-    SignatureInfo data_signature = 13;
+    optional SignatureInfo data_signature = 13;
     RegionInfo region_info = 14;
+
+    Certs committed_certs= 15;
 }
 
 // The response message containing response
@@ -77,6 +83,10 @@ message BatchClientRequest {
   repeated ClientRequest client_requests = 1;
   uint64 createtime = 2;
   uint64 local_id = 3;
+  uint64 seq = 4;
+  Certs committed_certs= 5;
+  bytes hash = 6;
+  int32 proxy_id = 7;
 }
 
 message BatchClientResponse {

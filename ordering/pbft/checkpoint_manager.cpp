@@ -1,3 +1,28 @@
+/*
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 #include "ordering/pbft/checkpoint_manager.h"
 
 #include "glog/logging.h"
@@ -104,6 +129,7 @@ int CheckPointManager::ProcessCheckPoint(std::unique_ptr<Context> context,
     if (res.second) {
       sign_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())]
           .push_back(checkpoint_data.hash_signature());
+      new_data_++;
     }
     Notify();
   }
@@ -118,11 +144,8 @@ void CheckPointManager::Notify() {
 bool CheckPointManager::Wait() {
   int timeout_ms = 1000;
   std::unique_lock<std::mutex> lk(cv_mutex_);
-  auto status = cv_.wait_for(lk, std::chrono::milliseconds(timeout_ms));
-  if (status == std::cv_status::timeout) {
-    return false;
-  }
-  return true;
+  return cv_.wait_for(lk, std::chrono::milliseconds(timeout_ms),
+                      [&] { return new_data_ > 0; });
 }
 
 void CheckPointManager::UpdateStableCheckPointStatus() {
@@ -141,8 +164,11 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
           stable_hash = it.first.second;
         }
       }
+      new_data_ = 0;
     }
 
+    LOG(ERROR) << "current stable seq:" << current_stable_seq_
+               << " stable seq:" << stable_seq;
     std::vector<SignatureInfo> votes;
     if (current_stable_seq_ < stable_seq) {
       std::lock_guard<std::mutex> lk(mutex_);
@@ -167,6 +193,7 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       LOG(INFO) << "done. stable seq:" << current_stable_seq_
                 << " votes:" << stable_ckpt_.DebugString();
     }
+    UpdateStableCheckPointCallback(current_stable_seq_);
   }
 }
 

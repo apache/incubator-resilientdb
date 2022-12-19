@@ -64,6 +64,7 @@ cc_library(
         "//config:resdb_config",
         "//database:txn_memory_db",
         "//execution:transaction_executor_impl",
+        "//ordering/status/checkpoint:check_point_info",
         "//proto:resdb_cc_proto",
         "//server:server_comm",
     ],
@@ -126,6 +127,7 @@ cc_library(
 cc_test(
     name = "checkpoint_manager_test",
     srcs = ["checkpoint_manager_test.cpp"],
+    tags = ["manual"],
     deps = [
         ":checkpoint_manager",
         "//common/test:test_main",
@@ -224,5 +226,14 @@ cc_library(
         ":viewchange_manager",
         "//crypto:signature_verifier",
         "//server:consensus_service",
+    ],
+)
+
+cc_library(
+    name = "pre_very_consensus_service_pbft",
+    hdrs = ["pre_very_consensus_service_pbft.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":consensus_service_pbft",
     ],
 )

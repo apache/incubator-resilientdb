@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package resdb;
+
+message BenchmarkMessage {
+  string data = 1;
+}
+
+message BenchmarkResponse {
+  string data = 1;
+}

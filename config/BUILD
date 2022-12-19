@@ -28,3 +28,11 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "resdb_poc_config",
+    srcs = ["resdb_poc_config.cpp"],
+    hdrs = ["resdb_poc_config.h"],
+    deps = [
+        ":resdb_config",
+    ],
+)

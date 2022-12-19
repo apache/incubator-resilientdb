@@ -56,12 +56,12 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "pistache",
-    deps = [
-        "@com_google_pistache//:pistache",
-    ],
-)
+#cc_library(
+#    name = "pistache",
+#    deps = [
+#        "@com_google_pistache//:pistache",
+#    ],
+#)
 
 cc_library(
     name = "date",
@@ -70,12 +70,12 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "crow",
-    deps = [
-        "@com_crowcpp_crow//:crow",
-    ],
-)
+#cc_library(
+#    name = "crow",
+#    deps = [
+#        "@com_crowcpp_crow//:crow",
+#    ],
+#)
 
 cc_library(
     name = "asio",
