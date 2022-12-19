@@ -1,2 +1,0 @@
-bazel-bin/application/geo_pbft/geo_pbft_client_main application/geo_pbft/geo_pbft_client1.config test 1234
-bazel-bin/application/geo_pbft/geo_pbft_client_main application/geo_pbft/geo_pbft_client2.config test 1234

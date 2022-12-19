@@ -42,7 +42,6 @@ std::unique_ptr<std::string> GeoPBFTExecutorImpl::ExecuteData(
     LOG(ERROR) << "parse data fail";
     return nullptr;
   }
-  // LOG(ERROR) << "get kv request:" << kv_request.DebugString();
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
@@ -60,12 +59,10 @@ std::unique_ptr<std::string> GeoPBFTExecutorImpl::ExecuteData(
 
 void GeoPBFTExecutorImpl::Set(const std::string& key,
                               const std::string& value) {
-  // LOG(ERROR) << "set value:" << key << " " << value;
   kv_map_[key] = value;
 }
 
 std::string GeoPBFTExecutorImpl::Get(const std::string& key) {
-  // LOG(ERROR) << "get value:" << key << " " << kv_map_[key];
   return kv_map_[key];
 }
 
