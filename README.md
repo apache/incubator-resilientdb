@@ -50,9 +50,9 @@ You will see this if success:
 
     client set ret = 0
 
-## Steps to Run KVServer on Multiple Machines
+## Steps to Run KVServer on Multiple Machines (e.g., Oracle Cloud)
 
-We illustrate the steps with an example of running PBFT KVservers on 4 replicas and 2 clients
+We illustrate the steps with an example of running PBFT KVservers on 4 replicas and 2 clients on Oracle.
 
 First, copy the IP addresses of the machines to ./oracle_script/iplist.txt
 
