@@ -32,7 +32,7 @@
 namespace resdb {
 namespace contract {
 
-// ContractClient to send data to the kv server.
+// ContractClient to send data to the contract server.
 class ContractClient : public ResDBUserClient {
  public:
   ContractClient(const ResDBConfig& config);
