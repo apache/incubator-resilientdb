@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package resdb.contract;
+
+import "application/contract/proto/func_params.proto";
+import "application/contract/proto/contract.proto";
+import "application/contract/proto/account.proto";
+
+message Request {
+    enum CMD {
+        NONE = 0;
+        CREATE_ACCOUNT = 1; // deploy contract
+        DEPLOY = 2; // deploy contract
+        EXECUTE = 3; // execute contract
+    };
+
+    CMD cmd = 1;
+    string caller_address = 2;
+    optional DeployInfo deploy_info = 3;
+    optional string contract_address = 4;
+    optional Params func_params = 5;
+}
+
+
+
+message Response {
+int32 ret = 1;
+optional Account account = 2;
+optional Contract contract = 3;
+optional string res = 4;
+}

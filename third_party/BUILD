@@ -83,3 +83,12 @@ cc_library(
         "@com_chriskohlhoff_asio//:asio",
     ],
 )
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+cc_library(
+    name = "evm_lib",
+    deps = [
+        "@eEVM",
+    ],
+)
