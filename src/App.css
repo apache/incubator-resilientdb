@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Quicksand", sans-serif;
+}
+body{
+  background:#ecf0f1
+}
+.mainContainer {
+  width: 350px;
+  height: 520px;
+  margin: 0 auto;
+  box-shadow:0 0 10px #2323;
+  margin-top: 50px;
+  background:white;
+}
+.cardHolder {
+  height: 240px;
+  margin-top: -50px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 800'%3E%3Cg %3E%3Ccircle fill='%23000000' cx='400' cy='400' r='600'/%3E%3Ccircle fill='%23230046' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f0052' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%233b075e' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%2348156a' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23552277' cx='400' cy='400' r='100'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
+  box-shadow: inset 0 0 0 2000px rgb(91 118 200 / 75%);
+}
+.center{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.vcenter{
+  display:flex;
+  align-items:center;
+}
+.heading{
+  height:40px;
+  font-size:14px;
+  letter-spacing:2px;
+  color:white;
+}
+.stepHeading{
+  height:20px;
+  font-size:16px;
+  font-weight:bolder;
+  letter-spacing:2px;
+  color:white;
+}
+
+.logo{
+  height: 125px;
+  width: 125px;
+  margin: 0 auto;
+  border-radius: 2.2em;
+  margin-top: 20px;
+  padding: 22px 23px;
+}
+
+.card{
+  height:180px;
+  width:280px;
+  background:white;
+  margin:0 auto;
+  border-radius:1.2em;
+  margin-top:25px;
+  padding:12px 20px;
+}
+.card > .part{
+  height:50px;
+  margin-bottom:4px;
+}
+.card > .top{
+  display:flex;
+  justify-content:flex-end;
+}
+.card > .top > img{
+  height:48px;
+}
+.infoheader{
+  height:20px;
+  font-size:11px;
+  font-weight:bold;
+  letter-spacing:2px;
+  color:#95a5a6
+}
+.card > .middle > .infocontent{
+  justify-content:space-between;
+  height:30px;
+}
+.number{
+  width:150px;
+}
+.card > .middle > .infocontent > .num{
+  height:25px;
+  font-size:14px;
+  letter-spacing:2px;
+  font-weight:bolder;
+}
+.card > .bottom{
+  display:flex;
+  justify-content:space-between
+}
+.holderInfo{
+  width:150px;
+}
+.holderInfo > .name,.expDate > .date{
+  font-size:12px;
+  font-weight:bolder;
+  letter-spacing:2px;
+}
+.status{
+  height:35px;
+  width:300px;
+  margin:0 auto;
+  box-shadow:0 0 10px #2323; 
+  margin-top:16px;
+  padding:0 16px;
+  font-size:12px;
+  letter-spacing:2px;
+  font-weight:bolder;
+}
+.status > i{
+  color:#16a085;
+  margin-right:20px;
+  font-size:16px;
+}
+h5{
+  width:220px;
+  margin:0 auto;
+  padding:8px;
+  margin-top:14px;
+  border-bottom:2px solid #bdc3c7;
+  letter-spacing:2px;
+  font-size:12px;
+  margin-bottom:12px;
+}
+.options{
+  width:250px;
+  height:75px;
+  margin:0 auto;
+  justify-content:space-between;
+}
+.options > .opt{
+  height:75px;
+  width:75px;
+  box-shadow:0 0 10px #2323; 
+  border-radius:5px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.options > .opt > .icon{
+  height:30px;
+  color:#95a5a6;
+  font-size:20px;
+}
+.optname{
+  height:30px;
+  font-size:10px;
+  color:#232323;
+  letter-spacing:2px;
+  font-weight:bolder
+}
+.payment{
+  height:80px;
+  position:relative;
+  top: 75px;
+  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.val{
+  height:40px;
+  font-size:24px;
+  font-weight:bolder;
+  letter-spacing:2px;
+  color:#6480ef;
+}
+.button{
+  width:120px;
+  height:35px;
+  border-radius:1.2em;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  ); 
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+}
+
+.buttonCreate{
+  width:190px;
+  height:45px;
+  border-radius:1.2em;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  ); 
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+}
+
+.footer {
+  width: 100%;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  );
+  color: white;
+  text-align: center;
+  margin-top: 156px;
+  padding: 15px 0;
+  text-align: center;
+}
+
+.publicKey {
+  font-size: 10px;
+  display: block;
+  border-radius:1.2em;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  ); 
+  color:white;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.paymentNew {
+  height:30px;
+  position:relative;
+  top: 75px;
+  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+
+.paymentKey {
+  height:18px;
+  position:relative;
+  top: 75px;
+  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
