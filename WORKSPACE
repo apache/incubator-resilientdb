@@ -282,3 +282,10 @@ http_archive(
     strip_prefix = "rocksdb-7.2.2",
     url = "https://github.com/facebook/rocksdb/archive/refs/tags/v7.2.2.zip",
 )
+
+http_archive(
+    name = "eEVM",
+    build_file = "//third_party:eEVM.BUILD",
+    strip_prefix = "eEVM-main",
+    url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
+)

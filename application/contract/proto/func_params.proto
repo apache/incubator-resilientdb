@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package resdb.contract;
+
+message Params {
+  repeated bytes param = 1;
+  string func_name = 2;
+}
+
+message FuncInfo {
+  string func_name = 1;
+  string hash = 2;
+}
+
+message DeployInfo {
+  repeated bytes init_param = 1;
+  repeated FuncInfo func_info = 2;
+  string contract_bin = 3;
+  string contract_name = 4;
+}
+
