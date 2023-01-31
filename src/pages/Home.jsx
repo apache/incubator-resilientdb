@@ -5,10 +5,7 @@ import CryptoJS from "crypto-js";
 import { sendRequest } from '../client';
 import Footer from "../components/Footer";
 
-function Home() {
-  const [publicKey, setPublicKey] = useState("");
-  const [publicKeyDisplay, setPublicKeyDisplay] = useState(false);
-
+function Home(props) {
   const createAccount = async () => {
     const query = `mutation {
         generateKeys {
@@ -19,8 +16,8 @@ function Home() {
     
     const res = await sendRequest(query);
     const getPublicKey = res.data.generateKeys.publicKey;
-    setPublicKeyDisplay(true);
-    setPublicKey(getPublicKey);
+    props.setPublicKeyDisplay(true);
+    props.setPublicKey(getPublicKey);
     const phrase = CryptoJS.AES.encrypt(
       JSON.stringify(res.data.generateKeys.privateKey),
       "abc1234"
@@ -50,13 +47,13 @@ function Home() {
       </div>
 
       
-      {publicKeyDisplay &&
+      {props.publicKeyDisplay &&
       <div>
         <div className='paymentNew vcenter'> 
           <div>Public Key</div> 
         </div> 
         <div className='paymentKey vcenter'> 
-          <div className='publicKey'>{publicKey}</div>
+          <div className='publicKey'>{props.publicKey}</div>
         </div>
       </div>
       }

@@ -1,13 +1,25 @@
-import logo from './logo.png';
 import './App.css';
-import axios from 'axios';
 import React, { useState } from 'react';
-import CryptoJS from "crypto-js";
 import Home from "./pages/Home";
 
 function App() {
+  const [publicKey, setPublicKey] = useState("");
+  const [publicKeyDisplay, setPublicKeyDisplay] = useState(false);
+  const props = {
+    publicKey,
+    publicKeyDisplay
+  }
+
+  const propsChange = {
+    setPublicKey,
+    setPublicKeyDisplay
+  }
+
   return (
-    <Home />
+    <>
+      <Home {...props} {...propsChange} />
+      <input value={publicKey}  />
+    </>
   )
 }
 
