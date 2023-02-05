@@ -165,7 +165,21 @@ h5{
 .payment{
   height:80px;
   position:relative;
-  top: 75px;
+  top: 20px;
+  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.paymentTop{
+  height:0px;
+  position:relative;
+  top: 60px;
+  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.paymentBottom{
+  height:110px;
+  position:relative;
+  top: 60px;
   box-shadow: 0 -5px 5px -5px #2323;
   justify-content:space-around;
 }
@@ -192,7 +206,7 @@ h5{
 }
 
 .buttonCreate{
-  width:190px;
+  width:250px;
   height:45px;
   border-radius:1.2em;
   background:linear-gradient(
@@ -219,7 +233,7 @@ h5{
   );
   color: white;
   text-align: center;
-  margin-top: 156px;
+  margin-top: 45px;
   padding: 15px 0;
   text-align: center;
 }
@@ -255,4 +269,24 @@ h5{
   top: 75px;
   box-shadow: 0 -5px 5px -5px #2323;
   justify-content:space-around;
+}
+
+input {
+  background-image: none;
+  border: solid 2px #6480ef;
+  border-radius: 1.2em;
+  color: inherit;
+  font: inherit;
+  margin: 0;
+  outline: 0;
+  padding: 10px 10px 10px 10px;
+  -webkit-transition: background-color 0.3s;
+  -o-transition: background-color 0.3s;
+  transition: background-color 0.3s;
+  width: 250px;
+}
+
+.special {
+  margin-top: 0rem;
+  margin-bottom: 0rem;
 }

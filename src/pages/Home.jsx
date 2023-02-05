@@ -4,30 +4,49 @@ import React, { useState } from 'react';
 import CryptoJS from "crypto-js";
 import { sendRequest } from '../client';
 import Footer from "../components/Footer";
+import { useAlert } from 'react-alert'
 
 function Home(props) {
+  const alert = useAlert();
+
   const createAccount = async () => {
-    const query = `mutation {
+    if(props.password===props.confirmPassword){
+      const query = `mutation {
         generateKeys {
           publicKey
           privateKey
         }
       }`
     
-    const res = await sendRequest(query);
-    const getPublicKey = res.data.generateKeys.publicKey;
-    props.setPublicKeyDisplay(true);
-    props.setPublicKey(getPublicKey);
-    const phrase = CryptoJS.AES.encrypt(
-      JSON.stringify(res.data.generateKeys.privateKey),
-      "abc1234"
-    ).toString();
-    console.log(phrase);
+      const res = await sendRequest(query);
+      const getPublicKey = res.data.generateKeys.publicKey;
+      props.setPublicKeyDisplay(true);
+      props.setPublicKey(getPublicKey);
+      const phrase = CryptoJS.AES.encrypt(
+        JSON.stringify(res.data.generateKeys.privateKey),
+        props.password
+      ).toString();
+      console.log(props.publicKey);
+      console.log(phrase);
 
-    const bytes = CryptoJS.AES.decrypt(phrase, "abc1234");
-    const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    console.log(data);
+      const bytes = CryptoJS.AES.decrypt(phrase, props.password);
+      const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+      console.log(data);
+    }
+    else {
+      alert.show("Passwords don't match.");
+    }
+    
   }
+
+  const onChangePasswordHandler = event => {
+    props.setPassword(event.target.value);
+  };
+
+  const onChangeConfirmPasswordHandler = event => {
+    props.setConfirmPassword(event.target.value);
+  };
+ 
 
   return (
   <div className="App">
@@ -41,6 +60,13 @@ function Home(props) {
           </div>
         </div>
       </div>
+
+      <div className="paymentTop vcenter">
+          <input type="password" value={props.password} onChange={onChangePasswordHandler} placeholder="Enter Password" />
+      </div>
+      <div className="paymentBottom vcenter">
+          <input type="password" value={props.confirmPassword} onChange={onChangeConfirmPasswordHandler} placeholder="Confirm Password" />
+      </div>
     
       <div className="payment vcenter">
         <button className="buttonCreate center" onClick={createAccount}>Create Account</button>
@@ -49,12 +75,6 @@ function Home(props) {
       
       {props.publicKeyDisplay &&
       <div>
-        <div className='paymentNew vcenter'> 
-          <div>Public Key</div> 
-        </div> 
-        <div className='paymentKey vcenter'> 
-          <div className='publicKey'>{props.publicKey}</div>
-        </div>
       </div>
       }
 
