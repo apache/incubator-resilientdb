@@ -4,21 +4,28 @@ import Home from "./pages/Home";
 
 function App() {
   const [publicKey, setPublicKey] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [publicKeyDisplay, setPublicKeyDisplay] = useState(false);
+  const [values, setValues] = useState({
+    password: "",
+    showPassword: false,
+  })
+  const [confirmValues, setConfirmValues] = useState({
+    password: "",
+    showPassword: false,
+  })
+
   const props = {
     publicKey,
     publicKeyDisplay,
-    password,
-    confirmPassword
+    values,
+    confirmValues
   }
 
   const propsChange = {
     setPublicKey,
     setPublicKeyDisplay,
-    setPassword,
-    setConfirmPassword
+    setValues,
+    setConfirmValues
   }
 
   return (

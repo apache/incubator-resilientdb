@@ -271,7 +271,7 @@ h5{
   justify-content:space-around;
 }
 
-input {
+.inputStyle {
   background-image: none;
   border: solid 2px #6480ef;
   border-radius: 1.2em;
