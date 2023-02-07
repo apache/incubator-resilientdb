@@ -1,19 +1,36 @@
+/*global chrome*/
 import logo from '../logo.png';
 import '../App.css';
-import React, { useState } from 'react';
 import CryptoJS from "crypto-js";
 import { sendRequest } from '../client';
 import Footer from "../components/Footer";
 import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";
-import InputLabel from "@material-ui/core/InputLabel";
 import Visibility from "@material-ui/icons/Visibility";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
+import bcrypt from 'bcryptjs';
+import React, { useEffect } from 'react';
 
 function Home(props) {
+  useEffect(() => {
+    chrome.storage.sync.get(["store"], (res) => {
+      console.log(res.store.publicKey);
+      if(res.store.publicKey){
+        props.setPublicKeyDisplay(true);
+        props.setPublicKey(res.store.publicKey);
+        props.setHash(res.store.hash);
+        props.setEncryptedPrivateKey(res.store.encryptedPrivateKey);
+        props.navigate("/login");
+      }
+    });
+  });
+
   const alert = useAlert();
+  props.setFooter("footer");
+
+  const salt = bcrypt.genSaltSync(10);
 
   const createAccount = async () => {
     if(props.values.password===props.confirmValues.password){
@@ -23,21 +40,32 @@ function Home(props) {
           privateKey
         }
       }`
-    
-      const res = await sendRequest(query);
-      const getPublicKey = res.data.generateKeys.publicKey;
-      props.setPublicKeyDisplay(true);
-      props.setPublicKey(getPublicKey);
-      const phrase = CryptoJS.AES.encrypt(
-        JSON.stringify(res.data.generateKeys.privateKey),
-        props.values.password
-      ).toString();
-      console.log(props.publicKey);
-      console.log(phrase);
 
-      const bytes = CryptoJS.AES.decrypt(phrase, props.values.password);
-      const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      console.log(data);
+      chrome.storage.sync.clear(async function(){
+          const result = await sendRequest(query).then(res => { 
+          const getPublicKey = res.data.generateKeys.publicKey;
+          props.setPublicKeyDisplay(true);
+          props.setPublicKey(getPublicKey);
+          props.setPrivateKey(res.data.generateKeys.privateKey);
+
+          const phrase = CryptoJS.AES.encrypt(
+            JSON.stringify(res.data.generateKeys.privateKey),
+            props.values.password
+          ).toString();
+          props.setEncryptedPrivateKey(phrase);
+
+          var hash = bcrypt.hashSync(props.values.password, salt);
+          
+          const store = {publicKey: props.publicKey, encryptedPrivateKey: props.encryptedPrivateKey, hash: hash};
+          return store;
+        }).then(store => {
+          chrome.storage.sync.set({ store }, () => {
+            /* Stored in local storage */
+            console.log("test");
+            props.navigate("/dashboard");
+          });
+        });
+      });
     }
     else {
       alert.show("Passwords don't match.");
@@ -127,16 +155,10 @@ function Home(props) {
       </div>
     
       <div className="payment vcenter">
-        <button className="buttonCreate center" onClick={createAccount}>Create Account</button>
+      <button className="buttonCreate center" onClick={createAccount}>Create Account</button>
       </div>
 
-      
-      {props.publicKeyDisplay &&
-      <div>
-      </div>
-      }
-
-      <Footer />
+      <Footer {...props} />
     </div>
   </div>
   )

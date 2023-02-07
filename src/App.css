@@ -166,21 +166,36 @@ h5{
   height:80px;
   position:relative;
   top: 20px;
-  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.paymentLogin{
+  height: 70px;
+  position:relative;
+  top: 105px;
   justify-content:space-around;
 }
 .paymentTop{
   height:0px;
   position:relative;
   top: 60px;
-  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.paymentLoginTop{
+  height:0px;
+  position:relative;
+  top: 80px;
   justify-content:space-around;
 }
 .paymentBottom{
   height:110px;
   position:relative;
   top: 60px;
-  box-shadow: 0 -5px 5px -5px #2323;
+  justify-content:space-around;
+}
+.paymentBottomDashboard{
+  height:95px;
+  position:relative;
+  top: 30px;
   justify-content:space-around;
 }
 .val{
@@ -238,6 +253,21 @@ h5{
   text-align: center;
 }
 
+.footerLogin {
+  width: 100%;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  );
+  color: white;
+  text-align: center;
+  margin-top: 45px;
+  padding: 15px 0;
+  text-align: center;
+}
+
 .publicKey {
   font-size: 10px;
   display: block;
@@ -259,7 +289,6 @@ h5{
   height:30px;
   position:relative;
   top: 75px;
-  box-shadow: 0 -5px 5px -5px #2323;
   justify-content:space-around;
 }
 
@@ -267,7 +296,6 @@ h5{
   height:18px;
   position:relative;
   top: 75px;
-  box-shadow: 0 -5px 5px -5px #2323;
   justify-content:space-around;
 }
 
@@ -289,4 +317,18 @@ h5{
 .special {
   margin-top: 0rem;
   margin-bottom: 0rem;
+}
+
+.routing {
+  text-decoration: none;
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+}
+
+.publicKeyStyle {
+  font-size: 10px;
 }
