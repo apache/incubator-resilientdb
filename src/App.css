@@ -180,6 +180,14 @@ h5{
   top: 60px;
   justify-content:space-around;
 }
+
+.paymentTopKey{
+  height:0px;
+  position:relative;
+  top: 20px;
+  justify-content:space-around;
+}
+
 .paymentLoginTop{
   height:0px;
   position:relative;
@@ -192,12 +200,51 @@ h5{
   top: 60px;
   justify-content:space-around;
 }
+
+.paymentBottomKey{
+  height:110px;
+  position:relative;
+  top: 10px;
+  justify-content:space-around;
+}
+
 .paymentBottomDashboard{
   height:95px;
   position:relative;
-  top: 30px;
+  top: -10px;
   justify-content:space-around;
 }
+
+.paymentBottomDashboardBack{
+  height:30px;
+  position:relative;
+  top: 0px;
+  justify-content:space-around;
+  width: 125%;
+  left: 30px;
+  right: 30px;
+}
+
+.paymentBottomDashboardBack .buttonCreate{
+  width:250px;
+  height:45px;
+  border-radius:1.2em;
+  background:linear-gradient(
+    to right,
+    #6480ef,
+    #7775e8,
+    #806ce8
+  ); 
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+  width: 50%;
+  align-self: right;
+}
+
 .val{
   height:40px;
   font-size:24px;
@@ -329,6 +376,25 @@ h5{
   cursor: pointer;
 }
 
+.routingBack {
+  text-decoration: none;
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.scrollabletextbox {
+  overflow:scroll;
+  font-size: 10px;
+  font-weight: 10em;
+  font-style: italic;
+}
+
 .publicKeyStyle {
   font-size: 10px;
 }
+

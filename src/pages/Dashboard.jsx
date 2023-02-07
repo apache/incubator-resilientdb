@@ -20,15 +20,20 @@ function Dashboard(props) {
         </div>
       </div>
 
-      <div className="paymentTop vcenter">
+      <div className="paymentTopKey vcenter">
         <p className="publicKeyStyle"><b>Public Key:</b> {props.publicKey}</p>
       </div>
-      <div className="paymentBottom vcenter">
+      <div className="paymentBottomKey vcenter">
         <p className="publicKeyStyle"><b>Private Key:</b> {props.privateKey}</p>
       </div>
 
       <div className="paymentBottomDashboard vcenter">
-      <Link to="/login" className="routing"><button className="buttonCreate center"><ArrowBackIcon /> Back</button></Link>
+        <textarea className="scrollabletextbox" rows="3" cols="35"> Insert Dynamic Manifest file here</textarea>
+      </div>
+
+      <div className="paymentBottomDashboardBack vcenter">
+        <button className="buttonCreate center" data-inline="true"> Submit </button>
+        <Link to="/login" className="routingBack"><button className="buttonCreate center" data-inline="true"><ArrowBackIcon /> Back </button></Link>
       </div>
 
       <Footer {...props} />
