@@ -22,7 +22,6 @@ function Home(props) {
         props.setPublicKey(res.store.publicKey);
         props.setHash(res.store.hash);
         props.setEncryptedPrivateKey(res.store.encryptedPrivateKey);
-        props.navigate("/login");
       }
     });
   });
@@ -61,7 +60,6 @@ function Home(props) {
         }).then(store => {
           chrome.storage.sync.set({ store }, () => {
             /* Stored in local storage */
-            console.log("test");
             props.navigate("/dashboard");
           });
         });
