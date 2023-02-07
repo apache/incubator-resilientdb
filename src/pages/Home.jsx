@@ -16,7 +16,6 @@ import React, { useEffect } from 'react';
 function Home(props) {
   useEffect(() => {
     chrome.storage.sync.get(["store"], (res) => {
-      console.log(res.store.publicKey);
       if(res.store.publicKey){
         props.setPublicKeyDisplay(true);
         props.setPublicKey(res.store.publicKey);
