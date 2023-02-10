@@ -1,6 +1,16 @@
-# ResilientDB: A High-throughput yielding Permissioned Blockchain Fabric.
+# ResilientDB: Global-Scale Sustainable Blockchain Fabric
 
- ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
+### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
+
+### Quick Facts about of ResilientDB
+1. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
+2. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
+3. ReslientDB designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
+4. ResilientDB exposes a wide range of interfaces, including Key-Value service, **Smart Contracts**, Python SDK/API.
+5. To facilitate data storage and persistence, ResilientDB provides support for an **in-memory key-value store**. Further, it provides durability through  **LevelDB** and **RocksDB**.
+6. With ResilientDB we also provide a seamless **GUI display**. This display generates a status log and also accesses **Grafana to plot the results**. 
+
+---
 
 
 ## Online Documentation:
