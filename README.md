@@ -63,3 +63,22 @@ You will see the following result if successful:
 
     client getvalues value = [test_value]
 
+
+
+## FAQ
+
+If you fail to install bazel on your ubuntu server, follow these steps:
+
+> mkdir bazel-src
+>
+> cd bazel-src
+>
+> wget https://github.com/bazelbuild/bazel/releases/download/5.4.0/bazel-5.4.0-dist.zip
+>
+> sudo apt-get install build-essential openjdk-11-jdk python zip unzip
+>
+> unzip bazel-5.4.0-dist.zip
+>
+> env EXTRA_BAZEL_ARGS="--tool_java_runtime_version=local_jdk" bash ./compile.sh
+>
+> sudo mv output/bazel /usr/local/bin
