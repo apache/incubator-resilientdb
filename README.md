@@ -67,7 +67,7 @@ You will see the following result if successful:
 
 ## FAQ
 
-If you fail to install bazel on your ubuntu server, follow these steps:
+If installing bazel fails on a ubuntu server, follow these steps:
 
 > mkdir bazel-src
 >
