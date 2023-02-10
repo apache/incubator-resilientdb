@@ -15,7 +15,22 @@
 
 ## Online Documentation:
 
-You can find the latest ResilientDB documentation, including a programming guide, on the **[project web blog](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file only contains basic setup instructions.
+You may find the latest ResilientDB documentation, including a programming guide, on the **[project web blog](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
+
+#### Table of Contents
+1. **[Architecture Overview (network, consensus, and execution layers)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
+2. Multi-threaded Runtime Design [TBA]
+3. Transaction Manager (block life-cycle and consensus optimization) [TBA]
+4. Multi-threaded Runtime Design [TBA]
+5. Recovery & Checkpoint Design [TBA]
+6. Ledger Durability [TBA]
+7. Interface/APIs (**[Key-Value service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, Python SDK [TBA])
+8. Continuous Integration & Testing [TBA]
+9. **[Monitoring Dashboard](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)** and **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
+10. ResilientDB Configuration  [TBA]
+11. **[Build Your First Application](https://blog.resilientdb.com/2022/09/28/StartYourApplication.html)**
+12. Detailed API Documentation  [TBA]
+13. Overview of Class Digram & Code Structure  [TBA]
 
 ## OS Requirements
 Ubuntu 20.*
