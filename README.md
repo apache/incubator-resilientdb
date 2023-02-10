@@ -20,14 +20,14 @@ You may find the latest ResilientDB documentation, including a programming guide
 #### Table of Contents
 1. **[Architecture Overview (network, consensus, and execution layers)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
 2. Multi-threaded Runtime Design [TBA]
-3. Transaction Manager (block life-cycle and consensus optimization) [TBA]
+3. Transaction Manager Design (block life-cycle and consensus optimization) [TBA]
 4. Multi-threaded Runtime Design [TBA]
 5. Recovery & Checkpoint Design [TBA]
-6. Ledger Durability [TBA]
-7. Interface/APIs (**[Key-Value service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, Python SDK [TBA])
-8. Continuous Integration & Testing [TBA]
-9. **[Monitoring Dashboard](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)** and **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
-10. ResilientDB Configuration  [TBA]
+6. Ledger Durability Design [TBA]
+7. API/SDK Overview  (**[Key-Value Service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, Python SDK [TBA])
+8. ResilientDB System Configuration  [TBA]
+9. Continuous Integration & Testing [TBA]
+10. **[Monitoring Dashboard](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)** and **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
 11. **[Build Your First Application](https://blog.resilientdb.com/2022/09/28/StartYourApplication.html)**
 12. Detailed API Documentation  [TBA]
 13. Overview of Class Digram & Code Structure  [TBA]
@@ -37,7 +37,7 @@ Ubuntu 20.*
 
 ---
 
-## Steps to ResilientDB
+## Build and Deploy ResilientDB
 
 Install dependencies:
 
