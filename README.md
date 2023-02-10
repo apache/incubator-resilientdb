@@ -2,7 +2,7 @@
 
 ### ResilientDB aims at *Making Permissioned Blockchain Systems Fast Again*. ResilientDB makes *system-centric* design decisions by adopting a *multi-thread architecture* that encompasses *deep-pipelines*. Further, we *separate* the ordering of client transactions from their execution, which allows us to perform *out-of-order processing of messages*.
 
-### Quick Facts about of ResilientDB
+### Quick Facts on ResilientDB
 1. **PBFT** [Castro and Liskov, 1998] protocol is used to achieve consensus among the replicas.
 2. ResilientDB expects minimum **3f+1** replicas, where **f** is the maximum number of byzantine (or malicious) replicas.
 3. ReslientDB designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
