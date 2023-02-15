@@ -24,7 +24,7 @@ You may find the latest ResilientDB documentation, including a programming guide
 4. Multi-threaded Runtime Design [TBA]
 5. Recovery & Checkpoint Design [TBA]
 6. Ledger Durability Design [TBA]
-7. API/SDK Features: **[Key-Value Service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, Python SDK [TBA]
+7. API/SDK Features: **[Key-Value Service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
 8. ResilientDB System Configuration  [TBA]
 9. Continuous Integration & Testing [TBA]
 10. **[Monitoring Dashboard](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)** and **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
