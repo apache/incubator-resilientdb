@@ -18,12 +18,11 @@
 You may find the latest ResilientDB documentation, including a programming guide, on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
 
 #### Table of Contents
-1. **[Architecture Overview (network, consensus, and execution layers)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
-2. Multi-threaded Runtime Design [TBA]
-3. Transaction Manager Design (block life-cycle and consensus optimization) [TBA]
-4. Recovery & Checkpoint Design [TBA]
-5. Ledger Durability Design [TBA]
-6. API/SDK Interfaces: **[Key-Value Service](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
+1. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management, storage)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
+2. Recovery & Checkpoint Design [TBA]
+3. **Service Layer:** Transaction Manager Design (runtime and chain state) [TBA]
+4. **[Durability Design](https://blog.resilientdb.com/2023/02/15/NexResDurabilityLayer.html)**
+5. **Tooling & API Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
 7. System Parameters & Configuration  [TBA]
 8. Continuous Integration & Testing [TBA]
 9. **[Installing & Deploying ResilientDB](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**
