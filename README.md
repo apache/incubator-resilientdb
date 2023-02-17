@@ -19,18 +19,18 @@ You may find the latest ResilientDB documentation, including a programming guide
 
 #### Table of Contents
 1. Software Stack Architecture: Platform, Service, and Tooling/API Layers [TBA]
-2. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management, storage)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
-3. Recovery & Checkpoint Design [TBA]
+   - Detailed API Documentation  [TBA]
+   - Overview of Class Digram & Code Structure  [TBA]
+3. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management, storage)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
+   - Recovery & Checkpoint Design [TBA]
+   - **[Durability Design](https://blog.resilientdb.com/2023/02/15/NexResDurabilityLayer.html)**
 4. **Service Layer:** Transaction Manager Design (runtime and chain state) [TBA]
-5. **[Durability Design](https://blog.resilientdb.com/2023/02/15/NexResDurabilityLayer.html)**
-6. **Tooling & API Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
-7. System Parameters & Configuration  [TBA]
-8. Continuous Integration & Testing [TBA]
-9. **[Installing & Deploying ResilientDB](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**
-10. Dashboard: **[Monitoring](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)**, **[Deployment](https://blog.resilientdb.com/2022/12/06/DeployGrafanaDashboardOnOracleCloud.html)**, **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
-11. Build Your First Application: **[KV Service](https://blog.resilientdb.com/2022/09/28/StartYourApplication.html)**, **[UTXO](https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html)**
-12. Detailed API Documentation  [TBA]
-13. Overview of Class Digram & Code Structure  [TBA]
+5. **Tooling & API Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
+6. **[Installing & Deploying ResilientDB](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**
+   - Build Your First Application: **[KV Service](https://blog.resilientdb.com/2022/09/28/StartYourApplication.html)**, **[UTXO](https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html)**
+   - Dashboard: **[Monitoring](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)**, **[Deployment](https://blog.resilientdb.com/2022/12/06/DeployGrafanaDashboardOnOracleCloud.html)**, **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
+   - System Parameters & Configuration  [TBA] 
+   - Continuous Integration & Testing [TBA]
 
 ## OS Requirements
 Ubuntu 20.*
