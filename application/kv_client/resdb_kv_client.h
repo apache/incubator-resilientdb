@@ -36,6 +36,9 @@ class ResDBKVClient : public ResDBUserClient {
 
   int Set(const std::string& key, const std::string& data);
   std::unique_ptr<std::string> Get(const std::string& key);
+  std::unique_ptr<std::string> GetValues();
+  std::unique_ptr<std::string> GetRange(const std::string& min_key,
+                                        const std::string& max_key);
 };
 
 }  // namespace resdb

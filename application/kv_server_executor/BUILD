@@ -11,6 +11,8 @@ cc_library(
         "//durable_layer:rocksdb_durable",
         "//execution:transaction_executor_impl",
         "//proto:kv_server_cc_proto",
+        "@pybind11",
+        "@pybind11//:pybind11_embed",
     ],
 )
 
