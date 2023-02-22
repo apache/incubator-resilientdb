@@ -7,7 +7,7 @@
 * Added REST CROW endpoints to interface with the on-chain KV service. ([Glenn Chen](https://github.com/glenn-chen) and [Julieta Duarte](https://github.com/juduarte00))
 * Extended KV service range queries. ([Glenn Chen](https://github.com/glenn-chen) and [Julieta Duarte](https://github.com/juduarte00))
 
-**Fixed Bugs**
+**Fixed Bugs:**
 * Fixed KV service queries on all values retrieving empty placeholder values ([Glenn Chen](https://github.com/glenn-chen))
 
 ### v2.0 ([2020-02-29](https://github.com/resilientdb/resilientdb/releases/tag/v2.0))
