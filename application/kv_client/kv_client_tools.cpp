@@ -38,16 +38,26 @@ using resdb::ResDBConfig;
 using resdb::ResDBKVClient;
 
 int main(int argc, char** argv) {
-  if (argc < 4) {
-    printf("<config path> <cmd>(set/get), key [value]\n");
+  if (argc < 3) {
+    printf(
+        "<config path> <cmd>(set/get/getvalues/getrange), [key] "
+        "[value/key2]\n");
     return 0;
   }
   std::string client_config_file = argv[1];
   std::string cmd = argv[2];
-  std::string key = argv[3];
+  std::string key;
+  if (cmd != "getvalues") {
+    key = argv[3];
+  }
   std::string value;
   if (cmd == "set") {
     value = argv[4];
+  }
+
+  std::string key2;
+  if (cmd == "getrange") {
+    key2 = argv[4];
   }
 
   ResDBConfig config = GenerateResDBConfig(client_config_file);
@@ -59,12 +69,26 @@ int main(int argc, char** argv) {
   if (cmd == "set") {
     int ret = client.Set(key, value);
     printf("client set ret = %d\n", ret);
-  } else {
+  } else if (cmd == "get") {
     auto res = client.Get(key);
     if (res != nullptr) {
       printf("client get value = %s\n", res->c_str());
     } else {
       printf("client get value fail\n");
+    }
+  } else if (cmd == "getvalues") {
+    auto res = client.GetValues();
+    if (res != nullptr) {
+      printf("client getvalues value = %s\n", res->c_str());
+    } else {
+      printf("client getvalues value fail\n");
+    }
+  } else if (cmd == "getrange") {
+    auto res = client.GetRange(key, key2);
+    if (res != nullptr) {
+      printf("client getrange value = %s\n", res->c_str());
+    } else {
+      printf("client getrange value fail\n");
     }
   }
 }
