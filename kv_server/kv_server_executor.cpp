@@ -26,11 +26,12 @@
 #include "kv_server/kv_server_executor.h"
 
 #include <glog/logging.h>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <pybind11/embed.h>
 
 #include "proto/kv_server.pb.h"
+
+namespace py = pybind11;
+using namespace py::literals;
 
 namespace resdb {
 
@@ -40,6 +41,13 @@ KVServerExecutor::KVServerExecutor(const ResConfigData& config_data,
       r_storage_layer_(cert_file, config_data) {
   equip_rocksdb_ = config_data.rocksdb_info().enable_rocksdb();
   equip_leveldb_ = config_data.leveldb_info().enable_leveldb();
+  require_txn_validation_ = config_data.require_txn_validation();
+  if (require_txn_validation_) {
+    py::initialize_interpreter();
+    py::exec(R"(
+      import json
+    )");
+  }
 }
 
 KVServerExecutor::KVServerExecutor(void) {}
@@ -60,6 +68,8 @@ std::unique_ptr<std::string> KVServerExecutor::ExecuteData(
     kv_response.set_value(Get(kv_request.key()));
   } else if (kv_request.cmd() == KVRequest::GETVALUES) {
     kv_response.set_value(GetValues());
+  } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
@@ -70,11 +80,40 @@ std::unique_ptr<std::string> KVServerExecutor::ExecuteData(
   return resp_str;
 }
 
+// Validate transactions committed by the Python SDK
+bool KVServerExecutor::Validate(const std::string& transaction) {
+  auto locals = py::dict("transaction"_a = transaction);
+
+  py::exec(R"(
+    from sdk_validator.validator import is_valid_tx
+
+    try:
+      txn_dict = json.loads(transaction)
+      ret = is_valid_tx(txn_dict)
+      is_valid = ret[0] == 0
+    except (KeyError, AttributeError, ValueError):
+      is_valid = False
+  )",
+           py::globals(), locals);
+
+  bool is_valid = locals["is_valid"].cast<bool>();
+
+  return is_valid;
+}
+
 void KVServerExecutor::Set(const std::string& key, const std::string& value) {
+  if (require_txn_validation_) {
+    bool is_valid = Validate(value);
+    if (!is_valid) {
+      LOG(ERROR) << "Invalid transaction for " << key;
+      return;
+    }
+  }
+
   if (equip_rocksdb_) {
-    r_storage_layer_.setDurable(key, value);
+    r_storage_layer_.SetValue(key, value);
   } else if (equip_leveldb_) {
-    l_storage_layer_.setDurable(key, value);
+    l_storage_layer_.SetValue(key, value);
   } else {
     kv_map_[key] = value;
   }
@@ -82,25 +121,54 @@ void KVServerExecutor::Set(const std::string& key, const std::string& value) {
 
 std::string KVServerExecutor::Get(const std::string& key) {
   if (equip_rocksdb_) {
-    return r_storage_layer_.getDurable(key);
+    return r_storage_layer_.GetValue(key);
   } else if (equip_leveldb_) {
-    return l_storage_layer_.getDurable(key);
+    return l_storage_layer_.GetValue(key);
   } else {
-    return kv_map_[key];
+    auto search = kv_map_.find(key);
+    if (search != kv_map_.end())
+      return search->second;
+    else
+      return "";
   }
 }
 
 std::string KVServerExecutor::GetValues() {
   if (equip_rocksdb_) {
-    return r_storage_layer_.getAllValues();
+    return r_storage_layer_.GetAllValues();
   } else if (equip_leveldb_) {
-    return l_storage_layer_.getAllValues();
+    return l_storage_layer_.GetAllValues();
   } else {
-    std::string values = "[\n";
+    std::string values = "[";
+    bool first_iteration = true;
     for (auto kv : kv_map_) {
+      if (!first_iteration) values.append(",");
+      first_iteration = false;
       values.append(kv.second);
     }
-    values.append("]\n");
+    values.append("]");
+    return values;
+  }
+}
+
+// Get values on a range of keys
+std::string KVServerExecutor::GetRange(const std::string& min_key,
+                                       const std::string& max_key) {
+  if (equip_rocksdb_) {
+    return r_storage_layer_.GetRange(min_key, max_key);
+  } else if (equip_leveldb_) {
+    return l_storage_layer_.GetRange(min_key, max_key);
+  } else {
+    std::string values = "[";
+    bool first_iteration = true;
+    for (auto kv : kv_map_) {
+      if (kv.first >= min_key && kv.first <= max_key) {
+        if (!first_iteration) values.append(",");
+        first_iteration = false;
+        values.append(kv.second);
+      }
+    }
+    values.append("]");
     return values;
   }
 }

@@ -31,7 +31,7 @@
 
 namespace resdb {
 
-SDKTransaction fromJson(const std::string &json) {
+SDKTransaction ParseSDKTransaction(const std::string &json) {
   rapidjson::Document doc;
   doc.Parse(json.c_str());
   SDKTransaction transaction{};

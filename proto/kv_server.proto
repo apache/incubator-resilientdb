@@ -8,6 +8,7 @@ message KVRequest {
         SET = 1;
         GET = 2;
         GETVALUES = 3;
+        GETRANGE = 4;
     }
     CMD cmd = 1;
     string key = 2;

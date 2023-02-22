@@ -227,4 +227,3 @@ cc_library(
         "//server:consensus_service",
     ],
 )
-

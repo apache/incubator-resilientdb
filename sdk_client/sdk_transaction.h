@@ -26,7 +26,6 @@
 #pragma once
 
 #include <string>
-
 namespace resdb {
 
 struct SDKTransaction {
@@ -34,6 +33,6 @@ struct SDKTransaction {
   std::string value;
 };
 
-SDKTransaction fromJson(const std::string &json);
+SDKTransaction ParseSDKTransaction(const std::string &json);
 
 }  // namespace resdb

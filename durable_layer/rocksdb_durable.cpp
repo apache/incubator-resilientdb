@@ -115,8 +115,7 @@ RocksDurable::RocksDurable(void) {
   LOG(ERROR) << "Successfully opened RocksDB";
 }
 
-void RocksDurable::setDurable(const std::string& key,
-                              const std::string& value) {
+void RocksDurable::SetValue(const std::string& key, const std::string& value) {
   batch_.Put(key, value);
 
   if (batch_.Count() >= write_batch_size_) {
@@ -125,20 +124,41 @@ void RocksDurable::setDurable(const std::string& key,
   }
 }
 
-std::string RocksDurable::getDurable(const std::string& key) {
+std::string RocksDurable::GetValue(const std::string& key) {
   std::string value = "";
   db_->Get(ReadOptions(), key, &value);
   return value;
 }
 
-std::string RocksDurable::getAllValues(void) {
-  std::string values = "[\n";
+std::string RocksDurable::GetAllValues(void) {
+  std::string values = "[";
   rocksdb::Iterator* itr = db_->NewIterator(ReadOptions());
+  bool first_iteration = true;
   for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
+    if (!first_iteration) values.append(",");
+    first_iteration = false;
     values.append(itr->value().ToString());
   }
-  values.append("]\n");
-  printf("gets here\n");
+  values.append("]");
+
+  delete itr;
+  return values;
+}
+
+std::string RocksDurable::GetRange(const std::string& min_key,
+                                   const std::string& max_key) {
+  std::string values = "[";
+  rocksdb::Iterator* itr = db_->NewIterator(ReadOptions());
+  bool first_iteration = true;
+  for (itr->Seek(min_key); itr->Valid() && itr->key().ToString() <= max_key;
+       itr->Next()) {
+    if (!first_iteration) values.append(",");
+    first_iteration = false;
+    values.append(itr->value().ToString());
+  }
+  values.append("]");
+
+  delete itr;
   return values;
 }
 

@@ -27,6 +27,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <pybind11/embed.h>
 
 #include "config/resdb_config_utils.h"
 #include "proto/kv_server.pb.h"
@@ -70,6 +71,63 @@ class KVServerExecutorTest : public Test {
       return "";
     }
     return kv_response.value();
+  }
+
+  std::string GetValues() {
+    KVRequest request;
+    request.set_cmd(KVRequest::GETVALUES);
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      return "";
+    }
+    auto resp = impl_.ExecuteData(str);
+    if (resp == nullptr) {
+      return "";
+    }
+    KVResponse kv_response;
+    if (!kv_response.ParseFromString(*resp)) {
+      return "";
+    }
+    return kv_response.value();
+  }
+
+  std::string GetRange(const std::string& min_key, const std::string& max_key) {
+    KVRequest request;
+    request.set_cmd(KVRequest::GETRANGE);
+    request.set_key(min_key);
+    request.set_value(max_key);
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      return "";
+    }
+    auto resp = impl_.ExecuteData(str);
+    if (resp == nullptr) {
+      return "";
+    }
+    KVResponse kv_response;
+    if (!kv_response.ParseFromString(*resp)) {
+      return "";
+    }
+    return kv_response.value();
+  }
+
+  // Test pybind11 is working and parse simple JSON object
+  bool PythonValidate(const std::string& transaction) {
+    using namespace pybind11::literals;
+    pybind11::scoped_interpreter guard{};
+
+    auto locals = pybind11::dict("transaction"_a = transaction);
+    pybind11::exec(R"(
+      import json
+
+      txn_dict = json.loads(transaction)
+      ret = txn_dict['is_valid']
+    )",
+             pybind11::globals(), locals);
+
+    return locals["ret"].cast<bool>();
   }
 
  private:
@@ -169,8 +227,14 @@ class KVServerExecutorTestRocksDB : public Test {
 };
 
 TEST_F(KVServerExecutorTest, SetValue) {
+  EXPECT_EQ(GetValues(), "[]");
   EXPECT_EQ(Set("test_key", "test_value"), 0);
   EXPECT_EQ(Get("test_key"), "test_value");
+
+  // GetValues and GetRange may be out of order for in-memory, so we test up to
+  // 1 key-value pair
+  EXPECT_EQ(GetValues(), "[test_value]");
+  EXPECT_EQ(GetRange("a", "z"), "[test_value]");
 }
 
 TEST_F(KVServerExecutorTest, GetValue) { EXPECT_EQ(Get("test_key"), ""); }
@@ -191,6 +255,11 @@ TEST_F(KVServerExecutorTestRocksDB, SetValue) {
 
 TEST_F(KVServerExecutorTestRocksDB, GetValue) {
   EXPECT_EQ(Get("test_key"), "");
+}
+
+TEST_F(KVServerExecutorTest, PythonValidate) {
+  EXPECT_EQ(PythonValidate("{\"is_valid\": true}"), true);
+  EXPECT_EQ(PythonValidate("{\"is_valid\": false}"), false);
 }
 
 }  // namespace

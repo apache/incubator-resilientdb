@@ -2,12 +2,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_foreign_cc",
-    # TODO: Get the latest sha256 value from a bazel debug message or the latest
-    #       release on the releases page: https://github.com/bazelbuild/rules_foreign_cc/releases
-    #
-    # sha256 = "...",
-    strip_prefix = "rules_foreign_cc-50ee9979e60e8db38e10de45d2c60873a210bf55",
-    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/50ee9979e60e8db38e10de45d2c60873a210bf55.tar.gz",
+    sha256 = "69023642d5781c68911beda769f91fcbc8ca48711db935a75da7f6536b65047f",
+    strip_prefix = "rules_foreign_cc-0.6.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.6.0.tar.gz",
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
@@ -37,8 +34,9 @@ bind(
 
 http_archive(
     name = "com_google_googletest",
-    strip_prefix = "googletest-609281088cfefc76f9d0ce82e1ff6c30cc3591e5",
-    urls = ["https://github.com/google/googletest/archive/609281088cfefc76f9d0ce82e1ff6c30cc3591e5.zip"],
+    sha256 = "ffa17fbc5953900994e2deec164bb8949879ea09b411e07f215bfbb1f87f4632",
+    strip_prefix = "googletest-1.13.0",
+    urls = ["https://github.com/google/googletest/archive/refs/tags/v1.13.0.zip"],
 )
 
 http_archive(
@@ -77,9 +75,9 @@ all_content = """filegroup(name = "all_srcs", srcs = glob(["**"]), visibility = 
 http_archive(
     name = "cryptopp",
     build_file_content = all_content,
-    sha256 = "5107c913c4682a07260f6a766aa1df8ec92a96c48d73994e023db3ac485bf532",
-    strip_prefix = "cryptopp-CRYPTOPP_8_6_0",
-    urls = ["https://github.com/weidai11/cryptopp/archive/refs/tags/CRYPTOPP_8_6_0.zip"],
+    sha256 = "6055ab314ff4daae9490ddfb3fbcf107bc94a556401ed42f756fa5f7cd8c6510",
+    strip_prefix = "cryptopp-CRYPTOPP_8_7_0",
+    urls = ["https://github.com/weidai11/cryptopp/archive/refs/tags/CRYPTOPP_8_7_0.zip"],
 )
 
 http_archive(
@@ -105,7 +103,7 @@ go_rules_dependencies()
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains")
 
-go_register_toolchains(version = "1.17.2")
+go_register_toolchains(version = "1.19.5")
 
 http_archive(
     name = "bazel_gazelle",
@@ -135,11 +133,12 @@ _RULES_BOOST_COMMIT = "652b21e35e4eeed5579e696da0facbe8dba52b1f"
 
 http_archive(
     name = "com_github_nelhage_rules_boost",
-    sha256 = "c1b8b2adc3b4201683cf94dda7eef3fc0f4f4c0ea5caa3ed3feffe07e1fb5b15",
-    strip_prefix = "rules_boost-%s" % _RULES_BOOST_COMMIT,
-    urls = [
-        "https://github.com/nelhage/rules_boost/archive/%s.tar.gz" % _RULES_BOOST_COMMIT,
-    ],
+    strip_prefix = "rules_boost-96e9b631f104b43a53c21c87b01ac538ad6f3b48",
+
+    # Replace the commit hash in both places (below) with the latest, rather than using the stale one here.
+    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
+    url = "https://github.com/nelhage/rules_boost/archive/96e9b631f104b43a53c21c87b01ac538ad6f3b48.tar.gz",
+    # When you first run this tool, it'll recommend a sha256 hash to put here with a message like: "DEBUG: Rule 'com_github_nelhage_rules_boost' indicated that a canonical reproducible form can be obtained by modifying arguments sha256 = ..."
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
@@ -158,18 +157,16 @@ http_archive(
 )
 
 #prometheus cpp client library
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_file")
 
 http_archive(
     name = "com_github_jupp0r_prometheus_cpp",
+    build_file = "//third_party:prometheus.BUILD",
     sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
     strip_prefix = "prometheus-cpp-1.0.1",
     url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
 )
 
 load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cpp_repositories")
-
-prometheus_cpp_repositories()
 
 http_archive(
     name = "com_google_leveldb",
@@ -181,35 +178,24 @@ http_archive(
 
 bind(
     name = "date",
-    actual = "@com_google_date//:date",
+    actual = "@com_howardhinnant_date//:date",
 )
 
 http_archive(
-    name = "com_google_date",
+    name = "com_howardhinnant_date",
     build_file = "//third_party:date.BUILD",
-    sha256 = "093f06859112120a58a820a81dc7f9048075e95a6634fa1f466a9a9bdda1e18e",
-    strip_prefix = "date-master",
-    url = "https://github.com/HowardHinnant/date/archive/refs/heads/master.zip",
-)
-
-'''
-http_archive(
-    name = "com_google_pistache",
-    build_file = "//third_party:pistache.BUILD",
-    sha256 = "0414c0a3b9e4ae01bae7c18d1b31f9ec9c041693959a66967a0d14a060481b0a",
-    strip_prefix = "pistache-master",
-    url = "https://github.com/pistacheio/pistache/archive/refs/heads/master.zip",
+    sha256 = "f4300b96f7a304d4ef9bf6e0fa3ded72159f7f2d0f605bdde3e030a0dba7cf9f",
+    strip_prefix = "date-3.0.1",
+    url = "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.zip",
 )
 
 http_archive(
     name = "com_crowcpp_crow",
     build_file = "//third_party:crow.BUILD",
-    sha256 = "b0da80870073112ef18e862cfd07936dd44c9a3311b64e471546fd9848aeeda7",
-    strip_prefix = "Crow-master",
-    url = "https://github.com/CrowCpp/Crow/archive/refs/heads/master.zip",
+    sha256 = "f95128a8976fae6f2922823e07da59edae277a460776572a556a4b663ff5ee4b",
+    strip_prefix = "Crow-1.0-5",
+    url = "https://github.com/CrowCpp/Crow/archive/refs/tags/v1.0+5.zip",
 )
-
-'''
 
 bind(
     name = "asio",
@@ -219,7 +205,7 @@ bind(
 http_archive(
     name = "com_chriskohlhoff_asio",
     build_file = "//third_party:asio.BUILD",
-    sha256 = "dbb066e63c1af407993cbfa6c1019671d4f7e020c182dde504a82e1104072627",
+    sha256 = "1607ed2e52efec86f02590efcab2614179df4ea73e52eba972507dc7fd08375d",
     strip_prefix = "asio-master",
     url = "https://github.com/chriskohlhoff/asio/archive/refs/heads/master.zip",
 )
@@ -288,4 +274,48 @@ http_archive(
     build_file = "//third_party:eEVM.BUILD",
     strip_prefix = "eEVM-main",
     url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
+)
+
+http_archive(
+    name = "pybind11_bazel",
+    strip_prefix = "pybind11_bazel-master",
+    urls = ["https://github.com/pybind/pybind11_bazel/archive/master.zip"],
+)
+
+http_archive(
+    name = "pybind11",
+    build_file = "@pybind11_bazel//:pybind11.BUILD",
+    strip_prefix = "pybind11-2.6.2",
+    urls = ["https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz"],
+)
+
+load("@pybind11_bazel//:python_configure.bzl", "python_configure")
+
+python_configure(
+    name = "local_config_python",
+    python_version = "3",
+)
+
+http_archive(
+    name = "nlohmann_json",
+    build_file = "//third_party:json.BUILD",  # see below
+    sha256 = "4cf0df69731494668bdd6460ed8cb269b68de9c19ad8c27abc24cd72605b2d5b",
+    strip_prefix = "json-3.9.1",
+    urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
+)
+
+http_archive(
+    name = "rapidjson",
+    build_file = "//third_party:rapidjson.BUILD",
+    sha256 = "8e00c38829d6785a2dfb951bb87c6974fa07dfe488aa5b25deec4b8bc0f6a3ab",
+    strip_prefix = "rapidjson-1.1.0",
+    url = "https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.zip",
+)
+
+http_archive(
+    name = "civetweb",
+    build_file = "//third_party:civetweb.BUILD",
+    sha256 = "88574f0cffd6047e22fafa3bdc748dd878a4928409d4f880332e2b0f262b9f62",
+    strip_prefix = "civetweb-1.15",
+    url = "https://github.com/civetweb/civetweb/archive/refs/tags/v1.15.zip",
 )

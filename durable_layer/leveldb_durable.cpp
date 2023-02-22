@@ -110,8 +110,7 @@ LevelDurable::LevelDurable(void) {
   LOG(ERROR) << "Successfully opened LevelDB";
 }
 
-void LevelDurable::setDurable(const std::string& key,
-                              const std::string& value) {
+void LevelDurable::SetValue(const std::string& key, const std::string& value) {
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
@@ -120,19 +119,41 @@ void LevelDurable::setDurable(const std::string& key,
   }
 }
 
-std::string LevelDurable::getDurable(const std::string& key) {
+std::string LevelDurable::GetValue(const std::string& key) {
   std::string value = "";
   status_ = db_->Get(leveldb::ReadOptions(), key, &value);
   return value;
 }
 
-std::string LevelDurable::getAllValues() {
-  std::string values = "[\n";
+std::string LevelDurable::GetAllValues(void) {
+  std::string values = "[";
   leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  bool first_iteration = true;
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    if (!first_iteration) values.append(",");
+    first_iteration = false;
     values.append(it->value().ToString());
   }
-  values.append("]\n");
+  values.append("]");
+
+  delete it;
+  return values;
+}
+
+std::string LevelDurable::GetRange(const std::string& min_key,
+                                   const std::string& max_key) {
+  std::string values = "[";
+  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  bool first_iteration = true;
+  for (it->Seek(min_key); it->Valid() && it->key().ToString() <= max_key;
+       it->Next()) {
+    if (!first_iteration) values.append(",");
+    first_iteration = false;
+    values.append(it->value().ToString());
+  }
+  values.append("]");
+
+  delete it;
   return values;
 }
 

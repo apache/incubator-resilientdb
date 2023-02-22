@@ -32,6 +32,7 @@ message ResConfigData{
   optional int32 input_worker_num =13; 
   optional int32 output_worker_num =14;
   optional int32 tcp_batch_num = 15;
+  optional bool require_txn_validation = 16; // for python sdk
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;

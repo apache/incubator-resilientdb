@@ -34,6 +34,7 @@
 #include "config/resdb_config_utils.h"
 #include "leveldb/db.h"
 #include "leveldb/env.h"
+#include "leveldb/iterator.h"
 #include "leveldb/options.h"
 #include "leveldb/write_batch.h"
 
@@ -46,9 +47,10 @@ class LevelDurable {
   LevelDurable(char* cert_file, std::optional<ResConfigData> config_data);
   LevelDurable(void);
   ~LevelDurable();
-  void setDurable(const std::string& key, const std::string& value);
-  std::string getDurable(const std::string& key);
-  std::string getAllValues();
+  void SetValue(const std::string& key, const std::string& value);
+  std::string GetValue(const std::string& key);
+  std::string GetAllValues(void);
+  std::string GetRange(const std::string& min_key, const std::string& max_key);
 
  private:
   std::unique_ptr<leveldb::DB> db_ = nullptr;

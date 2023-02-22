@@ -39,7 +39,7 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    leveldb_layer.setDurable(key, value);
+    leveldb_layer.SetValue(key, value);
     return 0;
   }
 
@@ -48,8 +48,26 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    std::string value = leveldb_layer.getDurable(key);
+    std::string value = leveldb_layer.GetValue(key);
     return value;
+  }
+
+  std::string GetAllValues() {
+    ResConfigData config_data;
+    config_data.mutable_leveldb_info()->set_path(path_);
+    LevelDurable leveldb_layer(NULL, config_data);
+
+    std::string values = leveldb_layer.GetAllValues();
+    return values;
+  }
+
+  std::string GetRange(const std::string& min_key, const std::string& max_key) {
+    ResConfigData config_data;
+    config_data.mutable_leveldb_info()->set_path(path_);
+    LevelDurable leveldb_layer(NULL, config_data);
+
+    std::string values = leveldb_layer.GetRange(min_key, max_key);
+    return values;
   }
 
  private:
@@ -72,6 +90,22 @@ TEST_F(LevelDBDurableTest, SetNewValue) {
 
 TEST_F(LevelDBDurableTest, GetNewValue) {
   EXPECT_EQ(Get("test_key"), "new_value");
+}
+
+TEST_F(LevelDBDurableTest, GetAllValues) {
+  EXPECT_EQ(Set("a", "a"), 0);
+  EXPECT_EQ(Set("b", "b"), 0);
+  EXPECT_EQ(Set("c", "c"), 0);
+  EXPECT_EQ(GetAllValues(), "[a,b,c,new_value]");
+}
+
+TEST_F(LevelDBDurableTest, GetRange) {
+  EXPECT_EQ(Set("key1", "value1"), 0);
+  EXPECT_EQ(Set("key2", "value2"), 0);
+  EXPECT_EQ(Set("key3", "value3"), 0);
+  EXPECT_EQ(GetRange("key1", "key3"), "[value1,value2,value3]");
+  EXPECT_EQ(GetRange("key1", "key2"), "[value1,value2]");
+  EXPECT_EQ(GetRange("key4", "key5"), "[]");
 }
 
 }  // namespace

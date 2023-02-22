@@ -45,9 +45,11 @@ class KVServerExecutor : public TransactionExecutorImpl {
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
 
  private:
+  bool Validate(const std::string& transaction);
   void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
   std::string GetValues();
+  std::string GetRange(const std::string& min_key, const std::string& max_key);
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;
@@ -55,6 +57,7 @@ class KVServerExecutor : public TransactionExecutorImpl {
   RocksDurable r_storage_layer_;
   bool equip_rocksdb_ = false;
   bool equip_leveldb_ = false;
+  bool require_txn_validation_;
 };
 
 }  // namespace resdb

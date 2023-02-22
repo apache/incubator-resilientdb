@@ -25,9 +25,11 @@
 
 #pragma once
 
+#include "client/resdb_txn_client.h"
 #include "config/resdb_config_utils.h"
 #include "crow.h"
 #include "kv_client/resdb_kv_client.h"
+#include "proto/kv_server.pb.h"
 #include "proto/signature_info.pb.h"
 #include "sdk_client/sdk_transaction.h"
 
@@ -35,12 +37,17 @@ namespace resdb {
 
 class CrowService {
  public:
-  CrowService(ResDBConfig config, uint16_t port_num = 18000);
+  CrowService(ResDBConfig config, ResDBConfig server_config,
+              uint16_t port_num = 18000);
   void run();
 
  private:
+  std::string ParseKVRequest(const KVRequest &kv_request);
   ResDBConfig config_;
+  ResDBConfig server_config_;
   uint16_t port_num_;
+  ResDBKVClient kv_client_;
+  ResDBTxnClient txn_client_;
 };
 
 }  // namespace resdb
