@@ -185,7 +185,6 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   if (executor_impl_) {
     response = executor_impl_->ExecuteBatch(batch_request);
   }
-
 }
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,

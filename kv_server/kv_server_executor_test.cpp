@@ -31,8 +31,6 @@
 
 #include "config/resdb_config_utils.h"
 #include "proto/kv_server.pb.h"
-namespace py = pybind11;
-// using namespace py::literals;
 
 namespace resdb {
 namespace {
@@ -117,17 +115,17 @@ class KVServerExecutorTest : public Test {
 
   // Test pybind11 is working and parse simple JSON object
   bool PythonValidate(const std::string& transaction) {
-    using namespace py::literals;
-    py::scoped_interpreter guard{};
+    using namespace pybind11::literals;
+    pybind11::scoped_interpreter guard{};
 
-    auto locals = py::dict("transaction"_a = transaction);
-    py::exec(R"(
+    auto locals = pybind11::dict("transaction"_a = transaction);
+    pybind11::exec(R"(
       import json
 
       txn_dict = json.loads(transaction)
       ret = txn_dict['is_valid']
     )",
-             py::globals(), locals);
+             pybind11::globals(), locals);
 
     return locals["ret"].cast<bool>();
   }

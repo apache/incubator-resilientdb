@@ -27,4 +27,3 @@ cc_library(
         ":resdb_config",
     ],
 )
-
