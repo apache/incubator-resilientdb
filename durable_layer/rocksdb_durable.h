@@ -43,9 +43,10 @@ class RocksDurable {
   RocksDurable(char* cert_file, std::optional<ResConfigData> config_data);
   RocksDurable(void);
   ~RocksDurable();
-  void setDurable(const std::string& key, const std::string& value);
-  std::string getDurable(const std::string& key);
-  std::string getAllValues(void);
+  void SetValue(const std::string& key, const std::string& value);
+  std::string GetValue(const std::string& key);
+  std::string GetAllValues(void);
+  std::string GetRange(const std::string& min_key, const std::string& max_key);
 
  private:
   std::unique_ptr<rocksdb::DB> db_ = nullptr;

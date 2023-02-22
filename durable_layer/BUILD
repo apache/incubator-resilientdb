@@ -8,6 +8,7 @@ cc_library(
         "//common:comm",
         "//config:resdb_config_utils",
         "//third_party:leveldb",
+        "//third_party:rapidjson",
     ],
 )
 

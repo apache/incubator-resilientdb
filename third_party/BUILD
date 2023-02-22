@@ -12,7 +12,7 @@ cc_library(
 cc_library(
     name = "prometheus",
     deps = [
-        "@com_github_jupp0r_prometheus_cpp//pull",
+        "@com_github_jupp0r_prometheus_cpp//:prometheus",
     ],
 )
 
@@ -57,16 +57,9 @@ cc_library(
 )
 
 cc_library(
-    name = "pistache",
-    deps = [
-        "@com_google_pistache//:pistache",
-    ],
-)
-
-cc_library(
     name = "date",
     deps = [
-        "@com_google_date//:date",
+        "@com_howardhinnant_date//:date",
     ],
 )
 
@@ -90,5 +83,12 @@ cc_library(
     name = "evm_lib",
     deps = [
         "@eEVM",
+    ],
+)
+
+cc_library(
+    name = "rapidjson",
+    deps = [
+        "@rapidjson",
     ],
 )

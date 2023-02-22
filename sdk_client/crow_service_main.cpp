@@ -25,19 +25,25 @@
 
 #include "sdk_client/crow_service.h"
 
+using resdb::BatchClientRequest;
 using resdb::CrowService;
 using resdb::GenerateResDBConfig;
+using resdb::KVRequest;
+using resdb::Request;
 using resdb::ResDBConfig;
+using resdb::ResDBTxnClient;
 
 int main(int argc, char** argv) {
-  if (argc < 2) {
-    printf("<config path>\n");
+  if (argc < 3) {
+    printf("<client config path> <server config path>\n");
     return 0;
   }
   std::string client_config_file = argv[1];
+  std::string server_config_file = argv[2];
   ResDBConfig config = GenerateResDBConfig(client_config_file);
+  ResDBConfig server_config = GenerateResDBConfig(server_config_file);
   config.SetClientTimeoutMs(100000);
 
-  CrowService service(config);
+  CrowService service(config, server_config);
   service.run();
 }

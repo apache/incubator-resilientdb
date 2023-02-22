@@ -1,7 +1,12 @@
 deps/*/
+deploy/kv_server/output/
 .idea/
 .vscode/
 .DS_Store
 bazel-*
 *.log
 *.bak
+node_modules/
+venv
+sdk_validator/venv
+__pycache__

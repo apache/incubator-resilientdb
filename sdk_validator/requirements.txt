@@ -1,0 +1,4 @@
+cryptoconditions==0.8.1
+pysha3==1.0.2
+python-rapidjson==1.8
+requests==2.28.1

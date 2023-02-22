@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/sh
 
 sudo apt update
 sudo apt install apt-transport-https curl gnupg -y
@@ -19,3 +19,9 @@ bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
 
 # for jemalloc
 sudo apt-get install autoconf automake libtool -y
+
+# for pybind
+sudo apt-get install python3.10-dev -y
+
+# for crow
+sudo apt-get install libboost-dev -y
