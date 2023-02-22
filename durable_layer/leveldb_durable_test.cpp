@@ -39,7 +39,7 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    leveldb_layer.setDurable(key, value);
+    leveldb_layer.SetValue(key, value);
     return 0;
   }
 
@@ -48,7 +48,7 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    std::string value = leveldb_layer.getDurable(key);
+    std::string value = leveldb_layer.GetValue(key);
     return value;
   }
 
@@ -57,7 +57,7 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    std::string values = leveldb_layer.getAllValues();
+    std::string values = leveldb_layer.GetAllValues();
     return values;
   }
 
@@ -66,7 +66,7 @@ class LevelDBDurableTest : public Test {
     config_data.mutable_leveldb_info()->set_path(path_);
     LevelDurable leveldb_layer(NULL, config_data);
 
-    std::string values = leveldb_layer.getRange(min_key, max_key);
+    std::string values = leveldb_layer.GetRange(min_key, max_key);
     return values;
   }
 

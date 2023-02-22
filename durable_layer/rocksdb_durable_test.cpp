@@ -39,7 +39,7 @@ class RocksDBDurableTest : public Test {
     config_data.mutable_rocksdb_info()->set_path(path_);
     RocksDurable rocksdb_layer(NULL, config_data);
 
-    rocksdb_layer.setDurable(key, value);
+    rocksdb_layer.SetValue(key, value);
     return 0;
   }
 
@@ -48,7 +48,7 @@ class RocksDBDurableTest : public Test {
     config_data.mutable_rocksdb_info()->set_path(path_);
     RocksDurable rocksdb_layer(NULL, config_data);
 
-    std::string value = rocksdb_layer.getDurable(key);
+    std::string value = rocksdb_layer.GetValue(key);
     return value;
   }
 
@@ -57,7 +57,7 @@ class RocksDBDurableTest : public Test {
     config_data.mutable_rocksdb_info()->set_path(path_);
     RocksDurable rocksdb_layer(NULL, config_data);
 
-    std::string values = rocksdb_layer.getAllValues();
+    std::string values = rocksdb_layer.GetAllValues();
     return values;
   }
 
@@ -66,7 +66,7 @@ class RocksDBDurableTest : public Test {
     config_data.mutable_rocksdb_info()->set_path(path_);
     RocksDurable rocksdb_layer(NULL, config_data);
 
-    std::string values = rocksdb_layer.getRange(min_key, max_key);
+    std::string values = rocksdb_layer.GetRange(min_key, max_key);
     return values;
   }
 
