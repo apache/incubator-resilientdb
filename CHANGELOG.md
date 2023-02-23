@@ -50,6 +50,14 @@ ResilientDB: Global Scale Resilient Blockchain Fabric, VLDB 2020
 * NexRes also supports LevelDB and RocksDB as the durable storage layer. ([Glenn Chen](https://github.com/glenn-chen), [Julieta Duarte](https://github.com/juduarte00), and [Junchao Chen](https://github.com/cjcchen))
 
 
+### v3.0 ([2021-09-30](https://github.com/resilientdb/resilientdb/releases/tag/v3.0))
+
+**Implemented Enhancements:** 
+* GeoBFT Protocol Added ([Sajjad Rahnama](https://github.com/sajjadrahnama))
+* Work Queue structure changed ([Sajjad Rahnama](https://github.com/sajjadrahnama))
+* Refactoring, Added Statistics and Scripts ([Sajjad Rahnama](https://github.com/sajjadrahnama))
+
+
 ### v2.0 ([2020-02-29](https://github.com/resilientdb/resilientdb/releases/tag/v2.0))
 
 **Implemented Enhancements:** 
