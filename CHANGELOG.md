@@ -1,6 +1,6 @@
 # Change Log
 
-### NexRes v1.3.0 ([2022-02-22](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.3.0))
+### NexRes v1.3.0 ([2023-02-22](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.3.0))
 
 **Implemented Enhancements:** 
 * Added Python SDK that supports UTXO-like transactions such as asset creation, transfer, and multi-party validations. ([Arindaam Roy](https://github.com/royari), [Glenn Chen](https://github.com/glenn-chen), and [Julieta Duarte](https://github.com/juduarte00))
@@ -9,6 +9,42 @@
 
 **Fixed Bugs:**
 * Fixed KV service queries on all values retrieving empty placeholder values ([Glenn Chen](https://github.com/glenn-chen))
+
+### NexRes v1.2.0 ([2023-01-29](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.2.0))
+
+**Implemented Enhancements:** 
+Support smart contract compiled from Solidity. [Junchao Chen]
+Use eEVM as a back-end service to execute the contract functions.[Junchao Chen]
+
+### NexRes v1.1.0 ([2023-01-03](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.1.0))
+
+**Implemented Enhancements:** 
+Added Geo-Scale Byzantine Fault-tolerant consensus protocol, referred to as GeoBFT. It is designed for excellent scalability by using a topological-aware grouping of replicas in local clusters, giving rise to parallelization of consensus at the local level and by minimizing communication between clusters. [
+WayneWang]
+
+ResilientDB: Global Scale Resilient Blockchain Fabric, VLDB 2020
+
+### NexRes v1.0.1 ([2022-10-13](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.0.1))
+
+**Implemented Enhancements:** 
+Add node manager backend for resilientdb.com to launch Nexres locally.[Junchao Chen]
+
+
+### NexRes v1.0.0 ([2022-09-30](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.0.0))
+
+**Implemented Enhancements:** 
+Release the next generation of RelisientDB referred to as Nexres.[Junchao Chen]
+Nexres supports PBFT as the default core protocol and provides a KV-Server as a service.[Junchao Chen]
+Nexres also supports LevelDB and RocksDB as the durable storage layer.[Junchao Chen]
+Add SDK endpoints.[Junchao Chen]
+
+### NexRes v1.0.0-alpha ([2022-09-22](https://github.com/resilientdb/resilientdb/releases/tag/nexres-alpha))
+
+**Implemented Enhancements:** 
+Release the next generation of RelisientDB referred to as Nexres. [Junchao Chen]
+Nexres supports PBFT as the default core protocol and provides a KV-Server as a service. [Junchao Chen]
+Nexres also supports LevelDB and RocksDB as the durable storage layer [Junchao Chen]
+
 
 ### v2.0 ([2020-02-29](https://github.com/resilientdb/resilientdb/releases/tag/v2.0))
 
