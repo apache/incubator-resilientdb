@@ -1,6 +1,6 @@
 # ResilientDB: Global-Scale Sustainable Blockchain Fabric
 
-ResilientDB is a **High Throughput Yielding Permissioned Blockchain Fabric** founded by **[ExpoLab](https://expolab.org/)** at **[UC Davis](https://www.ucdavis.edu/)**. ResilientDB advocates a **system-centric** design by adopting a **multi-threaded architecture** that encompasses **deep-pipelines**. Further, ResilientDB **separates** the ordering of client transactions from their execution, which allows it to **process messages out-of-order**.
+**[ResilientDB](https://resilientdb.com/)** is a **High Throughput Yielding Permissioned Blockchain Fabric** founded by **[ExpoLab](https://expolab.org/)** at **[UC Davis](https://www.ucdavis.edu/)** in 2018. ResilientDB advocates a **system-centric** design by adopting a **multi-threaded architecture** that encompasses **deep-pipelines**. Further, ResilientDB **separates** the ordering of client transactions from their execution, which allows it to **process messages out-of-order**.
 
 ### Quick Facts on ResilientDB
 1. ResilientDB's core consensus protocol is based on a highly optimized **[PBFT](https://pmg.csail.mit.edu/papers/osdi99.pdf)** [Castro and Liskov, 1998] implementation to achieve agreement among replicas. The core consensus layer is further expanded with the state-of-the-art consensus protocols *[the release is pending]* such as **[GeoBFT](http://www.vldb.org/pvldb/vol13/p868-gupta.pdf)**, **[PoE](https://openproceedings.org/2021/conf/edbt/p111.pdf)**, **[RCC](https://arxiv.org/abs/1911.00837)**, **[RingBFT](https://openproceedings.org/2022/conf/edbt/paper-73.pdf)**, **[PVP](https://arxiv.org/abs/2302.02325)**, **[PoC](https://arxiv.org/abs/2302.02118)**, **[HotStuff](https://arxiv.org/abs/1803.05069)**, **[DAG](https://arxiv.org/pdf/2105.11827.pdf)**.
@@ -9,6 +9,7 @@ ResilientDB is a **High Throughput Yielding Permissioned Blockchain Fabric** fou
 4. ResilientDB exposes a wide range of API services such as a **Key-Value**, **Smart Contracts**, **UTXO**, and **Python SDK**.
 5. To facilitate persistence of chain and chain state, ResilientDB provides durability through  **LevelDB** and **RocksDB**.
 6. To support deployment and maintenance, ResilientDB provides access to a seamless **GUI display** along with accesses to **Grafana for plotting monitoring data**. 
+7. The ResilientDB project was launched in 2018 and on September 30, 2021, we released ResilientDB version-3.0. In 2022, ResilientDB was completely re-written and re-architected, paving the way for a new sustainable foundation, referred to NexRes (Next Generation ResilientDB); thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new begining for **[ResilientDB](https://resilientdb.com/)**.
 
 ---
 
