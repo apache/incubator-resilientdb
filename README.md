@@ -8,8 +8,8 @@
 3. ReslientDB designates one of its replicas as the **primary** (replicas with identifier **0**), which is also responsible for initiating the consensus.
 4. ResilientDB exposes a wide range of API services such as a **Key-Value**, **Smart Contracts**, **UTXO**, and **Python SDK**.
 5. To facilitate persistence of chain and chain state, ResilientDB provides durability through  **LevelDB** and **RocksDB**.
-6. To support deployment and maintenance, ResilientDB provides access to a seamless **GUI display** along with accesses to **Grafana for plotting monitoring data**. 
-7. The ResilientDB project was launched in 2018 and on September 30, 2021, we released ResilientDB version-3.0. In 2022, ResilientDB was completely re-written and re-architected, paving the way for a new sustainable foundation, referred to NexRes (Next Generation ResilientDB); thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new begining for **[ResilientDB](https://resilientdb.com/)**.
+6. To support deployment and maintenance, ResilientDB provides access to a seamless **GUI display** along with accesses to **Grafana** for plotting monitoring data. 
+7. **[Historial Facts]** The ResilientDB project was launched in 2018 and on September 30, 2021, we released ResilientDB version-3.0. In 2022, ResilientDB was completely re-written and re-architected, paving the way for a new sustainable foundation, referred to NexRes (Next Generation ResilientDB); thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new begining for **[ResilientDB](https://resilientdb.com/)**.
 
 ---
 
