@@ -55,7 +55,7 @@ ResilientDB: Global Scale Resilient Blockchain Fabric, VLDB 2020
 **Implemented Enhancements:** 
 * GeoBFT Protocol Added ([Sajjad Rahnama](https://github.com/sajjadrahnama))
 * Work Queue structure changed ([Sajjad Rahnama](https://github.com/sajjadrahnama))
-* Refactoring, Added Statistics and Scripts ([Sajjad Rahnama](https://github.com/sajjadrahnama))
+* Refactoring, and added Statistics and Scripts ([Sajjad Rahnama](https://github.com/sajjadrahnama))
 
 
 ### v2.0 ([2020-02-29](https://github.com/resilientdb/resilientdb/releases/tag/v2.0))
