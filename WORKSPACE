@@ -289,36 +289,6 @@ http_archive(
     urls = ["https://github.com/pybind/pybind11/archive/v2.10.3.tar.gz"],
 )
 
-_py_configure = """
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    ./configure --prefix=$(pwd)/bazel_install --with-openssl=$(brew --prefix openssl)
-else
-    ./configure --prefix=$(pwd)/bazel_install
-fi
-"""
-
-http_archive(
-    name = "python_interpreter",
-    build_file_content = """
-	exports_files(["python_bin"])
-	filegroup(
-	    name = "files",
-	    srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),
-	    visibility = ["//visibility:public"],
-	)
-	""",
-    patch_cmds = [
-        "mkdir $(pwd)/bazel_install",
-        _py_configure,
-        "make",
-        "make install",
-        "ln -s bazel_install/bin/python3 python_bin",
-    ],
-    sha256 = "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
-    strip_prefix = "Python-3.8.3",
-    urls = ["https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz"],
-)
-
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
 
 python_configure(
