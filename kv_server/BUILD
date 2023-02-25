@@ -1,18 +1,41 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "py_verificator",
+    srcs = ["py_verificator.cpp"],
+    hdrs = ["py_verificator.h"],
+    deps = [
+        "//common:comm",
+        "@pybind11",
+        "@pybind11//:pybind11_embed",
+    ],
+    copts = [
+	    "-fvisibility=hidden",
+    ]
+)
+
+cc_test(
+    name = "py_verificator_test",
+    srcs = ["py_verificator_test.cpp"],
+    deps = [
+        ":py_verificator",
+        "//common/test:test_main",
+    ],
+)
+
+
+cc_library(
     name = "kv_server_executor",
     srcs = ["kv_server_executor.cpp"],
     hdrs = ["kv_server_executor.h"],
     deps = [
+	    ":py_verificator",
         "//common:comm",
         "//config:resdb_config_utils",
         "//durable_layer:leveldb_durable",
         "//durable_layer:rocksdb_durable",
         "//execution:transaction_executor_impl",
         "//proto:kv_server_cc_proto",
-        "@pybind11",
-        "@pybind11//:pybind11_embed",
     ],
 )
 
@@ -33,6 +56,9 @@ cc_binary(
         "//application/utils:server_factory",
         "//config:resdb_config_utils",
     ],
+	copts = [
+    "-fvisibility=hidden",
+    ]
 )
 
 cc_binary(

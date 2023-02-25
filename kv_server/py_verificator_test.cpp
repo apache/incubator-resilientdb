@@ -23,22 +23,21 @@
  *
  */
 
-#pragma once
-#include <memory>
-#include <stdlib.h>
+#include "kv_server/py_verificator.h"
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <pybind11/embed.h>
 
 namespace resdb {
+namespace {
 
-struct DataInfo {
-  DataInfo() : buff(nullptr), data_len(0) {}
-  ~DataInfo() {
-    if (buff) {
-      free(buff);
-      buff = nullptr;
-    }
-  }
-  void* buff = nullptr;
-  size_t data_len = 0;
-};
+using ::testing::Test;
+
+TEST(PYVerificatorTest, SetValue) {
+}
+
+
+}  // namespace
 
 }  // namespace resdb

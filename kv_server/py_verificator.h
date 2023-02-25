@@ -24,21 +24,18 @@
  */
 
 #pragma once
-#include <memory>
-#include <stdlib.h>
+
+#include <string>
 
 namespace resdb {
 
-struct DataInfo {
-  DataInfo() : buff(nullptr), data_len(0) {}
-  ~DataInfo() {
-    if (buff) {
-      free(buff);
-      buff = nullptr;
-    }
-  }
-  void* buff = nullptr;
-  size_t data_len = 0;
+class PYVerificator{
+ public:
+  PYVerificator();
+  virtual ~PYVerificator() = default;
+
+  bool Validate(const std::string& transaction);
+
 };
 
 }  // namespace resdb

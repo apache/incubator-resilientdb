@@ -23,22 +23,40 @@
  *
  */
 
-#pragma once
-#include <memory>
-#include <stdlib.h>
+#include "kv_server/py_verificator.h"
+
+#include <glog/logging.h>
+#include <pybind11/embed.h>
+
+namespace py = pybind11;
+using namespace py::literals;
 
 namespace resdb {
 
-struct DataInfo {
-  DataInfo() : buff(nullptr), data_len(0) {}
-  ~DataInfo() {
-    if (buff) {
-      free(buff);
-      buff = nullptr;
-    }
-  }
-  void* buff = nullptr;
-  size_t data_len = 0;
-};
+PYVerificator::PYVerificator(){
+    py::initialize_interpreter();
+    py::exec(R"(
+      import json
+    )");
+}
+
+// Validate transactions committed by the Python SDK
+bool PYVerificator::Validate(const std::string& transaction) {
+  auto locals = py::dict("transaction"_a = transaction);
+
+  py::exec(R"(
+    from sdk_validator.validator import is_valid_tx
+
+    try:
+      txn_dict = json.loads(transaction)
+      ret = is_valid_tx(txn_dict)
+      is_valid = ret[0] == 0
+    except (KeyError, AttributeError, ValueError):
+      is_valid = False
+  )",
+           py::globals(), locals);
+
+  return locals["is_valid"].cast<bool>();
+}
 
 }  // namespace resdb
