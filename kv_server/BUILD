@@ -9,9 +9,6 @@ cc_library(
         "@pybind11",
         "@pybind11//:pybind11_embed",
     ],
-    copts = [
-	    "-fvisibility=hidden",
-    ]
 )
 
 cc_test(

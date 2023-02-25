@@ -35,6 +35,9 @@ namespace {
 using ::testing::Test;
 
 TEST(PYVerificatorTest, SetValue) {
+  PYVerificator verifier;
+  EXPECT_EQ(verifier.Validate("{\"is_valid\": true}"), true);
+  EXPECT_EQ(verifier.Validate("{\"is_valid\": false}"), false);
 }
 
 
