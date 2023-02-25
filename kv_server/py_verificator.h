@@ -29,13 +29,12 @@
 
 namespace resdb {
 
-class PYVerificator{
+class PYVerificator {
  public:
   PYVerificator();
   virtual ~PYVerificator() = default;
 
   bool Validate(const std::string& transaction);
-
 };
 
 }  // namespace resdb

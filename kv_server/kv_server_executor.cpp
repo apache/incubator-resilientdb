@@ -39,7 +39,7 @@ KVServerExecutor::KVServerExecutor(const ResConfigData& config_data,
   equip_leveldb_ = config_data.leveldb_info().enable_leveldb();
   require_txn_validation_ = config_data.require_txn_validation();
   if (require_txn_validation_) {
-	  py_verificator_ = std::make_unique<PYVerificator>();
+    py_verificator_ = std::make_unique<PYVerificator>();
   }
 }
 

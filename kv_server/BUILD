@@ -20,13 +20,12 @@ cc_test(
     ],
 )
 
-
 cc_library(
     name = "kv_server_executor",
     srcs = ["kv_server_executor.cpp"],
     hdrs = ["kv_server_executor.h"],
     deps = [
-	    ":py_verificator",
+        ":py_verificator",
         "//common:comm",
         "//config:resdb_config_utils",
         "//durable_layer:leveldb_durable",
@@ -53,9 +52,6 @@ cc_binary(
         "//application/utils:server_factory",
         "//config:resdb_config_utils",
     ],
-	copts = [
-    "-fvisibility=hidden",
-    ]
 )
 
 cc_binary(

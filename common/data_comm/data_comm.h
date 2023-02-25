@@ -24,8 +24,9 @@
  */
 
 #pragma once
-#include <memory>
 #include <stdlib.h>
+
+#include <memory>
 
 namespace resdb {
 

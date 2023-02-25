@@ -33,9 +33,9 @@ using namespace py::literals;
 
 namespace resdb {
 
-PYVerificator::PYVerificator(){
-    py::initialize_interpreter();
-    py::exec(R"(
+PYVerificator::PYVerificator() {
+  py::initialize_interpreter();
+  py::exec(R"(
       import json
     )");
 }

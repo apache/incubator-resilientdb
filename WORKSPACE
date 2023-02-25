@@ -299,16 +299,6 @@ fi
 
 http_archive(
     name = "python_interpreter",
-    urls = ["https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz"],
-    sha256 = "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
-    strip_prefix = "Python-3.8.3",
-    patch_cmds = [
-        "mkdir $(pwd)/bazel_install",
-        _py_configure,
-        "make",
-        "make install",
-        "ln -s bazel_install/bin/python3 python_bin",
-    ],
     build_file_content = """
 	exports_files(["python_bin"])
 	filegroup(
@@ -317,6 +307,16 @@ http_archive(
 	    visibility = ["//visibility:public"],
 	)
 	""",
+    patch_cmds = [
+        "mkdir $(pwd)/bazel_install",
+        _py_configure,
+        "make",
+        "make install",
+        "ln -s bazel_install/bin/python3 python_bin",
+    ],
+    sha256 = "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
+    strip_prefix = "Python-3.8.3",
+    urls = ["https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tar.xz"],
 )
 
 load("@pybind11_bazel//:python_configure.bzl", "python_configure")
@@ -325,7 +325,6 @@ python_configure(
     name = "local_config_python",
     python_version = "3",
 )
-
 
 http_archive(
     name = "nlohmann_json",

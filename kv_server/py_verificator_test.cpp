@@ -40,7 +40,6 @@ TEST(PYVerificatorTest, SetValue) {
   EXPECT_EQ(verifier.Validate("{\"is_valid\": false}"), false);
 }
 
-
 }  // namespace
 
 }  // namespace resdb

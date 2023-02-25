@@ -125,7 +125,7 @@ class KVServerExecutorTest : public Test {
       txn_dict = json.loads(transaction)
       ret = txn_dict['is_valid']
     )",
-             pybind11::globals(), locals);
+                   pybind11::globals(), locals);
 
     return locals["ret"].cast<bool>();
   }
