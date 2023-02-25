@@ -22,6 +22,7 @@ sudo apt-get install autoconf automake libtool -y
 
 # for pybind
 sudo apt-get install python3.10-dev -y
+sudo apt-get install python3-dev -y
 
 # for crow
 sudo apt-get install libboost-dev -y
