@@ -79,7 +79,11 @@ You will see the following result if successful:
 
     client getvalues value = [test_value]
 
+## Enable SDK
 
+If you want to enable sdk verification, add a flag to the command
+
+    ./example/start_kv_server.sh --define enable_sdk=True
 
 ## FAQ
 

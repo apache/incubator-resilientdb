@@ -39,9 +39,7 @@ KVServerExecutor::KVServerExecutor(const ResConfigData& config_data,
   equip_leveldb_ = config_data.leveldb_info().enable_leveldb();
 
 #ifdef ENABLED_SDK
-  LOG(ERROR)<<"here?";
   require_txn_validation_ = config_data.require_txn_validation();
-  require_txn_validation_ = true;
   if (require_txn_validation_) {
     py_verificator_ = std::make_unique<PYVerificator>();
   }
@@ -80,7 +78,6 @@ std::unique_ptr<std::string> KVServerExecutor::ExecuteData(
 
 void KVServerExecutor::Set(const std::string& key, const std::string& value) {
 #ifdef ENABLED_SDK
-  LOG(ERROR)<<"here?";
   if (require_txn_validation_) {
     bool is_valid = py_verificator_->Validate(value);
     if (!is_valid) {

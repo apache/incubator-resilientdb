@@ -42,6 +42,7 @@ PYVerificator::PYVerificator() {
 
 // Validate transactions committed by the Python SDK
 bool PYVerificator::Validate(const std::string& transaction) {
+  LOG(ERROR) << "validate";
   auto locals = py::dict("transaction"_a = transaction);
 
   py::exec(R"(
