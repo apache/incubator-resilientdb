@@ -125,7 +125,7 @@ auto& packet_counter = BuildGauge()
 
 Add and remember dimensional data
 ```
-auto& tcp_rx_gauge = packet_counter.Add({{"protocol", "tcp"},  {"direction", "rx"}});
+auto& tcp_rx_gauge = packet_counter.Add({{"protocol", "tcp"}}, {{"direction", "rx"}});
 ```
 
 Ask the exposer to scrape the registry on incoming HTTP requests
