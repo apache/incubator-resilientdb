@@ -1,4 +1,21 @@
 package(default_visibility = ["//visibility:public"])
+load(
+    "@bazel_skylib//rules:common_settings.bzl",
+    "bool_flag",
+)
+
+
+bool_flag(
+    name = "enable_sdk",
+    build_setting_default = False,
+    # This visibility is working, however the config_setting is in same package.
+    visibility = ["//visibility:private"]
+)
+
+config_setting(
+  name = "custom",
+  values = {"define": "enable_sdk=True"},
+)
 
 cc_library(
     name = "py_verificator",
@@ -6,8 +23,8 @@ cc_library(
     hdrs = ["py_verificator.h"],
     deps = [
         "//common:comm",
-        "@pybind11",
-        "@pybind11//:pybind11_embed",
+    "@pybind11" , 
+    "@pybind11//:pybind11_embed",
     ],
 )
 
@@ -25,14 +42,20 @@ cc_library(
     srcs = ["kv_server_executor.cpp"],
     hdrs = ["kv_server_executor.h"],
     deps = [
-        ":py_verificator",
         "//common:comm",
         "//config:resdb_config_utils",
         "//durable_layer:leveldb_durable",
         "//durable_layer:rocksdb_durable",
         "//execution:transaction_executor_impl",
         "//proto:kv_server_cc_proto",
-    ],
+    ] + select({
+        ":custom":[":py_verificator"],
+	"//conditions:default": [],
+    }),
+    copts = select({
+        ":custom":["-DENABLED_SDK"],
+	"//conditions:default": [],
+    })
 )
 
 cc_test(

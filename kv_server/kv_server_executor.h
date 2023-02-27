@@ -33,7 +33,10 @@
 #include "durable_layer/leveldb_durable.h"
 #include "durable_layer/rocksdb_durable.h"
 #include "execution/transaction_executor_impl.h"
+
+#ifdef ENABLED_SDK
 #include "kv_server/py_verificator.h"
+#endif
 
 namespace resdb {
 
@@ -52,7 +55,10 @@ class KVServerExecutor : public TransactionExecutorImpl {
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
  private:
+#ifdef ENABLED_SDK
   std::unique_ptr<PYVerificator> py_verificator_;
+#endif
+
   std::unordered_map<std::string, std::string> kv_map_;
   LevelDurable l_storage_layer_;
   RocksDurable r_storage_layer_;
