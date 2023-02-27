@@ -27,7 +27,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <pybind11/embed.h>
 
 #include "config/resdb_config_utils.h"
 #include "proto/kv_server.pb.h"
@@ -111,23 +110,6 @@ class KVServerExecutorTest : public Test {
       return "";
     }
     return kv_response.value();
-  }
-
-  // Test pybind11 is working and parse simple JSON object
-  bool PythonValidate(const std::string& transaction) {
-    using namespace pybind11::literals;
-    pybind11::scoped_interpreter guard{};
-
-    auto locals = pybind11::dict("transaction"_a = transaction);
-    pybind11::exec(R"(
-      import json
-
-      txn_dict = json.loads(transaction)
-      ret = txn_dict['is_valid']
-    )",
-                   pybind11::globals(), locals);
-
-    return locals["ret"].cast<bool>();
   }
 
  private:
@@ -255,11 +237,6 @@ TEST_F(KVServerExecutorTestRocksDB, SetValue) {
 
 TEST_F(KVServerExecutorTestRocksDB, GetValue) {
   EXPECT_EQ(Get("test_key"), "");
-}
-
-TEST_F(KVServerExecutorTest, PythonValidate) {
-  EXPECT_EQ(PythonValidate("{\"is_valid\": true}"), true);
-  EXPECT_EQ(PythonValidate("{\"is_valid\": false}"), false);
 }
 
 }  // namespace

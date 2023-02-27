@@ -85,6 +85,10 @@ If you want to enable sdk verification, add a flag to the command
 
     ./example/start_kv_server.sh --define enable_sdk=True
 
+And in example/kv_config.config
+
+    require_txn_validation:true,
+
 ## FAQ
 
 If installing bazel fails on a ubuntu server, follow these steps:
