@@ -1,0 +1,27 @@
+var namespaceresdb__validator_1_1exceptions =
+[
+    [ "AmountError", "classresdb__validator_1_1exceptions_1_1AmountError.html", null ],
+    [ "AssetIdMismatch", "classresdb__validator_1_1exceptions_1_1AssetIdMismatch.html", null ],
+    [ "ConfigurationError", "classresdb__validator_1_1exceptions_1_1ConfigurationError.html", null ],
+    [ "CyclicBlockchainError", "classresdb__validator_1_1exceptions_1_1CyclicBlockchainError.html", null ],
+    [ "DatabaseDoesNotExist", "classresdb__validator_1_1exceptions_1_1DatabaseDoesNotExist.html", null ],
+    [ "DoubleSpend", "classresdb__validator_1_1exceptions_1_1DoubleSpend.html", null ],
+    [ "DuplicateTransaction", "classresdb__validator_1_1exceptions_1_1DuplicateTransaction.html", null ],
+    [ "InputDoesNotExist", "classresdb__validator_1_1exceptions_1_1InputDoesNotExist.html", null ],
+    [ "InvalidHash", "classresdb__validator_1_1exceptions_1_1InvalidHash.html", null ],
+    [ "InvalidPowerChange", "classresdb__validator_1_1exceptions_1_1InvalidPowerChange.html", null ],
+    [ "InvalidProposer", "classresdb__validator_1_1exceptions_1_1InvalidProposer.html", null ],
+    [ "InvalidPublicKey", "classresdb__validator_1_1exceptions_1_1InvalidPublicKey.html", null ],
+    [ "InvalidSignature", "classresdb__validator_1_1exceptions_1_1InvalidSignature.html", null ],
+    [ "KeypairMismatchException", "classresdb__validator_1_1exceptions_1_1KeypairMismatchException.html", null ],
+    [ "MultipleInputsError", "classresdb__validator_1_1exceptions_1_1MultipleInputsError.html", null ],
+    [ "MultipleValidatorOperationError", "classresdb__validator_1_1exceptions_1_1MultipleValidatorOperationError.html", null ],
+    [ "OperationError", "classresdb__validator_1_1exceptions_1_1OperationError.html", null ],
+    [ "ResDBError", "classresdb__validator_1_1exceptions_1_1ResDBError.html", null ],
+    [ "SchemaValidationError", "classresdb__validator_1_1exceptions_1_1SchemaValidationError.html", null ],
+    [ "StartupError", "classresdb__validator_1_1exceptions_1_1StartupError.html", null ],
+    [ "ThresholdTooDeep", "classresdb__validator_1_1exceptions_1_1ThresholdTooDeep.html", null ],
+    [ "TransactionOwnerError", "classresdb__validator_1_1exceptions_1_1TransactionOwnerError.html", null ],
+    [ "UnequalValidatorSet", "classresdb__validator_1_1exceptions_1_1UnequalValidatorSet.html", null ],
+    [ "ValidationError", "classresdb__validator_1_1exceptions_1_1ValidationError.html", null ]
+];

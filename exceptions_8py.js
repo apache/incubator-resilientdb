@@ -1,0 +1,27 @@
+var exceptions_8py =
+[
+    [ "resdb_validator.exceptions.ResDBError", "classresdb__validator_1_1exceptions_1_1ResDBError.html", null ],
+    [ "resdb_validator.exceptions.ConfigurationError", "classresdb__validator_1_1exceptions_1_1ConfigurationError.html", null ],
+    [ "resdb_validator.exceptions.DatabaseDoesNotExist", "classresdb__validator_1_1exceptions_1_1DatabaseDoesNotExist.html", null ],
+    [ "resdb_validator.exceptions.StartupError", "classresdb__validator_1_1exceptions_1_1StartupError.html", null ],
+    [ "resdb_validator.exceptions.CyclicBlockchainError", "classresdb__validator_1_1exceptions_1_1CyclicBlockchainError.html", null ],
+    [ "resdb_validator.exceptions.KeypairMismatchException", "classresdb__validator_1_1exceptions_1_1KeypairMismatchException.html", null ],
+    [ "resdb_validator.exceptions.OperationError", "classresdb__validator_1_1exceptions_1_1OperationError.html", null ],
+    [ "resdb_validator.exceptions.ValidationError", "classresdb__validator_1_1exceptions_1_1ValidationError.html", null ],
+    [ "resdb_validator.exceptions.DoubleSpend", "classresdb__validator_1_1exceptions_1_1DoubleSpend.html", null ],
+    [ "resdb_validator.exceptions.InvalidHash", "classresdb__validator_1_1exceptions_1_1InvalidHash.html", null ],
+    [ "resdb_validator.exceptions.SchemaValidationError", "classresdb__validator_1_1exceptions_1_1SchemaValidationError.html", null ],
+    [ "resdb_validator.exceptions.InvalidSignature", "classresdb__validator_1_1exceptions_1_1InvalidSignature.html", null ],
+    [ "resdb_validator.exceptions.AssetIdMismatch", "classresdb__validator_1_1exceptions_1_1AssetIdMismatch.html", null ],
+    [ "resdb_validator.exceptions.AmountError", "classresdb__validator_1_1exceptions_1_1AmountError.html", null ],
+    [ "resdb_validator.exceptions.InputDoesNotExist", "classresdb__validator_1_1exceptions_1_1InputDoesNotExist.html", null ],
+    [ "resdb_validator.exceptions.TransactionOwnerError", "classresdb__validator_1_1exceptions_1_1TransactionOwnerError.html", null ],
+    [ "resdb_validator.exceptions.DuplicateTransaction", "classresdb__validator_1_1exceptions_1_1DuplicateTransaction.html", null ],
+    [ "resdb_validator.exceptions.ThresholdTooDeep", "classresdb__validator_1_1exceptions_1_1ThresholdTooDeep.html", null ],
+    [ "resdb_validator.exceptions.MultipleValidatorOperationError", "classresdb__validator_1_1exceptions_1_1MultipleValidatorOperationError.html", null ],
+    [ "resdb_validator.exceptions.MultipleInputsError", "classresdb__validator_1_1exceptions_1_1MultipleInputsError.html", null ],
+    [ "resdb_validator.exceptions.InvalidProposer", "classresdb__validator_1_1exceptions_1_1InvalidProposer.html", null ],
+    [ "resdb_validator.exceptions.UnequalValidatorSet", "classresdb__validator_1_1exceptions_1_1UnequalValidatorSet.html", null ],
+    [ "resdb_validator.exceptions.InvalidPowerChange", "classresdb__validator_1_1exceptions_1_1InvalidPowerChange.html", null ],
+    [ "resdb_validator.exceptions.InvalidPublicKey", "classresdb__validator_1_1exceptions_1_1InvalidPublicKey.html", null ]
+];
