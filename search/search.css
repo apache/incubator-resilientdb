@@ -20,9 +20,9 @@ dark-mode-toggle {
 #MSearchBox {
     display: inline-block;
     white-space : nowrap;
-    background: var(--search-background-color);
+    background: black;
     border-radius: 0.65em;
-    box-shadow: var(--search-box-shadow);
+    box-shadow: inset 0.5px 0.5px 3px 0px #2F436C;
     z-index: 102;
 }
 
@@ -37,7 +37,7 @@ dark-mode-toggle {
     vertical-align: middle;
     width: 20px;
     height: 19px;
-    background-image: var(--search-magnification-select-image);
+    background-image: url('mag_seld.svg');
     margin: 0 0 0 0.3em;
     padding: 0;
 }
@@ -47,7 +47,7 @@ dark-mode-toggle {
     vertical-align: middle;
     width: 10px;
     height: 19px;
-    background-image: var(--search-magnification-image);
+    background-image: url('mag_d.svg');
     margin: 0 0 0 0.5em;
     padding: 0;
 }
@@ -62,9 +62,9 @@ dark-mode-toggle {
     padding: 0;
     line-height: 1em;
     border:none;
-    color: var(--search-foreground-color);
+    color: #C5C5C5;
     outline: none;
-    font-family: var(--font-family-search);
+    font-family: Arial,Verdana,sans-serif;
     -webkit-border-radius: 0px;
     border-radius: 0px;
     background: none;
@@ -101,7 +101,7 @@ dark-mode-toggle {
 }
 
 .MSearchBoxActive #MSearchField {
-    color: var(--search-active-color);
+    color: #C5C5C5;
 }
 
 
@@ -112,8 +112,8 @@ dark-mode-toggle {
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid var(--search-filter-border-color);
-    background-color: var(--search-filter-background-color);
+    border: 1px solid #7C95C6;
+    background-color: #101826;
     z-index: 10001;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -126,7 +126,7 @@ dark-mode-toggle {
 }
 
 .SelectItem {
-    font: 8pt var(--font-family-search);
+    font: 8pt Arial,Verdana,sans-serif;
     padding-left:  2px;
     padding-right: 12px;
     border: 0px;
@@ -134,7 +134,7 @@ dark-mode-toggle {
 
 span.SelectionMark {
     margin-right: 4px;
-    font-family: var(--font-family-monospace);
+    font-family: monospace,fixed;
     outline-style: none;
     text-decoration: none;
 }
@@ -142,7 +142,7 @@ span.SelectionMark {
 a.SelectItem {
     display: block;
     outline-style: none;
-    color: var(--search-filter-foreground-color);
+    color: #90A5CE;
     text-decoration: none;
     padding-left:   6px;
     padding-right: 12px;
@@ -150,14 +150,14 @@ a.SelectItem {
 
 a.SelectItem:focus,
 a.SelectItem:active {
-    color: var(--search-filter-foreground-color);
+    color: #90A5CE;
     outline-style: none;
     text-decoration: none;
 }
 
 a.SelectItem:hover {
-    color: var(--search-filter-highlight-text-color);
-    background-color: var(--search-filter-highlight-bg-color);
+    color: #BCC9E2;
+    background-color: #283A5D;
     outline-style: none;
     text-decoration: none;
     cursor: pointer;
@@ -175,8 +175,8 @@ iframe#MSearchResults {
     display: none;
     position: absolute;
     left: 0; top: 0;
-    border: 1px solid var(--search-results-border-color);
-    background-color: var(--search-results-background-color);
+    border: 1px solid #7C95C6;
+    background-color: #101826;
     z-index:10000;
     width: 300px;
     height: 400px;
@@ -202,7 +202,7 @@ iframe#MSearchResults {
 
 div.SRPage {
     margin: 5px 2px;
-    background-color: var(--search-results-background-color);
+    background-color: #101826;
 }
 
 .SRChildren {
@@ -215,16 +215,16 @@ div.SRPage {
 
 .SRSymbol {
     font-weight: bold;
-    color: var(--search-results-foreground-color);
-    font-family: var(--font-family-search);
+    color: #90A5CE;
+    font-family: Arial,Verdana,sans-serif;
     text-decoration: none;
     outline: none;
 }
 
 a.SRScope {
     display: block;
-    color: var(--search-results-foreground-color);
-    font-family: var(--font-family-search);
+    color: #90A5CE;
+    font-family: Arial,Verdana,sans-serif;
     font-size: 8pt;
     text-decoration: none;
     outline: none;
@@ -237,14 +237,14 @@ a.SRScope:focus, a.SRScope:active {
 
 span.SRScope {
     padding-left: 4px;
-    font-family: var(--font-family-search);
+    font-family: Arial,Verdana,sans-serif;
 }
 
 .SRPage .SRStatus {
     padding: 2px 5px;
     font-size: 8pt;
     font-style: italic;
-    font-family: var(--font-family-search);
+    font-family: Arial,Verdana,sans-serif;
 }
 
 .SRResult {
@@ -261,7 +261,7 @@ div.searchresults {
 .pages b {
    color: white;
    padding: 5px 5px 3px 5px;
-   background-image: var(--nav-gradient-active-image-parent);
+   background-image: url("../tab_ad.png");
    background-repeat: repeat-x;
    text-shadow: 0 1px 1px #000000;
 }
