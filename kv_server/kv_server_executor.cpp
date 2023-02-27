@@ -26,12 +26,8 @@
 #include "kv_server/kv_server_executor.h"
 
 #include <glog/logging.h>
-#include <pybind11/embed.h>
 
 #include "proto/kv_server.pb.h"
-
-namespace py = pybind11;
-using namespace py::literals;
 
 namespace resdb {
 
@@ -41,13 +37,13 @@ KVServerExecutor::KVServerExecutor(const ResConfigData& config_data,
       r_storage_layer_(cert_file, config_data) {
   equip_rocksdb_ = config_data.rocksdb_info().enable_rocksdb();
   equip_leveldb_ = config_data.leveldb_info().enable_leveldb();
+
+#ifdef ENABLED_SDK
   require_txn_validation_ = config_data.require_txn_validation();
   if (require_txn_validation_) {
-    py::initialize_interpreter();
-    py::exec(R"(
-      import json
-    )");
+    py_verificator_ = std::make_unique<PYVerificator>();
   }
+#endif
 }
 
 KVServerExecutor::KVServerExecutor(void) {}
@@ -80,35 +76,16 @@ std::unique_ptr<std::string> KVServerExecutor::ExecuteData(
   return resp_str;
 }
 
-// Validate transactions committed by the Python SDK
-bool KVServerExecutor::Validate(const std::string& transaction) {
-  auto locals = py::dict("transaction"_a = transaction);
-
-  py::exec(R"(
-    from sdk_validator.validator import is_valid_tx
-
-    try:
-      txn_dict = json.loads(transaction)
-      ret = is_valid_tx(txn_dict)
-      is_valid = ret[0] == 0
-    except (KeyError, AttributeError, ValueError):
-      is_valid = False
-  )",
-           py::globals(), locals);
-
-  bool is_valid = locals["is_valid"].cast<bool>();
-
-  return is_valid;
-}
-
 void KVServerExecutor::Set(const std::string& key, const std::string& value) {
+#ifdef ENABLED_SDK
   if (require_txn_validation_) {
-    bool is_valid = Validate(value);
+    bool is_valid = py_verificator_->Validate(value);
     if (!is_valid) {
       LOG(ERROR) << "Invalid transaction for " << key;
       return;
     }
   }
+#endif
 
   if (equip_rocksdb_) {
     r_storage_layer_.SetValue(key, value);
