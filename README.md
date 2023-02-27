@@ -20,7 +20,7 @@ You may find the latest ResilientDB documentation, including a programming guide
 
 #### Table of Contents
 1. Software Stack Architecture: Platform, Service, and Tooling/API Layers [TBA]
-   - Detailed API Documentation  [TBA]
+   - **[Detailed API Documentation](https://api.resilientdb.com/)**
    - Overview of Class Digram & Code Structure  [TBA]
 3. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management, storage)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
    - Recovery & Checkpoint Design [TBA]
