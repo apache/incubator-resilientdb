@@ -121,8 +121,8 @@ Inheritance diagram for resdb::ConsensusServicePBFT:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a6eaa2e54a200d84d06df2af114ea23b0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dde/classresdb_1_1ConsensusServicePBFT.html#a6eaa2e54a200d84d06df2af114ea23b0">ConsensusServicePBFT</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, std::unique_ptr&lt; <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">TransactionExecutorImpl</a> &gt; executor)</td></tr>
-<tr class="separator:a6eaa2e54a200d84d06df2af114ea23b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed2eaff38204946154b8fc21af20c13e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dde/classresdb_1_1ConsensusServicePBFT.html#aed2eaff38204946154b8fc21af20c13e">ConsensusServicePBFT</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, std::unique_ptr&lt; <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">TransactionExecutorImpl</a> &gt; executor, std::unique_ptr&lt; <a class="el" href="../../d6/dd9/classresdb_1_1CustomQuery.html">CustomQuery</a> &gt; query_executor=nullptr)</td></tr>
+<tr class="separator:aed2eaff38204946154b8fc21af20c13e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a123b77e23614d94a029d90056d7dcb65"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dde/classresdb_1_1ConsensusServicePBFT.html#a123b77e23614d94a029d90056d7dcb65">~ConsensusServicePBFT</a> ()=default</td></tr>
 <tr class="separator:a123b77e23614d94a029d90056d7dcb65"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f3cd6a6eda4a697481af01a7adb4e1f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/dde/classresdb_1_1ConsensusServicePBFT.html#a4f3cd6a6eda4a697481af01a7adb4e1f">ConsensusCommit</a> (std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt; context, std::unique_ptr&lt; Request &gt; request) override</td></tr>
@@ -268,10 +268,10 @@ Protected Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00040">40</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00041">41</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a6eaa2e54a200d84d06df2af114ea23b0" name="a6eaa2e54a200d84d06df2af114ea23b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6eaa2e54a200d84d06df2af114ea23b0">&#9670;&#160;</a></span>ConsensusServicePBFT() <span class="overload">[1/2]</span></h2>
+<a id="aed2eaff38204946154b8fc21af20c13e" name="aed2eaff38204946154b8fc21af20c13e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed2eaff38204946154b8fc21af20c13e">&#9670;&#160;</a></span>ConsensusServicePBFT() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -286,7 +286,13 @@ Protected Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">TransactionExecutorImpl</a> &gt;&#160;</td>
-          <td class="paramname"><em>executor</em>&#160;</td>
+          <td class="paramname"><em>executor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../d6/dd9/classresdb_1_1CustomQuery.html">CustomQuery</a> &gt;&#160;</td>
+          <td class="paramname"><em>query_executor</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -350,6 +356,8 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../df/db0/consensus__service__pbft__performance_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../df/db0/consensus__service__pbft__performance_8cpp_source.html">consensus_service_pbft_performance.cpp</a>.</p>
 
 </div>
 </div>
@@ -443,7 +451,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00092">92</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00094">94</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -483,7 +491,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../d6/d83/classresdb_1_1ConsensusService.html#a7a11e00ce916ddc402f6e10e5f916b52">resdb::ConsensusService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00111">111</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00113">113</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -550,7 +558,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../d6/d83/classresdb_1_1ConsensusService.html#a6198d52ed8de54fcd1621e5c10caa5bd">resdb::ConsensusService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00077">77</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00079">79</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -579,7 +587,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Implements <a class="el" href="../../d6/d83/classresdb_1_1ConsensusService.html#a9e23459fdb159739ac27ed8db1f0aff9">resdb::ConsensusService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00075">75</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -635,7 +643,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../d6/d83/classresdb_1_1ConsensusService.html#ad5af080613a9fd8947b3a18b59eb135f">resdb::ConsensusService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00081">81</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00083">83</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -673,7 +681,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00143">143</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00145">145</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -700,7 +708,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00099">99</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00101">101</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -720,7 +728,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00067">67</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00069">69</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -740,7 +748,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00196">196</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00200">200</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -780,7 +788,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../d6/d83/classresdb_1_1ConsensusService.html#ad250ffb246e8e9f4d8702df763005134">resdb::ConsensusService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00085">85</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00087">87</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -800,7 +808,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00191">191</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00195">195</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -829,7 +837,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../d0/d8d/classresdb_1_1ResDBService.html#a3781b83a5b1d2e7e27e38ff1388aa4c0">resdb::ResDBService</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00071">71</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../d0/dbc/consensus__service__pbft_8cpp_source.html">consensus_service_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -905,7 +913,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00071">71</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00073">73</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -929,7 +937,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00073">73</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00075">75</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -953,7 +961,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00078">78</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00080">80</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -977,7 +985,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00081">81</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00083">83</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1001,7 +1009,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00076">76</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00078">78</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1025,7 +1033,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00074">74</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00076">76</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1073,7 +1081,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00080">80</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00082">82</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1097,7 +1105,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00075">75</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00077">77</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1121,7 +1129,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00070">70</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00072">72</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1145,7 +1153,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00072">72</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00074">74</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -1169,7 +1177,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00077">77</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html#l00079">79</a> of file <a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">consensus_service_pbft.h</a>.</p>
 
 </div>
 </div>

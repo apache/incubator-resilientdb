@@ -146,9 +146,9 @@ $(document).ready(function(){initNavTree('d9/d2f/crow__service__test_8cpp_source
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  CROW_ROUTE(<a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>, <span class="stringliteral">&quot;/v1/transactions/commit&quot;</span>)</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>      .methods(<span class="stringliteral">&quot;POST&quot;</span>_method)([<span class="keyword">this</span>](<span class="keyword">const</span> crow::request&amp; req) {</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        crow::response res(201, req.body);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        res.set_header(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;text/plain&quot;</span>);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> res;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        crow::response <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>(201, req.body);</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>.set_header(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;text/plain&quot;</span>);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>;</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>      });</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.validate();</div>
@@ -158,26 +158,26 @@ $(document).ready(function(){initNavTree('d9/d2f/crow__service__test_8cpp_source
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  req.method = <span class="stringliteral">&quot;POST&quot;</span>_method;</div>
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  req.url = <span class="stringliteral">&quot;/v1/transactions/commit&quot;</span>;</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  crow::response res;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  crow::response <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>;</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.handle(req, res);</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  EXPECT_EQ(res.body, <span class="stringliteral">&quot;body&quot;</span>);</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  EXPECT_EQ(<a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>.body, <span class="stringliteral">&quot;body&quot;</span>);</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>}</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="comment">// Test passing string parameter through URL</span></div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(CrowServiceTest, GetTransaction) {</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  CROW_ROUTE(<a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>, <span class="stringliteral">&quot;/v1/transactions/&lt;string&gt;&quot;</span>)</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  ([<span class="keyword">this</span>](crow::response&amp; res, std::string id) {</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    res.set_header(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;text/plain&quot;</span>);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    res.end(<span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  ([<span class="keyword">this</span>](crow::response&amp; <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>, std::string id) {</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>.set_header(<span class="stringliteral">&quot;Content-Type&quot;</span>, <span class="stringliteral">&quot;text/plain&quot;</span>);</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>.end(<span class="keywordtype">id</span>);</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  });</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.validate();</div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.debug_print();</div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  crow::request req;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  crow::response res;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  crow::response <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>;</div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  req.url = <span class="stringliteral">&quot;/v1/transactions/test_str&quot;</span>;</div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.handle(req, res);</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  EXPECT_EQ(res.body, <span class="stringliteral">&quot;test_str&quot;</span>);</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  EXPECT_EQ(<a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>.body, <span class="stringliteral">&quot;test_str&quot;</span>);</div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>}</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="comment">// Test passing two int parameters through URL</span></div>
@@ -192,7 +192,7 @@ $(document).ready(function(){initNavTree('d9/d2f/crow__service__test_8cpp_source
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.validate();</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.debug_print();</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  crow::request req;</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  crow::response res;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  crow::response <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">res</a>;</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  req.url = <span class="stringliteral">&quot;/v1/blocks/1/2&quot;</span>;</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <a class="code hl_variable" href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a>.handle(req, res);</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  EXPECT_EQ(A, 1);</div>
@@ -204,6 +204,7 @@ $(document).ready(function(){initNavTree('d9/d2f/crow__service__test_8cpp_source
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="acrow__service_8h_html"><div class="ttname"><a href="../../dd/d06/crow__service_8h.html">crow_service.h</a></div></div>
 <div class="ttc" id="acrow__service__test_8cpp_html_ad06afbf5c79e6b985e20eb75d252b5b3"><div class="ttname"><a href="../../d9/d2f/crow__service__test_8cpp.html#ad06afbf5c79e6b985e20eb75d252b5b3">app</a></div><div class="ttdeci">crow::SimpleApp app</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d2f/crow__service__test_8cpp_source.html#l00038">crow_service_test.cpp:38</a></div></div>
+<div class="ttc" id="anamespaceaddr_html_a5ca5a5e44ae7c5aeb75fff2325c77298"><div class="ttname"><a href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">addr.res</a></div><div class="ttdeci">wallet_tools_py res</div><div class="ttdef"><b>Definition:</b> <a href="../../da/d4d/addr_8py_source.html#l00030">addr.py:30</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d2/d5c/contract__client_8cpp_source.html#l00035">contract_client.cpp:35</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_ab31c2875ec907efdbc2284cb1eabdc49"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">resdb::TEST_F</a></div><div class="ttdeci">TEST_F(ResDBTest, TestPBFTService)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00153">resdb_test.cpp:153</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

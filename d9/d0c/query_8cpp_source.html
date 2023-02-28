@@ -133,64 +133,93 @@ $(document).ready(function(){initNavTree('d9/d0c/query_8cpp_source.html','../../
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#a449bccc13b57b33f95663be43d9acf4b">   34</a></span><a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#a449bccc13b57b33f95663be43d9acf4b">Query::Query</a>(<span class="keyword">const</span> <a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&amp; config, <a class="code hl_class" href="../../df/d01/classresdb_1_1TransactionManager.html">TransactionManager</a>* transaction_manager)</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    : <a class="code hl_variable" href="../../d3/db5/resdb__state__client__test_8cpp.html#a4b1f98004f89e2582b05ad244479770e">config_</a>(config), <a class="code hl_variable" href="../../d5/d74/commitment__test_8cpp.html#a78fc833919d447f5cda7ae2755454b36">transaction_manager_</a>(transaction_manager) {}</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">   37</a></span><a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">Query::~Query</a>() {}</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">   39</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">Query::ProcessGetReplicaState</a>(std::unique_ptr&lt;Context&gt; context,</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>                                  std::unique_ptr&lt;Request&gt; request) {</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  ReplicaState replica_state;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="keywordtype">int</span> ret = <a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">transaction_manager_</a>-&gt;<a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#a613204ce56adda1c7ca87d264ef93abc">GetReplicaState</a>(&amp;replica_state);</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  <span class="keywordflow">if</span> (ret == 0) {</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keywordflow">if</span> (context != <span class="keyword">nullptr</span> &amp;&amp; context-&gt;client != <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>      ret = context-&gt;client-&gt;SendRawMessage(replica_state);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>      <span class="keywordflow">if</span> (ret) {</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;send resp&quot;</span> &lt;&lt; replica_state.DebugString()</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                   &lt;&lt; <span class="stringliteral">&quot; fail ret:&quot;</span> &lt;&lt; ret;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>      }</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    }</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  }</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">   55</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">Query::ProcessQuery</a>(std::unique_ptr&lt;Context&gt; context,</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>                        std::unique_ptr&lt;Request&gt; request) {</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  QueryRequest query;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keywordflow">if</span> (!query.ParseFromString(request-&gt;data())) {</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">return</span> -2;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  }</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="comment">// LOG(ERROR) &lt;&lt; &quot;request:&quot; &lt;&lt; query.DebugString();</span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  QueryResponse response;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  <span class="keywordflow">for</span> (uint64_t i = query.min_seq(); i &lt;= query.max_seq(); ++i) {</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    Request* ret_request = <a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">transaction_manager_</a>-&gt;<a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#a33b7a8460c02f6ed97d6ca332c9b1675">GetRequest</a>(i);</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keywordflow">if</span> (ret_request == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>      <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    }</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    Request* txn = response.add_transactions();</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    txn-&gt;set_data(ret_request-&gt;data());</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    txn-&gt;set_seq(ret_request-&gt;seq());</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  }</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  <span class="keywordflow">if</span> (context != <span class="keyword">nullptr</span> &amp;&amp; context-&gt;client != <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="comment">// LOG(ERROR) &lt;&lt; &quot;send response:&quot; &lt;&lt; response.DebugString();</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">int</span> ret = context-&gt;client-&gt;SendRawMessage(response);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordflow">if</span> (ret) {</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>      LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;send resp fail ret:&quot;</span> &lt;&lt; ret;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    }</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  }</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>}</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="aclassresdb_1_1Query_html_a449bccc13b57b33f95663be43d9acf4b"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a449bccc13b57b33f95663be43d9acf4b">resdb::Query::Query</a></div><div class="ttdeci">Query(const ResDBConfig &amp;config, TransactionManager *transaction_manager)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00034">query.cpp:34</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Query_html_a4c6db2d5a30313695d87cf1c3a118c1a"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">resdb::Query::ProcessGetReplicaState</a></div><div class="ttdeci">virtual int ProcessGetReplicaState(std::unique_ptr&lt; Context &gt; context, std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00039">query.cpp:39</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Query_html_a60a9784a7bec6c750867db02225cd278"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">resdb::Query::~Query</a></div><div class="ttdeci">virtual ~Query()</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00037">query.cpp:37</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Query_html_acdde0c721ea48de7be2e76ebd4f00eea"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">resdb::Query::transaction_manager_</a></div><div class="ttdeci">TransactionManager * transaction_manager_</div><div class="ttdef"><b>Definition:</b> <a href="../../dd/d6e/query_8h_source.html#l00045">query.h:45</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Query_html_ad01910547713134b8a043df98a34175d"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">resdb::Query::ProcessQuery</a></div><div class="ttdeci">virtual int ProcessQuery(std::unique_ptr&lt; Context &gt; context, std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00055">query.cpp:55</a></div></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#aea8edea4c0b25462c117c8c8e39dadd8">   34</a></span><a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#aea8edea4c0b25462c117c8c8e39dadd8">Query::Query</a>(<span class="keyword">const</span> <a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&amp; config, <a class="code hl_class" href="../../df/d01/classresdb_1_1TransactionManager.html">TransactionManager</a>* transaction_manager,</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>             std::unique_ptr&lt;CustomQuery&gt; executor)</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    : <a class="code hl_variable" href="../../d3/db5/resdb__state__client__test_8cpp.html#a4b1f98004f89e2582b05ad244479770e">config_</a>(config),</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>      <a class="code hl_variable" href="../../d5/d74/commitment__test_8cpp.html#a78fc833919d447f5cda7ae2755454b36">transaction_manager_</a>(transaction_manager),</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>      custom_query_executor_(std::move(executor)) {}</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">   40</a></span><a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">Query::~Query</a>() {}</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">   42</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">Query::ProcessGetReplicaState</a>(std::unique_ptr&lt;Context&gt; context,</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>                                  std::unique_ptr&lt;Request&gt; request) {</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  ReplicaState replica_state;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  <span class="keywordtype">int</span> ret = <a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">transaction_manager_</a>-&gt;<a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#a613204ce56adda1c7ca87d264ef93abc">GetReplicaState</a>(&amp;replica_state);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordflow">if</span> (ret == 0) {</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordflow">if</span> (context != <span class="keyword">nullptr</span> &amp;&amp; context-&gt;client != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>      ret = context-&gt;client-&gt;SendRawMessage(replica_state);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>      <span class="keywordflow">if</span> (ret) {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;send resp&quot;</span> &lt;&lt; replica_state.DebugString()</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                   &lt;&lt; <span class="stringliteral">&quot; fail ret:&quot;</span> &lt;&lt; ret;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      }</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    }</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  }</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>}</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">   58</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">Query::ProcessQuery</a>(std::unique_ptr&lt;Context&gt; context,</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>                        std::unique_ptr&lt;Request&gt; request) {</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  QueryRequest query;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keywordflow">if</span> (!query.ParseFromString(request-&gt;data())) {</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordflow">return</span> -2;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  }</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="comment">// LOG(ERROR) &lt;&lt; &quot;request:&quot; &lt;&lt; query.DebugString();</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  QueryResponse response;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  <span class="keywordflow">for</span> (uint64_t i = query.min_seq(); i &lt;= query.max_seq(); ++i) {</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    Request* ret_request = <a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">transaction_manager_</a>-&gt;<a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#a33b7a8460c02f6ed97d6ca332c9b1675">GetRequest</a>(i);</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordflow">if</span> (ret_request == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>      <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    }</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    Request* txn = response.add_transactions();</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    txn-&gt;set_data(ret_request-&gt;data());</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    txn-&gt;set_seq(ret_request-&gt;seq());</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  }</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  <span class="keywordflow">if</span> (context != <span class="keyword">nullptr</span> &amp;&amp; context-&gt;client != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="comment">// LOG(ERROR) &lt;&lt; &quot;send response:&quot; &lt;&lt; response.DebugString();</span></div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordtype">int</span> ret = context-&gt;client-&gt;SendRawMessage(response);</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="keywordflow">if</span> (ret) {</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>      LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;send resp fail ret:&quot;</span> &lt;&lt; ret;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    }</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  }</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>}</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno"><a class="line" href="../../de/d6d/classresdb_1_1Query.html#acb28583061fb723ae41d5e464b2980e4">   89</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../de/d6d/classresdb_1_1Query.html#acb28583061fb723ae41d5e464b2980e4">Query::ProcessCustomQuery</a>(std::unique_ptr&lt;Context&gt; context,</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>                              std::unique_ptr&lt;Request&gt; request) {</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  <span class="keywordflow">if</span> (<a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#a528ecde03ca3e96058d458965d26f36e">custom_query_executor_</a> == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;no custom executor&quot;</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  }</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  std::unique_ptr&lt;std::string&gt; resp_str =</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>      <a class="code hl_variable" href="../../de/d6d/classresdb_1_1Query.html#a528ecde03ca3e96058d458965d26f36e">custom_query_executor_</a>-&gt;Query(request-&gt;data());</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  CustomQueryResponse response;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  <span class="keywordflow">if</span> (resp_str != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    response.set_resp_str(*resp_str);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  }</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  <span class="keywordflow">if</span> (context != <span class="keyword">nullptr</span> &amp;&amp; context-&gt;client != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="keywordtype">int</span> ret = context-&gt;client-&gt;SendRawMessage(response);</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="keywordflow">if</span> (ret) {</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>      LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;send resp fail ret:&quot;</span> &lt;&lt; ret;</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    }</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>  }</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>}</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_a4c6db2d5a30313695d87cf1c3a118c1a"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a4c6db2d5a30313695d87cf1c3a118c1a">resdb::Query::ProcessGetReplicaState</a></div><div class="ttdeci">virtual int ProcessGetReplicaState(std::unique_ptr&lt; Context &gt; context, std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00042">query.cpp:42</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_a528ecde03ca3e96058d458965d26f36e"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a528ecde03ca3e96058d458965d26f36e">resdb::Query::custom_query_executor_</a></div><div class="ttdeci">std::unique_ptr&lt; CustomQuery &gt; custom_query_executor_</div><div class="ttdef"><b>Definition:</b> <a href="../../dd/d6e/query_8h_source.html#l00051">query.h:51</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_a60a9784a7bec6c750867db02225cd278"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#a60a9784a7bec6c750867db02225cd278">resdb::Query::~Query</a></div><div class="ttdeci">virtual ~Query()</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00040">query.cpp:40</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_acb28583061fb723ae41d5e464b2980e4"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#acb28583061fb723ae41d5e464b2980e4">resdb::Query::ProcessCustomQuery</a></div><div class="ttdeci">virtual int ProcessCustomQuery(std::unique_ptr&lt; Context &gt; context, std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00089">query.cpp:89</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_acdde0c721ea48de7be2e76ebd4f00eea"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#acdde0c721ea48de7be2e76ebd4f00eea">resdb::Query::transaction_manager_</a></div><div class="ttdeci">TransactionManager * transaction_manager_</div><div class="ttdef"><b>Definition:</b> <a href="../../dd/d6e/query_8h_source.html#l00050">query.h:50</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_ad01910547713134b8a043df98a34175d"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#ad01910547713134b8a043df98a34175d">resdb::Query::ProcessQuery</a></div><div class="ttdeci">virtual int ProcessQuery(std::unique_ptr&lt; Context &gt; context, std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00058">query.cpp:58</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Query_html_aea8edea4c0b25462c117c8c8e39dadd8"><div class="ttname"><a href="../../de/d6d/classresdb_1_1Query.html#aea8edea4c0b25462c117c8c8e39dadd8">resdb::Query::Query</a></div><div class="ttdeci">Query(const ResDBConfig &amp;config, TransactionManager *transaction_manager, std::unique_ptr&lt; CustomQuery &gt; executor=nullptr)</div><div class="ttdef"><b>Definition:</b> <a href="../../d9/d0c/query_8cpp_source.html#l00034">query.cpp:34</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResDBConfig_html"><div class="ttname"><a href="../../db/ddb/classresdb_1_1ResDBConfig.html">resdb::ResDBConfig</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d4/d9a/resdb__config_8h_source.html#l00034">resdb_config.h:34</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionManager_html"><div class="ttname"><a href="../../df/d01/classresdb_1_1TransactionManager.html">resdb::TransactionManager</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d8/dc0/transaction__manager_8h_source.html#l00050">transaction_manager.h:50</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionManager_html_a33b7a8460c02f6ed97d6ca332c9b1675"><div class="ttname"><a href="../../df/d01/classresdb_1_1TransactionManager.html#a33b7a8460c02f6ed97d6ca332c9b1675">resdb::TransactionManager::GetRequest</a></div><div class="ttdeci">Request * GetRequest(uint64_t seq)</div><div class="ttdef"><b>Definition:</b> <a href="../../d1/d14/transaction__manager_8cpp_source.html#l00210">transaction_manager.cpp:210</a></div></div>

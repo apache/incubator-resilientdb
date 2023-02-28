@@ -1,9 +1,19 @@
 var namespaceresdb =
 [
+    [ "coin", "d9/ddc/namespaceresdb_1_1coin.html", "d9/ddc/namespaceresdb_1_1coin" ],
     [ "contract", "d8/d28/namespaceresdb_1_1contract.html", "d8/d28/namespaceresdb_1_1contract" ],
     [ "testing", "d4/d47/namespaceresdb_1_1testing.html", [
       [ "MATCHER_P", "d4/d47/namespaceresdb_1_1testing.html#ad9c8f1de731bb888763780213a8a2c36", null ]
     ] ],
+    [ "utils", "da/d1b/namespaceresdb_1_1utils.html", [
+      [ "CalculateRIPEMD160Hash", "da/d1b/namespaceresdb_1_1utils.html#a0fb26398b123f4828c8a3336ed4db061", null ],
+      [ "CalculateSHA256Hash", "da/d1b/namespaceresdb_1_1utils.html#ab61a2f1c731d3cf28006f7e31b6659eb", null ],
+      [ "ECDSASignString", "da/d1b/namespaceresdb_1_1utils.html#a29dea4e3f2975397dd12772e8c497d3b", null ],
+      [ "ECDSAVerifyString", "da/d1b/namespaceresdb_1_1utils.html#a92ce76ce4209ab94c85b42ecff7a1fc7", null ],
+      [ "RsaSignString", "da/d1b/namespaceresdb_1_1utils.html#adf1d7ffe5d2e3dbbcd917cab7b37b1be", null ],
+      [ "RsaVerifyString", "da/d1b/namespaceresdb_1_1utils.html#a278b4bb0996b3e85baf3fa6cfaf76541", null ]
+    ] ],
+    [ "utxo", "d1/d74/namespaceresdb_1_1utxo.html", "d1/d74/namespaceresdb_1_1utxo" ],
     [ "AsyncAcceptor", "d3/d77/classresdb_1_1AsyncAcceptor.html", "d3/d77/classresdb_1_1AsyncAcceptor" ],
     [ "AsyncReplicaClient", "d8/d9d/classresdb_1_1AsyncReplicaClient.html", "d8/d9d/classresdb_1_1AsyncReplicaClient" ],
     [ "AtomicUniquePtr", "db/d71/classresdb_1_1AtomicUniquePtr.html", "db/d71/classresdb_1_1AtomicUniquePtr" ],
@@ -16,6 +26,7 @@ var namespaceresdb =
     [ "ConsensusServicePBFT", "d0/dde/classresdb_1_1ConsensusServicePBFT.html", "d0/dde/classresdb_1_1ConsensusServicePBFT" ],
     [ "Context", "d8/d18/structresdb_1_1Context.html", "d8/d18/structresdb_1_1Context" ],
     [ "CrowService", "d1/df3/classresdb_1_1CrowService.html", "d1/df3/classresdb_1_1CrowService" ],
+    [ "CustomQuery", "d6/dd9/classresdb_1_1CustomQuery.html", "d6/dd9/classresdb_1_1CustomQuery" ],
     [ "DataInfo", "dd/dd6/structresdb_1_1DataInfo.html", "dd/dd6/structresdb_1_1DataInfo" ],
     [ "GeoGlobalExecutor", "d4/d2d/classresdb_1_1GeoGlobalExecutor.html", "d4/d2d/classresdb_1_1GeoGlobalExecutor" ],
     [ "GeoPBFTClient", "d5/dcf/classresdb_1_1GeoPBFTClient.html", "d5/dcf/classresdb_1_1GeoPBFTClient" ],
@@ -109,6 +120,7 @@ var namespaceresdb =
       [ "EXECUTED", "d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0a71ceed164ea4750776c99b47b9725dbc", null ]
     ] ],
     [ "CustomGenerateResDBServer", "d5/d10/namespaceresdb.html#a7b607f8c725d7e080eeec6b16f8593e1", null ],
+    [ "CustomGenerateResDBServer", "d5/d10/namespaceresdb.html#a44f25aab0a464e7b496eb3dc385f8fc1", null ],
     [ "GenerateDBConfig", "d5/d10/namespaceresdb.html#a31ec53ebc543dbfb3af6819350c3f21c", null ],
     [ "GenerateReplicaInfo", "d5/d10/namespaceresdb.html#a83cacaf099010766767e14ff7bf476ca", null ],
     [ "GenerateResDBConfig", "d5/d10/namespaceresdb.html#a35e4f11828fc5f3c9563b6f651de312e", null ],

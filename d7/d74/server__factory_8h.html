@@ -105,6 +105,7 @@ $(document).ready(function(){initNavTree('d7/d74/server__factory_8h.html','../..
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">config/resdb_config_utils.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/d66/custom__query_8h_source.html">execution/custom_query.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d29/transaction__executor__impl_8h_source.html">execution/transaction_executor_impl.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">ordering/pbft/consensus_service_pbft.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d0/d35/resdb__server_8h_source.html">server/resdb_server.h</a>&quot;</code><br />
@@ -128,6 +129,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
 <tr class="memitem:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ResDBServer &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a7b607f8c725d7e080eeec6b16f8593e1">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionExecutorImpl &gt; executor, char *logging_dir=nullptr, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
 <tr class="separator:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
+<tr class="memitem:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ResDBServer &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a44f25aab0a464e7b496eb3dc385f8fc1">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionExecutorImpl &gt; executor, std::unique_ptr&lt; CustomQuery &gt; query_executor, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
+<tr class="separator:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

@@ -11,5 +11,6 @@ var searchData=
   ['contractexecutor_8',['ContractExecutor',['../db/d88/classresdb_1_1contract_1_1ContractExecutor.html',1,'resdb::contract']]],
   ['contractmanager_9',['ContractManager',['../d6/d7d/classresdb_1_1contract_1_1ContractManager.html',1,'resdb::contract']]],
   ['crowservice_10',['CrowService',['../d1/df3/classresdb_1_1CrowService.html',1,'resdb']]],
-  ['cyclicblockchainerror_11',['CyclicBlockchainError',['../d9/db4/classresdb__validator_1_1exceptions_1_1CyclicBlockchainError.html',1,'resdb_validator::exceptions']]]
+  ['customquery_11',['CustomQuery',['../d6/dd9/classresdb_1_1CustomQuery.html',1,'resdb']]],
+  ['cyclicblockchainerror_12',['CyclicBlockchainError',['../d9/db4/classresdb__validator_1_1exceptions_1_1CyclicBlockchainError.html',1,'resdb_validator::exceptions']]]
 ];
