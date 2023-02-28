@@ -26,6 +26,7 @@
 #pragma once
 
 #include "config/resdb_config_utils.h"
+#include "execution/custom_query.h"
 #include "execution/transaction_executor_impl.h"
 #include "ordering/pbft/consensus_service_pbft.h"
 #include "server/resdb_server.h"
@@ -44,6 +45,13 @@ class ServerFactory {
       char* config_file, char* private_key_file, char* cert_file,
       std::unique_ptr<TransactionExecutorImpl> executor, char* logging_dir,
       std::function<void(ResDBConfig* config)> config_handler);
+
+  template <typename ConsensusProtocol = ConsensusServicePBFT>
+  std::unique_ptr<ResDBServer> CustomCreateResDBServer(
+      char* config_file, char* private_key_file, char* cert_file,
+      std::unique_ptr<TransactionExecutorImpl> executor,
+      std::unique_ptr<CustomQuery> query_executor,
+      std::function<void(ResDBConfig* config)> config_handler);
 };
 
 std::unique_ptr<ResDBServer> GenerateResDBServer(
@@ -57,6 +65,13 @@ std::unique_ptr<ResDBServer> CustomGenerateResDBServer(
     char* config_file, char* private_key_file, char* cert_file,
     std::unique_ptr<TransactionExecutorImpl> executor,
     char* logging_dir = nullptr,
+    std::function<void(ResDBConfig* config)> config_handler = nullptr);
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ResDBServer> CustomGenerateResDBServer(
+    char* config_file, char* private_key_file, char* cert_file,
+    std::unique_ptr<TransactionExecutorImpl> executor,
+    std::unique_ptr<CustomQuery> query_executor,
     std::function<void(ResDBConfig* config)> config_handler = nullptr);
 
 // ===================================================================
@@ -77,6 +92,23 @@ std::unique_ptr<ResDBServer> ServerFactory::CustomCreateResDBServer(
 }
 
 template <typename ConsensusProtocol>
+std::unique_ptr<ResDBServer> ServerFactory::CustomCreateResDBServer(
+    char* config_file, char* private_key_file, char* cert_file,
+    std::unique_ptr<TransactionExecutorImpl> executor,
+    std::unique_ptr<CustomQuery> query_executor,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+
+  if (config_handler) {
+    config_handler(config.get());
+  }
+  return std::make_unique<ResDBServer>(
+      *config, std::make_unique<ConsensusProtocol>(*config, std::move(executor),
+                                                   std::move(query_executor)));
+}
+
+template <typename ConsensusProtocol>
 std::unique_ptr<ResDBServer> CustomGenerateResDBServer(
     char* config_file, char* private_key_file, char* cert_file,
     std::unique_ptr<TransactionExecutorImpl> executor, char* logging_dir,
@@ -84,6 +116,17 @@ std::unique_ptr<ResDBServer> CustomGenerateResDBServer(
   return ServerFactory().CustomCreateResDBServer<ConsensusProtocol>(
       config_file, private_key_file, cert_file, std::move(executor),
       logging_dir, config_handler);
+}
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ResDBServer> CustomGenerateResDBServer(
+    char* config_file, char* private_key_file, char* cert_file,
+    std::unique_ptr<TransactionExecutorImpl> executor,
+    std::unique_ptr<CustomQuery> query_executor,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  return ServerFactory().CustomCreateResDBServer<ConsensusProtocol>(
+      config_file, private_key_file, cert_file, std::move(executor),
+      std::move(query_executor), config_handler);
 }
 
 }  // namespace resdb

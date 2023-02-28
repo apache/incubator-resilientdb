@@ -20,35 +20,27 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
  */
 
-#pragma once
+#include "application/utxo/wallet_tool/cpp/addr_utils.h"
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include <glog/logging.h>
+
+#include "crypto/hash.h"
 
 namespace resdb {
+namespace coin {
+namespace utils {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+using resdb::utils::CalculateRIPEMD160Hash;
+using resdb::utils::CalculateSHA256Hash;
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+std::string GenAddr(const std::string& public_key) {
+  std::string sha256_hash = CalculateSHA256Hash(public_key);
+  std::string ripemd160_hash = CalculateRIPEMD160Hash(sha256_hash);
+  return ripemd160_hash;
+}
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace utils
+}  // namespace coin
 }  // namespace resdb

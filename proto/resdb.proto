@@ -36,8 +36,9 @@ message Request {
         TYPE_GEO_REQUEST = 15;
         TYPE_VIEWCHANGE = 16;
         TYPE_NEWVIEW= 17;
+        TYPE_CUSTOM_QUERY = 18;
 
-        NUM_OF_TYPE = 18; // the total number of types.
+        NUM_OF_TYPE = 19; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -158,7 +159,12 @@ message QueryRequest {
   uint64 min_seq = 1;
   uint64 max_seq = 2;
 }
+
 message QueryResponse {
   repeated Request transactions = 1;
+}
+
+message CustomQueryResponse {
+  bytes resp_str = 1;
 }
 

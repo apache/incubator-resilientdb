@@ -23,32 +23,32 @@
  *
  */
 
-#pragma once
+#include "crypto/hash.h"
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include <cryptopp/ripemd.h>
+#include <cryptopp/sha.h>
+#include <glog/logging.h>
 
 namespace resdb {
+namespace utils {
+// Funtion to calculate hash of a string.
+std::string CalculateSHA256Hash(const std::string& str) {
+  CryptoPP::byte const* pData = (CryptoPP::byte*)str.data();
+  unsigned int nDataLen = str.size();
+  CryptoPP::byte aDigest[CryptoPP::SHA256::DIGESTSIZE];
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  CryptoPP::SHA256().CalculateDigest(aDigest, pData, nDataLen);
+  return std::string((char*)aDigest, CryptoPP::SHA256::DIGESTSIZE);
+}
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+std::string CalculateRIPEMD160Hash(const std::string& str) {
+  CryptoPP::byte const* pData = (CryptoPP::byte*)str.data();
+  unsigned int nDataLen = str.size();
+  CryptoPP::byte aDigest[CryptoPP::RIPEMD160::DIGESTSIZE];
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+  CryptoPP::RIPEMD160().CalculateDigest(aDigest, pData, nDataLen);
+  return std::string((char*)aDigest, CryptoPP::RIPEMD160::DIGESTSIZE);
+}
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace utils
 }  // namespace resdb

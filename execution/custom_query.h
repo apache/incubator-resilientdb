@@ -25,30 +25,16 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
-
 namespace resdb {
 
-class Query {
+// Execute a query request which does not process consensus protocol.
+class CustomQuery {
  public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  virtual ~CustomQuery() = default;
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
-
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
+  virtual std::unique_ptr<std::string> Query(const std::string& request_str) {
+    return nullptr;
+  }
 };
 
 }  // namespace resdb

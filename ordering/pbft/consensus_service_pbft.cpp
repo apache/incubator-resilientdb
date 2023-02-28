@@ -34,7 +34,8 @@ namespace resdb {
 
 ConsensusServicePBFT::ConsensusServicePBFT(
     const ResDBConfig& config,
-    std::unique_ptr<TransactionExecutorImpl> executor)
+    std::unique_ptr<TransactionExecutorImpl> executor,
+    std::unique_ptr<CustomQuery> query_executor)
     : ConsensusService(config),
       system_info_(std::make_unique<SystemInfo>(config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
@@ -45,7 +46,8 @@ ConsensusServicePBFT::ConsensusServicePBFT(
       commitment_(std::make_unique<Commitment>(
           config_, transaction_manager_.get(), GetBroadCastClient(),
           GetSignatureVerifier())),
-      query_(std::make_unique<Query>(config_, transaction_manager_.get())),
+      query_(std::make_unique<Query>(config_, transaction_manager_.get(),
+                                     std::move(query_executor))),
       response_manager_(config_.IsPerformanceRunning()
                             ? nullptr
                             : std::make_unique<ResponseManager>(
@@ -184,6 +186,8 @@ int ConsensusServicePBFT::InternalConsensusCommit(
     case Request::TYPE_REPLICA_STATE:
       return query_->ProcessGetReplicaState(std::move(context),
                                             std::move(request));
+    case Request::TYPE_CUSTOM_QUERY:
+      return query_->ProcessCustomQuery(std::move(context), std::move(request));
   }
   return 0;
 }

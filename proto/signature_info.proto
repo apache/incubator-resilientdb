@@ -8,6 +8,7 @@ message SignatureInfo {
         RSA = 1;
         ED25519 = 2;
         CMAC_AES = 3;
+        ECDSA = 4;
     };
 
     HashType hash_type = 1;

@@ -31,8 +31,11 @@
 
 namespace resdb {
 
-Query::Query(const ResDBConfig& config, TransactionManager* transaction_manager)
-    : config_(config), transaction_manager_(transaction_manager) {}
+Query::Query(const ResDBConfig& config, TransactionManager* transaction_manager,
+             std::unique_ptr<CustomQuery> executor)
+    : config_(config),
+      transaction_manager_(transaction_manager),
+      custom_query_executor_(std::move(executor)) {}
 
 Query::~Query() {}
 
@@ -75,6 +78,30 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
 
   if (context != nullptr && context->client != nullptr) {
     // LOG(ERROR) << "send response:" << response.DebugString();
+    int ret = context->client->SendRawMessage(response);
+    if (ret) {
+      LOG(ERROR) << "send resp fail ret:" << ret;
+    }
+  }
+  return 0;
+}
+
+int Query::ProcessCustomQuery(std::unique_ptr<Context> context,
+                              std::unique_ptr<Request> request) {
+  if (custom_query_executor_ == nullptr) {
+    LOG(ERROR) << "no custom executor";
+    return -1;
+  }
+
+  std::unique_ptr<std::string> resp_str =
+      custom_query_executor_->Query(request->data());
+
+  CustomQueryResponse response;
+  if (resp_str != nullptr) {
+    response.set_resp_str(*resp_str);
+  }
+
+  if (context != nullptr && context->client != nullptr) {
     int ret = context->client->SendRawMessage(response);
     if (ret) {
       LOG(ERROR) << "send resp fail ret:" << ret;

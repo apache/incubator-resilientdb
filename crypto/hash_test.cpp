@@ -23,32 +23,34 @@
  *
  */
 
-#pragma once
+#include "crypto/hash.h"
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include <glog/logging.h>
+#include <gtest/gtest.h>
+
+#include "common/test/test_macros.h"
 
 namespace resdb {
+namespace utils {
+namespace {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+using ::resdb::testing::EqualsProto;
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+TEST(SignatureVerifyTest, CalculateSHA256) {
+  std::string expected_str =
+      "\x9F\x86\xD0\x81\x88L}e\x9A/"
+      "\xEA\xA0\xC5Z\xD0\x15\xA3\xBFO\x1B+\v\x82,\xD1]l\x15\xB0\xF0\n\b";
+  EXPECT_EQ(CalculateSHA256Hash("test"), expected_str);
+}
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+TEST(SignatureVerifyTest, CalculateRIPEMD160) {
+  std::string expected_str =
+      "^R\xFE\xE4~k\a\x5"
+      "e\xF7"
+      "CrF\x8C\xDCi\x9D\xE8\x91\a";
+  EXPECT_EQ(CalculateRIPEMD160Hash("test"), expected_str);
+}
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace
+}  // namespace utils
 }  // namespace resdb

@@ -23,32 +23,31 @@
  *
  */
 
-#pragma once
+#include <glog/logging.h>
+#include <pybind11/pybind11.h>
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "crypto/signature_utils.h"
 
 namespace resdb {
+namespace coin {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+using utils::ECDSASignString;
+using utils::ECDSAVerifyString;
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+bool TestKeyPairs(std::string private_key, std::string public_key) {
+  LOG(ERROR) << " private key:" << private_key << " public key:" << public_key;
+  std::string message = "hello world";
+  std::string sign = ECDSASignString(private_key, message);
+  LOG(ERROR) << "sign done:" << sign;
+  bool res = ECDSAVerifyString(message, public_key, sign);
+  LOG(ERROR) << "verify done. res:" << (res == true);
+  return res;
+}
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace coin
 }  // namespace resdb
+
+PYBIND11_MODULE(key_tester_utils, m) {
+  m.doc() = "ECDSA Key Tester";
+  m.def("TestKeyPairs", &resdb::coin::TestKeyPairs, "Test a ecdsa key pair.");
+}

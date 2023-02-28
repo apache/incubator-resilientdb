@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package resdb.utxo;
+
+import "application/utxo/proto/utxo.proto";
+
+message GenesisUTXO {
+  repeated UTXO transactions = 1;
+}
+
+message Config {
+  GenesisUTXO genesis_transactions = 1;
+}
+
+

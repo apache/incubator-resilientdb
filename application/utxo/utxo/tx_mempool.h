@@ -25,30 +25,37 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "absl/status/statusor.h"
+#include "application/utxo/proto/utxo.pb.h"
 
 namespace resdb {
+namespace utxo {
 
-class Query {
+class TxMempool {
  public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  TxMempool();
+  ~TxMempool();
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+  // Add a new utxo and return the transaction id.
+  int64_t AddUTXO(const UTXO& utxo);
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+  // get the transfer value from a transantion "id" in its output[out_idx].
+  // if the address not match or the transaction does not exist, return -1
+  int64_t GetUTXOOutValue(int64_t id, int out_idx, const std::string& address);
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
+  absl::StatusOr<UTXOOut> GetUTXO(int64_t id, int out_idx,
+                                  const std::string& address);
+
+  // Mark the output of a trans has been spent.
+  // Return the out value.
+  int64_t MarkSpend(int64_t id, int out_idx, const std::string& address);
+
+  std::vector<UTXO> GetUTXO(int64_t end_idx, int num);
+
+ private:
+  std::map<int64_t, std::unique_ptr<UTXO> > txs_;
+  std::atomic<int64_t> id_;
 };
 
+}  // namespace utxo
 }  // namespace resdb

@@ -20,35 +20,22 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
  */
 
-#pragma once
+#include "application/utxo/wallet_tool/cpp/key_utils.h"
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "crypto/key_generator.h"
 
 namespace resdb {
+namespace coin {
+namespace utils {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+std::pair<std::string, std::string> GenECDSAKeys() {
+  resdb::SecretKey key =
+      resdb::KeyGenerator::GeneratorKeys(resdb::SignatureInfo::ECDSA);
+  return std::make_pair(key.private_key(), key.public_key());
+}
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
-
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace utils
+}  // namespace coin
 }  // namespace resdb

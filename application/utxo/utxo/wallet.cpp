@@ -23,32 +23,22 @@
  *
  */
 
-#pragma once
+#include "application/utxo/utxo/wallet.h"
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include <glog/logging.h>
 
 namespace resdb {
+namespace utxo {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+Wallet::Wallet() {}
+Wallet::~Wallet() {}
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+int Wallet::AddCoin(const std::string& address, int64_t value) {
+  wallet_[address] += value;
+  return 0;
+}
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+int64_t Wallet::GetCoin(const std::string& address) { return wallet_[address]; }
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace utxo
 }  // namespace resdb

@@ -172,6 +172,7 @@ cc_library(
     deps = [
         ":transaction_manager",
         "//config:resdb_config",
+        "//execution:custom_query",
         "//proto:resdb_cc_proto",
     ],
 )
@@ -186,6 +187,7 @@ cc_test(
         "//common/test:test_main",
         "//config:resdb_config_utils",
         "//crypto:mock_signature_verifier",
+        "//execution:mock_custom_query",
         "//server:mock_resdb_replica_client",
     ],
 )

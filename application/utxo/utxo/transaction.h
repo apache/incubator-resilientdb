@@ -25,30 +25,38 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "absl/status/statusor.h"
+#include "application/utxo/proto/config.pb.h"
+#include "application/utxo/proto/utxo.pb.h"
+#include "application/utxo/utxo/tx_mempool.h"
+#include "application/utxo/utxo/wallet.h"
 
 namespace resdb {
+namespace utxo {
 
-class Query {
+class Transaction {
  public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  Transaction(const Config& config, Wallet* wallet);
+  ~Transaction();
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+  int64_t AddTransaction(const std::string& utxo_string);
+  int64_t AddTransaction(const UTXO& utxo);
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+  std::vector<UTXO> GetUTXO(int64_t end_id, int num);
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
+ private:
+  int AddCoin(const UTXO& utxo);
+  bool VerifyUTXO(const UTXO& utxo, const std::vector<UTXOOut>& ins);
+  int64_t GetUTXOOutValue(int64_t tx_id, int out_idx,
+                          const std::string& address);
+
+  absl::StatusOr<std::vector<UTXOOut>> GetInput(const UTXO& utxo);
+
+ private:
+  std::unique_ptr<TxMempool> tx_mempool_;
+  Config config_;
+  Wallet* wallet_;
 };
 
+}  // namespace utxo
 }  // namespace resdb
