@@ -17,17 +17,20 @@ function Home(props) {
   useEffect(() => {
     chrome.storage.sync.get(["store"], (res) => {
       if(res.store.publicKey){
-        if(chrome.storage.local.get("password")){
-          props.setHash(res.store.hash);
-          props.navigate("/login", {state: res.store} );
-        }
-        else{
-          const bytes = CryptoJS.AES.decrypt(res.store.encryptedPrivateKey, chrome.storage.local.get("password"));
-          const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-          const store = res.store;
-          store.privateKey = data;
-          props.navigate("/dashboard", {state: store});
-        }
+        chrome.storage.local.get(["password"], (result) => {
+          console.log(result);
+          if(!result.password) {
+            props.setHash(res.store.hash);
+            props.navigate("/login", {state: res.store} );
+          }
+          else {
+            const bytes = CryptoJS.AES.decrypt(res.store.encryptedPrivateKey, result.password);
+            const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+            const store = res.store;
+            store.privateKey = data;
+            props.navigate("/dashboard", {state: store});
+          }
+        })
       }
     });
   });
@@ -55,7 +58,7 @@ function Home(props) {
           var hash = bcrypt.hashSync(props.values.password, salt);
           const store = {publicKey: res.data.generateKeys.publicKey, encryptedPrivateKey: phrase, hash: hash};
           var password = {password: props.values.password};
-          chrome.storage.local.set(password);
+          chrome.storage.local.set({ password }, () => {});
           chrome.storage.sync.set({ store }, () => {
             store.privateKey = res.data.generateKeys.privateKey;
             props.navigate("/dashboard", {state: store} );

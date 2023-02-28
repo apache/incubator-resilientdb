@@ -33,7 +33,7 @@ function Login(props) {
         const store = location.state;
         var password = {password: props.values.password};
         store.privateKey = data;
-        chrome.storage.local.set(password);
+        chrome.storage.local.set({ password }, () => {});
         props.navigate("/dashboard", {state: store});
       }
       catch(err) {
