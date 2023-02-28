@@ -9,10 +9,10 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const navigate = useNavigate();
+  const [isLoading, setLoading] = useState(true);
   const [publicKey, setPublicKey] = useState("");
   const [privateKey, setPrivateKey] = useState("");
   const [encryptedPrivateKey, setEncryptedPrivateKey] = useState("");
-  const [publicKeyDisplay, setPublicKeyDisplay] = useState(false);
   const [hash, setHash] = useState("");
   const [footer, setFooter] = useState("");
   const [values, setValues] = useState({
@@ -26,10 +26,10 @@ function App() {
 
   const props = {
     navigate,
+    isLoading,
     publicKey,
     privateKey,
     encryptedPrivateKey,
-    publicKeyDisplay,
     hash,
     footer,
     values,
@@ -37,10 +37,10 @@ function App() {
   }
 
   const propsChange = {
+    setLoading,
     setPublicKey,
     setPrivateKey,
     setEncryptedPrivateKey,
-    setPublicKeyDisplay,
     setHash,
     setFooter,
     setValues,

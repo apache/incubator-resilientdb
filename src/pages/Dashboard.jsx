@@ -2,10 +2,16 @@ import logo from '../logo.png';
 import '../App.css';
 import Footer from "../components/Footer";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 function Dashboard(props) {
+  const location = useLocation();
   props.setFooter("footerLogin");
+
+  const back = async () => {
+    const store = location.state;
+    props.navigate("/login", {state: store});
+  }
  
   return (
   <div className="App">
@@ -21,10 +27,10 @@ function Dashboard(props) {
       </div>
 
       <div className="paymentTopKey vcenter">
-        <p className="publicKeyStyle"><b>Public Key:</b> {props.publicKey}</p>
+        <p className="publicKeyStyle"><b>Public Key:</b> {location.state.publicKey}</p>
       </div>
       <div className="paymentBottomKey vcenter">
-        <p className="publicKeyStyle"><b>Private Key:</b> {props.privateKey}</p>
+        <p className="publicKeyStyle"><b>Private Key:</b> {location.state.privateKey}</p>
       </div>
 
       <div className="paymentBottomDashboard vcenter">
@@ -33,7 +39,7 @@ function Dashboard(props) {
 
       <div className="paymentBottomDashboardBack vcenter">
         <button className="buttonCreate center" data-inline="true"> Submit </button>
-        <Link to="/login" className="routingBack"><button className="buttonCreate center" data-inline="true"><ArrowBackIcon /> Back </button></Link>
+        <button className="buttonCreate center" data-inline="true" onClick={back}><ArrowBackIcon /> Back </button>
       </div>
 
       <Footer {...props} />

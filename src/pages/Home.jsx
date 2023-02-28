@@ -17,10 +17,17 @@ function Home(props) {
   useEffect(() => {
     chrome.storage.sync.get(["store"], (res) => {
       if(res.store.publicKey){
-        props.setPublicKeyDisplay(true);
-        props.setPublicKey(res.store.publicKey);
-        props.setHash(res.store.hash);
-        props.setEncryptedPrivateKey(res.store.encryptedPrivateKey);
+        if(chrome.storage.local.get("password")){
+          props.setHash(res.store.hash);
+          props.navigate("/login", {state: res.store} );
+        }
+        else{
+          const bytes = CryptoJS.AES.decrypt(res.store.encryptedPrivateKey, chrome.storage.local.get("password"));
+          const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+          const store = res.store;
+          store.privateKey = data;
+          props.navigate("/dashboard", {state: store});
+        }
       }
     });
   });
@@ -40,29 +47,21 @@ function Home(props) {
       }`
 
       chrome.storage.sync.clear(async function(){
-          const result = await sendRequest(query).then(res => { 
-          const getPublicKey = res.data.generateKeys.publicKey;
-          props.setPublicKeyDisplay(true);
-          props.setPublicKey(getPublicKey);
-          props.setPrivateKey(res.data.generateKeys.privateKey);
-
+        const result = await sendRequest(query).then(res => { 
           const phrase = CryptoJS.AES.encrypt(
             JSON.stringify(res.data.generateKeys.privateKey),
             props.values.password
           ).toString();
-          props.setEncryptedPrivateKey(phrase);
-
           var hash = bcrypt.hashSync(props.values.password, salt);
-          
-          const store = {publicKey: props.publicKey, encryptedPrivateKey: props.encryptedPrivateKey, hash: hash};
-          return store;
-        }).then(store => {
+          const store = {publicKey: res.data.generateKeys.publicKey, encryptedPrivateKey: phrase, hash: hash};
+          var password = {password: props.values.password};
+          chrome.storage.local.set(password);
           chrome.storage.sync.set({ store }, () => {
-            /* Stored in local storage */
-            props.navigate("/dashboard");
-          });
-        });
-      });
+            store.privateKey = res.data.generateKeys.privateKey;
+            props.navigate("/dashboard", {state: store} );
+          });  
+        })
+    });
     }
     else {
       alert.show("Passwords don't match.");

@@ -11,9 +11,11 @@ import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import bcrypt from 'bcryptjs';
+import { useLocation } from "react-router-dom";
 
 function Login(props) {
   const alert = useAlert();
+  const location = useLocation();
   props.setFooter("footerLogin");
 
   const removeAccount = async () => {
@@ -24,22 +26,26 @@ function Login(props) {
   }
 
   const loginAccount = async () => {
-    if(bcrypt.compareSync(props.values.password, props.hash)){
-      console.log(props.encryptedPrivateKey);
-      console.log(props.values.password);
+    if(bcrypt.compareSync(props.values.password, location.state.hash)){
       try {
-        const bytes = CryptoJS.AES.decrypt(props.encryptedPrivateKey, props.values.password);
+        const bytes = CryptoJS.AES.decrypt(location.state.encryptedPrivateKey, props.values.password);
         const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-        props.setPrivateKey(data);
-        props.navigate("/dashboard");
+        const store = location.state;
+        var password = {password: props.values.password};
+        store.privateKey = data;
+        chrome.storage.local.set(password);
+        props.navigate("/dashboard", {state: store});
       }
       catch(err) {
         alert.show("Incorrect password.");
+        console.log(err);
       }
       
     }
     else {
       alert.show("Incorrect password.");
+      console.log(props.values.password);
+      console.log(props.hash);
     }
   }
 
