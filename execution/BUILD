@@ -128,3 +128,12 @@ cc_library(
     deps = [
     ],
 )
+
+cc_library(
+    name = "mock_custom_query",
+    hdrs = ["mock_custom_query.h"],
+    deps = [
+        ":custom_query",
+    ],
+)
+

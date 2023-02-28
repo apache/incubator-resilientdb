@@ -187,6 +187,7 @@ cc_test(
         "//common/test:test_main",
         "//config:resdb_config_utils",
         "//crypto:mock_signature_verifier",
+        "//execution:mock_custom_query",
         "//server:mock_resdb_replica_client",
     ],
 )

@@ -35,6 +35,7 @@
 #include "common/test/test_macros.h"
 #include "config/resdb_config_utils.h"
 #include "crypto/mock_signature_verifier.h"
+#include "execution/mock_custom_query.h"
 #include "ordering/pbft/commitment.h"
 #include "ordering/pbft/transaction_manager.h"
 #include "server/mock_resdb_replica_client.h"
@@ -186,6 +187,35 @@ TEST_F(QueryTest, QueryTxn) {
 
   int ret = query_.ProcessQuery(std::move(context),
                                 std::make_unique<Request>(request));
+  EXPECT_EQ(ret, 0);
+}
+
+TEST_F(QueryTest, CustomQuery) {
+  CustomQueryResponse response;
+  response.set_resp_str("custom_response");
+
+  std::unique_ptr<MockResDBClient> resp_client =
+      std::make_unique<MockResDBClient>("127.0.0.1", 0);
+  EXPECT_CALL(*resp_client, SendRawMessage(EqualsProto(response))).Times(1);
+
+  auto context = std::make_unique<Context>();
+  context->client = std::move(resp_client);
+
+  context->signature.set_signature("signature");
+
+  Request request;
+  request.set_data("request");
+
+  auto custom_query_executor = std::make_unique<MockCustomQuery>();
+  EXPECT_CALL(*custom_query_executor, Query("request"))
+      .WillOnce(Invoke([&](const std::string& str) {
+        return std::make_unique<std::string>("custom_response");
+      }));
+
+  Query cus_query(config_, nullptr, std::move(custom_query_executor));
+
+  int ret = cus_query.ProcessCustomQuery(std::move(context),
+                                         std::make_unique<Request>(request));
   EXPECT_EQ(ret, 0);
 }
 
