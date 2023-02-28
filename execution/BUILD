@@ -120,3 +120,11 @@ cc_test(
         "//server:mock_resdb_replica_client",
     ],
 )
+
+cc_library(
+    name = "custom_query",
+    hdrs = ["custom_query.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+    ],
+)

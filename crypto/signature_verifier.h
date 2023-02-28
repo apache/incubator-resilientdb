@@ -42,6 +42,7 @@ class SignatureVerifier {
  public:
   SignatureVerifier(const KeyInfo& private_key,
                     const CertificateInfo& certificate_info);
+  virtual ~SignatureVerifier() = default;
 
   // Set the public key that contains the public key, node id,
   // and its certificate.

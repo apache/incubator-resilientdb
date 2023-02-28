@@ -172,6 +172,7 @@ cc_library(
     deps = [
         ":transaction_manager",
         "//config:resdb_config",
+        "//execution:custom_query",
         "//proto:resdb_cc_proto",
     ],
 )

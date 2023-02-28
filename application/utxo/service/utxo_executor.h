@@ -25,30 +25,40 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
+#include "application/utxo/proto/config.pb.h"
+#include "application/utxo/utxo/transaction.h"
+#include "application/utxo/utxo/wallet.h"
+#include "config/resdb_config_utils.h"
 #include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "execution/transaction_executor_impl.h"
 
 namespace resdb {
+namespace utxo {
 
-class Query {
+class UTXOExecutor : public TransactionExecutorImpl {
  public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  UTXOExecutor(const Config& config, Transaction* transaction, Wallet* wallet);
+  ~UTXOExecutor();
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+  std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
+ private:
+  Transaction* transaction_;
+  Wallet* wallet_;
 };
 
+class QueryExecutor : public CustomQuery {
+ public:
+  QueryExecutor(Transaction* transaction, Wallet* wallet);
+  virtual ~QueryExecutor() = default;
+
+  virtual std::unique_ptr<std::string> Query(
+      const std::string& request_str) override;
+
+ private:
+  Transaction* transaction_;
+  Wallet* wallet_;
+};
+
+}  // namespace utxo
 }  // namespace resdb

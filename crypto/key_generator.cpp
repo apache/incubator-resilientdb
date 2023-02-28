@@ -27,6 +27,8 @@
 
 #include <cryptopp/aes.h>
 #include <cryptopp/cmac.h>
+#include <cryptopp/dsa.h>
+#include <cryptopp/eccrypto.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include <cryptopp/osrng.h>
@@ -105,6 +107,28 @@ SecretKey CmacGenerateHexKey(unsigned int key_size) {
   return key_pair;
 }
 
+SecretKey ECDSAGenerateKeys() {
+  CryptoPP::AutoSeededRandomPool prng;
+  CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey privateKey;
+  CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> params(
+      CryptoPP::ASN1::secp256k1());
+  privateKey.Initialize(prng, params);
+
+  CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey publicKey;
+  privateKey.MakePublicKey(publicKey);
+
+  SecretKey key_pair;
+
+  // save keys
+  publicKey.Save(CryptoPP::HexEncoder(
+                     new CryptoPP::StringSink(*key_pair.mutable_public_key()))
+                     .Ref());
+  privateKey.Save(CryptoPP::HexEncoder(
+                      new CryptoPP::StringSink(*key_pair.mutable_private_key()))
+                      .Ref());
+  return key_pair;
+}
+
 }  // namespace
 
 SecretKey KeyGenerator::GeneratorKeys(SignatureInfo::HashType type) {
@@ -119,6 +143,10 @@ SecretKey KeyGenerator::GeneratorKeys(SignatureInfo::HashType type) {
     }
     case SignatureInfo::CMAC_AES: {
       key = CmacGenerateHexKey(16);
+      break;
+    }
+    case SignatureInfo::ECDSA: {
+      key = ECDSAGenerateKeys();
       break;
     }
     default:

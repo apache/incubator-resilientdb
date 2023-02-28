@@ -25,30 +25,22 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include <string>
 
 namespace resdb {
+namespace utils {
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+bool RsaVerifyString(const std::string& message, const std::string& public_key,
+                     const std::string& signature);
+bool ECDSAVerifyString(const std::string& message,
+                       const std::string& public_key,
+                       const std::string& signature);
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+std::string RsaSignString(const std::string& private_key,
+                          const std::string& message);
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+std::string ECDSASignString(const std::string& private_key,
+                            const std::string& message);
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
+}  // namespace utils
 }  // namespace resdb

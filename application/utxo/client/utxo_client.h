@@ -25,30 +25,22 @@
 
 #pragma once
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "application/utxo/proto/utxo.pb.h"
+#include "client/resdb_user_client.h"
 
 namespace resdb {
+namespace utxo {
 
-class Query {
+class UTXOClient : public ResDBUserClient {
  public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
+  UTXOClient(const ResDBConfig& config);
 
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
+  int Transfer(const UTXO& utxo);
 
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
+  std::vector<UTXO> GetList(int64_t end_id, int num);
 
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
+  int64_t GetWallet(const std::string& address);
 };
 
+}  // namespace utxo
 }  // namespace resdb

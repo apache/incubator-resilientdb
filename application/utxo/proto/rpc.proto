@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package resdb.utxo;
+
+import "application/utxo/proto/utxo.proto";
+
+message UTXORequest {
+  UTXO utxo = 1;
+}
+
+message UTXOResponse {
+  int64 ret = 1;
+}
+
+message UTXOQuery {
+  bool query_transaction = 1;
+  int64 end_id  = 2;
+  int32 num = 3;
+  string address = 4;
+}
+
+message UTXOQueryResponse {
+  repeated UTXO utxos = 1;
+  int64 value = 2;
+}

@@ -27,6 +27,8 @@
 
 #include <cryptopp/aes.h>
 #include <cryptopp/cmac.h>
+#include <cryptopp/dsa.h>
+#include <cryptopp/eccrypto.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include <cryptopp/osrng.h>
@@ -36,41 +38,13 @@
 #include <cryptopp/whrlpool.h>
 #include <glog/logging.h>
 
-//#include <cryptopp/modes.h>
-//#include <iomanip>
+#include "crypto/signature_utils.h"
 
 namespace resdb {
 
 namespace {
 
 // ================== for verify ====================================
-bool RsaVerifyString(const std::string& message, const std::string& public_key,
-                     const std::string& signature) {
-  // decode and load public key (using pipeline)
-  CryptoPP::RSA::PublicKey rsa_public_key;
-  rsa_public_key.Load(
-      CryptoPP::StringSource(public_key, true, new CryptoPP::HexDecoder())
-          .Ref());
-
-  // decode signature
-  std::string decoded_signature;
-  CryptoPP::StringSource ss(
-      signature, true,
-      new CryptoPP::HexDecoder(new CryptoPP::StringSink(decoded_signature)));
-
-  // verify message
-  bool result = false;
-  CryptoPP::RSASS<CryptoPP::PSSR, CryptoPP::Whirlpool>::Verifier verifier(
-      rsa_public_key);
-  CryptoPP::StringSource ss2(
-      decoded_signature + message, true,
-      new CryptoPP::SignatureVerificationFilter(
-          verifier,
-          new CryptoPP::ArraySink((CryptoPP::byte*)&result, sizeof(result))));
-
-  return result;
-}
-
 bool ED25519verifyString(const std::string& message,
                          const std::string& public_key,
                          const std::string& signature) {
@@ -95,28 +69,6 @@ bool ED25519verifyString(const std::string& message,
   return valid;
 }
 
-// ================== for sign ====================================
-std::string RsaSignString(const std::string& private_key,
-                          const std::string& message) {
-  // decode and load private key (using pipeline)
-  CryptoPP::RSA::PrivateKey rsa_private_key;
-  rsa_private_key.Load(
-      CryptoPP::StringSource(private_key, true, new CryptoPP::HexDecoder())
-          .Ref());
-
-  // sign message
-  std::string signature;
-  CryptoPP::RSASS<CryptoPP::PSSR, CryptoPP::Whirlpool>::Signer signer(
-      rsa_private_key);
-  CryptoPP::AutoSeededRandomPool rng;
-  CryptoPP::StringSource ss(
-      message, true,
-      new CryptoPP::SignerFilter(
-          rng, signer,
-          new CryptoPP::HexEncoder(new CryptoPP::StringSink(signature))));
-  return signature;
-}
-
 bool CmacVerifyString(const std::string& message, const std::string& public_key,
                       const std::string& signature) {
   bool res = false;
@@ -136,6 +88,8 @@ bool CmacVerifyString(const std::string& message, const std::string& public_key,
           flags));  // StringSource
   return res;
 }
+
+// ================== for sign ====================================
 
 std::string ED25519signString(const std::string& message,
                               CryptoPP::ed25519::Signer* signer) {
@@ -244,7 +198,7 @@ absl::StatusOr<SignatureInfo> SignatureVerifier::SignMessage(
   info.set_node_id(node_id_);
   switch (private_key_.hash_type()) {
     case SignatureInfo::RSA:
-      info.set_signature(RsaSignString(private_key_.key(), message));
+      info.set_signature(utils::RsaSignString(private_key_.key(), message));
       break;
     case SignatureInfo::ED25519:
       info.set_signature(ED25519signString(message, signer_.get()));
@@ -313,7 +267,7 @@ bool SignatureVerifier::VerifyMessage(const std::string& message,
   //        << " msg size:" << message.size();
   switch (public_key.hash_type()) {
     case SignatureInfo::RSA:
-      return RsaVerifyString(message, public_key.key(), signature);
+      return utils::RsaVerifyString(message, public_key.key(), signature);
     case SignatureInfo::ED25519:
       return ED25519verifyString(message, public_key.key(), signature);
     case SignatureInfo::CMAC_AES:

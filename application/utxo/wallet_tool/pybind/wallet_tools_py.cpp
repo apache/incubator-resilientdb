@@ -20,35 +20,24 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
  */
 
-#pragma once
+#include <pybind11/pybind11.h>
 
-#include "config/resdb_config.h"
-#include "execution/custom_query.h"
-#include "ordering/pbft/transaction_manager.h"
+#include "application/utxo/wallet_tool/cpp/addr_utils.h"
+#include "application/utxo/wallet_tool/cpp/key_utils.h"
 
-namespace resdb {
+namespace py = pybind11;
 
-class Query {
- public:
-  Query(const ResDBConfig& config, TransactionManager* transaction_manager,
-        std::unique_ptr<CustomQuery> executor = nullptr);
-  virtual ~Query();
-
-  virtual int ProcessGetReplicaState(std::unique_ptr<Context> context,
-                                     std::unique_ptr<Request> request);
-  virtual int ProcessQuery(std::unique_ptr<Context> context,
-                           std::unique_ptr<Request> request);
-
-  virtual int ProcessCustomQuery(std::unique_ptr<Context> context,
-                                 std::unique_ptr<Request> request);
-
- protected:
-  ResDBConfig config_;
-  TransactionManager* transaction_manager_;
-  std::unique_ptr<CustomQuery> custom_query_executor_;
-};
-
-}  // namespace resdb
+PYBIND11_MODULE(wallet_tools_py, m) {
+  m.doc() = "Nexres Wallet Key Generator";
+  m.def("GenECDSAKeys", &resdb::coin::utils::GenECDSAKeys,
+        "Generate a ecdsa key pair.");
+  m.def(
+      "GenAddr",
+      [](const std::string& input) {
+        std::string output = resdb::coin::utils::GenAddr(input);
+        return py::bytes(output.data(), output.size());
+      },
+      "Generate a addr for a wallet by a public key.");
+}

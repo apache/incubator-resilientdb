@@ -26,6 +26,7 @@
 #pragma once
 
 #include "config/resdb_config.h"
+#include "execution/custom_query.h"
 #include "ordering/pbft/checkpoint_manager.h"
 #include "ordering/pbft/commitment.h"
 #include "ordering/pbft/performance_manager.h"
@@ -40,7 +41,8 @@ namespace resdb {
 class ConsensusServicePBFT : public ConsensusService {
  public:
   ConsensusServicePBFT(const ResDBConfig& config,
-                       std::unique_ptr<TransactionExecutorImpl> executor);
+                       std::unique_ptr<TransactionExecutorImpl> executor,
+                       std::unique_ptr<CustomQuery> query_executor = nullptr);
   virtual ~ConsensusServicePBFT() = default;
 
   int ConsensusCommit(std::unique_ptr<Context> context,
