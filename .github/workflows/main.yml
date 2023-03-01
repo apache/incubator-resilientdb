@@ -17,11 +17,11 @@ jobs:
         # Path to Doxyfile
         doxyfile-path: "Doxyfile" # default is ./Doxyfile
         # Working directory
-        working-directory: "doxygen/" # default is .
+        working-directory: "documents/doxygen/" # default is .
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: doxygen/html
+        publish_dir: documents/doxygen/html
         cname: api.resilientdb.com
