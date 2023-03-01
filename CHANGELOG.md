@@ -1,5 +1,13 @@
 # Change Log
 
+Major Changes
+Support of UTXO model and wallet integration: Detailed Documentation
+
+### NexRes v1.4.0 ([2023-02-28](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0))
+
+**Implemented Enhancements:** 
+* Support of UTXO model and wallet integration: [Detailed Documentation](https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html) ([Junchao Chen](https://github.com/cjcchen))
+
 ### NexRes v1.3.0 ([2023-02-22](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.3.0))
 
 **Implemented Enhancements:** 
