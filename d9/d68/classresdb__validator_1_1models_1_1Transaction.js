@@ -1,0 +1,6 @@
+var classresdb__validator_1_1models_1_1Transaction =
+[
+    [ "from_dict", "d9/d68/classresdb__validator_1_1models_1_1Transaction.html#a0e62b3e4e6e1a3023d16321534ae53f1", null ],
+    [ "validate", "d9/d68/classresdb__validator_1_1models_1_1Transaction.html#a5508bbd6a9e4f688dc6c2371674574a5", null ],
+    [ "operation", "d9/d68/classresdb__validator_1_1models_1_1Transaction.html#a1cded8cfdb458b534cb3e39bde748f90", null ]
+];
