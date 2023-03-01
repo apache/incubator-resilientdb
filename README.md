@@ -19,7 +19,8 @@
 You may find the latest ResilientDB documentation, including a programming guide, on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
 
 #### Table of Contents
-1. Software Stack Architecture: Platform, Service, and Tooling/API Layers [TBA]
+1. Software Stack Architecture 
+   - Platform, Service, and Tooling/API Layers [TBA]
    - **[Detailed API Documentation](https://api.resilientdb.com/)**
    - Overview of Class Diagram & Code Structure  [TBA]
 3. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management, storage)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
