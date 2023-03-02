@@ -35,13 +35,42 @@
 
 namespace resdb {
 
+/**
+ *
+ * Creates a HTTP service using [Crow Cpp](https://crowcpp.org/master/). The Crow app runs on http://localhost:18000 and defines 
+ * API endpoints for a direct connection to ResillientDB. 
+ *
+ * The following endpoints are defined: 
+ * Method | Route                              | Description
+ * ------ | -----------------------------------| -------------
+ * GET    | /v1/transactions                   | Gets all values
+ * GET    | /v1/transactions/<string>          | Gets value of specific id
+ * GET    | /v1/transactions/<string>/<string> | Gets values based on key range
+ * POST   | /v1/transactions/commit            | Set a key-value pair
+ * GET    | /v1/blocks/<int>                   | Retrieve blocks in batches of size of the int parameter
+ * GET    | /v1/blocks/<int>/<int>             | Retrieve blocks within a range
+ *
+ */
+
 class CrowService {
  public:
+ /** Initializes Crow Service
+  *
+  * @param config configuration file of the client for initializing the KV Client
+  * @param server_config configuration file of a replica for initializing the TXN Client
+  * @param port_num port number 
+  */
   CrowService(ResDBConfig config, ResDBConfig server_config,
               uint16_t port_num = 18000);
+  /** Runs the Crow app and exposes the endpoints
+  */
   void run();
 
  private:
+ /* Helper function used in the anonymous functions for reading
+  * from blocks. It parses the request, then based on the command
+  * type, it returns a relevant JSON string. 
+  */
   std::string ParseKVRequest(const KVRequest &kv_request);
   ResDBConfig config_;
   ResDBConfig server_config_;
