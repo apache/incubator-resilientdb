@@ -26,31 +26,28 @@ function Login(props) {
   }
 
   const loginAccount = async () => {
-    if(bcrypt.compareSync(props.values.password, location.state.hash)){
+    if(bcrypt.compareSync(props.loginValues.password, location.state.hash)){
       try {
-        const bytes = CryptoJS.AES.decrypt(location.state.encryptedPrivateKey, props.values.password);
+        const bytes = CryptoJS.AES.decrypt(location.state.encryptedPrivateKey, props.loginValues.password);
         const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
         const store = location.state;
-        var password = {password: props.values.password};
+        var password = {password: props.loginValues.password};
         store.privateKey = data;
         chrome.storage.local.set({ password }, () => {});
         props.navigate("/dashboard", {state: store});
       }
       catch(err) {
         alert.show("Incorrect password.");
-        console.log(err);
       }
       
     }
     else {
       alert.show("Incorrect password.");
-      console.log(props.values.password);
-      console.log(props.hash);
     }
   }
 
   const handleClickShowPassword = () => {
-    props.setValues({ ...props.values, showPassword: !props.values.showPassword });
+    props.setLoginValues({ ...props.loginValues, showPassword: !props.loginValues.showPassword });
   };
   
   const handleMouseDownPassword = (event) => {
@@ -58,7 +55,7 @@ function Login(props) {
   };
   
   const handlePasswordChange = (prop) => (event) => {
-    props.setValues({ ...props.values, [prop]: event.target.value });
+    props.setLoginValues({ ...props.loginValues, [prop]: event.target.value });
   };
  
 
@@ -77,11 +74,11 @@ function Login(props) {
 
       <div className="paymentTop vcenter">
         <Input
-          type={props.values.showPassword ? "text" : "password"}
+          type={props.loginValues.showPassword ? "text" : "password"}
           onChange={handlePasswordChange("password")}
           placeholder="Password"
           className="inputStyle"
-          value={props.values.password}
+          value={props.loginValues.password}
           disableUnderline
           style={{ height: 50 }}
           endAdornment={
@@ -90,7 +87,7 @@ function Login(props) {
                 onClick={handleClickShowPassword}
                 onMouseDown={handleMouseDownPassword}
               >
-                {props.values.showPassword ? <Visibility /> : <VisibilityOff />}
+                {props.loginValues.showPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>
             </InputAdornment>
           }

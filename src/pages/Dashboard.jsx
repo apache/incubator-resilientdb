@@ -1,7 +1,8 @@
+/*global chrome*/
 import logo from '../logo.png';
 import '../App.css';
 import Footer from "../components/Footer";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 
 function Dashboard(props) {
@@ -10,7 +11,9 @@ function Dashboard(props) {
 
   const back = async () => {
     const store = location.state;
-    props.navigate("/login", {state: store});
+    chrome.storage.local.clear(function(){
+      props.navigate("/login", {state: store});
+    });
   }
  
   return (
@@ -18,28 +21,28 @@ function Dashboard(props) {
     <div className="mainContainer">
       <div className="cardHolder">
         <div className="header">
-          <div className="heading center">Global-Scale Blockchain Fabric</div>
+          <div className="heading center">
+            Global-Scale Blockchain Fabric
+          </div> 
           <div className="stepHeading center">NexRes Wallet</div>
           <div className="logo">
             <img src={logo} alt="logo" />
           </div>
+          <div className="paymentTopKey vcenter">
+            <p className="publicKeyStyle" style={{color: 'white'}}><b>Account:</b> {location.state.publicKey}</p>
+            <button className="buttonSignOut" data-inline="true" onClick={back}><ExitToAppIcon /></button>
+          </div>
         </div>
       </div>
 
-      <div className="paymentTopKey vcenter">
-        <p className="publicKeyStyle"><b>Public Key:</b> {location.state.publicKey}</p>
-      </div>
-      <div className="paymentBottomKey vcenter">
-        <p className="publicKeyStyle"><b>Private Key:</b> {location.state.privateKey}</p>
-      </div>
-
       <div className="paymentBottomDashboard vcenter">
-        <textarea className="scrollabletextbox" rows="3" cols="35"> Insert Dynamic Manifest file here</textarea>
+        <textarea className="scrollabletextbox" rows="10" cols="45">operation: CREATE,
+        amount: 20, Account address: E3NqC432uxeDKJCg8GAfweFyJE4d846dsNpcX9hAQDZw, Component address: EYhyS62rqHPTE6cPejsUTZqNEWWhXCJ7aPvXJ1198vYH
+        </textarea>
       </div>
 
       <div className="paymentBottomDashboardBack vcenter">
         <button className="buttonCreate center" data-inline="true"> Submit </button>
-        <button className="buttonCreate center" data-inline="true" onClick={back}><ArrowBackIcon /> Back </button>
       </div>
 
       <Footer {...props} />

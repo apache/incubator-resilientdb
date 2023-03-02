@@ -19,6 +19,10 @@ function App() {
     password: "",
     showPassword: false,
   })
+  const [loginValues, setLoginValues] = useState({
+    password: "",
+    showPassword: false,
+  })
   const [confirmValues, setConfirmValues] = useState({
     password: "",
     showPassword: false,
@@ -33,6 +37,7 @@ function App() {
     hash,
     footer,
     values,
+    loginValues,
     confirmValues
   }
 
@@ -44,6 +49,7 @@ function App() {
     setHash,
     setFooter,
     setValues,
+    setLoginValues,
     setConfirmValues
   }
 

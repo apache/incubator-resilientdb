@@ -209,20 +209,18 @@ h5{
 }
 
 .paymentBottomDashboard{
-  height:95px;
+  height: 155px;
   position:relative;
-  top: -10px;
+  top: 10px;
   justify-content:space-around;
 }
 
 .paymentBottomDashboardBack{
-  height:30px;
+  height:45px;
   position:relative;
-  top: 0px;
+  top: 20px;
   justify-content:space-around;
-  width: 125%;
-  left: 30px;
-  right: 30px;
+  width: 100%;
 }
 
 .paymentBottomDashboardBack .buttonCreate{
@@ -277,6 +275,18 @@ h5{
     #7775e8,
     #806ce8
   ); 
+  color:white;
+  font-weight:bolder;
+  letter-spacing:2px;
+  outline: none;
+  border-style: none;
+  cursor: pointer;
+}
+
+.buttonSignOut{
+  height:45px;
+  border-radius:1.2em;
+  background: none;
   color:white;
   font-weight:bolder;
   letter-spacing:2px;

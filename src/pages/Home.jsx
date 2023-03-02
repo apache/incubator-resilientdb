@@ -18,13 +18,12 @@ function Home(props) {
     chrome.storage.sync.get(["store"], (res) => {
       if(res.store.publicKey){
         chrome.storage.local.get(["password"], (result) => {
-          console.log(result);
           if(!result.password) {
             props.setHash(res.store.hash);
             props.navigate("/login", {state: res.store} );
           }
           else {
-            const bytes = CryptoJS.AES.decrypt(res.store.encryptedPrivateKey, result.password);
+            const bytes = CryptoJS.AES.decrypt(res.store.encryptedPrivateKey, result.password.password);
             const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
             const store = res.store;
             store.privateKey = data;
