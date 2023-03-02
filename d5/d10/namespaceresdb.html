@@ -146,6 +146,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/df3/classresdb_1_1CrowService.html">CrowService</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a HTTP service using <a href="https://crowcpp.org/master/">Crow Cpp</a>.  <a href="../../d1/df3/classresdb_1_1CrowService.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dd9/classresdb_1_1CustomQuery.html">CustomQuery</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -234,6 +235,7 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d2f/classresdb_1_1ResponseManager.html">ResponseManager</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/dbb/structresdb_1_1SDKTransaction.html">SDKTransaction</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A structure to represent a transaction object for committing a key-value to ResillientDB.  <a href="../../df/dbb/structresdb_1_1SDKTransaction.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -362,6 +364,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a56d3b8c76b7936e7fc14a38d5ef31745"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; Request &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a56d3b8c76b7936e7fc14a38d5ef31745">NewRequest</a> (Request::Type type, const Request &amp;request, int sender_id, int region_id)</td></tr>
 <tr class="separator:a56d3b8c76b7936e7fc14a38d5ef31745"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac411f4b2b69ecb6aaa049332e9d10dff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../df/dbb/structresdb_1_1SDKTransaction.html">SDKTransaction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ac411f4b2b69ecb6aaa049332e9d10dff">ParseSDKTransaction</a> (const std::string &amp;json)</td></tr>
+<tr class="memdesc:ac411f4b2b69ecb6aaa049332e9d10dff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses a JSON string and extracts the transaction ID of the object using <a href="https://rapidjson.org/">RapidJSON</a>.  <br /></td></tr>
 <tr class="separator:ac411f4b2b69ecb6aaa049332e9d10dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31ec53ebc543dbfb3af6819350c3f21c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a31ec53ebc543dbfb3af6819350c3f21c">GenerateDBConfig</a> ()</td></tr>
 <tr class="separator:a31ec53ebc543dbfb3af6819350c3f21c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1038,6 +1041,8 @@ template&lt;typename ConsensusProtocol &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Parses a JSON string and extracts the transaction ID of the object using <a href="https://rapidjson.org/">RapidJSON</a>. </p>
 
 <p class="definition">Definition at line <a class="el" href="../../da/d90/sdk__transaction_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../da/d90/sdk__transaction_8cpp_source.html">sdk_transaction.cpp</a>.</p>
 
