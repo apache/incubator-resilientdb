@@ -7,8 +7,20 @@
     "64": "icon-64.png",
     "128": "icon-128.png"
   },
+  "content_scripts": [
+    {
+        "matches": [
+            "<all_urls>"
+        ],
+        "js": [
+            "content-script.js"
+        ]
+    }
+  ],
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab",
+    "scripting"
   ],
   "manifest_version": 2,
   "version": "0.0.1",

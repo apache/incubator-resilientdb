@@ -4,10 +4,67 @@ import '../App.css';
 import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
+import { sendRequest } from '../client';
 
 function Dashboard(props) {
   const location = useLocation();
   props.setFooter("footerLogin");
+
+  chrome.runtime.onMessage.addListener((msg, sender) => {
+    if ((msg.from === 'content')) {
+      var escapeCodes = { 
+          '\\': '\\',
+          'r':  '\r',
+          'n':  '\n',
+          't':  '\t'
+      };
+      msg.data.replace(/\\(.)/g, function(str, char) {
+        return escapeCodes[char];
+      });
+
+      const query = `mutation {
+        postTransaction(data: {
+          operation: "CREATE",
+          amount: ${parseInt(msg.amount)},
+          signerPublicKey: "${location.state.publicKey}",
+          signerPrivateKey: "${location.state.privateKey}",
+          recipientPublicKey: "${msg.address}",
+          asset: """{
+              "data": { 
+                ${msg.data}
+              },
+          }
+          """
+        }){
+          id
+        }
+      }`
+  
+      const result = sendRequest(query).then(res => { 
+        console.log(res.data.postTransaction);
+      });
+    }
+
+    else if ((msg.from === 'fetch')){
+      const query = `query {
+        getTransaction(id: "${msg.id}"){
+          id
+          version
+          amount
+          metadata
+          operation
+          asset
+          publicKey
+          uri
+          type
+        }
+      }`
+  
+      const result = sendRequest(query).then(res => { 
+        console.log(res.data.getTransaction);
+      });
+    }
+  });
 
   const back = async () => {
     const store = location.state;
@@ -36,8 +93,7 @@ function Dashboard(props) {
       </div>
 
       <div className="paymentBottomDashboard vcenter">
-        <textarea className="scrollabletextbox" rows="10" cols="45">operation: CREATE,
-        amount: 20, Account address: E3NqC432uxeDKJCg8GAfweFyJE4d846dsNpcX9hAQDZw, Component address: EYhyS62rqHPTE6cPejsUTZqNEWWhXCJ7aPvXJ1198vYH
+        <textarea className="scrollabletextbox" rows="10" cols="45">
         </textarea>
       </div>
 

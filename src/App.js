@@ -14,6 +14,11 @@ function App() {
   const [privateKey, setPrivateKey] = useState("");
   const [encryptedPrivateKey, setEncryptedPrivateKey] = useState("");
   const [hash, setHash] = useState("");
+  const [operation, setOperation] = useState("");
+  const [amount, setAmount] = useState("");
+  const [data, setData] = useState("");
+  const [accountAddress, setAccountAddress] = useState("");
+  const [componentAddress, setComponentAddress] = useState("");
   const [footer, setFooter] = useState("");
   const [values, setValues] = useState({
     password: "",
@@ -35,6 +40,11 @@ function App() {
     privateKey,
     encryptedPrivateKey,
     hash,
+    operation,
+    amount,
+    data,
+    accountAddress,
+    componentAddress,
     footer,
     values,
     loginValues,
@@ -47,6 +57,11 @@ function App() {
     setPrivateKey,
     setEncryptedPrivateKey,
     setHash,
+    setOperation,
+    setAmount,
+    setData,
+    setAccountAddress,
+    setComponentAddress,
     setFooter,
     setValues,
     setLoginValues,
