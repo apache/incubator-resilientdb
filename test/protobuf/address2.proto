@@ -1,9 +1,8 @@
 syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
-import "address2.proto";
 
-message Address {
+message Address2 {
     string address = 1;
 }
 
