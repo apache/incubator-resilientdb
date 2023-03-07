@@ -11,6 +11,7 @@ filegroup(
 proto_library(
     name = "address_proto",
     srcs = ["address.proto"],
+    deps = ["@com_google_protobuf//:wrappers_proto"],
 )
 
 cc_proto_library(
