@@ -9,13 +9,6 @@ filegroup(
 )
 
 proto_library(
-    name = "address2_proto",
-    srcs = ["address2.proto"],
-    deps = ["@com_google_protobuf//:wrappers_proto"],
-    strip_import_prefix  = "",
-)
-
-proto_library(
     name = "address_proto",
     srcs = ["address.proto", "address2.proto"],
     deps = ["@com_google_protobuf//:wrappers_proto"],
