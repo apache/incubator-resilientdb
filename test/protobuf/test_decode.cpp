@@ -1,5 +1,5 @@
 
-#include "test/protobuf/address.pb.h"
+#include "address.pb.h"
 #include <string>
 #include <unistd.h>
 #include <fcntl.h>
