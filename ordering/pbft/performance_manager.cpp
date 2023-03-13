@@ -36,10 +36,6 @@ PerformanceManager::PerformanceManager(const ResDBConfig& config,
                                        SignatureVerifier* verifier)
     : config_(config),
       replica_client_(replica_client),
-      collector_pool_(std::make_unique<LockFreeCollectorPool>(
-          "response", config_.GetMaxProcessTxn(), nullptr)),
-      context_pool_(std::make_unique<LockFreeCollectorPool>(
-          "context", config_.GetMaxProcessTxn(), nullptr)),
       batch_queue_("client request"),
       system_info_(system_info),
       verifier_(verifier) {
@@ -87,7 +83,7 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 60000000000; ++i) {
+  for (int i = 0; i < 6000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->client_request = GenerateClientRequest();
@@ -116,8 +112,7 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   }
   CollectorResultCode ret =
       AddResponseMsg(context->signature, std::move(request),
-                     [&](const Request& request,
-                         const TransactionCollector::CollectorDataType*) {
+                     [&](const Request& request) {
                        response = std::make_unique<Request>(request);
                        return;
                      });
@@ -133,51 +128,32 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
-bool PerformanceManager::MayConsensusChangeStatus(
-    int type, int received_count, std::atomic<TransactionStatue>* status) {
-  switch (type) {
-    case Request::TYPE_RESPONSE:
-      // if receive f+1 response results, ack to the client.
-      if (*status == TransactionStatue::None &&
-          config_.GetMinClientReceiveNum() <= received_count) {
-        TransactionStatue old_status = TransactionStatue::None;
-        return status->compare_exchange_strong(
-            old_status, TransactionStatue::EXECUTED, std::memory_order_acq_rel,
-            std::memory_order_acq_rel);
-      }
-      break;
-  }
-  return false;
-}
-
 CollectorResultCode PerformanceManager::AddResponseMsg(
     const SignatureInfo& signature, std::unique_ptr<Request> request,
-    std::function<void(const Request&,
-                       const TransactionCollector::CollectorDataType*)>
-        response_call_back) {
+    std::function<void(const Request&)> response_call_back) {
   if (request == nullptr) {
     return CollectorResultCode::INVALID;
   }
 
   int type = request->type();
   uint64_t seq = request->seq();
-  int resp_received_count = 0;
-  int ret = collector_pool_->GetCollector(seq)->AddRequest(
-      std::move(request), signature, false,
-      [&](const Request& request, int received_count,
-          TransactionCollector::CollectorDataType* data,
-          std::atomic<TransactionStatue>* status) {
-        if (MayConsensusChangeStatus(type, received_count, status)) {
-          resp_received_count = 1;
-          response_call_back(request, data);
-        }
-      });
-  if (ret != 0) {
-    return CollectorResultCode::INVALID;
+
+  bool done = false;
+  {
+	  int idx = seq % response_set_size_;
+	  std::unique_lock<std::mutex> lk(response_lock_[idx]);
+	  if (response_[idx][seq] == -1){
+		  return CollectorResultCode::OK;
+	  }
+	  response_[idx][seq]++;
+	  if (response_[idx][seq] >= config_.GetMinClientReceiveNum()){
+		  response_[idx][seq]=-1;
+		  done = true;
+	  }
   }
-  if (resp_received_count > 0) {
-    collector_pool_->Update(seq);
-    return CollectorResultCode::STATE_CHANGED;
+  if(done){
+	  response_call_back(*request);
+	  return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
 }
@@ -193,10 +169,6 @@ void PerformanceManager::SendResponseToClient(
     LOG(ERROR) << "seq:" << local_id << " no resp";
   }
   send_num_--;
-
-  if (config_.IsPerformanceRunning()) {
-    return;
-  }
 }
 
 // =================== request ========================

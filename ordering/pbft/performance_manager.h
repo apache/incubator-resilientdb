@@ -54,8 +54,7 @@ class PerformanceManager {
   // if there are f+1 same messages.
   CollectorResultCode AddResponseMsg(
       const SignatureInfo& signature, std::unique_ptr<Request> request,
-      std::function<void(const Request&,
-                         const TransactionCollector::CollectorDataType*)>
+      std::function<void(const Request&)>
           call_back);
   void SendResponseToClient(const BatchClientResponse& batch_response);
 
@@ -73,7 +72,6 @@ class PerformanceManager {
  private:
   ResDBConfig config_;
   ResDBReplicaClient* replica_client_;
-  std::unique_ptr<LockFreeCollectorPool> collector_pool_, context_pool_;
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread client_req_thread_[16];
   std::atomic<bool> stop_;
@@ -90,6 +88,9 @@ class PerformanceManager {
   std::promise<bool> eval_ready_promise_;
   std::atomic<bool> eval_started_;
   std::atomic<int> fail_num_;
+  static const int response_set_size_ = 6000000;
+  std::map<int64_t, int> response_[response_set_size_];
+  std::mutex response_lock_[response_set_size_];
 };
 
 }  // namespace resdb
