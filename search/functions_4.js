@@ -9,5 +9,7 @@ var searchData=
   ['deploycontract_6',['DeployContract',['../d9/dfa/classresdb_1_1contract_1_1ContractClient.html#a7d414fceddccb9146ceff3d34198b96c',1,'resdb::contract::ContractClient::DeployContract()'],['../d6/d7d/classresdb_1_1contract_1_1ContractManager.html#a14ddd808a0665b5f2ee79c05308bf699',1,'resdb::contract::ContractManager::DeployContract()'],['../d6/dff/contract__tools_8cpp.html#ac5f318a4e5f462ab6986adc27d36b95d',1,'DeployContract():&#160;contract_tools.cpp']]],
   ['deserialize_7',['deserialize',['../da/dcc/namespaceresdb__validator_1_1utils.html#a13f0f5e42c57fc9c2158a620344c4b2b',1,'resdb_validator::utils']]],
   ['disablesignaturecheck_8',['DisableSignatureCheck',['../d3/d9c/classresdb_1_1ResDBUserClient.html#ae23cdda108a4150a31be98ef65818485',1,'resdb::ResDBUserClient']]],
-  ['dispatch_9',['Dispatch',['../d6/d83/classresdb_1_1ConsensusService.html#a3f8d8b0a3a55b53a741f3a6264b40ab6',1,'resdb::ConsensusService']]]
+  ['dispatch_9',['Dispatch',['../d6/d83/classresdb_1_1ConsensusService.html#a3f8d8b0a3a55b53a741f3a6264b40ab6',1,'resdb::ConsensusService']]],
+  ['do_5fget_10',['do_GET',['../d6/d19/classdeploy__manager_1_1GetHandler.html#ae8c48b8a34e254ee6769fb4b6cef9f22',1,'deploy_manager::GetHandler']]],
+  ['do_5fpost_11',['do_POST',['../d6/d19/classdeploy__manager_1_1GetHandler.html#a832dcb9346ceea3e454d022928567ebb',1,'deploy_manager::GetHandler']]]
 ];

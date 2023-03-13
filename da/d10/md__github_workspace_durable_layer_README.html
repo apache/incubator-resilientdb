@@ -100,11 +100,11 @@ $(document).ready(function(){initNavTree('da/d10/md__github_workspace_durable_la
   <div class="headertitle"><div class="title">Durable layer </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md20"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md26"></a>
 How to use</h1>
 <p>Look at <a href="https://github.com/msadoghi/nexres/blob/master/proto/durable.proto">proto/durable.proto</a> and <a href="https://github.com/msadoghi/nexres/blob/master/proto/replica_info.proto">proto/replica_info.proto</a> for how to format the durability settings.</p>
 <p>A config file for 4 replicas on localhost can be found at <a href="https://github.com/msadoghi/nexres/blob/master/example/kv_config.config">config/example/kv_config.config</a>.</p>
-<h1><a class="anchor" id="autotoc_md21"></a>
+<h1><a class="anchor" id="autotoc_md27"></a>
 Warning</h1>
 <p>If "path" is not set in the durability settings for RocksDB or LevelDB then default paths will be generated in the /tmp/ folder, which is cleared whenever the machine is shut down.</p>
 <p>If you are testing Nexres on your local machine using localhost ip, then make sure to set generate_unique_pathnames to true, because multiple processes are not allowed to open up the same RocksDB/LevelDB directory at the same time. When generate_unique_pathnames is set to true, the durable layer uses the cert file names to generate separate directories for each port of the localhost ip.</p>

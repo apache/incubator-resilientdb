@@ -14,8 +14,9 @@ var searchData=
   ['transactionexecutor_11',['TransactionExecutor',['../da/dfa/classresdb_1_1TransactionExecutor.html#aad4111c58b8d5e25855efbc9ea85f5cd',1,'resdb::TransactionExecutor']]],
   ['transactionexecutorimpl_12',['TransactionExecutorImpl',['../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#a402e8fa3a3c959fb97d9a5bb7e7b128c',1,'resdb::TransactionExecutorImpl']]],
   ['transactionmanager_13',['TransactionManager',['../df/d01/classresdb_1_1TransactionManager.html#a87959f2bf99c9c78a4523e273ff37089',1,'resdb::TransactionManager']]],
-  ['transfer_14',['transfer',['../d5/d13/classresdb__validator_1_1transaction_1_1Transaction.html#a115fdf3301067575031d1184d3b9aae2',1,'resdb_validator::transaction::Transaction']]],
-  ['transfer_15',['Transfer',['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html#a2330ff0e07aaaddfdf38f10586377481',1,'resdb::utxo::UTXOClient::Transfer()'],['../d3/d81/utxo__client__tools_8cpp.html#aee93eeef37d752f6cf182424428554cc',1,'Transfer():&#160;utxo_client_tools.cpp']]],
-  ['txmempool_16',['TxMempool',['../d7/d32/classresdb_1_1utxo_1_1TxMempool.html#a196b628f969b9f7ce770a7128e170b40',1,'resdb::utxo::TxMempool']]],
-  ['txnmemorydb_17',['TxnMemoryDB',['../dd/dd3/classresdb_1_1TxnMemoryDB.html#afebaa6f365167a01fc011e91b80b2bb8',1,'resdb::TxnMemoryDB']]]
+  ['transfer_14',['Transfer',['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html#a2330ff0e07aaaddfdf38f10586377481',1,'resdb::utxo::UTXOClient']]],
+  ['transfer_15',['transfer',['../d5/d13/classresdb__validator_1_1transaction_1_1Transaction.html#a115fdf3301067575031d1184d3b9aae2',1,'resdb_validator::transaction::Transaction']]],
+  ['transfer_16',['Transfer',['../d3/d81/utxo__client__tools_8cpp.html#aee93eeef37d752f6cf182424428554cc',1,'utxo_client_tools.cpp']]],
+  ['txmempool_17',['TxMempool',['../d7/d32/classresdb_1_1utxo_1_1TxMempool.html#a196b628f969b9f7ce770a7128e170b40',1,'resdb::utxo::TxMempool']]],
+  ['txnmemorydb_18',['TxnMemoryDB',['../dd/dd3/classresdb_1_1TxnMemoryDB.html#afebaa6f365167a01fc011e91b80b2bb8',1,'resdb::TxnMemoryDB']]]
 ];

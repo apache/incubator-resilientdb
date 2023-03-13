@@ -8,6 +8,7 @@ var namespaces_dup =
       [ "witprog", "d2/dd8/namespaceaddr.html#ac436e25c5725e015686acffb977aec58", null ],
       [ "witver", "d2/dd8/namespaceaddr.html#a2a524a14b1da6753e8baeb0cbdee65f4", null ]
     ] ],
+    [ "deploy_manager", "de/d8d/namespacedeploy__manager.html", "de/d8d/namespacedeploy__manager" ],
     [ "generate_mulregion_config", "df/d44/namespacegenerate__mulregion__config.html", [
       [ "GenerateJsonConfig", "df/d44/namespacegenerate__mulregion__config.html#afa95156f70a0a756d90a9c167ce55cc9", null ],
       [ "files", "df/d44/namespacegenerate__mulregion__config.html#af21cc9094201404d11e3ffe1b1dca000", null ]

@@ -147,6 +147,9 @@ var hierarchy =
     [ "resdb::TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", null ],
     [ "resdb::ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", null ],
     [ "resdb::utxo::Wallet", "df/ddc/classresdb_1_1utxo_1_1Wallet.html", null ],
+    [ "BaseHTTPRequestHandler", null, [
+      [ "deploy_manager.GetHandler", "d6/d19/classdeploy__manager_1_1GetHandler.html", null ]
+    ] ],
     [ "Transaction", null, [
       [ "resdb_validator.models.Transaction", "d9/d68/classresdb__validator_1_1models_1_1Transaction.html", null ]
     ] ]

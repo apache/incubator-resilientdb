@@ -32,10 +32,11 @@ var searchData=
   ['resethead_29',['ResetHead',['../dc/df2/classresdb_1_1Logging.html#ae03885b4452e72fed3f12bc8f9385a63',1,'resdb::Logging']]],
   ['resolve_5fclass_30',['resolve_class',['../d5/d13/classresdb__validator_1_1transaction_1_1Transaction.html#a321f62c866532848d7a05f48992e7340',1,'resdb_validator::transaction::Transaction']]],
   ['responsemanager_31',['ResponseManager',['../da/d2f/classresdb_1_1ResponseManager.html#a902c531118991fa2e89e99610541e06c',1,'resdb::ResponseManager']]],
-  ['rocksdurable_32',['RocksDurable',['../d5/d5b/classRocksDurable.html#a6db8455aa2d4fd51aa2a15499bbd08c9',1,'RocksDurable::RocksDurable(char *cert_file, std::optional&lt; ResConfigData &gt; config_data)'],['../d5/d5b/classRocksDurable.html#ae12d5bb161665bec37bcf81c4875dac5',1,'RocksDurable::RocksDurable(void)']]],
+  ['rocksdurable_32',['RocksDurable',['../d5/d5b/classRocksDurable.html#ae12d5bb161665bec37bcf81c4875dac5',1,'RocksDurable::RocksDurable(void)'],['../d5/d5b/classRocksDurable.html#a6db8455aa2d4fd51aa2a15499bbd08c9',1,'RocksDurable::RocksDurable(char *cert_file, std::optional&lt; ResConfigData &gt; config_data)']]],
   ['rsasignstring_33',['RsaSignString',['../da/d1b/namespaceresdb_1_1utils.html#adf1d7ffe5d2e3dbbcd917cab7b37b1be',1,'resdb::utils']]],
   ['rsaverifystring_34',['RsaVerifyString',['../da/d1b/namespaceresdb_1_1utils.html#a278b4bb0996b3e85baf3fa6cfaf76541',1,'resdb::utils']]],
-  ['run_35',['run',['../d1/df3/classresdb_1_1CrowService.html#ad74ae4d67608f78e7910c7da88e6116a',1,'resdb::CrowService']]],
-  ['run_36',['Run',['../d3/d20/classresdb_1_1ResDBServer.html#a09a03bfaf26c7330347ef088f088fce2',1,'resdb::ResDBServer']]],
-  ['runningperformance_37',['RunningPerformance',['../db/ddb/classresdb_1_1ResDBConfig.html#a9e48528dcf8683b4a8e9118f992700c9',1,'resdb::ResDBConfig']]]
+  ['run_35',['Run',['../d3/d20/classresdb_1_1ResDBServer.html#a09a03bfaf26c7330347ef088f088fce2',1,'resdb::ResDBServer']]],
+  ['run_36',['run',['../d1/df3/classresdb_1_1CrowService.html#ad74ae4d67608f78e7910c7da88e6116a',1,'resdb::CrowService']]],
+  ['runcmd_37',['RunCmd',['../de/d8d/namespacedeploy__manager.html#aa01b5c930f7db7a32989e350cd078b83',1,'deploy_manager']]],
+  ['runningperformance_38',['RunningPerformance',['../db/ddb/classresdb_1_1ResDBConfig.html#a9e48528dcf8683b4a8e9118f992700c9',1,'resdb::ResDBConfig']]]
 ];

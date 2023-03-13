@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('de/d1f/md__github_workspace_sdk_valida
   <div class="headertitle"><div class="title">Building a NFT market with resdb </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md3394"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md3400"></a>
 How can Sajjad sell his painting to Mo?</h1>
 <ol type="1">
 <li>Sajjad registers his painting as an immutable asset of which he has ownership</li>
@@ -111,7 +111,7 @@ How can Sajjad sell his painting to Mo?</h1>
 <li>Upload the NFT publicly for everyone to see</li>
 <li>Sell the NFT to Mo</li>
 </ol>
-<h2><a class="anchor" id="autotoc_md3395"></a>
+<h2><a class="anchor" id="autotoc_md3401"></a>
 The above process in terms of transactions</h2>
 <ol type="1">
 <li>Creating the NFT = <code>CREATE</code> transaction</li>
@@ -120,19 +120,19 @@ The above process in terms of transactions</h2>
 </ol>
 <p>Resdb uses public key cryptography to register and maintain the integrity and security of assets. Each asset has to be signed with the owner's private key. This provides surity that the owner of the asset is the one making the transactions.</p>
 <p>Each transactions generates a unique hash called <code>transaction ID</code>.</p>
-<h1><a class="anchor" id="autotoc_md3396"></a>
+<h1><a class="anchor" id="autotoc_md3402"></a>
 Creating and Transferring Assets</h1>
-<h3><a class="anchor" id="autotoc_md3397"></a>
+<h3><a class="anchor" id="autotoc_md3403"></a>
 Importing the important stuff</h3>
 <div class="fragment"><div class="line"><span class="keyword">from</span> resdb_driver <span class="keyword">import</span> Resdb</div>
 <div class="line"><span class="keyword">from</span> resdb_driver.crypto <span class="keyword">import</span> generate_keypair</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3398"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3404"></a>
 Generating keys</h3>
 <div class="fragment"><div class="line">Sajjad, Mo = generate_keypair(), generate_keypair()</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3399"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3405"></a>
 Set up root url</h3>
 <div class="fragment"><div class="line">root_url = <span class="stringliteral">&#39;https://resdb_url:8080&#39;</span></div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3400"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3406"></a>
 PART 1: Creating the Asset and registering it under Sajjad's ownership</h3>
 <div class="fragment"><div class="line">db = Nesres(root_url)</div>
 <div class="line">painting_asset = {</div>
@@ -163,10 +163,10 @@ PART 1: Creating the Asset and registering it under Sajjad's ownership</h3>
 <div class="line">    prepared_creation_tx,</div>
 <div class="line">    private_keys=Sajjad.private_key</div>
 <div class="line">)</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3401"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3407"></a>
 Upload the asset to the database</h3>
 <div class="fragment"><div class="line">sent_creation_tx = db.transactions.send_commit(fulfilled_creation_tx)</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3402"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3408"></a>
 PART 2: preparing the transfering of asset ownership from Sajjad to Mo</h3>
 <div class="fragment"><div class="line">txid = fulfilled_creation_tx[<span class="stringliteral">&#39;id&#39;</span>] <span class="comment"># In reality this transaction id and asset details needs to be fetched from the database</span></div>
 <div class="line">asset_id = txid</div>
@@ -193,16 +193,16 @@ PART 2: preparing the transfering of asset ownership from Sajjad to Mo</h3>
 <div class="line">    prepared_transfer_tx,</div>
 <div class="line">    private_keys=Sajjad.private_key,</div>
 <div class="line">)</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3403"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3409"></a>
 competing the TRANSFER operatiom with a commit</h3>
 <p><code>sent_transfer_tx = resdb.transactions.send_commit(fulfilled_transfer_tx)</code></p>
-<h3><a class="anchor" id="autotoc_md3404"></a>
+<h3><a class="anchor" id="autotoc_md3410"></a>
 Comfirming</h3>
 <div class="fragment"><div class="line">print(“Is Mo the owner of the painting?”,</div>
 <div class="line">    sent_transfer_tx[‘outputs’][0][‘public_keys’][0] == Mo.public_key)</div>
 <div class="line">print(“Was Sajjad the previous owner of the painting?”,</div>
 <div class="line">    fulfilled_transfer_tx[‘inputs’][0][‘owners_before’][0] == Sajjad.public_key)</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3405"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md3411"></a>
 !Note!</h3>
 <p>We are using the same transaction model as <a href="https://github.com/bigchaindb/BEPs/tree/master/13">bigchaindb transaction model</a> </p>
 </div></div><!-- contents -->

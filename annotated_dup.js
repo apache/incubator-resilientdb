@@ -1,5 +1,8 @@
 var annotated_dup =
 [
+    [ "deploy_manager", "de/d8d/namespacedeploy__manager.html", [
+      [ "GetHandler", "d6/d19/classdeploy__manager_1_1GetHandler.html", "d6/d19/classdeploy__manager_1_1GetHandler" ]
+    ] ],
     [ "resdb", "d5/d10/namespaceresdb.html", [
       [ "contract", "d8/d28/namespaceresdb_1_1contract.html", [
         [ "AddressManager", "d4/d26/classresdb_1_1contract_1_1AddressManager.html", "d4/d26/classresdb_1_1contract_1_1AddressManager" ],

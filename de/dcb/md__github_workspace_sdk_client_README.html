@@ -105,35 +105,35 @@ $(document).ready(function(){initNavTree('de/dcb/md__github_workspace_sdk_client
 <p>We can hit nexres endpoint using python sdk to commit,retireve and transfer assets as transactions to NexRes.</p>
 <p>Start two terminals shells.</p>
 <p>In first terminal:</p>
-<h1><a class="anchor" id="autotoc_md3386"></a>
+<h1><a class="anchor" id="autotoc_md3392"></a>
 Clone the repo and change directory</h1>
 <p><code>git clone <a href="https://github.com/msadoghi/nexres.git">https://github.com/msadoghi/nexres.git</a></code></p>
 <p><code>cd nexres</code></p>
 <p>Install the dependencies for NEXRES</p>
 <p><code>chmod +x ./INSTALL.sh</code></p>
 <p><code>./INSTALL.sh</code></p>
-<h1><a class="anchor" id="autotoc_md3387"></a>
+<h1><a class="anchor" id="autotoc_md3393"></a>
 Start the KVServer</h1>
 <p><code>chmod +x ./example/start_kv_server.sh</code></p>
 <p><code>./example/start_kv_server.sh</code></p>
 <p>NexRes has started. Now in a seperate terminal, we will start the endpoint service.</p>
 <p>In second terminal:</p>
-<h2><a class="anchor" id="autotoc_md3388"></a>
+<h2><a class="anchor" id="autotoc_md3394"></a>
 Build and Compile the CROW Service</h2>
 <p><code>bazel build sdk_client/crow_service_main</code></p>
-<h2><a class="anchor" id="autotoc_md3389"></a>
+<h2><a class="anchor" id="autotoc_md3395"></a>
 Run binaries and start the CROW Service</h2>
 <p><code>bazel-bin/sdk_client/crow_service_main example/kv_client_config.config sdk_client/server_config.config</code></p>
 <p>EXAMPLE OUTPUT: </p><div class="fragment"><div class="line">(2022-12-19 06:12:02) [INFO    ] Crow/master server is running at http://0.0.0.0:18000 using 16 threads</div>
 <div class="line">(2022-12-19 06:12:02) [INFO    ] Call `app.loglevel(crow::LogLevel::Warning)` to hide Info level logs</div>
 </div><!-- fragment --><p>We will now use the <a href="http://0.0.0.0:18000">http://0.0.0.0:18000</a> as <code>database url</code> in <a href="https://github.com/msadoghi/nexres_sdk">nexres_sdk</a>.</p>
-<h1><a class="anchor" id="autotoc_md3390"></a>
+<h1><a class="anchor" id="autotoc_md3396"></a>
 NexRes on Cloud Platforms:</h1>
 <p>Instructions for setting a remote NexRes server, then, use nexres_sdk locally for development.</p>
-<h3><a class="anchor" id="autotoc_md3391"></a>
+<h3><a class="anchor" id="autotoc_md3397"></a>
 On Local Machine</h3>
 <p>On local system, setup the nexres_sdk environment from the instructions provided in the <a href="https://github.com/msadoghi/nexres_sdk">nexres_sdk repository</a>.</p>
-<h3><a class="anchor" id="autotoc_md3392"></a>
+<h3><a class="anchor" id="autotoc_md3398"></a>
 On Remote Machine</h3>
 <p>Inorder to setup Nexres instance on cloud, in your cloud VM perform all of the above steps, as a result, it will generate a NexRes server with an endpoint. Take a note of the output after crow service starts as the port number is mentioned there.</p>
 <p>Use <a href="https://en.wikipedia.org/wiki/Port_forwarding">remote port forwarding</a>, then forward you remote port (in above case port 18000) to local machine.</p>

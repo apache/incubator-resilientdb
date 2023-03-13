@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('dc/d8c/md__github_workspace_sdk_valida
   <div class="headertitle"><div class="title">resdb validator code in python </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md3411"></a>
+<div class="textblock"><h1><a class="anchor" id="autotoc_md3417"></a>
 Requirements</h1>
 <ul>
 <li>python3.9+</li>
@@ -109,23 +109,23 @@ Requirements</h1>
 <li><code>$ source venv/bin/activate</code></li>
 <li><code>$ pip install -r requirements.txt</code> </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md3412"></a>
+<h1><a class="anchor" id="autotoc_md3418"></a>
 entrypoint</h1>
 <p><code><a class="el" href="../../d3/d40/validator_8py.html">validator.py</a></code> call the <code>is_valid_tx(tx_dict)</code> function with the transaction json (tx_dict) as the argument.</p>
-<h1><a class="anchor" id="autotoc_md3413"></a>
+<h1><a class="anchor" id="autotoc_md3419"></a>
 Transaction Validation</h1>
 <p>A transaction is said to be valid if it satisfies certain condtions or rules.</p>
 <p>We employ a simpler version of the transaction spec and validation rules specified by <a href="https://github.com/bigchaindb/BEPs/tree/master/13#transaction-validation">BigchainDB</a></p>
-<h3><a class="anchor" id="autotoc_md3414"></a>
+<h3><a class="anchor" id="autotoc_md3420"></a>
 JSON Schema Validation</h3>
 <p>The json structure of a transaction should be the transaction spec v2 of BigchainDB </p>
-<h3><a class="anchor" id="autotoc_md3415"></a>
+<h3><a class="anchor" id="autotoc_md3421"></a>
 The output.amount Rule</h3>
 <p>For all output.amount must be an integer between 1 and 9×10^18, inclusive. The reason for the upper bound is to keep amount within what a server can comfortably represent using a 64-bit signed integer, i.e. 9×10^18 is less than 2^63. </p>
-<h3><a class="anchor" id="autotoc_md3416"></a>
+<h3><a class="anchor" id="autotoc_md3422"></a>
 The Duplicate Transaction Rule</h3>
 <p>If a transaction is a duplicate of a previous transaction, then it’s invalid. A quick way to check that is by checking to see if a transaction with the same transaction ID is already stored. A transaction ID is the hash of the transaction.</p>
-<h3><a class="anchor" id="autotoc_md3417"></a>
+<h3><a class="anchor" id="autotoc_md3423"></a>
 The TRANSFER Transaction Rules</h3>
 <p>if a transaction is a <code>TRANSFER</code> transaction:</p>
 <ul>
@@ -139,7 +139,7 @@ The TRANSFER Transaction Rules</h3>
 <li>a transaction output that doesn’t exist, then it’s invalid.</li>
 <li>a transaction with an asset ID that’s different from this transaction’s asset ID, then this transaction is invalid. (The asset ID of a CREATE transaction is the same as the transaction ID. The asset ID of a TRANSFER transaction is asset.id.) Note: The first two rules prevent double spending.</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md3418"></a>
+<h3><a class="anchor" id="autotoc_md3424"></a>
 The input.fulfillment Rule</h3>
 <p>Regardless of whether the transaction is a CREATE or TRANSFER transaction: For all inputs, input.fulfillment must be valid. </p>
 </div></div><!-- contents -->
