@@ -1,5 +1,7 @@
 $PWD
 
+set -e
+
 # load environment parameters
 . ./script/env.sh
 
@@ -38,9 +40,15 @@ echo "where am i:"$PWD
 deploy/script/generate_key.sh ${config_real_path} ${output_path}
 deploy/script/generate_config.sh ${config_real_path} ${output_path}
 
+
 # build kv server
 bazel build ${server}
 
+if [ $? != 0 ]
+then
+	echo "Complile ${server} failed"
+	exit 0
+fi
 
 # commands functions
 function run_cmd(){

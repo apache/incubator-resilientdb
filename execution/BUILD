@@ -136,4 +136,3 @@ cc_library(
         ":custom_query",
     ],
 )
-

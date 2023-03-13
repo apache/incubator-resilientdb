@@ -111,11 +111,10 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
     return 0;
   }
   CollectorResultCode ret =
-      AddResponseMsg(context->signature, std::move(request),
-                     [&](const Request& request) {
-                       response = std::make_unique<Request>(request);
-                       return;
-                     });
+      AddResponseMsg(std::move(request), [&](const Request& request) {
+        response = std::make_unique<Request>(request);
+        return;
+      });
 
   if (ret == CollectorResultCode::STATE_CHANGED) {
     BatchClientResponse batch_response;
@@ -129,31 +128,30 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
 }
 
 CollectorResultCode PerformanceManager::AddResponseMsg(
-    const SignatureInfo& signature, std::unique_ptr<Request> request,
+    std::unique_ptr<Request> request,
     std::function<void(const Request&)> response_call_back) {
   if (request == nullptr) {
     return CollectorResultCode::INVALID;
   }
 
-  int type = request->type();
   uint64_t seq = request->seq();
 
   bool done = false;
   {
-	  int idx = seq % response_set_size_;
-	  std::unique_lock<std::mutex> lk(response_lock_[idx]);
-	  if (response_[idx][seq] == -1){
-		  return CollectorResultCode::OK;
-	  }
-	  response_[idx][seq]++;
-	  if (response_[idx][seq] >= config_.GetMinClientReceiveNum()){
-		  response_[idx][seq]=-1;
-		  done = true;
-	  }
+    int idx = seq % response_set_size_;
+    std::unique_lock<std::mutex> lk(response_lock_[idx]);
+    if (response_[idx][seq] == -1) {
+      return CollectorResultCode::OK;
+    }
+    response_[idx][seq]++;
+    if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
+      response_[idx][seq] = -1;
+      done = true;
+    }
   }
-  if(done){
-	  response_call_back(*request);
-	  return CollectorResultCode::STATE_CHANGED;
+  if (done) {
+    response_call_back(*request);
+    return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
 }
@@ -220,7 +218,6 @@ int PerformanceManager::DoBatch(
   if (new_request == nullptr) {
     return -2;
   }
-  std::vector<std::unique_ptr<Context>> context_list;
 
   BatchClientRequest batch_request;
   for (size_t i = 0; i < batch_req.size(); ++i) {

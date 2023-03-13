@@ -28,21 +28,21 @@
 #include <string>
 namespace resdb {
 
-/** 
-* A structure to represent a transaction object for committing
-* a key-value to ResillientDB. The JSON structure of a 
-* transaction should be the transaction spec v2 of BigchainDB.
-*/
+/**
+ * A structure to represent a transaction object for committing
+ * a key-value to ResillientDB. The JSON structure of a
+ * transaction should be the transaction spec v2 of BigchainDB.
+ */
 
 struct SDKTransaction {
-  std::string id;       /**< The transaction ID or hash of the transaction */ 
-  std::string value;    /**< The entire transaction JSON string */
+  std::string id;    /**< The transaction ID or hash of the transaction */
+  std::string value; /**< The entire transaction JSON string */
 };
 
-/** 
-* Parses a JSON string and extracts the transaction ID 
-* of the object using [RapidJSON](https://rapidjson.org/). 
-*/
+/**
+ * Parses a JSON string and extracts the transaction ID
+ * of the object using [RapidJSON](https://rapidjson.org/).
+ */
 SDKTransaction ParseSDKTransaction(const std::string &json);
 
 }  // namespace resdb
