@@ -125,7 +125,7 @@ Run the performance</h3>
 </pre><p> This tools will trigger the eval on the server. The parameter for the set function does not matter.</p>
 <h3><a class="anchor" id="autotoc_md24"></a>
 Get the performance</h3>
-<p>It will take a few seconds for the replica to generate data and send it out to the primary. Keep tracking the performance log on one of the replica, like on server1: </p><pre class="fragment">tal -f kv_server_performance.log | grep txn
+<p>It will take a few seconds for the replica to generate data and send it out to the primary. Keep tracking the performance log on one of the replica, like on server1: </p><pre class="fragment">tail -f kv_server_performance.log | grep txn
 </pre><p> Then you will see some performance logging during the 5 second period. e.g. </p><pre class="fragment">server call:465157 server process:465156 socket recv:0 client call:465156 client req:46519 broad_cast:139557 send broad_cast:139563 per send broad_cast:49783 propose:46518 prepare:5815 commit:5813 pending execute:46504 execute:46504 execute done:46991 seq gap:70 total request:4699100 txn:939820 seq fail:0 time:210
 </pre> </div></div><!-- contents -->
 </div><!-- PageDoc -->
