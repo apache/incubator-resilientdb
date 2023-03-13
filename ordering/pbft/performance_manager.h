@@ -25,12 +25,12 @@
 
 #pragma once
 
-#include <future>
-
+#include "common/data_comm/data_comm.h"
 #include "config/resdb_config.h"
-#include "ordering/pbft/lock_free_collector_pool.h"
+#include "execution/system_info.h"
 #include "ordering/pbft/transaction_utils.h"
 #include "server/resdb_replica_client.h"
+#include "server/server_comm.h"
 #include "statistic/stats.h"
 
 namespace resdb {
@@ -53,18 +53,14 @@ class PerformanceManager {
   // Add response messages which will be sent back to the client
   // if there are f+1 same messages.
   CollectorResultCode AddResponseMsg(
-      const SignatureInfo& signature, std::unique_ptr<Request> request,
-      std::function<void(const Request&,
-                         const TransactionCollector::CollectorDataType*)>
-          call_back);
+      std::unique_ptr<Request> request,
+      std::function<void(const Request&)> call_back);
   void SendResponseToClient(const BatchClientResponse& batch_response);
 
   struct QueueItem {
     std::unique_ptr<Context> context;
     std::unique_ptr<Request> client_request;
   };
-  bool MayConsensusChangeStatus(int type, int received_count,
-                                std::atomic<TransactionStatue>* status);
   int DoBatch(const std::vector<std::unique_ptr<QueueItem>>& batch_req);
   int BatchProposeMsg();
   int GetPrimary();
@@ -73,7 +69,6 @@ class PerformanceManager {
  private:
   ResDBConfig config_;
   ResDBReplicaClient* replica_client_;
-  std::unique_ptr<LockFreeCollectorPool> collector_pool_, context_pool_;
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread client_req_thread_[16];
   std::atomic<bool> stop_;
@@ -90,6 +85,9 @@ class PerformanceManager {
   std::promise<bool> eval_ready_promise_;
   std::atomic<bool> eval_started_;
   std::atomic<int> fail_num_;
+  static const int response_set_size_ = 6000000;
+  std::map<int64_t, int> response_[response_set_size_];
+  std::mutex response_lock_[response_set_size_];
 };
 
 }  // namespace resdb
