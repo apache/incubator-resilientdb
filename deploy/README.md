@@ -52,7 +52,7 @@ This tools will trigger the eval on the server. The parameter for the set functi
 It will take a few seconds for the replica to generate data and send it out to the primary.
 Keep tracking the performance log on one of the replica, like on server1:
 
-    tal -f kv_server_performance.log | grep txn
+    tail -f kv_server_performance.log | grep txn
     
 Then you will see some performance logging during the 5 second period. e.g.
 
