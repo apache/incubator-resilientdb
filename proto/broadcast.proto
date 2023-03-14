@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-message BroadcastData {
-  repeated bytes data = 1;
-  bool is_resp = 2;
-}
-

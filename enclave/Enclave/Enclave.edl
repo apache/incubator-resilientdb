@@ -1,0 +1,27 @@
+enclave {
+    from "Sealing/Sealing.edl" import *;
+
+    trusted {
+        /* define ECALLs here. */
+        public int generate_random_number(void);
+        public uint64_t generate_unique_sequence_number([in, string]const char* hash);
+        public uint64_t get_prepare_counter([in, string]const char* hash);
+        public uint64_t get_commit_counter([in, string]const char* hash);
+        public uint64_t get_execute_counter([in, string]const char* hash);
+        public int esv_init([in, string] const char* sealed_data_file);
+		public int esv_seal_keys([in, string] const char* sealed_data_file);
+		public int esv_sign([in, string] const char* message, [out, size=sig_len] uint32_t* signature, size_t sig_len);
+		public int esv_verify([in, string] const char* message, [in, size=sig_len] void* signature, size_t sig_len);
+        public int cmac_sign([in, string] const char* message, [out, size=src_len] uint8_t* signature, size_t src_len);
+        public int cmac_verify([in, string] const char* message, [in, size=src_len] void* signature, size_t src_len);
+		public int esv_close();
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+        void ocall_print([in, string]const char* str);
+        void ocall_print_int(uint32_t number);
+        void esv_write_data([in, string] const char* file_name, [in, size=len] const unsigned char* p_data, size_t len);
+		void esv_read_data([in, string] const char* file_name, [out] unsigned char** pp_data, [out] size_t* len);
+    };
+};

@@ -1,0 +1,7 @@
+*.o
+*.so
+enclave
+enclave.token
+sealeddata
+App/Enclave_*
+Enclave/Enclave_*
