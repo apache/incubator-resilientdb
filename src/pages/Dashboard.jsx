@@ -12,6 +12,14 @@ function Dashboard(props) {
 
   chrome.runtime.onMessage.addListener((msg, sender) => {
     if ((msg.from === 'content')) {
+      chrome.windows.create({
+        url: "index.html",
+        type: "popup",
+        focused: true,
+        height: 580,
+        width: 390
+      })
+
       var escapeCodes = { 
           '\\': '\\',
           'r':  '\r',
