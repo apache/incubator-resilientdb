@@ -1,6 +1,6 @@
-# Dissecting BFT Consensus: In Trusted Components we Trust: Reproducibility Document
+# Dissecting BFT Consensus: In Trusted Components we Trust! 
 
-In this document, we explain how to run the ResilientDB codebase and reproduce the results in the paper.
+In this document, we explain how to run this artifact of our Eurosys'23 [paper](https://doi.org/10.1145/3552326.3587455) and reproduce the presented results.
 
 
 ## Setup code and machines
