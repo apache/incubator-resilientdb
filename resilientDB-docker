@@ -1,0 +1,149 @@
+#!/bin/bash
+unset GREP_OPTIONS
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+if [ -z $1 ];then
+    echo "ResilientDB Dockerized:"
+    echo "  Usage:"
+    echo -e "    ./resilientDB-docker --clients=[] --replicas=[]"
+    echo ""
+    echo -e "    ./resilientDB-docker -d"
+    echo -e "      default setup with 4 nodes and 1 client"
+    exit
+fi
+
+if [ "$(uname)" == "Darwin" ]; then
+	flags="-oE"
+else
+	flags="-oP"
+fi
+string_params=($(echo "$@" | grep ${flags} '\-\-[^\-\= ]+\=[^\-\= ]+'))
+replicas=0
+clients=0
+
+for var in "${string_params[@]}"; do
+    key=$(echo "$var" | grep ${flags} '\-\-[^\-\=]+' | grep ${flags} '[^\=\-]+')
+    value=$(echo "$var" | grep ${flags} '=([^\=\-]+)' | grep ${flags} '[^\=\-]+')
+    case $key in
+
+    clients)
+        if [ -n "$value" ] && [ "$value" -eq "$value" ] 2>/dev/null; then
+            if [ "$value" -gt 100 ]; then
+                printf "${RED}Invalid Number of Clients: greater than 100\nAborting...${NC}\n"
+                exit
+            else
+                clients=$value
+            fi
+        else
+            printf "${RED}Invalid Number of Clients: not a number\nAborting...${NC}\n"
+            exit
+        fi
+        ;;
+
+    replicas)
+        if [ -n "$value" ] && [ "$value" -eq "$value" ] 2>/dev/null; then
+            if [ "$value" -gt 100 ] | [ $value -lt 4 ]; then
+                printf "${RED}Invalid Number of Replicas: greater than 100 or less than 4\nAborting...${NC}\n"
+                exit
+            else
+                replicas=$value
+            fi
+        else
+            printf "${RED}Invalid Number of Replicas: not a number\nAborting...${NC}\n"
+            exit
+        fi
+        ;;
+    *) ;;
+    esac
+done
+if [ "$replicas" -eq 0 ]; then
+    replicas=4
+fi
+if [ "$clients" -eq 0 ]; then
+    clients=1
+fi
+echo -e "Number of Replicas:\t$replicas"
+echo -e "Number of Clients:\t$clients"
+
+if [ -f "docker-compose.yml" ]; then
+    echo "Stopping previous containers..."
+    command -v docker-compose >/dev/null 2>&1 || {
+        printf "${RED}ResilientDB requires docker and docker-compose\nAborting...${NC}\n"
+        exit 1
+    }
+    $(docker-compose down)
+    printf "${GREEN}Successfully stopped${NC}\n"
+fi
+
+echo "Creating docker compose file ..."
+echo "version: '3'" >docker-compose.yml
+echo "services:" >>docker-compose.yml
+
+t="    "
+for i in $(seq 1 $replicas); do
+    echo -e "${t}s${i}:" >>docker-compose.yml
+    echo -e "${t}${t}image: resilientdb/res-machine" >>docker-compose.yml
+    echo -e "${t}${t}container_name: s${i}" >>docker-compose.yml
+    echo -e "${t}${t}volumes:" >>docker-compose.yml
+    echo -e "${t}${t}${t}- ./:/home/expo/resilientdb" >>docker-compose.yml
+    echo -e "${t}${t}restart: always" >>docker-compose.yml
+done
+for i in $(seq 1 $clients); do
+    echo -e "${t}c${i}:" >>docker-compose.yml
+    echo -e "${t}${t}image: resilientdb/res-machine" >>docker-compose.yml
+    echo -e "${t}${t}container_name: c${i}" >>docker-compose.yml
+    echo -e "${t}${t}volumes:" >>docker-compose.yml
+    echo -e "${t}${t}${t}- ./:/home/expo/resilientdb" >>docker-compose.yml
+    echo -e "${t}${t}restart: always" >>docker-compose.yml
+done
+printf "${GREEN}Docker compose file created --> docker-compose.yml${NC}\n"
+
+echo "Starting the containers..."
+$(docker-compose up -d)
+
+scripts/docker-ifconfig.sh
+
+printf "\nChecking Dependencies...\n"
+if [ ! -d "deps/crypto" ]; then
+    printf "Installing dependencies..\n"
+    cd deps && $(ls | xargs -n 1 tar -xvf 2>/dev/null)
+    cd ..
+fi
+pwd
+printf "${GREEN}Dependencies has been installed${NC}\n"
+
+printf "\nCreating config file...\n"
+scripts/make_config.sh ${replicas} ${clients}
+printf "${GREEN}Config file has been created${NC}\n"
+
+printf "\nCompiling ResilientDB...\n"
+docker exec s1 mkdir -p obj
+docker exec s1 make clean
+docker exec s1 make
+printf "${GREEN}ResilientDB is compiled successfully${NC}\n"
+
+printf "\nRunning ResilientDB replicas...\n"
+mkdir -p results
+for i in $(seq 1 $replicas); do
+    echo "rep $i"
+    docker exec s${i} pkill rundb
+    docker exec s${i} ./rundb -nid$((i - 1)) >results/s${replicas}_c${clients}_results_PBFT_b100_run0_node$((i - 1)).out &
+done
+printf "${GREEN}Replicas started successfully${NC}\n"
+
+printf "\nRunning ResilientDB clients...\n"
+cl=$replicas
+for i in $(seq 1 $clients); do
+    echo "cl $i"
+    docker exec c${i} pkill runcl
+    docker exec c${i} ./runcl -nid$((i + replicas - 1)) >results/s${replicas}_c${clients}_results_PBFT_b100_run0_node$((i + replicas - 1)).out &
+done
+printf "${GREEN}Clients started successfully${NC}\n"
+
+wait
+
+scripts/result.sh ${replicas} ${clients} PBFT 100 0 >res.out
+scripts/result_colorized.sh ${replicas} ${clients} PBFT 100 0
+# rm results/*
+printf "${GREEN}Code Ran successfully${NC} ---> res.out\n"
