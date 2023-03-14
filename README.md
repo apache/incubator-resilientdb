@@ -4,7 +4,7 @@ In this document, we explain how to run the ResilientDB codebase and reproduce t
 
 
 ## Setup code and machines
-The code is available at [link](https://github.com/msadoghi/resdb-sgx-eurosys). This is a branch of [ResilientDB](https://resilientdb.com/) version **V3** (prior to the release of version **NexRes**). In order to reproduce the results presented in the paper, you would need the following:
+The code is available at [link](https://github.com/resilientdb/resilientdb/tree/resilientdb-legacy-eurosys23). This is a branch of [ResilientDB](https://resilientdb.com/) version **V3** (prior to the release of version **NexRes**). In order to reproduce the results presented in the paper, you would need the following:
 - A development machine to build the codebase and to run necessary deployment and execution scripts (**Dev-Machine**).
 - A set of machines to run replicas and clients (we use the terms server and replica interchangeably). 
 
@@ -14,7 +14,7 @@ If you have access to Oracle Cloud Infrastructure (OCI) machines, we provide rea
 **Note**: All developement and experimentation was done on Ubuntu 18.04.6 LTS.
 
 ### Setup without OCI images
-1. Clone the code base from this [Repo](https://github.com/msadoghi/resdb-sgx-eurosys)
+1. Clone the code base from this [Repo](https://github.com/resilientdb/resilientdb/tree/resilientdb-legacy-eurosys23)
 2. Unzip all the dependencies using this command 
     ```
     cd deps; \ls | xargs -n 1 tar -xvf
