@@ -100,17 +100,24 @@ $(document).ready(function(){initNavTree('d5/d01/md__github_workspace_deploy_REA
   <div class="headertitle"><div class="title">README </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Deployment scripts help you deploy the each Nexres Applications. Current we support deploy KV server and KV Performance server.</p>
+<div class="textblock"><p>This directory includes deployment scripts that help to deploy ResilientDB on multiple machines. At present, these scripts only support deploying KV service and KV Performance server.</p>
 <h1><a class="anchor" id="autotoc_md19"></a>
 Usage</h1>
 <h2><a class="anchor" id="autotoc_md20"></a>
-Deploy KV Server</h2>
-<p>Put the server ip and the SSH key in <a href="https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf">config/kv_server.conf</a>. Please use their private IPs. If you change the binary path, also modify the path.</p>
-<p>run: </p><pre class="fragment">./script/deploy.sh ./config/kv_server.conf
-</pre><p> Once it is done, kv_server has been running inside the nodes pointed from the IPs. The script will also create a output folder(config_out) containing the generated server.config and client.config.</p>
+Deploy KV Service</h2>
+<p>Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file <a href="https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf">config/kv_server.conf</a>. We recomment using private IP addresses of each machine.</p>
+<ul>
+<li>If you do not require any SSH key to log in to a machine, then you would need to update the scripts.</li>
+<li>In these scripts, we assume that the <code>root</code> is <code>ubuntu</code> and the current working directory is located at <code>/home/ubuntu/</code>. If this is not the case for your machines, you would need to update the scripts.</li>
+<li>If you have changed the path for the binary, then you would need to update the path stated in the scripts.</li>
+</ul>
+<p>To deploy the KV service, run the following command from the <code>deploy</code> directory: </p><pre class="fragment">./script/deploy.sh ./config/kv_server.conf
+</pre><p> If the script outputs <code>Servers are running</code>, it implies that you have successfully deployed ReslientDB KV Service on desired machines. <br  />
+</p>
+<p>Note: this script creates a directory <code>config_out</code>, which includes keys and certificates for all the replicas and the proxy. Further, it includes the configuration for replicas <code>server.config</code> and proxy <code>client.config</code>.</p>
 <h3><a class="anchor" id="autotoc_md21"></a>
-Test your kv server</h3>
-<p>build and run the kv client tools: </p><pre class="fragment">bazel build //example:kv_server_tools
+Testing deployed KV Service</h3>
+<p>To do so, we need to build and run the KV client tools: </p><pre class="fragment">bazel build //example:kv_server_tools
 cd ..
 ./bazel-bin/example/kv_server_tools deploy/config_out/client.config get test 1234
 </pre><p> Or: </p><pre class="fragment">bazel run //example:kv_server_tools -- $PWD/config_out/client.config get test
