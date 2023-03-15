@@ -96,7 +96,7 @@ for ip in ${deploy_iplist[@]};
 do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
-  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}.log 2>&1 &" &
+  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}${idx}.log 2>&1 &" &
   ((count++))
   ((idx++))
 done
@@ -113,7 +113,7 @@ do
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}${idx}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     fi
