@@ -1,25 +1,28 @@
-Deployment scripts help you deploy the each Nexres Applications.
-Current we support deploy KV server and KV Performance server.
+This directory includes deployment scripts that help to deploy ResilientDB on multiple machines. At present, these scripts only support deploying KV service and KV Performance server.
 
 # Usage
 
-## Deploy KV Server
+## Deploy KV Service
 
-Put the server ip and the SSH key in [config/kv_server.conf](https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf). 
-Please use their private IPs.
-If you change the binary path, also modify the path.
+Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file [config/kv_server.conf](https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf). 
+We recomment using private IP addresses of each machine.
+
+* If you do not require any SSH key to log in to a machine, then you would need to update the scripts.
+* In these scripts, we assume that the ``root`` is ``ubuntu`` and the current working directory is located at ``/home/ubuntu/``. If this is not the case for your machines, you would need to update the scripts.
+* If you have changed the path for the binary, then you would need to update the path stated in the scripts.
 
 
-run:
+To deploy the KV service, run the following command from the ``deploy`` directory:
 
     ./script/deploy.sh ./config/kv_server.conf
     
-Once it is done, kv_server has been running inside the nodes pointed from the IPs. 
-The script will also create a output folder(config_out) containing the generated server.config and client.config.
+If the script outputs ``Servers are running``, it implies that you have successfully deployed ReslientDB KV Service on desired machines.  
 
-### Test your kv server
+Note: this script creates a directory ``config_out``, which includes keys and certificates for all the replicas and the proxy. Further, it includes the configuration for replicas ``server.config`` and proxy ``client.config``.
 
-build and run the kv client tools:
+### Testing deployed KV Service
+
+To do so, we need to build and run the KV client tools:
 
     bazel build //example:kv_server_tools
     cd ..
