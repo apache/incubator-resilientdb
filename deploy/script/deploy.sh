@@ -11,8 +11,7 @@ set -e
 config_real_path=$(readlink -f $1) 
 config_real_dir=$(dirname ${config_real_path})
 
-rm -rf ${output_path}
-mkdir -p ${output_path}
+
 
 # obtain the src path
 server_path=`echo "$server" | sed 's/:/\//g'`
@@ -22,6 +21,9 @@ server_bin=${server_name}
 
 bin_path=bazel-bin/${server_path}
 output_path=deploy/config_out
+
+rm -rf ${output_path}
+mkdir -p ${output_path}
 
 deploy_iplist=${iplist[@]}
 
