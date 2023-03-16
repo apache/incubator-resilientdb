@@ -33,7 +33,7 @@ namespace resdb {
 #define CPU_FREQ 2.2
 #define TIME_ENABLE true
 
-uint64_t get_server_clock() {
+uint64_t GetServerClock() {
 #if defined(__i386__)
   uint64_t ret;
   __asm__ __volatile__("rdtsc" : "=A"(ret));
@@ -51,10 +51,7 @@ uint64_t get_server_clock() {
   return ret;
 }
 
-uint64_t get_sys_clock() {
-  if (TIME_ENABLE) return get_server_clock();
-  return 0;
-}
+uint64_t GetSysClock() { return GetServerClock(); }
 
 uint64_t GetCurrentTime() {
   struct timeval tv;

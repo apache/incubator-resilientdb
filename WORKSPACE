@@ -1,4 +1,10 @@
+workspace(name = "com_resdb_nexres")
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+load("//:repositories.bzl", "nexres_repositories")
+
+nexres_repositories()
 
 http_archive(
     name = "rules_foreign_cc",
@@ -20,6 +26,34 @@ http_archive(
         "https://github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0.tar.gz",
     ],
 )
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()
+
+http_archive(
+    name = "rules_python",
+    sha256 = "ffc7b877c95413c82bfd5482c017edcf759a6250d8b24e82f41f3c8b8d9e287e",
+    strip_prefix = "rules_python-0.19.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.19.0/rules_python-0.19.0.tar.gz",
+)
+
+load("@rules_python//python:pip.bzl", "pip_install")
+
+http_archive(
+    name = "rules_proto_grpc",
+    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
+    strip_prefix = "rules_proto_grpc-4.3.0",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
+)
+
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
+
+rules_proto_grpc_toolchains()
+
+rules_proto_grpc_repos()
 
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
@@ -147,7 +181,7 @@ boost_deps()
 
 http_archive(
     name = "net_zlib_zlib",
-    build_file = "//third_party:z.BUILD",
+    build_file = "@com_resdb_nexres//third_party:z.BUILD",
     sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
     strip_prefix = "zlib-1.2.12",
     urls = [
@@ -160,7 +194,7 @@ http_archive(
 
 http_archive(
     name = "com_github_jupp0r_prometheus_cpp",
-    build_file = "//third_party:prometheus.BUILD",
+    build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
     sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
     strip_prefix = "prometheus-cpp-1.0.1",
     url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
@@ -170,7 +204,7 @@ load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cp
 
 http_archive(
     name = "com_google_leveldb",
-    build_file = "//third_party:leveldb.BUILD",
+    build_file = "@com_resdb_nexres//third_party:leveldb.BUILD",
     sha256 = "a6fa7eebd11de709c46bf1501600ed98bf95439d6967963606cc964931ce906f",
     strip_prefix = "leveldb-1.23",
     url = "https://github.com/google/leveldb/archive/refs/tags/1.23.zip",
@@ -183,7 +217,7 @@ bind(
 
 http_archive(
     name = "com_howardhinnant_date",
-    build_file = "//third_party:date.BUILD",
+    build_file = "@com_resdb_nexres//third_party:date.BUILD",
     sha256 = "f4300b96f7a304d4ef9bf6e0fa3ded72159f7f2d0f605bdde3e030a0dba7cf9f",
     strip_prefix = "date-3.0.1",
     url = "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.zip",
@@ -191,7 +225,7 @@ http_archive(
 
 http_archive(
     name = "com_crowcpp_crow",
-    build_file = "//third_party:crow.BUILD",
+    build_file = "@com_resdb_nexres//third_party:crow.BUILD",
     sha256 = "f95128a8976fae6f2922823e07da59edae277a460776572a556a4b663ff5ee4b",
     strip_prefix = "Crow-1.0-5",
     url = "https://github.com/CrowCpp/Crow/archive/refs/tags/v1.0+5.zip",
@@ -204,10 +238,10 @@ bind(
 
 http_archive(
     name = "com_chriskohlhoff_asio",
-    build_file = "//third_party:asio.BUILD",
-    sha256 = "1607ed2e52efec86f02590efcab2614179df4ea73e52eba972507dc7fd08375d",
-    strip_prefix = "asio-master",
-    url = "https://github.com/chriskohlhoff/asio/archive/refs/heads/master.zip",
+    build_file = "@com_resdb_nexres//third_party:asio.BUILD",
+    sha256 = "babcdfd2c744905a73d20de211b51367bda0d5200f11d654c4314b909d8c963c",
+    strip_prefix = "asio-asio-1-26-0",
+    url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
 )
 
 bind(
@@ -217,7 +251,7 @@ bind(
 
 http_archive(
     name = "com_google_snappy",
-    build_file = "//third_party:snappy.BUILD",
+    build_file = "@com_resdb_nexres//third_party:snappy.BUILD",
     sha256 = "e170ce0def2c71d0403f5cda61d6e2743373f9480124bcfcd0fa9b3299d428d9",
     strip_prefix = "snappy-1.1.9",
     url = "https://github.com/google/snappy/archive/refs/tags/1.1.9.zip",
@@ -230,7 +264,7 @@ bind(
 
 http_archive(
     name = "com_zlib",
-    build_file = "//third_party:zlib.BUILD",
+    build_file = "@com_resdb_nexres//third_party:zlib.BUILD",
     sha256 = "629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff",
     strip_prefix = "zlib-1.2.11",
     url = "https://github.com/madler/zlib/archive/v1.2.11.tar.gz",
@@ -248,22 +282,9 @@ http_archive(
     url = "https://github.com/facebook/zstd/archive/refs/tags/v1.5.2.zip",
 )
 
-bind(
-    name = "jemalloc",
-    actual = "//third_party:jemalloc",
-)
-
-http_archive(
-    name = "com_jemalloc",
-    build_file_content = all_content,
-    sha256 = "1f35888bad9fd331f5a03445bc1bff808a59378be61fef01e9736179d76f2fab",
-    strip_prefix = "jemalloc-5.3.0",
-    url = "https://github.com/jemalloc/jemalloc/archive/refs/tags/5.3.0.zip",
-)
-
 http_archive(
     name = "com_github_facebook_rocksdb",
-    build_file = "//third_party:rocksdb.BUILD",
+    build_file = "@com_resdb_nexres//third_party:rocksdb.BUILD",
     sha256 = "928cbd416c0531e9b2e7fa74864ce0d7097dca3f5a8c31f31459772a28dbfcba",
     strip_prefix = "rocksdb-7.2.2",
     url = "https://github.com/facebook/rocksdb/archive/refs/tags/v7.2.2.zip",
@@ -271,7 +292,7 @@ http_archive(
 
 http_archive(
     name = "eEVM",
-    build_file = "//third_party:eEVM.BUILD",
+    build_file = "@com_resdb_nexres//third_party:eEVM.BUILD",
     strip_prefix = "eEVM-main",
     url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
 )
@@ -285,6 +306,7 @@ http_archive(
 http_archive(
     name = "pybind11",
     build_file = "@pybind11_bazel//:pybind11.BUILD",
+    sha256 = "8ff2fff22df038f5cd02cea8af56622bc67f5b64534f1b83b9f133b8366acff2",
     strip_prefix = "pybind11-2.6.2",
     urls = ["https://github.com/pybind/pybind11/archive/v2.6.2.tar.gz"],
 )
@@ -298,7 +320,7 @@ python_configure(
 
 http_archive(
     name = "nlohmann_json",
-    build_file = "//third_party:json.BUILD",  # see below
+    build_file = "@com_resdb_nexres//third_party:json.BUILD",  # see below
     sha256 = "4cf0df69731494668bdd6460ed8cb269b68de9c19ad8c27abc24cd72605b2d5b",
     strip_prefix = "json-3.9.1",
     urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
@@ -306,7 +328,7 @@ http_archive(
 
 http_archive(
     name = "rapidjson",
-    build_file = "//third_party:rapidjson.BUILD",
+    build_file = "@com_resdb_nexres//third_party:rapidjson.BUILD",
     sha256 = "8e00c38829d6785a2dfb951bb87c6974fa07dfe488aa5b25deec4b8bc0f6a3ab",
     strip_prefix = "rapidjson-1.1.0",
     url = "https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.zip",
@@ -319,3 +341,4 @@ http_archive(
     strip_prefix = "civetweb-1.15",
     url = "https://github.com/civetweb/civetweb/archive/refs/tags/v1.15.zip",
 )
+

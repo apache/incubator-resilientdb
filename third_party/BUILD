@@ -4,6 +4,7 @@ load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make", "make")
 
 cc_library(
     name = "rocksdb",
+    tags = ["manual"],
     deps = [
         "@com_github_facebook_rocksdb//:rocksdb",
     ],
@@ -14,26 +15,6 @@ cc_library(
     deps = [
         "@com_github_jupp0r_prometheus_cpp//:prometheus",
     ],
-)
-
-configure_make(
-    name = "jemalloc",
-    autogen = True,
-    configure_in_place = True,
-    configure_options = [
-        #    "--enable-prof",
-    ],
-    copts = [
-        "-Wsign-compare",
-    ],
-    lib_source = "@com_jemalloc//:all_srcs",
-    out_static_libs = ["libjemalloc.a"],
-    targets = [
-        "build_lib_static",
-        "install_lib",
-        "install_include",
-    ],
-    visibility = ["//visibility:public"],
 )
 
 cc_library(

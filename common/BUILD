@@ -30,6 +30,29 @@ cc_library(
 )
 
 cc_library(
+    name = "pybind",
+    deps = [
+        "@pybind11",
+        "@pybind11//:pybind11_embed",
+    ],
+)
+
+cc_library(
+    name = "json",
+    deps = [
+        "@nlohmann_json//:json",
+    ],
+)
+
+cc_library(
+    name = "boost_comm",
+    deps = [
+        "@boost//:algorithm",
+        "@boost//:optional",
+    ],
+)
+
+cc_library(
     name = "comm",
     deps = [
         ":absl",

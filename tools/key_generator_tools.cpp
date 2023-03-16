@@ -28,7 +28,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "crypto/key_generator.h"
+#include "common/crypto/key_generator.h"
 
 using namespace resdb;
 

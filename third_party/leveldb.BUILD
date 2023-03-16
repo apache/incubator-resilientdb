@@ -9,11 +9,15 @@ cc_library(
             "db/db_bench.cc",
             "benchmarks/*.cc",
             "util/env_windows.cc",
+            "util/testutil.cc",
         ],
     ),
     hdrs = glob(
         ["**/*.h"],
-        exclude = ["doc/**"],
+        exclude = [
+          "doc/**",
+          "util/testutil.h",
+          ],
     ),
     defines = [
         "LEVELDB_PLATFORM_POSIX=1",
@@ -23,9 +27,5 @@ cc_library(
         ".",
         "include",
     ],
-    linkstatic = 1,
     visibility = ["//visibility:public"],
-    deps = [
-        "//external:gtest",
-    ],
 )
