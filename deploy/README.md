@@ -34,30 +34,33 @@ Or:
 
 ## Deploy KV Performance Server
 
-Put the server ip in [deploy_performance_server.conf](https://github.com/msadoghi/nexres/blob/master/deploy/kv_server/deploy_performance_server.conf). If your local machine could not access to the nodes using their private IPs, put the public IPs in the public_iplist section.
-Otherwise, leave the public_iplist empty.
+Next, we show how to benchmark the KV service. 
+For this task, we provide access to the configuration file ``kv_performance_server.conf``. 
+Like above, place the private IP addresses of your machines in the file ``config/kv_performance_server.conf``.
 
-run:
+Prior to collecting the performance stats, please ensure that you have killed the ``kv_server`` (both ``kv_server`` and ``kv_performance_server`` binaries cannot run on the same machine.
+
+Next, run the server binary:
 
     ./script/deploy.sh ./config/kv_performance_server.conf
     
-Once it is done, kv_server has been running inside the nodes pointed from the IPs. 
-The script will also create a output folder inside kv_server/ and generate the server.config and client.config.
+This command deploys the KV service that enables stat collection at each machine.
 
-### Run the performance
+### Initiate Benchmarking
+
+Next, we initiate benchmarking, which will issue a large number of client requests to help measure different metrics.
 
     bazel run //example:kv_server_tools -- $PWD/config_out/client.config set test 1234
 
-This tools will trigger the eval on the server. The parameter for the set function does not matter.
+Note: the parameters for the ``set`` function do not matter.
 
-### Get the performance
+### Fetching Results
 
-It will take a few seconds for the replica to generate data and send it out to the primary.
-Keep tracking the performance log on one of the replica, like on server1:
+To fetch the results, you would need to log in to the specific machines. After a few seconds of warmup, the logs at each replica should include relevant statistics. You can use the following ``tail`` command to read scan these logs.
 
     tail -f kv_server_performance.log | grep txn
     
-Then you will see some performance logging during the 5 second period. e.g.
+This command should show you the following output, logged periodically every 5 seconds.
 
     server call:465157 server process:465156 socket recv:0 client call:465156 client req:46519 broad_cast:139557 send broad_cast:139563 per send broad_cast:49783 propose:46518 prepare:5815 commit:5813 pending execute:46504 execute:46504 execute done:46991 seq gap:70 total request:4699100 txn:939820 seq fail:0 time:210
 
