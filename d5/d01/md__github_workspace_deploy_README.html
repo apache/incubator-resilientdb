@@ -123,17 +123,18 @@ cd ..
 </pre><p> Or: </p><pre class="fragment">bazel run //example:kv_server_tools -- $PWD/config_out/client.config get test
 </pre> <h2><a class="anchor" id="autotoc_md22"></a>
 Deploy KV Performance Server</h2>
-<p>Put the server ip in <a href="https://github.com/msadoghi/nexres/blob/master/deploy/kv_server/deploy_performance_server.conf">deploy_performance_server.conf</a>. If your local machine could not access to the nodes using their private IPs, put the public IPs in the public_iplist section. Otherwise, leave the public_iplist empty.</p>
-<p>run: </p><pre class="fragment">./script/deploy.sh ./config/kv_performance_server.conf
-</pre><p> Once it is done, kv_server has been running inside the nodes pointed from the IPs. The script will also create a output folder inside kv_server/ and generate the server.config and client.config.</p>
+<p>Next, we show how to benchmark the KV service. For this task, we provide access to the configuration file <code>kv_performance_server.conf</code>. Like above, place the private IP addresses of your machines in the file <code>config/kv_performance_server.conf</code>.</p>
+<p>Prior to collecting the performance stats, please ensure that you have killed the <code>kv_server</code> (both <code>kv_server</code> and <code>kv_performance_server</code> binaries cannot run on the same machine.</p>
+<p>Next, run the server binary: </p><pre class="fragment">./script/deploy.sh ./config/kv_performance_server.conf
+</pre><p> This command deploys the KV service that enables stat collection at each machine.</p>
 <h3><a class="anchor" id="autotoc_md23"></a>
-Run the performance</h3>
-<pre class="fragment">bazel run //example:kv_server_tools -- $PWD/config_out/client.config set test 1234
-</pre><p> This tools will trigger the eval on the server. The parameter for the set function does not matter.</p>
+Initiate Benchmarking</h3>
+<p>Next, we initiate benchmarking, which will issue a large number of client requests to help measure different metrics. </p><pre class="fragment">bazel run //example:kv_server_tools -- $PWD/config_out/client.config set test 1234
+</pre><p> Note: the parameters for the <code>set</code> function do not matter.</p>
 <h3><a class="anchor" id="autotoc_md24"></a>
-Get the performance</h3>
-<p>It will take a few seconds for the replica to generate data and send it out to the primary. Keep tracking the performance log on one of the replica, like on server1: </p><pre class="fragment">tail -f kv_server_performance.log | grep txn
-</pre><p> Then you will see some performance logging during the 5 second period. e.g. </p><pre class="fragment">server call:465157 server process:465156 socket recv:0 client call:465156 client req:46519 broad_cast:139557 send broad_cast:139563 per send broad_cast:49783 propose:46518 prepare:5815 commit:5813 pending execute:46504 execute:46504 execute done:46991 seq gap:70 total request:4699100 txn:939820 seq fail:0 time:210
+Fetching Results</h3>
+<p>To fetch the results, you would need to log in to the specific machines. After a few seconds of warmup, the logs at each replica should include relevant statistics. You can use the following <code>tail</code> command to read scan these logs. </p><pre class="fragment">tail -f kv_server_performance.log | grep txn
+</pre><p> This command should show you the following output, logged periodically every 5 seconds. </p><pre class="fragment">server call:465157 server process:465156 socket recv:0 client call:465156 client req:46519 broad_cast:139557 send broad_cast:139563 per send broad_cast:49783 propose:46518 prepare:5815 commit:5813 pending execute:46504 execute:46504 execute done:46991 seq gap:70 total request:4699100 txn:939820 seq fail:0 time:210
 </pre> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
