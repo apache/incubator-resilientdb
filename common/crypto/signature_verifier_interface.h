@@ -26,29 +26,18 @@
 #pragma once
 
 #include "absl/status/statusor.h"
-#include "platform/config/resdb_config.h"
-#include "platform/interface/resdb_net_channel.h"
+#include "common/proto/signature_info.pb.h"
 
 namespace resdb {
 
-// ResDBTransactionProposer is a tool to access NesDB to send data and receive
-// data Inside ResDBTransactionProposer, it does two things:
-class ResDBTransactionProposer : public ResDBNetChannel {
+// SignatureVerifier base class, provide an interface for communication.
+class SignatureVerifierInterface {
  public:
-  ResDBTransactionProposer(const ResDBConfig& config);
-  virtual ~ResDBTransactionProposer() = default;
+  SignatureVerifierInterface() = default;
+  virtual ~SignatureVerifierInterface() = default;
 
-  // Send request with a command.
-  int SendRequest(const google::protobuf::Message& message,
-                  Request::Type type = Request::TYPE_CLIENT_REQUEST);
-  // Send request with a command and wait for a response.
-  int SendRequest(const google::protobuf::Message& message,
-                  google::protobuf::Message* response,
-                  Request::Type type = Request::TYPE_CLIENT_REQUEST);
-
- private:
-  ResDBConfig config_;
-  int64_t timeout_ms_;  // microsecond for timeout.
+  // Sign messages using the private key.
+  virtual absl::StatusOr<SignatureInfo> SignMessage(const std::string& message);
 };
 
 }  // namespace resdb

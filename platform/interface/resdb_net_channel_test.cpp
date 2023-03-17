@@ -27,6 +27,7 @@
 
 #include <gtest/gtest.h>
 
+#include "common/crypto/signature_verifier.h"
 #include "common/crypto/key_generator.h"
 #include "platform/common/network/mock_socket.h"
 #include "platform/proto/client_test.pb.h"

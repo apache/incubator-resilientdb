@@ -56,7 +56,7 @@ ResDBNetChannel::ResDBNetChannel(std::unique_ptr<Socket> socket,
 
 void ResDBNetChannel::Close() { socket_->Close(); }
 
-void ResDBNetChannel::SetSignatureVerifier(SignatureVerifier* verifier) {
+void ResDBNetChannel::SetSignatureVerifier(SignatureVerifierInterface* verifier) {
   verifier_ = verifier;
 }
 
@@ -138,7 +138,7 @@ int ResDBNetChannel::Recv(std::string* data) {
 // Sign the message if verifier has been provied and send the message to the
 // server.
 std::string ResDBNetChannel::GetRawMessageString(
-    const google::protobuf::Message& message, SignatureVerifier* verifier) {
+    const google::protobuf::Message& message, SignatureVerifierInterface* verifier) {
   ResDBMessage sig_message;
   if (!message.SerializeToString(sig_message.mutable_data())) {
     return "";

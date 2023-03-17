@@ -42,11 +42,6 @@ def nexres_repositories():
     urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.zip"],
   )
 
-
-
-
-
-
 def _data_deps_extension_impl(ctx):
     nexres_repositories()
 

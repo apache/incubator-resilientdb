@@ -26,6 +26,7 @@
 #pragma once
 
 #include <bitset>
+#include <list>
 
 #include "platform/communication/server_comm.h"
 #include "platform/consensus/execution/transaction_executor.h"

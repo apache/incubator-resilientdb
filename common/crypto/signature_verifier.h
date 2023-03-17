@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include "common/crypto/signature_verifier_interface.h"
+
 #include <cryptopp/filters.h>
 #include <cryptopp/xed25519.h>
 
@@ -39,7 +41,7 @@ namespace resdb {
 // SignatureVerifier used to sign signatures using private_key,
 // and verify signatures using the public keys of the senders identified
 // by their node_id.
-class SignatureVerifier {
+class SignatureVerifier : public SignatureVerifierInterface {
  public:
   SignatureVerifier(const KeyInfo& private_key,
                     const CertificateInfo& certificate_info);

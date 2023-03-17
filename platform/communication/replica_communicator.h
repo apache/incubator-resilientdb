@@ -26,6 +26,7 @@
 #pragma once
 #include <thread>
 
+#include "common/crypto/signature_verifier.h"
 #include "platform/common/queue/batch_queue.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/communication/async_replica_client.h"

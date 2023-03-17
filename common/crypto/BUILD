@@ -42,10 +42,21 @@ cc_library(
 )
 
 cc_library(
+    name = "signature_verifier_interface",
+    srcs = ["signature_verifier_interface.cpp"],
+    hdrs = ["signature_verifier_interface.h"],
+    deps = [
+        "//common:comm",
+        "//common/proto:signature_info_cc_proto",
+    ],
+)
+
+cc_library(
     name = "signature_verifier",
     srcs = ["signature_verifier.cpp"],
     hdrs = ["signature_verifier.h"],
     deps = [
+      ":signature_verifier_interface",
         ":signature_utils",
         "//:cryptopp_lib",
         "//common:comm",

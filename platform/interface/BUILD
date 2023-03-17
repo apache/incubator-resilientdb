@@ -7,7 +7,7 @@ cc_library(
     visibility = ["//platform/communication:__pkg__"],
     deps = [
         "//common:comm",
-        "//common/crypto:signature_verifier",
+        "//common/crypto:signature_verifier_interface",
         "//platform/common/data_comm",
         "//platform/common/network:tcp_socket",
         "//platform/config:resdb_config",
@@ -32,6 +32,7 @@ cc_test(
         "//:cryptopp_lib",
         "//common/crypto:key_generator",
         "//common/test:test_main",
+        "//common/crypto:signature_verifier",
         "//platform/common/network:mock_socket",
         "//platform/proto:client_test_cc_proto",
     ],

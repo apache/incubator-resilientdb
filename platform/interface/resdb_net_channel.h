@@ -26,14 +26,14 @@
 #pragma once
 #include <memory>
 
-#include "common/crypto/signature_verifier.h"
+#include "common/crypto/signature_verifier_interface.h"
 #include "platform/common/network/socket.h"
 #include "platform/proto/resdb.pb.h"
 
 namespace resdb {
 
 // ResDBNetChannel is used to send data to the server identified by ip:port or
-// via the provided socket. If SignatureVerifier is provided, data will be
+// via the provided socket. If SignatureVerifierInterface is provided, data will be
 // signed. The client will retry max_retry_time_ if the connection or sned
 // process fail. For a message with a command, it will be set inside a Request
 // message. Each Request will be put into the network message ResDBMessage and
@@ -64,7 +64,7 @@ class ResDBNetChannel {
   void Close();
 
   void SetSocket(std::unique_ptr<Socket> socket);
-  void SetSignatureVerifier(SignatureVerifier* verifier);
+  void SetSignatureVerifier(SignatureVerifierInterface* verifier);
   void SetDestReplicaInfo(const ReplicaInfo& replica);
 
   // Send a message request to the server with a commend.
@@ -85,7 +85,7 @@ class ResDBNetChannel {
 
   static std::string GetRawMessageString(
       const google::protobuf::Message& message,
-      SignatureVerifier* verifier = nullptr);
+      SignatureVerifierInterface* verifier = nullptr);
 
   void SetRecvTimeout(int microseconds);
   void IsLongConnection(bool long_connect_tion);
@@ -99,7 +99,7 @@ class ResDBNetChannel {
   int Connect();
 
  protected:
-  SignatureVerifier* verifier_ = nullptr;
+  SignatureVerifierInterface* verifier_ = nullptr;
 
   std::unique_ptr<Socket> socket_;
   int max_retry_time_ = 3;

@@ -144,6 +144,7 @@ cc_library(
     visibility = ["//platform:__subpackages__"],
     deps = [
         ":async_replica_client",
+        "//common/crypto:signature_verifier",
         "//platform/common/queue:batch_queue",
         "//platform/interface:resdb_net_channel",
         "//platform/proto:broadcast_cc_proto",

@@ -37,35 +37,6 @@ ResDBTransactionProposer::ResDBTransactionProposer(const ResDBConfig& config)
   socket_->SetRecvTimeout(timeout_ms_);
 }
 
-absl::StatusOr<std::string> ResDBTransactionProposer::GetResponseData(
-    const Response& response) {
-  std::string hash_;
-  std::set<int64_t> hash_counter;
-  std::string resp_str;
-  for (const auto& each_resp : response.resp()) {
-    // Check signature
-    std::string hash = SignatureVerifier::CalculateHash(each_resp.data());
-
-    if (!hash_.empty() && hash != hash_) {
-      LOG(ERROR) << "hash not the same";
-      return absl::InvalidArgumentError("hash not match");
-    }
-    if (hash_.empty()) {
-      hash_ = hash;
-      resp_str = each_resp.data();
-    }
-    hash_counter.insert(each_resp.signature().node_id());
-  }
-  // LOG(INFO) << "recv hash:" << hash_counter.size()
-  //         << " need:" << config_.GetMinClientReceiveNum()
-  //        << " data len:" << resp_str.size();
-  if (hash_counter.size() >=
-      static_cast<size_t>(config_.GetMinClientReceiveNum())) {
-    return resp_str;
-  }
-  return absl::InvalidArgumentError("data not enough");
-}
-
 int ResDBTransactionProposer::SendRequest(
     const google::protobuf::Message& message, Request::Type type) {
   // Use the replica obtained from the server.
