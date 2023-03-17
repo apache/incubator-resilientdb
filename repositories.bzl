@@ -20,6 +20,15 @@ def nexres_repositories():
         build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
   )
 
+  maybe(
+      http_archive,
+      name = "com_github_nelhage_rules_boost",
+      strip_prefix = "rules_boost-96e9b631f104b43a53c21c87b01ac538ad6f3b48",
+      url = "https://github.com/nelhage/rules_boost/archive/96e9b631f104b43a53c21c87b01ac538ad6f3b48.tar.gz",
+  )
+
+
+
 
 
 def _data_deps_extension_impl(ctx):
