@@ -76,7 +76,7 @@ def nexres_repositories():
   maybe(
     http_archive,
     name = "civetweb",
-    build_file = "//third_party:civetweb.BUILD",
+    build_file = "@com_resdb_nexres//third_party:civetweb.BUILD",
     sha256 = "88574f0cffd6047e22fafa3bdc748dd878a4928409d4f880332e2b0f262b9f62",
     strip_prefix = "civetweb-1.15",
     url = "https://github.com/civetweb/civetweb/archive/refs/tags/v1.15.zip",
