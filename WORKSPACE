@@ -66,20 +66,6 @@ bind(
     actual = "@com_google_googletest//:gtest",
 )
 
-http_archive(
-    name = "com_google_googletest",
-    sha256 = "ffa17fbc5953900994e2deec164bb8949879ea09b411e07f215bfbb1f87f4632",
-    strip_prefix = "googletest-1.13.0",
-    urls = ["https://github.com/google/googletest/archive/refs/tags/v1.13.0.zip"],
-)
-
-http_archive(
-    name = "com_github_gflags_gflags",
-    sha256 = "34af2f15cf7367513b352bdcd2493ab14ce43692d2dcd9dfc499492966c64dcf",
-    strip_prefix = "gflags-2.2.2",
-    urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
-)
-
 bind(
     name = "glog",
     actual = "@com_github_google_glog//:glog",
