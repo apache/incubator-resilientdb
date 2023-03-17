@@ -26,6 +26,21 @@ def nexres_repositories():
       strip_prefix = "rules_boost-96e9b631f104b43a53c21c87b01ac538ad6f3b48",
       url = "https://github.com/nelhage/rules_boost/archive/96e9b631f104b43a53c21c87b01ac538ad6f3b48.tar.gz",
   )
+  maybe(
+    http_archive,
+      name = "cryptopp",
+      build_file_content = all_content,
+      sha256 = "6055ab314ff4daae9490ddfb3fbcf107bc94a556401ed42f756fa5f7cd8c6510",
+      strip_prefix = "cryptopp-CRYPTOPP_8_7_0",
+      urls = ["https://github.com/weidai11/cryptopp/archive/refs/tags/CRYPTOPP_8_7_0.zip"],
+  )
+  maybe(
+    http_archive,
+    name = "com_google_absl",
+    strip_prefix = "abseil-cpp-20211102.0",
+    urls = ["https://github.com/abseil/abseil-cpp/archive/refs/tags/20211102.0.zip"],
+  )
+
 
 
 
