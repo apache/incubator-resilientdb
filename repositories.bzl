@@ -55,6 +55,13 @@ def nexres_repositories():
     strip_prefix = "gflags-2.2.2",
     urls = ["https://github.com/gflags/gflags/archive/v2.2.2.tar.gz"],
   )
+  maybe(
+    http_archive,
+    name = "rules_proto_grpc",
+    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
+    strip_prefix = "rules_proto_grpc-4.3.0",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
+  )
 
 
 def _data_deps_extension_impl(ctx):
