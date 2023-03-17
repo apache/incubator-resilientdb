@@ -11,6 +11,16 @@ def nexres_repositories():
         url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
         build_file = "@com_resdb_nexres//third_party:eEVM.BUILD",
   )
+  maybe(
+        http_archive,
+        name = "com_github_jupp0r_prometheus_cpp",
+        strip_prefix = "prometheus-cpp-1.0.1",
+        sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
+        url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
+        build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
+  )
+
+
 
 def _data_deps_extension_impl(ctx):
     nexres_repositories()

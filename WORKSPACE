@@ -192,13 +192,13 @@ http_archive(
 
 #prometheus cpp client library
 
-http_archive(
-    name = "com_github_jupp0r_prometheus_cpp",
-    build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
-    sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
-    strip_prefix = "prometheus-cpp-1.0.1",
-    url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
-)
+#http_archive(
+#    name = "com_github_jupp0r_prometheus_cpp",
+#    build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
+#    sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
+#    strip_prefix = "prometheus-cpp-1.0.1",
+#    url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
+#)
 
 load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cpp_repositories")
 
@@ -288,13 +288,6 @@ http_archive(
     sha256 = "928cbd416c0531e9b2e7fa74864ce0d7097dca3f5a8c31f31459772a28dbfcba",
     strip_prefix = "rocksdb-7.2.2",
     url = "https://github.com/facebook/rocksdb/archive/refs/tags/v7.2.2.zip",
-)
-
-http_archive(
-    name = "eEVM",
-    build_file = "@com_resdb_nexres//third_party:eEVM.BUILD",
-    strip_prefix = "eEVM-main",
-    url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
 )
 
 http_archive(
