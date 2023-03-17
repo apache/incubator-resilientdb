@@ -62,6 +62,18 @@ def nexres_repositories():
     strip_prefix = "rules_proto_grpc-4.3.0",
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
   )
+  maybe(
+    http_archive,
+    name = "net_zlib_zlib",
+    build_file = "@com_resdb_nexres//third_party:z.BUILD",
+    sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
+    strip_prefix = "zlib-1.2.12",
+    urls = [
+        "https://zlib.net/zlib-1.2.12.tar.gz",
+        "https://storage.googleapis.com/bazel-mirror/zlib.net/zlib-1.2.12.tar.gz",
+    ],
+  )
+
 
 
 def _data_deps_extension_impl(ctx):
