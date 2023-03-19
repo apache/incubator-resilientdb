@@ -9,17 +9,9 @@ import { sendRequest } from '../client';
 function Dashboard(props) {
   const location = useLocation();
   props.setFooter("footerLogin");
-
+  
   chrome.runtime.onMessage.addListener((msg, sender) => {
     if ((msg.from === 'content')) {
-      chrome.windows.create({
-        url: "index.html",
-        type: "popup",
-        focused: true,
-        height: 580,
-        width: 390
-      })
-
       var escapeCodes = { 
           '\\': '\\',
           'r':  '\r',
@@ -49,7 +41,10 @@ function Dashboard(props) {
       }`
   
       const result = sendRequest(query).then(res => { 
+        const store = location.state;
+        store.id = res.data.postTransaction.id;
         console.log(res.data.postTransaction);
+        props.navigate("/logs", {state: store});
       });
     }
 

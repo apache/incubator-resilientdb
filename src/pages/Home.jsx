@@ -12,6 +12,8 @@ import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
 import bcrypt from 'bcryptjs';
 import React, { useEffect } from 'react';
+import Base58 from 'bs58';
+import nacl from 'tweetnacl';
 
 function Home(props) {
   useEffect(() => {
@@ -39,30 +41,31 @@ function Home(props) {
 
   const salt = bcrypt.genSaltSync(10);
 
+  function generateKeyPair(){
+    var keyPair = nacl.sign.keyPair();
+    var pk = Base58.encode(keyPair.publicKey);
+    var sk = Base58.encode(keyPair.secretKey.slice(0,32));
+    return {publicKey: pk, privateKey: sk};
+  };
+
   const createAccount = async () => {
     if(props.values.password===props.confirmValues.password){
-      const query = `mutation {
-        generateKeys {
-          publicKey
-          privateKey
-        }
-      }`
-
       chrome.storage.sync.clear(async function(){
-        const result = await sendRequest(query).then(res => { 
-          const phrase = CryptoJS.AES.encrypt(
-            JSON.stringify(res.data.generateKeys.privateKey),
-            props.values.password
-          ).toString();
-          var hash = bcrypt.hashSync(props.values.password, salt);
-          const store = {publicKey: res.data.generateKeys.publicKey, encryptedPrivateKey: phrase, hash: hash};
-          var password = {password: props.values.password};
-          chrome.storage.local.set({ password }, () => {});
-          chrome.storage.sync.set({ store }, () => {
-            store.privateKey = res.data.generateKeys.privateKey;
-            props.navigate("/dashboard", {state: store} );
-          });  
-        })
+        const keys = generateKeyPair();
+        var publicKey = keys.publicKey;
+        var privateKey = keys.privateKey;
+        const phrase = CryptoJS.AES.encrypt(
+          JSON.stringify(privateKey),
+          props.values.password
+        ).toString();
+        var hash = bcrypt.hashSync(props.values.password, salt);
+        const store = {publicKey: publicKey, encryptedPrivateKey: phrase, hash: hash};
+        var password = {password: props.values.password};
+        chrome.storage.local.set({ password }, () => {});
+        chrome.storage.sync.set({ store }, () => {
+          store.privateKey = privateKey;
+          props.navigate("/dashboard", {state: store} );
+        });  
     });
     }
     else {

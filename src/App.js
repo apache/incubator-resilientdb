@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Logs from "./pages/Logs";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -73,6 +74,7 @@ function App() {
       <Route path='/' element={<Home {...props} {...propsChange} />} />
       <Route path='/login' element={<Login {...props} {...propsChange} />} />
       <Route path='/dashboard' element={<Dashboard {...props} {...propsChange} />} />
+      <Route path='/logs' element={<Logs {...props} {...propsChange} />} />
       <Route path='*' element={<Navigate to='/' />} />
     </Routes>
   )
