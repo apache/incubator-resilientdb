@@ -2,7 +2,6 @@
 import logo from '../logo.png';
 import '../App.css';
 import CryptoJS from "crypto-js";
-import { sendRequest } from '../client';
 import Footer from "../components/Footer";
 import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";

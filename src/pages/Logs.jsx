@@ -4,7 +4,6 @@ import '../App.css';
 import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
-import { sendRequest } from '../client';
 import { useEffect } from 'react';
 
 function Logs(props) {
