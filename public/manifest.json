@@ -7,6 +7,9 @@
     "64": "icon-64.png",
     "128": "icon-128.png"
   },
+  "background": {
+    "scripts": ["background.js"]
+  },
   "content_scripts": [
     {
         "matches": [
@@ -18,6 +21,7 @@
     }
   ],
   "permissions": [
+    "declarativeContent",
     "storage",
     "activeTab",
     "scripting",
