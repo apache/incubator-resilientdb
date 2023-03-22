@@ -11,7 +11,7 @@ function Dashboard(props) {
   props.setFooter("footerLogin");
   
   chrome.runtime.onMessage.addListener((msg, sender) => {
-    if ((msg.from === 'content')) {
+    if ((msg.from === 'commit')) {
       var escapeCodes = { 
           '\\': '\\',
           'r':  '\r',
@@ -48,7 +48,7 @@ function Dashboard(props) {
       });
     }
 
-    else if ((msg.from === 'fetch')){
+    else if ((msg.from === 'get')){
       const query = `query {
         getTransaction(id: "${msg.id}"){
           id

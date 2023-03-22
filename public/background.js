@@ -12,15 +12,10 @@ chrome.runtime.onInstalled.addListener(function() {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log("onMessage");
     if (request.action === 'showExtension') {
         chrome.storage.local.get("popupShown", function(data) {
         if (!data.popupShown) {
-            chrome.windows.getCurrent(function(currentWindow) {
-                var left = currentWindow.left;
-                var top = currentWindow.top;
-                var width = currentWindow.width;
-            
+            chrome.windows.getCurrent(function(currentWindow) {      
                 // Show the page action popup at the same position as the extension button
                 chrome.windows.create({
                   url: chrome.extension.getURL("index.html"),
@@ -28,7 +23,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                   top: 65,
                   left: 840,
                   height: 558,
-                  width: 400
+                  width: 385
                 });
             });
             // Save popupShown flag in storage

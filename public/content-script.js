@@ -2,10 +2,10 @@
 window.addEventListener("message", (event) => {
   if (
       event.source === window &&
-      event.data.direction === "from-page-script"
+      event.data.direction === "commit-page-script"
   ) {
       chrome.runtime.sendMessage({
-      from: 'content',
+      from: 'commit',
       data: event.data.message,
       amount: event.data.amount,
       address: event.data.address,
@@ -13,15 +13,18 @@ window.addEventListener("message", (event) => {
       })
   }
   else if (event.source === window &&
-      event.data.direction === "id-page-script") {
+      event.data.direction === "get-page-script") {
       chrome.runtime.sendMessage({
-          from: 'fetch',
+          from: 'get',
           id: event.data.id
       })
   }
 });
 
-document.getElementById('from-page-script').addEventListener('click', function() {
-  console.log("sendMessage");
+document.getElementById('commit-page-script').addEventListener('click', function() {
+  chrome.runtime.sendMessage({ action: 'showExtension' });
+});
+
+document.getElementById('get-page-script').addEventListener('click', function() {
   chrome.runtime.sendMessage({ action: 'showExtension' });
 });
