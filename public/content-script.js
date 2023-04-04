@@ -10,14 +10,18 @@ window.addEventListener("message", (event) => {
       amount: event.data.amount,
       address: event.data.address,
       event: event.data.event
-      })
+      }, function(response) {
+        console.log(response); 
+      });
   }
   else if (event.source === window &&
       event.data.direction === "get-page-script") {
       chrome.runtime.sendMessage({
           from: 'get',
           id: event.data.id
-      })
+      }, function(response) {
+        console.log(response); 
+      });
   }
 });
 

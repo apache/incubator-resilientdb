@@ -4,69 +4,28 @@ import '../App.css';
 import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
-import { sendRequest } from '../client';
 
 function Dashboard(props) {
   const location = useLocation();
   props.setFooter("footerLogin");
   
-  chrome.runtime.onMessage.addListener((msg, sender) => {
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if ((msg.from === 'commit')) {
-      var escapeCodes = { 
-          '\\': '\\',
-          'r':  '\r',
-          'n':  '\n',
-          't':  '\t'
-      };
-      msg.data.replace(/\\(.)/g, function(str, char) {
-        return escapeCodes[char];
-      });
-
-      const query = `mutation {
-        postTransaction(data: {
-          operation: "CREATE",
-          amount: ${parseInt(msg.amount)},
-          signerPublicKey: "${location.state.publicKey}",
-          signerPrivateKey: "${location.state.privateKey}",
-          recipientPublicKey: "${msg.address}",
-          asset: """{
-              "data": { 
-                ${msg.data}
-              },
-          }
-          """
-        }){
-          id
-        }
-      }`
-  
-      const result = sendRequest(query).then(res => { 
-        const store = location.state;
-        store.id = res.data.postTransaction.id;
-        console.log(res.data.postTransaction);
-        props.navigate("/logs", {state: store});
-      });
+      const store = location.state;
+      store.address = msg.address;
+      store.amount = msg.amount;
+      store.data = msg.data;
+      store.from = msg.from;
+      store.operation = "CREATE";
+      props.navigate("/transaction", {state: store} );
     }
 
     else if ((msg.from === 'get')){
-      const query = `query {
-        getTransaction(id: "${msg.id}"){
-          id
-          version
-          amount
-          metadata
-          operation
-          asset
-          publicKey
-          uri
-          type
-        }
-      }`
-  
-      const result = sendRequest(query).then(res => { 
-        console.log(res.data.getTransaction);
-      });
-    }
+      const store = location.state;
+      store.id = msg.id;
+      store.from = msg.from;
+      props.navigate("/transaction", {state: store} );
+    };
   });
 
   const back = async () => {

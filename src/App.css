@@ -408,3 +408,19 @@ h5{
   font-size: 10px;
 }
 
+.manifest {
+  background: lightgrey; 
+  width: 250px;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  overflow:hidden;padding: 10px;
+  border: 1px solid grey; 
+  border-radius: 5px;
+}
+
+.list {
+  text-overflow: ellipsis; 
+  overflow: hidden; 
+  white-space: nowrap;
+}
+

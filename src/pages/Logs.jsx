@@ -37,7 +37,7 @@ function Logs(props) {
             <img src={logo} alt="logo" />
           </div>
           <div className="paymentTopKey vcenter">
-            <p className="publicKeyStyle" style={{color: 'white'}}><b>ID:</b> {location.state.publicKey}</p>
+            <p className="publicKeyStyle" style={{color: 'white'}}><b>Account ID:</b> {location.state.publicKey}</p>
             <button className="buttonSignOut" data-inline="true" onClick={back}><ExitToAppIcon /></button>
           </div>
         </div>
