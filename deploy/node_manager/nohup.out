@@ -1,0 +1,13 @@
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //deploy/node_manager:deploy_manager (0 packages loaded, 0 targets configured)
+INFO: Analyzed target //deploy/node_manager:deploy_manager (0 packages loaded, 0 targets configured).
+INFO: Found 1 target...
+[0 / 1] [Prepa] BazelWorkspaceStatusAction stable-status.txt
+Target //deploy/node_manager:deploy_manager up-to-date:
+  bazel-bin/deploy/node_manager/deploy_manager
+INFO: Elapsed time: 0.316s, Critical Path: 0.01s
+INFO: 1 process: 1 internal.
+INFO: Build completed successfully, 1 total action
+INFO: Running command line: bazel-bin/deploy/node_manager/deploy_manager /home/ubuntu/nexres/deploy/node_manager
+INFO: Build completed successfully, 1 total action
