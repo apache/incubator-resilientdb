@@ -63,7 +63,10 @@ function Transaction(props) {
       }`
 
       const result = sendRequest(query).then(res => { 
+        const store = location.state;
+        store.id = res.data.getTransaction.id;
         console.log(res.data.getTransaction);
+        props.navigate("/logs", {state: store});
       });
     }
   }
@@ -106,8 +109,10 @@ function Transaction(props) {
         </p>
       ):(
         <p className="manifest">
-          Your Account: {location.state.publicKey} <br></br>
-          Transaction ID: {location.state.id} <br></br>
+          <ul className="list">
+            <li className="list"><span className="list">Your Account: {location.state.publicKey}</span></li>
+            <li className="list"><span className="list">Transaction ID: {location.state.id}</span></li>
+            </ul>
         </p>
       )}
       </div>
