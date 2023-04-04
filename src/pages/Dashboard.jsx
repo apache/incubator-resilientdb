@@ -55,8 +55,11 @@ function Dashboard(props) {
       </div>
 
       <div className="paymentBottomDashboard vcenter">
-        <textarea className="scrollabletextbox" rows="10" cols="45">
-        </textarea>
+        <p className="manifest">
+          <ul className="list">
+            <li className="list"><span className="list"></span></li>
+          </ul>
+        </p>
       </div>
 
       <div className="paymentBottomDashboardBack vcenter">

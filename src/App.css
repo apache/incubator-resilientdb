@@ -411,6 +411,7 @@ h5{
 .manifest {
   background: lightgrey; 
   width: 250px;
+  height: 150px;
   font-size: 10px;
   text-overflow: ellipsis;
   overflow:hidden;padding: 10px;
