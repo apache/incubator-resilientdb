@@ -37,27 +37,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "date",
-    deps = [
-        "@com_howardhinnant_date//:date",
-    ],
-)
-
-cc_library(
-    name = "crow",
-    deps = [
-        "@com_crowcpp_crow//:crow",
-    ],
-)
-
-cc_library(
-    name = "asio",
-    deps = [
-        "@com_chriskohlhoff_asio//:asio",
-    ],
-)
-
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
 cc_library(
@@ -67,9 +46,3 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "rapidjson",
-    deps = [
-        "@rapidjson",
-    ],
-)

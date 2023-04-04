@@ -33,7 +33,6 @@ cc_library(
     name = "pybind",
     deps = [
         "@pybind11",
-        "@pybind11//:pybind11_embed",
     ],
 )
 

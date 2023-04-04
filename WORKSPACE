@@ -163,15 +163,6 @@ http_archive(
 
 #prometheus cpp client library
 
-#http_archive(
-#    name = "com_github_jupp0r_prometheus_cpp",
-#    build_file = "@com_resdb_nexres//third_party:prometheus.BUILD",
-#    sha256 = "281b6d9a26da35375c9958954e03616d71ea28d57ec193b0e75c3e10ff3da55d",
-#    strip_prefix = "prometheus-cpp-1.0.1",
-#    url = "https://github.com/jupp0r/prometheus-cpp/archive/refs/tags/v1.0.1.zip",
-#)
-
-load("@com_github_jupp0r_prometheus_cpp//bazel:repositories.bzl", "prometheus_cpp_repositories")
 
 http_archive(
     name = "com_google_leveldb",
@@ -179,40 +170,6 @@ http_archive(
     sha256 = "a6fa7eebd11de709c46bf1501600ed98bf95439d6967963606cc964931ce906f",
     strip_prefix = "leveldb-1.23",
     url = "https://github.com/google/leveldb/archive/refs/tags/1.23.zip",
-)
-
-bind(
-    name = "date",
-    actual = "@com_howardhinnant_date//:date",
-)
-
-http_archive(
-    name = "com_howardhinnant_date",
-    build_file = "@com_resdb_nexres//third_party:date.BUILD",
-    sha256 = "f4300b96f7a304d4ef9bf6e0fa3ded72159f7f2d0f605bdde3e030a0dba7cf9f",
-    strip_prefix = "date-3.0.1",
-    url = "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.zip",
-)
-
-http_archive(
-    name = "com_crowcpp_crow",
-    build_file = "@com_resdb_nexres//third_party:crow.BUILD",
-    sha256 = "f95128a8976fae6f2922823e07da59edae277a460776572a556a4b663ff5ee4b",
-    strip_prefix = "Crow-1.0-5",
-    url = "https://github.com/CrowCpp/Crow/archive/refs/tags/v1.0+5.zip",
-)
-
-bind(
-    name = "asio",
-    actual = "@com_chriskohlhoff_asio//:asio",
-)
-
-http_archive(
-    name = "com_chriskohlhoff_asio",
-    build_file = "@com_resdb_nexres//third_party:asio.BUILD",
-    sha256 = "babcdfd2c744905a73d20de211b51367bda0d5200f11d654c4314b909d8c963c",
-    strip_prefix = "asio-asio-1-26-0",
-    url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
 )
 
 bind(
@@ -289,20 +246,4 @@ http_archive(
     strip_prefix = "json-3.9.1",
     urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
 )
-
-http_archive(
-    name = "rapidjson",
-    build_file = "@com_resdb_nexres//third_party:rapidjson.BUILD",
-    sha256 = "8e00c38829d6785a2dfb951bb87c6974fa07dfe488aa5b25deec4b8bc0f6a3ab",
-    strip_prefix = "rapidjson-1.1.0",
-    url = "https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.zip",
-)
-
-#http_archive(
-#    name = "civetweb",
-#    build_file = "//third_party:civetweb.BUILD",
-#    sha256 = "88574f0cffd6047e22fafa3bdc748dd878a4928409d4f880332e2b0f262b9f62",
-#    strip_prefix = "civetweb-1.15",
-#    url = "https://github.com/civetweb/civetweb/archive/refs/tags/v1.15.zip",
-#)
 
