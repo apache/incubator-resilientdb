@@ -24,6 +24,8 @@
  */
 
 #pragma once
+#include <glog/logging.h>
+#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/message_differencer.h>
 
 #include "gmock/gmock.h"
@@ -33,6 +35,18 @@ namespace testing {
 
 MATCHER_P(EqualsProto, replica, "") {
   return ::google::protobuf::util::MessageDifferencer::Equals(arg, replica);
+}
+
+template <typename T>
+T ParseFromText(const std::string& json_str) {
+  T message;
+  google::protobuf::util::JsonParseOptions options;
+  auto st =
+      google::protobuf::util::JsonStringToMessage(json_str, &message, options);
+  if (!st.ok()) {
+    LOG(ERROR) << st.message();
+  }
+  return message;
 }
 
 }  // namespace testing

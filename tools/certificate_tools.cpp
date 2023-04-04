@@ -28,8 +28,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "crypto/key_generator.h"
-#include "crypto/signature_verifier.h"
+#include "common/crypto/key_generator.h"
+#include "common/crypto/signature_verifier.h"
 
 using namespace resdb;
 

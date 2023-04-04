@@ -1,12 +1,17 @@
 # Change Log
 
-Major Changes
-Support of UTXO model and wallet integration: Detailed Documentation
-
-### NexRes v1.4.0 ([2023-02-28](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0))
+### NexRes v1.5.0 ([2023-04-03](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.5.0))
 
 **Implemented Enhancements:** 
+* Refactor whole code base:
+  Move framework code under the platform folder, including the formwork architectures and protocols implementations.
+  Move all the service based on the platform under service folder, including UTXO, smart contact and key-value storage.
+  Move sdk stuff out of this repo.
+
+### NexRes v1.4.0 ([2023-02-28](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0))
+Major Changes
 * Support of UTXO model and wallet integration: [Detailed Documentation](https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html) ([Junchao Chen](https://github.com/cjcchen))
+
 
 ### NexRes v1.3.0 ([2023-02-22](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.3.0))
 
