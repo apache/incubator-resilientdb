@@ -43,13 +43,13 @@ cc_binary(
     ],
 )
 
-#py_binary(
-#    name = "generate_region_config",
-#    srcs = ["generate_region_config.py"],
-#    deps = [
-#        "//platform/proto:replica_info_py_proto",
-#    ],
-#)
+py_binary(
+    name = "generate_region_config",
+    srcs = ["generate_region_config.py"],
+    deps = [
+        "//platform/proto:replica_info_py_proto",
+    ],
+)
 
 #py_binary(
 #    name = "generate_mulregion_config",
