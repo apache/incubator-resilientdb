@@ -42,19 +42,6 @@ http_archive(
 
 load("@rules_python//python:pip.bzl", "pip_install")
 
-#http_archive(
-#    name = "rules_proto_grpc",
-#    sha256 = "fb7fc7a3c19a92b2f15ed7c4ffb2983e956625c1436f57a3430b897ba9864059",
-#    strip_prefix = "rules_proto_grpc-4.3.0",
-#    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/4.3.0.tar.gz"],
-#)
-
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
-
-rules_proto_grpc_toolchains()
-
-rules_proto_grpc_repos()
-
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
 rules_proto_dependencies()
@@ -135,16 +122,6 @@ http_archive(
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-#http_archive(
-#    name = "com_github_nelhage_rules_boost",
-#    strip_prefix = "rules_boost-96e9b631f104b43a53c21c87b01ac538ad6f3b48",
-
-    # Replace the commit hash in both places (below) with the latest, rather than using the stale one here.
-    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
-#    url = "https://github.com/nelhage/rules_boost/archive/96e9b631f104b43a53c21c87b01ac538ad6f3b48.tar.gz",
-    # When you first run this tool, it'll recommend a sha256 hash to put here with a message like: "DEBUG: Rule 'com_github_nelhage_rules_boost' indicated that a canonical reproducible form can be obtained by modifying arguments sha256 = ..."
-#)
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 
