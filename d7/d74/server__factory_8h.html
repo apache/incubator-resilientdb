@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/application/utils/server_factory.h File Reference</title>
+<title>ResilientDB: /github/workspace/service/utils/server_factory.h File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -104,11 +104,11 @@ $(document).ready(function(){initNavTree('d7/d74/server__factory_8h.html','../..
   <div class="headertitle"><div class="title">server_factory.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">config/resdb_config_utils.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d1/d66/custom__query_8h_source.html">execution/custom_query.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d6/d29/transaction__executor__impl_8h_source.html">execution/transaction_executor_impl.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d6/d44/consensus__service__pbft_8h_source.html">ordering/pbft/consensus_service_pbft.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d0/d35/resdb__server_8h_source.html">server/resdb_server.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d2/d22/service__network_8h_source.html">platform/communication/service_network.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">platform/config/resdb_config_utils.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/d66/custom__query_8h_source.html">platform/consensus/execution/custom_query.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d8/dc0/transaction__manager_8h_source.html">platform/consensus/execution/transaction_manager.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">platform/consensus/ordering/pbft/consensus_manager_pbft.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d7/d74/server__factory_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -124,21 +124,21 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a305b111f170bc87310d9e391ea86ac78"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; ResDBServer &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a305b111f170bc87310d9e391ea86ac78">resdb::GenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionExecutorImpl &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</td></tr>
-<tr class="separator:a305b111f170bc87310d9e391ea86ac78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
-<tr class="memitem:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ResDBServer &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a7b607f8c725d7e080eeec6b16f8593e1">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionExecutorImpl &gt; executor, char *logging_dir=nullptr, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
-<tr class="separator:a7b607f8c725d7e080eeec6b16f8593e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
-<tr class="memitem:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ResDBServer &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a44f25aab0a464e7b496eb3dc385f8fc1">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionExecutorImpl &gt; executor, std::unique_ptr&lt; CustomQuery &gt; query_executor, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
-<tr class="separator:a44f25aab0a464e7b496eb3dc385f8fc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92bea99ce90c0c721d002ab634ffa2b0"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; ServiceNetwork &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a92bea99ce90c0c721d002ab634ffa2b0">resdb::GenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</td></tr>
+<tr class="separator:a92bea99ce90c0c721d002ab634ffa2b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97c32c8baa5b98233ee9dc1cc0a30c13"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
+<tr class="memitem:a97c32c8baa5b98233ee9dc1cc0a30c13"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ServiceNetwork &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir=nullptr, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
+<tr class="separator:a97c32c8baa5b98233ee9dc1cc0a30c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
+<tr class="memitem:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; ServiceNetwork &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a5285e59a982e46c95d72f2bb08c4dc55">resdb::CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, std::unique_ptr&lt; CustomQuery &gt; query_executor, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</td></tr>
+<tr class="separator:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_d75c23162a2652451dce46d2e7e8aead.html">application</a></li><li class="navelem"><a class="el" href="../../dir_dabfba6cfd2361f1b8d1b90e08409999.html">utils</a></li><li class="navelem"><a class="el" href="../../d7/d74/server__factory_8h.html">server_factory.h</a></li>
+    <li class="navelem"><a class="el" href="../../dir_285b4baccdb4ea5626083318817dbf24.html">service</a></li><li class="navelem"><a class="el" href="../../dir_aa5b5c5c4d2c120931f2c0942aefd369.html">utils</a></li><li class="navelem"><a class="el" href="../../d7/d74/server__factory_8h.html">server_factory.h</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

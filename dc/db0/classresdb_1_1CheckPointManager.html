@@ -118,8 +118,8 @@ Inheritance diagram for resdb::CheckPointManager:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae6983991409f069efa9d97cd43188418"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#ae6983991409f069efa9d97cd43188418">CheckPointManager</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, <a class="el" href="../../d1/d1b/classresdb_1_1ResDBReplicaClient.html">ResDBReplicaClient</a> *replica_client, <a class="el" href="../../d4/d30/classresdb_1_1SignatureVerifier.html">SignatureVerifier</a> *verifier)</td></tr>
-<tr class="separator:ae6983991409f069efa9d97cd43188418"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a57af3a73065a5527ffe4a9600d597372"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a57af3a73065a5527ffe4a9600d597372">CheckPointManager</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, <a class="el" href="../../d3/d5e/classresdb_1_1ReplicaCommunicator.html">ReplicaCommunicator</a> *replica_communicator, <a class="el" href="../../d4/d30/classresdb_1_1SignatureVerifier.html">SignatureVerifier</a> *verifier)</td></tr>
+<tr class="separator:a57af3a73065a5527ffe4a9600d597372"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01a5417fd7d2d4f1a3b2da681d3c0e11"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a01a5417fd7d2d4f1a3b2da681d3c0e11">~CheckPointManager</a> ()</td></tr>
 <tr class="separator:a01a5417fd7d2d4f1a3b2da681d3c0e11"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a232cc7220d8960dde9b57f60b782a532"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/dd3/classresdb_1_1TxnMemoryDB.html">TxnMemoryDB</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a232cc7220d8960dde9b57f60b782a532">GetTxnDB</a> ()</td></tr>
@@ -140,13 +140,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a0869d9de93210d15c060bcefde9935f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5395376992e5b027ce749b7b3618e4ec"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a5395376992e5b027ce749b7b3618e4ec">UpdateStableCheckPointCallback</a> (int64_t current_stable_checkpoint)</td></tr>
 <tr class="separator:a5395376992e5b027ce749b7b3618e4ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f858923ca4ff59ef40476835da54e7f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a7f858923ca4ff59ef40476835da54e7f">Stop</a> ()</td></tr>
+<tr class="separator:a7f858923ca4ff59ef40476835da54e7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:aceffced8931a5a2a9c6c4a517cfe489f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#aceffced8931a5a2a9c6c4a517cfe489f">config_</a></td></tr>
 <tr class="separator:aceffced8931a5a2a9c6c4a517cfe489f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5733cfb139194ca8b1ba56d82fdf946"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d1/d1b/classresdb_1_1ResDBReplicaClient.html">ResDBReplicaClient</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#af5733cfb139194ca8b1ba56d82fdf946">replica_client_</a></td></tr>
-<tr class="separator:af5733cfb139194ca8b1ba56d82fdf946"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48db466b3df3b353c2378fc099524817"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d5e/classresdb_1_1ReplicaCommunicator.html">ReplicaCommunicator</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#a48db466b3df3b353c2378fc099524817">replica_communicator_</a></td></tr>
+<tr class="separator:a48db466b3df3b353c2378fc099524817"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aedc8343a1b68e4b967028064e35909c7"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../dd/dd3/classresdb_1_1TxnMemoryDB.html">TxnMemoryDB</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7">txn_db_</a></td></tr>
 <tr class="separator:aedc8343a1b68e4b967028064e35909c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0f71814b4ac48401d58419992109097"><td class="memItemLeft" align="right" valign="top">std::thread&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html#ab0f71814b4ac48401d58419992109097">checkpoint_thread_</a></td></tr>
@@ -182,8 +184,8 @@ Protected Attributes</h2></td></tr>
 <div class="textblock">
 <p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00038">38</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ae6983991409f069efa9d97cd43188418" name="ae6983991409f069efa9d97cd43188418"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6983991409f069efa9d97cd43188418">&#9670;&#160;</a></span>CheckPointManager()</h2>
+<a id="a57af3a73065a5527ffe4a9600d597372" name="a57af3a73065a5527ffe4a9600d597372"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57af3a73065a5527ffe4a9600d597372">&#9670;&#160;</a></span>CheckPointManager()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -197,8 +199,8 @@ Protected Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d1/d1b/classresdb_1_1ResDBReplicaClient.html">ResDBReplicaClient</a> *&#160;</td>
-          <td class="paramname"><em>replica_client</em>, </td>
+          <td class="paramtype"><a class="el" href="../../d3/d5e/classresdb_1_1ReplicaCommunicator.html">ReplicaCommunicator</a> *&#160;</td>
+          <td class="paramname"><em>replica_communicator</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -214,7 +216,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00035">35</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -241,7 +243,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00051">51</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00052">52</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -262,7 +264,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00075">75</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00078">78</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -281,7 +283,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00063">63</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00066">66</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -300,7 +302,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00065">65</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00068">68</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -319,7 +321,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00070">70</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -338,7 +340,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00061">61</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00064">64</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -358,7 +360,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00084">84</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00087">87</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -388,7 +390,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00098">98</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00101">101</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -408,7 +410,26 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00204">204</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00207">207</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a7f858923ca4ff59ef40476835da54e7f" name="a7f858923ca4ff59ef40476835da54e7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f858923ca4ff59ef40476835da54e7f">&#9670;&#160;</a></span>Stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::CheckPointManager::Stop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html#l00054">54</a> of file <a class="el" href="../../df/d98/checkpoint__manager_8cpp_source.html">checkpoint_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -461,7 +482,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00073">73</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00075">75</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -485,7 +506,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00070">70</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00072">72</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -509,7 +530,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00079">79</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00081">81</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -533,7 +554,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00083">83</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00085">85</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -557,7 +578,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00082">82</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00084">84</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -581,7 +602,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00081">81</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00083">83</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -605,7 +626,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00080">80</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00082">82</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -629,12 +650,12 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00086">86</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00088">88</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
-<a id="af5733cfb139194ca8b1ba56d82fdf946" name="af5733cfb139194ca8b1ba56d82fdf946"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5733cfb139194ca8b1ba56d82fdf946">&#9670;&#160;</a></span>replica_client_</h2>
+<a id="a48db466b3df3b353c2378fc099524817" name="a48db466b3df3b353c2378fc099524817"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48db466b3df3b353c2378fc099524817">&#9670;&#160;</a></span>replica_communicator_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -643,7 +664,7 @@ Protected Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d1/d1b/classresdb_1_1ResDBReplicaClient.html">ResDBReplicaClient</a>* resdb::CheckPointManager::replica_client_</td>
+          <td class="memname"><a class="el" href="../../d3/d5e/classresdb_1_1ReplicaCommunicator.html">ReplicaCommunicator</a>* resdb::CheckPointManager::replica_communicator_</td>
         </tr>
       </table>
   </td>
@@ -653,7 +674,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00071">71</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00073">73</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -677,7 +698,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00076">76</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00078">78</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -701,7 +722,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00078">78</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00080">80</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -725,7 +746,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00073">73</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00075">75</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -749,7 +770,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00085">85</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00087">87</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -773,7 +794,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00075">75</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00077">77</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -797,7 +818,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00084">84</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00086">86</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -821,7 +842,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00072">72</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00074">74</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>
@@ -845,7 +866,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00074">74</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html#l00076">76</a> of file <a class="el" href="../../d8/dc4/checkpoint__manager_8h_source.html">checkpoint_manager.h</a>.</p>
 
 </div>
 </div>

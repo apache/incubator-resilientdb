@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/server/server_comm.h Source File</title>
+<title>ResilientDB: /github/workspace/platform/communication/server_comm.h Source File</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -127,28 +127,28 @@ $(document).ready(function(){initNavTree('d3/dba/server__comm_8h_source.html','.
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/da4/resdb__client_8h.html">client/resdb_client.h</a>&quot;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;proto/resdb.pb.h&quot;</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="../../db/d82/resdb__net__channel_8h.html">platform/interface/resdb_net_channel.h</a>&quot;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;platform/proto/resdb.pb.h&quot;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="../../d8/d18/structresdb_1_1Context.html">   33</a></span><span class="keyword">struct </span><a class="code hl_struct" href="../../d8/d18/structresdb_1_1Context.html">Context</a> {</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="../../d8/d18/structresdb_1_1Context.html#a2caf4a2d9e91a50f920715ed6ef8f67d">   34</a></span>  std::unique_ptr&lt;ResDBClient&gt; <a class="code hl_variable" href="../../d8/d18/structresdb_1_1Context.html#a2caf4a2d9e91a50f920715ed6ef8f67d">client</a>;</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="../../d8/d18/structresdb_1_1Context.html#a2d98fade5b7c1466937834b89094bfcd">   34</a></span>  std::unique_ptr&lt;ResDBNetChannel&gt; <a class="code hl_variable" href="../../d8/d18/structresdb_1_1Context.html#a2d98fade5b7c1466937834b89094bfcd">client</a>;</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="../../d8/d18/structresdb_1_1Context.html#a6a3d2c25d70f5bea908736f794c480bc">   35</a></span>  SignatureInfo <a class="code hl_variable" href="../../d8/d18/structresdb_1_1Context.html#a6a3d2c25d70f5bea908736f794c480bc">signature</a>;</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>};</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d2/d5c/contract__client_8cpp_source.html#l00035">contract_client.cpp:35</a></div></div>
-<div class="ttc" id="aresdb__client_8h_html"><div class="ttname"><a href="../../d4/da4/resdb__client_8h.html">resdb_client.h</a></div></div>
+<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
+<div class="ttc" id="aresdb__net__channel_8h_html"><div class="ttname"><a href="../../db/d82/resdb__net__channel_8h.html">resdb_net_channel.h</a></div></div>
 <div class="ttc" id="astructresdb_1_1Context_html"><div class="ttname"><a href="../../d8/d18/structresdb_1_1Context.html">resdb::Context</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d3/dba/server__comm_8h_source.html#l00033">server_comm.h:33</a></div></div>
-<div class="ttc" id="astructresdb_1_1Context_html_a2caf4a2d9e91a50f920715ed6ef8f67d"><div class="ttname"><a href="../../d8/d18/structresdb_1_1Context.html#a2caf4a2d9e91a50f920715ed6ef8f67d">resdb::Context::client</a></div><div class="ttdeci">std::unique_ptr&lt; ResDBClient &gt; client</div><div class="ttdef"><b>Definition:</b> <a href="../../d3/dba/server__comm_8h_source.html#l00034">server_comm.h:34</a></div></div>
+<div class="ttc" id="astructresdb_1_1Context_html_a2d98fade5b7c1466937834b89094bfcd"><div class="ttname"><a href="../../d8/d18/structresdb_1_1Context.html#a2d98fade5b7c1466937834b89094bfcd">resdb::Context::client</a></div><div class="ttdeci">std::unique_ptr&lt; ResDBNetChannel &gt; client</div><div class="ttdef"><b>Definition:</b> <a href="../../d3/dba/server__comm_8h_source.html#l00034">server_comm.h:34</a></div></div>
 <div class="ttc" id="astructresdb_1_1Context_html_a6a3d2c25d70f5bea908736f794c480bc"><div class="ttname"><a href="../../d8/d18/structresdb_1_1Context.html#a6a3d2c25d70f5bea908736f794c480bc">resdb::Context::signature</a></div><div class="ttdeci">SignatureInfo signature</div><div class="ttdef"><b>Definition:</b> <a href="../../d3/dba/server__comm_8h_source.html#l00035">server_comm.h:35</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_41e1742e44e2de38b3bc91f993fed282.html">server</a></li><li class="navelem"><a class="el" href="../../d3/dba/server__comm_8h.html">server_comm.h</a></li>
+    <li class="navelem"><a class="el" href="../../dir_c5a52a81292cf9a5167198f4f346d6d9.html">platform</a></li><li class="navelem"><a class="el" href="../../dir_00d7b4c3ace0959c6ce8c9e1b542db63.html">communication</a></li><li class="navelem"><a class="el" href="../../d3/dba/server__comm_8h.html">server_comm.h</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

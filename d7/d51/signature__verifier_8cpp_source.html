@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/crypto/signature_verifier.cpp Source File</title>
+<title>ResilientDB: /github/workspace/common/crypto/signature_verifier.cpp Source File</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -125,7 +125,7 @@ $(document).ready(function(){initNavTree('d7/d51/signature__verifier_8cpp_source
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> */</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../da/db0/signature__verifier_8h.html">crypto/signature_verifier.h</a>&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../da/db0/signature__verifier_8h.html">common/crypto/signature_verifier.h</a>&quot;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;cryptopp/aes.h&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;cryptopp/cmac.h&gt;</span></div>
@@ -140,7 +140,7 @@ $(document).ready(function(){initNavTree('d7/d51/signature__verifier_8cpp_source
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#include &lt;cryptopp/whrlpool.h&gt;</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;glog/logging.h&gt;</span></div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d5e/signature__utils_8h.html">crypto/signature_utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d5e/signature__utils_8h.html">common/crypto/signature_utils.h</a>&quot;</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
@@ -308,93 +308,100 @@ $(document).ready(function(){initNavTree('d7/d51/signature__verifier_8cpp_source
 <div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    <span class="keywordflow">case</span> SignatureInfo::CMAC_AES:</div>
 <div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>      info.set_signature(CmacSignString(private_key_.key(), message));</div>
 <div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>      <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <span class="keywordflow">default</span>:</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>      <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>  }</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  <span class="keywordflow">return</span> info;</div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>}</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#aa3bc3f45f9486efb5412ee36089675bf">  215</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> google::protobuf::Message&amp; message,</div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>                                      <span class="keyword">const</span> SignatureInfo&amp; sign) {</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>  std::string str;</div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>  <span class="keywordflow">if</span> (!message.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>  }</div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(str, sign);</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>}</div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">  224</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> std::string&amp; message,</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>                                      <span class="keyword">const</span> SignatureInfo&amp; info) {</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>  <span class="keywordflow">if</span> (info.signature().empty()) {</div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot; signature is empty&quot;</span>;</div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  }</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>  <span class="keyword">auto</span> public_key = <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a39ca6e6b38eee13b266614685afbea4d">GetPublicKey</a>(info.node_id());</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  <span class="keywordflow">if</span> (!public_key.ok()) {</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;key not found:&quot;</span> &lt;&lt; info.node_id();</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  }</div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(message, *public_key, info.signature());</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>}</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span> </div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">  238</a></span>absl::StatusOr&lt;SignatureInfo&gt; <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">SignatureVerifier::SignCertificateKeyInfo</a>(</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>    <span class="keyword">const</span> CertificateKeyInfo&amp; info) {</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>  std::string str;</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>  <span class="keywordflow">if</span> (!info.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    <span class="keywordflow">return</span> absl::InvalidArgumentError(<span class="stringliteral">&quot;Serialize fail&quot;</span>);</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  }</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#adc86510b993b3d93abde5e4f897d193d">SignatureVerifier::SignMessage</a>(str);</div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>}</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span> </div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">  247</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">SignatureVerifier::VerifyKey</a>(<span class="keyword">const</span> CertificateKeyInfo&amp; info,</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>                                  <span class="keyword">const</span> SignatureInfo&amp; sign) {</div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>  std::string str;</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>  <span class="keywordflow">if</span> (!info.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  }</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(str, admin_public_key_, sign.signature());</div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>}</div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span> </div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#aab1500da0af60d65e1bf2b2ce9c85143">  256</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> std::string&amp; message,</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>                                      <span class="keyword">const</span> KeyInfo&amp; public_key,</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>                                      <span class="keyword">const</span> std::string&amp; signature) {</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>  <span class="keywordflow">if</span> (public_key.key().empty() || signature.empty()) {</div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;public is empty, size(&quot;</span> &lt;&lt; public_key.key().size()</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>               &lt;&lt; <span class="stringliteral">&quot;) or signature is empty, size(&quot;</span> &lt;&lt; signature.size() &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  }</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  <span class="comment">// LOG(ERROR) &lt;&lt; &quot;public key hash type:&quot; &lt;&lt; public_key.hash_type()</span></div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>  <span class="comment">//          &lt;&lt; &quot; key size:&quot; &lt;&lt; public_key.key().size()</span></div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  <span class="comment">//         &lt;&lt; &quot; sig size:&quot; &lt;&lt; signature.size()</span></div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  <span class="comment">//        &lt;&lt; &quot; msg size:&quot; &lt;&lt; message.size();</span></div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  <span class="keywordflow">switch</span> (public_key.hash_type()) {</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>    <span class="keywordflow">case</span> SignatureInfo::RSA:</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>      <span class="keywordflow">return</span> <a class="code hl_function" href="../../da/d1b/namespaceresdb_1_1utils.html#a278b4bb0996b3e85baf3fa6cfaf76541">utils::RsaVerifyString</a>(message, public_key.key(), signature);</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>    <span class="keywordflow">case</span> SignatureInfo::ED25519:</div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>      <span class="keywordflow">return</span> ED25519verifyString(message, public_key.key(), signature);</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>    <span class="keywordflow">case</span> SignatureInfo::CMAC_AES:</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>      <span class="keywordflow">return</span> CmacVerifyString(message, public_key.key(), signature);</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>    <span class="keywordflow">default</span>:</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>  }</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>}</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a08790752971f4f3d79190b86cff02315"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">resdb::SignatureVerifier::VerifyKey</a></div><div class="ttdeci">bool VerifyKey(const CertificateKeyInfo &amp;info, const SignatureInfo &amp;sign)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00247">signature_verifier.cpp:247</a></div></div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <span class="keywordflow">case</span> SignatureInfo::ECDSA:</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>      info.set_signature(<a class="code hl_function" href="../../da/d1b/namespaceresdb_1_1utils.html#a29dea4e3f2975397dd12772e8c497d3b">utils::ECDSASignString</a>(private_key_.key(), message));</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>      <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>    <span class="keywordflow">default</span>:</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>      <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>  }</div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>  <span class="keywordflow">return</span> info;</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>}</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span> </div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#aa3bc3f45f9486efb5412ee36089675bf">  218</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> google::protobuf::Message&amp; message,</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>                                      <span class="keyword">const</span> SignatureInfo&amp; sign) {</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>  std::string str;</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  <span class="keywordflow">if</span> (!message.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  }</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(str, sign);</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>}</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span> </div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">  227</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> std::string&amp; message,</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>                                      <span class="keyword">const</span> SignatureInfo&amp; info) {</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  <span class="keywordflow">if</span> (info.signature().empty()) {</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot; signature is empty&quot;</span>;</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  }</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>  <span class="keyword">auto</span> public_key = <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a39ca6e6b38eee13b266614685afbea4d">GetPublicKey</a>(info.node_id());</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  <span class="keywordflow">if</span> (!public_key.ok()) {</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;key not found:&quot;</span> &lt;&lt; info.node_id();</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>  }</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(message, *public_key, info.signature());</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>}</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span> </div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">  241</a></span>absl::StatusOr&lt;SignatureInfo&gt; <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">SignatureVerifier::SignCertificateKeyInfo</a>(</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>    <span class="keyword">const</span> CertificateKeyInfo&amp; info) {</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  std::string str;</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>  <span class="keywordflow">if</span> (!info.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    <span class="keywordflow">return</span> absl::InvalidArgumentError(<span class="stringliteral">&quot;Serialize fail&quot;</span>);</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  }</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#adc86510b993b3d93abde5e4f897d193d">SignatureVerifier::SignMessage</a>(str);</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>}</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">  250</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">SignatureVerifier::VerifyKey</a>(<span class="keyword">const</span> CertificateKeyInfo&amp; info,</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>                                  <span class="keyword">const</span> SignatureInfo&amp; sign) {</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  std::string str;</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  <span class="keywordflow">if</span> (!info.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>  }</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>  <span class="keywordflow">return</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">VerifyMessage</a>(str, admin_public_key_, sign.signature());</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>}</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span> </div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno"><a class="line" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#aab1500da0af60d65e1bf2b2ce9c85143">  259</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">SignatureVerifier::VerifyMessage</a>(<span class="keyword">const</span> std::string&amp; message,</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>                                      <span class="keyword">const</span> KeyInfo&amp; public_key,</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>                                      <span class="keyword">const</span> std::string&amp; signature) {</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>  <span class="keywordflow">if</span> (public_key.key().empty() || signature.empty()) {</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;public is empty, size(&quot;</span> &lt;&lt; public_key.key().size()</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>               &lt;&lt; <span class="stringliteral">&quot;) or signature is empty, size(&quot;</span> &lt;&lt; signature.size() &lt;&lt; <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  }</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  <span class="comment">// LOG(ERROR) &lt;&lt; &quot;public key hash type:&quot; &lt;&lt; public_key.hash_type()</span></div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  <span class="comment">//          &lt;&lt; &quot; key size:&quot; &lt;&lt; public_key.key().size()</span></div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>  <span class="comment">//         &lt;&lt; &quot; sig size:&quot; &lt;&lt; signature.size()</span></div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>  <span class="comment">//        &lt;&lt; &quot; msg size:&quot; &lt;&lt; message.size();</span></div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  <span class="keywordflow">switch</span> (public_key.hash_type()) {</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>    <span class="keywordflow">case</span> SignatureInfo::RSA:</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>      <span class="keywordflow">return</span> <a class="code hl_function" href="../../da/d1b/namespaceresdb_1_1utils.html#a278b4bb0996b3e85baf3fa6cfaf76541">utils::RsaVerifyString</a>(message, public_key.key(), signature);</div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>    <span class="keywordflow">case</span> SignatureInfo::ED25519:</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>      <span class="keywordflow">return</span> ED25519verifyString(message, public_key.key(), signature);</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    <span class="keywordflow">case</span> SignatureInfo::CMAC_AES:</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>      <span class="keywordflow">return</span> CmacVerifyString(message, public_key.key(), signature);</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>    <span class="keywordflow">case</span> SignatureInfo::ECDSA:</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>      <span class="keywordflow">return</span> <a class="code hl_function" href="../../da/d1b/namespaceresdb_1_1utils.html#a92ce76ce4209ab94c85b42ecff7a1fc7">utils::ECDSAVerifyString</a>(message, public_key.key(), signature);</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>    <span class="keywordflow">default</span>:</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>      <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>  }</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>}</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a08790752971f4f3d79190b86cff02315"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a08790752971f4f3d79190b86cff02315">resdb::SignatureVerifier::VerifyKey</a></div><div class="ttdeci">bool VerifyKey(const CertificateKeyInfo &amp;info, const SignatureInfo &amp;sign)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00250">signature_verifier.cpp:250</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a0d9744411a6ce3b4ac868a04e52b3dac"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a0d9744411a6ce3b4ac868a04e52b3dac">resdb::SignatureVerifier::GetPublicKeysSize</a></div><div class="ttdeci">size_t GetPublicKeysSize() const</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00180">signature_verifier.cpp:180</a></div></div>
-<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a384b868235e8bc3fb2313022c2cdb052"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">resdb::SignatureVerifier::SignCertificateKeyInfo</a></div><div class="ttdeci">absl::StatusOr&lt; SignatureInfo &gt; SignCertificateKeyInfo(const CertificateKeyInfo &amp;info)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00238">signature_verifier.cpp:238</a></div></div>
+<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a384b868235e8bc3fb2313022c2cdb052"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a384b868235e8bc3fb2313022c2cdb052">resdb::SignatureVerifier::SignCertificateKeyInfo</a></div><div class="ttdeci">absl::StatusOr&lt; SignatureInfo &gt; SignCertificateKeyInfo(const CertificateKeyInfo &amp;info)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00241">signature_verifier.cpp:241</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a39ca6e6b38eee13b266614685afbea4d"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a39ca6e6b38eee13b266614685afbea4d">resdb::SignatureVerifier::GetPublicKey</a></div><div class="ttdeci">absl::StatusOr&lt; KeyInfo &gt; GetPublicKey(int64_t node_id) const</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00162">signature_verifier.cpp:162</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a4ca1fe9d923ee334041114f1a6533982"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a4ca1fe9d923ee334041114f1a6533982">resdb::SignatureVerifier::SignatureVerifier</a></div><div class="ttdeci">SignatureVerifier(const KeyInfo &amp;private_key, const CertificateInfo &amp;certificate_info)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00128">signature_verifier.cpp:128</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_a603ba38828fdc548cabc6a02bf5f9d1f"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#a603ba38828fdc548cabc6a02bf5f9d1f">resdb::SignatureVerifier::GetAllPublicKeys</a></div><div class="ttdeci">std::vector&lt; CertificateKey &gt; GetAllPublicKeys() const</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00171">signature_verifier.cpp:171</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_acf7b6e124421e09d9f13155a3daea5f5"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#acf7b6e124421e09d9f13155a3daea5f5">resdb::SignatureVerifier::CalculateHash</a></div><div class="ttdeci">static std::string CalculateHash(const std::string &amp;str)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00186">signature_verifier.cpp:186</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_ad26f40992724d4705207c0faaef74556"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#ad26f40992724d4705207c0faaef74556">resdb::SignatureVerifier::AddPublicKey</a></div><div class="ttdeci">bool AddPublicKey(const CertificateKey &amp;pub_key, bool need_verify=true)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00149">signature_verifier.cpp:149</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_adc86510b993b3d93abde5e4f897d193d"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#adc86510b993b3d93abde5e4f897d193d">resdb::SignatureVerifier::SignMessage</a></div><div class="ttdeci">virtual absl::StatusOr&lt; SignatureInfo &gt; SignMessage(const std::string &amp;message)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00195">signature_verifier.cpp:195</a></div></div>
-<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_af2e7bd53e9d0d2ab3eb1dfa3540de789"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">resdb::SignatureVerifier::VerifyMessage</a></div><div class="ttdeci">virtual bool VerifyMessage(const std::string &amp;message, const SignatureInfo &amp;sign)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00224">signature_verifier.cpp:224</a></div></div>
+<div class="ttc" id="aclassresdb_1_1SignatureVerifier_html_af2e7bd53e9d0d2ab3eb1dfa3540de789"><div class="ttname"><a href="../../d4/d30/classresdb_1_1SignatureVerifier.html#af2e7bd53e9d0d2ab3eb1dfa3540de789">resdb::SignatureVerifier::VerifyMessage</a></div><div class="ttdeci">virtual bool VerifyMessage(const std::string &amp;message, const SignatureInfo &amp;sign)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/signature__verifier_8cpp_source.html#l00227">signature_verifier.cpp:227</a></div></div>
 <div class="ttc" id="anamespaceaddr_html_a5ca5a5e44ae7c5aeb75fff2325c77298"><div class="ttname"><a href="../../d2/dd8/namespaceaddr.html#a5ca5a5e44ae7c5aeb75fff2325c77298">addr.res</a></div><div class="ttdeci">wallet_tools_py res</div><div class="ttdef"><b>Definition:</b> <a href="../../da/d4d/addr_8py_source.html#l00030">addr.py:30</a></div></div>
 <div class="ttc" id="anamespacekeys_html"><div class="ttname"><a href="../../dc/d84/namespacekeys.html">keys</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d8/de6/keys_8py_source.html#l00001">keys.py:1</a></div></div>
 <div class="ttc" id="anamespaceresdb_1_1utils_html_a278b4bb0996b3e85baf3fa6cfaf76541"><div class="ttname"><a href="../../da/d1b/namespaceresdb_1_1utils.html#a278b4bb0996b3e85baf3fa6cfaf76541">resdb::utils::RsaVerifyString</a></div><div class="ttdeci">bool RsaVerifyString(const std::string &amp;message, const std::string &amp;public_key, const std::string &amp;signature)</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d65/signature__utils_8cpp_source.html#l00039">signature_utils.cpp:39</a></div></div>
+<div class="ttc" id="anamespaceresdb_1_1utils_html_a29dea4e3f2975397dd12772e8c497d3b"><div class="ttname"><a href="../../da/d1b/namespaceresdb_1_1utils.html#a29dea4e3f2975397dd12772e8c497d3b">resdb::utils::ECDSASignString</a></div><div class="ttdeci">std::string ECDSASignString(const std::string &amp;private_key, const std::string &amp;message)</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d65/signature__utils_8cpp_source.html#l00122">signature_utils.cpp:122</a></div></div>
+<div class="ttc" id="anamespaceresdb_1_1utils_html_a92ce76ce4209ab94c85b42ecff7a1fc7"><div class="ttname"><a href="../../da/d1b/namespaceresdb_1_1utils.html#a92ce76ce4209ab94c85b42ecff7a1fc7">resdb::utils::ECDSAVerifyString</a></div><div class="ttdeci">bool ECDSAVerifyString(const std::string &amp;message, const std::string &amp;public_key, const std::string &amp;signature)</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d65/signature__utils_8cpp_source.html#l00071">signature_utils.cpp:71</a></div></div>
 <div class="ttc" id="anamespaceresdb_1_1utils_html_adf1d7ffe5d2e3dbbcd917cab7b37b1be"><div class="ttname"><a href="../../da/d1b/namespaceresdb_1_1utils.html#adf1d7ffe5d2e3dbbcd917cab7b37b1be">resdb::utils::RsaSignString</a></div><div class="ttdeci">std::string RsaSignString(const std::string &amp;private_key, const std::string &amp;message)</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d65/signature__utils_8cpp_source.html#l00101">signature_utils.cpp:101</a></div></div>
-<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d2/d5c/contract__client_8cpp_source.html#l00035">contract_client.cpp:35</a></div></div>
+<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
 <div class="ttc" id="asignature__utils_8h_html"><div class="ttname"><a href="../../df/d5e/signature__utils_8h.html">signature_utils.h</a></div></div>
 <div class="ttc" id="asignature__verifier_8h_html"><div class="ttname"><a href="../../da/db0/signature__verifier_8h.html">signature_verifier.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -402,7 +409,7 @@ $(document).ready(function(){initNavTree('d7/d51/signature__verifier_8cpp_source
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_53403d93963d3f5d2fcffd0698f5bddb.html">crypto</a></li><li class="navelem"><a class="el" href="../../d7/d51/signature__verifier_8cpp.html">signature_verifier.cpp</a></li>
+    <li class="navelem"><a class="el" href="../../dir_bdd9a5d540de89e9fe90efdfc6973a4f.html">common</a></li><li class="navelem"><a class="el" href="../../dir_d292b9ab0831f7182493bcec9c8bbad1.html">crypto</a></li><li class="navelem"><a class="el" href="../../d7/d51/signature__verifier_8cpp.html">signature_verifier.cpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

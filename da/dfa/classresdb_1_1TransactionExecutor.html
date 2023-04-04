@@ -110,8 +110,8 @@ $(document).ready(function(){initNavTree('da/dfa/classresdb_1_1TransactionExecut
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a47631db7b11e751c69a44dc31c45af2a"><td class="memItemLeft" align="right" valign="top">typedef std::function&lt; void(std::unique_ptr&lt; Request &gt;, std::unique_ptr&lt; BatchClientResponse &gt; resp)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a47631db7b11e751c69a44dc31c45af2a">PostExecuteFunc</a></td></tr>
-<tr class="separator:a47631db7b11e751c69a44dc31c45af2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9aec46034e4178fa11e07f9dea6ae02"><td class="memItemLeft" align="right" valign="top">typedef std::function&lt; void(std::unique_ptr&lt; Request &gt;, std::unique_ptr&lt; BatchUserResponse &gt; resp)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#af9aec46034e4178fa11e07f9dea6ae02">PostExecuteFunc</a></td></tr>
+<tr class="separator:af9aec46034e4178fa11e07f9dea6ae02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3e79822f7f10906f57ab33d4ce97ca0"><td class="memItemLeft" align="right" valign="top">typedef std::function&lt; void(Request *)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ab3e79822f7f10906f57ab33d4ce97ca0">PreExecuteFunc</a></td></tr>
 <tr class="separator:ab3e79822f7f10906f57ab33d4ce97ca0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a611ce0a2cc0cacc5b2894c9862c745cf"><td class="memItemLeft" align="right" valign="top">typedef std::function&lt; void(uint64_t seq)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a611ce0a2cc0cacc5b2894c9862c745cf">SeqUpdateNotifyFunc</a></td></tr>
@@ -119,12 +119,14 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aad4111c58b8d5e25855efbc9ea85f5cd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aad4111c58b8d5e25855efbc9ea85f5cd">TransactionExecutor</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, <a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a47631db7b11e751c69a44dc31c45af2a">PostExecuteFunc</a> post_exec_func, <a class="el" href="../../d9/d27/classresdb_1_1SystemInfo.html">SystemInfo</a> *system_info, std::unique_ptr&lt; <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">TransactionExecutorImpl</a> &gt; executor_impl)</td></tr>
-<tr class="separator:aad4111c58b8d5e25855efbc9ea85f5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bcfacc40f458986e634081d367c4b20"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bcfacc40f458986e634081d367c4b20">TransactionExecutor</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config, <a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#af9aec46034e4178fa11e07f9dea6ae02">PostExecuteFunc</a> post_exec_func, <a class="el" href="../../d9/d27/classresdb_1_1SystemInfo.html">SystemInfo</a> *system_info, std::unique_ptr&lt; <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html">TransactionManager</a> &gt; transaction_manager)</td></tr>
+<tr class="separator:a1bcfacc40f458986e634081d367c4b20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bb0c406fdb0817e29996a67e6e4c787"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">~TransactionExecutor</a> ()</td></tr>
 <tr class="separator:a1bb0c406fdb0817e29996a67e6e4c787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b6aab58f6f0647c393b20a719bff7d4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">Stop</a> ()</td></tr>
 <tr class="separator:a3b6aab58f6f0647c393b20a719bff7d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3fd2e8afff02e8c55c5fda9beec3a9e7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">NeedResponse</a> ()</td></tr>
+<tr class="separator:a3fd2e8afff02e8c55c5fda9beec3a9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad420d6234095f3e9ebb70e424ecfdc56"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">Commit</a> (std::unique_ptr&lt; Request &gt; request)</td></tr>
 <tr class="separator:ad420d6234095f3e9ebb70e424ecfdc56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a090b64bc32c131d70a296e580fa3649c"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">GetMaxPendingExecutedSeq</a> ()</td></tr>
@@ -143,14 +145,14 @@ Protected Attributes</h2></td></tr>
 <div class="textblock">
 <p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00040">40</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
-<a id="a47631db7b11e751c69a44dc31c45af2a" name="a47631db7b11e751c69a44dc31c45af2a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a47631db7b11e751c69a44dc31c45af2a">&#9670;&#160;</a></span>PostExecuteFunc</h2>
+<a id="af9aec46034e4178fa11e07f9dea6ae02" name="af9aec46034e4178fa11e07f9dea6ae02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9aec46034e4178fa11e07f9dea6ae02">&#9670;&#160;</a></span>PostExecuteFunc</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef std::function&lt;void(std::unique_ptr&lt;Request&gt;, std::unique_ptr&lt;BatchClientResponse&gt; resp)&gt; <a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a47631db7b11e751c69a44dc31c45af2a">resdb::TransactionExecutor::PostExecuteFunc</a></td>
+          <td class="memname">typedef std::function&lt;void(std::unique_ptr&lt;Request&gt;, std::unique_ptr&lt;BatchUserResponse&gt; resp)&gt; <a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#af9aec46034e4178fa11e07f9dea6ae02">resdb::TransactionExecutor::PostExecuteFunc</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -192,8 +194,8 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="aad4111c58b8d5e25855efbc9ea85f5cd" name="aad4111c58b8d5e25855efbc9ea85f5cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad4111c58b8d5e25855efbc9ea85f5cd">&#9670;&#160;</a></span>TransactionExecutor()</h2>
+<a id="a1bcfacc40f458986e634081d367c4b20" name="a1bcfacc40f458986e634081d367c4b20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1bcfacc40f458986e634081d367c4b20">&#9670;&#160;</a></span>TransactionExecutor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -207,7 +209,7 @@ Protected Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a47631db7b11e751c69a44dc31c45af2a">PostExecuteFunc</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#af9aec46034e4178fa11e07f9dea6ae02">PostExecuteFunc</a>&#160;</td>
           <td class="paramname"><em>post_exec_func</em>, </td>
         </tr>
         <tr>
@@ -219,8 +221,8 @@ Protected Attributes</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">TransactionExecutorImpl</a> &gt;&#160;</td>
-          <td class="paramname"><em>executor_impl</em>&#160;</td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html">TransactionManager</a> &gt;&#160;</td>
+          <td class="paramname"><em>transaction_manager</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -249,7 +251,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00053">53</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00054">54</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -270,7 +272,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00082">82</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00088">88</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -289,7 +291,26 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00078">78</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00079">79</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a3fd2e8afff02e8c55c5fda9beec3a9e7" name="a3fd2e8afff02e8c55c5fda9beec3a9e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3fd2e8afff02e8c55c5fda9beec3a9e7">&#9670;&#160;</a></span>NeedResponse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool resdb::TransactionExecutor::NeedResponse </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00083">83</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -309,7 +330,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00068">68</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00069">69</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -329,7 +350,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00072">72</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -348,7 +369,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00055">55</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00056">56</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -373,7 +394,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00083">83</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00085">85</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 
 </div>
 </div>

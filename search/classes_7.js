@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['input_0',['Input',['../dc/dbc/classresdb__validator_1_1transaction_1_1Input.html',1,'resdb_validator::transaction']]],
-  ['inputdoesnotexist_1',['InputDoesNotExist',['../d6/dd1/classresdb__validator_1_1exceptions_1_1InputDoesNotExist.html',1,'resdb_validator::exceptions']]],
-  ['invalidhash_2',['InvalidHash',['../d7/db1/classresdb__validator_1_1exceptions_1_1InvalidHash.html',1,'resdb_validator::exceptions']]],
-  ['invalidpowerchange_3',['InvalidPowerChange',['../d7/d9e/classresdb__validator_1_1exceptions_1_1InvalidPowerChange.html',1,'resdb_validator::exceptions']]],
-  ['invalidproposer_4',['InvalidProposer',['../dc/d35/classresdb__validator_1_1exceptions_1_1InvalidProposer.html',1,'resdb_validator::exceptions']]],
-  ['invalidpublickey_5',['InvalidPublicKey',['../db/d2b/classresdb__validator_1_1exceptions_1_1InvalidPublicKey.html',1,'resdb_validator::exceptions']]],
-  ['invalidsignature_6',['InvalidSignature',['../d5/d07/classresdb__validator_1_1exceptions_1_1InvalidSignature.html',1,'resdb_validator::exceptions']]]
+  ['lockfreecollectorpool_0',['LockFreeCollectorPool',['../d7/d31/classresdb_1_1LockFreeCollectorPool.html',1,'resdb']]],
+  ['lockfreequeue_1',['LockFreeQueue',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
+  ['lockfreequeue_3c_20batchuserresponse_20_3e_2',['LockFreeQueue&lt; BatchUserResponse &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
+  ['lockfreequeue_3c_20queueitem_20_3e_3',['LockFreeQueue&lt; QueueItem &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
+  ['lockfreequeue_3c_20request_20_3e_4',['LockFreeQueue&lt; Request &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
+  ['lockfreequeue_3c_20resdb_3a_3aqueueitem_20_3e_5',['LockFreeQueue&lt; resdb::QueueItem &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
+  ['lockfreequeue_3c_20std_3a_3astring_20_3e_6',['LockFreeQueue&lt; std::string &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]]
 ];

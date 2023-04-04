@@ -1,15 +1,15 @@
 var searchData=
 [
-  ['datainfo_0',['DataInfo',['../dd/dd6/structresdb_1_1DataInfo.html#a14a877c9faa5cdd4d737e126af735a57',1,'resdb::DataInfo']]],
-  ['delete_5fabci_5fchain_1',['delete_abci_chain',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html#a6877ba36d51785a22e1f12f32e429ff0',1,'resdb_validator::lib::ResDB']]],
-  ['delete_5felections_2',['delete_elections',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html#aff096eb064f9b21bc7e98299acd0813b',1,'resdb_validator::lib::ResDB']]],
-  ['delete_5ftransactions_3',['delete_transactions',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html#a39a140703f78cc51fb811f4350d3a1c1',1,'resdb_validator::lib::ResDB']]],
-  ['delete_5funspent_5foutputs_4',['delete_unspent_outputs',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html#ab11fd600421fdb4a9324e6c6d2ccfa6e',1,'resdb_validator::lib::ResDB']]],
-  ['delete_5fvalidator_5fset_5',['delete_validator_set',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html#a660dfb793151a086071c80c3801f0a67',1,'resdb_validator::lib::ResDB']]],
-  ['deploycontract_6',['DeployContract',['../d9/dfa/classresdb_1_1contract_1_1ContractClient.html#a7d414fceddccb9146ceff3d34198b96c',1,'resdb::contract::ContractClient::DeployContract()'],['../d6/d7d/classresdb_1_1contract_1_1ContractManager.html#a14ddd808a0665b5f2ee79c05308bf699',1,'resdb::contract::ContractManager::DeployContract()'],['../d6/dff/contract__tools_8cpp.html#ac5f318a4e5f462ab6986adc27d36b95d',1,'DeployContract():&#160;contract_tools.cpp']]],
-  ['deserialize_7',['deserialize',['../da/dcc/namespaceresdb__validator_1_1utils.html#a13f0f5e42c57fc9c2158a620344c4b2b',1,'resdb_validator::utils']]],
-  ['disablesignaturecheck_8',['DisableSignatureCheck',['../d3/d9c/classresdb_1_1ResDBUserClient.html#ae23cdda108a4150a31be98ef65818485',1,'resdb::ResDBUserClient']]],
-  ['dispatch_9',['Dispatch',['../d6/d83/classresdb_1_1ConsensusService.html#a3f8d8b0a3a55b53a741f3a6264b40ab6',1,'resdb::ConsensusService']]],
-  ['do_5fget_10',['do_GET',['../d6/d19/classdeploy__manager_1_1GetHandler.html#ae8c48b8a34e254ee6769fb4b6cef9f22',1,'deploy_manager::GetHandler']]],
-  ['do_5fpost_11',['do_POST',['../d6/d19/classdeploy__manager_1_1GetHandler.html#a832dcb9346ceea3e454d022928567ebb',1,'deploy_manager::GetHandler']]]
+  ['ecdsasignstring_0',['ECDSASignString',['../da/d1b/namespaceresdb_1_1utils.html#a29dea4e3f2975397dd12772e8c497d3b',1,'resdb::utils']]],
+  ['ecdsaverifystring_1',['ECDSAVerifyString',['../da/d1b/namespaceresdb_1_1utils.html#a92ce76ce4209ab94c85b42ecff7a1fc7',1,'resdb::utils']]],
+  ['empty_2',['Empty',['../da/dd3/classresdb_1_1LockFreeQueue.html#a5fee6967691497e163a5cbe3785d7921',1,'resdb::LockFreeQueue']]],
+  ['enablecheckpoint_3',['EnableCheckPoint',['../db/ddb/classresdb_1_1ResDBConfig.html#ac7bf51cca4c0b82cdea81af219690f43',1,'resdb::ResDBConfig']]],
+  ['exec_4',['Exec',['../d4/d9f/set__random__data_8cpp.html#a65a0c6a26bb701eaae5833e7658bd0d4',1,'set_random_data.cpp']]],
+  ['execcontract_5',['ExecContract',['../d6/d7d/classresdb_1_1contract_1_1ContractManager.html#ab8d26929977fd86e2b1a3d008fd5987c',1,'resdb::contract::ContractManager']]],
+  ['execute_6',['Execute',['../d4/d2d/classresdb_1_1GeoGlobalExecutor.html#a006649f01ee90a1f10dac2b36124e4f0',1,'resdb::GeoGlobalExecutor']]],
+  ['executebatch_7',['ExecuteBatch',['../d9/d92/classresdb_1_1GeoTransactionExecutor.html#a90b6a79f0a7b454731fa78263b42fc0d',1,'resdb::GeoTransactionExecutor::ExecuteBatch()'],['../df/d01/classresdb_1_1TransactionManager.html#a59e2a453cd7534781a1535c882af50e8',1,'resdb::TransactionManager::ExecuteBatch()']]],
+  ['executecontract_8',['ExecuteContract',['../d6/dff/contract__tools_8cpp.html#a2e7b5ba98265d8b97c0981a40dc2541d',1,'ExecuteContract():&#160;contract_tools.cpp'],['../d9/dfa/classresdb_1_1contract_1_1ContractClient.html#a703bf9e3ec560c4a7f20ec24ac0122de',1,'resdb::contract::ContractClient::ExecuteContract()']]],
+  ['executedata_9',['ExecuteData',['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html#a706114915019e7d63132ef628852fc8d',1,'resdb::KVServiceTransactionManager::ExecuteData()'],['../d0/d6a/classresdb_1_1utxo_1_1UTXOTransactionManager.html#a84f2773298d5a5da133d7fe5e1cba1cd',1,'resdb::utxo::UTXOTransactionManager::ExecuteData()'],['../d7/d96/classresdb_1_1contract_1_1ContractTransactionManager.html#a346f7a17c8b79f6228ec23b0aa7066f3',1,'resdb::contract::ContractTransactionManager::ExecuteData()'],['../d0/d2a/classresdb_1_1ResDBTestManager.html#aaa52a0d469cf7a63a6be2db74d30780d',1,'resdb::ResDBTestManager::ExecuteData()'],['../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64',1,'resdb::TransactionManager::ExecuteData()']]],
+  ['exist_10',['Exist',['../d4/d26/classresdb_1_1contract_1_1AddressManager.html#ac5d0fdba1631c0388c9babffb8f3eef5',1,'resdb::contract::AddressManager']]],
+  ['exists_11',['exists',['../d4/d35/classresdb_1_1SpinLockSet.html#a12fb2982b456bbcf496c375c02a2c410',1,'resdb::SpinLockSet']]]
 ];

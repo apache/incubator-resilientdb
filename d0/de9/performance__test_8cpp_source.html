@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/application/contract/performance/performance_test.cpp Source File</title>
+<title>ResilientDB: /github/workspace/service/contract/performance/performance_test.cpp Source File</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -130,8 +130,8 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;fstream&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d98/contract__executor_8h.html">application/contract/service/contract_executor.h</a>&quot;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;service/contract/executor/service/contract_executor.h&quot;</span></div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span>contract {</div>
@@ -144,9 +144,9 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>                             <span class="stringliteral">&quot;/application/contract/performance/&quot;</span>;</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>std::string ToString(<span class="keyword">const</span> Request&amp; request) {</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::string <a class="code hl_variable" href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">ret</a>;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::string ret;</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  request.SerializeToString(&amp;ret);</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">ret</a>;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keywordflow">return</span> ret;</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>}</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">class </span>ContractExecutorTest : <span class="keyword">public</span> Test {</div>
@@ -161,7 +161,7 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    }</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    nlohmann::json definition = nlohmann::json::parse(contract_fstream);</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a> = definition[<span class="stringliteral">&quot;contracts&quot;</span>];</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a> = definition[<span class="stringliteral">&quot;contracts&quot;</span>];</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  }</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  Account <a class="code hl_function" href="../../d6/dff/contract__tools_8cpp.html#a92291261bc6622c8d835461c07303b2b">CreateAccount</a>() {</div>
@@ -169,7 +169,7 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    Response response;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    request.set_cmd(Request::CREATE_ACCOUNT);</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    std::unique_ptr&lt;std::string&gt; <a class="code hl_variable" href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">ret</a> = <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">executor_</a>.ExecuteData(ToString(request));</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    std::unique_ptr&lt;std::string&gt; ret = <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a63399061705640c620d17d5cef2c017c">executor_</a>.ExecuteData(ToString(request));</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    EXPECT_TRUE(ret != <span class="keyword">nullptr</span>);</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    response.ParseFromString(*ret);</div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordflow">return</span> response.account();</div>
@@ -184,7 +184,7 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    *request.mutable_deploy_info() = deploy_info;</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    request.set_cmd(Request::DEPLOY);</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    std::unique_ptr&lt;std::string&gt; <a class="code hl_variable" href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">ret</a> = <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">executor_</a>.ExecuteData(ToString(request));</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    std::unique_ptr&lt;std::string&gt; ret = <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a63399061705640c620d17d5cef2c017c">executor_</a>.ExecuteData(ToString(request));</div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    EXPECT_TRUE(ret != <span class="keyword">nullptr</span>);</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    response.ParseFromString(*ret);</div>
@@ -206,7 +206,7 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    request.set_cmd(Request::EXECUTE);</div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    *request.mutable_func_params() = params;</div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    std::unique_ptr&lt;std::string&gt; <a class="code hl_variable" href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">ret</a> = <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">executor_</a>.ExecuteData(ToString(request));</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    std::unique_ptr&lt;std::string&gt; ret = <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a63399061705640c620d17d5cef2c017c">executor_</a>.ExecuteData(ToString(request));</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    EXPECT_TRUE(ret != <span class="keyword">nullptr</span>);</div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    response.ParseFromString(*ret);</div>
@@ -219,8 +219,8 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>  }</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno"><a class="line" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">  120</a></span>  nlohmann::json <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>;</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno"><a class="line" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">  121</a></span>  ContractExecutor <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">executor_</a>;</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno"><a class="line" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">  120</a></span>  nlohmann::json <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno"><a class="line" href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">  121</a></span>  ContractExecutor <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a63399061705640c620d17d5cef2c017c">executor_</a>;</div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>};</div>
 <div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
 <div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(ContractExecutorTest, ExecContract) {</div>
@@ -229,8 +229,8 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>  EXPECT_FALSE(account.address().empty());</div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
 <div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>  std::string contract_name = <span class="stringliteral">&quot;kv.sol:KV&quot;</span>;</div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  std::string contract_code = <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>[contract_name][<span class="stringliteral">&quot;bin&quot;</span>];</div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  nlohmann::json func_hashes = <a class="code hl_variable" href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>[contract_name][<span class="stringliteral">&quot;hashes&quot;</span>];</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  std::string contract_code = <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>[contract_name][<span class="stringliteral">&quot;bin&quot;</span>];</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  nlohmann::json func_hashes = <a class="code hl_variable" href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a>[contract_name][<span class="stringliteral">&quot;hashes&quot;</span>];</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  <span class="comment">// deploy</span></div>
 <div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  DeployInfo deploy_info;</div>
@@ -272,21 +272,19 @@ $(document).ready(function(){initNavTree('d0/de9/performance__test_8cpp_source.h
 <div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>}  <span class="comment">// namespace contract</span></div>
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="acommon_2utils_2utils_8h_html"><div class="ttname"><a href="../../d4/d71/common_2utils_2utils_8h.html">utils.h</a></div></div>
-<div class="ttc" id="acontract__executor_8h_html"><div class="ttname"><a href="../../d8/d98/contract__executor_8h.html">contract_executor.h</a></div></div>
 <div class="ttc" id="acontract__tools_8cpp_html_a92291261bc6622c8d835461c07303b2b"><div class="ttname"><a href="../../d6/dff/contract__tools_8cpp.html#a92291261bc6622c8d835461c07303b2b">CreateAccount</a></div><div class="ttdeci">void CreateAccount(ContractClient *client)</div><div class="ttdef"><b>Definition:</b> <a href="../../d6/dff/contract__tools_8cpp_source.html#l00045">contract_tools.cpp:45</a></div></div>
-<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../d2/d5c/contract__client_8cpp_source.html#l00035">contract_client.cpp:35</a></div></div>
+<div class="ttc" id="acontract__transaction__manager__test_8cpp_html_a63399061705640c620d17d5cef2c017c"><div class="ttname"><a href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a63399061705640c620d17d5cef2c017c">executor_</a></div><div class="ttdeci">ContractTransactionManager executor_</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/contract__transaction__manager__test_8cpp_source.html#l00120">contract_transaction_manager_test.cpp:120</a></div></div>
+<div class="ttc" id="acontract__transaction__manager__test_8cpp_html_a9b0e68d47130a78a08ccf90e86ecde98"><div class="ttname"><a href="../../d7/d51/contract__transaction__manager__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a></div><div class="ttdeci">nlohmann::json contracts_json_</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d51/contract__transaction__manager__test_8cpp_source.html#l00119">contract_transaction_manager_test.cpp:119</a></div></div>
+<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_a20a9c64f3963cdec2d8dfcb221b6a223"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a20a9c64f3963cdec2d8dfcb221b6a223">resdb::test_dir</a></div><div class="ttdeci">const std::string test_dir</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00044">resdb_test.cpp:44</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a60842c77d7913e381a97c08279a383a7"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">resdb::GetCurrentTime</a></div><div class="ttdeci">uint64_t GetCurrentTime()</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d06/utils_8cpp_source.html#l00059">utils.cpp:59</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_ab31c2875ec907efdbc2284cb1eabdc49"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">resdb::TEST_F</a></div><div class="ttdeci">TEST_F(ResDBTest, TestPBFTService)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00153">resdb_test.cpp:153</a></div></div>
-<div class="ttc" id="anamespacevalidator_html_a63bf06ac2486e4eb73b79ae5b41c02c8"><div class="ttname"><a href="../../d6/d3b/namespacevalidator.html#a63bf06ac2486e4eb73b79ae5b41c02c8">validator.ret</a></div><div class="ttdeci">Transaction ret</div><div class="ttdef"><b>Definition:</b> <a href="../../d3/d40/validator_8py_source.html#l00035">validator.py:35</a></div></div>
-<div class="ttc" id="aperformance__test_8cpp_html_a9b0e68d47130a78a08ccf90e86ecde98"><div class="ttname"><a href="../../d0/de9/performance__test_8cpp.html#a9b0e68d47130a78a08ccf90e86ecde98">contracts_json_</a></div><div class="ttdeci">nlohmann::json contracts_json_</div><div class="ttdef"><b>Definition:</b> <a href="../../d0/de9/performance__test_8cpp_source.html#l00120">performance_test.cpp:120</a></div></div>
-<div class="ttc" id="aperformance__test_8cpp_html_aa4aaa14c7518680ef120c08ee601f53d"><div class="ttname"><a href="../../d0/de9/performance__test_8cpp.html#aa4aaa14c7518680ef120c08ee601f53d">executor_</a></div><div class="ttdeci">ContractExecutor executor_</div><div class="ttdef"><b>Definition:</b> <a href="../../d0/de9/performance__test_8cpp_source.html#l00121">performance_test.cpp:121</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a60842c77d7913e381a97c08279a383a7"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">resdb::GetCurrentTime</a></div><div class="ttdeci">uint64_t GetCurrentTime()</div><div class="ttdef"><b>Definition:</b> <a href="../../de/d06/utils_8cpp_source.html#l00056">utils.cpp:56</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_ab31c2875ec907efdbc2284cb1eabdc49"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">resdb::TEST_F</a></div><div class="ttdeci">TEST_F(ResDBTest, TestPBFTService)</div><div class="ttdef"><b>Definition:</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00155">resdb_test.cpp:155</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_d75c23162a2652451dce46d2e7e8aead.html">application</a></li><li class="navelem"><a class="el" href="../../dir_9f47cffce4f219c84a564890f853a27d.html">contract</a></li><li class="navelem"><a class="el" href="../../dir_8bfd6e4199a835125b46c8a08e72ad2d.html">performance</a></li><li class="navelem"><a class="el" href="../../d0/de9/performance__test_8cpp.html">performance_test.cpp</a></li>
+    <li class="navelem"><a class="el" href="../../dir_285b4baccdb4ea5626083318817dbf24.html">service</a></li><li class="navelem"><a class="el" href="../../dir_72ed1c6d56c06d38f6cf84e7ec5fedd7.html">contract</a></li><li class="navelem"><a class="el" href="../../dir_9e33c88d459755a821e2054d501060d7.html">performance</a></li><li class="navelem"><a class="el" href="../../d0/de9/performance__test_8cpp.html">performance_test.cpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

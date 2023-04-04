@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/ordering/pbft/query_test.cpp File Reference</title>
+<title>ResilientDB: /github/workspace/platform/consensus/ordering/pbft/query_test.cpp File Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -102,19 +102,18 @@ $(document).ready(function(){initNavTree('dc/d81/query__test_8cpp.html','../../'
   <div class="headertitle"><div class="title">query_test.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="../../dd/d6e/query_8h_source.html">ordering/pbft/query.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="../../dd/d6e/query_8h_source.html">platform/consensus/ordering/pbft/query.h</a>&quot;</code><br />
 <code>#include &lt;glog/logging.h&gt;</code><br />
 <code>#include &lt;gmock/gmock.h&gt;</code><br />
 <code>#include &lt;gtest/gtest.h&gt;</code><br />
 <code>#include &lt;future&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../d5/d74/mock__resdb__client_8h_source.html">client/mock_resdb_client.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d8/d15/mock__signature__verifier_8h_source.html">common/crypto/mock_signature_verifier.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d96/test__macros_8h_source.html">common/test/test_macros.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">config/resdb_config_utils.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d8/d15/mock__signature__verifier_8h_source.html">crypto/mock_signature_verifier.h</a>&quot;</code><br />
-<code>#include &quot;execution/mock_custom_query.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../dd/dc3/commitment_8h_source.html">ordering/pbft/commitment.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d8/dc0/transaction__manager_8h_source.html">ordering/pbft/transaction_manager.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../dd/d91/mock__resdb__replica__client_8h_source.html">server/mock_resdb_replica_client.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/dfd/mock__replica__communicator_8h_source.html">platform/communication/mock_replica_communicator.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">platform/config/resdb_config_utils.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../dd/dc3/commitment_8h_source.html">platform/consensus/ordering/pbft/commitment.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d3/d62/message__manager_8h_source.html">platform/consensus/ordering/pbft/message_manager.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/d12/mock__resdb__net__channel_8h_source.html">platform/interface/mock_resdb_net_channel.h</a>&quot;</code><br />
 </div>
 <p><a href="../../dc/d81/query__test_8cpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -144,7 +143,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00138">138</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00136">136</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -168,7 +167,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00143">143</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00141">141</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -192,7 +191,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00136">136</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00134">134</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -216,7 +215,31 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00135">135</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00133">133</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a79b03b20aef10ea33f314119b1742975" name="a79b03b20aef10ea33f314119b1742975"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79b03b20aef10ea33f314119b1742975">&#9670;&#160;</a></span>message_manager_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">MessageManager message_manager_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00137">137</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -240,12 +263,12 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00140">140</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00138">138</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a6708e180e5a4ea0c77efd28a60a05844" name="a6708e180e5a4ea0c77efd28a60a05844"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6708e180e5a4ea0c77efd28a60a05844">&#9670;&#160;</a></span>replica_client_</h2>
+<a id="a25772ec6341de4facf7489566013b2fa" name="a25772ec6341de4facf7489566013b2fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25772ec6341de4facf7489566013b2fa">&#9670;&#160;</a></span>replica_communicator_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -254,7 +277,7 @@ Namespaces</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">MockResDBReplicaClient replica_client_</td>
+          <td class="memname">MockReplicaCommunicator replica_communicator_</td>
         </tr>
       </table>
   </td>
@@ -264,7 +287,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00141">141</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00139">139</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -288,31 +311,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00137">137</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a54f8982e2a4d6999ec9f4d76d277bf32" name="a54f8982e2a4d6999ec9f4d76d277bf32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54f8982e2a4d6999ec9f4d76d277bf32">&#9670;&#160;</a></span>transaction_manager_</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">TransactionManager transaction_manager_</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00139">139</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00135">135</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -336,7 +335,7 @@ Namespaces</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00142">142</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d81/query__test_8cpp_source.html#l00140">140</a> of file <a class="el" href="../../dc/d81/query__test_8cpp_source.html">query_test.cpp</a>.</p>
 
 </div>
 </div>
@@ -345,7 +344,7 @@ Namespaces</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_90b57b2979ab59dbc0f8023c21ba8de8.html">ordering</a></li><li class="navelem"><a class="el" href="../../dir_7adfda5433b313f8af47b1fae182db91.html">pbft</a></li><li class="navelem"><a class="el" href="../../dc/d81/query__test_8cpp.html">query_test.cpp</a></li>
+    <li class="navelem"><a class="el" href="../../dir_c5a52a81292cf9a5167198f4f346d6d9.html">platform</a></li><li class="navelem"><a class="el" href="../../dir_442540c59dc4ae359e0995b88ff43a8a.html">consensus</a></li><li class="navelem"><a class="el" href="../../dir_67dee822327095b4b7385c3f5521eefe.html">ordering</a></li><li class="navelem"><a class="el" href="../../dir_8f52f9228c992a5f2e44087915656d2f.html">pbft</a></li><li class="navelem"><a class="el" href="../../dc/d81/query__test_8cpp.html">query_test.cpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

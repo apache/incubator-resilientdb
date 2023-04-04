@@ -104,15 +104,15 @@ $(document).ready(function(){initNavTree('dc/db6/classresdb_1_1MockTransactionEx
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="../../d3/d71/mock__transaction__executor__impl_8h_source.html">mock_transaction_executor_impl.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="../../dc/d4d/mock__transaction__manager_8h_source.html">mock_transaction_manager.h</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for resdb::MockTransactionExecutorDataImpl:</div>
 <div class="dyncontent">
  <div class="center">
   <img src="../../dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.png" usemap="#resdb::MockTransactionExecutorDataImpl_map" alt=""/>
   <map id="resdb::MockTransactionExecutorDataImpl_map" name="resdb::MockTransactionExecutorDataImpl_map">
-<area href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html" alt="resdb::TransactionExecutorImpl" shape="rect" coords="0,0,245,24"/>
-<area href="../../d2/dd1/classresdb_1_1MockTransactionExecutorImpl.html" alt="resdb::MockTransactionExecutorImpl" shape="rect" coords="0,112,245,136"/>
+<area href="../../df/d01/classresdb_1_1TransactionManager.html" alt="resdb::TransactionManager" shape="rect" coords="0,0,245,24"/>
+<area href="../../dc/d6d/classresdb_1_1MockTransactionManager.html" alt="resdb::MockTransactionManager" shape="rect" coords="0,112,245,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -120,25 +120,25 @@ Inheritance diagram for resdb::MockTransactionExecutorDataImpl:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aa334f83b2f0b5f0ae1b9f93af7485dd4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html#aa334f83b2f0b5f0ae1b9f93af7485dd4">MockTransactionExecutorDataImpl</a> (bool is_out_of_order=false)</td></tr>
 <tr class="separator:aa334f83b2f0b5f0ae1b9f93af7485dd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5437d5f658af86715c02b4176d76a76"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html#aa5437d5f658af86715c02b4176d76a76">MOCK_METHOD</a> (std::unique_ptr&lt; std::string &gt;, <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#ad9ed5122eb7901e3e4f57da1646fed0c">ExecuteData</a>,(const std::string &amp;),(override))</td></tr>
+<tr class="memitem:aa5437d5f658af86715c02b4176d76a76"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html#aa5437d5f658af86715c02b4176d76a76">MOCK_METHOD</a> (std::unique_ptr&lt; std::string &gt;, <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">ExecuteData</a>,(const std::string &amp;),(override))</td></tr>
 <tr class="separator:aa5437d5f658af86715c02b4176d76a76"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_classresdb_1_1TransactionExecutorImpl"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classresdb_1_1TransactionExecutorImpl')"><img src="../../closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html">resdb::TransactionExecutorImpl</a></td></tr>
-<tr class="memitem:a402e8fa3a3c959fb97d9a5bb7e7b128c inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#a402e8fa3a3c959fb97d9a5bb7e7b128c">TransactionExecutorImpl</a> (bool is_out_of_order=false, bool need_response=true)</td></tr>
-<tr class="separator:a402e8fa3a3c959fb97d9a5bb7e7b128c inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6ff7a753c902700b8a6a500df5560fe inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#ad6ff7a753c902700b8a6a500df5560fe">~TransactionExecutorImpl</a> ()=default</td></tr>
-<tr class="separator:ad6ff7a753c902700b8a6a500df5560fe inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6718da4a1295bec747d6e7f8e4d66b88 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; BatchClientResponse &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#a6718da4a1295bec747d6e7f8e4d66b88">ExecuteBatch</a> (const BatchClientRequest &amp;request)</td></tr>
-<tr class="separator:a6718da4a1295bec747d6e7f8e4d66b88 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9ed5122eb7901e3e4f57da1646fed0c inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#ad9ed5122eb7901e3e4f57da1646fed0c">ExecuteData</a> (const std::string &amp;request)</td></tr>
-<tr class="separator:ad9ed5122eb7901e3e4f57da1646fed0c inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f6fa2ec4e44fe6bf4ed2deb1c28c3b1 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#a0f6fa2ec4e44fe6bf4ed2deb1c28c3b1">IsOutOfOrder</a> ()</td></tr>
-<tr class="separator:a0f6fa2ec4e44fe6bf4ed2deb1c28c3b1 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb8778e5d615aa6005852740ec8153b3 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#afb8778e5d615aa6005852740ec8153b3">NeedResponse</a> ()</td></tr>
-<tr class="separator:afb8778e5d615aa6005852740ec8153b3 inherit pub_methods_classresdb_1_1TransactionExecutorImpl"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classresdb_1_1TransactionManager"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classresdb_1_1TransactionManager')"><img src="../../closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html">resdb::TransactionManager</a></td></tr>
+<tr class="memitem:a2052d912a5ff5488106cf3af32ca66b6 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#a2052d912a5ff5488106cf3af32ca66b6">TransactionManager</a> (bool is_out_of_order=false, bool need_response=true)</td></tr>
+<tr class="separator:a2052d912a5ff5488106cf3af32ca66b6 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdbd5f2e9d431854017c92e712055478 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#acdbd5f2e9d431854017c92e712055478">~TransactionManager</a> ()=default</td></tr>
+<tr class="separator:acdbd5f2e9d431854017c92e712055478 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59e2a453cd7534781a1535c882af50e8 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; BatchUserResponse &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#a59e2a453cd7534781a1535c882af50e8">ExecuteBatch</a> (const BatchUserRequest &amp;request)</td></tr>
+<tr class="separator:a59e2a453cd7534781a1535c882af50e8 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af426cffa031dac8e1930385dfdb1cd64 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">virtual std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">ExecuteData</a> (const std::string &amp;request)</td></tr>
+<tr class="separator:af426cffa031dac8e1930385dfdb1cd64 inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af59c30af5760a407b53b7a7e14f1e1ba inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#af59c30af5760a407b53b7a7e14f1e1ba">IsOutOfOrder</a> ()</td></tr>
+<tr class="separator:af59c30af5760a407b53b7a7e14f1e1ba inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac314189b56cc00ea67255df26fde171d inherit pub_methods_classresdb_1_1TransactionManager"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#ac314189b56cc00ea67255df26fde171d">NeedResponse</a> ()</td></tr>
+<tr class="separator:ac314189b56cc00ea67255df26fde171d inherit pub_methods_classresdb_1_1TransactionManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../d3/d71/mock__transaction__executor__impl_8h_source.html#l00033">33</a> of file <a class="el" href="../../d3/d71/mock__transaction__executor__impl_8h_source.html">mock_transaction_executor_impl.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d4d/mock__transaction__manager_8h_source.html#l00033">33</a> of file <a class="el" href="../../dc/d4d/mock__transaction__manager_8h_source.html">mock_transaction_manager.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aa334f83b2f0b5f0ae1b9f93af7485dd4" name="aa334f83b2f0b5f0ae1b9f93af7485dd4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa334f83b2f0b5f0ae1b9f93af7485dd4">&#9670;&#160;</a></span>MockTransactionExecutorDataImpl()</h2>
@@ -164,7 +164,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d71/mock__transaction__executor__impl_8h_source.html#l00035">35</a> of file <a class="el" href="../../d3/d71/mock__transaction__executor__impl_8h_source.html">mock_transaction_executor_impl.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d4d/mock__transaction__manager_8h_source.html#l00035">35</a> of file <a class="el" href="../../dc/d4d/mock__transaction__manager_8h_source.html">mock_transaction_manager.h</a>.</p>
 
 </div>
 </div>
@@ -184,7 +184,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/dd6/classresdb_1_1TransactionExecutorImpl.html#ad9ed5122eb7901e3e4f57da1646fed0c">ExecuteData</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">ExecuteData</a>&#160;</td>
           <td class="paramname">, </td>
         </tr>
         <tr>

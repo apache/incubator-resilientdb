@@ -1,21 +1,5 @@
 var searchData=
 [
-  ['requestinfo_0',['RequestInfo',['../d8/d15/structresdb_1_1RequestInfo.html',1,'resdb']]],
-  ['resdb_1',['ResDB',['../de/d4d/classresdb__validator_1_1lib_1_1ResDB.html',1,'resdb_validator::lib']]],
-  ['resdbclient_2',['ResDBClient',['../dd/d87/classresdb_1_1ResDBClient.html',1,'resdb']]],
-  ['resdbconfig_3',['ResDBConfig',['../db/ddb/classresdb_1_1ResDBConfig.html',1,'resdb']]],
-  ['resdberror_4',['ResDBError',['../df/d1b/classresdb__validator_1_1exceptions_1_1ResDBError.html',1,'resdb_validator::exceptions']]],
-  ['resdbkvclient_5',['ResDBKVClient',['../d8/db0/classresdb_1_1ResDBKVClient.html',1,'resdb']]],
-  ['resdbkvperformanceclient_6',['ResDBKVPerformanceClient',['../de/dd6/classresdb_1_1ResDBKVPerformanceClient.html',1,'resdb']]],
-  ['resdbreplicaclient_7',['ResDBReplicaClient',['../d1/d1b/classresdb_1_1ResDBReplicaClient.html',1,'resdb']]],
-  ['resdbserver_8',['ResDBServer',['../d3/d20/classresdb_1_1ResDBServer.html',1,'resdb']]],
-  ['resdbservice_9',['ResDBService',['../d0/d8d/classresdb_1_1ResDBService.html',1,'resdb']]],
-  ['resdbstateclient_10',['ResDBStateClient',['../da/d7c/classresdb_1_1ResDBStateClient.html',1,'resdb']]],
-  ['resdbtest_11',['ResDBTest',['../dd/d33/classresdb_1_1ResDBTest.html',1,'resdb']]],
-  ['resdbtestclient_12',['ResDBTestClient',['../d8/d65/classresdb_1_1ResDBTestClient.html',1,'resdb']]],
-  ['resdbtestexecutor_13',['ResDBTestExecutor',['../df/d3b/classresdb_1_1ResDBTestExecutor.html',1,'resdb']]],
-  ['resdbtxnclient_14',['ResDBTxnClient',['../d4/daf/classresdb_1_1ResDBTxnClient.html',1,'resdb']]],
-  ['resdbuserclient_15',['ResDBUserClient',['../d3/d9c/classresdb_1_1ResDBUserClient.html',1,'resdb']]],
-  ['responsemanager_16',['ResponseManager',['../da/d2f/classresdb_1_1ResponseManager.html',1,'resdb']]],
-  ['rocksdurable_17',['RocksDurable',['../d5/d5b/classRocksDurable.html',1,'']]]
+  ['utxoclient_0',['UTXOClient',['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html',1,'resdb::utxo']]],
+  ['utxotransactionmanager_1',['UTXOTransactionManager',['../d0/d6a/classresdb_1_1utxo_1_1UTXOTransactionManager.html',1,'resdb::utxo']]]
 ];

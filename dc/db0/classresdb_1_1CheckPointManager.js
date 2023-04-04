@@ -1,6 +1,6 @@
 var classresdb_1_1CheckPointManager =
 [
-    [ "CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html#ae6983991409f069efa9d97cd43188418", null ],
+    [ "CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html#a57af3a73065a5527ffe4a9600d597372", null ],
     [ "~CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html#a01a5417fd7d2d4f1a3b2da681d3c0e11", null ],
     [ "AddCommitData", "dc/db0/classresdb_1_1CheckPointManager.html#ad7417f8126c6b8fa9c0f7c85a21e2568", null ],
     [ "GetMaxTxnSeq", "dc/db0/classresdb_1_1CheckPointManager.html#ae05581eae257b0b5fb901cf74a833980", null ],
@@ -10,6 +10,7 @@ var classresdb_1_1CheckPointManager =
     [ "IsValidCheckpointProof", "dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf", null ],
     [ "ProcessCheckPoint", "dc/db0/classresdb_1_1CheckPointManager.html#a9e3c9dbedd4383b65a359c00e10d1101", null ],
     [ "SetTimeoutHandler", "dc/db0/classresdb_1_1CheckPointManager.html#a0869d9de93210d15c060bcefde9935f0", null ],
+    [ "Stop", "dc/db0/classresdb_1_1CheckPointManager.html#a7f858923ca4ff59ef40476835da54e7f", null ],
     [ "UpdateStableCheckPointCallback", "dc/db0/classresdb_1_1CheckPointManager.html#a5395376992e5b027ce749b7b3618e4ec", null ],
     [ "checkpoint_thread_", "dc/db0/classresdb_1_1CheckPointManager.html#ab0f71814b4ac48401d58419992109097", null ],
     [ "config_", "dc/db0/classresdb_1_1CheckPointManager.html#aceffced8931a5a2a9c6c4a517cfe489f", null ],
@@ -19,7 +20,7 @@ var classresdb_1_1CheckPointManager =
     [ "data_queue_", "dc/db0/classresdb_1_1CheckPointManager.html#afb4eac9eaae472ee7464f09b74162ccd", null ],
     [ "mutex_", "dc/db0/classresdb_1_1CheckPointManager.html#a477933cbfccf791258fc31806dd7edfd", null ],
     [ "new_data_", "dc/db0/classresdb_1_1CheckPointManager.html#aee51af13557dd31e832534cbd2e94cb3", null ],
-    [ "replica_client_", "dc/db0/classresdb_1_1CheckPointManager.html#af5733cfb139194ca8b1ba56d82fdf946", null ],
+    [ "replica_communicator_", "dc/db0/classresdb_1_1CheckPointManager.html#a48db466b3df3b353c2378fc099524817", null ],
     [ "sender_ckpt_", "dc/db0/classresdb_1_1CheckPointManager.html#a1595d057e150d0c0d0bf777873adf9b4", null ],
     [ "sign_ckpt_", "dc/db0/classresdb_1_1CheckPointManager.html#a6f445d8cb06177a0400a1e8effd16844", null ],
     [ "stable_checkpoint_thread_", "dc/db0/classresdb_1_1CheckPointManager.html#afb9e73ab008ad66527482c59d80e0bf6", null ],

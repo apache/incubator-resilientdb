@@ -9,7 +9,7 @@ var classresdb_1_1TcpSocket =
     [ "GetBindingPort", "d4/de5/classresdb_1_1TcpSocket.html#aa56e55315ebea1183a92c46dc9df65ea", null ],
     [ "Listen", "d4/de5/classresdb_1_1TcpSocket.html#ac66d091d4ae97832ea9e6358075b76f9", null ],
     [ "Recv", "d4/de5/classresdb_1_1TcpSocket.html#a54897c0db952e0d51c9dfa3abca7edb2", null ],
-    [ "ReInit", "d4/de5/classresdb_1_1TcpSocket.html#a1896130bce5c047166ca9f65a6c9d2ff", null ],
+    [ "ReInit", "d4/de5/classresdb_1_1TcpSocket.html#ab61fd1e5fc6f7c5528cc67b934ac7e52", null ],
     [ "Send", "d4/de5/classresdb_1_1TcpSocket.html#a4eca17474efc3b188dc2da478ea24cd4", null ],
     [ "SetAsync", "d4/de5/classresdb_1_1TcpSocket.html#ad6e67c1a358f7bdb9ce748eb5fc88ee5", null ],
     [ "SetRecvTimeout", "d4/de5/classresdb_1_1TcpSocket.html#a467a96fb732c8fd2ecdfc10907d71ff8", null ],
