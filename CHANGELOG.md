@@ -1,12 +1,9 @@
 # Change Log
 
-### NexRes v1.5.0 ([2023-04-03](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.5.0))
+### NexRes v1.5.0 ([2023-04-04](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.5.0))
 
 **Implemented Enhancements:** 
-* Refactor whole code base:
-  Move framework code under the platform folder, including the formwork architectures and protocols implementations.
-  Move all the service based on the platform under service folder, including UTXO, smart contact and key-value storage.
-  Move sdk stuff out of this repo.
+* A complete refactoring of the code base such that (1) the core engine code is now moved to the platform folder, including the formwork architectures and protocols implementations; (2) the API/interface-related code is moved to the service folder, including UTXO, smart contract, and key-value interface;  (3) the python SDK code is moved to a different repository [here](https://github.com/resilientdb/sdk).
 
 ### NexRes v1.4.0 ([2023-02-28](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0))
 Major Changes
