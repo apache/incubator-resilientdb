@@ -2,7 +2,7 @@ set -e
 
 # load environment parameters
 . ./script/env.sh
-echo "config:"$1
+
 # load ip list
 . ./script/load_config.sh $1
 
