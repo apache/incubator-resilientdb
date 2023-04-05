@@ -30,6 +30,7 @@ unzip bazel-6.0.0-dist.zip
 export JAVA_HOME='/usr/lib/jvm/java-1.11.0-openjdk-arm64/'
 env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
 sudo cp output/bazel /usr/local/bin/
+cd ..
 rm -rf bazel_build
 
 fi
