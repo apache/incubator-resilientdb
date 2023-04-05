@@ -13,9 +13,10 @@ var searchData=
   ['keys_2epy_10',['keys.py',['../d8/de6/keys_8py.html',1,'']]],
   ['kv_5fclient_5ftxn_5ftools_2ecpp_11',['kv_client_txn_tools.cpp',['../d8/d56/kv__client__txn__tools_8cpp.html',1,'']]],
   ['kv_5fserver_2ecpp_12',['kv_server.cpp',['../d7/de1/kv__server_8cpp.html',1,'']]],
-  ['kv_5fservice_5ftools_2ecpp_13',['kv_service_tools.cpp',['../d2/de0/kv__service__tools_8cpp.html',1,'']]],
-  ['kv_5fservice_5ftransaction_5fmanager_2ecpp_14',['kv_service_transaction_manager.cpp',['../d3/d4e/kv__service__transaction__manager_8cpp.html',1,'']]],
-  ['kv_5fservice_5ftransaction_5fmanager_2eh_15',['kv_service_transaction_manager.h',['../db/d5d/kv__service__transaction__manager_8h.html',1,'']]],
-  ['kv_5fservice_5ftransaction_5fmanager_5ftest_2ecpp_16',['kv_service_transaction_manager_test.cpp',['../df/dde/kv__service__transaction__manager__test_8cpp.html',1,'']]],
-  ['kvservicetransactionmanager_17',['KVServiceTransactionManager',['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html#af52654370c79043218219eda1e6b0394',1,'resdb::KVServiceTransactionManager::KVServiceTransactionManager(const ResConfigData &amp;config_data, char *cert_file)'],['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html#a7712eb9c833dd041dc2740cff2dbdc63',1,'resdb::KVServiceTransactionManager::KVServiceTransactionManager(std::unique_ptr&lt; Storage &gt; storage)'],['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html',1,'resdb::KVServiceTransactionManager']]]
+  ['kv_5fserver_5fperformance_2ecpp_13',['kv_server_performance.cpp',['../df/d28/kv__server__performance_8cpp.html',1,'']]],
+  ['kv_5fservice_5ftools_2ecpp_14',['kv_service_tools.cpp',['../d2/de2/service_2tools_2kv__service_2api__tools_2kv__service__tools_8cpp.html',1,'(Global Namespace)'],['../d6/dc8/benchmark_2protocols_2pbft_2kv__service__tools_8cpp.html',1,'(Global Namespace)']]],
+  ['kv_5fservice_5ftransaction_5fmanager_2ecpp_15',['kv_service_transaction_manager.cpp',['../d3/d4e/kv__service__transaction__manager_8cpp.html',1,'']]],
+  ['kv_5fservice_5ftransaction_5fmanager_2eh_16',['kv_service_transaction_manager.h',['../db/d5d/kv__service__transaction__manager_8h.html',1,'']]],
+  ['kv_5fservice_5ftransaction_5fmanager_5ftest_2ecpp_17',['kv_service_transaction_manager_test.cpp',['../df/dde/kv__service__transaction__manager__test_8cpp.html',1,'']]],
+  ['kvservicetransactionmanager_18',['KVServiceTransactionManager',['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html#af52654370c79043218219eda1e6b0394',1,'resdb::KVServiceTransactionManager::KVServiceTransactionManager(const ResConfigData &amp;config_data, char *cert_file)'],['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html#a7712eb9c833dd041dc2740cff2dbdc63',1,'resdb::KVServiceTransactionManager::KVServiceTransactionManager(std::unique_ptr&lt; Storage &gt; storage)'],['../dd/dfc/classresdb_1_1KVServiceTransactionManager.html',1,'resdb::KVServiceTransactionManager']]]
 ];

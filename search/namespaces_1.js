@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['generate_5fmulregion_5fconfig_0',['generate_mulregion_config',['../df/d44/namespacegenerate__mulregion__config.html',1,'']]],
-  ['generate_5fregion_5fconfig_1',['generate_region_config',['../d8/dab/namespacegenerate__region__config.html',1,'']]]
+  ['calculate_5fresult_0',['calculate_result',['../d8/d54/namespacecalculate__result.html',1,'']]]
 ];

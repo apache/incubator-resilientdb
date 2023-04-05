@@ -156,7 +156,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  });</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  boost::asio::io_service io_service;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  std::thread t([&amp;]() { io_service.run(); });</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  std::thread <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>([&amp;]() { io_service.run(); });</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  boost::asio::io_service::work *work =</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>      <span class="keyword">new</span> boost::asio::io_service::work(io_service);</div>
@@ -166,7 +166,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="keyword">delete</span> work;</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  work = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  svr_thead.join();</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  t.join();</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>.join();</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}</div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(AsyncReplicaClientTest, SendLargeMessage) {</div>
@@ -189,7 +189,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  });</div>
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  boost::asio::io_service io_service;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  std::thread t([&amp;]() { io_service.run(); });</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  std::thread <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>([&amp;]() { io_service.run(); });</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  boost::asio::io_service::work *work =</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>      <span class="keyword">new</span> boost::asio::io_service::work(io_service);</div>
@@ -199,7 +199,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  <span class="keyword">delete</span> work;</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  work = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  svr_thead.join();</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  t.join();</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>.join();</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>}</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(AsyncReplicaClientTest, MultiSendMessage) {</div>
@@ -222,7 +222,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  });</div>
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>  boost::asio::io_service io_service;</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>  std::thread t([&amp;]() { io_service.run(); });</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>  std::thread <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>([&amp;]() { io_service.run(); });</div>
 <div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  boost::asio::io_service::work *work =</div>
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>      <span class="keyword">new</span> boost::asio::io_service::work(io_service);</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>  AsyncReplicaClient client(&amp;io_service, <span class="stringliteral">&quot;127.0.0.1&quot;</span>, 1234);</div>
@@ -233,7 +233,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>  <span class="keyword">delete</span> work;</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>  work = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>  svr_thead.join();</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  t.join();</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>.join();</div>
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>}</div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(AsyncReplicaClientTest, Reconnect) {</div>
@@ -258,7 +258,7 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>  });</div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span> </div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>  boost::asio::io_service io_service;</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  std::thread t([&amp;]() { io_service.run(); });</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  std::thread <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>([&amp;]() { io_service.run(); });</div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  boost::asio::io_service::work *work =</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>      <span class="keyword">new</span> boost::asio::io_service::work(io_service);</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>  AsyncReplicaClient client(&amp;io_service, <span class="stringliteral">&quot;127.0.0.1&quot;</span>, 1234);</div>
@@ -270,13 +270,14 @@ $(document).ready(function(){initNavTree('d1/d14/async__replica__client__test_8c
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>  <span class="keyword">delete</span> work;</div>
 <div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>  work = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>  svr_thead.join();</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>  t.join();</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>  <a class="code hl_variable" href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">t</a>.join();</div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>}</div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span> </div>
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>}  <span class="comment">// namespace</span></div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span> </div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aasync__replica__client_8h_html"><div class="ttname"><a href="../../d6/ddf/async__replica__client_8h.html">async_replica_client.h</a></div></div>
+<div class="ttc" id="anamespacecalculate__result_html_a659010e7ae3ab15439cde90a2a68cf4a"><div class="ttname"><a href="../../d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a">calculate_result.t</a></div><div class="ttdeci">t</div><div class="ttdef"><b>Definition:</b> <a href="../../d4/ddd/calculate__result_8py_source.html#l00050">calculate_result.py:50</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition:</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_ad80063b9797bc83c1fce71f3a06ce1b0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">resdb::TEST</a></div><div class="ttdeci">TEST(NetworkUtilsTest, GetDNSName)</div><div class="ttdef"><b>Definition:</b> <a href="../../d3/d7b/network__utils__test_8cpp_source.html#l00036">network_utils_test.cpp:36</a></div></div>
 <div class="ttc" id="atcp__socket_8h_html"><div class="ttname"><a href="../../df/d68/tcp__socket_8h.html">tcp_socket.h</a></div></div>

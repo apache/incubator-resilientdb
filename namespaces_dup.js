@@ -8,6 +8,16 @@ var namespaces_dup =
       [ "witprog", "d2/dd8/namespaceaddr.html#ac436e25c5725e015686acffb977aec58", null ],
       [ "witver", "d2/dd8/namespaceaddr.html#a2a524a14b1da6753e8baeb0cbdee65f4", null ]
     ] ],
+    [ "calculate_result", "d8/d54/namespacecalculate__result.html", [
+      [ "cal_lat", "d8/d54/namespacecalculate__result.html#ac2d300ea246eff93784035d791b11f7d", null ],
+      [ "cal_tps", "d8/d54/namespacecalculate__result.html#abe098129c06effea3b5cdc56e4e5040b", null ],
+      [ "read_tps", "d8/d54/namespacecalculate__result.html#a6341184603c5de4b73325be786e9cff7", null ],
+      [ "files", "d8/d54/namespacecalculate__result.html#af524773544aeed6b694357e7962968c7", null ],
+      [ "l", "d8/d54/namespacecalculate__result.html#a4e5a360bbed73492f4946a8ddb62739b", null ],
+      [ "lat", "d8/d54/namespacecalculate__result.html#a9fdf00a7db597322101d8fbcbf9b2ea7", null ],
+      [ "t", "d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a", null ],
+      [ "tps", "d8/d54/namespacecalculate__result.html#ae1fbf3fa2a9030100bc693cad754de10", null ]
+    ] ],
     [ "generate_mulregion_config", "df/d44/namespacegenerate__mulregion__config.html", [
       [ "GenerateJsonConfig", "df/d44/namespacegenerate__mulregion__config.html#afa95156f70a0a756d90a9c167ce55cc9", null ],
       [ "files", "df/d44/namespacegenerate__mulregion__config.html#af21cc9094201404d11e3ffe1b1dca000", null ]
