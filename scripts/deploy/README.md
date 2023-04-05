@@ -30,37 +30,16 @@ To do so, we need to build and run the KV client tools:
 
 Or:
 	
-    bazel run //service/tools/kv_service/api_tools:kv_server_tools -- $PWD/config_out/client.config get test
+    bazel run //service/tools/kv_service/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
 
-## Deploy KV Performance Server
+## Test Performance 
 
-Next, we show how to benchmark the KV service. 
-For this task, we provide access to the configuration file ``kv_performance_server.conf``. 
-Like above, place the private IP addresses of your machines in the file ``config/kv_performance_server.conf``.
+Our benchmark is based on the Key-Value service.
 
-Prior to collecting the performance stats, please ensure that you have killed the ``kv_server`` (both ``kv_server`` and ``kv_performance_server`` binaries cannot run on the same machine.
+Before running, place the private IP addresses of your machines in the file ``config/kv_performance_server.conf``.
 
-Next, run the server binary:
+Run the script:
 
-    ./script/deploy.sh ./config/kv_performance_server.conf
-    
-This command deploys the KV service that enables stat collection at each machine.
+	./performance/run_performance.sh config/kv_performance_server.conf
 
-### Initiate Benchmarking
-
-Next, we initiate benchmarking, which will issue a large number of client requests to help measure different metrics.
-
-    bazel run //service/tools/kv_service/api_tools:kv_server_tools -- $PWD/config_out/client.config set test 1234
-
-Note: the parameters for the ``set`` function do not matter.
-
-### Fetching Results
-
-To fetch the results, you would need to log in to the specific machines. After a few seconds of warmup, the logs at each replica should include relevant statistics. You can use the following ``tail`` command to read scan these logs.
-
-    tail -f kv_server_performance.log | grep txn
-    
-This command should show you the following output, logged periodically every 5 seconds.
-
-    server call:465157 server process:465156 socket recv:0 client call:465156 client req:46519 broad_cast:139557 send broad_cast:139563 per send broad_cast:49783 propose:46518 prepare:5815 commit:5813 pending execute:46504 execute:46504 execute done:46991 seq gap:70 total request:4699100 txn:939820 seq fail:0 time:210
-
+Results will be saved locally and be shown on the screen as well.
