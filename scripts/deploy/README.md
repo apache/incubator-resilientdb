@@ -24,13 +24,13 @@ Note: this script creates a directory ``config_out``, which includes keys and ce
 
 To do so, we need to build and run the KV client tools:
 
-    bazel build //example:kv_server_tools
-    cd ..
-    ./bazel-bin/example/kv_server_tools deploy/config_out/client.config get test 1234
+    cd ../..
+    bazel build service/tools/kv_service/api_tools/kv_service_tools
+    bazel-bin/service/tools/kv_service/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
 
 Or:
 	
-    bazel run //example:kv_server_tools -- $PWD/config_out/client.config get test
+    bazel run //service/tools/kv_service/api_tools:kv_server_tools -- $PWD/config_out/client.config get test
 
 ## Deploy KV Performance Server
 
@@ -50,7 +50,7 @@ This command deploys the KV service that enables stat collection at each machine
 
 Next, we initiate benchmarking, which will issue a large number of client requests to help measure different metrics.
 
-    bazel run //example:kv_server_tools -- $PWD/config_out/client.config set test 1234
+    bazel run //service/tools/kv_service/api_tools:kv_server_tools -- $PWD/config_out/client.config set test 1234
 
 Note: the parameters for the ``set`` function do not matter.
 
