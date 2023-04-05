@@ -17,7 +17,7 @@ ret=$?
 
 if [[ $ret != "0" ]]; then
 
-sudo apt-get install build-essential openjdk-11-jdk python zip unzip -y
+sudo apt-get install build-essential openjdk-11-jdk zip unzip -y
 rm bazel-6.0.0-dist.zip
 rm -rf bazel_build
 wget wget https://releases.bazel.build/6.0.0/release/bazel-6.0.0-dist.zip
