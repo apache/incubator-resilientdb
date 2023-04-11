@@ -43,6 +43,41 @@ std::unique_ptr<ResDBNetChannel> ResDBStateAccessor::GetResDBNetChannel(
 // Obtain ReplicaState of each replica.
 absl::StatusOr<std::vector<ReplicaState>>
 ResDBStateAccessor::GetReplicaStates() {
+
+
+  const auto& client_info = config_.GetReplicaInfos()[0];
+
+  Request request;
+  std::unique_ptr<ResDBNetChannel> client =
+    GetResDBNetChannel(client_info.ip(), client_info.port());
+  client->SetRecvTimeout(1000000);  // 1s for recv timeout.
+
+  int ret = client->SendRequest(request, Request::TYPE_REPLICA_STATE);
+  if (ret) {
+    return absl::InternalError("send data fail.");
+  }
+
+  std::unique_ptr<ReplicaState> state =
+    std::make_unique<ReplicaState>();
+  ret = client->RecvRawMessage(state.get());
+  if (ret < 0) {
+    return absl::InternalError("recv data fail.");
+  }
+  if(state == nullptr){
+    return absl::InternalError("recv data fail.");
+  }
+
+  std::vector<ReplicaState> resp;
+  for(const auto& region: state->replica_config().region()){
+    for(const auto& info: region.replica_info()){
+      ReplicaState new_state;
+      *new_state.mutable_replica_info() = info;
+      resp.push_back(new_state);
+    }
+  }
+  return resp;
+
+/*
   std::vector<std::thread> ths;
   Request request;
   std::vector<std::future<std::unique_ptr<ReplicaState>>> resp_future;
@@ -88,6 +123,7 @@ ResDBStateAccessor::GetReplicaStates() {
     th.join();
   }
   return resp;
+  */
 }
 
 }  // namespace resdb

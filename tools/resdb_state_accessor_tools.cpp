@@ -28,26 +28,18 @@
 #include "platform/config/resdb_config_utils.h"
 #include "platform/interface/resdb_state_accessor.h"
 
-using resdb::GenerateReplicaInfo;
-using resdb::ReplicaInfo;
-using resdb::ResDBConfig;
-using resdb::ResDBStateAccessor;
+using namespace resdb;
 
 int main(int argc, char** argv) {
-  if (argc < 4) {
-    printf("<config path> <private key path> <cert_file>\n");
+  if (argc < 2) {
+    printf("<config path>\n");
     return 0;
   }
   std::string config_file = argv[1];
-  std::string private_key_file = argv[2];
-  std::string cert_file = argv[3];
 
-  ReplicaInfo self_info = GenerateReplicaInfo(0, "127.0.0.1", 88888);
+  ResDBConfig config = GenerateResDBConfig(config_file);
 
-  std::unique_ptr<ResDBConfig> config =
-      GenerateResDBConfig(config_file, private_key_file, cert_file, self_info);
-
-  ResDBStateAccessor client(*config);
+  ResDBStateAccessor client(config);
   auto states = client.GetReplicaStates();
   if (!states.ok()) {
     LOG(ERROR) << "get replica state fail";

@@ -220,6 +220,7 @@ TransactionStatue MessageManager::GetTransactionState(uint64_t seq) {
 int MessageManager::GetReplicaState(ReplicaState* state) {
   state->set_view(GetCurrentView());
   *state->mutable_replica_info() = config_.GetSelfInfo();
+  *state->mutable_replica_config() = config_.GetConfigData();
   return 0;
 }
 
