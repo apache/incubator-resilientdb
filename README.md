@@ -53,7 +53,86 @@ Note: If there is an error with the pip version, use the command:
 
 `python3 -m pip install -r requirements.txt`
 
-Finally, start the app using:
+12. **BUG FIX**: in the case requirements.txt doesn't work, and the `cloud-init` version is not found, edit the file to be:
+```C
+aiohttp==3.8.3
+aiohttp-cors==0.7.0
+aiosignal==1.3.1
+anyio==3.6.2
+ariadne==0.17.0
+async-timeout==4.0.2
+attrs==22.2.0
+base58==2.1.0
+certifi==2022.12.7
+cffi==1.15.1
+charset-normalizer==2.1.1
+click==8.1.3
+commonmark==0.9.1
+cryptoconditions==0.8.1
+cryptography==3.4.7
+Flask==2.2.2
+Flask-Cors==3.0.10
+frozenlist==1.3.3
+graphql-core==3.2.3
+h11==0.14.0
+idna==3.4
+importlib-metadata==5.2.0
+itsdangerous==2.1.2
+Jinja2==3.1.2
+libcst==0.4.9
+MarkupSafe==2.1.1
+multidict==6.0.4
+mypy-extensions==0.4.3
+pyasn1==0.4.8
+pycparser==2.21
+Pygments==2.14.0
+PyNaCl==1.4.0
+pysha3==1.0.2
+python-dateutil==2.8.2
+python-multipart==0.0.5
+python-rapidjson==1.8
+PyYAML==6.0
+requests==2.28.1
+rich==13.0.1
+six==1.16.0
+sniffio==1.3.0
+starlette==0.23.1
+strawberry-graphql==0.152.0
+typing-inspect==0.8.0
+typing_extensions==4.4.0
+urllib3==1.26.13
+uvicorn==0.20.0
+Werkzeug==2.2.2
+yarl==1.8.2
+zipp==3.11.0
+```
+
+- You may get an error that says `Running setup.py install for <dependency> did not run successfully.`
+- First, try `pip3 install wheel` or `pip install wheel`
+- Next, install all missing dependencies manually
+    - **NOTE** as long as you still have dependencies to install, you will get an error message, but this is okay!
+    - From the stack trace, identify the module, then use `pip install <dependency>`
+    - keep generating errors by running `python3 app.py` every time, and resolve each missing dependency
+- Ex:
+```C
+Traceback (most recent call last):
+File "/home/user/repos/NexresGraphQL/app.py", line 1, in <module>
+from resdb_driver import Resdb
+File "/home/user/repos/NexresGraphQL/resdb_driver/__init__.py", line 1, in <module>
+from .driver import Resdb
+File "/home/user/repos/NexresGraphQL/resdb_driver/driver.py", line 4, in <module>
+from .offchain import prepare_transaction, fulfill_transaction
+File "/home/user/repos/NexresGraphQL/resdb_driver/offchain.py", line 8, in <module>
+from .transaction import Input, Transaction, TransactionLink, _fulfillment_from_details
+File "/home/user/repos/NexresGraphQL/resdb_driver/transaction.py", line 14, in <module>
+import base58
+ModuleNotFoundError: No module named 'base58'
+```
+- In the last line, you can run `pip install base58`
+- Keep running `pip install <dependency>` until you get to the broken dependency (ex: pysha3, sha3), then try running `sudo apt-get install python3.10-dev`
+- Hopefully, all your dependencies should be installed, and running `python3 app.py` will run the server!
+
+Start the app using:
 
 `python3 app.py`
 
