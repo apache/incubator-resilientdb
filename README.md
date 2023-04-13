@@ -129,7 +129,7 @@ import base58
 ModuleNotFoundError: No module named 'base58'
 ```
 - In the last line, you can run `pip install base58`
-- Keep running `pip install <dependency>` until you get to the broken dependency (ex: pysha3, sha3), then try running `sudo apt-get install python3.10-dev`
+- Keep running `python3 app.py` until you get to the broken dependency (ex: pysha3, sha3), then try running `sudo apt-get install python3.10-dev`
 - Hopefully, all your dependencies should be installed, and running `python3 app.py` will run the server!
 
 Start the app using:
