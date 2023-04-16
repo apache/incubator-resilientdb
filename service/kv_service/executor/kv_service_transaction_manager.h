@@ -35,6 +35,38 @@
 
 namespace resdb {
 
+  // **needs a batched transactions param**
+  // we only have get, set, batched writes
+  // create the queue, check if there are things in the queue
+  // if there is 1+ things in the queue, process
+  // depending on how many things are in the queue, use 
+  // up however many planner/execution threads
+  // components:
+  // - planner threads
+  //    - priority groups (based on order of txns)
+  // - execution threads
+  //    - check if EQ is full, if so, then load balance
+  //    - to load balance, split the EQ in half, then assign new 
+  //    - EQ's to each half-range
+  //    - use thread pool of EQ's to reduce cost
+  // - execution priority invariance
+  // - use EQ switch if there is intra-transaction dependency -> switch to 
+  // - the other EQ that has the dependency
+  // - undo buffer for recovery
+
+class QueCC_Thread {
+  public:
+    QueCC_Thread();
+    virtual ~QueCC_Thread();
+
+  private:
+    struct QueCC_ThreadPool {};
+    struct QueCC_PlannerThread {};
+    struct QueCC_ExecutionThread {};
+    struct QueCC_PriorityGroup {};
+};
+
+
 class KVServiceTransactionManager : public TransactionManager {
  public:
   KVServiceTransactionManager(std::unique_ptr<Storage> storage);

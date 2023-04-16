@@ -73,12 +73,16 @@ std::unique_ptr<std::string> KVServiceTransactionManager::ExecuteData(
   }
 
   if (kv_request.cmd() == KVRequest::SET) {
+    // add to batch
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
+    // add to batch
     kv_response.set_value(Get(kv_request.key()));
   } else if (kv_request.cmd() == KVRequest::GETVALUES) {
+    // add to batch
     kv_response.set_value(GetValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    // add to batch
     kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   }
 
