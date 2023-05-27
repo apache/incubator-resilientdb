@@ -1,7 +1,6 @@
 workspace(name = "com_resdb_nexres")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load("//:repositories.bzl", "nexres_repositories")
 
 nexres_repositories()
@@ -41,7 +40,6 @@ http_archive(
 )
 
 load("@rules_python//python:pip.bzl", "pip_install")
-
 load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
 
 rules_proto_dependencies()
@@ -85,7 +83,6 @@ protobuf_deps()
 
 all_content = """filegroup(name = "all_srcs", srcs = glob(["**"]), visibility = ["//visibility:public"])"""
 
-
 # buildifier is written in Go and hence needs rules_go to be built.
 # See https://github.com/bazelbuild/rules_go for the up to date setup instructions.
 http_archive(
@@ -128,7 +125,6 @@ http_archive(
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 
 boost_deps()
@@ -145,7 +141,6 @@ http_archive(
 )
 
 #prometheus cpp client library
-
 
 http_archive(
     name = "com_google_leveldb",
@@ -229,4 +224,3 @@ http_archive(
     strip_prefix = "json-3.9.1",
     urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
 )
-

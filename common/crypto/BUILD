@@ -56,8 +56,8 @@ cc_library(
     srcs = ["signature_verifier.cpp"],
     hdrs = ["signature_verifier.h"],
     deps = [
-      ":signature_verifier_interface",
         ":signature_utils",
+        ":signature_verifier_interface",
         "//:cryptopp_lib",
         "//common:comm",
         "//common/proto:signature_info_cc_proto",

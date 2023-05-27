@@ -25,8 +25,6 @@
 
 #pragma once
 
-#include "common/crypto/signature_verifier_interface.h"
-
 #include <cryptopp/filters.h>
 #include <cryptopp/xed25519.h>
 
@@ -34,6 +32,7 @@
 #include <string>
 
 #include "absl/status/statusor.h"
+#include "common/crypto/signature_verifier_interface.h"
 #include "common/proto/signature_info.pb.h"
 
 namespace resdb {

@@ -45,4 +45,3 @@ cc_library(
         "@eEVM",
     ],
 )
-
