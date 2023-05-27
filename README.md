@@ -81,9 +81,3 @@ You will see the following result if successful:
     client getvalues value = [test_value]
 
 
-
-## Other tools:
-
-Obtain the replica states (not include client proxy state):
-
-    bazel-bin/tools/resdb_state_accessor_tools service/tools/config/interface/service.config
