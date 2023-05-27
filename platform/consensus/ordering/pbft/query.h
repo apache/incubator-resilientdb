@@ -25,8 +25,8 @@
 
 #pragma once
 
+#include "executor/common/custom_query.h"
 #include "platform/config/resdb_config.h"
-#include "platform/consensus/execution/custom_query.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
 
 namespace resdb {

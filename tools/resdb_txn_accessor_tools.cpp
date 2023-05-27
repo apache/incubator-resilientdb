@@ -25,8 +25,8 @@
 
 #include <glog/logging.h>
 
+#include "interface/common/resdb_txn_accessor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/interface/resdb_txn_accessor.h"
 
 using resdb::GenerateReplicaInfo;
 using resdb::ReplicaInfo;

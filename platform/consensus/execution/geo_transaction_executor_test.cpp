@@ -32,10 +32,10 @@
 #include <future>
 
 #include "common/test/test_macros.h"
-#include "platform/communication/mock_replica_communicator.h"
+#include "executor/common/mock_transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/consensus/execution/mock_transaction_manager.h"
 #include "platform/consensus/ordering/common/transaction_utils.h"
+#include "platform/networkstrate/mock_replica_communicator.h"
 
 namespace resdb {
 namespace {

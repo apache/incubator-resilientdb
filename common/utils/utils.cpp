@@ -26,7 +26,6 @@
 #include "common/utils/utils.h"
 
 #include <stdlib.h>
-#include <time.h>
 #include <sys/time.h>
 
 namespace resdb {

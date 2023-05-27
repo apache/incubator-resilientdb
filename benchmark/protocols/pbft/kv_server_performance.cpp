@@ -25,20 +25,15 @@
 
 #include <glog/logging.h>
 
-#include "platform/communication/service_network.h"
+#include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
+#include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
-#include "service/kv_service/executor/kv_service_transaction_manager.h"
-#include "service/kv_service/proto/kv_server.pb.h"
+#include "proto/kv/kv.pb.h"
+#include "storage/in_mem_kv_storage.h"
 
-using resdb::ConsensusManagerPBFT;
-using resdb::GenerateResDBConfig;
-using resdb::KVRequest;
-using resdb::KVServiceTransactionManager;
-using resdb::ResDBConfig;
-using resdb::ServiceNetwork;
-using resdb::Stats;
+using namespace resdb;
 
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
@@ -74,8 +69,7 @@ int main(int argc, char** argv) {
   config->RunningPerformance(true);
 
   auto performance_consens = std::make_unique<ConsensusManagerPBFT>(
-      *config, std::make_unique<KVServiceTransactionManager>(
-                   (*config).GetConfigData(), cert_file));
+      *config, std::make_unique<KVExecutor>(NewInMemKVStorage()));
   performance_consens->SetupPerformanceDataFunc([]() {
     KVRequest request;
     request.set_cmd(KVRequest::SET);

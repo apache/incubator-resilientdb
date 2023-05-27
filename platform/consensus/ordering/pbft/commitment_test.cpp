@@ -33,11 +33,11 @@
 
 #include "common/crypto/mock_signature_verifier.h"
 #include "common/test/test_macros.h"
-#include "platform/communication/mock_replica_communicator.h"
+#include "interface/rdbc/mock_net_channel.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/pbft/checkpoint_manager.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
-#include "platform/interface/mock_resdb_net_channel.h"
+#include "platform/networkstrate/mock_replica_communicator.h"
 
 namespace resdb {
 namespace {
@@ -178,8 +178,8 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
   std::promise<bool> done;
   std::future<bool> done_future = done.get_future();
   for (int i = 0; i < 3; ++i) {
-    std::unique_ptr<MockResDBNetChannel> channel =
-        std::make_unique<MockResDBNetChannel>("127.0.0.1", 0);
+    std::unique_ptr<MockNetChannel> channel =
+        std::make_unique<MockNetChannel>("127.0.0.1", 0);
     auto context = std::make_unique<Context>();
     context->signature.set_signature("signature");
     if (i < 2) {

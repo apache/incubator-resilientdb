@@ -27,10 +27,10 @@
 #include <functional>
 #include <thread>
 
+#include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/system_info.h"
-#include "platform/consensus/execution/transaction_manager.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
 

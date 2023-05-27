@@ -30,9 +30,9 @@
 #include <gtest/gtest.h>
 
 #include "common/test/test_macros.h"
-#include "platform/communication/mock_replica_communicator.h"
+#include "interface/rdbc/mock_net_channel.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/interface/mock_resdb_net_channel.h"
+#include "platform/networkstrate/mock_replica_communicator.h"
 
 namespace resdb {
 namespace {
@@ -115,8 +115,8 @@ TEST_F(ResponseManagerTest, SendUserRequest) {
 }
 
 TEST_F(ResponseManagerTest, ProcessResponse) {
-  std::unique_ptr<MockResDBNetChannel> channel =
-      std::make_unique<MockResDBNetChannel>("127.0.0.1", 0);
+  std::unique_ptr<MockNetChannel> channel =
+      std::make_unique<MockNetChannel>("127.0.0.1", 0);
 
   EXPECT_CALL(*channel, SendRawMessageData).Times(1);
 
@@ -146,8 +146,8 @@ TEST_F(ResponseManagerTest, ProcessResponse) {
 }
 
 TEST_F(ResponseManagerTest, ProcessResponseWithMoreResp) {
-  std::unique_ptr<MockResDBNetChannel> channel =
-      std::make_unique<MockResDBNetChannel>("127.0.0.1", 0);
+  std::unique_ptr<MockNetChannel> channel =
+      std::make_unique<MockNetChannel>("127.0.0.1", 0);
 
   EXPECT_CALL(*channel, SendRawMessageData).Times(1);
 
@@ -179,8 +179,8 @@ TEST_F(ResponseManagerTest, ProcessResponseWithMoreResp) {
 }
 
 TEST_F(ResponseManagerTest, ProcessResponseWithSameSender) {
-  std::unique_ptr<MockResDBNetChannel> channel =
-      std::make_unique<MockResDBNetChannel>("127.0.0.1", 0);
+  std::unique_ptr<MockNetChannel> channel =
+      std::make_unique<MockNetChannel>("127.0.0.1", 0);
 
   EXPECT_CALL(*channel, SendRawMessageData).Times(0);
 

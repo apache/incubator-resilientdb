@@ -1,17 +1,6 @@
 package(default_visibility = ["//platform/consensus/ordering:__subpackages__"])
 
 cc_library(
-    name = "transaction_manager",
-    srcs = ["transaction_manager.cpp"],
-    hdrs = ["transaction_manager.h"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//common:comm",
-        "//platform/proto:resdb_cc_proto",
-    ],
-)
-
-cc_library(
     name = "system_info",
     srcs = ["system_info.cpp"],
     hdrs = ["system_info.h"],
@@ -31,21 +20,13 @@ cc_test(
 )
 
 cc_library(
-    name = "mock_transaction_manager",
-    hdrs = ["mock_transaction_manager.h"],
-    deps = [
-        ":transaction_executor",
-    ],
-)
-
-cc_library(
     name = "transaction_executor",
     srcs = ["transaction_executor.cpp"],
     hdrs = ["transaction_executor.h"],
     deps = [
         ":system_info",
-        ":transaction_manager",
         "//common:comm",
+        "//executor/common:transaction_manager",
         "//platform/common/queue:lock_free_queue",
         "//platform/config:resdb_config",
         "//platform/proto:resdb_cc_proto",
@@ -57,10 +38,10 @@ cc_test(
     name = "transaction_executor_test",
     srcs = ["transaction_executor_test.cpp"],
     deps = [
-        ":mock_transaction_manager",
         ":system_info",
         ":transaction_executor",
         "//common/test:test_main",
+        "//executor/common:mock_transaction_manager",
     ],
 )
 
@@ -71,8 +52,8 @@ cc_library(
     deps = [
         ":system_info",
         ":transaction_executor",
-        "//platform/communication:replica_communicator",
         "//platform/consensus/ordering/common:transaction_utils",
+        "//platform/networkstrate:replica_communicator",
     ],
 )
 
@@ -81,7 +62,7 @@ cc_library(
     srcs = ["geo_global_executor.cpp"],
     hdrs = ["geo_global_executor.h"],
     deps = [
-        ":transaction_manager",
+        "//executor/common:transaction_manager",
         "//platform/common/queue:lock_free_queue",
         "//platform/config:resdb_config",
         "//platform/statistic:stats",
@@ -93,8 +74,8 @@ cc_test(
     srcs = ["geo_global_executor_test.cpp"],
     deps = [
         ":geo_global_executor",
-        ":mock_transaction_manager",
         "//common/test:test_main",
+        "//executor/common:mock_transaction_manager",
         "//platform/config:resdb_config_utils",
     ],
 )
@@ -112,18 +93,10 @@ cc_test(
     srcs = ["geo_transaction_executor_test.cpp"],
     deps = [
         ":geo_transaction_executor",
-        ":mock_transaction_manager",
         "//common/test",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
+        "//executor/common:mock_transaction_manager",
         "//platform/config:resdb_config_utils",
-    ],
-)
-
-cc_library(
-    name = "custom_query",
-    hdrs = ["custom_query.h"],
-    visibility = ["//visibility:public"],
-    deps = [
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )

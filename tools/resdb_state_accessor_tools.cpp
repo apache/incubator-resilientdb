@@ -25,8 +25,8 @@
 
 #include <glog/logging.h>
 
+#include "interface/common/resdb_state_accessor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/interface/resdb_state_accessor.h"
 
 using namespace resdb;
 

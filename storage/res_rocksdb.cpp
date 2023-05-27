@@ -31,11 +31,11 @@
 namespace resdb {
 
 std::unique_ptr<Storage> NewResRocksDB(
-    char* cert_file, std::optional<resdb::ResConfigData> config_data) {
+    const char* cert_file, std::optional<resdb::ResConfigData> config_data) {
   return std::make_unique<ResRocksDB>(cert_file, config_data);
 }
 
-ResRocksDB::ResRocksDB(char* cert_file,
+ResRocksDB::ResRocksDB(const char* cert_file,
                        std::optional<ResConfigData> config_data) {
   std::string directory_id = "";
 

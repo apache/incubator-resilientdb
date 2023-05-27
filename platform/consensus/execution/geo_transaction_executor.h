@@ -24,10 +24,10 @@
  */
 
 #pragma once
-#include "platform/communication/replica_communicator.h"
+#include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/system_info.h"
-#include "platform/consensus/execution/transaction_manager.h"
+#include "platform/networkstrate/replica_communicator.h"
 
 namespace resdb {
 

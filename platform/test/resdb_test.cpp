@@ -29,11 +29,11 @@
 
 #include <thread>
 
-#include "platform/communication/service_network.h"
+#include "executor/common/transaction_manager.h"
+#include "interface/rdbc/transaction_constructor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/consensus/execution/transaction_manager.h"
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
-#include "platform/interface/resdb_transaction_proposer.h"
+#include "platform/networkstrate/service_network.h"
 #include "platform/test/proto/resdb_test.pb.h"
 
 namespace resdb {
@@ -45,10 +45,9 @@ const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
                              "/platform/test/";
 
-class ResDBTestClient : public ResDBTransactionProposer {
+class ResDBTestClient : public TransactionConstructor {
  public:
-  ResDBTestClient(const ResDBConfig& config)
-      : ResDBTransactionProposer(config) {}
+  ResDBTestClient(const ResDBConfig& config) : TransactionConstructor(config) {}
 
   int Set(int seq) {
     TestRequest request;

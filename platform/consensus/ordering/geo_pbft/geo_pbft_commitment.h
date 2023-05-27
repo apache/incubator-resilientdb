@@ -25,12 +25,12 @@
 
 #pragma once
 
-#include "platform/communication/replica_communicator.h"
-#include "platform/communication/server_comm.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/geo_global_executor.h"
 #include "platform/consensus/execution/system_info.h"
 #include "platform/consensus/ordering/geo_pbft/hash_set.h"
+#include "platform/networkstrate/replica_communicator.h"
+#include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
 
 namespace resdb {

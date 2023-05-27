@@ -26,11 +26,11 @@
 #pragma once
 
 #include "common/crypto/signature_verifier.h"
-#include "platform/communication/replica_communicator.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/system_info.h"
 #include "platform/consensus/ordering/pbft/checkpoint_manager.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
+#include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/viewchange_message.pb.h"
 
 namespace resdb {
