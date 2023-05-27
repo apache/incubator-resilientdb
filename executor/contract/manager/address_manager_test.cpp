@@ -26,8 +26,8 @@
 #include "executor/contract/manager/address_manager.h"
 
 #include "eEVM/util.h"
-#include "glog/logging.h"
-#include "gtest/gtest.h"
+#include <glog/logging.h>
+#include <gtest/gtest.h>
 
 namespace resdb {
 namespace contract {
