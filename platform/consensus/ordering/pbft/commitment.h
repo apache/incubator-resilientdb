@@ -26,10 +26,10 @@
 #pragma once
 
 #include "platform/common/queue/batch_queue.h"
-#include "platform/communication/replica_communicator.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/consensus/ordering/pbft/response_manager.h"
+#include "platform/networkstrate/replica_communicator.h"
 #include "platform/statistic/stats.h"
 
 namespace resdb {

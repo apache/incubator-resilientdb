@@ -31,7 +31,7 @@
 #include <future>
 
 #include "common/test/test_macros.h"
-#include "platform/consensus/execution/mock_transaction_manager.h"
+#include "executor/common/mock_transaction_manager.h"
 
 namespace resdb {
 namespace {

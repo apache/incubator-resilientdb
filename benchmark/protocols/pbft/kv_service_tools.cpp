@@ -42,8 +42,7 @@ using resdb::ResDBKVClient;
 
 int main(int argc, char** argv) {
   if (argc < 2) {
-    printf(
-        "<config path>\n");
+    printf("<config path>\n");
     return 0;
   }
   std::string client_config_file = argv[1];

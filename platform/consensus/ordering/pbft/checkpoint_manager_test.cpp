@@ -33,9 +33,9 @@
 
 #include "common/crypto/mock_signature_verifier.h"
 #include "common/test/test_macros.h"
-#include "platform/communication/mock_replica_communicator.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/pbft/transaction_utils.h"
+#include "platform/networkstrate/mock_replica_communicator.h"
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/statistic/stats.h"
 

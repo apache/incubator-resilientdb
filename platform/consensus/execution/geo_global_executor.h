@@ -28,9 +28,9 @@
 #include <queue>
 #include <unordered_map>
 
+#include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"
-#include "platform/consensus/execution/transaction_manager.h"
 #include "platform/statistic/stats.h"
 
 namespace resdb {

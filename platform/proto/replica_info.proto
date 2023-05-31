@@ -45,4 +45,5 @@ message ReplicaStates {
 message ReplicaState {
   int64 view = 1;
   ReplicaInfo replica_info = 2;
+  ResConfigData replica_config = 3;
 }

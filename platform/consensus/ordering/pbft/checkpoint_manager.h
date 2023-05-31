@@ -26,9 +26,9 @@
 #pragma once
 
 #include "common/crypto/signature_verifier.h"
-#include "platform/communication/replica_communicator.h"
-#include "platform/communication/server_comm.h"
 #include "platform/config/resdb_config.h"
+#include "platform/networkstrate/replica_communicator.h"
+#include "platform/networkstrate/server_comm.h"
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
 #include "storage/txn_memory_db.h"

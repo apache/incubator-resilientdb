@@ -9,5 +9,3 @@ cc_library(
         "//platform/proto:resdb_cc_proto",
     ],
 )
-
-

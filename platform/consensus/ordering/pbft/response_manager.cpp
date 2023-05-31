@@ -181,7 +181,7 @@ void ResponseManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   uint64_t local_id = batch_response.local_id();
   if (create_time > 0) {
-    uint64_t run_time = GetSysClock() - create_time;
+    uint64_t run_time = GetCurrentTime() - create_time;
     global_stats_->AddLatency(run_time);
   } else {
     LOG(ERROR) << "seq:" << local_id << " no resp";
@@ -284,7 +284,7 @@ int ResponseManager::DoBatch(
       return ret;
     }
   }
-  batch_request.set_createtime(GetSysClock());
+  batch_request.set_createtime(GetCurrentTime());
   std::string data;
   batch_request.SerializeToString(&data);
   if (verifier_) {

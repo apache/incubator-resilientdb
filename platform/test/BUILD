@@ -9,11 +9,11 @@ cc_test(
     deps = [
         "//common:comm",
         "//common/test:test_main",
-        "//platform/communication:service_network",
+        "//executor/common:transaction_manager",
+        "//interface/rdbc:transaction_constructor",
         "//platform/config:resdb_config_utils",
-        "//platform/consensus/execution:transaction_manager",
         "//platform/consensus/ordering/pbft:consensus_manager_pbft",
-        "//platform/interface:resdb_transaction_proposer",
+        "//platform/networkstrate:service_network",
         "//platform/test/proto:resdb_test_cc_proto",
     ],
 )

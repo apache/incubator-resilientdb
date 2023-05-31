@@ -25,7 +25,7 @@ cc_library(
     deps = [
         ":lock_free_collector_pool",
         ":transaction_utils",
-        "//platform/communication:replica_communicator",
+        "//platform/networkstrate:replica_communicator",
     ],
 )
 
@@ -35,9 +35,9 @@ cc_test(
     deps = [
         ":response_manager",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
+        "//interface/rdbc:mock_net_channel",
         "//platform/config:resdb_config_utils",
-        "//platform/interface:mock_resdb_net_channel",
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )
 
@@ -48,7 +48,7 @@ cc_library(
     deps = [
         ":lock_free_collector_pool",
         ":transaction_utils",
-        "//platform/communication:replica_communicator",
+        "//platform/networkstrate:replica_communicator",
     ],
 )
 
@@ -61,9 +61,9 @@ cc_library(
         ":lock_free_collector_pool",
         ":transaction_collector",
         ":transaction_utils",
-        "//platform/communication:server_comm",
+        "//executor/common:transaction_manager",
         "//platform/config:resdb_config",
-        "//platform/consensus/execution:transaction_manager",
+        "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
         "//storage:txn_memory_db",
     ],
@@ -87,8 +87,8 @@ cc_library(
         ":response_manager",
         "//common/utils",
         "//platform/common/queue:batch_queue",
-        "//platform/communication:replica_communicator",
         "//platform/config:resdb_config",
+        "//platform/networkstrate:replica_communicator",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
     ],
@@ -101,9 +101,9 @@ cc_test(
         ":commitment",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
+        "//interface/rdbc:mock_net_channel",
         "//platform/config:resdb_config_utils",
-        "//platform/interface:mock_resdb_net_channel",
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )
 
@@ -114,9 +114,9 @@ cc_library(
     deps = [
         ":transaction_utils",
         "//common/crypto:signature_verifier",
-        "//platform/communication:replica_communicator",
-        "//platform/communication:server_comm",
         "//platform/config:resdb_config",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
         "//storage:txn_memory_db",
     ],
@@ -129,8 +129,8 @@ cc_test(
         ":checkpoint_manager",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
         "//platform/config:resdb_config_utils",
+        "//platform/networkstrate:mock_replica_communicator",
         "//platform/statistic:stats",
     ],
 )
@@ -143,9 +143,9 @@ cc_library(
         ":checkpoint_manager",
         ":message_manager",
         ":transaction_utils",
-        "//platform/communication:replica_communicator",
         "//platform/config:resdb_config",
         "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:replica_communicator",
         "//platform/proto:viewchange_message_cc_proto",
     ],
 )
@@ -157,9 +157,9 @@ cc_test(
         ":viewchange_manager",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )
 
@@ -169,8 +169,8 @@ cc_library(
     hdrs = ["query.h"],
     deps = [
         ":message_manager",
+        "//executor/common:custom_query",
         "//platform/config:resdb_config",
-        "//platform/consensus/execution:custom_query",
         "//platform/proto:resdb_cc_proto",
     ],
 )
@@ -183,9 +183,9 @@ cc_test(
         ":query",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
+        "//interface/rdbc:mock_net_channel",
         "//platform/config:resdb_config_utils",
-        "//platform/interface:mock_resdb_net_channel",
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )
 
@@ -194,8 +194,8 @@ cc_library(
     srcs = ["transaction_collector.cpp"],
     hdrs = ["transaction_collector.h"],
     deps = [
-        "//platform/communication:server_comm",
         "//platform/consensus/execution:transaction_executor",
+        "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
     ],
@@ -215,9 +215,7 @@ cc_library(
     srcs = ["consensus_manager_pbft.cpp"],
     hdrs = ["consensus_manager_pbft.h"],
     visibility = [
-        "//benchmark:__subpackages__",
-        "//platform:__subpackages__",
-        "//service:__subpackages__",
+        "//visibility:public",
     ],
     deps = [
         ":checkpoint_manager",
@@ -227,7 +225,7 @@ cc_library(
         ":query",
         ":viewchange_manager",
         "//common/crypto:signature_verifier",
-        "//platform/communication:consensus_manager",
+        "//platform/networkstrate:consensus_manager",
     ],
 )
 

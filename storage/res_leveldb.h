@@ -36,12 +36,12 @@
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewResLevelDB(char* cert_file,
+std::unique_ptr<Storage> NewResLevelDB(const char* cert_file,
                                        resdb::ResConfigData config_data);
 
 class ResLevelDB : public Storage {
  public:
-  ResLevelDB(char* cert_file, std::optional<ResConfigData> config_data);
+  ResLevelDB(const char* cert_file, std::optional<ResConfigData> config_data);
 
   virtual ~ResLevelDB();
   int SetValue(const std::string& key, const std::string& value) override;

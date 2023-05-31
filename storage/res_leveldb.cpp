@@ -29,12 +29,12 @@
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewResLevelDB(char* cert_file,
+std::unique_ptr<Storage> NewResLevelDB(const char* cert_file,
                                        resdb::ResConfigData config_data) {
   return std::make_unique<ResLevelDB>(cert_file, config_data);
 }
 
-ResLevelDB::ResLevelDB(char* cert_file,
+ResLevelDB::ResLevelDB(const char* cert_file,
                        std::optional<ResConfigData> config_data) {
   std::string directory_id = "";
 
@@ -99,6 +99,7 @@ ResLevelDB::~ResLevelDB() {
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
   batch_.Put(key, value);
+
   if (batch_.ApproximateSize() >= write_batch_size_) {
     leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
     if (status.ok()) {

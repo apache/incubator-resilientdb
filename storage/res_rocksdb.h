@@ -36,11 +36,11 @@
 namespace resdb {
 
 std::unique_ptr<Storage> NewResRocksDB(
-    char* cert_file, std::optional<resdb::ResConfigData> config_data);
+    const char* cert_file, std::optional<resdb::ResConfigData> config_data);
 
 class ResRocksDB : public Storage {
  public:
-  ResRocksDB(char* cert_file, std::optional<ResConfigData> config_data);
+  ResRocksDB(const char* cert_file, std::optional<ResConfigData> config_data);
   virtual ~ResRocksDB();
   int SetValue(const std::string& key, const std::string& value) override;
   std::string GetValue(const std::string& key) override;

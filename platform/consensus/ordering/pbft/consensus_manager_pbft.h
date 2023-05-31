@@ -25,9 +25,8 @@
 
 #pragma once
 
-#include "platform/communication/consensus_manager.h"
+#include "executor/common/custom_query.h"
 #include "platform/config/resdb_config.h"
-#include "platform/consensus/execution/custom_query.h"
 #include "platform/consensus/ordering/pbft/checkpoint_manager.h"
 #include "platform/consensus/ordering/pbft/commitment.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
@@ -35,6 +34,7 @@
 #include "platform/consensus/ordering/pbft/query.h"
 #include "platform/consensus/ordering/pbft/response_manager.h"
 #include "platform/consensus/ordering/pbft/viewchange_manager.h"
+#include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
 

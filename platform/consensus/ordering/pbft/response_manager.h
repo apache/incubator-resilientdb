@@ -25,10 +25,10 @@
 
 #pragma once
 
-#include "platform/communication/replica_communicator.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/lock_free_collector_pool.h"
 #include "platform/consensus/ordering/pbft/transaction_utils.h"
+#include "platform/networkstrate/replica_communicator.h"
 #include "platform/statistic/stats.h"
 
 namespace resdb {

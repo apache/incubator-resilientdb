@@ -19,12 +19,12 @@ cc_library(
     deps = [
         ":hash_set",
         "//common:comm",
-        "//platform/communication:replica_communicator",
-        "//platform/communication:server_comm",
         "//platform/config:resdb_config",
         "//platform/consensus/execution:geo_global_executor",
         "//platform/consensus/execution:system_info",
         "//platform/consensus/ordering/common:transaction_utils",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
     ],
 )
@@ -42,9 +42,9 @@ cc_test(
         ":geo_pbft_commitment",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
-        "//platform/communication:mock_replica_communicator",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/execution:mock_geo_global_executor",
         "//platform/consensus/execution:mock_transaction_executor_impl",
+        "//platform/networkstrate:mock_replica_communicator",
     ],
 )

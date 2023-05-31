@@ -29,8 +29,8 @@ cc_binary(
     name = "resdb_state_accessor_tools",
     srcs = ["resdb_state_accessor_tools.cpp"],
     deps = [
+        "//interface/common:resdb_state_accessor",
         "//platform/config:resdb_config_utils",
-        "//platform/interface:resdb_state_accessor",
     ],
 )
 
@@ -38,8 +38,8 @@ cc_binary(
     name = "resdb_txn_accessor_tools",
     srcs = ["resdb_txn_accessor_tools.cpp"],
     deps = [
+        "//interface/common:resdb_txn_accessor",
         "//platform/config:resdb_config_utils",
-        "//platform/interface:resdb_txn_accessor",
     ],
 )
 
@@ -51,10 +51,10 @@ py_binary(
     ],
 )
 
-#py_binary(
-#    name = "generate_mulregion_config",
-#    srcs = ["generate_mulregion_config.py"],
-#    deps = [
-#        "//platform/proto:replica_info_py_proto",
-#    ],
-#)
+py_binary(
+    name = "generate_mulregion_config",
+    srcs = ["generate_mulregion_config.py"],
+    deps = [
+        "//platform/proto:replica_info_py_proto",
+    ],
+)
