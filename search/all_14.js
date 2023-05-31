@@ -12,7 +12,7 @@ var searchData=
   ['utxo_5fexecutor_2ecpp_9',['utxo_executor.cpp',['../d5/da3/utxo__executor_8cpp.html',1,'']]],
   ['utxo_5fexecutor_2eh_10',['utxo_executor.h',['../d9/dbb/utxo__executor_8h.html',1,'']]],
   ['utxo_5fexecutor_5ftest_2ecpp_11',['utxo_executor_test.cpp',['../d5/df8/utxo__executor__test_8cpp.html',1,'']]],
-  ['utxo_5fserver_2ecpp_12',['utxo_server.cpp',['../d2/da2/utxo__server_8cpp.html',1,'']]],
+  ['utxo_5fservice_2ecpp_12',['utxo_service.cpp',['../d4/d30/utxo__service_8cpp.html',1,'']]],
   ['utxoclient_13',['UTXOClient',['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html',1,'resdb::utxo::UTXOClient'],['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html#aefb23cd8c7705337c87d7b4a19e321b6',1,'resdb::utxo::UTXOClient::UTXOClient()']]],
   ['utxoexecutor_14',['UTXOExecutor',['../de/de8/classresdb_1_1utxo_1_1UTXOExecutor.html',1,'resdb::utxo::UTXOExecutor'],['../de/de8/classresdb_1_1utxo_1_1UTXOExecutor.html#ac88c78d485fb83492cc6d88c71fe18e6',1,'resdb::utxo::UTXOExecutor::UTXOExecutor()']]]
 ];

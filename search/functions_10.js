@@ -2,7 +2,7 @@ var searchData=
 [
   ['read_5ftps_0',['read_tps',['../d8/d54/namespacecalculate__result.html#aa1a662b60cf2bab2562007eb11c40dde',1,'calculate_result']]],
   ['readconfig_1',['ReadConfig',['../d5/d10/namespaceresdb.html#a67842a19269800fb4efcff8d4082118b',1,'resdb']]],
-  ['readconfigfromfile_2',['ReadConfigFromFile',['../d5/d10/namespaceresdb.html#aa55fc1c659f788583d9b656c93a8455b',1,'resdb::ReadConfigFromFile()'],['../d2/da2/utxo__server_8cpp.html#ad61cfeaeddea3145878c30f59ebd48cc',1,'ReadConfigFromFile(const std::string &amp;file_name):&#160;utxo_server.cpp']]],
+  ['readconfigfromfile_2',['ReadConfigFromFile',['../d5/d10/namespaceresdb.html#aa55fc1c659f788583d9b656c93a8455b',1,'resdb::ReadConfigFromFile()'],['../d4/d30/utxo__service_8cpp.html#ad61cfeaeddea3145878c30f59ebd48cc',1,'ReadConfigFromFile(const std::string &amp;file_name):&#160;utxo_service.cpp']]],
   ['readdata_3',['ReadData',['../d6/d49/certificate__tools__test_8cpp.html#a36cf574a450e58a92a81e2afb85ce5df',1,'certificate_tools_test.cpp']]],
   ['readkey_4',['ReadKey',['../d2/dca/certificate__tools_8cpp.html#ac57862d3b3731f6987373443dd5127bd',1,'ReadKey(const std::string &amp;file_name):&#160;certificate_tools.cpp'],['../d6/d49/certificate__tools__test_8cpp.html#ac57862d3b3731f6987373443dd5127bd',1,'ReadKey(const std::string &amp;file_name):&#160;certificate_tools_test.cpp']]],
   ['recv_5',['Recv',['../d0/d29/classresdb_1_1Socket.html#a23008bf7aebd8f5d9d19c507326f06b4',1,'resdb::Socket::Recv()'],['../de/dc3/classresdb_1_1NetChannel.html#aae106e62dc0b68ebfe8f6f337e4a4914',1,'resdb::NetChannel::Recv()'],['../d4/de5/classresdb_1_1TcpSocket.html#a54897c0db952e0d51c9dfa3abca7edb2',1,'resdb::TcpSocket::Recv()']]],

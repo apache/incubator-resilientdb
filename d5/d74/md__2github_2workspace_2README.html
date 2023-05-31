@@ -116,6 +116,7 @@ Quick Facts on ResilientDB</h2>
 <h1><a class="anchor" id="autotoc_md57"></a>
 Online Documentation:</h1>
 <p>You may find the latest ResilientDB documentation, including a programming guide, on our <b><a href="https://blog.resilientdb.com/archive.html?tag=NexRes">blog repository</a></b>. This README file provides basic setup instructions.</p>
+<p><img src="../.././img/nexres.pdf" alt="Nexres" class="inline"/></p>
 <h3><a class="anchor" id="autotoc_md58"></a>
 Table of Contents</h3>
 <ol type="1">
@@ -147,16 +148,16 @@ OS Requirements</h1>
 <h1><a class="anchor" id="autotoc_md61"></a>
 Build and Deploy ResilientDB</h1>
 <p>Install dependencies: </p><pre class="fragment">./INSTALL.sh
-</pre><p>Run ResilientDB (Providing a Key-Value Service): </p><pre class="fragment">./service/tools/kv_service/service_tools/start_kv_service.sh
+</pre><p>Run ResilientDB (Providing a Key-Value Service): </p><pre class="fragment">./service/tools/kv/server_tools/start_kv_service.sh
 </pre><ul>
 <li>This script will start 4 replica and 1 client. Each replica instantiates a key-value store.</li>
 </ul>
-<p>Build Interactive Tools: </p><pre class="fragment">bazel build service/tools/kv_service/api_tools/kv_service_tools
-</pre><p> Run tools to set a value by a key (for example, set the value with key "test" and value "test_value"): </p><pre class="fragment">bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
+<p>Build Interactive Tools: </p><pre class="fragment">bazel build service/tools/kv/api_tools/kv_service_tools
+</pre><p> Run tools to set a value by a key (for example, set the value with key "test" and value "test_value"): </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client set ret = 0
-</pre><p> Run tools to get value by a key (for example, get the value with key "test"): </p><pre class="fragment">bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config get test test_value
+</pre><p> Run tools to get value by a key (for example, get the value with key "test"): </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test test_value
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client get value = test_value
-</pre><p> Run tools to get all values that have been set: </p><pre class="fragment">bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
+</pre><p> Run tools to get all values that have been set: </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client getvalues value = [test_value]
 </pre> </div></div><!-- contents -->
 </div><!-- PageDoc -->

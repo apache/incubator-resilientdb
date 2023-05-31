@@ -176,40 +176,39 @@ $(document).ready(function(){initNavTree('d1/d7e/acceptor_8cpp_source.html','../
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        item-&gt;socket = std::move(client_socket);</div>
 <div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>        item-&gt;data = std::move(request_info);</div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">ServerCall</a>();</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;push item&quot;</span>;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        input_queue_-&gt;<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(item));</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>      }</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    }));</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  }</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  <span class="keywordflow">while</span> (IsRunning()) {</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keyword">auto</span> client_socket = socket_-&gt;Accept();</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">if</span> (client_socket == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    }</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    socket_queue.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(client_socket));</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  }</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; th : threads) {</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordflow">if</span> (th.joinable()) {</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>      th.join();</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    }</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  }</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>}</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno"><a class="line" href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">   98</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">Acceptor::Stop</a>() {</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  is_stop_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  socket_-&gt;Close();</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>}</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="keywordtype">bool</span> Acceptor::IsRunning() { <span class="keywordflow">return</span> !is_stop_; }</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        input_queue_-&gt;<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(item));</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>      }</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    }));</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  }</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  <span class="keywordflow">while</span> (IsRunning()) {</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keyword">auto</span> client_socket = socket_-&gt;Accept();</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordflow">if</span> (client_socket == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    }</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    socket_queue.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(client_socket));</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  }</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; th : threads) {</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordflow">if</span> (th.joinable()) {</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>      th.join();</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    }</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  }</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>}</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno"><a class="line" href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">   97</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">Acceptor::Stop</a>() {</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  is_stop_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  socket_-&gt;Close();</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>}</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span> </div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="keywordtype">bool</span> Acceptor::IsRunning() { <span class="keywordflow">return</span> !is_stop_; }</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aacceptor_8h_html"><div class="ttname"><a href="../../d1/d31/acceptor_8h.html">acceptor.h</a></div></div>
 <div class="ttc" id="aclassresdb_1_1Acceptor_html_a08959e6b6f17b06cedf146d60288728b"><div class="ttname"><a href="../../d6/dac/classresdb_1_1Acceptor.html#a08959e6b6f17b06cedf146d60288728b">resdb::Acceptor::~Acceptor</a></div><div class="ttdeci">virtual ~Acceptor()</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d7e/acceptor_8cpp_source.html#l00052">acceptor.cpp:52</a></div></div>
 <div class="ttc" id="aclassresdb_1_1Acceptor_html_a763b62e46a6d17ad2959f83492ecf56b"><div class="ttname"><a href="../../d6/dac/classresdb_1_1Acceptor.html#a763b62e46a6d17ad2959f83492ecf56b">resdb::Acceptor::Run</a></div><div class="ttdeci">void Run()</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d7e/acceptor_8cpp_source.html#l00054">acceptor.cpp:54</a></div></div>
 <div class="ttc" id="aclassresdb_1_1Acceptor_html_a9dc7e4d205155b8b9b2527aca2ff22c9"><div class="ttname"><a href="../../d6/dac/classresdb_1_1Acceptor.html#a9dc7e4d205155b8b9b2527aca2ff22c9">resdb::Acceptor::Acceptor</a></div><div class="ttdeci">Acceptor(const ResDBConfig &amp;config, LockFreeQueue&lt; QueueItem &gt; *input_queue)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d7e/acceptor_8cpp_source.html#l00037">acceptor.cpp:37</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Acceptor_html_aec406738c3d88c1b9d820ada50e06c7c"><div class="ttname"><a href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">resdb::Acceptor::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d7e/acceptor_8cpp_source.html#l00098">acceptor.cpp:98</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Acceptor_html_aec406738c3d88c1b9d820ada50e06c7c"><div class="ttname"><a href="../../d6/dac/classresdb_1_1Acceptor.html#aec406738c3d88c1b9d820ada50e06c7c">resdb::Acceptor::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d7e/acceptor_8cpp_source.html#l00097">acceptor.cpp:97</a></div></div>
 <div class="ttc" id="aclassresdb_1_1LockFreeQueue_html"><div class="ttname"><a href="../../da/dd3/classresdb_1_1LockFreeQueue.html">resdb::LockFreeQueue</a></div><div class="ttdef"><b>Definition</b> <a href="../../d1/dc3/lock__free__queue_8h_source.html#l00038">lock_free_queue.h:38</a></div></div>
 <div class="ttc" id="aclassresdb_1_1LockFreeQueue_html_a31109d24473eb39492d0c1ae959d0444"><div class="ttname"><a href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">resdb::LockFreeQueue::Push</a></div><div class="ttdeci">void Push(std::unique_ptr&lt; T &gt; data)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dc3/lock__free__queue_8h_source.html#l00041">lock_free_queue.h:41</a></div></div>
 <div class="ttc" id="aclassresdb_1_1LockFreeQueue_html_a411d447bf97a1628f11174d1d406d806"><div class="ttname"><a href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">resdb::LockFreeQueue::Pop</a></div><div class="ttdeci">std::unique_ptr&lt; T &gt; Pop(int timeout_ms=100)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dc3/lock__free__queue_8h_source.html#l00058">lock_free_queue.h:58</a></div></div>
