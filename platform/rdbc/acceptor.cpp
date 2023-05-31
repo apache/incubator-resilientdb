@@ -74,7 +74,6 @@ void Acceptor::Run() {
         item->socket = std::move(client_socket);
         item->data = std::move(request_info);
         global_stats_->ServerCall();
-        LOG(ERROR) << "push item";
         input_queue_->Push(std::move(item));
       }
     }));
