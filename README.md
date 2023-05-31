@@ -18,6 +18,8 @@
 
 You may find the latest ResilientDB documentation, including a programming guide, on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
 
+![Nexres](./img/nexres.pdf)
+
 #### Table of Contents
 1. Software Stack Architecture 
    - Platform, Service, and Tooling/API Layers [TBA]
@@ -48,17 +50,17 @@ Install dependencies:
 
 Run ResilientDB (Providing a Key-Value Service):
 
-    ./service/tools/kv_service/service_tools/start_kv_service.sh
+    ./service/tools/kv/server_tools/start_kv_service.sh
     
 - This script will start 4 replica and 1 client. Each replica instantiates a key-value store.
 
 Build Interactive Tools:
 
-    bazel build service/tools/kv_service/api_tools/kv_service_tools
+    bazel build service/tools/kv/api_tools/kv_service_tools
 
 Run tools to set a value by a key (for example, set the value with key "test" and value "test_value"):
 
-    bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
     
 You will see the following result if successful:
 
@@ -66,7 +68,7 @@ You will see the following result if successful:
 
 Run tools to get value by a key (for example, get the value with key "test"):
 
-    bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config get test test_value
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test test_value
     
 You will see the following result if successful:
 
@@ -74,7 +76,7 @@ You will see the following result if successful:
 
 Run tools to get all values that have been set:
 
-    bazel-bin/service/tools/kv_service/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
 
 You will see the following result if successful:
 

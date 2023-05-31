@@ -96,7 +96,6 @@ void ServiceNetwork::InputProcess() {
         if (item == nullptr) {
           continue;
         }
-        LOG(ERROR) << "get item";
         global_stats_->ServerProcess();
         Process(std::move(item));
       }
