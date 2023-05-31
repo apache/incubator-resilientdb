@@ -3,7 +3,7 @@ var classresdb_1_1ReplicaCommunicator =
     [ "ReplicaCommunicator", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#a103e777ec9dd9f70b2ea4ae551405617", null ],
     [ "~ReplicaCommunicator", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#a5f9f44ab6f7faf07cfc102f0ce4003b1", null ],
     [ "BroadCast", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#a14668b5802825c825f8a64eeb3388323", null ],
-    [ "GetClient", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#acc5c3482ffe362d55c9675268dfcbea6", null ],
+    [ "GetClient", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#a6626f42ecb400e1319ae1f4bbb3ad7fd", null ],
     [ "GetClientFromPool", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#ac8fbc4295558546489ccecff50c2a2c2", null ],
     [ "GetClientReplicas", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#aa998887439d733db45e23e70b6c420f7", null ],
     [ "IsInPool", "d3/d5e/classresdb_1_1ReplicaCommunicator.html#aad6f3fa1ff3b39824f6acad8f092c588", null ],

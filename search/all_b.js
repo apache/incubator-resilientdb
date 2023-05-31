@@ -16,6 +16,6 @@ var searchData=
   ['lockfreequeue_3c_20request_20_3e_13',['LockFreeQueue&lt; Request &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
   ['lockfreequeue_3c_20resdb_3a_3aqueueitem_20_3e_14',['LockFreeQueue&lt; resdb::QueueItem &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
   ['lockfreequeue_3c_20std_3a_3astring_20_3e_15',['LockFreeQueue&lt; std::string &gt;',['../da/dd3/classresdb_1_1LockFreeQueue.html',1,'resdb']]],
-  ['long_5fconnect_5ftion_5f_16',['long_connect_tion_',['../dc/d9f/classresdb_1_1ResDBNetChannel.html#a68c64b3a3e3a67a9eaa1a0465998d19f',1,'resdb::ResDBNetChannel']]],
-  ['long_5fconnecting_5f_17',['long_connecting_',['../dc/d9f/classresdb_1_1ResDBNetChannel.html#afe7cde1493de17b0d268d9395da31ec7',1,'resdb::ResDBNetChannel']]]
+  ['long_5fconnect_5ftion_5f_16',['long_connect_tion_',['../de/dc3/classresdb_1_1NetChannel.html#a8c41b28517b37e7ebeaf31d5e909072a',1,'resdb::NetChannel']]],
+  ['long_5fconnecting_5f_17',['long_connecting_',['../de/dc3/classresdb_1_1NetChannel.html#a6c3b02cfdaa365103c2c3b7d202a58d4',1,'resdb::NetChannel']]]
 ];

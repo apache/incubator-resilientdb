@@ -1,5 +1,6 @@
 var hierarchy =
 [
+    [ "resdb::Acceptor", "d6/dac/classresdb_1_1Acceptor.html", null ],
     [ "resdb::contract::AddressManager", "d4/d26/classresdb_1_1contract_1_1AddressManager.html", null ],
     [ "resdb::AsyncAcceptor", "d3/d77/classresdb_1_1AsyncAcceptor.html", null ],
     [ "resdb::AsyncReplicaClient", "d8/d9d/classresdb_1_1AsyncReplicaClient.html", [
@@ -36,6 +37,15 @@ var hierarchy =
     [ "resdb::LockFreeQueue< resdb::QueueItem >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::LockFreeQueue< std::string >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::MessageManager", "d7/d18/classresdb_1_1MessageManager.html", null ],
+    [ "resdb::NetChannel", "de/dc3/classresdb_1_1NetChannel.html", [
+      [ "resdb::MockNetChannel", "d4/dac/classresdb_1_1MockNetChannel.html", null ],
+      [ "resdb::TransactionConstructor", "d0/da5/classresdb_1_1TransactionConstructor.html", [
+        [ "resdb::KVClient", "d4/dbb/classresdb_1_1KVClient.html", null ],
+        [ "resdb::ResDBTestClient", "d8/d65/classresdb_1_1ResDBTestClient.html", null ],
+        [ "resdb::contract::ContractClient", "d9/dfa/classresdb_1_1contract_1_1ContractClient.html", null ],
+        [ "resdb::utxo::UTXOClient", "d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html", null ]
+      ] ]
+    ] ],
     [ "resdb::PerformanceManager", "d1/d89/classresdb_1_1PerformanceManager.html", null ],
     [ "resdb::PrometheusHandler", "df/dcf/classresdb_1_1PrometheusHandler.html", null ],
     [ "resdb::Query", "de/d6d/classresdb_1_1Query.html", null ],
@@ -47,15 +57,6 @@ var hierarchy =
     [ "resdb::RequestInfo", "d8/d15/structresdb_1_1RequestInfo.html", null ],
     [ "resdb::ResDBConfig", "db/ddb/classresdb_1_1ResDBConfig.html", [
       [ "resdb::ResDBPoCConfig", "da/d86/classresdb_1_1ResDBPoCConfig.html", null ]
-    ] ],
-    [ "resdb::ResDBNetChannel", "dc/d9f/classresdb_1_1ResDBNetChannel.html", [
-      [ "resdb::MockResDBNetChannel", "db/d3e/classresdb_1_1MockResDBNetChannel.html", null ],
-      [ "resdb::ResDBTransactionProposer", "df/d19/classresdb_1_1ResDBTransactionProposer.html", [
-        [ "resdb::ResDBKVClient", "d8/db0/classresdb_1_1ResDBKVClient.html", null ],
-        [ "resdb::ResDBTestClient", "d8/d65/classresdb_1_1ResDBTestClient.html", null ],
-        [ "resdb::contract::ContractClient", "d9/dfa/classresdb_1_1contract_1_1ContractClient.html", null ],
-        [ "resdb::utxo::UTXOClient", "d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html", null ]
-      ] ]
     ] ],
     [ "resdb::ResDBStateAccessor", "d7/d30/classresdb_1_1ResDBStateAccessor.html", null ],
     [ "resdb::ResDBTxnAccessor", "da/d12/classresdb_1_1ResDBTxnAccessor.html", [
@@ -98,13 +99,13 @@ var hierarchy =
     [ "resdb::TransactionExecutor", "da/dfa/classresdb_1_1TransactionExecutor.html", null ],
     [ "resdb::TransactionManager", "df/d01/classresdb_1_1TransactionManager.html", [
       [ "resdb::GeoTransactionExecutor", "d9/d92/classresdb_1_1GeoTransactionExecutor.html", null ],
-      [ "resdb::KVServiceTransactionManager", "dd/dfc/classresdb_1_1KVServiceTransactionManager.html", null ],
+      [ "resdb::KVExecutor", "d3/d37/classresdb_1_1KVExecutor.html", null ],
       [ "resdb::MockTransactionExecutorDataImpl", "dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html", [
         [ "resdb::MockTransactionManager", "dc/d6d/classresdb_1_1MockTransactionManager.html", null ]
       ] ],
       [ "resdb::ResDBTestManager", "d0/d2a/classresdb_1_1ResDBTestManager.html", null ],
       [ "resdb::contract::ContractTransactionManager", "d7/d96/classresdb_1_1contract_1_1ContractTransactionManager.html", null ],
-      [ "resdb::utxo::UTXOTransactionManager", "d0/d6a/classresdb_1_1utxo_1_1UTXOTransactionManager.html", null ]
+      [ "resdb::utxo::UTXOExecutor", "de/de8/classresdb_1_1utxo_1_1UTXOExecutor.html", null ]
     ] ],
     [ "resdb::utxo::TxMempool", "d7/d32/classresdb_1_1utxo_1_1TxMempool.html", null ],
     [ "resdb::TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", null ],

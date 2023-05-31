@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['introduction_0',['Introduction',['../d6/d7b/md__github_workspace_platform_statistic_README.html',1,'']]]
+  ['introduction_0',['Introduction',['../d8/d84/md__2github_2workspace_2platform_2statistic_2README.html',1,'']]]
 ];

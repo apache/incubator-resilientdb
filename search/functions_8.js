@@ -17,7 +17,7 @@ var searchData=
   ['ischeckpointenabled_14',['IsCheckPointEnabled',['../db/ddb/classresdb_1_1ResDBConfig.html#a93e9f3bfda0a9ab731c01e506f7e0031',1,'resdb::ResDBConfig']]],
   ['isinpool_15',['IsInPool',['../d3/d5e/classresdb_1_1ReplicaCommunicator.html#aad6f3fa1ff3b39824f6acad8f092c588',1,'resdb::ReplicaCommunicator']]],
   ['isinviewchange_16',['IsInViewChange',['../d1/db2/classresdb_1_1ViewChangeManager.html#a2372585060ec8e89b0df72ef71e919ee',1,'resdb::ViewChangeManager']]],
-  ['islongconnection_17',['IsLongConnection',['../dc/d9f/classresdb_1_1ResDBNetChannel.html#abcb291714354d95f36c14f0e77fa3c9e',1,'resdb::ResDBNetChannel']]],
+  ['islongconnection_17',['IsLongConnection',['../de/dc3/classresdb_1_1NetChannel.html#aea266111b7b17de8da3c80de6fb38dd8',1,'resdb::NetChannel']]],
   ['isoutoforder_18',['IsOutOfOrder',['../df/d01/classresdb_1_1TransactionManager.html#af59c30af5760a407b53b7a7e14f1e1ba',1,'resdb::TransactionManager']]],
   ['isperformancerunning_19',['IsPerformanceRunning',['../db/ddb/classresdb_1_1ResDBConfig.html#afa6bd07e0241eab074be9102e2c8919e',1,'resdb::ResDBConfig']]],
   ['isready_20',['IsReady',['../da/d19/classresdb_1_1ConsensusManager.html#a5a706d7931fb764202c4d9076c888a33',1,'resdb::ConsensusManager::IsReady()'],['../da/d3b/classresdb_1_1ServiceInterface.html#a2320c7ed2f786de970789b8974ac0165',1,'resdb::ServiceInterface::IsReady()']]],

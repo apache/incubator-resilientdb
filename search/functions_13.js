@@ -5,5 +5,5 @@ var searchData=
   ['updateclientreplicas_2',['UpdateClientReplicas',['../d3/d5e/classresdb_1_1ReplicaCommunicator.html#ae93d03a61ab026c280b2a85da8b99076',1,'resdb::ReplicaCommunicator']]],
   ['updatestablecheckpointcallback_3',['UpdateStableCheckPointCallback',['../dc/db0/classresdb_1_1CheckPointManager.html#a5395376992e5b027ce749b7b3618e4ec',1,'resdb::CheckPointManager']]],
   ['utxoclient_4',['UTXOClient',['../d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html#aefb23cd8c7705337c87d7b4a19e321b6',1,'resdb::utxo::UTXOClient']]],
-  ['utxotransactionmanager_5',['UTXOTransactionManager',['../d0/d6a/classresdb_1_1utxo_1_1UTXOTransactionManager.html#a78a818c4243f023961608c96eb53dc9b',1,'resdb::utxo::UTXOTransactionManager']]]
+  ['utxoexecutor_5',['UTXOExecutor',['../de/de8/classresdb_1_1utxo_1_1UTXOExecutor.html#ac88c78d485fb83492cc6d88c71fe18e6',1,'resdb::utxo::UTXOExecutor']]]
 ];
