@@ -18,7 +18,7 @@
 
 You may find the latest ResilientDB documentation, including a programming guide, on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
 
-![Nexres](./img/nexres.pdf)
+![Nexres](./img/nexres.jpg)
 
 #### Table of Contents
 1. Software Stack Architecture 
