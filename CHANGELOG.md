@@ -1,5 +1,11 @@
 # Change Log
 
+### NexRes v1.6.0 ([2023-05-30](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.6.0))
+
+**Implemented Enhancements:** 
+Refactoring the service by moving out the sub-folders.
+
+
 ### NexRes v1.5.0 ([2023-04-04](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.5.0))
 
 **Implemented Enhancements:** 
