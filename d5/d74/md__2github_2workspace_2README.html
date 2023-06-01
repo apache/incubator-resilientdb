@@ -100,8 +100,8 @@ $(document).ready(function(){initNavTree('d5/d74/md__2github_2workspace_2README.
   <div class="headertitle"><div class="title">ResilientDB: Global-Scale Sustainable Blockchain Fabric</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md54"></a> <b><a href="https://resilientdb.com/">ResilientDB</a></b> is a <b>High Throughput Yielding Permissioned Blockchain Fabric</b> founded by <b><a href="https://expolab.org/">ExpoLab</a></b> at <b><a href="https://www.ucdavis.edu/">UC Davis</a></b> in 2018. ResilientDB advocates a <b>system-centric</b> design by adopting a <b>multi-threaded architecture</b> that encompasses <b>deep pipelines</b>. Further, ResilientDB <b>separates</b> the ordering of client transactions from their execution, which allows it to <b>process messages out-of-order</b>.</p>
-<h2><a class="anchor" id="autotoc_md55"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md57"></a> <b><a href="https://resilientdb.com/">ResilientDB</a></b> is a <b>High Throughput Yielding Permissioned Blockchain Fabric</b> founded by <b><a href="https://expolab.org/">ExpoLab</a></b> at <b><a href="https://www.ucdavis.edu/">UC Davis</a></b> in 2018. ResilientDB advocates a <b>system-centric</b> design by adopting a <b>multi-threaded architecture</b> that encompasses <b>deep pipelines</b>. Further, ResilientDB <b>separates</b> the ordering of client transactions from their execution, which allows it to <b>process messages out-of-order</b>.</p>
+<h2><a class="anchor" id="autotoc_md58"></a>
 Quick Facts on ResilientDB</h2>
 <ol type="1">
 <li>ResilientDB's core consensus protocol is based on a highly optimized <b><a href="https://pmg.csail.mit.edu/papers/osdi99.pdf">PBFT</a></b> [Castro and Liskov, 1998] implementation to achieve agreement among replicas. The core consensus layer is further expanded with the state-of-the-art consensus protocols <em>[release are planned]</em> such as <b><a href="http://www.vldb.org/pvldb/vol13/p868-gupta.pdf">GeoBFT</a></b> [<b><a href="https://blog.resilientdb.com/2023/03/07/GeoBFT.html">blog</a>, <a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.1.0">released</a></b>], <b><a href="https://openproceedings.org/2021/conf/edbt/p111.pdf">PoE</a></b>, <b><a href="https://arxiv.org/abs/1911.00837">RCC</a></b>, <b><a href="https://openproceedings.org/2022/conf/edbt/paper-73.pdf">RingBFT</a></b>, <b><a href="https://arxiv.org/abs/2302.02325">PVP</a></b>, <b><a href="https://arxiv.org/abs/2302.02118">PoC</a></b>, <b><a href="https://arxiv.org/abs/1803.05069">HotStuff</a></b>, and <b><a href="https://arxiv.org/pdf/2105.11827.pdf">DAG</a></b>.</li>
@@ -113,10 +113,10 @@ Quick Facts on ResilientDB</h2>
 <li><b>[Historial Facts]</b> The ResilientDB project was founded by <b><a href="https://expolab.org/">Mohammad Sadoghi</a></b> along with his students (<a href="https://gupta-suyash.github.io/index.html">Suyash Gupta</a> as the lead Architect, <a href="https://sajjadrahnama.com/">Sajjad Rahnama</a>, <a href="https://www.jhellings.nl/">Jelle Hellings</a>) at <b><a href="https://www.ucdavis.edu/">UC Davis</a></b> in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected (<a href="https://github.com/cjcchen">Junchao Chen</a> as the lead Architect along with the entire <a href="https://resilientdb.com/">NexRes Team</a>), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB); thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for <b><a href="https://resilientdb.com/">ResilientDB</a></b>.</li>
 </ol>
 <hr  />
-<h1><a class="anchor" id="autotoc_md57"></a>
+<h1><a class="anchor" id="autotoc_md60"></a>
 Online Documentation:</h1>
 <p>You may find the latest ResilientDB documentation, including a programming guide, on our <b><a href="https://blog.resilientdb.com/archive.html?tag=NexRes">blog repository</a></b>. This README file provides basic setup instructions.</p>
-<h3><a class="anchor" id="autotoc_md58"></a>
+<h3><a class="anchor" id="autotoc_md61"></a>
 Table of Contents</h3>
 <ol type="1">
 <li>Software Stack Architecture<ul>
@@ -141,12 +141,12 @@ Table of Contents</h3>
 </ul>
 </li>
 </ol>
-<p><img src="../.././img/nexres.jpg" alt="Nexres" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md59"></a>
+<p><img src="../.././img/nexres.png" alt="Nexres" class="inline"/></p>
+<h1><a class="anchor" id="autotoc_md62"></a>
 OS Requirements</h1>
 <p>Ubuntu 20.*</p>
 <hr  />
-<h1><a class="anchor" id="autotoc_md61"></a>
+<h1><a class="anchor" id="autotoc_md64"></a>
 Build and Deploy ResilientDB</h1>
 <p>Install dependencies: </p><pre class="fragment">./INSTALL.sh
 </pre><p>Run ResilientDB (Providing a Key-Value Service): </p><pre class="fragment">./service/tools/kv/server_tools/start_kv_service.sh

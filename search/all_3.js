@@ -9,5 +9,5 @@ var searchData=
   ['deploycontract_6',['DeployContract',['../d6/d7d/classresdb_1_1contract_1_1ContractManager.html#a14ddd808a0665b5f2ee79c05308bf699',1,'resdb::contract::ContractManager::DeployContract()'],['../d9/dfa/classresdb_1_1contract_1_1ContractClient.html#a7d414fceddccb9146ceff3d34198b96c',1,'resdb::contract::ContractClient::DeployContract()'],['../d6/dff/contract__tools_8cpp.html#ac5f318a4e5f462ab6986adc27d36b95d',1,'DeployContract(ContractClient *client, const std::string &amp;caller_address, const std::string &amp;contract_name, const std::string &amp;contract_path, const std::vector&lt; std::string &gt; &amp;init_params):&#160;contract_tools.cpp']]],
   ['dest_5finfo_5f_7',['dest_info_',['../db/dde/transaction__constructor__test_8cpp.html#a53c955863b46f968e5af2ef978cc010c',1,'transaction_constructor_test.cpp']]],
   ['dispatch_8',['Dispatch',['../da/d19/classresdb_1_1ConsensusManager.html#aded3d44b3131103f6c8849491fa4e346',1,'resdb::ConsensusManager']]],
-  ['durable_20layer_9',['Durable layer',['../d3/dc5/md__2github_2workspace_2storage_2README.html',1,'']]]
+  ['durable_20layer_9',['Durable layer',['../d1/d7b/md__2github_2workspace_2chain_2storage_2README.html',1,'']]]
 ];

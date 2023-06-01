@@ -135,6 +135,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d88/classresdb_1_1BlockingQueue.html">BlockingQueue</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d22/classresdb_1_1ChainState.html">ChainState</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/db0/classresdb_1_1CheckPointManager.html">CheckPointManager</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html">Commitment</a></td></tr>
@@ -156,8 +158,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d2b/classresdb_1_1GeoPBFTCommitment.html">GeoPBFTCommitment</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d92/classresdb_1_1GeoTransactionExecutor.html">GeoTransactionExecutor</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d01/classresdb_1_1InMemKVStorage.html">InMemKVStorage</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d5c/classresdb_1_1KeyGenerator.html">KeyGenerator</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -321,6 +321,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ad1657351e0a5d089bbf7d890837a696c"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ad1657351e0a5d089bbf7d890837a696c">NewResLevelDB</a> (const char *cert_file, resdb::ResConfigData config_data)</td></tr>
+<tr class="separator:ad1657351e0a5d089bbf7d890837a696c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0095a195a7abbd4390576c5911cd07f"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ac0095a195a7abbd4390576c5911cd07f">NewResRocksDB</a> (const char *cert_file, std::optional&lt; resdb::ResConfigData &gt; config_data)</td></tr>
+<tr class="separator:ac0095a195a7abbd4390576c5911cd07f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae736dc8df15beb705246e09f68f98923"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ae736dc8df15beb705246e09f68f98923">GetServerClock</a> ()</td></tr>
 <tr class="separator:ae736dc8df15beb705246e09f68f98923"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a530bc4bc75a952a7e2268b306c2763c0"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a530bc4bc75a952a7e2268b306c2763c0">GetSysClock</a> ()</td></tr>
@@ -373,12 +377,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memTemplParams" colspan="2">template&lt;typename ConsensusProtocol &gt; </td></tr>
 <tr class="memitem:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memTemplItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d4/d2d/classresdb_1_1ServiceNetwork.html">ServiceNetwork</a> &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a5285e59a982e46c95d72f2bb08c4dc55">CustomGenerateResDBServer</a> (char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html">TransactionManager</a> &gt; executor, std::unique_ptr&lt; <a class="el" href="../../d6/dd9/classresdb_1_1CustomQuery.html">CustomQuery</a> &gt; query_executor, std::function&lt; void(<a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> *config)&gt; config_handler=nullptr)</td></tr>
 <tr class="separator:a5285e59a982e46c95d72f2bb08c4dc55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9797758ee64aaaaec260465b98b3f7f4"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#a9797758ee64aaaaec260465b98b3f7f4">NewInMemKVStorage</a> ()</td></tr>
-<tr class="separator:a9797758ee64aaaaec260465b98b3f7f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1657351e0a5d089bbf7d890837a696c"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ad1657351e0a5d089bbf7d890837a696c">NewResLevelDB</a> (const char *cert_file, resdb::ResConfigData config_data)</td></tr>
-<tr class="separator:ad1657351e0a5d089bbf7d890837a696c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0095a195a7abbd4390576c5911cd07f"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ac0095a195a7abbd4390576c5911cd07f">NewResRocksDB</a> (const char *cert_file, std::optional&lt; resdb::ResConfigData &gt; config_data)</td></tr>
-<tr class="separator:ac0095a195a7abbd4390576c5911cd07f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -948,25 +946,6 @@ template&lt;typename ConsensusProtocol &gt; </div>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="../../dc/db8/network__utils_8cpp_source.html#l00046">46</a> of file <a class="el" href="../../dc/db8/network__utils_8cpp_source.html">network_utils.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a9797758ee64aaaaec260465b98b3f7f4" name="a9797758ee64aaaaec260465b98b3f7f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9797758ee64aaaaec260465b98b3f7f4">&#9670;&#160;</a></span>NewInMemKVStorage()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt; resdb::NewInMemKVStorage </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../dc/da8/in__mem__kv__storage_8cpp_source.html#l00032">32</a> of file <a class="el" href="../../dc/da8/in__mem__kv__storage_8cpp_source.html">in_mem_kv_storage.cpp</a>.</p>
 
 </div>
 </div>

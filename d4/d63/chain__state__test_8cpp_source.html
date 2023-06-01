@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.7"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ResilientDB: /github/workspace/storage/in_mem_kv_storage_test.cpp Source File</title>
+<title>ResilientDB: /github/workspace/chain/state/chain_state_test.cpp Source File</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "../../search/",'.html');
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('d8/dfa/in__mem__kv__storage__test_8cpp_source.html','../../'); initResizable(); });
+$(document).ready(function(){initNavTree('d4/d63/chain__state__test_8cpp_source.html','../../'); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -97,10 +97,10 @@ $(document).ready(function(){initNavTree('d8/dfa/in__mem__kv__storage__test_8cpp
 </div>
 
 <div class="header">
-  <div class="headertitle"><div class="title">in_mem_kv_storage_test.cpp</div></div>
+  <div class="headertitle"><div class="title">chain_state_test.cpp</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="../../d8/dfa/in__mem__kv__storage__test_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
+<a href="../../d4/d63/chain__state__test_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * Copyright (c) 2019-2022 ExpoLab, UC Davis</span></div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * Permission is hereby granted, free of charge, to any person</span></div>
@@ -125,7 +125,7 @@ $(document).ready(function(){initNavTree('d8/dfa/in__mem__kv__storage__test_8cpp
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> */</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../da/daf/in__mem__kv__storage_8h.html">storage/in_mem_kv_storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../d0/dee/chain__state_8h.html">chain/state/chain_state.h</a>&quot;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;gmock/gmock.h&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;gtest/gtest.h&gt;</span></div>
@@ -134,35 +134,35 @@ $(document).ready(function(){initNavTree('d8/dfa/in__mem__kv__storage__test_8cpp
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">namespace </span>{</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(KVServerExecutorTest, SetValue) {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  InMemKVStorage storage;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>  ChainState state;</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  EXPECT_EQ(storage.GetAllValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  EXPECT_EQ(storage.SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  EXPECT_EQ(storage.GetValue(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  EXPECT_EQ(state.GetAllValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  EXPECT_EQ(state.SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  EXPECT_EQ(state.GetValue(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="comment">// GetValues and GetRange may be out of order for in-memory, so we test up to</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="comment">// 1 key-value pair</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  EXPECT_EQ(storage.GetAllValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  EXPECT_EQ(storage.GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  EXPECT_EQ(state.GetAllValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  EXPECT_EQ(state.GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>}</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(KVServerExecutorTest, GetValue) {</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  InMemKVStorage storage;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  EXPECT_EQ(storage.GetValue(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  ChainState state;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  EXPECT_EQ(state.GetValue(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;&quot;</span>);</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>}</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}  <span class="comment">// namespace</span></div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="ain__mem__kv__storage_8h_html"><div class="ttname"><a href="../../da/daf/in__mem__kv__storage_8h.html">in_mem_kv_storage.h</a></div></div>
-<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
+<div class="ttc" id="achain__state_8h_html"><div class="ttname"><a href="../../d0/dee/chain__state_8h.html">chain_state.h</a></div></div>
+<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_ad80063b9797bc83c1fce71f3a06ce1b0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">resdb::TEST</a></div><div class="ttdeci">TEST(NetworkUtilsTest, GetDNSName)</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d7b/network__utils__test_8cpp_source.html#l00036">network_utils_test.cpp:36</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../dir_70f20ecf11358dff00a0daf546d3147e.html">storage</a></li><li class="navelem"><a class="el" href="../../d8/dfa/in__mem__kv__storage__test_8cpp.html">in_mem_kv_storage_test.cpp</a></li>
+    <li class="navelem"><a class="el" href="../../dir_b2e9c4946f1c05be3254ad723901ca63.html">chain</a></li><li class="navelem"><a class="el" href="../../dir_c860e9255293b44dfdd59093e86636b8.html">state</a></li><li class="navelem"><a class="el" href="../../d4/d63/chain__state__test_8cpp.html">chain_state_test.cpp</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.7 </li>
   </ul>
 </div>

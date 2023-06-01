@@ -132,7 +132,7 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d3/d16/resdb__config__utils_8h.html">platform/config/resdb_config_utils.h</a>&quot;</span></div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;proto/kv/kv.pb.h&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d9b/mock__storage_8h.html">storage/mock_storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d9b/mock__storage_8h.html">chain/storage/mock_storage.h</a>&quot;</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">namespace </span>{</div>
@@ -145,7 +145,7 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  KVExecutorTest() {</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">auto</span> mock_storage = std::make_unique&lt;MockStorage&gt;();</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a> = mock_storage.get();</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    impl_ = std::make_unique&lt;KVExecutor&gt;(std::move(mock_storage));</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    impl_ = std::make_unique&lt;KVExecutor&gt;(std::make_unique&lt;ChainState&gt;(std::move(mock_storage)));</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  }</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keywordtype">int</span> Set(<span class="keyword">const</span> std::string&amp; key, <span class="keyword">const</span> std::string&amp; value) {</div>
@@ -233,8 +233,8 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(KVExecutorTest, SetValue) {</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>))</div>
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>      .WillOnce(Return(0));</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetValue(<span class="stringliteral">&quot;test_key&quot;</span>))</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>      .WillOnce(Return(<span class="stringliteral">&quot;test_value&quot;</span>));</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  <span class="comment">//EXPECT_CALL(*mock_storage_ptr_, GetValue(&quot;test_key&quot;))</span></div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>  <span class="comment">//    .WillOnce(Return(&quot;test_value&quot;));</span></div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetAllValues())</div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>      .WillOnce(Return(<span class="stringliteral">&quot;[]&quot;</span>))</div>
 <div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
@@ -258,7 +258,7 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="ttc" id="akv__executor_8h_html"><div class="ttname"><a href="../../d1/d72/kv__executor_8h.html">kv_executor.h</a></div></div>
 <div class="ttc" id="akv__executor__test_8cpp_html_acf492a9c89f2718e819eccd999a8cbba"><div class="ttname"><a href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a></div><div class="ttdeci">MockStorage * mock_storage_ptr_</div><div class="ttdef"><b>Definition</b> <a href="../../db/d64/kv__executor__test_8cpp_source.html#l00125">kv_executor_test.cpp:125</a></div></div>
 <div class="ttc" id="amock__storage_8h_html"><div class="ttname"><a href="../../df/d9b/mock__storage_8h.html">mock_storage.h</a></div></div>
-<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../da/de5/hash_8cpp_source.html#l00032">hash.cpp:32</a></div></div>
+<div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_ab31c2875ec907efdbc2284cb1eabdc49"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">resdb::TEST_F</a></div><div class="ttdeci">TEST_F(ResDBTest, TestPBFTService)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00154">resdb_test.cpp:154</a></div></div>
 <div class="ttc" id="aresdb__config__utils_8h_html"><div class="ttname"><a href="../../d3/d16/resdb__config__utils_8h.html">resdb_config_utils.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

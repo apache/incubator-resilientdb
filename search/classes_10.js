@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['viewchangemanager_0',['ViewChangeManager',['../d1/db2/classresdb_1_1ViewChangeManager.html',1,'resdb']]]
+  ['wallet_0',['Wallet',['../df/ddc/classresdb_1_1utxo_1_1Wallet.html',1,'resdb::utxo']]]
 ];

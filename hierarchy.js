@@ -11,6 +11,7 @@ var hierarchy =
     [ "resdb::BatchQueue< T >", "d5/db6/classresdb_1_1BatchQueue.html", null ],
     [ "resdb::BatchQueue< std::unique_ptr< QueueItem > >", "d5/db6/classresdb_1_1BatchQueue.html", null ],
     [ "resdb::BlockingQueue< T >", "dd/d88/classresdb_1_1BlockingQueue.html", null ],
+    [ "resdb::ChainState", "d8/d22/classresdb_1_1ChainState.html", null ],
     [ "resdb::CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html", [
       [ "resdb::MockCheckPointManager", "de/da4/classresdb_1_1MockCheckPointManager.html", null ]
     ] ],
@@ -85,7 +86,6 @@ var hierarchy =
     [ "resdb::SpinLockSet< _type >", "d4/d35/classresdb_1_1SpinLockSet.html", null ],
     [ "resdb::Stats", "de/d0d/classresdb_1_1Stats.html", null ],
     [ "resdb::Storage", "d2/d14/classresdb_1_1Storage.html", [
-      [ "resdb::InMemKVStorage", "da/d01/classresdb_1_1InMemKVStorage.html", null ],
       [ "resdb::MockStorage", "de/d28/classresdb_1_1MockStorage.html", null ],
       [ "resdb::ResLevelDB", "d4/d91/classresdb_1_1ResLevelDB.html", null ],
       [ "resdb::ResRocksDB", "d0/d5a/classresdb_1_1ResRocksDB.html", null ]
