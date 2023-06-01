@@ -35,7 +35,7 @@ You may find the latest ResilientDB documentation, including a programming guide
    - System Parameters & Configuration  [TBA] 
    - Continuous Integration & Testing [TBA]
 
-![Nexres](./img/nexres.jpg)
+![Nexres](./img/nexres.png)
 
 ## OS Requirements
 Ubuntu 20.*
