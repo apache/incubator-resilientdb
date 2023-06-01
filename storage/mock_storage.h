@@ -25,39 +25,19 @@
 
 #pragma once
 
-#include <memory>
-#include <optional>
-#include <string>
-
-#include "leveldb/db.h"
-#include "leveldb/write_batch.h"
-#include "platform/proto/replica_info.pb.h"
-#include "chain/storage/storage.h"
+#include "gmock/gmock.h"
+#include "storage/storage.h"
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewResLevelDB(const char* cert_file,
-                                       resdb::ResConfigData config_data);
-
-class ResLevelDB : public Storage {
+class MockStorage : public Storage {
  public:
-  ResLevelDB(const char* cert_file, std::optional<ResConfigData> config_data);
-
-  virtual ~ResLevelDB();
-  int SetValue(const std::string& key, const std::string& value) override;
-  std::string GetValue(const std::string& key) override;
-  std::string GetAllValues(void) override;
-  std::string GetRange(const std::string& min_key,
-                       const std::string& max_key) override;
-
- private:
-  void CreateDB(const std::string& path);
-
- private:
-  std::unique_ptr<leveldb::DB> db_ = nullptr;
-  ::leveldb::WriteBatch batch_;
-  unsigned int write_buffer_size_ = 64 << 20;
-  unsigned int write_batch_size_ = 1;
+  MOCK_METHOD(int, SetValue, (const std::string& key, const std::string& value),
+              (override));
+  MOCK_METHOD(std::string, GetValue, (const std::string& key), (override));
+  MOCK_METHOD(std::string, GetAllValues, (), (override));
+  MOCK_METHOD(std::string, GetRange, (const std::string&, const std::string&),
+              (override));
 };
 
 }  // namespace resdb

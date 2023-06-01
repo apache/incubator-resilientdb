@@ -23,21 +23,28 @@
  *
  */
 
-#pragma once
+#include "storage/txn_memory_db.h"
 
-#include "gmock/gmock.h"
-#include "chain/storage/storage.h"
+#include <glog/logging.h>
 
 namespace resdb {
 
-class MockStorage : public Storage {
- public:
-  MOCK_METHOD(int, SetValue, (const std::string& key, const std::string& value),
-              (override));
-  MOCK_METHOD(std::string, GetValue, (const std::string& key), (override));
-  MOCK_METHOD(std::string, GetAllValues, (), (override));
-  MOCK_METHOD(std::string, GetRange, (const std::string&, const std::string&),
-              (override));
-};
+TxnMemoryDB::TxnMemoryDB() : max_seq_(0) {}
+
+Request* TxnMemoryDB::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
+}
+
+void TxnMemoryDB::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
+}
+
+uint64_t TxnMemoryDB::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb

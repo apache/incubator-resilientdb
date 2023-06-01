@@ -30,7 +30,7 @@
 
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
-#include "chain/storage/mock_storage.h"
+#include "storage/mock_storage.h"
 
 namespace resdb {
 namespace {
