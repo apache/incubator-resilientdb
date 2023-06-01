@@ -2,14 +2,20 @@
 
 ### NexRes v1.6.0 ([2023-05-30](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.6.0))
 
-**Implemented Enhancements:** 
-Refactoring the service by moving out the sub-folders.
+**Implemented Enhancements:** Refactoring and enhancement of the codebase to highlight the entire software stack of ResilientDB consisting of the following layers ([Junchao Chen](https://github.com/cjcchen))
+
+* SDK Layer (C++, Python, Go, Solidity)
+* Interface Layer (key-value, smart contract, UTXO)
+* ResilientDB Database Connectivity (RDBC) API
+* Platform Layer (consensus, chain, network, notary)
+* Transaction Layer (execution runtime and in-memory chain state)
+* Storage Layer (chain and chain state durability)
 
 
 ### NexRes v1.5.0 ([2023-04-04](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.5.0))
 
 **Implemented Enhancements:** 
-* A complete refactoring of the code base such that (1) the core engine code is now moved to the platform folder, including the formwork architectures and protocols implementations; (2) the API/interface-related code is moved to the service folder, including UTXO, smart contract, and key-value interface;  (3) the python SDK code is moved to a different repository [here](https://github.com/resilientdb/sdk).
+* A complete refactoring of the codebase such that (1) the core engine code is now moved to the platform folder, including the formwork architectures and protocols implementations; (2) the API/interface-related code is moved to the service folder, including UTXO, smart contract, and key-value interface;  (3) the python SDK code is moved to a different repository [here](https://github.com/resilientdb/sdk) ([Junchao Chen](https://github.com/cjcchen)).
 
 ### NexRes v1.4.0 ([2023-02-28](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0))
 Major Changes
