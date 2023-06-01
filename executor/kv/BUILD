@@ -39,7 +39,7 @@ cc_library(
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
-        "//storage:in_mem_kv_storage",
+        "//chain/state:chain_state",
     ],
 )
 
@@ -49,6 +49,6 @@ cc_test(
     deps = [
         ":kv_executor",
         "//common/test:test_main",
-        "//storage:mock_storage",
+        "//chain/storage:mock_storage",
     ],
 )

@@ -23,30 +23,40 @@
  *
  */
 
-#include "storage/in_mem_kv_storage.h"
+#include "chain/state/chain_state.h"
 
 #include <glog/logging.h>
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewInMemKVStorage() {
-  return std::make_unique<InMemKVStorage>();
+ChainState::ChainState(std::unique_ptr<Storage> storage) : storage_(std::move(storage)){
 }
 
-int InMemKVStorage::SetValue(const std::string& key, const std::string& value) {
+int ChainState::SetValue(const std::string& key, const std::string& value) {
   kv_map_[key] = value;
+  if(storage_) {
+    return storage_->SetValue(key, value);
+  }
   return 0;
 }
 
-std::string InMemKVStorage::GetValue(const std::string& key) {
+std::string ChainState::GetValue(const std::string& key) {
   auto search = kv_map_.find(key);
   if (search != kv_map_.end())
     return search->second;
-  else
+  else {
+    if(storage_){
+      std::string value = storage_->GetValue(key);
+      kv_map_[key] = value;
+    }
     return "";
+  }
 }
 
-std::string InMemKVStorage::GetAllValues(void) {
+std::string ChainState::GetAllValues(void) {
+  if(storage_){
+      return storage_->GetAllValues();
+  }
   std::string values = "[";
   bool first_iteration = true;
   for (auto kv : kv_map_) {
@@ -58,8 +68,11 @@ std::string InMemKVStorage::GetAllValues(void) {
   return values;
 }
 
-std::string InMemKVStorage::GetRange(const std::string& min_key,
+std::string ChainState::GetRange(const std::string& min_key,
                                      const std::string& max_key) {
+  if(storage_){
+      return storage_->GetRange(min_key, max_key);
+  }
   std::string values = "[";
   bool first_iteration = true;
   for (auto kv : kv_map_) {

@@ -28,12 +28,11 @@
 #include <glog/logging.h>
 
 #include "proto/kv/kv.pb.h"
-#include "storage/in_mem_kv_storage.h"
 
 namespace resdb {
 
-KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
-    : storage_(std::move(storage)) {}
+KVExecutor::KVExecutor(std::unique_ptr<ChainState> state)
+    : state_(std::move(state)) {}
 
 std::unique_ptr<std::string> KVExecutor::ExecuteData(
     const std::string& request) {
@@ -64,19 +63,19 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  storage_->SetValue(key, value);
+  state_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  return storage_->GetValue(key);
+  return state_->GetValue(key);
 }
 
-std::string KVExecutor::GetValues() { return storage_->GetAllValues(); }
+std::string KVExecutor::GetValues() { return state_->GetAllValues(); }
 
 // Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
-  return storage_->GetRange(min_key, max_key);
+  return state_->GetRange(min_key, max_key);
 }
 
 }  // namespace resdb

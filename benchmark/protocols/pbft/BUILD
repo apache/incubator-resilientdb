@@ -9,6 +9,6 @@ cc_binary(
         "//executor/kv:kv_executor",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/pbft:consensus_manager_pbft",
-        "//server/utils:server_factory",
+        "//service/utils:server_factory",
     ],
 )

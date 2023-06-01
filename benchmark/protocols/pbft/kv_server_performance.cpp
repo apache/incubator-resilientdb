@@ -31,7 +31,7 @@
 #include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
 #include "proto/kv/kv.pb.h"
-#include "storage/in_mem_kv_storage.h"
+#include "chain/state/chain_state.h"
 
 using namespace resdb;
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
   config->RunningPerformance(true);
 
   auto performance_consens = std::make_unique<ConsensusManagerPBFT>(
-      *config, std::make_unique<KVExecutor>(NewInMemKVStorage()));
+      *config, std::make_unique<KVExecutor>(std::make_unique<ChainState>()));
   performance_consens->SetupPerformanceDataFunc([]() {
     KVRequest request;
     request.set_cmd(KVRequest::SET);
