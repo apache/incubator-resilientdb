@@ -26,23 +26,38 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
+#include <optional>
+#include <string>
 
-#include "storage/storage.h"
+#include "leveldb/db.h"
+#include "leveldb/write_batch.h"
+#include "platform/proto/replica_info.pb.h"
+#include "chain/storage/storage.h"
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewInMemKVStorage();
+std::unique_ptr<Storage> NewResLevelDB(const char* cert_file,
+                                       resdb::ResConfigData config_data);
 
-class InMemKVStorage : public Storage {
+class ResLevelDB : public Storage {
  public:
-  int SetValue(const std::string& key, const std::string& value);
-  std::string GetValue(const std::string& key);
-  std::string GetAllValues(void);
-  std::string GetRange(const std::string& min_key, const std::string& max_key);
+  ResLevelDB(const char* cert_file, std::optional<ResConfigData> config_data);
+
+  virtual ~ResLevelDB();
+  int SetValue(const std::string& key, const std::string& value) override;
+  std::string GetValue(const std::string& key) override;
+  std::string GetAllValues(void) override;
+  std::string GetRange(const std::string& min_key,
+                       const std::string& max_key) override;
 
  private:
-  std::unordered_map<std::string, std::string> kv_map_;
+  void CreateDB(const std::string& path);
+
+ private:
+  std::unique_ptr<leveldb::DB> db_ = nullptr;
+  ::leveldb::WriteBatch batch_;
+  unsigned int write_buffer_size_ = 64 << 20;
+  unsigned int write_batch_size_ = 1;
 };
 
 }  // namespace resdb

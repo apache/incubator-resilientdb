@@ -15,7 +15,7 @@ cc_binary(
         "//executor/kv:kv_executor",
         "//service/utils:server_factory",
         "//common:comm",
-        "//storage:in_mem_kv_storage",
+        "//chain/state:chain_state",
         "//proto/kv:kv_cc_proto",
     ] + select({
         "//executor/kv:enable_leveldb_setting": ["//storage:res_leveldb"],

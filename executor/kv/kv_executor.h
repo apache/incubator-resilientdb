@@ -31,13 +31,13 @@
 
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
-#include "storage/storage.h"
+#include "chain/state/chain_state.h"
 
 namespace resdb {
 
 class KVExecutor : public TransactionManager {
  public:
-  KVExecutor(std::unique_ptr<Storage> storage);
+  KVExecutor(std::unique_ptr<ChainState> state);
   virtual ~KVExecutor() = default;
 
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
@@ -49,7 +49,7 @@ class KVExecutor : public TransactionManager {
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
  private:
-  std::unique_ptr<Storage> storage_;
+  std::unique_ptr<ChainState> state_;
 };
 
 }  // namespace resdb

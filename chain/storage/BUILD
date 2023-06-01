@@ -16,25 +16,6 @@ cc_library(
 )
 
 cc_library(
-    name = "in_mem_kv_storage",
-    srcs = ["in_mem_kv_storage.cpp"],
-    hdrs = ["in_mem_kv_storage.h"],
-    deps = [
-        ":storage",
-        "//common:comm",
-    ],
-)
-
-cc_test(
-    name = "in_mem_kv_storage_test",
-    srcs = ["in_mem_kv_storage_test.cpp"],
-    deps = [
-        ":in_mem_kv_storage",
-        "//common/test:test_main",
-    ],
-)
-
-cc_library(
     name = "res_leveldb",
     srcs = ["res_leveldb.cpp"],
     hdrs = ["res_leveldb.h"],

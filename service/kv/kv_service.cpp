@@ -29,12 +29,12 @@
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
-#include "storage/in_mem_kv_storage.h"
+#include "chain/state/chain_state.h"
 #ifdef ENABLE_LEVELDB
-#include "storage/res_leveldb.h"
+#include "chain/storage/res_leveldb.h"
 #endif
 #ifdef ENABLE_ROCKSDB
-#include "storage/res_rocksdb.h"
+#include "chain/storage/res_rocksdb.h"
 #endif
 
 using namespace resdb;
@@ -43,7 +43,7 @@ void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
 
-std::unique_ptr<Storage> NewStorage(const std::string& cert_file,
+std::unique_ptr<ChainState> NewState(const std::string& cert_file,
                                     const ResConfigData& config_data) {
   std::unique_ptr<Storage> storage = nullptr;
 
@@ -56,12 +56,8 @@ std::unique_ptr<Storage> NewStorage(const std::string& cert_file,
   storage = NewResLevelDB(cert_file.c_str(), config_data);
   LOG(INFO) << "use leveldb storage.";
 #endif
-
-  if (storage == nullptr) {
-    LOG(INFO) << "use kv storage.";
-    storage = NewInMemKVStorage();
-  }
-  return storage;
+  std::unique_ptr<ChainState> state  = std::make_unique<ChainState>(std::move(storage));
+  return state;
 }
 
 int main(int argc, char** argv) {
@@ -91,7 +87,7 @@ int main(int argc, char** argv) {
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(NewStorage(cert_file, config_data)),
+      std::make_unique<KVExecutor>(NewState(cert_file, config_data)),
       logging_dir);
   server->Run();
 }

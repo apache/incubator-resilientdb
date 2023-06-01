@@ -23,32 +23,28 @@
  *
  */
 
-#include "storage/in_mem_kv_storage.h"
+#include "chain/storage/txn_memory_db.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include <glog/logging.h>
 
 namespace resdb {
-namespace {
 
-TEST(KVServerExecutorTest, SetValue) {
-  InMemKVStorage storage;
+TxnMemoryDB::TxnMemoryDB() : max_seq_(0) {}
 
-  EXPECT_EQ(storage.GetAllValues(), "[]");
-  EXPECT_EQ(storage.SetValue("test_key", "test_value"), 0);
-  EXPECT_EQ(storage.GetValue("test_key"), "test_value");
-
-  // GetValues and GetRange may be out of order for in-memory, so we test up to
-  // 1 key-value pair
-  EXPECT_EQ(storage.GetAllValues(), "[test_value]");
-  EXPECT_EQ(storage.GetRange("a", "z"), "[test_value]");
+Request* TxnMemoryDB::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
 }
 
-TEST(KVServerExecutorTest, GetValue) {
-  InMemKVStorage storage;
-  EXPECT_EQ(storage.GetValue("test_key"), "");
+void TxnMemoryDB::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
 }
 
-}  // namespace
+uint64_t TxnMemoryDB::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb

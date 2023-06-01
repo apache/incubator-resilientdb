@@ -23,21 +23,32 @@
  *
  */
 
-#pragma once
+#include "chain/state/chain_state.h"
 
-#include "gmock/gmock.h"
-#include "storage/storage.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace resdb {
+namespace {
 
-class MockStorage : public Storage {
- public:
-  MOCK_METHOD(int, SetValue, (const std::string& key, const std::string& value),
-              (override));
-  MOCK_METHOD(std::string, GetValue, (const std::string& key), (override));
-  MOCK_METHOD(std::string, GetAllValues, (), (override));
-  MOCK_METHOD(std::string, GetRange, (const std::string&, const std::string&),
-              (override));
-};
+TEST(KVServerExecutorTest, SetValue) {
+  ChainState state;
+
+  EXPECT_EQ(state.GetAllValues(), "[]");
+  EXPECT_EQ(state.SetValue("test_key", "test_value"), 0);
+  EXPECT_EQ(state.GetValue("test_key"), "test_value");
+
+  // GetValues and GetRange may be out of order for in-memory, so we test up to
+  // 1 key-value pair
+  EXPECT_EQ(state.GetAllValues(), "[test_value]");
+  EXPECT_EQ(state.GetRange("a", "z"), "[test_value]");
+}
+
+TEST(KVServerExecutorTest, GetValue) {
+  ChainState state;
+  EXPECT_EQ(state.GetValue("test_key"), "");
+}
+
+}  // namespace
 
 }  // namespace resdb
