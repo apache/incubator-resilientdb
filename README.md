@@ -18,8 +18,6 @@
 
 You may find the latest ResilientDB documentation, including a programming guide, on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
 
-![Nexres](./img/nexres.jpg)
-
 #### Table of Contents
 1. Software Stack Architecture 
    - SDK, Interface/API, Platform, Execution, and Storage Layers [TBA]
@@ -38,6 +36,8 @@ You may find the latest ResilientDB documentation, including a programming guide
    - Dashboard: **[Monitoring](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)**, **[Deployment](https://blog.resilientdb.com/2022/12/06/DeployGrafanaDashboardOnOracleCloud.html)**, **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
    - System Parameters & Configuration  [TBA] 
    - Continuous Integration & Testing [TBA]
+
+![Nexres](./img/nexres.jpg)
 
 ## OS Requirements
 Ubuntu 20.*
