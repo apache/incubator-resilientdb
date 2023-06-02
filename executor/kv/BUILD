@@ -49,6 +49,6 @@ cc_test(
     deps = [
         ":kv_executor",
         "//common/test:test_main",
-        "//storage:mock_storage",
+        "//chain/storage:mock_storage",
     ],
 )

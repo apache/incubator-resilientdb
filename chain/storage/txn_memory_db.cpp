@@ -23,41 +23,28 @@
  *
  */
 
-#pragma once
+#include "chain/storage/txn_memory_db.h"
 
-#include <memory>
-#include <optional>
-#include <string>
-
-#include "leveldb/db.h"
-#include "leveldb/write_batch.h"
-#include "platform/proto/replica_info.pb.h"
-#include "storage/storage.h"
+#include <glog/logging.h>
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewResLevelDB(const char* cert_file,
-                                       resdb::ResConfigData config_data);
+TxnMemoryDB::TxnMemoryDB() : max_seq_(0) {}
 
-class ResLevelDB : public Storage {
- public:
-  ResLevelDB(const char* cert_file, std::optional<ResConfigData> config_data);
+Request* TxnMemoryDB::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
+}
 
-  virtual ~ResLevelDB();
-  int SetValue(const std::string& key, const std::string& value) override;
-  std::string GetValue(const std::string& key) override;
-  std::string GetAllValues(void) override;
-  std::string GetRange(const std::string& min_key,
-                       const std::string& max_key) override;
+void TxnMemoryDB::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
+}
 
- private:
-  void CreateDB(const std::string& path);
-
- private:
-  std::unique_ptr<leveldb::DB> db_ = nullptr;
-  ::leveldb::WriteBatch batch_;
-  unsigned int write_buffer_size_ = 64 << 20;
-  unsigned int write_batch_size_ = 1;
-};
+uint64_t TxnMemoryDB::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb

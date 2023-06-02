@@ -23,7 +23,7 @@
  *
  */
 
-#include "storage/res_leveldb.h"
+#include "chain/storage/res_leveldb.h"
 
 #include <glog/logging.h>
 #include <gmock/gmock.h>
