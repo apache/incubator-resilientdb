@@ -27,8 +27,8 @@ You may find the latest ResilientDB documentation, including a programming guide
 3. **Interface Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, ResilientDB Database Connectivity (RDBC) API
 4. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
    - Recovery & Checkpoint Design [TBA]
-5. **Execution Layer:** Transaction Manager Design (runtime and chain state) [TBA]
-6. **Storage Layer:** Storage Manager Design (chain and chain state **[durability](https://blog.resilientdb.com/2023/02/15/NexResDurabilityLayer.html)**) [TBA]
+5. **Execution Layer:** Transaction Manager Design (Runtime) [TBA]
+6. **Chain Layer:** Chain State & Storage Manager Design (**[durability](https://blog.resilientdb.com/2023/02/15/NexResDurabilityLayer.html)**) [TBA]
 7. **[Installing & Deploying ResilientDB](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**
    - Build Your First Application: **[KV Service](https://blog.resilientdb.com/2022/09/28/StartYourApplication.html)**, **[UTXO](https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html)**
    - Dashboard: **[Monitoring](https://blog.resilientdb.com/2022/12/06/NexResGrafanaDashboardInstallation.html)**, **[Deployment](https://blog.resilientdb.com/2022/12/06/DeployGrafanaDashboardOnOracleCloud.html)**, **[Data Pipeline](https://blog.resilientdb.com/2022/12/12/NexResGrafanaDashboardPipeline.html)**
