@@ -43,7 +43,7 @@
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
-#include "chain/storage/txn_memory_db.h"
+#include "storage/txn_memory_db.h"
 
 namespace resdb {
 

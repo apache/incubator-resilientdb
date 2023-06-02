@@ -28,7 +28,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "chain/storage/storage.h"
+#include "storage/storage.h"
 
 namespace resdb {
 
