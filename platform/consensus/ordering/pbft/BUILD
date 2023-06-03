@@ -65,7 +65,7 @@ cc_library(
         "//platform/config:resdb_config",
         "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
-        "//storage:txn_memory_db",
+        "//chain/storage:txn_memory_db",
     ],
 )
 
@@ -118,7 +118,7 @@ cc_library(
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
-        "//storage:txn_memory_db",
+        "//chain/storage:txn_memory_db",
     ],
 )
 

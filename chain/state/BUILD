@@ -5,7 +5,7 @@ cc_library(
     srcs = ["chain_state.cpp"],
     hdrs = ["chain_state.h"],
     deps = [
-        "//storage:storage",
+        "//chain/storage:storage",
         "//common:comm",
     ],
 )
