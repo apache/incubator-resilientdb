@@ -118,9 +118,9 @@ Deploy KV Service</h2>
 <h3><a class="anchor" id="autotoc_md67"></a>
 Testing deployed KV Service</h3>
 <p>To do so, we need to build and run the KV client tools: </p><pre class="fragment">cd ../..
-bazel build service/tools/kv_service/api_tools/kv_service_tools
-bazel-bin/service/tools/kv_service/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
-</pre><p> Or: </p><pre class="fragment">bazel run //service/tools/kv_service/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
+bazel build service/tools/kv/api_tools/kv_service_tools
+bazel-bin/service/tools/kv/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
+</pre><p> Or: </p><pre class="fragment">bazel run //service/tools/kv/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
 </pre> <h2><a class="anchor" id="autotoc_md68"></a>
 Test Performance</h2>
 <p>Our benchmark is based on the Key-Value service.</p>
