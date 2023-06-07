@@ -69,7 +69,7 @@ You will see the following result if successful:
 
 Run tools to get value by a key (for example, get the value with key "test"):
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test test_value
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test 
     
 You will see the following result if successful:
 

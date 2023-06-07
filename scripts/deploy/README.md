@@ -25,12 +25,12 @@ Note: this script creates a directory ``config_out``, which includes keys and ce
 To do so, we need to build and run the KV client tools:
 
     cd ../..
-    bazel build service/tools/kv_service/api_tools/kv_service_tools
-    bazel-bin/service/tools/kv_service/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
+    bazel build service/tools/kv/api_tools/kv_service_tools
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
 
 Or:
 	
-    bazel run //service/tools/kv_service/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
+    bazel run //service/tools/kv/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
 
 ## Test Performance 
 

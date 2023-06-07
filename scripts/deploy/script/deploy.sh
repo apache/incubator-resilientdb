@@ -10,7 +10,7 @@ script_path=${BAZEL_WORKSPACE_PATH}/scripts
 
 if [[ -z $server ]];
 then
-server=//service/kv_service/server/pbft:kv_server
+server=//service/kv:kv_service
 fi
 
 # obtain the src path
@@ -46,7 +46,6 @@ echo "where am i:"$PWD
 
 deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#iplist[@]}
 deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
-
 
 # build kv server
 bazel build ${server}
