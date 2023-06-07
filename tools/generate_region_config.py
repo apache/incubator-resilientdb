@@ -1,7 +1,7 @@
 import os
 import json
 import sys
-from proto.replica_info_pb2 import ResConfigData,ReplicaInfo
+from platform.proto.replica_info_pb2 import ResConfigData,ReplicaInfo
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.json_format import Parse, ParseDict
 
