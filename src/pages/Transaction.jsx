@@ -5,12 +5,14 @@ import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 import { sendRequest } from '../client';
+import React, { useEffect } from 'react';
 
 function Transaction(props) {
   const location = useLocation();
   props.setFooter("footerLogin");
   
   const submit = async () => {
+    const port = chrome.runtime.connect();
     if ((location.state.from === 'commit')) {
       var escapeCodes = { 
           '\\': '\\',
@@ -43,7 +45,11 @@ function Transaction(props) {
       const result = sendRequest(query).then(res => { 
         const store = location.state;
         store.id = res.data.postTransaction.id;
-        props.navigate("/logs", {state: store});
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          // Send a message to the content script
+          chrome.tabs.sendMessage(tabs[0].id, store.id)
+        });
+        props.navigate("/logs", { state: store });
       });
     }
 
@@ -65,7 +71,10 @@ function Transaction(props) {
       const result = sendRequest(query).then(res => { 
         const store = location.state;
         store.id = res.data.getTransaction.id;
-        console.log(res.data.getTransaction);
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          // Send a message to the content script
+          chrome.tabs.sendMessage(tabs[0].id, res.data.getTransaction)
+        });
         props.navigate("/logs", {state: store});
       });
     }

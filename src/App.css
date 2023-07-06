@@ -57,6 +57,11 @@ body{
   padding: 22px 23px;
 }
 
+.logo img{
+  height: 100px;
+  margin-left: -10px;
+}
+
 .card{
   height:180px;
   width:280px;
