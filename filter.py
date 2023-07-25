@@ -56,5 +56,3 @@ def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
 def filter_by_keys(url, ownerPublicKey, recipientPublicKey):
     json_data = get_json_data(url, ownerPublicKey, recipientPublicKey)
     return json_data
-
-print(filter_by_keys("http://localhost:18000/v1/transactions", None, None))
