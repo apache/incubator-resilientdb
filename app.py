@@ -75,7 +75,6 @@ class Query:
     
     @strawberry.field
     def getFilteredTransactions(self, filter: Optional[FilterKeys]) -> List[RetrieveTransaction]:
-        print(filter.recipientPublicKey)
         url = f"{protocol}{db_root_url}{fetch_all_endpoint}"
         json_data = filter_by_keys(url, filter.ownerPublicKey, filter.recipientPublicKey)
         records = []

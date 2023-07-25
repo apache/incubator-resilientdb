@@ -19,6 +19,9 @@ def get_json_objects_by_public_key(json_data, owner_public_key=None, recipient_p
         for obj in json_data[0]:
             if owner_public_key in obj['inputs'][0]['owners_before']:
                 matching_objects.append(obj)
+    else:
+        for obj in json_data[0]:
+            matching_objects.append(obj)
     return matching_objects
 
 def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
@@ -30,7 +33,8 @@ def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
             json_text = fix_json_with_commas(response.text)
             json_data = json.loads(json_text)
             if ownerPublicKey == None and recipientPublicKey == None:
-                return json_data
+                matching_objects = get_json_objects_by_public_key(json_data, None, None)
+                return matching_objects
             elif ownerPublicKey == None and recipientPublicKey != None:
                 matching_objects = get_json_objects_by_public_key(json_data, None, recipientPublicKey)
                 return matching_objects
@@ -52,3 +56,5 @@ def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
 def filter_by_keys(url, ownerPublicKey, recipientPublicKey):
     json_data = get_json_data(url, ownerPublicKey, recipientPublicKey)
     return json_data
+
+print(filter_by_keys("http://localhost:18000/v1/transactions", None, None))
