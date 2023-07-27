@@ -25,6 +25,30 @@ function Dashboard(props) {
       store.id = msg.id;
       store.from = msg.from;
       props.navigate("/transaction", {state: store} );
+    }
+
+    else if ((msg.from === 'update')){
+      const store = location.state;
+      store.address = msg.address;
+      store.amount = msg.amount;
+      store.data = msg.data;
+      store.from = msg.from;
+      store.operation = "UPDATE";
+      props.navigate("/transaction", {state: store} );
+    }
+
+    else if ((msg.from === 'filter')){
+      const store = location.state;
+      store.ownerPublicKey = msg.ownerPublicKey;
+      store.recipientPublicKey = msg.recipientPublicKey;
+      store.from = msg.from;
+      props.navigate("/transaction", {state: store} );
+    }
+
+    else if ((msg.from === 'account')){
+      const store = location.state;
+      store.from = msg.from;
+      props.navigate("/transaction", {state: store} );
     };
   });
 

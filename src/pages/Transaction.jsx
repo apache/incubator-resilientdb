@@ -10,9 +10,60 @@ import React, { useEffect } from 'react';
 function Transaction(props) {
   const location = useLocation();
   props.setFooter("footerLogin");
+  var content;
+
+  if (location.state.from === 'commit') {
+    content = ( 
+     <p className="manifest">
+       <ul className="list">
+         <li className="list"><span className="list">Operation: {location.state.operation} </span></li>
+         <li className="list"><span className="list">Your Account: {location.state.publicKey} </span></li>
+         <li className="list"><span className="list">Recipient Account: {location.state.address} </span></li>
+         <li className="list"><span className="list">Amount: {location.state.amount} </span></li>
+       </ul>
+     </p>
+   )
+   } else if (location.state.from === 'get') {
+     content = (
+       <p className="manifest">
+       <ul className="list">
+         <li className="list"><span className="list">Your Account: {location.state.publicKey}</span></li>
+         <li className="list"><span className="list">Transaction ID: {location.state.id}</span></li>
+         </ul>
+       </p>
+     )
+   } else if (location.state.from === 'update') {
+     content = (
+       <p className="manifest">
+       <ul className="list">
+         <li className="list"><span className="list">Operation: {location.state.operation} </span></li>
+         <li className="list"><span className="list">Your Account: {location.state.publicKey} </span></li>
+         <li className="list"><span className="list">Recipient Account: {location.state.address} </span></li>
+         <li className="list"><span className="list">Amount: {location.state.amount} </span></li>
+       </ul>
+       </p>
+     )
+   } else if (location.state.from === 'filter') {
+    content = (
+      <p className="manifest">
+      <ul className="list">
+        <li className="list"><span className="list">Operation: "FILTER" </span></li>
+        <li className="list"><span className="list">Owner Account: {location.state.ownerPublicKey} </span></li>
+        <li className="list"><span className="list">Recipient Account: {location.state.recipientPublicKey} </span></li>
+      </ul>
+      </p>
+    )
+  } else if (location.state.from === 'account') {
+     content = (
+       <p className="manifest">
+       <ul className="list">
+         <li className="list"><span className="list">Your Account: {location.state.publicKey}</span></li>
+         </ul>
+       </p>
+     )
+   }
   
   const submit = async () => {
-    const port = chrome.runtime.connect();
     if ((location.state.from === 'commit')) {
       var escapeCodes = { 
           '\\': '\\',
@@ -78,6 +129,90 @@ function Transaction(props) {
         props.navigate("/logs", {state: store});
       });
     }
+
+    else if ((location.state.from === 'update')) {
+      escapeCodes = { 
+          '\\': '\\',
+          'r':  '\r',
+          'n':  '\n',
+          't':  '\t'
+      };
+      location.state.data.replace(/\\(.)/g, function(str, char) {
+        return escapeCodes[char];
+      });
+
+      const query = `mutation {
+        updateTransaction(data: {
+          operation: "CREATE",
+          amount: ${parseInt(location.state.amount)},
+          signerPublicKey: "${location.state.publicKey}",
+          signerPrivateKey: "${location.state.privateKey}",
+          recipientPublicKey: "${location.state.address}",
+          asset: """{
+              "data": { 
+                ${location.state.data}
+              },
+          }
+          """
+        }){
+          id
+          version
+          amount
+          metadata
+          operation
+          asset
+          publicKey
+          uri
+          type
+        }
+      }`
+
+      const result = sendRequest(query).then(res => { 
+        const store = location.state;
+        store.id = res.data.updateTransaction.id;
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          // Send a message to the content script
+          chrome.tabs.sendMessage(tabs[0].id, res.data.updateTransaction)
+        });
+        props.navigate("/logs", { state: store });
+      });
+    }
+
+
+    else if ((location.state.from === 'filter')) {
+      const ownerPublicKey = location.state.ownerPublicKey !== null ? `"${location.state.ownerPublicKey}"` : null;
+const recipientPublicKey = location.state.recipientPublicKey !== null ? `"${location.state.recipientPublicKey}"` : null;
+      const query = `query { getFilteredTransactions(filter: {
+        ownerPublicKey: ${ownerPublicKey}
+        recipientPublicKey: ${recipientPublicKey}
+        }) {
+          id
+          version
+          amount
+          metadata
+          operation
+          asset
+          publicKey
+          uri
+          type
+        } 
+      }`
+
+      const result = sendRequest(query).then(res => { 
+        const store = location.state;
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          // Send a message to the content script
+          chrome.tabs.sendMessage(tabs[0].id, res.data.getFilteredTransactions)
+        });
+      });
+    }
+
+    else if ((location.state.from === 'account')) {
+      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+        // Send a message to the content script
+        chrome.tabs.sendMessage(tabs[0].id, location.state.publicKey)
+      });
+    }
   }
 
   const back = async () => {
@@ -105,25 +240,10 @@ function Transaction(props) {
           </div>
         </div>
       </div>
-
+      
+      
       <div className="paymentBottomDashboard vcenter">
-      {location.state.from === 'commit' ? (
-        <p className="manifest">
-          <ul className="list">
-            <li className="list"><span className="list">Operation: {location.state.operation} </span></li>
-            <li className="list"><span className="list">Your Account: {location.state.publicKey} </span></li>
-            <li className="list"><span className="list">Recipient Account: {location.state.address} </span></li>
-            <li className="list"><span className="list">Amount: {location.state.amount} </span></li>
-          </ul>
-        </p>
-      ):(
-        <p className="manifest">
-          <ul className="list">
-            <li className="list"><span className="list">Your Account: {location.state.publicKey}</span></li>
-            <li className="list"><span className="list">Transaction ID: {location.state.id}</span></li>
-            </ul>
-        </p>
-      )}
+      {content}
       </div>
 
       <div className="paymentBottomDashboardBack vcenter">
