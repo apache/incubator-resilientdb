@@ -36,6 +36,10 @@ PerformanceManager::PerformanceManager(
     SystemInfo* system_info, SignatureVerifier* verifier)
     : config_(config),
       replica_communicator_(replica_communicator),
+      collector_pool_(std::make_unique<LockFreeCollectorPool>(
+          "response", config_.GetMaxProcessTxn(), nullptr)),
+      context_pool_(std::make_unique<LockFreeCollectorPool>(
+          "context", config_.GetMaxProcessTxn(), nullptr)),
       batch_queue_("user request"),
       system_info_(system_info),
       verifier_(verifier) {
@@ -111,10 +115,12 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
     return 0;
   }
   CollectorResultCode ret =
-      AddResponseMsg(std::move(request), [&](const Request& request) {
-        response = std::make_unique<Request>(request);
-        return;
-      });
+      AddResponseMsg(context->signature, std::move(request),
+                     [&](const Request& request,
+                         const TransactionCollector::CollectorDataType*) {
+                       response = std::make_unique<Request>(request);
+                       return;
+                     });
 
   if (ret == CollectorResultCode::STATE_CHANGED) {
     BatchUserResponse batch_response;
@@ -127,30 +133,50 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
+bool PerformanceManager::MayConsensusChangeStatus(
+    int type, int received_count, std::atomic<TransactionStatue>* status) {
+  switch (type) {
+    case Request::TYPE_RESPONSE:
+      // if receive f+1 response results, ack to the caller.
+      if (*status == TransactionStatue::None &&
+          config_.GetMinClientReceiveNum() <= received_count) {
+        TransactionStatue old_status = TransactionStatue::None;
+        return status->compare_exchange_strong(
+            old_status, TransactionStatue::EXECUTED, std::memory_order_acq_rel,
+            std::memory_order_acq_rel);
+      }
+      break;
+  }
+  return false;
+}
+
 CollectorResultCode PerformanceManager::AddResponseMsg(
-    std::unique_ptr<Request> request,
-    std::function<void(const Request&)> response_call_back) {
+    const SignatureInfo& signature, std::unique_ptr<Request> request,
+    std::function<void(const Request&,
+                       const TransactionCollector::CollectorDataType*)>
+        response_call_back) {
   if (request == nullptr) {
     return CollectorResultCode::INVALID;
   }
 
+  int type = request->type();
   uint64_t seq = request->seq();
-
-  bool done = false;
-  {
-    int idx = seq % response_set_size_;
-    std::unique_lock<std::mutex> lk(response_lock_[idx]);
-    if (response_[idx][seq] == -1) {
-      return CollectorResultCode::OK;
-    }
-    response_[idx][seq]++;
-    if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
-      response_[idx][seq] = -1;
-      done = true;
-    }
+  int resp_received_count = 0;
+  int ret = collector_pool_->GetCollector(seq)->AddRequest(
+      std::move(request), signature, false,
+      [&](const Request& request, int received_count,
+          TransactionCollector::CollectorDataType* data,
+          std::atomic<TransactionStatue>* status) {
+        if (MayConsensusChangeStatus(type, received_count, status)) {
+          resp_received_count = 1;
+          response_call_back(request, data);
+        }
+      });
+  if (ret != 0) {
+    return CollectorResultCode::INVALID;
   }
-  if (done) {
-    response_call_back(*request);
+  if (resp_received_count > 0) {
+    collector_pool_->Update(seq);
     return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
@@ -167,6 +193,10 @@ void PerformanceManager::SendResponseToClient(
     LOG(ERROR) << "seq:" << local_id << " no resp";
   }
   send_num_--;
+
+  if (config_.IsPerformanceRunning()) {
+    return;
+  }
 }
 
 // =================== request ========================
@@ -218,6 +248,7 @@ int PerformanceManager::DoBatch(
   if (new_request == nullptr) {
     return -2;
   }
+  std::vector<std::unique_ptr<Context>> context_list;
 
   BatchUserRequest batch_request;
   for (size_t i = 0; i < batch_req.size(); ++i) {
