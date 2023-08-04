@@ -47,6 +47,9 @@ class Storage {
   // Get values on a range of keys
   virtual std::string GetRange(const std::string& min_key,
                                const std::string& max_key) = 0;
+
+  // Flush data to disk
+  virtual bool Flush() = 0;
 };
 
 }  // namespace resdb

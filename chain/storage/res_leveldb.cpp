@@ -156,6 +156,14 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
   return values;
 }
 
-//}
+bool ResLevelDB::Flush() {
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+  if (status.ok()) {
+    batch_.Clear();
+    return true;
+  }
+  LOG(ERROR) << "flush buffer fail:" << status.ToString();
+  return false;
+}
 
 }  // namespace resdb

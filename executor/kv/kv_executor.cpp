@@ -63,6 +63,9 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
+  if (!VerifyRequest(key, value)) {
+    return;
+  }
   state_->SetValue(key, value);
 }
 
@@ -77,5 +80,7 @@ std::string KVExecutor::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
   return state_->GetRange(min_key, max_key);
 }
+
+Storage* KVExecutor::GetStorage() { return state_->GetStorage(); }
 
 }  // namespace resdb

@@ -29,10 +29,10 @@
 #include <optional>
 #include <string>
 
+#include "chain/storage/storage.h"
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
 #include "platform/proto/replica_info.pb.h"
-#include "chain/storage/storage.h"
 
 namespace resdb {
 
@@ -49,6 +49,8 @@ class ResLevelDB : public Storage {
   std::string GetAllValues(void) override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
+
+  bool Flush() override;
 
  private:
   void CreateDB(const std::string& path);

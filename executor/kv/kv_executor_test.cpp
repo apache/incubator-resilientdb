@@ -28,9 +28,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "chain/storage/mock_storage.h"
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
-#include "chain/storage/mock_storage.h"
 
 namespace resdb {
 namespace {
@@ -43,7 +43,8 @@ class KVExecutorTest : public Test {
   KVExecutorTest() {
     auto mock_storage = std::make_unique<MockStorage>();
     mock_storage_ptr_ = mock_storage.get();
-    impl_ = std::make_unique<KVExecutor>(std::make_unique<ChainState>(std::move(mock_storage)));
+    impl_ = std::make_unique<KVExecutor>(
+        std::make_unique<ChainState>(std::move(mock_storage)));
   }
 
   int Set(const std::string& key, const std::string& value) {
@@ -131,7 +132,7 @@ class KVExecutorTest : public Test {
 TEST_F(KVExecutorTest, SetValue) {
   EXPECT_CALL(*mock_storage_ptr_, SetValue("test_key", "test_value"))
       .WillOnce(Return(0));
-  //EXPECT_CALL(*mock_storage_ptr_, GetValue("test_key"))
+  // EXPECT_CALL(*mock_storage_ptr_, GetValue("test_key"))
   //    .WillOnce(Return("test_value"));
   EXPECT_CALL(*mock_storage_ptr_, GetAllValues())
       .WillOnce(Return("[]"))

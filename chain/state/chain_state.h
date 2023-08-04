@@ -40,6 +40,8 @@ class ChainState {
   std::string GetAllValues(void);
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
+  Storage* GetStorage();
+
  private:
   std::unique_ptr<Storage> storage_ = nullptr;
   std::unordered_map<std::string, std::string> kv_map_;

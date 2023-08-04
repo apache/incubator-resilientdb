@@ -29,9 +29,9 @@
 #include <optional>
 #include <unordered_map>
 
+#include "chain/state/chain_state.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
-#include "chain/state/chain_state.h"
 
 namespace resdb {
 
@@ -42,11 +42,17 @@ class KVExecutor : public TransactionManager {
 
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
 
+  Storage* GetStorage() override;
+
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
   std::string GetValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
+
+  virtual bool VerifyRequest(const std::string& key, const std::string& value) {
+    return true;
+  }
 
  private:
   std::unique_ptr<ChainState> state_;

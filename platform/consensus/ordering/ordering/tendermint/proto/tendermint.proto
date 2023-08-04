@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "common/proto/signature_info.proto";
+
+package resdb;
+
+message TendermintRequest {
+    enum Type {
+      TYPE_NONE = 0;
+      TYPE_CLIENT_REQUEST = 1;
+      TYPE_NEWREQUEST = 2;
+      TYPE_PROPOSAL = 3;
+      TYPE_PREVOTE = 4;
+      TYPE_PRECOMMIT = 5;
+      NUM_OF_TYPE = 6; 
+    };
+  
+    int32 type = 1;
+    int64 height = 2;
+    int32 sender_id = 3;
+    int64 round = 4;
+    int64 valid_round = 5;
+    bytes data = 6;
+    bytes hash = 7;
+    int32 proxy_id = 8;
+}
+
+
+

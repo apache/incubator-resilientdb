@@ -35,11 +35,25 @@ cc_library(
     srcs = ["kv_executor.cpp"],
     hdrs = ["kv_executor.h"],
     deps = [
+        "//chain/state:chain_state",
         "//common:comm",
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
+    ],
+)
+
+cc_library(
+    name = "ext_kv_executor",
+    srcs = ["ext_kv_executor.cpp"],
+    hdrs = ["ext_kv_executor.h"],
+    deps = [
+        ":kv_executor",
         "//chain/state:chain_state",
+        "//common:comm",
+        "//executor/common:transaction_manager",
+        "//platform/config:resdb_config_utils",
+        "//proto/kv:kv_cc_proto",
     ],
 )
 
@@ -48,7 +62,7 @@ cc_test(
     srcs = ["kv_executor_test.cpp"],
     deps = [
         ":kv_executor",
-        "//common/test:test_main",
         "//chain/storage:mock_storage",
+        "//common/test:test_main",
     ],
 )

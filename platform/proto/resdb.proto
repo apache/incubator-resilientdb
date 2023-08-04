@@ -58,6 +58,7 @@ message Request {
     RegionInfo region_info = 14;
 
     Certs committed_certs= 15;
+    bool is_recovery = 16;
 }
 
 // The response message containing response

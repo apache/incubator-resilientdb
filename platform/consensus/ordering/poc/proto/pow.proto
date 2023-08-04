@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package resdb;
+
+
+message ClientTransactions {
+  bytes transaction_data = 1;
+  uint64 seq = 2;
+  uint64 create_time = 3;
+}
+
+message BatchClientTransactions {
+  repeated ClientTransactions transactions = 1;
+  uint64 min_seq = 2;
+  uint64 max_seq = 3;
+}
+
+enum PoWRequest {
+  NONE = 0;
+  TYPE_COMMITTED_BLOCK = 101;
+  TYPE_SHIFT_MSG = 102;
+};
+
+message SliceInfo {
+  uint64 height = 1;
+  int32 shift_idx = 2;
+  int32 sender = 3;
+}
+
+// 256 bits hash value
+message HashValue{
+	repeated uint64 bits = 1;
+};
+
+message Block {
+  message Header {
+    uint64 height = 1;
+    HashValue pre_hash = 2;
+    HashValue merkle_hash = 3;
+    uint64 nonce = 4;
+  };
+  Header header = 1;
+  bytes transaction_data = 2;
+  HashValue hash = 3;
+  uint64 min_seq = 4;
+  uint64 max_seq = 5;
+  uint64 miner = 6;
+  uint64 block_time = 7;
+  uint64 mining_time = 8;
+}
+
+

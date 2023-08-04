@@ -29,14 +29,18 @@
 
 namespace resdb {
 
-ChainState::ChainState(std::unique_ptr<Storage> storage) : storage_(std::move(storage)){
+ChainState::ChainState(std::unique_ptr<Storage> storage)
+    : storage_(std::move(storage)) {}
+
+Storage* ChainState::GetStorage() {
+  return storage_ ? storage_.get() : nullptr;
 }
 
 int ChainState::SetValue(const std::string& key, const std::string& value) {
-  kv_map_[key] = value;
-  if(storage_) {
+  if (storage_) {
     return storage_->SetValue(key, value);
   }
+  kv_map_[key] = value;
   return 0;
 }
 
@@ -45,7 +49,7 @@ std::string ChainState::GetValue(const std::string& key) {
   if (search != kv_map_.end())
     return search->second;
   else {
-    if(storage_){
+    if (storage_) {
       std::string value = storage_->GetValue(key);
       kv_map_[key] = value;
     }
@@ -54,8 +58,8 @@ std::string ChainState::GetValue(const std::string& key) {
 }
 
 std::string ChainState::GetAllValues(void) {
-  if(storage_){
-      return storage_->GetAllValues();
+  if (storage_) {
+    return storage_->GetAllValues();
   }
   std::string values = "[";
   bool first_iteration = true;
@@ -69,9 +73,9 @@ std::string ChainState::GetAllValues(void) {
 }
 
 std::string ChainState::GetRange(const std::string& min_key,
-                                     const std::string& max_key) {
-  if(storage_){
-      return storage_->GetRange(min_key, max_key);
+                                 const std::string& max_key) {
+  if (storage_) {
+    return storage_->GetRange(min_key, max_key);
   }
   std::string values = "[";
   bool first_iteration = true;
