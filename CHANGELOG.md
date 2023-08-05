@@ -2,7 +2,7 @@
 
 ### NexRes v1.7.0 ([2023-08-04](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.7.0))
 
-**Implemented Enhancements:** Support recovery locally when restarting Nexres.([Junchao Chen](https://github.com/cjcchen))
+**Implemented Enhancements:** For each replica local recovery from durable storage upon system restart was added.([Junchao Chen](https://github.com/cjcchen))
 
 
 ### NexRes v1.6.0 ([2023-05-30](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.6.0))
