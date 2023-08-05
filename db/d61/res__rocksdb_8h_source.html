@@ -130,10 +130,10 @@ $(document).ready(function(){initNavTree('db/d61/res__rocksdb_8h_source.html','.
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;optional&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;platform/proto/replica_info.pb.h&quot;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;rocksdb/db.h&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;rocksdb/write_batch.h&quot;</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d6b/storage_8h.html">storage/storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d6b/storage_8h.html">chain/storage/storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;platform/proto/replica_info.pb.h&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;rocksdb/db.h&quot;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &quot;rocksdb/write_batch.h&quot;</span></div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
@@ -150,18 +150,21 @@ $(document).ready(function(){initNavTree('db/d61/res__rocksdb_8h_source.html','.
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  std::string <a class="code hl_function" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#adbd758032c11e03397db79310e05867f">GetRange</a>(<span class="keyword">const</span> std::string&amp; min_key,</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>                       <span class="keyword">const</span> std::string&amp; max_key) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  std::unique_ptr&lt;rocksdb::DB&gt; db_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  rocksdb::WriteBatch batch_;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> num_threads_ = 1;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_buffer_size_ = 64 &lt;&lt; 20;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_batch_size_ = 1;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>};</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a6040606066f068d4cb4a0eec631a7c34">Flush</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  std::unique_ptr&lt;rocksdb::DB&gt; db_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  rocksdb::WriteBatch batch_;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> num_threads_ = 1;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_buffer_size_ = 64 &lt;&lt; 20;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_batch_size_ = 1;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>};</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html">resdb::ResRocksDB</a></div><div class="ttdef"><b>Definition</b> <a href="../../db/d61/res__rocksdb_8h_source.html#l00041">res_rocksdb.h:41</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html_a07c763658d38701e584ae811c2417175"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a07c763658d38701e584ae811c2417175">resdb::ResRocksDB::~ResRocksDB</a></div><div class="ttdeci">virtual ~ResRocksDB()</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00098">res_rocksdb.cpp:98</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html_a4c02ca69e0572800072d9e2b57667bdd"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a4c02ca69e0572800072d9e2b57667bdd">resdb::ResRocksDB::SetValue</a></div><div class="ttdeci">int SetValue(const std::string &amp;key, const std::string &amp;value) override</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00104">res_rocksdb.cpp:104</a></div></div>
+<div class="ttc" id="aclassresdb_1_1ResRocksDB_html_a6040606066f068d4cb4a0eec631a7c34"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a6040606066f068d4cb4a0eec631a7c34">resdb::ResRocksDB::Flush</a></div><div class="ttdeci">bool Flush() override</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00161">res_rocksdb.cpp:161</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html_ad0b4309f0962f4cd64d033bb1687511c"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#ad0b4309f0962f4cd64d033bb1687511c">resdb::ResRocksDB::GetAllValues</a></div><div class="ttdeci">std::string GetAllValues(void) override</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00129">res_rocksdb.cpp:129</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html_adbd758032c11e03397db79310e05867f"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#adbd758032c11e03397db79310e05867f">resdb::ResRocksDB::GetRange</a></div><div class="ttdeci">std::string GetRange(const std::string &amp;min_key, const std::string &amp;max_key) override</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00144">res_rocksdb.cpp:144</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResRocksDB_html_adc9cf32bdbcc72e54e10e6180d655638"><div class="ttname"><a href="../../d0/d5a/classresdb_1_1ResRocksDB.html#adc9cf32bdbcc72e54e10e6180d655638">resdb::ResRocksDB::GetValue</a></div><div class="ttdeci">std::string GetValue(const std::string &amp;key) override</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/res__rocksdb_8cpp_source.html#l00119">res_rocksdb.cpp:119</a></div></div>

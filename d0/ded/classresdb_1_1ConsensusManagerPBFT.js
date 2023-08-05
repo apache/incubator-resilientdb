@@ -21,6 +21,7 @@ var classresdb_1_1ConsensusManagerPBFT =
     [ "mutex_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a81cabeca7680a56fec9cd938ecd252b3", null ],
     [ "performance_manager_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a322584e996a88e4b6e9a1d378be54acf", null ],
     [ "query_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#ad9932af00b5c059f10e7f0a74dda19c2", null ],
+    [ "recovery_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#ab6ee9ab06a5e7f63b9173fc7edcf6c88", null ],
     [ "request_pending_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#ac83af970fc0df80b514a27078ba93e9f", null ],
     [ "response_manager_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a7c88bb983f828c2c69c97ee84b791fa2", null ],
     [ "system_info_", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a92bea35c52644d050375c3072d107bae", null ],

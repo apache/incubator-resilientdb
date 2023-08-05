@@ -131,6 +131,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a74b80a711f53c3c0bd98d5006a17c541"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f2a7fe32638e6b4a5a1e2597913a378"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a4f2a7fe32638e6b4a5a1e2597913a378">GetRange</a> (const std::string &amp;min_key, const std::string &amp;max_key)=0</td></tr>
 <tr class="separator:a4f2a7fe32638e6b4a5a1e2597913a378"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63bd726417d38d67cc831f260cab0804"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a63bd726417d38d67cc831f260cab0804">Flush</a> ()=0</td></tr>
+<tr class="separator:a63bd726417d38d67cc831f260cab0804"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -187,6 +189,33 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a63bd726417d38d67cc831f260cab0804" name="a63bd726417d38d67cc831f260cab0804"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63bd726417d38d67cc831f260cab0804">&#9670;&#160;</a></span>Flush()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool resdb::Storage::Flush </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a4ba3d06a427186fa1c14e2068126ff03">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a6040606066f068d4cb4a0eec631a7c34">resdb::ResRocksDB</a>.</p>
+
+</div>
+</div>
 <a id="a74b80a711f53c3c0bd98d5006a17c541" name="a74b80a711f53c3c0bd98d5006a17c541"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a74b80a711f53c3c0bd98d5006a17c541">&#9670;&#160;</a></span>GetAllValues()</h2>
 

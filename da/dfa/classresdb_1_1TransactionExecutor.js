@@ -7,6 +7,7 @@ var classresdb_1_1TransactionExecutor =
     [ "~TransactionExecutor", "da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787", null ],
     [ "Commit", "da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56", null ],
     [ "GetMaxPendingExecutedSeq", "da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c", null ],
+    [ "GetStorage", "da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c", null ],
     [ "NeedResponse", "da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7", null ],
     [ "SetPreExecuteFunc", "da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01", null ],
     [ "SetSeqUpdateNotifyFunc", "da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907", null ],

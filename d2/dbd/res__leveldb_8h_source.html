@@ -131,10 +131,10 @@ $(document).ready(function(){initNavTree('d2/dbd/res__leveldb_8h_source.html','.
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;optional&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;leveldb/db.h&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;leveldb/write_batch.h&quot;</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &quot;platform/proto/replica_info.pb.h&quot;</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d6b/storage_8h.html">chain/storage/storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/d6b/storage_8h.html">chain/storage/storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;leveldb/db.h&quot;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#include &quot;leveldb/write_batch.h&quot;</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#include &quot;platform/proto/replica_info.pb.h&quot;</span></div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
@@ -152,20 +152,23 @@ $(document).ready(function(){initNavTree('d2/dbd/res__leveldb_8h_source.html','.
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  std::string <a class="code hl_function" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a10de56deebe8fd30f8fbf67292bba564">GetRange</a>(<span class="keyword">const</span> std::string&amp; min_key,</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                       <span class="keyword">const</span> std::string&amp; max_key) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  <span class="keywordtype">void</span> CreateDB(<span class="keyword">const</span> std::string&amp; path);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  std::unique_ptr&lt;leveldb::DB&gt; db_ = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  ::leveldb::WriteBatch batch_;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_buffer_size_ = 64 &lt;&lt; 20;</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_batch_size_ = 1;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>};</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a4ba3d06a427186fa1c14e2068126ff03">Flush</a>() <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  <span class="keywordtype">void</span> CreateDB(<span class="keyword">const</span> std::string&amp; path);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  std::unique_ptr&lt;leveldb::DB&gt; db_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  ::leveldb::WriteBatch batch_;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_buffer_size_ = 64 &lt;&lt; 20;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> write_batch_size_ = 1;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>};</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html">resdb::ResLevelDB</a></div><div class="ttdef"><b>Definition</b> <a href="../../d2/dbd/res__leveldb_8h_source.html#l00042">res_leveldb.h:42</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html_a09127e6633c6c5ed8fe9a56fba22db9f"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#a09127e6633c6c5ed8fe9a56fba22db9f">resdb::ResLevelDB::GetValue</a></div><div class="ttdeci">std::string GetValue(const std::string &amp;key) override</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00116">res_leveldb.cpp:116</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html_a10de56deebe8fd30f8fbf67292bba564"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#a10de56deebe8fd30f8fbf67292bba564">resdb::ResLevelDB::GetRange</a></div><div class="ttdeci">std::string GetRange(const std::string &amp;min_key, const std::string &amp;max_key) override</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00142">res_leveldb.cpp:142</a></div></div>
+<div class="ttc" id="aclassresdb_1_1ResLevelDB_html_a4ba3d06a427186fa1c14e2068126ff03"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#a4ba3d06a427186fa1c14e2068126ff03">resdb::ResLevelDB::Flush</a></div><div class="ttdeci">bool Flush() override</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00159">res_leveldb.cpp:159</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html_a5bdfc16ee6def9b9fc93d4e819eaee4b"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#a5bdfc16ee6def9b9fc93d4e819eaee4b">resdb::ResLevelDB::GetAllValues</a></div><div class="ttdeci">std::string GetAllValues(void) override</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00127">res_leveldb.cpp:127</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html_a759aee3d3ed8ea8460652be3816889d6"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#a759aee3d3ed8ea8460652be3816889d6">resdb::ResLevelDB::~ResLevelDB</a></div><div class="ttdeci">virtual ~ResLevelDB()</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00094">res_leveldb.cpp:94</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResLevelDB_html_adeda0dde2a2e402a51110a8169565498"><div class="ttname"><a href="../../d4/d91/classresdb_1_1ResLevelDB.html#adeda0dde2a2e402a51110a8169565498">resdb::ResLevelDB::SetValue</a></div><div class="ttdeci">int SetValue(const std::string &amp;key, const std::string &amp;value) override</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d82/res__leveldb_8cpp_source.html#l00100">res_leveldb.cpp:100</a></div></div>

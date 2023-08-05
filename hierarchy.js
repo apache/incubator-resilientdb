@@ -12,8 +12,11 @@ var hierarchy =
     [ "resdb::BatchQueue< std::unique_ptr< QueueItem > >", "d5/db6/classresdb_1_1BatchQueue.html", null ],
     [ "resdb::BlockingQueue< T >", "dd/d88/classresdb_1_1BlockingQueue.html", null ],
     [ "resdb::ChainState", "d8/d22/classresdb_1_1ChainState.html", null ],
-    [ "resdb::CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html", [
-      [ "resdb::MockCheckPointManager", "de/da4/classresdb_1_1MockCheckPointManager.html", null ]
+    [ "resdb::CheckPoint", "d2/dce/classresdb_1_1CheckPoint.html", [
+      [ "resdb::CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html", [
+        [ "resdb::MockCheckPointManager", "de/da4/classresdb_1_1MockCheckPointManager.html", null ]
+      ] ],
+      [ "resdb::MockCheckPoint", "d8/dcb/classresdb_1_1MockCheckPoint.html", null ]
     ] ],
     [ "resdb::Commitment", "dd/d4b/classresdb_1_1Commitment.html", null ],
     [ "ConsensusServicePBFT", null, [
@@ -52,6 +55,7 @@ var hierarchy =
     [ "resdb::Query", "de/d6d/classresdb_1_1Query.html", null ],
     [ "resdb::ConsensusManager::QueueItem", "dc/d89/structresdb_1_1ConsensusManager_1_1QueueItem.html", null ],
     [ "resdb::QueueItem", "df/d64/structresdb_1_1QueueItem.html", null ],
+    [ "resdb::Recovery", "d1/d44/classresdb_1_1Recovery.html", null ],
     [ "resdb::ReplicaCommunicator", "d3/d5e/classresdb_1_1ReplicaCommunicator.html", [
       [ "resdb::MockReplicaCommunicator", "d4/de4/classresdb_1_1MockReplicaCommunicator.html", null ]
     ] ],

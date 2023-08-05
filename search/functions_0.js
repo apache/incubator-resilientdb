@@ -13,7 +13,7 @@ var searchData=
   ['addpendingrequest_10',['AddPendingRequest',['../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a5483a7975ce8559002743854722f232f',1,'resdb::ConsensusManagerPBFT']]],
   ['addpublickey_11',['AddPublicKey',['../d4/d30/classresdb_1_1SignatureVerifier.html#ad26f40992724d4705207c0faaef74556',1,'resdb::SignatureVerifier']]],
   ['addreplica_12',['AddReplica',['../d9/d27/classresdb_1_1SystemInfo.html#aaa7c0106eb4509b9fdc22d428d65aa41',1,'resdb::SystemInfo']]],
-  ['addrequest_13',['AddRequest',['../d7/d95/classresdb_1_1TransactionCollector.html#aa9c277665e1925b3d183f9c5da4dd2e3',1,'resdb::TransactionCollector']]],
+  ['addrequest_13',['AddRequest',['../d7/d95/classresdb_1_1TransactionCollector.html#aa9c277665e1925b3d183f9c5da4dd2e3',1,'resdb::TransactionCollector::AddRequest()'],['../d1/d44/classresdb_1_1Recovery.html#a9487fb3d0eb4075dc8498b8d4994fda1',1,'resdb::Recovery::AddRequest()']]],
   ['addressmanager_14',['AddressManager',['../d4/d26/classresdb_1_1contract_1_1AddressManager.html#adb1616cf40a86be693185895d8a88366',1,'resdb::contract::AddressManager']]],
   ['addresstohex_15',['AddressToHex',['../d4/d26/classresdb_1_1contract_1_1AddressManager.html#a0d01711b9de8cc5a03d2bb14603b3f73',1,'resdb::contract::AddressManager']]],
   ['addtransaction_16',['AddTransaction',['../d8/d15/classresdb_1_1utxo_1_1Transaction.html#a4905ab43d66b58cb9ef5bafc3594153d',1,'resdb::utxo::Transaction::AddTransaction(const std::string &amp;utxo_string)'],['../d8/d15/classresdb_1_1utxo_1_1Transaction.html#a8f9a773d8da46dc0e48c69a148924328',1,'resdb::utxo::Transaction::AddTransaction(const UTXO &amp;utxo)']]],

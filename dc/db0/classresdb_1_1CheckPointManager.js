@@ -4,7 +4,7 @@ var classresdb_1_1CheckPointManager =
     [ "~CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html#a01a5417fd7d2d4f1a3b2da681d3c0e11", null ],
     [ "AddCommitData", "dc/db0/classresdb_1_1CheckPointManager.html#ad7417f8126c6b8fa9c0f7c85a21e2568", null ],
     [ "GetMaxTxnSeq", "dc/db0/classresdb_1_1CheckPointManager.html#ae05581eae257b0b5fb901cf74a833980", null ],
-    [ "GetStableCheckpoint", "dc/db0/classresdb_1_1CheckPointManager.html#a687c8da5dcab027ff6b04c9570bf173d", null ],
+    [ "GetStableCheckpoint", "dc/db0/classresdb_1_1CheckPointManager.html#a9ee2716c726f5bade01d56cd09c8d880", null ],
     [ "GetStableCheckpointWithVotes", "dc/db0/classresdb_1_1CheckPointManager.html#ab12ae64e561933759ad360830c061d2e", null ],
     [ "GetTxnDB", "dc/db0/classresdb_1_1CheckPointManager.html#a232cc7220d8960dde9b57f60b782a532", null ],
     [ "IsValidCheckpointProof", "dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf", null ],
