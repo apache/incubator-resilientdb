@@ -25,17 +25,18 @@
 
 #pragma once
 
+#include "chain/storage/txn_memory_db.h"
 #include "common/crypto/signature_verifier.h"
 #include "platform/config/resdb_config.h"
+#include "platform/consensus/checkpoint/checkpoint.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
-#include "chain/storage/txn_memory_db.h"
 
 namespace resdb {
 
-class CheckPointManager {
+class CheckPointManager : public CheckPoint {
  public:
   CheckPointManager(const ResDBConfig& config,
                     ReplicaCommunicator* replica_communicator,
@@ -49,7 +50,7 @@ class CheckPointManager {
   int ProcessCheckPoint(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> request);
 
-  uint64_t GetStableCheckpoint();
+  uint64_t GetStableCheckpoint() override;
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 

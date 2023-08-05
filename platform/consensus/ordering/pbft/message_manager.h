@@ -32,6 +32,7 @@
 #include <queue>
 #include <set>
 
+#include "chain/storage/txn_memory_db.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"
@@ -43,7 +44,6 @@
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
-#include "chain/storage/txn_memory_db.h"
 
 namespace resdb {
 
@@ -60,6 +60,7 @@ class MessageManager {
   int64_t GetCurrentPrimary() const;
   uint64_t GetMinExecutCandidateSeq();
   void SetNextSeq(uint64_t seq);
+  int64_t GetNextSeq();
 
   // Add commit messages and return the number of messages have been received.
   // The commit messages only include post(pre-prepare), prepare and commit
@@ -98,6 +99,8 @@ class MessageManager {
   // Replica State
   int GetReplicaState(ReplicaState* state);
   std::unique_ptr<Context> FetchClientContext(uint64_t seq);
+
+  Storage* GetStorage();
 
  private:
   bool IsValidMsg(const Request& request);

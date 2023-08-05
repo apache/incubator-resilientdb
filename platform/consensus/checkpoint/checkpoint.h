@@ -23,35 +23,16 @@
  *
  */
 
-#include "executor/contract/manager/address_manager.h"
-
-#include "eEVM/util.h"
-#include "glog/logging.h"
-#include "gtest/gtest.h"
+#pragma once
 
 namespace resdb {
-namespace contract {
-namespace {
 
-TEST(AddressManagerTest, CreateAddress) {
-  Address address = AddressManager().CreateRandomAddress();
-  std::array<uint8_t, 32> raw;
-  eevm::to_big_endian(address, raw.data());
-  Address m = eevm::from_big_endian(raw.data() + 12, raw.size() - 12);
-  EXPECT_EQ(m, address);
-}
+class CheckPoint {
+ public:
+  CheckPoint() = default;
+  virtual ~CheckPoint() = default;
 
-TEST(AddressManagerTest, CreateContractAddress) {
-  Address address = AddressManager().CreateRandomAddress();
+  virtual uint64_t GetStableCheckpoint() = 0;
+};
 
-  Address contract_address = AddressManager::CreateContractAddress(address);
-
-  std::array<uint8_t, 32> raw;
-  eevm::to_big_endian(contract_address, raw.data());
-  Address m = eevm::from_big_endian(raw.data() + 12, raw.size() - 12);
-  EXPECT_EQ(m, contract_address);
-}
-
-}  // namespace
-}  // namespace contract
 }  // namespace resdb

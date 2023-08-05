@@ -5,6 +5,7 @@ cc_library(
     srcs = ["transaction_manager.cpp"],
     hdrs = ["transaction_manager.h"],
     deps = [
+        "//chain/storage",
         "//common:comm",
         "//platform/proto:resdb_cc_proto",
     ],

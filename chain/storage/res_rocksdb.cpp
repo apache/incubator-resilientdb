@@ -23,7 +23,7 @@
  *
  */
 
-#include "storage/res_rocksdb.h"
+#include "chain/storage/res_rocksdb.h"
 
 #include <assert.h>
 #include <glog/logging.h>
@@ -156,6 +156,16 @@ std::string ResRocksDB::GetRange(const std::string& min_key,
 
   delete itr;
   return values;
+}
+
+bool ResRocksDB::Flush() {
+  rocksdb::Status status = db_->Write(rocksdb::WriteOptions(), &batch_);
+  if (status.ok()) {
+    batch_.Clear();
+    return true;
+  }
+  LOG(ERROR) << "write value fail:" << status.ToString();
+  return false;
 }
 
 }  // namespace resdb

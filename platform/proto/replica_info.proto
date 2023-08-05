@@ -33,6 +33,10 @@ message ResConfigData{
   optional int32 output_worker_num =14;
   optional int32 tcp_batch_num = 15;
   optional bool require_txn_validation = 16; // for python sdk
+  optional bool recovery_enabled = 17; // whether to enable recovery locally
+  optional string recovery_path = 18;
+  optional int32 recovery_buffer_size = 19;
+  optional int32 recovery_ckpt_time_s = 20;
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;

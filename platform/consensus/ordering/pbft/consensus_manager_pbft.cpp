@@ -59,10 +59,17 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
                                : nullptr),
       view_change_manager_(std::make_unique<ViewChangeManager>(
           config_, checkpoint_manager_.get(), message_manager_.get(),
-          system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())) {
+          system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
+      recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
+                                           message_manager_->GetStorage())) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
+
+  recovery_->ReadLogs(
+      [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        return InternalConsensusCommit(std::move(context), std::move(request));
+      });
 }
 
 void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
@@ -112,10 +119,11 @@ ConsensusManagerPBFT::PopPendingRequest() {
 int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
   // LOG(INFO) << "recv impl type:" << request->type() << " "
-  //           << "sender id:" << request->sender_id();
+  //          << "sender id:" << request->sender_id();
   // If it is in viewchange, push the request to the queue
   // for the requests from the new view which come before
   // the local new view done.
+  recovery_->AddRequest(context.get(), request.get());
   if (config_.GetConfigData().enable_viewchange()) {
     view_change_manager_->MayStart();
     if (view_change_manager_->IsInViewChange()) {
@@ -144,7 +152,8 @@ int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
 int ConsensusManagerPBFT::InternalConsensusCommit(
     std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
   // LOG(INFO) << "recv impl type:" << request->type() << " "
-  //          << "sender id:" << request->sender_id();
+  //         << "sender id:" << request->sender_id()<<" seq:"<<request->seq();
+
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
       if (config_.IsPerformanceRunning()) {

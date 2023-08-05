@@ -65,6 +65,8 @@ class TransactionExecutor {
 
   void SetSeqUpdateNotifyFunc(SeqUpdateNotifyFunc func);
 
+  Storage* GetStorage();
+
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);

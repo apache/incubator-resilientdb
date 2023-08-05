@@ -34,6 +34,7 @@
 #include "platform/consensus/ordering/pbft/query.h"
 #include "platform/consensus/ordering/pbft/response_manager.h"
 #include "platform/consensus/ordering/pbft/viewchange_manager.h"
+#include "platform/consensus/recovery/recovery.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -77,6 +78,7 @@ class ConsensusManagerPBFT : public ConsensusManager {
   std::unique_ptr<ResponseManager> response_manager_;
   std::unique_ptr<PerformanceManager> performance_manager_;
   std::unique_ptr<ViewChangeManager> view_change_manager_;
+  std::unique_ptr<Recovery> recovery_;
   Stats* global_stats_;
   std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
       request_pending_;

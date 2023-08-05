@@ -42,6 +42,9 @@ MessageManager::MessageManager(
           config,
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchUserResponse> resp_msg) {
+            if (request->is_recovery()) {
+              return;
+            }
             resp_msg->set_proxy_id(request->proxy_id());
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
@@ -79,7 +82,12 @@ uint64_t MessageManager ::GetCurrentView() const {
   return system_info_->GetCurrentView();
 }
 
-void MessageManager::SetNextSeq(uint64_t seq) { next_seq_ = seq; }
+void MessageManager::SetNextSeq(uint64_t seq) {
+  next_seq_ = seq;
+  LOG(ERROR) << "set next seq:" << next_seq_;
+}
+
+int64_t MessageManager::GetNextSeq() { return next_seq_; }
 
 absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   std::unique_lock<std::mutex> lk(seq_mutex_);
@@ -222,6 +230,10 @@ int MessageManager::GetReplicaState(ReplicaState* state) {
   *state->mutable_replica_info() = config_.GetSelfInfo();
   *state->mutable_replica_config() = config_.GetConfigData();
   return 0;
+}
+
+Storage* MessageManager::GetStorage() {
+  return transaction_executor_->GetStorage();
 }
 
 }  // namespace resdb

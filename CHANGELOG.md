@@ -1,5 +1,10 @@
 # Change Log
 
+### NexRes v1.7.0 ([2023-08-04](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.7.0))
+
+**Implemented Enhancements:** Support recovery locally when restarting Nexres.([Junchao Chen](https://github.com/cjcchen))
+
+
 ### NexRes v1.6.0 ([2023-05-30](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.6.0))
 
 **Implemented Enhancements:** Refactoring and enhancement of the codebase to highlight the entire software stack of ResilientDB consisting of the following layers ([Junchao Chen](https://github.com/cjcchen))

@@ -27,6 +27,8 @@
 
 #include <glog/logging.h>
 
+#include "common/crypto/signature_verifier.h"
+
 namespace resdb {
 
 uint64_t TransactionCollector::Seq() { return seq_; }

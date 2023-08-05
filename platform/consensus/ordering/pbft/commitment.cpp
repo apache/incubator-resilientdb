@@ -111,6 +111,13 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
+  if (request->is_recovery()) {
+    if (request->seq() == message_manager_->GetNextSeq()) {
+      message_manager_->SetNextSeq(request->seq() + 1);
+    }
+    return message_manager_->AddConsensusMsg(context->signature,
+                                             std::move(request));
+  }
 
   if (request->sender_id() != message_manager_->GetCurrentPrimary()) {
     LOG(ERROR) << "the request is not from primary. sender:"
@@ -162,6 +169,10 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
+  if (request->is_recovery()) {
+    return message_manager_->AddConsensusMsg(context->signature,
+                                             std::move(request));
+  }
   global_stats_->IncPrepare();
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
@@ -192,8 +203,13 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
 int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
                                  std::unique_ptr<Request> request) {
   if (context == nullptr || context->signature.signature().empty()) {
-    LOG(ERROR) << "user request doesn't contain signature, reject";
+    LOG(ERROR) << "user request doesn't contain signature, reject"
+               << " context:" << (context == nullptr);
     return -2;
+  }
+  if (request->is_recovery()) {
+    return message_manager_->AddConsensusMsg(context->signature,
+                                             std::move(request));
   }
   global_stats_->IncCommit();
   // Add request to message_manager.

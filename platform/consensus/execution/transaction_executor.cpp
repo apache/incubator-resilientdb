@@ -66,6 +66,10 @@ void TransactionExecutor::Stop() {
   }
 }
 
+Storage* TransactionExecutor::GetStorage() {
+  return transaction_manager_ ? transaction_manager_->GetStorage() : nullptr;
+}
+
 void TransactionExecutor::SetPreExecuteFunc(PreExecuteFunc pre_exec_func) {
   pre_exec_func_ = pre_exec_func;
 }

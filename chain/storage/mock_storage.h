@@ -25,8 +25,8 @@
 
 #pragma once
 
-#include "gmock/gmock.h"
 #include "chain/storage/storage.h"
+#include "gmock/gmock.h"
 
 namespace resdb {
 
@@ -38,6 +38,7 @@ class MockStorage : public Storage {
   MOCK_METHOD(std::string, GetAllValues, (), (override));
   MOCK_METHOD(std::string, GetRange, (const std::string&, const std::string&),
               (override));
+  MOCK_METHOD(bool, Flush, (), (override));
 };
 
 }  // namespace resdb

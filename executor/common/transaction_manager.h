@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "chain/storage/storage.h"
 #include "platform/proto/resdb.pb.h"
 
 namespace resdb {
@@ -50,6 +51,8 @@ class TransactionManager {
   bool IsOutOfOrder();
 
   bool NeedResponse();
+
+  virtual Storage* GetStorage() { return nullptr; };
 
  private:
   bool is_out_of_order_ = false;
