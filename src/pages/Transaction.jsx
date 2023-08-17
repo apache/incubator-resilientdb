@@ -43,7 +43,16 @@ function Transaction(props) {
        </ul>
        </p>
      )
-   } else if (location.state.from === 'filter') {
+   } else if (location.state.from === 'update-multi') {
+    content = (
+      <p className="manifest">
+      <ul className="list">
+        <li className="list"><span className="list">Operation: {location.state.operation} </span></li>
+        <li className="list"><span className="list">Your Account: {location.state.publicKey} </span></li>
+      </ul>
+      </p>
+    )
+  } else if (location.state.from === 'filter') {
     content = (
       <p className="manifest">
       <ul className="list">
@@ -143,7 +152,8 @@ function Transaction(props) {
 
       const query = `mutation {
         updateTransaction(data: {
-          operation: "CREATE",
+          id: "${location.state.id}"
+          operation: "",
           amount: ${parseInt(location.state.amount)},
           signerPublicKey: "${location.state.publicKey}",
           signerPrivateKey: "${location.state.privateKey}",
@@ -173,6 +183,67 @@ function Transaction(props) {
         chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
           // Send a message to the content script
           chrome.tabs.sendMessage(tabs[0].id, res.data.updateTransaction)
+        });
+        props.navigate("/logs", { state: store });
+      });
+    }
+
+    else if ((location.state.from === 'update-multi')) {
+      escapeCodes = { 
+        '\\': '\\',
+        'r':  '\r',
+        'n':  '\n',
+        't':  '\t'
+      };
+      var records = [];
+      for (const value of location.state.values) {
+        value.data.replace(/\\(.)/g, function(str, char) {
+          return escapeCodes[char];
+        });
+        var object = {
+          id: value.id,
+          operation: "",
+          amount: value.amount === "" ? "" : parseInt(value.amount),
+          signerPublicKey: location.state.publicKey,
+          signerPrivateKey: location.state.privateKey,
+          recipientPublicKey: value.address,
+          asset: `"""{ "data": { ${value.data} }, }"""`
+        }
+        records.push(object);
+      }
+      console.log(records);
+
+      const query = `mutation {
+        updateMultipleTransaction(data: [
+          ${records.map(record => `{
+            id: "${record.id}",
+            operation: "${record.operation}",
+            amount: ${record.amount}
+            signerPublicKey: "${record.signerPublicKey}"
+            signerPrivateKey: "${record.signerPrivateKey}"
+            recipientPublicKey: "${record.recipientPublicKey}"
+            asset: ${record.asset}
+          }`).join(',')}
+        ]){
+          id
+          version
+          amount
+          metadata
+          operation
+          asset
+          publicKey
+          uri
+          type
+        }
+      }`
+      console.log(query);
+
+      const result = sendRequest(query).then(res => { 
+        const store = location.state;
+        store.id = res.data.updateMultipleTransaction[0].id;
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+          // Send a message to the content script
+          chrome.tabs.sendMessage(tabs[0].id, res.data.updateMultipleTransaction)
         });
         props.navigate("/logs", { state: store });
       });

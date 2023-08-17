@@ -33,10 +33,29 @@ window.addEventListener("message", (event) => {
     event.data.direction === "update-page-script") {
     chrome.runtime.sendMessage({
       from: 'update',
+      id: event.data.id,
       data: event.data.message,
       amount: event.data.amount,
       address: event.data.address,
       event: event.data.event
+    })
+  }
+  else if (event.source === window &&
+    event.data.direction === "update-multi-page-script") {
+      const valuesList = event.data.values;
+      const messageEvent = event.data.event;
+  
+      const modifiedValuesList = valuesList.map(eventData => ({
+        id: eventData.id,
+        data: eventData.message,
+        amount: eventData.amount,
+        address: eventData.address,
+      }));
+
+    chrome.runtime.sendMessage({
+      from: 'update-multi',
+      values: modifiedValuesList,
+      event: messageEvent
     })
   }
   else if (event.source === window &&

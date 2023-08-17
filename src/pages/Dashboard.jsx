@@ -29,11 +29,22 @@ function Dashboard(props) {
 
     else if ((msg.from === 'update')){
       const store = location.state;
+      store.id = msg.id;
       store.address = msg.address;
       store.amount = msg.amount;
       store.data = msg.data;
       store.from = msg.from;
       store.operation = "UPDATE";
+      props.navigate("/transaction", {state: store} );
+    }
+
+    else if ((msg.from === 'update-multi')){
+      const store = location.state;
+      const receivedValuesList = msg.values;
+      store.values = receivedValuesList;
+      console.log(store.values);
+      store.from = msg.from;
+      store.operation = "UPDATE MULTIPLE";
       props.navigate("/transaction", {state: store} );
     }
 
