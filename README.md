@@ -22,7 +22,6 @@ You may find the latest ResilientDB documentation, including a programming guide
 1. Software Stack Architecture 
    - SDK, Interface/API, Platform, Execution, and Storage Layers 
    - Detailed API Documentation: **[Core](https://api.resilientdb.com/)** and **[SDK](https://sdk.resilientdb.com/)**
-   - Overview of Class Diagram & Code Structure  
 2. **SDK Layer:** **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
 3. **Interface Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, ResilientDB Database Connectivity (RDBC) API
 4. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
