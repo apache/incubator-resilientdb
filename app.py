@@ -46,6 +46,16 @@ class PrepareAsset:
     asset: str
 
 @strawberry.input
+class UpdateAsset:
+    id: str
+    operation: typing.Optional["str"]
+    amount: typing.Optional["int"]
+    signerPublicKey: str
+    signerPrivateKey: str
+    recipientPublicKey: typing.Optional["str"]
+    asset: typing.Optional["str"]
+
+@strawberry.input
 class FilterKeys:
     ownerPublicKey: Optional[str]
     recipientPublicKey: Optional[str]
@@ -54,6 +64,33 @@ class FilterKeys:
 class Keys:
     publicKey: str
     privateKey: str
+
+def update(data):
+    record = db.transactions.retrieve(data.id)
+    prepared_token_tx = db.transactions.prepare(
+    operation=record["operation"] if data.operation == "" else data.operation,
+    signers=data.signerPublicKey,
+    recipients=[([record["outputs"][0]["condition"]["details"]["public_key"] if data.recipientPublicKey == "" else data.recipientPublicKey], record["outputs"][0]["amount"] if data.amount == "" else data.amount)],
+    asset=record["asset"] if data.asset == "" else ast.literal_eval(data.asset),
+    )
+
+    # fulfill the tnx
+    fulfilled_token_tx = db.transactions.fulfill(prepared_token_tx, private_keys=data.signerPrivateKey)
+
+    id = db.transactions.send_commit(fulfilled_token_tx)[4:] # Extract ID
+    data = db.transactions.retrieve(txid=id)
+    payload = RetrieveTransaction(
+        id=data["id"],
+        version=data["version"],
+        amount=data["outputs"][0]["amount"],
+        uri=data["outputs"][0]["condition"]["uri"],
+        type=data["outputs"][0]["condition"]["details"]["type"],
+        publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
+        operation=data["operation"],
+        metadata=data["metadata"],
+        asset=str(data["asset"])
+    )
+    return payload
 
 @strawberry.type
 class Query:
@@ -113,31 +150,15 @@ class Mutation:
         return payload
     
     @strawberry.mutation
-    def updateTransaction(self, data: PrepareAsset) -> RetrieveTransaction:
-        prepared_token_tx = db.transactions.prepare(
-        operation=data.operation,
-        signers=data.signerPublicKey,
-        recipients=[([data.recipientPublicKey], data.amount)],
-        asset=ast.literal_eval(data.asset),
-        )
-
-        # fulfill the tnx
-        fulfilled_token_tx = db.transactions.fulfill(prepared_token_tx, private_keys=data.signerPrivateKey)
-
-        id = db.transactions.send_commit(fulfilled_token_tx)[4:] # Extract ID
-        data = db.transactions.retrieve(txid=id)
-        payload = RetrieveTransaction(
-            id=data["id"],
-            version=data["version"],
-            amount=data["outputs"][0]["amount"],
-            uri=data["outputs"][0]["condition"]["uri"],
-            type=data["outputs"][0]["condition"]["details"]["type"],
-            publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
-            operation=data["operation"],
-            metadata=data["metadata"],
-            asset=str(data["asset"])
-        )
-        return payload
+    def updateTransaction(self, data: UpdateAsset) -> RetrieveTransaction:
+        return update(data)
+    
+    @strawberry.mutation
+    def updateMultipleTransaction(self, data: List[UpdateAsset]) -> List[RetrieveTransaction]:
+        result = []
+        for transaction in data:
+            result.append(update(transaction))
+        return result
 
     @strawberry.mutation
     def generateKeys(self) -> Keys:
