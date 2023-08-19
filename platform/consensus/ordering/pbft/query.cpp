@@ -71,7 +71,9 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
     }
     Request* txn = response.add_transactions();
     txn->set_data(ret_request->data());
+    txn->set_hash(ret_request->hash());
     txn->set_seq(ret_request->seq());
+    txn->set_proxy_id(ret_request->proxy_id());
   }
 
   if (context != nullptr && context->client != nullptr) {

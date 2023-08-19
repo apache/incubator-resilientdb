@@ -72,6 +72,11 @@ class AtomicUniquePtr {
     return ptr_.get();
   }
 
+  void Clear(){
+    v_ = 0;
+    ptr_ = nullptr;
+  }
+
  private:
   std::unique_ptr<T> ptr_;
   std::atomic<int> v_;
@@ -84,7 +89,8 @@ class TransactionCollector {
       : seq_(seq),
         executor_(executor),
         status_(TransactionStatue::None),
-        enable_viewchange_(enable_viewchange) {}
+        enable_viewchange_(enable_viewchange),
+        view_(0) {}
 
   ~TransactionCollector() = default;
 
@@ -103,13 +109,18 @@ class TransactionCollector {
                  const SignatureInfo& signature, bool is_main_request,
                  std::function<void(const Request&, int received_count,
                                     CollectorDataType* data,
-                                    std::atomic<TransactionStatue>* status)>
+                                    std::atomic<TransactionStatue>* status, 
+                                    bool force)>
                      call_back);
 
   std::vector<RequestInfo> GetPreparedProof();
   TransactionStatue GetStatus() const;
 
   uint64_t Seq();
+
+  bool IsPrepared();
+
+  std::vector<std::string> GetAllStoredHash();
 
  private:
   int Commit();
@@ -118,16 +129,19 @@ class TransactionCollector {
   uint64_t seq_;
   TransactionExecutor* executor_;
   std::atomic<bool> is_committed_ = false;
+  std::atomic<bool> is_prepared = false;
   std::vector<std::unique_ptr<Context>> context_list_;
   std::map<std::string, std::list<std::unique_ptr<RequestInfo>>>
       data_[Request::NUM_OF_TYPE];
   std::vector<std::unique_ptr<RequestInfo>> prepared_proof_;
   AtomicUniquePtr<RequestInfo> atomic_mian_request_;
   std::atomic<TransactionStatue> status_ = TransactionStatue::None;
-  std::bitset<128> senders_[Request::NUM_OF_TYPE];
   bool enable_viewchange_;
   std::mutex mutex_;
   std::vector<SignatureInfo> commit_certs_;
+  std::map<std::string, std::bitset<128>> senders_[Request::NUM_OF_TYPE];
+  std::set<std::unique_ptr<RequestInfo>> other_main_request_;
+  uint64_t view_;
 };
 
 }  // namespace resdb

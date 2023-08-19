@@ -25,6 +25,8 @@
 
 #include "platform/consensus/ordering/pbft/message_manager.h"
 
+#include "common/utils/utils.h"
+
 #include <glog/logging.h>
 
 namespace resdb {
@@ -48,7 +50,8 @@ MessageManager::MessageManager(
             resp_msg->set_proxy_id(request->proxy_id());
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
-            if (transaction_executor_->NeedResponse()) {
+            resp_msg->set_primary_id(GetCurrentPrimary());
+            if (transaction_executor_->NeedResponse() && resp_msg->proxy_id() != 0) {
               queue_.Push(std::move(resp_msg));
             }
             if (checkpoint_manager_) {
@@ -62,6 +65,7 @@ MessageManager::MessageManager(
   global_stats_ = Stats::GetGlobalStats();
   transaction_executor_->SetSeqUpdateNotifyFunc(
       [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
+  checkpoint_manager_->SetExecutor(transaction_executor_.get());
 }
 
 MessageManager::~MessageManager() {
@@ -95,6 +99,7 @@ absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   global_stats_->SeqGap(next_seq_ - max_executed_seq);
   if (next_seq_ - max_executed_seq >
       static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
+    // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " << max_executed_seq;
     return absl::InvalidArgumentError("Seq has been used up.");
   }
   return next_seq_++;
@@ -128,7 +133,7 @@ bool MessageManager::IsValidMsg(const Request& request) {
 }
 
 bool MessageManager::MayConsensusChangeStatus(
-    int type, int received_count, std::atomic<TransactionStatue>* status) {
+    int type, int received_count, std::atomic<TransactionStatue>* status, bool ret) {
   switch (type) {
     case Request::TYPE_PRE_PREPARE:
       if (*status == TransactionStatue::None) {
@@ -158,7 +163,7 @@ bool MessageManager::MayConsensusChangeStatus(
       }
       break;
   }
-  return false;
+  return ret;
 }
 
 // Add commit messages and return the number of messages have been received.
@@ -175,17 +180,21 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   int type = request->type();
   uint64_t seq = request->seq();
   int resp_received_count = 0;
+  int proxy_id = request->proxy_id();
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
       [&](const Request& request, int received_count,
           TransactionCollector::CollectorDataType* data,
-          std::atomic<TransactionStatue>* status) {
-        if (MayConsensusChangeStatus(type, received_count, status)) {
+          std::atomic<TransactionStatue>* status, bool force) {
+        if (MayConsensusChangeStatus(type, received_count, status, force)) {
           resp_received_count = 1;
         }
       });
-  if (ret != 0) {
+  if (ret == 1){
+    SetLastCommittedTime(proxy_id);
+  }
+  else if (ret != 0) {
     return CollectorResultCode::INVALID;
   }
   if (resp_received_count > 0) {
@@ -235,5 +244,53 @@ int MessageManager::GetReplicaState(ReplicaState* state) {
 Storage* MessageManager::GetStorage() {
   return transaction_executor_->GetStorage();
 }
+
+void MessageManager::SetLastCommittedTime(uint64_t proxy_id) {
+  lct_lock.lock();
+  last_committed_time[proxy_id] = GetCurrentTime();
+  lct_lock.unlock();
+}
+
+uint64_t MessageManager::GetLastCommittedTime(uint64_t proxy_id) {
+  lct_lock.lock();
+  auto value = last_committed_time[proxy_id];
+  lct_lock.unlock();
+  return value;
+}
+
+bool MessageManager::IsPreapared(uint64_t seq) {
+  return collector_pool_->GetCollector(seq)->IsPrepared();
+}
+
+uint64_t MessageManager::GetHighestPreparedSeq() {
+  return checkpoint_manager_->GetHighestPreparedSeq();
+}
+
+void MessageManager::SetHighestPreparedSeq(uint64_t seq) {
+  return checkpoint_manager_->SetHighestPreparedSeq(seq);
+}
+
+void MessageManager::SetDuplicateManager(DuplicateManager *manager) {
+  transaction_executor_->SetDuplicateManager(manager);
+}
+
+void MessageManager::SendResponse(std::unique_ptr<Request> request) {
+  std::unique_ptr<BatchUserResponse> response = std::make_unique<BatchUserResponse>();
+  response->set_createtime(GetCurrentTime());
+  // response->set_local_id(batch_request.local_id());
+  response->set_hash(request->hash());
+  response->set_proxy_id(request->proxy_id());
+  response->set_seq(request->seq());
+  response->set_current_view(GetCurrentView());
+  response->set_primary_id(GetCurrentPrimary());
+  if (transaction_executor_->NeedResponse() && response->proxy_id() != 0) {
+    queue_.Push(std::move(response));
+  }
+}
+
+LockFreeCollectorPool* MessageManager::GetCollectorPool() {
+  return collector_pool_.get();
+}
+
 
 }  // namespace resdb

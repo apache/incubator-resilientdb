@@ -25,35 +25,41 @@
 
 #pragma once
 
-#include "absl/status/statusor.h"
-#include "interface/rdbc/net_channel.h"
-#include "platform/config/resdb_config.h"
-#include "platform/proto/replica_info.pb.h"
+#include <stdint.h>
+#include <unistd.h>
+#include <map>
+#include <memory>
+#include <queue>
+#include <set>
+#include <thread>
+#include <mutex>
 
 namespace resdb {
 
-// ResDBTxnAccessor used to obtain the server state of each replica in ResDB.
-// The addresses of each replica are provided from the config.
-class ResDBTxnAccessor {
- public:
-  ResDBTxnAccessor(const ResDBConfig& config);
-  virtual ~ResDBTxnAccessor() = default;
-
-  // Obtain ReplicaState of each replica.
-  virtual absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> GetTxn(
-      uint64_t min_seq, uint64_t max_seq);
-
-  virtual absl::StatusOr<std::vector<Request>> GetRequestFromReplica(
-      uint64_t min_seq, uint64_t max_seq, const ReplicaInfo& replica);
-
- protected:
-  virtual std::unique_ptr<NetChannel> GetNetChannel(const std::string& ip,
-                                                    int port);
-
- private:
-  ResDBConfig config_;
-  std::vector<ReplicaInfo> replicas_;
-  int recv_timeout_ = 1;
+class DuplicateManager{
+public:
+  DuplicateManager();
+  bool CheckIfProposed(std::string hash);
+  uint64_t CheckIfExecuted(std::string hash);
+  void AddProposed(std::string hash);
+  void AddExecuted(std::string hash, uint64_t seq);
+  void EraseProposed(std::string hash);
+  void EraseExecuted(std::string hash);
+  bool CheckAndAddProposed(std::string hash);
+  bool CheckAndAddExecuted(std::string hash, uint64_t seq);
+  void UpdateRecentHash();
+private:
+  std::set<std::string> proposed_hash_set;
+  std::set<std::string> executed_hash_set;
+  std::queue<std::pair<std::string, uint64_t>> proposed_hash_time_queue;
+  std::queue<std::pair<std::string, uint64_t>> executed_hash_time_queue;
+  std::map<std::string, uint64_t> executed_hash_seq;
+  std::thread update_thread;
+  std::mutex prop_mutex_;
+  std::mutex exec_mutex_;
+  uint64_t frequency_useconds = 5000000; // 5s
+  uint64_t window_useconds = 20000000; // 20s
 };
+
 
 }  // namespace resdb

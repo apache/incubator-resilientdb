@@ -8,6 +8,8 @@ from google.protobuf.json_format import Parse, ParseDict
 
 def GenerateJsonConfig(file_name, output_file):
     config_data=ResConfigData() 
+    config_data.enable_viewchange = False
+    config_data.max_client_complaint_num = 10
     tmp_config={}
     with open(file_name) as f:
         for line in f.readlines():

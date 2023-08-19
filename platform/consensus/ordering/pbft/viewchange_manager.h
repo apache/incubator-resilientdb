@@ -32,8 +32,58 @@
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/viewchange_message.pb.h"
+#include <semaphore.h>
 
 namespace resdb {
+
+enum ViewChangeTimerType{
+   TYPE_COMPLAINT,
+   TYPE_VIEWCHANGE,
+   TYPE_NEWVIEW
+ };
+
+ class ViewChangeTimeout {
+ public:
+  ViewChangeTimeout(ViewChangeTimerType type, uint64_t view, uint64_t proxy_id, std::string hash,
+              uint64_t start_time, uint64_t timeout_length)
+      : type(type),
+        view(view),
+        proxy_id(proxy_id),
+        hash(hash),
+        start_time(start_time),
+        timeout_time(start_time + timeout_length) {}
+
+  ViewChangeTimerType type;
+  uint64_t view;
+  uint64_t proxy_id;
+  std::string hash;
+  uint64_t start_time;
+  uint64_t timeout_time;
+  
+
+  bool operator<(const ViewChangeTimeout& other) const{
+    return timeout_time > other.timeout_time;
+  }
+};
+
+class ComplaningClients {
+  public:
+  ComplaningClients();
+  ComplaningClients(uint64_t proxy_id);
+  std::shared_ptr<ViewChangeTimeout> SetComplaining(std::string hash, uint64_t view);
+  void ReleaseComplaining(std::string hash);
+  void set_proxy_id(uint64_t proxy_id) { this->proxy_id = proxy_id; }
+
+  uint CountViewChangeTimeout(std::string hash);
+  void EraseViewChangeTimeout(std::string hash);
+
+  protected:
+  uint64_t proxy_id;
+  bool is_complaining;
+  uint64_t timeout_length;
+  std::mutex complain_state_lock;
+  std::set<std::string> viewchange_timeout_set;
+};
 
 class ViewChangeManager {
  public:
@@ -56,7 +106,14 @@ class ViewChangeManager {
     NONE = 0,
     READY_VIEW_CHANGE = 1,
     READY_NEW_VIEW = 2,
+    VIEW_CHANGE_FAIL = 3,
   };
+
+  void AddComplaintTimer(uint64_t proxy_id, std::string hash);
+  void AddViewChangeTimer();
+  void AddNewViewTimer();
+  void CheckComplaintTimeout();
+  void SetDuplicateManager(DuplicateManager* manager);
 
  private:
   void SendViewChangeMsg();
@@ -70,6 +127,10 @@ class ViewChangeManager {
       const NewViewMessage& new_view_message, bool need_sign = true);
 
   bool ChangeStatue(ViewChangeStatus status);
+
+  void MonitoringViewChangeTimeOut();
+  bool CheckTimeOut(ViewChangeTimeout& info);
+  void MonitoringCheckpointState();
 
  protected:
   ResDBConfig config_;
@@ -85,6 +146,20 @@ class ViewChangeManager {
   ViewChangeStatus status_;
   std::atomic<bool> started_;
   uint32_t view_change_counter_;
+
+  std::mutex vc_mutex_;
+  std::thread server_checking_timeout_thread;
+  std::thread checkpoint_state_thread;
+  sem_t timeout_cnt;
+  sem_t viewchange_timer_signal;
+  // LockFreeQueue<ViewChangeTimeout> timeout_info_queue;
+  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>> viewchange_timeout_min_heap;
+  std::map<uint64_t, ComplaningClients> complaining_clients;
+  std::atomic<bool> stop_;
+  uint64_t timeout_length = 10000000;
+
+  LockFreeCollectorPool* collector_pool_;
+  DuplicateManager* duplicate_manager_;
 };
 
 }  // namespace resdb

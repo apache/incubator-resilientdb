@@ -31,6 +31,7 @@
 #include "platform/consensus/ordering/pbft/response_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/statistic/stats.h"
+#include "platform/consensus/execution/duplicate_manager.h"
 
 namespace resdb {
 
@@ -54,6 +55,13 @@ class Commitment {
   void SetPreVerifyFunc(std::function<bool(const Request& request)> func);
   void SetNeedCommitQC(bool need_qc);
 
+  std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
+       request_complained_;
+
+  std::mutex rc_mutex_;
+
+  DuplicateManager* GetDuplicateManager();
+
  protected:
   virtual int PostProcessExecutedMsg();
 
@@ -69,6 +77,9 @@ class Commitment {
 
   std::function<bool(const Request& request)> pre_verify_func_;
   bool need_qc_ = false;
+
+  std::mutex mutex_;
+  DuplicateManager* duplicate_manager_;
 };
 
 }  // namespace resdb

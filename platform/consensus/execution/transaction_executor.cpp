@@ -126,8 +126,8 @@ void TransactionExecutor::OrderMessage() {
       global_stats_->IncExecute();
       uint64_t seq = message->seq();
       if (next_execute_seq_ > seq) {
-        LOG(INFO) << "request seq:" << seq << " has been executed"
-                  << " next seq:" << next_execute_seq_;
+        // LOG(INFO) << "request seq:" << seq << " has been executed"
+                  // << " next seq:" << next_execute_seq_;
         continue;
       }
 
@@ -189,8 +189,8 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   // LOG(INFO) << " get request batch size:"
   //          << batch_request.user_requests_size()<<" proxy
   //          id:"<<request->proxy_id();
-  std::unique_ptr<BatchUserResponse> batch_response =
-      std::make_unique<BatchUserResponse>();
+  // std::unique_ptr<BatchUserResponse> batch_response =
+  //     std::make_unique<BatchUserResponse>();
 
   std::unique_ptr<BatchUserResponse> response;
   if (transaction_manager_) {
@@ -218,13 +218,15 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   // LOG(INFO) << " get request batch size:"
   //         << batch_request.user_requests_size()<<" proxy
   //         id:"<<request->proxy_id()<<" need execute:"<<need_execute;
-  std::unique_ptr<BatchUserResponse> batch_response =
-      std::make_unique<BatchUserResponse>();
+  // std::unique_ptr<BatchUserResponse> batch_response =
+  //     std::make_unique<BatchUserResponse>();
 
   std::unique_ptr<BatchUserResponse> response;
   if (transaction_manager_ && need_execute) {
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
+
+  duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());
 
   global_stats_->IncTotalRequest(batch_request.user_requests_size());
   if (response == nullptr) {
@@ -233,9 +235,15 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
   response->set_createtime(batch_request.createtime());
   response->set_local_id(batch_request.local_id());
+  response->set_hash(batch_request.hash());
+  
   post_exec_func_(std::move(request), std::move(response));
 
   global_stats_->IncExecuteDone();
+}
+
+void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager){
+  duplicate_manager_ = manager;
 }
 
 }  // namespace resdb

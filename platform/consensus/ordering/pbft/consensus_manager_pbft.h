@@ -66,8 +66,10 @@ class ConsensusManagerPBFT : public ConsensusManager {
                               std::unique_ptr<Request> request);
   void AddPendingRequest(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
-  absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
-  PopPendingRequest();
+  void AddComplainedRequest(std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request);
+  absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>> PopPendingRequest();
+  absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>> PopComplainedRequest();
 
  protected:
   std::unique_ptr<SystemInfo> system_info_;
@@ -82,6 +84,8 @@ class ConsensusManagerPBFT : public ConsensusManager {
   Stats* global_stats_;
   std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
       request_pending_;
+  std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
+      request_complained_;
   std::mutex mutex_;
 };
 

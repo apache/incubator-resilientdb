@@ -31,6 +31,7 @@ cc_library(
         "//platform/config:resdb_config",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
+        ":duplicate_manager",
     ],
 )
 
@@ -98,5 +99,16 @@ cc_test(
         "//executor/common:mock_transaction_manager",
         "//platform/config:resdb_config_utils",
         "//platform/networkstrate:mock_replica_communicator",
+    ],
+)
+
+
+cc_library(
+    name = "duplicate_manager",
+    srcs = ["duplicate_manager.cpp"],
+    hdrs = ["duplicate_manager.h"],
+    deps = [
+        "//common:comm",
+        "//common/utils",
     ],
 )

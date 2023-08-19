@@ -129,6 +129,11 @@ int ResDBConfig::GetMinClientReceiveNum() const {
   return std::max(f + 1, 1);
 }
 
+int ResDBConfig::GetMinCheckpointReceiveNum() const {
+  int f = (replicas_.size() - 1) / 3;
+  return std::max(f + 1, 1);
+}
+
 size_t ResDBConfig::GetMaxMaliciousReplicaNum() const {
   int f = (replicas_.size() - 1) / 3;
   return std::max(f, 0);
@@ -202,6 +207,13 @@ uint32_t ResDBConfig::GetMaxProcessTxn() const {
 void ResDBConfig::SetMaxProcessTxn(uint32_t num) {
   config_data_.set_max_process_txn(num);
   max_process_txn_ = num;
+}
+
+uint32_t ResDBConfig::GetMaxClientComplaintNum() const {
+  if (config_data_.max_client_complaint_num()) {
+    return config_data_.max_client_complaint_num();
+  }
+  return 10;
 }
 
 uint32_t ResDBConfig::ClientBatchWaitTimeMS() const {
