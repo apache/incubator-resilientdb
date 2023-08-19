@@ -37,25 +37,15 @@
 
 namespace resdb {
 
- class PerformanceClientTimeout{
- public:
-     std::string hash;
-     uint64_t timeout_time;
+class PerformanceClientTimeout{
+public:
+    PerformanceClientTimeout(std::string hash_, uint64_t time_);
+    PerformanceClientTimeout(const PerformanceClientTimeout& other);
+    bool operator<(const PerformanceClientTimeout& other) const;
 
-     PerformanceClientTimeout(std::string hash_, uint64_t time_){
-         this->hash = hash_;
-         this->timeout_time = time_;
-     }
-
-     PerformanceClientTimeout(const PerformanceClientTimeout& other){
-         this->hash = other.hash;
-         this->timeout_time = other.timeout_time;
-     }
-
-     bool operator<(const PerformanceClientTimeout& other) const{
-         return timeout_time > other.timeout_time;
-     }
- };
+    std::string hash;
+    uint64_t timeout_time;
+};
 
 
 class PerformanceManager {
@@ -121,15 +111,14 @@ class PerformanceManager {
   std::atomic<bool> eval_started_;
   std::atomic<int> fail_num_;
 
-  std::thread checking_timeout_thread;
-  std::map<std::string, std::unique_ptr<Request>> waiting_response_batches;
-  std::priority_queue<PerformanceClientTimeout> client_timeout_min_heap;
-  std::mutex pm_lock;
-  uint64_t timeout_length;
-  sem_t request_sent_signal;
-  uint64_t highest_seq;
-  uint64_t highest_seq_primary_id;
-  std::vector<std::string> hashes;
+  std::thread checking_timeout_thread_;
+  std::map<std::string, std::unique_ptr<Request>> waiting_response_batches_;
+  std::priority_queue<PerformanceClientTimeout> client_timeout_min_heap_;
+  std::mutex pm_lock_;
+  uint64_t timeout_length_;
+  sem_t request_sent_signal_;
+  uint64_t highest_seq_;
+  uint64_t highest_seq_primary_id_;
 };
 
 }  // namespace resdb

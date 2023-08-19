@@ -142,8 +142,8 @@ class MessageManager {
 
   Stats* global_stats_;
 
-  std::mutex lct_lock;
-  std::map<uint64_t, uint64_t> last_committed_time;
+  std::mutex lct_lock_;
+  std::map<uint64_t, uint64_t> last_committed_time_;
 
 };
 

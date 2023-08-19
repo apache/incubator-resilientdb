@@ -246,15 +246,15 @@ Storage* MessageManager::GetStorage() {
 }
 
 void MessageManager::SetLastCommittedTime(uint64_t proxy_id) {
-  lct_lock.lock();
-  last_committed_time[proxy_id] = GetCurrentTime();
-  lct_lock.unlock();
+  lct_lock_.lock();
+  last_committed_time_[proxy_id] = GetCurrentTime();
+  lct_lock_.unlock();
 }
 
 uint64_t MessageManager::GetLastCommittedTime(uint64_t proxy_id) {
-  lct_lock.lock();
-  auto value = last_committed_time[proxy_id];
-  lct_lock.unlock();
+  lct_lock_.lock();
+  auto value = last_committed_time_[proxy_id];
+  lct_lock_.unlock();
   return value;
 }
 

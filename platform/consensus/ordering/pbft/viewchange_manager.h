@@ -45,13 +45,13 @@ enum ViewChangeTimerType{
  class ViewChangeTimeout {
  public:
   ViewChangeTimeout(ViewChangeTimerType type, uint64_t view, uint64_t proxy_id, std::string hash,
-              uint64_t start_time, uint64_t timeout_length)
+              uint64_t start_time, uint64_t timeout_length_)
       : type(type),
         view(view),
         proxy_id(proxy_id),
         hash(hash),
         start_time(start_time),
-        timeout_time(start_time + timeout_length) {}
+        timeout_time(start_time + timeout_length_) {}
 
   ViewChangeTimerType type;
   uint64_t view;
@@ -80,7 +80,7 @@ class ComplaningClients {
   protected:
   uint64_t proxy_id;
   bool is_complaining;
-  uint64_t timeout_length;
+  uint64_t timeout_length_;
   std::mutex complain_state_lock;
   std::set<std::string> viewchange_timeout_set;
 };
@@ -148,15 +148,15 @@ class ViewChangeManager {
   uint32_t view_change_counter_;
 
   std::mutex vc_mutex_;
-  std::thread server_checking_timeout_thread;
-  std::thread checkpoint_state_thread;
-  sem_t timeout_cnt;
-  sem_t viewchange_timer_signal;
+  std::thread server_checking_timeout_thread_;
+  std::thread checkpoint_state_thread_;
+  sem_t timeout_cnt_;
+  sem_t viewchange_timer_signal_;
   // LockFreeQueue<ViewChangeTimeout> timeout_info_queue;
-  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>> viewchange_timeout_min_heap;
-  std::map<uint64_t, ComplaningClients> complaining_clients;
+  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>> viewchange_timeout_min_heap_;
+  std::map<uint64_t, ComplaningClients> complaining_clients_;
   std::atomic<bool> stop_;
-  uint64_t timeout_length = 10000000;
+  uint64_t timeout_length_ = 10000000;
 
   LockFreeCollectorPool* collector_pool_;
   DuplicateManager* duplicate_manager_;

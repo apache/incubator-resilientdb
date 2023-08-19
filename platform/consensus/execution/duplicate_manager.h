@@ -49,16 +49,16 @@ public:
   bool CheckAndAddExecuted(std::string hash, uint64_t seq);
   void UpdateRecentHash();
 private:
-  std::set<std::string> proposed_hash_set;
-  std::set<std::string> executed_hash_set;
-  std::queue<std::pair<std::string, uint64_t>> proposed_hash_time_queue;
-  std::queue<std::pair<std::string, uint64_t>> executed_hash_time_queue;
-  std::map<std::string, uint64_t> executed_hash_seq;
-  std::thread update_thread;
+  std::set<std::string> proposed_hash_set_;
+  std::set<std::string> executed_hash_set_;
+  std::queue<std::pair<std::string, uint64_t>> proposed_hash_time_queue_;
+  std::queue<std::pair<std::string, uint64_t>> executed_hash_time_queue_;
+  std::map<std::string, uint64_t> executed_hash_seq_;
+  std::thread update_thread_;
   std::mutex prop_mutex_;
   std::mutex exec_mutex_;
-  uint64_t frequency_useconds = 5000000; // 5s
-  uint64_t window_useconds = 20000000; // 20s
+  uint64_t frequency_useconds_ = 5000000; // 5s
+  uint64_t window_useconds_ = 20000000; // 20s
 };
 
 

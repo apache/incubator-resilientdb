@@ -44,7 +44,7 @@ Commitment::Commitment(const ResDBConfig& config,
       verifier_(verifier) {
   executed_thread_ = std::thread(&Commitment::PostProcessExecutedMsg, this);
   global_stats_ = Stats::GetGlobalStats();
-  duplicate_manager_ = new DuplicateManager();
+  duplicate_manager_ = std::make_unique<DuplicateManager>();
   message_manager_->SetDuplicateManager(duplicate_manager_);
 }
 
@@ -303,7 +303,7 @@ int Commitment::PostProcessExecutedMsg() {
 }
 
 DuplicateManager* Commitment::GetDuplicateManager(){
-  return duplicate_manager_;
+  return duplicate_manager_.get();
 }
 
 }  // namespace resdb

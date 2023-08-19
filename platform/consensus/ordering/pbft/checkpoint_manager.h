@@ -110,15 +110,15 @@ class CheckPointManager : public CheckPoint {
   std::function<void()> timeout_handler_;
   StableCheckPoint stable_ckpt_;
   int new_data_ = 0;
-  LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue;
+  LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue_;
   std::condition_variable signal_;
-  ResDBTxnAccessor txn_accessor;
+  ResDBTxnAccessor txn_accessor_;
   std::mutex lt_mutex_;
-  uint64_t last_seq = 0;
+  uint64_t last_seq_ = 0;
   TransactionExecutor* executor_;
   std::atomic<uint64_t> highest_prepared_seq_;
-  uint64_t committable_seq = 0;
-  std::string last_hash, committable_hash;
+  uint64_t committable_seq_ = 0;
+  std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
 };
 

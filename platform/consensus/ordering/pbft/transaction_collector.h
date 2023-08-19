@@ -129,7 +129,7 @@ class TransactionCollector {
   uint64_t seq_;
   TransactionExecutor* executor_;
   std::atomic<bool> is_committed_ = false;
-  std::atomic<bool> is_prepared = false;
+  std::atomic<bool> is_prepared_ = false;
   std::vector<std::unique_ptr<Context>> context_list_;
   std::map<std::string, std::list<std::unique_ptr<RequestInfo>>>
       data_[Request::NUM_OF_TYPE];

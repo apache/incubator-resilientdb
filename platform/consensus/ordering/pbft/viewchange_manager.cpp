@@ -37,18 +37,18 @@ namespace resdb {
 ComplaningClients::ComplaningClients()
     : proxy_id(0),
       is_complaining(false),
-      timeout_length(10000000) {}
+      timeout_length_(10000000) {}
 
 ComplaningClients::ComplaningClients(uint64_t proxy_id)
     : proxy_id(proxy_id),
       is_complaining(false),
-      timeout_length(10000000) {}
+      timeout_length_(10000000) {}
 
 std::shared_ptr<ViewChangeTimeout> ComplaningClients::SetComplaining(std::string hash, uint64_t view) {
   this->complain_state_lock.lock();
   this->is_complaining = true;
   auto info = std::make_shared<ViewChangeTimeout>(ViewChangeTimerType::TYPE_COMPLAINT, 
-    view, this->proxy_id, hash, GetCurrentTime(), this->timeout_length);
+    view, this->proxy_id, hash, GetCurrentTime(), this->timeout_length_);
   this->viewchange_timeout_set.insert(hash);
   this->complain_state_lock.unlock();
   return info;
@@ -94,19 +94,19 @@ ViewChangeManager::ViewChangeManager(const ResDBConfig& config,
   view_change_counter_ = 1;
   if(config_.GetConfigData().enable_viewchange()){
     collector_pool_ = message_manager->GetCollectorPool();
-    sem_init(&viewchange_timer_signal, 0, 0);
-    server_checking_timeout_thread = std::thread(&ViewChangeManager::MonitoringViewChangeTimeOut, this);
-    checkpoint_state_thread = std::thread(&ViewChangeManager::MonitoringCheckpointState, this);
+    sem_init(&viewchange_timer_signal_, 0, 0);
+    server_checking_timeout_thread_ = std::thread(&ViewChangeManager::MonitoringViewChangeTimeOut, this);
+    checkpoint_state_thread_ = std::thread(&ViewChangeManager::MonitoringCheckpointState, this);
   }
 }
 
 ViewChangeManager::~ViewChangeManager() { 
   checkpoint_manager_->Stop(); 
-  if (server_checking_timeout_thread.joinable()) {
-    server_checking_timeout_thread.join();
+  if (server_checking_timeout_thread_.joinable()) {
+    server_checking_timeout_thread_.join();
   }
-  if (checkpoint_state_thread.joinable()) {
-    checkpoint_state_thread.join();
+  if (checkpoint_state_thread_.joinable()) {
+    checkpoint_state_thread_.join();
   }
 }
 
@@ -137,11 +137,11 @@ void ViewChangeManager::MayStart() {
     if (ChangeStatue(ViewChangeStatus::READY_VIEW_CHANGE)) {
       SendViewChangeMsg();
       auto viewchange_timer = std::make_shared<ViewChangeTimeout>(ViewChangeTimerType::TYPE_VIEWCHANGE, 
-        system_info_->GetCurrentView(), config_.GetSelfInfo().id(), "null", GetCurrentTime(), timeout_length);
+        system_info_->GetCurrentView(), config_.GetSelfInfo().id(), "null", GetCurrentTime(), timeout_length_);
       std::lock_guard<std::mutex> lk(vc_mutex_);
-      if (viewchange_timeout_min_heap[config_.GetSelfInfo().id()].size() < config_.GetMaxClientComplaintNum()) {
-        viewchange_timeout_min_heap[config_.GetSelfInfo().id()].push(viewchange_timer);
-        sem_post(&viewchange_timer_signal); 
+      if (viewchange_timeout_min_heap_[config_.GetSelfInfo().id()].size() < config_.GetMaxClientComplaintNum()) {
+        viewchange_timeout_min_heap_[config_.GetSelfInfo().id()].push(viewchange_timer);
+        sem_post(&viewchange_timer_signal_); 
       }
 
     }
@@ -397,11 +397,11 @@ int ViewChangeManager::ProcessViewChange(std::unique_ptr<Context> context,
     }
     else {
       auto newview_timer = std::make_shared<ViewChangeTimeout>(ViewChangeTimerType::TYPE_NEWVIEW, 
-         system_info_->GetCurrentView(), config_.GetSelfInfo().id(), "null", GetCurrentTime(), timeout_length);
+         system_info_->GetCurrentView(), config_.GetSelfInfo().id(), "null", GetCurrentTime(), timeout_length_);
       std::lock_guard<std::mutex> lk(vc_mutex_);
-      if (viewchange_timeout_min_heap[config_.GetSelfInfo().id()].size() < config_.GetMaxClientComplaintNum()) {
-        viewchange_timeout_min_heap[config_.GetSelfInfo().id()].push(newview_timer);
-        sem_post(&viewchange_timer_signal); 
+      if (viewchange_timeout_min_heap_[config_.GetSelfInfo().id()].size() < config_.GetMaxClientComplaintNum()) {
+        viewchange_timeout_min_heap_[config_.GetSelfInfo().id()].push(newview_timer);
+        sem_post(&viewchange_timer_signal_); 
       }
     }
     ChangeStatue(ViewChangeStatus::READY_NEW_VIEW);
@@ -503,13 +503,13 @@ void ViewChangeManager::SendViewChangeMsg() {
 
 void ViewChangeManager::AddComplaintTimer(uint64_t proxy_id, std::string hash) {
   std::lock_guard<std::mutex> lk(vc_mutex_);
-  if (complaining_clients.count(proxy_id) == 0) {
-    complaining_clients[proxy_id].set_proxy_id(proxy_id);
+  if (complaining_clients_.count(proxy_id) == 0) {
+    complaining_clients_[proxy_id].set_proxy_id(proxy_id);
   }
-  auto complaint_ = complaining_clients[proxy_id].SetComplaining(hash, system_info_->GetCurrentView());
-  if (viewchange_timeout_min_heap[proxy_id].size() < config_.GetMaxClientComplaintNum()) {
-    viewchange_timeout_min_heap[proxy_id].push(complaint_);
-    sem_post(&viewchange_timer_signal); 
+  auto complaint_ = complaining_clients_[proxy_id].SetComplaining(hash, system_info_->GetCurrentView());
+  if (viewchange_timeout_min_heap_[proxy_id].size() < config_.GetMaxClientComplaintNum()) {
+    viewchange_timeout_min_heap_[proxy_id].push(complaint_);
+    sem_post(&viewchange_timer_signal_); 
   }
   else {
     // LOG(INFO) << "The number of complaints reaches the maximum value";
@@ -520,11 +520,11 @@ void ViewChangeManager::MonitoringViewChangeTimeOut(){
   while(!stop_){
     // [DK3] After timer is out, the client will check if the corresponding client request 
     // has recevied sufficient valid responses
-    sem_wait(&viewchange_timer_signal);
+    sem_wait(&viewchange_timer_signal_);
     vc_mutex_.lock();
     bool empty = true;
     std::shared_ptr<ViewChangeTimeout> viewchange_timeout;
-    for(auto& heap : viewchange_timeout_min_heap){
+    for(auto& heap : viewchange_timeout_min_heap_){
       if(!heap.second.empty()){
         viewchange_timeout = heap.second.top();
         heap.second.pop();
@@ -562,8 +562,8 @@ void ViewChangeManager::MonitoringViewChangeTimeOut(){
     }
     else if(viewchange_timeout->type == ViewChangeTimerType::TYPE_COMPLAINT){
       // [DK7] if the primary does not broadcast the request in a timely manner, the replica starts a viewchange
-      if (complaining_clients[viewchange_timeout->proxy_id].CountViewChangeTimeout(viewchange_timeout->hash)) {
-        complaining_clients[viewchange_timeout->proxy_id].EraseViewChangeTimeout(viewchange_timeout->hash);
+      if (complaining_clients_[viewchange_timeout->proxy_id].CountViewChangeTimeout(viewchange_timeout->hash)) {
+        complaining_clients_[viewchange_timeout->proxy_id].EraseViewChangeTimeout(viewchange_timeout->hash);
       }
       std::lock_guard<std::mutex> lk(status_mutex_);
       if (status_ == ViewChangeStatus::NONE && viewchange_timeout->view == system_info_->GetCurrentView()) {

@@ -79,7 +79,7 @@ class Commitment {
   bool need_qc_ = false;
 
   std::mutex mutex_;
-  DuplicateManager* duplicate_manager_;
+  std::unique_ptr<DuplicateManager> duplicate_manager_;
 };
 
 }  // namespace resdb

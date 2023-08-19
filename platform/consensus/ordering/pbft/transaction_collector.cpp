@@ -33,7 +33,7 @@ namespace resdb {
 
 uint64_t TransactionCollector::Seq() { return seq_; }
 
-bool TransactionCollector::IsPrepared() { return is_prepared; }
+bool TransactionCollector::IsPrepared() { return is_prepared_; }
 
 TransactionStatue TransactionCollector::GetStatus() const { return status_; }
 
@@ -106,7 +106,7 @@ int TransactionCollector::AddRequest(
     request_info->signature = signature;
     request_info->request = std::move(request);
     bool force = false;
-    if (view_ && view_ < view && !is_prepared) {
+    if (view_ && view_ < view && !is_prepared_) {
       force = true;
       atomic_mian_request_.Clear();
     }
@@ -133,7 +133,7 @@ int TransactionCollector::AddRequest(
           request_info->signature = signature;
           request_info->request = std::make_unique<Request>(*request);
           std::lock_guard<std::mutex> lk(mutex_);
-          if(is_prepared){
+          if(is_prepared_){
             return 0;
           }
           prepared_proof_.push_back(std::move(request_info));
@@ -143,7 +143,7 @@ int TransactionCollector::AddRequest(
           senders_[type][hash][sender_id] = 1;
           call_back(*request, senders_[type][hash].count(), nullptr, &status_, false);
           if (status_.load() == TransactionStatue::READY_COMMIT){
-            is_prepared = true;
+            is_prepared_ = true;
             if (atomic_mian_request_.Reference() != nullptr && atomic_mian_request_.Reference()->request->hash() != hash) {
               atomic_mian_request_.Clear();
               for(auto it = other_main_request_.begin(); it != other_main_request_.end(); it++){
@@ -225,15 +225,15 @@ int TransactionCollector::Commit() {
 }
 
 std::vector<std::string> TransactionCollector::GetAllStoredHash() {
-  std::vector<std::string> v_;
+  std::vector<std::string> v;
   auto main_request = atomic_mian_request_.Reference();
   if (main_request) {
-    v_.push_back(main_request->request->hash());
+    v.push_back(main_request->request->hash());
   } 
   for (auto& info : other_main_request_){
-    v_.push_back(info->request->hash());
+    v.push_back(info->request->hash());
   }
-  return v_;
+  return v;
 }
 
 }  // namespace resdb

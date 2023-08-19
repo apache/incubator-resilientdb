@@ -40,7 +40,7 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
       txn_db_(std::make_unique<TxnMemoryDB>()),
       verifier_(verifier),
       stop_(false),
-      txn_accessor(config),
+      txn_accessor_(config),
       highest_prepared_seq_(0) {
   current_stable_seq_ = 0;
   // if (config_.GetConfigData().enable_viewchange()) {
@@ -181,24 +181,24 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       for (auto it : sender_ckpt_) {
         if (it.second.size() >=
           static_cast<size_t>(config_.GetMinCheckpointReceiveNum())) {
-          committable_seq = it.first.first;
-          committable_hash = it.first.second;
-          std::set<uint32_t> senders_ = sender_ckpt_[std::make_pair(committable_seq, committable_hash)];
+          committable_seq_ = it.first.first;
+          committable_hash_ = it.first.second;
+          std::set<uint32_t> senders_ = sender_ckpt_[std::make_pair(committable_seq_, committable_hash_)];
           sem_post(&committable_seq_signal_);
-          if (last_seq < committable_seq && last_committable_seq < committable_seq){
+          if (last_seq_ < committable_seq_ && last_committable_seq < committable_seq_){
             auto replicas_ = config_.GetReplicaInfos();
             for(auto &replica_: replicas_){
-              std::string last_hash_;
-              uint64_t last_seq_;
+              std::string last_hash;
+              uint64_t last_seq;
               {
                 std::lock_guard<std::mutex> lk(lt_mutex_);
-                last_hash_ = last_hash;
+                last_hash = last_hash_;
                 // last_seq_ = last_seq > last_committable_seq ? last_seq : last_committable_seq;
-                last_seq_ = last_seq;
+                last_seq = last_seq_;
               }
-              if(senders_.count(replica_.id()) && last_seq_ < committable_seq){
-                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << " " << committable_seq;
-                auto requests = txn_accessor.GetRequestFromReplica(last_seq_ + 1, committable_seq, replica_);
+              if(senders_.count(replica_.id()) && last_seq < committable_seq_){
+                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << " " << committable_seq_;
+                auto requests = txn_accessor_.GetRequestFromReplica(last_seq + 1, committable_seq_, replica_);
                 if(requests.ok()){
                   bool fail = false;
                   for (auto& request: *requests){
@@ -207,22 +207,22 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
                       fail = true;
                       break;
                     }
-                    last_hash_ = GetHash(last_hash_, request.hash());
+                    last_hash = GetHash(last_hash, request.hash());
                   }
                   if (fail) {
                     continue;
                   }
-                  else if (last_hash_ != committable_hash) {
-                    LOG(ERROR) << "The hash of requests returned do not match. " << last_seq_ + 1 << " " << committable_seq;
+                  else if (last_hash != committable_hash_) {
+                    LOG(ERROR) << "The hash of requests returned do not match. " << last_seq + 1 << " " << committable_seq_;
                   }
                   else {
-                    last_committable_seq = committable_seq;
+                    last_committable_seq = committable_seq_;
                     for (auto& request: *requests) { 
                       if (executor_) {
                         executor_->Commit(std::make_unique<Request>(request));
                       }
                     }
-                    SetHighestPreparedSeq(committable_seq);
+                    SetHighestPreparedSeq(committable_seq_);
                     // LOG(ERROR) << "[4]";
                     break;
                   }
@@ -300,20 +300,20 @@ void CheckPointManager::UpdateCheckPointStatus() {
     }
     std::string hash_ = request->hash();
     uint64_t current_seq = request->seq();
-    if (current_seq != last_seq + 1) {
-      LOG(ERROR) << "seq invalid:" << last_seq << " current:" << current_seq;
+    if (current_seq != last_seq_ + 1) {
+      LOG(ERROR) << "seq invalid:" << last_seq_ << " current:" << current_seq;
       continue;
     }
     {
       std::lock_guard<std::mutex> lk(lt_mutex_);
-      last_hash = GetHash(last_hash, request->hash());
-      last_seq++;
+      last_hash_ = GetHash(last_hash_, request->hash());
+      last_seq_++;
     }
     txn_db_->Put(std::move(request));
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
-      BroadcastCheckPoint(last_ckpt_seq, last_hash, stable_hashs, stable_seqs);
+      BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs, stable_seqs);
     }
   }
   return;
@@ -343,11 +343,11 @@ void CheckPointManager::BroadcastCheckPoint(uint64_t seq,
 
 void CheckPointManager::WaitSignal(){
   std::unique_lock<std::mutex> lk(mutex_);
-  signal_.wait(lk, [&]{ return !stable_hash_queue.Empty(); });
+  signal_.wait(lk, [&]{ return !stable_hash_queue_.Empty(); });
 }
 
 std::unique_ptr<std::pair<uint64_t, std::string>> CheckPointManager::PopStableSeqHash(){
-  return stable_hash_queue.Pop();
+  return stable_hash_queue_.Pop();
 }
 
 uint64_t CheckPointManager::GetHighestPreparedSeq() {
@@ -367,7 +367,7 @@ sem_t* CheckPointManager::CommitableSeqSignal() {
 
 uint64_t CheckPointManager::GetCommittableSeq() {
   std::lock_guard<std::mutex> lk(lt_mutex_);
-  return committable_seq;
+  return committable_seq_;
 }
 
 }  // namespace resdb
