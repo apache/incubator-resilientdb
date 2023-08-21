@@ -144,6 +144,22 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:acac70c70e436b4b716a2d42c5e37141b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f80acfd2861da00ce8ec8d4c0dedd6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a5f80acfd2861da00ce8ec8d4c0dedd6e">GetStorage</a> ()</td></tr>
 <tr class="separator:a5f80acfd2861da00ce8ec8d4c0dedd6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0265ab61f90ec9af5043de1bc977a718"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a0265ab61f90ec9af5043de1bc977a718">SetLastCommittedTime</a> (uint64_t proxy_id)</td></tr>
+<tr class="separator:a0265ab61f90ec9af5043de1bc977a718"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a432c9c62670ddc407e64bc711ec0cfdd"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a432c9c62670ddc407e64bc711ec0cfdd">GetLastCommittedTime</a> (uint64_t proxy_id)</td></tr>
+<tr class="separator:a432c9c62670ddc407e64bc711ec0cfdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84ab69569fb75a020efd07269a33e625"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a84ab69569fb75a020efd07269a33e625">IsPreapared</a> (uint64_t seq)</td></tr>
+<tr class="separator:a84ab69569fb75a020efd07269a33e625"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f203e89bbcc620801ca5716ff0b99b9"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a3f203e89bbcc620801ca5716ff0b99b9">GetHighestPreparedSeq</a> ()</td></tr>
+<tr class="separator:a3f203e89bbcc620801ca5716ff0b99b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cf2194e60da0708bcc87d09c2a4a133"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a4cf2194e60da0708bcc87d09c2a4a133">SetHighestPreparedSeq</a> (uint64_t seq)</td></tr>
+<tr class="separator:a4cf2194e60da0708bcc87d09c2a4a133"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a086f2369e6e992e3f186cd8c4c60a168"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a086f2369e6e992e3f186cd8c4c60a168">SetDuplicateManager</a> (<a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *manager)</td></tr>
+<tr class="separator:a086f2369e6e992e3f186cd8c4c60a168"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f341b293f7cebba8632546d8fd9fbbd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#a3f341b293f7cebba8632546d8fd9fbbd">SendResponse</a> (std::unique_ptr&lt; Request &gt; request)</td></tr>
+<tr class="separator:a3f341b293f7cebba8632546d8fd9fbbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3db5d0c05aacfd2af9e7ff41ce5c673"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d7/d31/classresdb_1_1LockFreeCollectorPool.html">LockFreeCollectorPool</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d18/classresdb_1_1MessageManager.html#ae3db5d0c05aacfd2af9e7ff41ce5c673">GetCollectorPool</a> ()</td></tr>
+<tr class="separator:ae3db5d0c05aacfd2af9e7ff41ce5c673"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -187,7 +203,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00032">32</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -206,7 +222,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00067">67</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00071">71</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -237,7 +253,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00170">170</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00175">175</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -256,7 +272,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00092">92</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00096">96</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -278,6 +294,25 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae3db5d0c05aacfd2af9e7ff41ce5c673" name="ae3db5d0c05aacfd2af9e7ff41ce5c673"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3db5d0c05aacfd2af9e7ff41ce5c673">&#9670;&#160;</a></span>GetCollectorPool()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d7/d31/classresdb_1_1LockFreeCollectorPool.html">LockFreeCollectorPool</a> * resdb::MessageManager::GetCollectorPool </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00291">291</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a9a98a3b57dcba4f428eb51cc3f093aff" name="a9a98a3b57dcba4f428eb51cc3f093aff"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9a98a3b57dcba4f428eb51cc3f093aff">&#9670;&#160;</a></span>GetCurrentPrimary()</h2>
 
@@ -293,7 +328,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00077">77</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00081">81</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -312,7 +347,46 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00081">81</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00085">85</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a3f203e89bbcc620801ca5716ff0b99b9" name="a3f203e89bbcc620801ca5716ff0b99b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f203e89bbcc620801ca5716ff0b99b9">&#9670;&#160;</a></span>GetHighestPreparedSeq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t resdb::MessageManager::GetHighestPreparedSeq </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00265">265</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a432c9c62670ddc407e64bc711ec0cfdd" name="a432c9c62670ddc407e64bc711ec0cfdd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a432c9c62670ddc407e64bc711ec0cfdd">&#9670;&#160;</a></span>GetLastCommittedTime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t resdb::MessageManager::GetLastCommittedTime </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>proxy_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00254">254</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -348,7 +422,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00090">90</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00094">94</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -368,7 +442,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00220">220</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00229">229</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -387,7 +461,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00103">103</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00108">108</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -407,7 +481,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00228">228</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00237">237</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -427,7 +501,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00218">218</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00227">227</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -457,7 +531,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00197">197</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00206">206</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -476,7 +550,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00077">77</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -495,7 +569,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00235">235</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00244">244</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -515,7 +589,107 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00224">224</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00233">233</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a84ab69569fb75a020efd07269a33e625" name="a84ab69569fb75a020efd07269a33e625"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a84ab69569fb75a020efd07269a33e625">&#9670;&#160;</a></span>IsPreapared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool resdb::MessageManager::IsPreapared </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>seq</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00261">261</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a3f341b293f7cebba8632546d8fd9fbbd" name="a3f341b293f7cebba8632546d8fd9fbbd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f341b293f7cebba8632546d8fd9fbbd">&#9670;&#160;</a></span>SendResponse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::MessageManager::SendResponse </td>
+          <td>(</td>
+          <td class="paramtype">std::unique_ptr&lt; Request &gt;&#160;</td>
+          <td class="paramname"><em>request</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00277">277</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a086f2369e6e992e3f186cd8c4c60a168" name="a086f2369e6e992e3f186cd8c4c60a168"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a086f2369e6e992e3f186cd8c4c60a168">&#9670;&#160;</a></span>SetDuplicateManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::MessageManager::SetDuplicateManager </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *&#160;</td>
+          <td class="paramname"><em>manager</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00273">273</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a4cf2194e60da0708bcc87d09c2a4a133" name="a4cf2194e60da0708bcc87d09c2a4a133"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4cf2194e60da0708bcc87d09c2a4a133">&#9670;&#160;</a></span>SetHighestPreparedSeq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::MessageManager::SetHighestPreparedSeq </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>seq</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00269">269</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a0265ab61f90ec9af5043de1bc977a718" name="a0265ab61f90ec9af5043de1bc977a718"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0265ab61f90ec9af5043de1bc977a718">&#9670;&#160;</a></span>SetLastCommittedTime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::MessageManager::SetLastCommittedTime </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>proxy_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00248">248</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -535,7 +709,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00085">85</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d32/message__manager_8cpp_source.html#l00089">89</a> of file <a class="el" href="../../dd/d32/message__manager_8cpp_source.html">message_manager.cpp</a>.</p>
 
 </div>
 </div>

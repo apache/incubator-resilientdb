@@ -9,6 +9,7 @@ var classresdb_1_1TransactionExecutor =
     [ "GetMaxPendingExecutedSeq", "da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c", null ],
     [ "GetStorage", "da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c", null ],
     [ "NeedResponse", "da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7", null ],
+    [ "SetDuplicateManager", "da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d", null ],
     [ "SetPreExecuteFunc", "da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01", null ],
     [ "SetSeqUpdateNotifyFunc", "da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907", null ],
     [ "Stop", "da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4", null ],

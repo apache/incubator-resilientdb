@@ -135,6 +135,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8362ad75caf7b727aa2ea0e763d70b01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdcf4b2d634e3ce26f383fd07b35b907"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">SetSeqUpdateNotifyFunc</a> (<a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a611ce0a2cc0cacc5b2894c9862c745cf">SeqUpdateNotifyFunc</a> func)</td></tr>
 <tr class="separator:abdcf4b2d634e3ce26f383fd07b35b907"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a283b962690108a1385ae038c2d81141d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">SetDuplicateManager</a> (<a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *manager)</td></tr>
+<tr class="separator:a283b962690108a1385ae038c2d81141d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2cb31010b591f79383027918784795c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">GetStorage</a> ()</td></tr>
 <tr class="separator:aa2cb31010b591f79383027918784795c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -145,7 +147,7 @@ Protected Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00040">40</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00041">41</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="af9aec46034e4178fa11e07f9dea6ae02" name="af9aec46034e4178fa11e07f9dea6ae02"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af9aec46034e4178fa11e07f9dea6ae02">&#9670;&#160;</a></span>PostExecuteFunc</h2>
@@ -159,7 +161,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00044">44</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00045">45</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 
 </div>
 </div>
@@ -175,7 +177,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00045">45</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00046">46</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 
 </div>
 </div>
@@ -191,7 +193,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00046">46</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00047">47</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 
 </div>
 </div>
@@ -335,6 +337,26 @@ Protected Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a283b962690108a1385ae038c2d81141d" name="a283b962690108a1385ae038c2d81141d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a283b962690108a1385ae038c2d81141d">&#9670;&#160;</a></span>SetDuplicateManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::TransactionExecutor::SetDuplicateManager </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *&#160;</td>
+          <td class="paramname"><em>manager</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html#l00245">245</a> of file <a class="el" href="../../d7/d24/transaction__executor_8cpp_source.html">transaction_executor.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a8362ad75caf7b727aa2ea0e763d70b01" name="a8362ad75caf7b727aa2ea0e763d70b01"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8362ad75caf7b727aa2ea0e763d70b01">&#9670;&#160;</a></span>SetPreExecuteFunc()</h2>
 
@@ -415,7 +437,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00087">87</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/d8c/transaction__executor_8h_source.html#l00090">90</a> of file <a class="el" href="../../db/d8c/transaction__executor_8h_source.html">transaction_executor.h</a>.</p>
 
 </div>
 </div>

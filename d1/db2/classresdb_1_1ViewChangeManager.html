@@ -113,6 +113,7 @@ Public Types</h2></td></tr>
 <tr class="memitem:acd229d978d381feb3b0301faf83b0c81"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#acd229d978d381feb3b0301faf83b0c81">ViewChangeStatus</a> { <a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#acd229d978d381feb3b0301faf83b0c81a457ab33cb8e4a477304072393fc9f1ef">NONE</a> = 0
 , <a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#acd229d978d381feb3b0301faf83b0c81af74af63a3c7a453a0b886b386c1fb7e9">READY_VIEW_CHANGE</a> = 1
 , <a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#acd229d978d381feb3b0301faf83b0c81a3b77325139ff3604a1d5cbe172e357b7">READY_NEW_VIEW</a> = 2
+, <a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#acd229d978d381feb3b0301faf83b0c81a1ec5b50b0b9d489951c81d54dfdcdc5a">VIEW_CHANGE_FAIL</a> = 3
  }</td></tr>
 <tr class="separator:acd229d978d381feb3b0301faf83b0c81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -130,6 +131,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2372585060ec8e89b0df72ef71e919ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3baf9b3fb63aa554436e58c315147d93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a3baf9b3fb63aa554436e58c315147d93">MayStart</a> ()</td></tr>
 <tr class="separator:a3baf9b3fb63aa554436e58c315147d93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae620405b1e3a7cc117924a5b8f0c47cb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ae620405b1e3a7cc117924a5b8f0c47cb">AddComplaintTimer</a> (uint64_t proxy_id, std::string hash)</td></tr>
+<tr class="separator:ae620405b1e3a7cc117924a5b8f0c47cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7ba24b43c1f153e2627537621a6b6de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ae7ba24b43c1f153e2627537621a6b6de">AddViewChangeTimer</a> ()</td></tr>
+<tr class="separator:ae7ba24b43c1f153e2627537621a6b6de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecf46c3fc2621dd33af484e921b801a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#aecf46c3fc2621dd33af484e921b801a0">AddNewViewTimer</a> ()</td></tr>
+<tr class="separator:aecf46c3fc2621dd33af484e921b801a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad8df4b90742eb30efd5a202db033575b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ad8df4b90742eb30efd5a202db033575b">CheckComplaintTimeout</a> ()</td></tr>
+<tr class="separator:ad8df4b90742eb30efd5a202db033575b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad15a1b126adb35551fad79de0bb8afe8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ad15a1b126adb35551fad79de0bb8afe8">SetDuplicateManager</a> (<a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *manager)</td></tr>
+<tr class="separator:ad15a1b126adb35551fad79de0bb8afe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -161,10 +172,32 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a79e1b036b816c4e1c0317d4b762d112c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64e85ae7ea16f0e4481d45d38fc59a9a"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a64e85ae7ea16f0e4481d45d38fc59a9a">view_change_counter_</a></td></tr>
 <tr class="separator:a64e85ae7ea16f0e4481d45d38fc59a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ab0e74c1561122aaa3a844984581adf"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a0ab0e74c1561122aaa3a844984581adf">vc_mutex_</a></td></tr>
+<tr class="separator:a0ab0e74c1561122aaa3a844984581adf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af58d8e0dcbb22b7af62c97fe85cda6ce"><td class="memItemLeft" align="right" valign="top">std::thread&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#af58d8e0dcbb22b7af62c97fe85cda6ce">server_checking_timeout_thread_</a></td></tr>
+<tr class="separator:af58d8e0dcbb22b7af62c97fe85cda6ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac859a94d354046ebeef5ce6627565857"><td class="memItemLeft" align="right" valign="top">std::thread&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ac859a94d354046ebeef5ce6627565857">checkpoint_state_thread_</a></td></tr>
+<tr class="separator:ac859a94d354046ebeef5ce6627565857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab29f04590bc552d8c8a28f8bc3b888bc"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ab29f04590bc552d8c8a28f8bc3b888bc">timeout_cnt_</a></td></tr>
+<tr class="separator:ab29f04590bc552d8c8a28f8bc3b888bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2ba05528b2cfac2943893b4150e58c8"><td class="memItemLeft" align="right" valign="top">sem_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ac2ba05528b2cfac2943893b4150e58c8">viewchange_timer_signal_</a></td></tr>
+<tr class="separator:ac2ba05528b2cfac2943893b4150e58c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4aeb8124da5c4c92d5cc198564ed53ab"><td class="memItemLeft" align="right" valign="top">std::map&lt; uint64_t, std::priority_queue&lt; std::shared_ptr&lt; <a class="el" href="../../d9/d00/classresdb_1_1ViewChangeTimeout.html">ViewChangeTimeout</a> &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a4aeb8124da5c4c92d5cc198564ed53ab">viewchange_timeout_min_heap_</a></td></tr>
+<tr class="separator:a4aeb8124da5c4c92d5cc198564ed53ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86931d3d4e417df485fecb55380e04ba"><td class="memItemLeft" align="right" valign="top">std::map&lt; uint64_t, <a class="el" href="../../d3/da3/classresdb_1_1ComplaningClients.html">ComplaningClients</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a86931d3d4e417df485fecb55380e04ba">complaining_clients_</a></td></tr>
+<tr class="separator:a86931d3d4e417df485fecb55380e04ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1fb539de7f0cbda6271fadb4de6ef95c"><td class="memItemLeft" align="right" valign="top">std::atomic&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a1fb539de7f0cbda6271fadb4de6ef95c">stop_</a></td></tr>
+<tr class="separator:a1fb539de7f0cbda6271fadb4de6ef95c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7ddc35f2c5e1fffe494ebe08832cb1a"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#aa7ddc35f2c5e1fffe494ebe08832cb1a">timeout_length_</a> = 10000000</td></tr>
+<tr class="separator:aa7ddc35f2c5e1fffe494ebe08832cb1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad2714a423fc6c1720ebb18e2b0e3c289"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d7/d31/classresdb_1_1LockFreeCollectorPool.html">LockFreeCollectorPool</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#ad2714a423fc6c1720ebb18e2b0e3c289">collector_pool_</a></td></tr>
+<tr class="separator:ad2714a423fc6c1720ebb18e2b0e3c289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10f5e377daad2b2fbb2c0394f71c8d8c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html#a10f5e377daad2b2fbb2c0394f71c8d8c">duplicate_manager_</a></td></tr>
+<tr class="separator:a10f5e377daad2b2fbb2c0394f71c8d8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00038">38</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00088">88</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="acd229d978d381feb3b0301faf83b0c81" name="acd229d978d381feb3b0301faf83b0c81"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd229d978d381feb3b0301faf83b0c81">&#9670;&#160;</a></span>ViewChangeStatus</h2>
@@ -181,9 +214,10 @@ Protected Attributes</h2></td></tr>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="acd229d978d381feb3b0301faf83b0c81a457ab33cb8e4a477304072393fc9f1ef" name="acd229d978d381feb3b0301faf83b0c81a457ab33cb8e4a477304072393fc9f1ef"></a>NONE&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acd229d978d381feb3b0301faf83b0c81af74af63a3c7a453a0b886b386c1fb7e9" name="acd229d978d381feb3b0301faf83b0c81af74af63a3c7a453a0b886b386c1fb7e9"></a>READY_VIEW_CHANGE&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="acd229d978d381feb3b0301faf83b0c81a3b77325139ff3604a1d5cbe172e357b7" name="acd229d978d381feb3b0301faf83b0c81a3b77325139ff3604a1d5cbe172e357b7"></a>READY_NEW_VIEW&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="acd229d978d381feb3b0301faf83b0c81a1ec5b50b0b9d489951c81d54dfdcdc5a" name="acd229d978d381feb3b0301faf83b0c81a1ec5b50b0b9d489951c81d54dfdcdc5a"></a>VIEW_CHANGE_FAIL&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00055">55</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00105">105</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -238,7 +272,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00038">38</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00079">79</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -265,11 +299,92 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00055">55</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00103">103</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae620405b1e3a7cc117924a5b8f0c47cb" name="ae620405b1e3a7cc117924a5b8f0c47cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae620405b1e3a7cc117924a5b8f0c47cb">&#9670;&#160;</a></span>AddComplaintTimer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ViewChangeManager::AddComplaintTimer </td>
+          <td>(</td>
+          <td class="paramtype">uint64_t&#160;</td>
+          <td class="paramname"><em>proxy_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>hash</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00504">504</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aecf46c3fc2621dd33af484e921b801a0" name="aecf46c3fc2621dd33af484e921b801a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aecf46c3fc2621dd33af484e921b801a0">&#9670;&#160;</a></span>AddNewViewTimer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ViewChangeManager::AddNewViewTimer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae7ba24b43c1f153e2627537621a6b6de" name="ae7ba24b43c1f153e2627537621a6b6de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7ba24b43c1f153e2627537621a6b6de">&#9670;&#160;</a></span>AddViewChangeTimer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ViewChangeManager::AddViewChangeTimer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad8df4b90742eb30efd5a202db033575b" name="ad8df4b90742eb30efd5a202db033575b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8df4b90742eb30efd5a202db033575b">&#9670;&#160;</a></span>CheckComplaintTimeout()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ViewChangeManager::CheckComplaintTimeout </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a2372585060ec8e89b0df72ef71e919ee" name="a2372585060ec8e89b0df72ef71e919ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2372585060ec8e89b0df72ef71e919ee">&#9670;&#160;</a></span>IsInViewChange()</h2>
 
@@ -285,7 +400,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00098">98</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00163">163</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -304,7 +419,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00057">57</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00113">113</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -334,7 +449,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00221">221</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00290">290</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -364,7 +479,27 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00295">295</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00376">376</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ad15a1b126adb35551fad79de0bb8afe8" name="ad15a1b126adb35551fad79de0bb8afe8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad15a1b126adb35551fad79de0bb8afe8">&#9670;&#160;</a></span>SetDuplicateManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ViewChangeManager::SetDuplicateManager </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *&#160;</td>
+          <td class="paramname"><em>manager</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html#l00594">594</a> of file <a class="el" href="../../d0/dd0/viewchange__manager_8cpp_source.html">viewchange_manager.cpp</a>.</p>
 
 </div>
 </div>
@@ -389,7 +524,79 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00076">76</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00137">137</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="ac859a94d354046ebeef5ce6627565857" name="ac859a94d354046ebeef5ce6627565857"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac859a94d354046ebeef5ce6627565857">&#9670;&#160;</a></span>checkpoint_state_thread_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::thread resdb::ViewChangeManager::checkpoint_state_thread_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00152">152</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="ad2714a423fc6c1720ebb18e2b0e3c289" name="ad2714a423fc6c1720ebb18e2b0e3c289"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad2714a423fc6c1720ebb18e2b0e3c289">&#9670;&#160;</a></span>collector_pool_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d7/d31/classresdb_1_1LockFreeCollectorPool.html">LockFreeCollectorPool</a>* resdb::ViewChangeManager::collector_pool_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00161">161</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a86931d3d4e417df485fecb55380e04ba" name="a86931d3d4e417df485fecb55380e04ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86931d3d4e417df485fecb55380e04ba">&#9670;&#160;</a></span>complaining_clients_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt;uint64_t, <a class="el" href="../../d3/da3/classresdb_1_1ComplaningClients.html">ComplaningClients</a>&gt; resdb::ViewChangeManager::complaining_clients_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00157">157</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -413,7 +620,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00075">75</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00136">136</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a10f5e377daad2b2fbb2c0394f71c8d8c" name="a10f5e377daad2b2fbb2c0394f71c8d8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10f5e377daad2b2fbb2c0394f71c8d8c">&#9670;&#160;</a></span>duplicate_manager_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a>* resdb::ViewChangeManager::duplicate_manager_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00162">162</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +668,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00077">77</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00138">138</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -461,7 +692,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00081">81</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00142">142</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -485,7 +716,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00083">83</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00144">144</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -509,7 +740,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00084">84</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00145">145</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -533,7 +764,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00079">79</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00140">140</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="af58d8e0dcbb22b7af62c97fe85cda6ce" name="af58d8e0dcbb22b7af62c97fe85cda6ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af58d8e0dcbb22b7af62c97fe85cda6ce">&#9670;&#160;</a></span>server_checking_timeout_thread_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::thread resdb::ViewChangeManager::server_checking_timeout_thread_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00151">151</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -557,7 +812,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00086">86</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00147">147</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -581,7 +836,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00085">85</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00146">146</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -605,7 +860,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00083">83</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00144">144</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a1fb539de7f0cbda6271fadb4de6ef95c" name="a1fb539de7f0cbda6271fadb4de6ef95c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fb539de7f0cbda6271fadb4de6ef95c">&#9670;&#160;</a></span>stop_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::atomic&lt;bool&gt; resdb::ViewChangeManager::stop_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00158">158</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -629,7 +908,79 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00078">78</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00139">139</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="ab29f04590bc552d8c8a28f8bc3b888bc" name="ab29f04590bc552d8c8a28f8bc3b888bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab29f04590bc552d8c8a28f8bc3b888bc">&#9670;&#160;</a></span>timeout_cnt_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">sem_t resdb::ViewChangeManager::timeout_cnt_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00153">153</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="aa7ddc35f2c5e1fffe494ebe08832cb1a" name="aa7ddc35f2c5e1fffe494ebe08832cb1a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7ddc35f2c5e1fffe494ebe08832cb1a">&#9670;&#160;</a></span>timeout_length_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint64_t resdb::ViewChangeManager::timeout_length_ = 10000000</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00159">159</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a0ab0e74c1561122aaa3a844984581adf" name="a0ab0e74c1561122aaa3a844984581adf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ab0e74c1561122aaa3a844984581adf">&#9670;&#160;</a></span>vc_mutex_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::mutex resdb::ViewChangeManager::vc_mutex_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00150">150</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -653,7 +1004,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00080">80</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00141">141</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -677,7 +1028,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00087">87</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00148">148</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>
@@ -701,7 +1052,55 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00082">82</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00143">143</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="a4aeb8124da5c4c92d5cc198564ed53ab" name="a4aeb8124da5c4c92d5cc198564ed53ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4aeb8124da5c4c92d5cc198564ed53ab">&#9670;&#160;</a></span>viewchange_timeout_min_heap_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::map&lt;uint64_t, std::priority_queue&lt;std::shared_ptr&lt;<a class="el" href="../../d9/d00/classresdb_1_1ViewChangeTimeout.html">ViewChangeTimeout</a>&gt; &gt; &gt; resdb::ViewChangeManager::viewchange_timeout_min_heap_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00156">156</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
+
+</div>
+</div>
+<a id="ac2ba05528b2cfac2943893b4150e58c8" name="ac2ba05528b2cfac2943893b4150e58c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2ba05528b2cfac2943893b4150e58c8">&#9670;&#160;</a></span>viewchange_timer_signal_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">sem_t resdb::ViewChangeManager::viewchange_timer_signal_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html#l00154">154</a> of file <a class="el" href="../../d9/dc0/viewchange__manager_8h_source.html">viewchange_manager.h</a>.</p>
 
 </div>
 </div>

@@ -2,6 +2,7 @@ var classresdb_1_1Commitment =
 [
     [ "Commitment", "dd/d4b/classresdb_1_1Commitment.html#a7cbe79c34bd0694da632bd19fb2114a0", null ],
     [ "~Commitment", "dd/d4b/classresdb_1_1Commitment.html#a88083294ed66b6e6446a1cd0b8f01392", null ],
+    [ "GetDuplicateManager", "dd/d4b/classresdb_1_1Commitment.html#a4b1bcaf6fb42276d1b019bd5f5fe420e", null ],
     [ "PostProcessExecutedMsg", "dd/d4b/classresdb_1_1Commitment.html#a61fcfbed3b1725f9f11da4e31feae68c", null ],
     [ "ProcessCommitMsg", "dd/d4b/classresdb_1_1Commitment.html#a26030536e901f2304479d8b01b5ea487", null ],
     [ "ProcessNewRequest", "dd/d4b/classresdb_1_1Commitment.html#a8af8beaabc316d9427f4202be7b4808c", null ],
@@ -10,12 +11,16 @@ var classresdb_1_1Commitment =
     [ "SetNeedCommitQC", "dd/d4b/classresdb_1_1Commitment.html#af002bd04a7e7829599181d50f97df84b", null ],
     [ "SetPreVerifyFunc", "dd/d4b/classresdb_1_1Commitment.html#acbd9388d56b9ff217e4267702272aeb6", null ],
     [ "config_", "dd/d4b/classresdb_1_1Commitment.html#a01336e0862230c3037facdaeddac8232", null ],
+    [ "duplicate_manager_", "dd/d4b/classresdb_1_1Commitment.html#af38e8574b68da0c20576d31ad60e5ef8", null ],
     [ "executed_thread_", "dd/d4b/classresdb_1_1Commitment.html#a1389b1df60156e87e2be026135b5ead4", null ],
     [ "global_stats_", "dd/d4b/classresdb_1_1Commitment.html#ab75d21675ca20d52f6e1825c784f92d8", null ],
     [ "message_manager_", "dd/d4b/classresdb_1_1Commitment.html#a0c73ca7a679972b689bedb74d9f9a65f", null ],
+    [ "mutex_", "dd/d4b/classresdb_1_1Commitment.html#acc75c9d835e037d859988b76ae033e9d", null ],
     [ "need_qc_", "dd/d4b/classresdb_1_1Commitment.html#adaabf48eec85e0741a24e3b01feb9b51", null ],
     [ "pre_verify_func_", "dd/d4b/classresdb_1_1Commitment.html#accd36fb3a8e5aff5854cddeed6883e7d", null ],
+    [ "rc_mutex_", "dd/d4b/classresdb_1_1Commitment.html#a89061c90981240874ae37590deaa1aa7", null ],
     [ "replica_communicator_", "dd/d4b/classresdb_1_1Commitment.html#a23ba988ae5ed7ac94f83fac247f9c228", null ],
+    [ "request_complained_", "dd/d4b/classresdb_1_1Commitment.html#ad9d930a8d9b13f843faed7ea4bb412c1", null ],
     [ "stop_", "dd/d4b/classresdb_1_1Commitment.html#a355cc356cbb12ba0a974cb480c65417f", null ],
     [ "verifier_", "dd/d4b/classresdb_1_1Commitment.html#ac18a010059b957c6689613b3f84cb0df", null ]
 ];

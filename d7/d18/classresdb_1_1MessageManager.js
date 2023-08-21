@@ -5,8 +5,11 @@ var classresdb_1_1MessageManager =
     [ "AddConsensusMsg", "d7/d18/classresdb_1_1MessageManager.html#a630387e2c7c60d469c7bfffd9c08c303", null ],
     [ "AssignNextSeq", "d7/d18/classresdb_1_1MessageManager.html#a17b125d33ecf7674113801ce7224d4ff", null ],
     [ "FetchClientContext", "d7/d18/classresdb_1_1MessageManager.html#acac70c70e436b4b716a2d42c5e37141b", null ],
+    [ "GetCollectorPool", "d7/d18/classresdb_1_1MessageManager.html#ae3db5d0c05aacfd2af9e7ff41ce5c673", null ],
     [ "GetCurrentPrimary", "d7/d18/classresdb_1_1MessageManager.html#a9a98a3b57dcba4f428eb51cc3f093aff", null ],
     [ "GetCurrentView", "d7/d18/classresdb_1_1MessageManager.html#a403152c19643d50a4a01b8d951e51467", null ],
+    [ "GetHighestPreparedSeq", "d7/d18/classresdb_1_1MessageManager.html#a3f203e89bbcc620801ca5716ff0b99b9", null ],
+    [ "GetLastCommittedTime", "d7/d18/classresdb_1_1MessageManager.html#a432c9c62670ddc407e64bc711ec0cfdd", null ],
     [ "GetMinExecutCandidateSeq", "d7/d18/classresdb_1_1MessageManager.html#a2bfd278b9e99bc045ff12fd32d8fb9a3", null ],
     [ "GetNextSeq", "d7/d18/classresdb_1_1MessageManager.html#a951e10c56081d1b64341f4495c05afc4", null ],
     [ "GetPreparedProof", "d7/d18/classresdb_1_1MessageManager.html#a66cd059b7c3d7b893a9b79ea54fdf880", null ],
@@ -17,5 +20,10 @@ var classresdb_1_1MessageManager =
     [ "GetResponseMsg", "d7/d18/classresdb_1_1MessageManager.html#aaa9a8d568d32aff83f13ee87325c493d", null ],
     [ "GetStorage", "d7/d18/classresdb_1_1MessageManager.html#a5f80acfd2861da00ce8ec8d4c0dedd6e", null ],
     [ "GetTransactionState", "d7/d18/classresdb_1_1MessageManager.html#a210330fdb27ab9259f8e65f0e2af7d44", null ],
+    [ "IsPreapared", "d7/d18/classresdb_1_1MessageManager.html#a84ab69569fb75a020efd07269a33e625", null ],
+    [ "SendResponse", "d7/d18/classresdb_1_1MessageManager.html#a3f341b293f7cebba8632546d8fd9fbbd", null ],
+    [ "SetDuplicateManager", "d7/d18/classresdb_1_1MessageManager.html#a086f2369e6e992e3f186cd8c4c60a168", null ],
+    [ "SetHighestPreparedSeq", "d7/d18/classresdb_1_1MessageManager.html#a4cf2194e60da0708bcc87d09c2a4a133", null ],
+    [ "SetLastCommittedTime", "d7/d18/classresdb_1_1MessageManager.html#a0265ab61f90ec9af5043de1bc977a718", null ],
     [ "SetNextSeq", "d7/d18/classresdb_1_1MessageManager.html#ac1f9731985836ead3438abaa99509c62", null ]
 ];

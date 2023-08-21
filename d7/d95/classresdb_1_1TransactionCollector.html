@@ -124,18 +124,22 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac275f9ab9ae34869f94b7f14ffe81fa6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3072e3bb1bfc6606ab2413dde73bf3f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#aa3072e3bb1bfc6606ab2413dde73bf3f">FetchContextList</a> (uint64_t seq)</td></tr>
 <tr class="separator:aa3072e3bb1bfc6606ab2413dde73bf3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9c277665e1925b3d183f9c5da4dd2e3"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#aa9c277665e1925b3d183f9c5da4dd2e3">AddRequest</a> (std::unique_ptr&lt; Request &gt; request, const SignatureInfo &amp;signature, bool is_main_request, std::function&lt; void(const Request &amp;, int received_count, <a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">CollectorDataType</a> *<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>, std::atomic&lt; <a class="el" href="../../d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0">TransactionStatue</a> &gt; *status)&gt; call_back)</td></tr>
-<tr class="separator:aa9c277665e1925b3d183f9c5da4dd2e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa57402be472aa008886ee6d39eccaa9e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#aa57402be472aa008886ee6d39eccaa9e">AddRequest</a> (std::unique_ptr&lt; Request &gt; request, const SignatureInfo &amp;signature, bool is_main_request, std::function&lt; void(const Request &amp;, int received_count, <a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">CollectorDataType</a> *<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>, std::atomic&lt; <a class="el" href="../../d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0">TransactionStatue</a> &gt; *status, bool force)&gt; call_back)</td></tr>
+<tr class="separator:aa57402be472aa008886ee6d39eccaa9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a656230a242f692f8dc71297b8ef971f3"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="../../d8/d15/structresdb_1_1RequestInfo.html">RequestInfo</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#a656230a242f692f8dc71297b8ef971f3">GetPreparedProof</a> ()</td></tr>
 <tr class="separator:a656230a242f692f8dc71297b8ef971f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe636e9e226a969d3272a4547aba72f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0">TransactionStatue</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#afe636e9e226a969d3272a4547aba72f8">GetStatus</a> () const</td></tr>
 <tr class="separator:afe636e9e226a969d3272a4547aba72f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5204b67bb1f3c45644b998f88f6c9934"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#a5204b67bb1f3c45644b998f88f6c9934">Seq</a> ()</td></tr>
 <tr class="separator:a5204b67bb1f3c45644b998f88f6c9934"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3dcf74104f1d7fa9bfe0f75ab25687f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ac3dcf74104f1d7fa9bfe0f75ab25687f">IsPrepared</a> ()</td></tr>
+<tr class="separator:ac3dcf74104f1d7fa9bfe0f75ab25687f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5539dbb091e11c964f30648c20eb9b7"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ad5539dbb091e11c964f30648c20eb9b7">GetAllStoredHash</a> ()</td></tr>
+<tr class="separator:ad5539dbb091e11c964f30648c20eb9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00080">80</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00085">85</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ab3d0f2bed3225bc3356e528d2d26a28d" name="ab3d0f2bed3225bc3356e528d2d26a28d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab3d0f2bed3225bc3356e528d2d26a28d">&#9670;&#160;</a></span>CollectorDataType</h2>
@@ -149,7 +153,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00098">98</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00104">104</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
 
 </div>
 </div>
@@ -194,7 +198,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00082">82</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d63/transaction__collector_8h_source.html#l00087">87</a> of file <a class="el" href="../../df/d63/transaction__collector_8h_source.html">transaction_collector.h</a>.</p>
 
 </div>
 </div>
@@ -224,8 +228,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aa9c277665e1925b3d183f9c5da4dd2e3" name="aa9c277665e1925b3d183f9c5da4dd2e3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa9c277665e1925b3d183f9c5da4dd2e3">&#9670;&#160;</a></span>AddRequest()</h2>
+<a id="aa57402be472aa008886ee6d39eccaa9e" name="aa57402be472aa008886ee6d39eccaa9e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa57402be472aa008886ee6d39eccaa9e">&#9670;&#160;</a></span>AddRequest()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -251,7 +255,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">std::function&lt; void(const Request &amp;, int received_count, <a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">CollectorDataType</a> *<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>, std::atomic&lt; <a class="el" href="../../d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0">TransactionStatue</a> &gt; *status)&gt;&#160;</td>
+          <td class="paramtype">std::function&lt; void(const Request &amp;, int received_count, <a class="el" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">CollectorDataType</a> *<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>, std::atomic&lt; <a class="el" href="../../d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0">TransactionStatue</a> &gt; *status, bool force)&gt;&#160;</td>
           <td class="paramname"><em>call_back</em>&#160;</td>
         </tr>
         <tr>
@@ -262,7 +266,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00075">75</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>
@@ -282,7 +286,26 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00054">54</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00056">56</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ad5539dbb091e11c964f30648c20eb9b7" name="ad5539dbb091e11c964f30648c20eb9b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5539dbb091e11c964f30648c20eb9b7">&#9670;&#160;</a></span>GetAllStoredHash()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt; std::string &gt; resdb::TransactionCollector::GetAllStoredHash </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00227">227</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>
@@ -301,7 +324,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00062">62</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00064">64</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>
@@ -320,7 +343,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00036">36</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00038">38</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>
@@ -340,7 +363,26 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00047">47</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00049">49</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac3dcf74104f1d7fa9bfe0f75ab25687f" name="ac3dcf74104f1d7fa9bfe0f75ab25687f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3dcf74104f1d7fa9bfe0f75ab25687f">&#9670;&#160;</a></span>IsPrepared()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool resdb::TransactionCollector::IsPrepared </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00036">36</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>
@@ -389,7 +431,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00038">38</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html#l00040">40</a> of file <a class="el" href="../../d4/d5b/transaction__collector_8cpp_source.html">transaction_collector.cpp</a>.</p>
 
 </div>
 </div>

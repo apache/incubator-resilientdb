@@ -25,12 +25,14 @@ var namespaceresdb =
     [ "CheckPoint", "d2/dce/classresdb_1_1CheckPoint.html", "d2/dce/classresdb_1_1CheckPoint" ],
     [ "CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html", "dc/db0/classresdb_1_1CheckPointManager" ],
     [ "Commitment", "dd/d4b/classresdb_1_1Commitment.html", "dd/d4b/classresdb_1_1Commitment" ],
+    [ "ComplaningClients", "d3/da3/classresdb_1_1ComplaningClients.html", "d3/da3/classresdb_1_1ComplaningClients" ],
     [ "ConsensusManager", "da/d19/classresdb_1_1ConsensusManager.html", "da/d19/classresdb_1_1ConsensusManager" ],
     [ "ConsensusManagerGeoPBFT", "dd/dea/classresdb_1_1ConsensusManagerGeoPBFT.html", "dd/dea/classresdb_1_1ConsensusManagerGeoPBFT" ],
     [ "ConsensusManagerPBFT", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html", "d0/ded/classresdb_1_1ConsensusManagerPBFT" ],
     [ "Context", "d8/d18/structresdb_1_1Context.html", "d8/d18/structresdb_1_1Context" ],
     [ "CustomQuery", "d6/dd9/classresdb_1_1CustomQuery.html", "d6/dd9/classresdb_1_1CustomQuery" ],
     [ "DataInfo", "dd/dd6/structresdb_1_1DataInfo.html", "dd/dd6/structresdb_1_1DataInfo" ],
+    [ "DuplicateManager", "d6/da0/classresdb_1_1DuplicateManager.html", "d6/da0/classresdb_1_1DuplicateManager" ],
     [ "GeoGlobalExecutor", "d4/d2d/classresdb_1_1GeoGlobalExecutor.html", "d4/d2d/classresdb_1_1GeoGlobalExecutor" ],
     [ "GeoPBFTCommitment", "df/d2b/classresdb_1_1GeoPBFTCommitment.html", "df/d2b/classresdb_1_1GeoPBFTCommitment" ],
     [ "GeoTransactionExecutor", "d9/d92/classresdb_1_1GeoTransactionExecutor.html", "d9/d92/classresdb_1_1GeoTransactionExecutor" ],
@@ -54,6 +56,7 @@ var namespaceresdb =
     [ "MockTransactionExecutorDataImpl", "dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html", "dc/db6/classresdb_1_1MockTransactionExecutorDataImpl" ],
     [ "MockTransactionManager", "dc/d6d/classresdb_1_1MockTransactionManager.html", "dc/d6d/classresdb_1_1MockTransactionManager" ],
     [ "NetChannel", "de/dc3/classresdb_1_1NetChannel.html", "de/dc3/classresdb_1_1NetChannel" ],
+    [ "PerformanceClientTimeout", "d7/dbd/classresdb_1_1PerformanceClientTimeout.html", "d7/dbd/classresdb_1_1PerformanceClientTimeout" ],
     [ "PerformanceManager", "d1/d89/classresdb_1_1PerformanceManager.html", "d1/d89/classresdb_1_1PerformanceManager" ],
     [ "PreVerifyConsensusServicePBFT", "da/d52/classresdb_1_1PreVerifyConsensusServicePBFT.html", "da/d52/classresdb_1_1PreVerifyConsensusServicePBFT" ],
     [ "PrometheusHandler", "df/dcf/classresdb_1_1PrometheusHandler.html", "df/dcf/classresdb_1_1PrometheusHandler" ],
@@ -89,6 +92,7 @@ var namespaceresdb =
     [ "TransactionManager", "df/d01/classresdb_1_1TransactionManager.html", "df/d01/classresdb_1_1TransactionManager" ],
     [ "TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", "dd/dd3/classresdb_1_1TxnMemoryDB" ],
     [ "ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", "d1/db2/classresdb_1_1ViewChangeManager" ],
+    [ "ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", "d9/d00/classresdb_1_1ViewChangeTimeout" ],
     [ "ConfigGenFunc", "d5/d10/namespaceresdb.html#a031e2c65bfc513f03b13ea6181b0eb26", null ],
     [ "CollectorResultCode", "d5/d10/namespaceresdb.html#affdec049917742284c2ba9216d5ae83f", [
       [ "INVALID", "d5/d10/namespaceresdb.html#affdec049917742284c2ba9216d5ae83fa318d6f266638fe77c0aabf8482053523", null ],
@@ -124,6 +128,11 @@ var namespaceresdb =
       [ "READY_COMMIT", "d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0af630efee5e3abf6506559b871738ad3d", null ],
       [ "READY_EXECUTE", "d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0a32e1445895e83fb95fa7fb3876d8ff91", null ],
       [ "EXECUTED", "d5/d10/namespaceresdb.html#a9365b7af8267b084d545559cc0f87cb0a71ceed164ea4750776c99b47b9725dbc", null ]
+    ] ],
+    [ "ViewChangeTimerType", "d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786", [
+      [ "TYPE_COMPLAINT", "d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a205d38abccca4f8fe21b76f868e50eaa", null ],
+      [ "TYPE_VIEWCHANGE", "d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a6f15aebd22323d952f28dd79ede1cce3", null ],
+      [ "TYPE_NEWVIEW", "d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a404d38f1284ec36db617c8ad5e932ba0", null ]
     ] ],
     [ "CustomGenerateResDBServer", "d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13", null ],
     [ "CustomGenerateResDBServer", "d5/d10/namespaceresdb.html#a5285e59a982e46c95d72f2bb08c4dc55", null ],

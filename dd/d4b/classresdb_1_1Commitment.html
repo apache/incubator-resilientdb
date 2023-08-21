@@ -99,6 +99,7 @@ $(document).ready(function(){initNavTree('dd/d4b/classresdb_1_1Commitment.html',
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="../../d4/d4c/classresdb_1_1Commitment-members.html">List of all members</a>  </div>
@@ -126,6 +127,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:acbd9388d56b9ff217e4267702272aeb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af002bd04a7e7829599181d50f97df84b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#af002bd04a7e7829599181d50f97df84b">SetNeedCommitQC</a> (bool need_qc)</td></tr>
 <tr class="separator:af002bd04a7e7829599181d50f97df84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b1bcaf6fb42276d1b019bd5f5fe420e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#a4b1bcaf6fb42276d1b019bd5f5fe420e">GetDuplicateManager</a> ()</td></tr>
+<tr class="separator:a4b1bcaf6fb42276d1b019bd5f5fe420e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:ad9d930a8d9b13f843faed7ea4bb412c1"><td class="memItemLeft" align="right" valign="top">std::queue&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#ad9d930a8d9b13f843faed7ea4bb412c1">request_complained_</a></td></tr>
+<tr class="separator:ad9d930a8d9b13f843faed7ea4bb412c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89061c90981240874ae37590deaa1aa7"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#a89061c90981240874ae37590deaa1aa7">rc_mutex_</a></td></tr>
+<tr class="separator:a89061c90981240874ae37590deaa1aa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-methods" name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -152,10 +162,14 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:accd36fb3a8e5aff5854cddeed6883e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adaabf48eec85e0741a24e3b01feb9b51"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#adaabf48eec85e0741a24e3b01feb9b51">need_qc_</a> = false</td></tr>
 <tr class="separator:adaabf48eec85e0741a24e3b01feb9b51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc75c9d835e037d859988b76ae033e9d"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#acc75c9d835e037d859988b76ae033e9d">mutex_</a></td></tr>
+<tr class="separator:acc75c9d835e037d859988b76ae033e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af38e8574b68da0c20576d31ad60e5ef8"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d4b/classresdb_1_1Commitment.html#af38e8574b68da0c20576d31ad60e5ef8">duplicate_manager_</a></td></tr>
+<tr class="separator:af38e8574b68da0c20576d31ad60e5ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00037">37</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00038">38</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7cbe79c34bd0694da632bd19fb2114a0" name="a7cbe79c34bd0694da632bd19fb2114a0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7cbe79c34bd0694da632bd19fb2114a0">&#9670;&#160;</a></span>Commitment()</h2>
@@ -222,11 +236,30 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00049">49</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00051">51</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a4b1bcaf6fb42276d1b019bd5f5fe420e" name="a4b1bcaf6fb42276d1b019bd5f5fe420e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b1bcaf6fb42276d1b019bd5f5fe420e">&#9670;&#160;</a></span>GetDuplicateManager()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a> * resdb::Commitment::GetDuplicateManager </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00305">305</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a61fcfbed3b1725f9f11da4e31feae68c" name="a61fcfbed3b1725f9f11da4e31feae68c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a61fcfbed3b1725f9f11da4e31feae68c">&#9670;&#160;</a></span>PostProcessExecutedMsg()</h2>
 
@@ -250,7 +283,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00225">225</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00284">284</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -288,7 +321,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00203">203</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00262">262</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -326,7 +359,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00065">65</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00067">67</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -364,7 +397,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00166">166</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00221">221</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -402,7 +435,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00108">108</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00153">153</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -422,7 +455,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00061">61</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00063">63</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -442,7 +475,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00056">56</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d25/commitment_8cpp_source.html#l00058">58</a> of file <a class="el" href="../../df/d25/commitment_8cpp_source.html">commitment.cpp</a>.</p>
 
 </div>
 </div>
@@ -467,7 +500,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00061">61</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00069">69</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+
+</div>
+</div>
+<a id="af38e8574b68da0c20576d31ad60e5ef8" name="af38e8574b68da0c20576d31ad60e5ef8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af38e8574b68da0c20576d31ad60e5ef8">&#9670;&#160;</a></span>duplicate_manager_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a>&gt; resdb::Commitment::duplicate_manager_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00082">82</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -491,7 +548,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00063">63</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00071">71</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -515,7 +572,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00068">68</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00076">76</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -539,7 +596,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00062">62</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00070">70</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+
+</div>
+</div>
+<a id="acc75c9d835e037d859988b76ae033e9d" name="acc75c9d835e037d859988b76ae033e9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc75c9d835e037d859988b76ae033e9d">&#9670;&#160;</a></span>mutex_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::mutex resdb::Commitment::mutex_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00081">81</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -563,7 +644,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00071">71</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00079">79</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -587,7 +668,23 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00070">70</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00078">78</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+
+</div>
+</div>
+<a id="a89061c90981240874ae37590deaa1aa7" name="a89061c90981240874ae37590deaa1aa7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89061c90981240874ae37590deaa1aa7">&#9670;&#160;</a></span>rc_mutex_</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::mutex resdb::Commitment::rc_mutex_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00061">61</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -611,7 +708,23 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00065">65</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00073">73</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+
+</div>
+</div>
+<a id="ad9d930a8d9b13f843faed7ea4bb412c1" name="ad9d930a8d9b13f843faed7ea4bb412c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9d930a8d9b13f843faed7ea4bb412c1">&#9670;&#160;</a></span>request_complained_</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::queue&lt;std::pair&lt;std::unique_ptr&lt;<a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a>&gt;, std::unique_ptr&lt;Request&gt; &gt; &gt; resdb::Commitment::request_complained_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00059">59</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -635,7 +748,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00064">64</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00072">72</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>
@@ -659,7 +772,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00067">67</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dc3/commitment_8h_source.html#l00075">75</a> of file <a class="el" href="../../dd/dc3/commitment_8h_source.html">commitment.h</a>.</p>
 
 </div>
 </div>

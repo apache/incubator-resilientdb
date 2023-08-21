@@ -1,5 +1,7 @@
 var dir_3632537f4b501c3b5cce10bb3b750ce4 =
 [
+    [ "duplicate_manager.cpp", "df/dd5/duplicate__manager_8cpp.html", null ],
+    [ "duplicate_manager.h", "d7/dd0/duplicate__manager_8h.html", "d7/dd0/duplicate__manager_8h" ],
     [ "geo_global_executor.cpp", "d9/d20/geo__global__executor_8cpp.html", null ],
     [ "geo_global_executor.h", "d0/d67/geo__global__executor_8h.html", "d0/d67/geo__global__executor_8h" ],
     [ "geo_global_executor_test.cpp", "d8/d9a/geo__global__executor__test_8cpp.html", "d8/d9a/geo__global__executor__test_8cpp" ],

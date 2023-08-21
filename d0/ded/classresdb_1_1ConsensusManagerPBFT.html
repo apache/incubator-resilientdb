@@ -180,8 +180,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a87e731937645a0f0a718fa9ffc7a164b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5483a7975ce8559002743854722f232f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a5483a7975ce8559002743854722f232f">AddPendingRequest</a> (std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt; context, std::unique_ptr&lt; Request &gt; request)</td></tr>
 <tr class="separator:a5483a7975ce8559002743854722f232f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80de817712896c306983edfb3672b27d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a80de817712896c306983edfb3672b27d">AddComplainedRequest</a> (std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt; context, std::unique_ptr&lt; Request &gt; request)</td></tr>
+<tr class="separator:a80de817712896c306983edfb3672b27d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af43d2713b19e9748a68b18926b6dfb42"><td class="memItemLeft" align="right" valign="top">absl::StatusOr&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#af43d2713b19e9748a68b18926b6dfb42">PopPendingRequest</a> ()</td></tr>
 <tr class="separator:af43d2713b19e9748a68b18926b6dfb42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaca980098b6bd8044f6a4ab041be0c2e"><td class="memItemLeft" align="right" valign="top">absl::StatusOr&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#aaca980098b6bd8044f6a4ab041be0c2e">PopComplainedRequest</a> ()</td></tr>
+<tr class="separator:aaca980098b6bd8044f6a4ab041be0c2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classresdb_1_1ConsensusManager"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classresdb_1_1ConsensusManager')"><img src="../../closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html">resdb::ConsensusManager</a></td></tr>
 <tr class="memitem:a0ef369732b69f2073f5ed4abca09170c inherit pro_methods_classresdb_1_1ConsensusManager"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#a0ef369732b69f2073f5ed4abca09170c">BroadCast</a> (const Request &amp;request)</td></tr>
 <tr class="separator:a0ef369732b69f2073f5ed4abca09170c inherit pro_methods_classresdb_1_1ConsensusManager"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -244,6 +248,8 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:accbe75d7be210c0357cde550d4947198"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac83af970fc0df80b514a27078ba93e9f"><td class="memItemLeft" align="right" valign="top">std::queue&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#ac83af970fc0df80b514a27078ba93e9f">request_pending_</a></td></tr>
 <tr class="separator:ac83af970fc0df80b514a27078ba93e9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26b6265aa1944d24f85135ecb5a6916f"><td class="memItemLeft" align="right" valign="top">std::queue&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a26b6265aa1944d24f85135ecb5a6916f">request_complained_</a></td></tr>
+<tr class="separator:a26b6265aa1944d24f85135ecb5a6916f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81cabeca7680a56fec9cd938ecd252b3"><td class="memItemLeft" align="right" valign="top">std::mutex&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a81cabeca7680a56fec9cd938ecd252b3">mutex_</a></td></tr>
 <tr class="separator:a81cabeca7680a56fec9cd938ecd252b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_classresdb_1_1ConsensusManager"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classresdb_1_1ConsensusManager')"><img src="../../closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html">resdb::ConsensusManager</a></td></tr>
@@ -318,6 +324,44 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a80de817712896c306983edfb3672b27d" name="a80de817712896c306983edfb3672b27d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80de817712896c306983edfb3672b27d">&#9670;&#160;</a></span>AddComplainedRequest()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::ConsensusManagerPBFT::AddComplainedRequest </td>
+          <td>(</td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::unique_ptr&lt; Request &gt;&#160;</td>
+          <td class="paramname"><em>request</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00108">108</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a5483a7975ce8559002743854722f232f" name="a5483a7975ce8559002743854722f232f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5483a7975ce8559002743854722f232f">&#9670;&#160;</a></span>AddPendingRequest()</h2>
 
@@ -352,7 +396,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00100">100</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00102">102</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -392,7 +436,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#a3c2e731d6921a66d99c25878b3cf930c">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00119">119</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00139">139</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -421,7 +465,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#a5d13be9749d0960aab81fef99500b3c7">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00085">85</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00087">87</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -450,7 +494,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Implements <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#ac849142ab5ae823044a70383b106a0a3">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00081">81</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00083">83</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -479,7 +523,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#afddbd1de6fd7a2a629e593e879fc1b5e">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00089">89</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00091">91</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -517,7 +561,34 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00152">152</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00186">186</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aaca980098b6bd8044f6a4ab041be0c2e" name="aaca980098b6bd8044f6a4ab041be0c2e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaca980098b6bd8044f6a4ab041be0c2e">&#9670;&#160;</a></span>PopComplainedRequest()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">absl::StatusOr&lt; std::pair&lt; std::unique_ptr&lt; <a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a> &gt;, std::unique_ptr&lt; Request &gt; &gt; &gt; resdb::ConsensusManagerPBFT::PopComplainedRequest </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00127">127</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -544,7 +615,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00107">107</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00115">115</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -564,7 +635,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00075">75</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00077">77</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -584,7 +655,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00208">208</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00258">258</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -624,7 +695,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#a4d8b91c23bf209de4510fc2e088f205d">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00093">93</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00095">95</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -644,7 +715,7 @@ Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00203">203</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00253">253</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -673,7 +744,7 @@ Protected Attributes</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../da/d19/classresdb_1_1ConsensusManager.html#aff784e311e586b5399d47c822bb34b14">resdb::ConsensusManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00079">79</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html#l00081">81</a> of file <a class="el" href="../../de/de1/consensus__manager__pbft_8cpp_source.html">consensus_manager_pbft.cpp</a>.</p>
 
 </div>
 </div>
@@ -698,7 +769,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00074">74</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00076">76</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -722,7 +793,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00076">76</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00078">78</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -746,7 +817,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00082">82</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00084">84</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -770,7 +841,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00075">75</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00077">77</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -794,7 +865,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00085">85</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00089">89</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -818,7 +889,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00079">79</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00081">81</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -842,7 +913,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00077">77</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00079">79</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -866,7 +937,31 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00081">81</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00083">83</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+
+</div>
+</div>
+<a id="a26b6265aa1944d24f85135ecb5a6916f" name="a26b6265aa1944d24f85135ecb5a6916f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26b6265aa1944d24f85135ecb5a6916f">&#9670;&#160;</a></span>request_complained_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::queue&lt;std::pair&lt;std::unique_ptr&lt;<a class="el" href="../../d8/d18/structresdb_1_1Context.html">Context</a>&gt;, std::unique_ptr&lt;Request&gt; &gt; &gt; resdb::ConsensusManagerPBFT::request_complained_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00088">88</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -890,7 +985,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00084">84</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00086">86</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -914,7 +1009,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00078">78</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00080">80</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -938,7 +1033,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00073">73</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00075">75</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>
@@ -962,7 +1057,7 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00080">80</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html#l00082">82</a> of file <a class="el" href="../../d9/d6c/consensus__manager__pbft_8h_source.html">consensus_manager_pbft.h</a>.</p>
 
 </div>
 </div>

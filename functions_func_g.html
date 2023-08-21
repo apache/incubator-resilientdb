@@ -108,6 +108,7 @@ $(document).ready(function(){initNavTree('functions_func_g.html',''); initResiza
 <li>Get()&#160;:&#160;<a class="el" href="d4/dbb/classresdb_1_1KVClient.html#aeb8ba2021b40e6fa1eff734d6cfa1324">resdb::KVClient</a>, <a class="el" href="d3/d37/classresdb_1_1KVExecutor.html#a693520b730d1f5b7999fe9090120904d">resdb::KVExecutor</a>, <a class="el" href="dd/dd3/classresdb_1_1TxnMemoryDB.html#aedc7c239bc2f8b42a6f1ad853282cb04">resdb::TxnMemoryDB</a></li>
 <li>GetAllPublicKeys()&#160;:&#160;<a class="el" href="d4/d30/classresdb_1_1SignatureVerifier.html#a603ba38828fdc548cabc6a02bf5f9d1f">resdb::SignatureVerifier</a></li>
 <li>GetAllReplicas()&#160;:&#160;<a class="el" href="da/d19/classresdb_1_1ConsensusManager.html#a0b75916105a323382321e50d95dec456">resdb::ConsensusManager</a></li>
+<li>GetAllStoredHash()&#160;:&#160;<a class="el" href="d7/d95/classresdb_1_1TransactionCollector.html#ad5539dbb091e11c964f30648c20eb9b7">resdb::TransactionCollector</a></li>
 <li>GetAllValues()&#160;:&#160;<a class="el" href="d8/d22/classresdb_1_1ChainState.html#a32fcb0abe017afa7ffc195541b5eda2f">resdb::ChainState</a>, <a class="el" href="d4/d91/classresdb_1_1ResLevelDB.html#a5bdfc16ee6def9b9fc93d4e819eaee4b">resdb::ResLevelDB</a>, <a class="el" href="d0/d5a/classresdb_1_1ResRocksDB.html#ad0b4309f0962f4cd64d033bb1687511c">resdb::ResRocksDB</a>, <a class="el" href="d2/d14/classresdb_1_1Storage.html#a74b80a711f53c3c0bd98d5006a17c541">resdb::Storage</a></li>
 <li>GetBFTConfig()&#160;:&#160;<a class="el" href="da/d86/classresdb_1_1ResDBPoCConfig.html#aaf4dfbdfa521e74251379332934e5db2">resdb::ResDBPoCConfig</a></li>
 <li>GetBFTReplicas()&#160;:&#160;<a class="el" href="da/d86/classresdb_1_1ResDBPoCConfig.html#af8008f29832da49713fea7a8bdef6a08">resdb::ResDBPoCConfig</a></li>
@@ -122,6 +123,8 @@ $(document).ready(function(){initNavTree('functions_func_g.html',''); initResiza
 <li>GetClientTimeoutMs()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#adac6ea8534b37765a76383ded84b5e14">resdb::ResDBConfig</a></li>
 <li>GetCoin()&#160;:&#160;<a class="el" href="df/ddc/classresdb_1_1utxo_1_1Wallet.html#a0f581241631638a4ff3c31806ee04cc3">resdb::utxo::Wallet</a></li>
 <li>GetCollector()&#160;:&#160;<a class="el" href="d7/d31/classresdb_1_1LockFreeCollectorPool.html#a3834c854e7ba20b47fddbccf452a1131">resdb::LockFreeCollectorPool</a></li>
+<li>GetCollectorPool()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#ae3db5d0c05aacfd2af9e7ff41ce5c673">resdb::MessageManager</a></li>
+<li>GetCommittableSeq()&#160;:&#160;<a class="el" href="dc/db0/classresdb_1_1CheckPointManager.html#a275dc85b67e4828e84b015d09414f3d6">resdb::CheckPointManager</a></li>
 <li>GetConfiFile()&#160;:&#160;<a class="el" href="dd/d33/classresdb_1_1ResDBTest.html#a7138fb7e512f27d0852a4e835f534a79">resdb::ResDBTest</a></li>
 <li>GetConfig()&#160;:&#160;<a class="el" href="dd/d33/classresdb_1_1ResDBTest.html#af72ccd0c00ffd5c2e88b737448c1ad1f">resdb::ResDBTest</a></li>
 <li>GetConfigData()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">resdb::ResDBConfig</a></li>
@@ -129,15 +132,20 @@ $(document).ready(function(){initNavTree('functions_func_g.html',''); initResiza
 <li>GetCurrentPrimary()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a9a98a3b57dcba4f428eb51cc3f093aff">resdb::MessageManager</a></li>
 <li>GetCurrentView()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a403152c19643d50a4a01b8d951e51467">resdb::MessageManager</a>, <a class="el" href="d9/d27/classresdb_1_1SystemInfo.html#adc08eba38f8ab761c0da6a47f9cc98c7">resdb::SystemInfo</a></li>
 <li>GetDifficulty()&#160;:&#160;<a class="el" href="da/d86/classresdb_1_1ResDBPoCConfig.html#ae1ac608ba1bfcd979d8af5c6547b67a2">resdb::ResDBPoCConfig</a></li>
+<li>GetDuplicateManager()&#160;:&#160;<a class="el" href="dd/d4b/classresdb_1_1Commitment.html#a4b1bcaf6fb42276d1b019bd5f5fe420e">resdb::Commitment</a></li>
 <li>GetGlobalStats()&#160;:&#160;<a class="el" href="de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">resdb::Stats</a></li>
+<li>GetHighestPreparedSeq()&#160;:&#160;<a class="el" href="dc/db0/classresdb_1_1CheckPointManager.html#a0dc9bc6adb18dd5defea89ea9477cd1d">resdb::CheckPointManager</a>, <a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a3f203e89bbcc620801ca5716ff0b99b9">resdb::MessageManager</a></li>
 <li>GetInputWorkerNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a3669f8ea7516a477902af0e357d47b84">resdb::ResDBConfig</a></li>
+<li>GetLastCommittedTime()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a432c9c62670ddc407e64bc711ec0cfdd">resdb::MessageManager</a></li>
 <li>GetList()&#160;:&#160;<a class="el" href="d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html#a053f05bb29ae14060941e7188cb6b04a">resdb::utxo::UTXOClient</a></li>
+<li>GetMaxClientComplaintNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#ae8f129eab9ecb997db2e6aeca2083cb8">resdb::ResDBConfig</a></li>
 <li>GetMaxMaliciousReplicaNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a76f1ddcf02a3467b79bcf871347f4231">resdb::ResDBConfig</a></li>
 <li>GetMaxNonceBit()&#160;:&#160;<a class="el" href="da/d86/classresdb_1_1ResDBPoCConfig.html#ac89cb03a4c916504caadad4cdd145361">resdb::ResDBPoCConfig</a></li>
 <li>GetMaxPendingExecutedSeq()&#160;:&#160;<a class="el" href="da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">resdb::TransactionExecutor</a></li>
 <li>GetMaxProcessTxn()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a67e77f0346f3264fc3087293d1b08e13">resdb::ResDBConfig</a></li>
 <li>GetMaxSeq()&#160;:&#160;<a class="el" href="d1/d44/classresdb_1_1Recovery.html#acf1e0b15359a0db222327b53ab42b1a8">resdb::Recovery</a>, <a class="el" href="dd/dd3/classresdb_1_1TxnMemoryDB.html#abb673088364dc0fa8dbb475c9c9be984">resdb::TxnMemoryDB</a></li>
 <li>GetMaxTxnSeq()&#160;:&#160;<a class="el" href="dc/db0/classresdb_1_1CheckPointManager.html#ae05581eae257b0b5fb901cf74a833980">resdb::CheckPointManager</a></li>
+<li>GetMinCheckpointReceiveNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a7d4134fc5a25643ede8883c301574591">resdb::ResDBConfig</a></li>
 <li>GetMinClientReceiveNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a2f169bcf96c9d9aab1ba06e204658a87">resdb::ResDBConfig</a></li>
 <li>GetMinDataReceiveNum()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a288793f30d8165a26089e157f87b0631">resdb::ResDBConfig</a></li>
 <li>GetMinExecutCandidateSeq()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a2bfd278b9e99bc045ff12fd32d8fb9a3">resdb::MessageManager</a></li>
@@ -162,6 +170,7 @@ $(document).ready(function(){initNavTree('functions_func_g.html',''); initResiza
 <li>GetReplicaState()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a5a2a6faa74e63fb70be62ffe70f85613">resdb::MessageManager</a></li>
 <li>GetReplicaStates()&#160;:&#160;<a class="el" href="d7/d30/classresdb_1_1ResDBStateAccessor.html#a383e0cf800b3a5c50258440062949f63">resdb::ResDBStateAccessor</a></li>
 <li>GetRequest()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#a15dc90d103bd0488558186a4454f7677">resdb::MessageManager</a></li>
+<li>GetRequestFromReplica()&#160;:&#160;<a class="el" href="da/d12/classresdb_1_1ResDBTxnAccessor.html#a422acb908221725b0aa73038367ac4e2">resdb::ResDBTxnAccessor</a></li>
 <li>GetRequestSet()&#160;:&#160;<a class="el" href="d7/d18/classresdb_1_1MessageManager.html#acaff0e406720fc1f7adf6cee1b260987">resdb::MessageManager</a></li>
 <li>GetResponseMsg()&#160;:&#160;<a class="el" href="d4/d2d/classresdb_1_1GeoGlobalExecutor.html#a4a55bb1f0228b517d301d4635b33dc51">resdb::GeoGlobalExecutor</a>, <a class="el" href="d7/d18/classresdb_1_1MessageManager.html#aaa9a8d568d32aff83f13ee87325c493d">resdb::MessageManager</a></li>
 <li>GetSelfInfo()&#160;:&#160;<a class="el" href="db/ddb/classresdb_1_1ResDBConfig.html#a8c6b178bc0fd3efd488456907dbecbd6">resdb::ResDBConfig</a></li>

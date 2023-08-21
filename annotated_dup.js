@@ -25,12 +25,14 @@ var annotated_dup =
       [ "CheckPoint", "d2/dce/classresdb_1_1CheckPoint.html", "d2/dce/classresdb_1_1CheckPoint" ],
       [ "CheckPointManager", "dc/db0/classresdb_1_1CheckPointManager.html", "dc/db0/classresdb_1_1CheckPointManager" ],
       [ "Commitment", "dd/d4b/classresdb_1_1Commitment.html", "dd/d4b/classresdb_1_1Commitment" ],
+      [ "ComplaningClients", "d3/da3/classresdb_1_1ComplaningClients.html", "d3/da3/classresdb_1_1ComplaningClients" ],
       [ "ConsensusManager", "da/d19/classresdb_1_1ConsensusManager.html", "da/d19/classresdb_1_1ConsensusManager" ],
       [ "ConsensusManagerGeoPBFT", "dd/dea/classresdb_1_1ConsensusManagerGeoPBFT.html", "dd/dea/classresdb_1_1ConsensusManagerGeoPBFT" ],
       [ "ConsensusManagerPBFT", "d0/ded/classresdb_1_1ConsensusManagerPBFT.html", "d0/ded/classresdb_1_1ConsensusManagerPBFT" ],
       [ "Context", "d8/d18/structresdb_1_1Context.html", "d8/d18/structresdb_1_1Context" ],
       [ "CustomQuery", "d6/dd9/classresdb_1_1CustomQuery.html", "d6/dd9/classresdb_1_1CustomQuery" ],
       [ "DataInfo", "dd/dd6/structresdb_1_1DataInfo.html", "dd/dd6/structresdb_1_1DataInfo" ],
+      [ "DuplicateManager", "d6/da0/classresdb_1_1DuplicateManager.html", "d6/da0/classresdb_1_1DuplicateManager" ],
       [ "GeoGlobalExecutor", "d4/d2d/classresdb_1_1GeoGlobalExecutor.html", "d4/d2d/classresdb_1_1GeoGlobalExecutor" ],
       [ "GeoPBFTCommitment", "df/d2b/classresdb_1_1GeoPBFTCommitment.html", "df/d2b/classresdb_1_1GeoPBFTCommitment" ],
       [ "GeoTransactionExecutor", "d9/d92/classresdb_1_1GeoTransactionExecutor.html", "d9/d92/classresdb_1_1GeoTransactionExecutor" ],
@@ -54,6 +56,7 @@ var annotated_dup =
       [ "MockTransactionExecutorDataImpl", "dc/db6/classresdb_1_1MockTransactionExecutorDataImpl.html", "dc/db6/classresdb_1_1MockTransactionExecutorDataImpl" ],
       [ "MockTransactionManager", "dc/d6d/classresdb_1_1MockTransactionManager.html", "dc/d6d/classresdb_1_1MockTransactionManager" ],
       [ "NetChannel", "de/dc3/classresdb_1_1NetChannel.html", "de/dc3/classresdb_1_1NetChannel" ],
+      [ "PerformanceClientTimeout", "d7/dbd/classresdb_1_1PerformanceClientTimeout.html", "d7/dbd/classresdb_1_1PerformanceClientTimeout" ],
       [ "PerformanceManager", "d1/d89/classresdb_1_1PerformanceManager.html", "d1/d89/classresdb_1_1PerformanceManager" ],
       [ "PreVerifyConsensusServicePBFT", "da/d52/classresdb_1_1PreVerifyConsensusServicePBFT.html", "da/d52/classresdb_1_1PreVerifyConsensusServicePBFT" ],
       [ "PrometheusHandler", "df/dcf/classresdb_1_1PrometheusHandler.html", "df/dcf/classresdb_1_1PrometheusHandler" ],
@@ -88,6 +91,7 @@ var annotated_dup =
       [ "TransactionExecutor", "da/dfa/classresdb_1_1TransactionExecutor.html", "da/dfa/classresdb_1_1TransactionExecutor" ],
       [ "TransactionManager", "df/d01/classresdb_1_1TransactionManager.html", "df/d01/classresdb_1_1TransactionManager" ],
       [ "TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", "dd/dd3/classresdb_1_1TxnMemoryDB" ],
-      [ "ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", "d1/db2/classresdb_1_1ViewChangeManager" ]
+      [ "ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", "d1/db2/classresdb_1_1ViewChangeManager" ],
+      [ "ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", "d9/d00/classresdb_1_1ViewChangeTimeout" ]
     ] ]
 ];

@@ -99,7 +99,8 @@ $(document).ready(function(){initNavTree('d9/dc0/viewchange__manager_8h.html','.
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#namespaces">Namespaces</a>  </div>
+<a href="#namespaces">Namespaces</a> &#124;
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle"><div class="title">viewchange_manager.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -110,11 +111,16 @@ $(document).ready(function(){initNavTree('d9/dc0/viewchange__manager_8h.html','.
 <code>#include &quot;<a class="el" href="../../d3/d62/message__manager_8h_source.html">platform/consensus/ordering/pbft/message_manager.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d0/dd9/replica__communicator_8h_source.html">platform/networkstrate/replica_communicator.h</a>&quot;</code><br />
 <code>#include &quot;platform/proto/viewchange_message.pb.h&quot;</code><br />
+<code>#include &lt;semaphore.h&gt;</code><br />
 </div>
 <p><a href="../../d9/dc0/viewchange__manager_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d00/classresdb_1_1ViewChangeTimeout.html">resdb::ViewChangeTimeout</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/da3/classresdb_1_1ComplaningClients.html">resdb::ComplaningClients</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/db2/classresdb_1_1ViewChangeManager.html">resdb::ViewChangeManager</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -122,6 +128,14 @@ Classes</h2></td></tr>
 Namespaces</h2></td></tr>
 <tr class="memitem:d5/d10/namespaceresdb"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html">resdb</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ae05061d085569cf14a198ad0477fa786"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786">resdb::ViewChangeTimerType</a> { <a class="el" href="../../d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a205d38abccca4f8fe21b76f868e50eaa">resdb::TYPE_COMPLAINT</a>
+, <a class="el" href="../../d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a6f15aebd22323d952f28dd79ede1cce3">resdb::TYPE_VIEWCHANGE</a>
+, <a class="el" href="../../d5/d10/namespaceresdb.html#ae05061d085569cf14a198ad0477fa786a404d38f1284ec36db617c8ad5e932ba0">resdb::TYPE_NEWVIEW</a>
+ }</td></tr>
+<tr class="separator:ae05061d085569cf14a198ad0477fa786"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->

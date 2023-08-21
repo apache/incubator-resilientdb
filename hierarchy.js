@@ -19,6 +19,7 @@ var hierarchy =
       [ "resdb::MockCheckPoint", "d8/dcb/classresdb_1_1MockCheckPoint.html", null ]
     ] ],
     [ "resdb::Commitment", "dd/d4b/classresdb_1_1Commitment.html", null ],
+    [ "resdb::ComplaningClients", "d3/da3/classresdb_1_1ComplaningClients.html", null ],
     [ "ConsensusServicePBFT", null, [
       [ "resdb::PreVerifyConsensusServicePBFT< RequestType >", "da/d52/classresdb_1_1PreVerifyConsensusServicePBFT.html", null ]
     ] ],
@@ -28,6 +29,7 @@ var hierarchy =
       [ "resdb::utxo::QueryExecutor", "d0/da0/classresdb_1_1utxo_1_1QueryExecutor.html", null ]
     ] ],
     [ "resdb::DataInfo", "dd/dd6/structresdb_1_1DataInfo.html", null ],
+    [ "resdb::DuplicateManager", "d6/da0/classresdb_1_1DuplicateManager.html", null ],
     [ "resdb::GeoGlobalExecutor", "d4/d2d/classresdb_1_1GeoGlobalExecutor.html", [
       [ "resdb::MockGeoGlobalExecutor", "d7/ddc/classresdb_1_1MockGeoGlobalExecutor.html", null ]
     ] ],
@@ -39,6 +41,7 @@ var hierarchy =
     [ "resdb::LockFreeQueue< QueueItem >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::LockFreeQueue< Request >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::LockFreeQueue< resdb::QueueItem >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
+    [ "resdb::LockFreeQueue< std::pair< uint64_t, std::string > >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::LockFreeQueue< std::string >", "da/dd3/classresdb_1_1LockFreeQueue.html", null ],
     [ "resdb::MessageManager", "d7/d18/classresdb_1_1MessageManager.html", null ],
     [ "resdb::NetChannel", "de/dc3/classresdb_1_1NetChannel.html", [
@@ -50,6 +53,7 @@ var hierarchy =
         [ "resdb::utxo::UTXOClient", "d0/dfe/classresdb_1_1utxo_1_1UTXOClient.html", null ]
       ] ]
     ] ],
+    [ "resdb::PerformanceClientTimeout", "d7/dbd/classresdb_1_1PerformanceClientTimeout.html", null ],
     [ "resdb::PerformanceManager", "d1/d89/classresdb_1_1PerformanceManager.html", null ],
     [ "resdb::PrometheusHandler", "df/dcf/classresdb_1_1PrometheusHandler.html", null ],
     [ "resdb::Query", "de/d6d/classresdb_1_1Query.html", null ],
@@ -114,5 +118,6 @@ var hierarchy =
     [ "resdb::utxo::TxMempool", "d7/d32/classresdb_1_1utxo_1_1TxMempool.html", null ],
     [ "resdb::TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", null ],
     [ "resdb::ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", null ],
+    [ "resdb::ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", null ],
     [ "resdb::utxo::Wallet", "df/ddc/classresdb_1_1utxo_1_1Wallet.html", null ]
 ];

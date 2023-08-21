@@ -20,9 +20,11 @@ var searchData=
   ['islongconnection_17',['IsLongConnection',['../de/dc3/classresdb_1_1NetChannel.html#aea266111b7b17de8da3c80de6fb38dd8',1,'resdb::NetChannel']]],
   ['isoutoforder_18',['IsOutOfOrder',['../df/d01/classresdb_1_1TransactionManager.html#af59c30af5760a407b53b7a7e14f1e1ba',1,'resdb::TransactionManager']]],
   ['isperformancerunning_19',['IsPerformanceRunning',['../db/ddb/classresdb_1_1ResDBConfig.html#afa6bd07e0241eab074be9102e2c8919e',1,'resdb::ResDBConfig']]],
-  ['isready_20',['IsReady',['../da/d19/classresdb_1_1ConsensusManager.html#a5a706d7931fb764202c4d9076c888a33',1,'resdb::ConsensusManager::IsReady()'],['../da/d3b/classresdb_1_1ServiceInterface.html#a2320c7ed2f786de970789b8974ac0165',1,'resdb::ServiceInterface::IsReady()']]],
-  ['isrunning_21',['IsRunning',['../d3/d5e/classresdb_1_1ReplicaCommunicator.html#a8cb7f41342adcd8939a378532e055bfa',1,'resdb::ReplicaCommunicator::IsRunning()'],['../da/d3b/classresdb_1_1ServiceInterface.html#ac08da9c5cd432a5972c6cd8018143286',1,'resdb::ServiceInterface::IsRunning()']]],
-  ['isstop_22',['IsStop',['../d9/d92/classresdb_1_1GeoTransactionExecutor.html#ae5981cbfbf6e4dba9b391a6f020fbfab',1,'resdb::GeoTransactionExecutor']]],
-  ['istestmode_23',['IsTestMode',['../db/ddb/classresdb_1_1ResDBConfig.html#a62b3cc96d167d858f489a7cd6cdbbfd9',1,'resdb::ResDBConfig']]],
-  ['isvalidcheckpointproof_24',['IsValidCheckpointProof',['../dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf',1,'resdb::CheckPointManager']]]
+  ['ispreapared_20',['IsPreapared',['../d7/d18/classresdb_1_1MessageManager.html#a84ab69569fb75a020efd07269a33e625',1,'resdb::MessageManager']]],
+  ['isprepared_21',['IsPrepared',['../d7/d95/classresdb_1_1TransactionCollector.html#ac3dcf74104f1d7fa9bfe0f75ab25687f',1,'resdb::TransactionCollector']]],
+  ['isready_22',['IsReady',['../da/d19/classresdb_1_1ConsensusManager.html#a5a706d7931fb764202c4d9076c888a33',1,'resdb::ConsensusManager::IsReady()'],['../da/d3b/classresdb_1_1ServiceInterface.html#a2320c7ed2f786de970789b8974ac0165',1,'resdb::ServiceInterface::IsReady()']]],
+  ['isrunning_23',['IsRunning',['../d3/d5e/classresdb_1_1ReplicaCommunicator.html#a8cb7f41342adcd8939a378532e055bfa',1,'resdb::ReplicaCommunicator::IsRunning()'],['../da/d3b/classresdb_1_1ServiceInterface.html#ac08da9c5cd432a5972c6cd8018143286',1,'resdb::ServiceInterface::IsRunning()']]],
+  ['isstop_24',['IsStop',['../d9/d92/classresdb_1_1GeoTransactionExecutor.html#ae5981cbfbf6e4dba9b391a6f020fbfab',1,'resdb::GeoTransactionExecutor']]],
+  ['istestmode_25',['IsTestMode',['../db/ddb/classresdb_1_1ResDBConfig.html#a62b3cc96d167d858f489a7cd6cdbbfd9',1,'resdb::ResDBConfig']]],
+  ['isvalidcheckpointproof_26',['IsValidCheckpointProof',['../dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf',1,'resdb::CheckPointManager']]]
 ];
