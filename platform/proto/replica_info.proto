@@ -40,6 +40,8 @@ message ResConfigData{
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;
+
+  optional int32 max_client_complaint_num = 21;
 }
 
 message ReplicaStates {

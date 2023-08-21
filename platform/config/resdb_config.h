@@ -72,6 +72,8 @@ class ResDBConfig {
   // replicas.
   int GetMinClientReceiveNum() const;
 
+  int GetMinCheckpointReceiveNum() const;
+
   // The timeout microseconds to process a client request.
   // Default value is 3s.
   void SetClientTimeoutMs(int timeout_ms);
@@ -107,6 +109,8 @@ class ResDBConfig {
   // The maximun transactions being processed.
   uint32_t GetMaxProcessTxn() const;
   void SetMaxProcessTxn(uint32_t num);
+
+  uint32_t GetMaxClientComplaintNum() const;
 
   uint32_t ClientBatchWaitTimeMS() const;
   void SetClientBatchWaitTimeMS(uint32_t wait_time_ms);

@@ -91,6 +91,7 @@ cc_library(
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
+        "//platform/consensus/execution:duplicate_manager",
     ],
 )
 
@@ -120,6 +121,8 @@ cc_library(
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
+        "//interface/common:resdb_txn_accessor",
+        "//platform/consensus/execution:transaction_executor",
     ],
 )
 

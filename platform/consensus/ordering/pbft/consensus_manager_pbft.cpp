@@ -66,6 +66,8 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
 
+  view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
+
   recovery_->ReadLogs(
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         return InternalConsensusCommit(std::move(context), std::move(request));
@@ -103,15 +105,33 @@ void ConsensusManagerPBFT::AddPendingRequest(std::unique_ptr<Context> context,
   request_pending_.push(std::make_pair(std::move(context), std::move(request)));
 }
 
+void ConsensusManagerPBFT::AddComplainedRequest(std::unique_ptr<Context> context,
+                                            std::unique_ptr<Request> request) {
+  std::lock_guard<std::mutex> lk(mutex_);
+  request_complained_.push(std::make_pair(std::move(context), std::move(request)));
+}
+
 absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
 ConsensusManagerPBFT::PopPendingRequest() {
   std::lock_guard<std::mutex> lk(mutex_);
   if (request_pending_.empty()) {
-    LOG(ERROR) << "empty:";
+    // LOG(ERROR) << "empty:";
     return absl::InternalError("No Data.");
   }
   auto new_request = std::move(request_pending_.front());
   request_pending_.pop();
+  return new_request;
+}
+
+absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
+ConsensusManagerPBFT::PopComplainedRequest() {
+  std::lock_guard<std::mutex> lk(mutex_);
+  if (request_complained_.empty()) {
+    // LOG(ERROR) << "empty:";
+    return absl::InternalError("No Data.");
+  }
+  auto new_request = std::move(request_complained_.front());
+  request_complained_.pop();
   return new_request;
 }
 
@@ -146,7 +166,21 @@ int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
       }
     }
   }
-  return InternalConsensusCommit(std::move(context), std::move(request));
+  int ret = InternalConsensusCommit(std::move(context), std::move(request));
+  if (config_.GetConfigData().enable_viewchange()) {
+    if(ret == -4){
+        while (true) {
+          auto new_request = PopComplainedRequest();
+          if (!new_request.ok()) {
+            break;
+          }
+          // LOG(ERROR) << "[POP COMPLAINED REQUEST]";
+          InternalConsensusCommit(std::move((*new_request).first),
+                                  std::move((*new_request).second));
+        }
+    }
+  }
+  return ret;
 }
 
 int ConsensusManagerPBFT::InternalConsensusCommit(
@@ -168,9 +202,25 @@ int ConsensusManagerPBFT::InternalConsensusCommit(
       }
       return response_manager_->ProcessResponseMsg(std::move(context),
                                                    std::move(request));
-    case Request::TYPE_NEW_TXNS:
-      return commitment_->ProcessNewRequest(std::move(context),
-                                            std::move(request));
+    case Request::TYPE_NEW_TXNS:{
+        uint64_t proxy_id = request->proxy_id();
+        std::string hash = request->hash();
+        int ret = commitment_->ProcessNewRequest(std::move(context),
+                                              std::move(request));
+        if(ret == -3){
+          std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> request_complained;
+          {
+            std::lock_guard<std::mutex> lk(commitment_->rc_mutex_);
+            
+            request_complained = std::move(commitment_->request_complained_.front());
+            commitment_->request_complained_.pop();
+          }
+          AddComplainedRequest(std::move(request_complained.first),
+                                std::move(request_complained.second));
+          view_change_manager_->AddComplaintTimer(proxy_id, hash);
+        }                                  
+        return ret;
+    }
     case Request::TYPE_PRE_PREPARE:
       return commitment_->ProcessProposeMsg(std::move(context),
                                             std::move(request));

@@ -37,7 +37,12 @@ SystemInfo::SystemInfo(const ResDBConfig& config)
 
 uint32_t SystemInfo::GetPrimaryId() const { return primary_id_; }
 
-void SystemInfo::SetPrimary(uint32_t id) { primary_id_ = id; }
+void SystemInfo::SetPrimary(uint32_t id) { 
+  if(primary_id_ != id){
+    LOG(ERROR) << "[SetPrimary]: " << id;
+  }
+  primary_id_ = id; 
+}
 
 uint64_t SystemInfo::GetCurrentView() const { return view_; }
 

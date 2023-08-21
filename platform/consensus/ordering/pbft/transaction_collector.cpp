@@ -33,6 +33,8 @@ namespace resdb {
 
 uint64_t TransactionCollector::Seq() { return seq_; }
 
+bool TransactionCollector::IsPrepared() { return is_prepared_; }
+
 TransactionStatue TransactionCollector::GetStatus() const { return status_; }
 
 int TransactionCollector::SetContextList(
@@ -74,7 +76,7 @@ int TransactionCollector::AddRequest(
     std::unique_ptr<Request> request, const SignatureInfo& signature,
     bool is_main_request,
     std::function<void(const Request&, int received_count, CollectorDataType*,
-                       std::atomic<TransactionStatue>* status)>
+                       std::atomic<TransactionStatue>* status, bool force)>
         call_back) {
   if (request == nullptr) {
     LOG(ERROR) << "request empty";
@@ -85,6 +87,7 @@ int TransactionCollector::AddRequest(
   std::string hash = request->hash();
   int type = request->type();
   uint64_t seq = request->seq();
+  uint64_t view = request->current_view();
   if (is_committed_) {
     return -2;
   }
@@ -102,8 +105,14 @@ int TransactionCollector::AddRequest(
     auto request_info = std::make_unique<RequestInfo>();
     request_info->signature = signature;
     request_info->request = std::move(request);
+    bool force = false;
+    if (view_ && view_ < view && !is_prepared_) {
+      force = true;
+      atomic_mian_request_.Clear();
+    }
     int ret = atomic_mian_request_.Set(request_info);
     if (!ret) {
+      other_main_request_.insert(std::move(request_info));
       LOG(ERROR) << "set main request fail: data existed:" << seq
                  << " ret:" << ret;
       return -2;
@@ -113,15 +122,51 @@ int TransactionCollector::AddRequest(
       LOG(ERROR) << "set main request data fail";
       return -2;
     }
-    call_back(*main_request->request.get(), 1, nullptr, &status_);
+    view_ = view;
+    call_back(*main_request->request.get(), 1, nullptr, &status_, force);
     return 0;
   } else {
     if (enable_viewchange_) {
-      if (status_.load() == READY_PREPARE) {
-        auto request_info = std::make_unique<RequestInfo>();
-        request_info->signature = signature;
-        request_info->request = std::make_unique<Request>(*request);
-        prepared_proof_.push_back(std::move(request_info));
+      if (type == Request::TYPE_PREPARE){
+        if(status_.load() <= TransactionStatue::READY_PREPARE){
+          auto request_info = std::make_unique<RequestInfo>();
+          request_info->signature = signature;
+          request_info->request = std::make_unique<Request>(*request);
+          std::lock_guard<std::mutex> lk(mutex_);
+          if(is_prepared_){
+            return 0;
+          }
+          prepared_proof_.push_back(std::move(request_info));
+          if(senders_[type].count(hash) == 0){
+            senders_[type].insert(std::make_pair(hash, std::bitset<128>()));
+          }
+          senders_[type][hash][sender_id] = 1;
+          call_back(*request, senders_[type][hash].count(), nullptr, &status_, false);
+          if (status_.load() == TransactionStatue::READY_COMMIT){
+            is_prepared_ = true;
+            if (atomic_mian_request_.Reference() != nullptr && atomic_mian_request_.Reference()->request->hash() != hash) {
+              atomic_mian_request_.Clear();
+              for(auto it = other_main_request_.begin(); it != other_main_request_.end(); it++){
+                if ((*it)->request->hash() == hash){
+                  auto request_info = std::make_unique<RequestInfo>();
+                  request_info->signature = (*it)->signature;
+                  request_info->request = std::move((*it)->request);
+                  atomic_mian_request_.Set(request_info);
+                  break;
+                }
+              }
+              other_main_request_.clear();
+            }
+            int pos = 0;
+            for(size_t i = 0; i < prepared_proof_.size(); i++){
+              if(prepared_proof_[i]->request->hash() == hash){
+                prepared_proof_[pos++] = std::move(prepared_proof_[i]);
+              }
+            }
+            prepared_proof_.erase(prepared_proof_.begin() + pos, prepared_proof_.end());
+          }
+        }
+        return 0;
       }
     }
     if (request->type() == Request::TYPE_COMMIT) {
@@ -132,10 +177,19 @@ int TransactionCollector::AddRequest(
         commit_certs_.push_back(request->data_signature());
       }
     }
-    senders_[type][sender_id] = 1;
-    call_back(*request, senders_[type].count(), nullptr, &status_);
+    
+    {
+       std::lock_guard<std::mutex> lk(mutex_);
+       if(senders_[type].count(hash) == 0){
+         senders_[type].insert(std::make_pair(hash, std::bitset<128>()));
+       }
+       senders_[type][hash][sender_id] = 1;
+       call_back(*request, senders_[type][hash].count(), nullptr, &status_, false);
+    }
+
     if (status_.load() == TransactionStatue::READY_EXECUTE) {
       Commit();
+      return 1;
     }
   }
   return 0;
@@ -168,6 +222,18 @@ int TransactionCollector::Commit() {
     executor_->Commit(std::move(main_request->request));
   }
   return 0;
+}
+
+std::vector<std::string> TransactionCollector::GetAllStoredHash() {
+  std::vector<std::string> v;
+  auto main_request = atomic_mian_request_.Reference();
+  if (main_request) {
+    v.push_back(main_request->request->hash());
+  } 
+  for (auto& info : other_main_request_){
+    v.push_back(info->request->hash());
+  }
+  return v;
 }
 
 }  // namespace resdb

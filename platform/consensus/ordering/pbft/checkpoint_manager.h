@@ -33,6 +33,9 @@
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
+#include "interface/common/resdb_txn_accessor.h"
+#include "platform/consensus/execution/transaction_executor.h"
+#include <semaphore.h>
 
 namespace resdb {
 
@@ -60,11 +63,29 @@ class CheckPointManager : public CheckPoint {
 
   void Stop();
 
+  void TimeoutHandler();
+
+  void WaitSignal();
+  std::unique_ptr<std::pair<uint64_t, std::string>> PopStableSeqHash();
+
+  void SetExecutor(TransactionExecutor* executor){
+    executor_ = executor;
+  }
+
+  uint64_t GetHighestPreparedSeq();
+
+  void SetHighestPreparedSeq(uint64_t seq);
+
+  sem_t* CommitableSeqSignal();
+
+  uint64_t GetCommittableSeq();
+
  private:
   void UpdateCheckPointStatus();
   void UpdateStableCheckPointStatus();
-  void BroadcastCheckPoint(uint64_t seq, const std::string& hash);
-  void TimeoutHandler();
+  void BroadcastCheckPoint(uint64_t seq, const std::string& hash, 
+                            const std::vector<std::string>& stable_hashs, 
+                            const std::vector<uint64_t>& stable_seqs);
 
   void Notify();
   bool Wait();
@@ -79,6 +100,8 @@ class CheckPointManager : public CheckPoint {
   std::map<std::pair<uint64_t, std::string>, std::set<uint32_t>> sender_ckpt_;
   std::map<std::pair<uint64_t, std::string>, std::vector<SignatureInfo>>
       sign_ckpt_;
+  std::map<std::pair<uint64_t, std::string>, std::vector<std::string>>
+      hash_ckpt_;
   std::atomic<uint64_t> current_stable_seq_;
   std::mutex mutex_;
   LockFreeQueue<Request> data_queue_;
@@ -87,6 +110,16 @@ class CheckPointManager : public CheckPoint {
   std::function<void()> timeout_handler_;
   StableCheckPoint stable_ckpt_;
   int new_data_ = 0;
+  LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue_;
+  std::condition_variable signal_;
+  ResDBTxnAccessor txn_accessor_;
+  std::mutex lt_mutex_;
+  uint64_t last_seq_ = 0;
+  TransactionExecutor* executor_;
+  std::atomic<uint64_t> highest_prepared_seq_;
+  uint64_t committable_seq_ = 0;
+  std::string last_hash_, committable_hash_;
+  sem_t committable_seq_signal_;
 };
 
 }  // namespace resdb

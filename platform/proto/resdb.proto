@@ -59,6 +59,9 @@ message Request {
 
     Certs committed_certs= 15;
     bool is_recovery = 16;
+    int32 primary_id = 17;
+    repeated bytes hashs = 18;
+    repeated uint64 seqs = 19;
 }
 
 // The response message containing response
@@ -99,6 +102,8 @@ message BatchUserResponse {
   uint64 current_view = 5;
   uint64 createtime = 6;
   uint64 local_id = 7;
+  bytes hash = 8;
+  int32 primary_id = 9;
 }
 
 message HeartBeatInfo{
