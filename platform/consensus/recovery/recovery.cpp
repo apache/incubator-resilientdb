@@ -38,8 +38,11 @@
 namespace resdb {
 
 Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
-                   Storage* storage)
-    : config_(config), checkpoint_(checkpoint), storage_(storage) {
+                   SystemInfo* system_info, Storage* storage)
+    : config_(config),
+      checkpoint_(checkpoint),
+      system_info_(system_info),
+      storage_(storage) {
   recovery_enabled_ = config_.GetConfigData().recovery_enabled();
   file_path_ = config_.GetConfigData().recovery_path();
   if (file_path_.empty()) {
@@ -166,7 +169,6 @@ std::string Recovery::GenerateFile(int64_t seq, int64_t min_seq,
 }
 
 void Recovery::FinishFile(int64_t seq) {
-  std::string next_file_path = GenerateFile(seq, -1, -1);
   std::unique_lock<std::mutex> lk(mutex_);
   Flush();
   if (storage_) {
@@ -182,6 +184,8 @@ void Recovery::FinishFile(int64_t seq) {
 
   std::rename(file_path_.c_str(), new_file_path.c_str());
 
+  LOG(ERROR) << "rename:" << file_path_ << " to:" << new_file_path;
+  std::string next_file_path = GenerateFile(seq, -1, -1);
   file_path_ = next_file_path;
 
   OpenFile(file_path_);
@@ -194,7 +198,7 @@ void Recovery::SwitchFile(const std::string& file_path) {
   max_seq_ = -1;
 
   ReadLogsFromFiles(
-      file_path, 0,
+      file_path, 0, 0, [&](const SystemInfoData& data) {},
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         min_seq_ == -1
             ? min_seq_ = request->seq()
@@ -203,11 +207,12 @@ void Recovery::SwitchFile(const std::string& file_path) {
       });
 
   OpenFile(file_path);
-  LOG(ERROR) << "switch to file:" << file_path << " seq:"
-             << "[" << min_seq_ << "," << max_seq_ << "]";
+  LOG(INFO) << "switch to file:" << file_path << " seq:"
+            << "[" << min_seq_ << "," << max_seq_ << "]";
 }
 
 void Recovery::OpenFile(const std::string& path) {
+  LOG(ERROR) << "open file:" << path;
   if (fd_ >= 0) {
     close(fd_);
   }
@@ -215,9 +220,31 @@ void Recovery::OpenFile(const std::string& path) {
   if (fd_ < 0) {
     LOG(ERROR) << "open file fail:" << path << " error:" << strerror(errno);
   }
+
+  int pos = lseek(fd_, 0, SEEK_END);
+  LOG(INFO) << "file path:" << path << " len:" << pos;
+  if (pos == 0) {
+    WriteSystemInfo();
+  }
+
   lseek(fd_, 0, SEEK_END);
   LOG(ERROR) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR);
   assert(fd_ >= 0);
+}
+
+void Recovery::WriteSystemInfo() {
+  int view = system_info_->GetCurrentView();
+  int primary_id = system_info_->GetPrimaryId();
+  LOG(ERROR) << "write system info:" << view << " primary id:" << primary_id;
+  SystemInfoData data;
+  data.set_view(view);
+  data.set_primary_id(primary_id);
+
+  std::string data_str;
+  data.SerializeToString(&data_str);
+
+  AppendData(data_str);
+  Flush();
 }
 
 void Recovery::AddRequest(const Context* context, const Request* request) {
@@ -299,6 +326,21 @@ std::vector<std::unique_ptr<Recovery::RecoveryData>> Recovery::ParseData(
     request_list.push_back(std::move(recovery_data));
   }
   return request_list;
+}
+
+std::vector<std::string> Recovery::ParseRawData(const std::string& data) {
+  std::vector<std::string> data_list;
+  int pos = 0;
+  while (pos < data.size()) {
+    size_t len;
+    memcpy(&len, data.c_str() + pos, sizeof(len));
+    pos += sizeof(len);
+
+    std::string item = data.substr(pos, len);
+    pos += len;
+    data_list.push_back(item);
+  }
+  return data_list;
 }
 
 void Recovery::MayFlush() {
@@ -392,22 +434,26 @@ Recovery::GetRecoveryFiles() {
   return std::make_pair(list, last_ckpt);
 }
 
-void Recovery::ReadLogs(std::function<void(std::unique_ptr<Context> context,
-                                           std::unique_ptr<Request> request)>
-                            call_back) {
+void Recovery::ReadLogs(
+    std::function<void(const SystemInfoData& data)> system_callback,
+    std::function<void(std::unique_ptr<Context> context,
+                       std::unique_ptr<Request> request)>
+        call_back) {
   if (recovery_enabled_ == false) {
     return;
   }
   std::unique_lock<std::mutex> lk(mutex_);
   auto recovery_files_pair = GetRecoveryFiles();
   int64_t ckpt = recovery_files_pair.second;
+  int idx = 0;
   for (auto path : recovery_files_pair.first) {
-    ReadLogsFromFiles(path.second, ckpt, call_back);
+    ReadLogsFromFiles(path.second, ckpt, idx++, system_callback, call_back);
   }
 }
 
 void Recovery::ReadLogsFromFiles(
-    const std::string& path, int64_t ckpt,
+    const std::string& path, int64_t ckpt, int file_idx,
+    std::function<void(const SystemInfoData& data)> system_callback,
     std::function<void(std::unique_ptr<Context> context,
                        std::unique_ptr<Request> request)>
         call_back) {
@@ -417,9 +463,32 @@ void Recovery::ReadLogsFromFiles(
   }
   assert(fd >= 0);
 
+  size_t data_len = 0;
+  Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len));
+  {
+    std::string data;
+    char* buf = new char[data_len];
+    if (!Read(fd, data_len, buf)) {
+      LOG(ERROR) << "Read system info fail";
+      return;
+    }
+    data = std::string(buf, data_len);
+    delete buf;
+    std::vector<std::string> data_list = ParseRawData(data);
+
+    SystemInfoData info;
+    if (data_list.empty() || !info.ParseFromString(data_list[0])) {
+      LOG(ERROR) << "parse info fail:" << data.size();
+      return;
+    }
+    LOG(ERROR) << "read system info:" << info.DebugString();
+    if (file_idx == 0) {
+      system_callback(info);
+    }
+  }
+
   std::vector<std::unique_ptr<RecoveryData>> request_list;
 
-  size_t data_len = 0;
   while (Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len))) {
     std::string data;
     char* buf = new char[data_len];

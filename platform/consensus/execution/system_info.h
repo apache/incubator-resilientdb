@@ -36,6 +36,7 @@ namespace resdb {
 // has been agreed on, like the primary, the replicas,etc..
 class SystemInfo {
  public:
+  SystemInfo();
   SystemInfo(const ResDBConfig& config);
   virtual ~SystemInfo() = default;
 

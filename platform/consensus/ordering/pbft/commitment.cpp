@@ -157,7 +157,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
   if (request->is_recovery()) {
-    if (request->seq() == message_manager_->GetNextSeq()) {
+    if (request->seq() >= message_manager_->GetNextSeq()) {
       message_manager_->SetNextSeq(request->seq() + 1);
     }
     return message_manager_->AddConsensusMsg(context->signature,

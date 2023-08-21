@@ -1,4 +1,4 @@
-package(default_visibility = ["//platform/consensus/ordering:__subpackages__"])
+package(default_visibility = ["//platform/consensus:__subpackages__"])
 
 cc_library(
     name = "system_info",

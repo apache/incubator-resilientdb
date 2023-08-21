@@ -131,3 +131,15 @@ cc_proto_library(
     name = "broadcast_cc_proto",
     deps = [":broadcast_proto"],
 )
+
+proto_library(
+    name = "system_info_data_proto",
+    srcs = ["system_info_data.proto"],
+)
+
+cc_proto_library(
+    name = "system_info_data_cc_proto",
+    deps = [
+        ":system_info_data_proto",
+    ],
+)

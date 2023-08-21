@@ -61,6 +61,7 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
           config_, checkpoint_manager_.get(), message_manager_.get(),
           system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
       recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
+                                           system_info_.get(),
                                            message_manager_->GetStorage())) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
@@ -69,6 +70,10 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
   view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
 
   recovery_->ReadLogs(
+      [&](const SystemInfoData& data) {
+        system_info_->SetCurrentView(data.view());
+        system_info_->SetPrimary(data.primary_id());
+      },
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         return InternalConsensusCommit(std::move(context), std::move(request));
       });
