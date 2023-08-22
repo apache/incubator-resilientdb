@@ -5,7 +5,7 @@ This directory includes deployment scripts that help to deploy ResilientDB on mu
 ## Deploy KV Service
 
 Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file [config/kv_server.conf](https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf). 
-We recomment using private IP addresses of each machine.
+We recommend using private IP addresses of each machine.
 
 * If you do not require any SSH key to log in to a machine, then you would need to update the scripts.
 * In these scripts, we assume that the ``root`` is ``ubuntu`` and the current working directory is located at ``/home/ubuntu/``. If this is not the case for your machines, you would need to update the scripts.
