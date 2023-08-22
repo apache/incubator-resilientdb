@@ -101,9 +101,9 @@ $(document).ready(function(){initNavTree('d7/dbd/md__2github_2workspace_2scripts
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>This directory includes deployment scripts that help to deploy ResilientDB on multiple machines. At present, these scripts only support deploying KV service and KV Performance server.</p>
-<h1><a class="anchor" id="autotoc_md66"></a>
+<h1><a class="anchor" id="autotoc_md67"></a>
 Usage</h1>
-<h2><a class="anchor" id="autotoc_md67"></a>
+<h2><a class="anchor" id="autotoc_md68"></a>
 Deploy KV Service</h2>
 <p>Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file <a href="https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf">config/kv_server.conf</a>. We recomment using private IP addresses of each machine.</p>
 <ul>
@@ -115,13 +115,13 @@ Deploy KV Service</h2>
 </pre><p> If the script outputs <code>Servers are running</code>, it implies that you have successfully deployed ReslientDB KV Service on desired machines. <br  />
 </p>
 <p>Note: this script creates a directory <code>config_out</code>, which includes keys and certificates for all the replicas and the proxy. Further, it includes the configuration for replicas <code>server.config</code> and proxy <code>client.config</code>.</p>
-<h3><a class="anchor" id="autotoc_md68"></a>
+<h3><a class="anchor" id="autotoc_md69"></a>
 Testing deployed KV Service</h3>
 <p>To do so, we need to build and run the KV client tools: </p><pre class="fragment">cd ../..
 bazel build service/tools/kv/api_tools/kv_service_tools
 bazel-bin/service/tools/kv/api_tools/kv_service_tools scripts/deploy/config_out/client.config get test 1234
 </pre><p> Or: </p><pre class="fragment">bazel run //service/tools/kv/api_tools:kv_service_tools -- $PWD/config_out/client.config get test
-</pre> <h2><a class="anchor" id="autotoc_md69"></a>
+</pre> <h2><a class="anchor" id="autotoc_md70"></a>
 Test Performance</h2>
 <p>Our benchmark is based on the Key-Value service.</p>
 <p>Before running, place the private IP addresses of your machines in the file <code>config/kv_performance_server.conf</code>.</p>
