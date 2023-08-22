@@ -2,7 +2,7 @@
 
 ### NexRes v1.8.0 ([2023-08-21](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.8.0))
 
-**Implemented Enhancements:** View-Change algorithm in PBFT was added. Now PBFT-performance in NexRes is resilient to the following Byzantine behaviors and can replace primary and recover via the view-change algorithm. ([Dakai Kang](https://github.com/DakaiKang))
+**Implemented Enhancements:** The view-change recovery protocol was extensively expanded to support the following Byzantine failures through primary/leader replacement and replica recovery. ([Dakai Kang](https://github.com/DakaiKang))
 
 * Byzantine primary becomes non-responsive, stopping proposing any new Pre-Prepare messages.
 * Byzantine primary equivocates, proposing two different client requests to two subsets of replicas.
