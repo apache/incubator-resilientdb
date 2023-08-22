@@ -26,10 +26,10 @@ sudo apt install grafana
 ```
 
 ## Change endpoint's server address
-Edit [example/start_kv_server.sh](/example/start_kv_server.sh), set the new endpoint address in command line arguments.
+Edit [example/start_kv_server.sh](/example/start_kv_server.sh), sets the new endpoint address in command line arguments.
 
 # Start the dashboard
-Prometheus endpoint start automaticly with nexres. To start nexres:
+Prometheus endpoint starts automatically with nexres. To start nexres:
 ```
 sh example/kv_server.sh
 ```
@@ -54,7 +54,7 @@ sudo service grafana-server enable
 ```
 *Stop grafana: sudo service grafana-server stop*
 
-# Configurate prometheus
+# Configure prometheus
 ## Add prometheus endpoint:
 Edit “prometheus.yml” under your prometheus folder
 add the following code after “scrape_configs”
@@ -100,7 +100,7 @@ Go to grafana configuration and click data source. Select your prometheus databa
 
 ![resolution](/documents/image/dashboard/resolution.png)
 
-# Prometheus metrics developemt:
+# Prometheus metrics development:
 All the prometheus endpoint code and metrics builder are located under Stats class. There are three types of metric variables you can utilize according to the demand. They are Counter, Gauge, and Histogram. You can discover their using scenario in this [link](https://prometheus.io/docs/concepts/metric_types/). 
 
 To properly integrate these metric types to the code, check prometheus-cpp documentation ([Documentation](https://jupp0r.github.io/prometheus-cpp/), [Example](https://github.com/jupp0r/prometheus-cpp)). Here is an example of starting a prometheus endpoint and adding a metric to the database.
@@ -110,12 +110,12 @@ Create a server running on port 8080
 Exposer exposer{"127.0.0.1:8080"};
 ```
 
-Create a metrics registry (make sure it is alway alive)
+Create a metrics registry (make sure it is always alive)
 ```
 auto registry = std::make_shared<Registry>();
 ```
 
-Add a new gauge family to the registry (you can change this part to other metric type as your needed)
+Add a new gauge family to the registry (you can change this part to other metric type as needed)
 ```
 auto& packet_counter = BuildGauge()
                         .Name("observed_packets_total")
