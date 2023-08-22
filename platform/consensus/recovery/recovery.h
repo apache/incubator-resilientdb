@@ -30,19 +30,23 @@
 #include "chain/storage/storage.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/checkpoint/checkpoint.h"
+#include "platform/consensus/execution/system_info.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
+#include "platform/proto/system_info_data.pb.h"
 
 namespace resdb {
 
 class Recovery {
  public:
-  Recovery(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage);
+  Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
+           SystemInfo* system_info, Storage* storage);
   virtual ~Recovery();
 
   virtual void AddRequest(const Context* context, const Request* request);
 
-  void ReadLogs(std::function<void(std::unique_ptr<Context> context,
+  void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
+                std::function<void(std::unique_ptr<Context> context,
                                    std::unique_ptr<Request> request)>
                     call_back);
 
@@ -58,6 +62,7 @@ class Recovery {
   void WriteLog(const Context* context, const Request* request);
   void AppendData(const std::string& data);
   std::vector<std::unique_ptr<RecoveryData>> ParseData(const std::string& data);
+  std::vector<std::string> ParseRawData(const std::string& data);
   void Flush();
   void MayFlush();
 
@@ -66,6 +71,7 @@ class Recovery {
 
   std::string GenerateFile(int64_t seq, int64_t min_seq, int64_t max_seq);
   void GetLastFile();
+  void WriteSystemInfo();
 
   void OpenFile(const std::string& path);
   void FinishFile(int64_t seq);
@@ -74,10 +80,12 @@ class Recovery {
   void UpdateStableCheckPoint();
   std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t>
   GetRecoveryFiles();
-  void ReadLogsFromFiles(const std::string& path, int64_t ckpt,
-                         std::function<void(std::unique_ptr<Context> context,
-                                            std::unique_ptr<Request> request)>
-                             call_back);
+  void ReadLogsFromFiles(
+      const std::string& path, int64_t ckpt, int file_idx,
+      std::function<void(const SystemInfoData& data)> system_callback,
+      std::function<void(std::unique_ptr<Context> context,
+                         std::unique_ptr<Request> request)>
+          call_back);
 
  protected:
   ResDBConfig config_;
@@ -95,6 +103,7 @@ class Recovery {
   std::mutex ckpt_mutex_;
   std::atomic<bool> stop_;
   int recovery_ckpt_time_s_;
+  SystemInfo* system_info_;
   Storage* storage_;
 };
 

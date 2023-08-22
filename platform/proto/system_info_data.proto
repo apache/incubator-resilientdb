@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package resdb;
+
+message SystemInfoData {
+    int32 view = 1;
+    int32 primary_id = 2;
+}
