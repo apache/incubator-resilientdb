@@ -1,11 +1,11 @@
 var classresdb_1_1Recovery =
 [
-    [ "Recovery", "d1/d44/classresdb_1_1Recovery.html#a6f1b18568f29b0edb6417fcf72c23f4f", null ],
+    [ "Recovery", "d1/d44/classresdb_1_1Recovery.html#acd5836e122a05acaea2640f17ccd6be9", null ],
     [ "~Recovery", "d1/d44/classresdb_1_1Recovery.html#ac067902ab15b9e6705e2f9d7fa117c38", null ],
     [ "AddRequest", "d1/d44/classresdb_1_1Recovery.html#a9487fb3d0eb4075dc8498b8d4994fda1", null ],
     [ "GetMaxSeq", "d1/d44/classresdb_1_1Recovery.html#acf1e0b15359a0db222327b53ab42b1a8", null ],
     [ "GetMinSeq", "d1/d44/classresdb_1_1Recovery.html#a3c94d7c50cd3e24d66f5e3beb13ec15e", null ],
-    [ "ReadLogs", "d1/d44/classresdb_1_1Recovery.html#a4182dba01fe75251e217f0e88aa94645", null ],
+    [ "ReadLogs", "d1/d44/classresdb_1_1Recovery.html#a61a5e9bb6293c982f9b158f76b0d9542", null ],
     [ "base_file_path_", "d1/d44/classresdb_1_1Recovery.html#a4702da091d77fff4b8189454ca6576c1", null ],
     [ "buffer_", "d1/d44/classresdb_1_1Recovery.html#a16d630355aca59e4cf89d258939d761e", null ],
     [ "buffer_size_", "d1/d44/classresdb_1_1Recovery.html#ace4eacb35dd3c48d924c653a9e8dbddd", null ],
@@ -22,5 +22,6 @@ var classresdb_1_1Recovery =
     [ "recovery_ckpt_time_s_", "d1/d44/classresdb_1_1Recovery.html#abb818d763e6fb5a60c83e52206ece201", null ],
     [ "recovery_enabled_", "d1/d44/classresdb_1_1Recovery.html#af407e64394ef0e17bb1395342bb4cf2b", null ],
     [ "stop_", "d1/d44/classresdb_1_1Recovery.html#a041d82fedf04245d7de66701d9e0b3b4", null ],
-    [ "storage_", "d1/d44/classresdb_1_1Recovery.html#af04276b8d4e1d8883995c8e8898f68d1", null ]
+    [ "storage_", "d1/d44/classresdb_1_1Recovery.html#af04276b8d4e1d8883995c8e8898f68d1", null ],
+    [ "system_info_", "d1/d44/classresdb_1_1Recovery.html#a0f7da48a1e0ca91b472e91450b69f9d8", null ]
 ];

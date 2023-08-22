@@ -1,5 +1,6 @@
 var classresdb_1_1SystemInfo =
 [
+    [ "SystemInfo", "d9/d27/classresdb_1_1SystemInfo.html#aeb62c083885a498b239fe1056e8ecdb8", null ],
     [ "SystemInfo", "d9/d27/classresdb_1_1SystemInfo.html#a53272449614d0c097a8bbf75f63d91e4", null ],
     [ "~SystemInfo", "d9/d27/classresdb_1_1SystemInfo.html#a3ae5c30ab977c21d79f2f07c6444e787", null ],
     [ "AddReplica", "d9/d27/classresdb_1_1SystemInfo.html#aaa7c0106eb4509b9fdc22d428d65aa41", null ],
