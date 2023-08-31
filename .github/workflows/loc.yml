@@ -14,6 +14,6 @@ jobs:
       with:
         debug: true
         directory: ./
-        badge: ./output/badge.svg
+        badge: ./badge.svg
         patterns: '*.cpp'  # Patterns in the format of a '.gitignore' file, separated by pipes.
         ignore: 'node_modules'
