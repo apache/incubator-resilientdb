@@ -9,7 +9,7 @@ jobs:
 
     steps:
     - name: Make Code Badge
-      uses: shadowmoose/GHA-LoC-Badge@1.0.0
+      uses: actions/checkout@v3
       id: badge
       with:
         debug: true
