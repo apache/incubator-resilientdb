@@ -5,9 +5,12 @@ jobs:
     name: run
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        ref: master
 
     - name: run
-      uses: resilientdb/resilientdb@master
+      uses: ./
       with:
         args: build //...
