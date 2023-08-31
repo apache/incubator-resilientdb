@@ -103,11 +103,11 @@ function makeBadge(text, config) {
 	// only `status` is required.
 	return badgen({
 		label: `line of code`,     // <Text>
-		'555',                     // <Color RGB> or <Color Name> (default: '555')
+		'555',                    // <Color RGB> or <Color Name> (default: '555')
 		status: `${text}`,               // <Text>, required
 		'blue',    // <Color RGB> or <Color Name> (default: 'blue')
 		'classic',    // 'flat' or 'classic' (default: 'classic')
-		1// Set badge scale (default: 1)
+		1 // Set badge scale (default: 1)
 	});
 }
 
