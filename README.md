@@ -1,6 +1,7 @@
 ![](https://img.shields.io/badge/language-c++-orange.svg)
 ![](https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg)
 ![GitHub](https://img.shields.io/github/license/resilientdb/resilientdb)
+![Generated Button](https://raw.githubusercontent.com/resilientdb/resilientdb/image-data/badge.svg)
 
 
 
