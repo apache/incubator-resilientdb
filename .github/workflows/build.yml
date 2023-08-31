@@ -1,15 +1,13 @@
 on: push
-name: My Action
+name: bazel-build CI
 jobs:
-  checks:
-    name: run
+  ubuntu-build:
+    name: build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v1
 
-    - name: Run bazel --version
-      shell: bash
-      run: 
-        `bazel ...`
-
+      - name: run
+        uses: ngalaiko/bazel-action/1.2.1@master
+        with:
+          args: build //...
