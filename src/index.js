@@ -93,21 +93,21 @@ function throttle(callback, limit=5) {
 
 
 function makeBadge(text, config) {
-	let { label, color, style, scale, labelcolor } = (config || {});
-	label = label || 'Lines of Code';
-	color = color || 'blue';
-	labelcolor = labelcolor || '555';
-	style = style || 'classic';
-	scale = scale? parseInt(scale) : 1;
+	//let { label, color, style, scale, labelcolor } = (config || {});
+	//label = label || 'Lines of Code';
+	//color = color || 'blue';
+	//labelcolor = labelcolor || '555';
+	//style = style || 'classic';
+	//scale = scale? parseInt(scale) : 1;
 
 	// only `status` is required.
 	return badgen({
-		label: `${label}`,     // <Text>
-		labelcolor,                     // <Color RGB> or <Color Name> (default: '555')
+		label: `line of code`,     // <Text>
+		//labelcolor,                     // <Color RGB> or <Color Name> (default: '555')
 		status: `${text}`,               // <Text>, required
-		color,    // <Color RGB> or <Color Name> (default: 'blue')
-		style,    // 'flat' or 'classic' (default: 'classic')
-		scale     // Set badge scale (default: 1)
+		//color,    // <Color RGB> or <Color Name> (default: 'blue')
+		//style,    // 'flat' or 'classic' (default: 'classic')
+		//scale     // Set badge scale (default: 1)
 	});
 }
 
