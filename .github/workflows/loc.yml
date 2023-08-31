@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      #- name: Checkout
+      #  uses: actions/checkout@v1
+
       - name: Launch the local action
         uses: ./ # Uses an action in the root directory
         id: badge
@@ -23,7 +26,7 @@ jobs:
           echo "Line Count: ${{ steps.badge.outputs.total_lines }}";
 
       - name: Deploy to image-data branch
-        uses: peaceiris/actions-gh-pages@v3
+        #uses: peaceiris/actions-gh-pages@v3
         with:
           publish_dir: ./output
           publish_branch: image-data
