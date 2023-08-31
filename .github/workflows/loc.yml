@@ -21,7 +21,7 @@ jobs:
          debug: true
          directory: ./
          badge: ./output/badge.svg
-         patterns: '*.h|*.cpp'
+         patterns: '*.h'
          ignore: 'node_modules/|README'
 
      - name: Print the output
