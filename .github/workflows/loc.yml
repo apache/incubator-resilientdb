@@ -20,7 +20,7 @@ jobs:
        with:
          debug: true
          directory: ./
-         patterns: '**/*.h'
+         patterns: '**/*.h|**/*.cpp'
          badge: ./output/badge.svg
          ignore: 'node_modules/|README'
 
