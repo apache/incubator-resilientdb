@@ -1,11 +1,8 @@
-name: Doxygen Action
+name: LOC
 
 on:
-  push: 
-    branches:
-      - master
-  pull_request:
-    branches:
+  push:
+    branches:    
       - master
  
 jobs:
