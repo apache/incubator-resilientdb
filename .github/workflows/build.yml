@@ -6,8 +6,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-
-      - name: run
-        uses: ngalaiko/bazel-action/1.2.1@master
-        with:
-          args: build //...
+      - name: build
+        run: bazel build ...
