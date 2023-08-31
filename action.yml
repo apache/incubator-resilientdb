@@ -43,13 +43,6 @@ inputs:
     required: false
     default: 'false'
 
-
-outputs:
-  total_lines:
-    description: 'The total line count.'
-  counted_files:
-    description: 'A count of all files that were included in the total.'
-
 runs:
   using: 'node12'
   main: './src/index.js'
