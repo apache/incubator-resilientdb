@@ -1,3 +1,9 @@
+![](https://img.shields.io/badge/language-c++-orange.svg)
+![](https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg)
+![GitHub](https://img.shields.io/github/license/resilientdb/resilientdb)
+
+
+
 # ResilientDB: Global-Scale Sustainable Blockchain Fabric
 
 **[ResilientDB](https://resilientdb.com/)** is a **High Throughput Yielding Permissioned Blockchain Fabric** founded by **[ExpoLab](https://expolab.org/)** at **[UC Davis](https://www.ucdavis.edu/)** in 2018. ResilientDB advocates a **system-centric** design by adopting a **multi-threaded architecture** that encompasses **deep pipelines**. Further, ResilientDB **separates** the ordering of client transactions from their execution, which allows it to **process messages out-of-order**.
