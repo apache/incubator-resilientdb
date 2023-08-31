@@ -8,6 +8,6 @@ jobs:
     - uses: actions/checkout@master
 
     - name: run
-      uses: ngalaiko/bazel-action/1.2.1@master
+      uses: resilientdb/resilientdb@master
       with:
         args: build //...
