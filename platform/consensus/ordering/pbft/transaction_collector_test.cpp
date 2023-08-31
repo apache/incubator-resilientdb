@@ -48,7 +48,7 @@ TEST(TransactionCollectorTest, SeqError) {
                            /* is_main_request =*/true,
                            [&](const Request& request, int received_count,
                                TransactionCollector::CollectorDataType* data,
-                               std::atomic<TransactionStatue>* status) {}),
+                               std::atomic<TransactionStatue>* status, bool) {}),
       -2);
 }
 
@@ -79,7 +79,7 @@ TEST(TransactionCollectorTest, AddMainRequest) {
                            /* is_main_request =*/true,
                            [&](const Request& request, int received_count,
                                TransactionCollector::CollectorDataType* data,
-                               std::atomic<TransactionStatue>* status) {
+                               std::atomic<TransactionStatue>* status, bool) {
                              EXPECT_THAT(request, EqualsProto(expect_request));
                              EXPECT_EQ(received_count, 1);
                              EXPECT_EQ(*status, TransactionStatue::None);
@@ -107,7 +107,7 @@ TEST(TransactionCollectorTest, AddSameMainRequest) {
                   /* is_main_request =*/true,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -126,7 +126,7 @@ TEST(TransactionCollectorTest, AddSameMainRequest) {
                   /* is_main_request =*/true,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -156,7 +156,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/true,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -177,7 +177,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -199,7 +199,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -222,7 +222,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 2);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -245,7 +245,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::Prepare);
@@ -267,7 +267,7 @@ TEST(TransactionCollectorTest, AddTypeRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 3);
                     EXPECT_EQ(*status, TransactionStatue::Prepare);
@@ -298,7 +298,7 @@ TEST(TransactionCollectorTest, DelayMainRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -318,7 +318,7 @@ TEST(TransactionCollectorTest, DelayMainRequest) {
                   /* is_main_request =*/true,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -342,7 +342,7 @@ TEST(TransactionCollectorTest, DelayMainRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 2);
                     EXPECT_EQ(*status, TransactionStatue::None);
@@ -365,7 +365,7 @@ TEST(TransactionCollectorTest, DelayMainRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 1);
                     EXPECT_EQ(*status, TransactionStatue::Prepare);
@@ -387,7 +387,7 @@ TEST(TransactionCollectorTest, DelayMainRequest) {
                   /* is_main_request =*/false,
                   [&](const Request& request, int received_count,
                       TransactionCollector::CollectorDataType* data,
-                      std::atomic<TransactionStatue>* status) {
+                      std::atomic<TransactionStatue>* status, bool) {
                     EXPECT_THAT(request, EqualsProto(expect_request));
                     EXPECT_EQ(received_count, 3);
                     EXPECT_EQ(*status, TransactionStatue::Prepare);
