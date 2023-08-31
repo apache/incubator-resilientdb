@@ -45,14 +45,13 @@ int ChainState::SetValue(const std::string& key, const std::string& value) {
 }
 
 std::string ChainState::GetValue(const std::string& key) {
+  if (storage_) {
+    return storage_->GetValue(key);
+  }
   auto search = kv_map_.find(key);
   if (search != kv_map_.end())
     return search->second;
   else {
-    if (storage_) {
-      std::string value = storage_->GetValue(key);
-      kv_map_[key] = value;
-    }
     return "";
   }
 }

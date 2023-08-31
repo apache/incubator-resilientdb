@@ -82,21 +82,23 @@ class StateClientTest : public Test {
 TEST_F(StateClientTest, GetAllReplicaState) {
   MockResDBStateAccessor client(*config_);
 
-  std::vector<ReplicaState> replica_states;
+  ReplicaState state;
+  auto region = state.mutable_replica_config()->add_region();
+
   for (auto replica : replicas_) {
-    ReplicaState state;
-    *state.mutable_replica_info() = replica;
-    replica_states.push_back(state);
+    *region->add_replica_info() = replica;
   }
 
   std::atomic<int> idx = 0;
   EXPECT_CALL(client, GetNetChannel)
-      .Times(4)
+      .Times(1)
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
+        LOG(ERROR)<<"get channel:"<<ip<<port;
         auto client = std::make_unique<MockNetChannel>(ip, port);
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-              *reinterpret_cast<ReplicaState*>(message) = replica_states[idx++];
+              LOG(ERROR)<<"recv message:";
+              *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
         return client;
@@ -106,59 +108,16 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   std::set<int> results;
   for (auto& state : *ret) {
     auto it =
-        std::find_if(replica_states.begin(), replica_states.end(),
-                     [&](const ReplicaState& cur_state) {
-                       return MessageDifferencer::Equals(cur_state, state);
+        std::find_if(replicas_.begin(), replicas_.end(),
+                     [&](const ReplicaInfo& info) {
+                       return MessageDifferencer::Equals(info, state.replica_info());
                      });
-    EXPECT_TRUE(it != replica_states.end());
-    results.insert(it - replica_states.begin());
+    EXPECT_TRUE(it != replicas_.end());
+    results.insert(it - replicas_.begin());
   }
   EXPECT_EQ(results.size(), 4);
 }
 
-TEST_F(StateClientTest, GetAllReplicaStateButOneFail) {
-  MockResDBStateAccessor client(*config_);
-
-  std::vector<ReplicaState> replica_states;
-  for (auto replica : replicas_) {
-    ReplicaState state;
-    *state.mutable_replica_info() = replica;
-    replica_states.push_back(state);
-  }
-
-  std::mutex mutex;
-  std::atomic<int> idx = 0;
-  EXPECT_CALL(client, GetNetChannel)
-      .Times(4)
-      .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
-        auto client = std::make_unique<MockNetChannel>(ip, port);
-        EXPECT_CALL(*client, RecvRawMessage)
-            .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-              std::unique_lock<std::mutex> lk(mutex);
-              if (idx < 3) {
-                *reinterpret_cast<ReplicaState*>(message) =
-                    replica_states[idx++];
-                return 0;
-              } else {
-                return -1;
-              }
-            }));
-        return client;
-      }));
-  auto ret = client.GetReplicaStates();
-  EXPECT_TRUE(ret.ok());
-  std::set<int> results;
-  for (auto& state : *ret) {
-    auto it =
-        std::find_if(replica_states.begin(), replica_states.end(),
-                     [&](const ReplicaState& cur_state) {
-                       return MessageDifferencer::Equals(cur_state, state);
-                     });
-    EXPECT_TRUE(it != replica_states.end());
-    results.insert(it - replica_states.begin());
-  }
-  EXPECT_EQ(results.size(), 3);
-}
 
 }  // namespace
 

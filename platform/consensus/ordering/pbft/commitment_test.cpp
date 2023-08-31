@@ -47,16 +47,23 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
 
+ResDBConfig GenerateConfig(){
+  ResConfigData data;
+  data.set_duplicate_check_frequency_useconds(100000);
+  return ResDBConfig({GenerateReplicaInfo(1, "127.0.0.1", 1234),
+      GenerateReplicaInfo(2, "127.0.0.1", 1235),
+      GenerateReplicaInfo(3, "127.0.0.1", 1236),
+      GenerateReplicaInfo(4, "127.0.0.1", 1237)},
+      GenerateReplicaInfo(1, "127.0.0.1", 1234), data);
+
+}
+
 class CommitmentTest : public Test {
  public:
   CommitmentTest()
       :  // just set the monitor time to 1 second to return early.
         global_stats_(Stats::GetGlobalStats(1)),
-        config_({GenerateReplicaInfo(1, "127.0.0.1", 1234),
-                 GenerateReplicaInfo(2, "127.0.0.1", 1235),
-                 GenerateReplicaInfo(3, "127.0.0.1", 1236),
-                 GenerateReplicaInfo(4, "127.0.0.1", 1237)},
-                GenerateReplicaInfo(1, "127.0.0.1", 1234)),
+        config_(GenerateConfig()),
         system_info_(config_),
         checkpoint_manager_(config_, &replica_communicator_, &verifier_),
         message_manager_(std::make_unique<MessageManager>(
@@ -155,6 +162,8 @@ TEST_F(CommitmentTest, NoPrimary) {
 TEST_F(CommitmentTest, NewRequest) {
   auto context = std::make_unique<Context>();
   context->signature.set_signature("signature");
+  Request request;
+  request.set_data("data");
 
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();
@@ -162,8 +171,12 @@ TEST_F(CommitmentTest, NewRequest) {
     propose_done.set_value(true);
   }));
 
+  EXPECT_CALL(verifier_,
+              VerifyMessage(::testing::_, EqualsProto(SignatureInfo())))
+      .WillOnce(Return(true));
+
   EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                           std::make_unique<Request>()),
+                                           std::make_unique<Request>(request)),
             0);
   propose_done_future.get();
 }
@@ -177,18 +190,24 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
       config_, message_manager_.get(), &replica_communicator_, &verifier_);
   std::promise<bool> done;
   std::future<bool> done_future = done.get_future();
+  EXPECT_CALL(verifier_,
+              VerifyMessage(::testing::_, EqualsProto(SignatureInfo())))
+      .WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i) {
     std::unique_ptr<MockNetChannel> channel =
         std::make_unique<MockNetChannel>("127.0.0.1", 0);
     auto context = std::make_unique<Context>();
     context->signature.set_signature("signature");
+    Request request;
+    request.set_data("sig"+std::to_string(i));
+    request.set_hash("hash"+std::to_string(i));
     if (i < 2) {
       EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                               std::make_unique<Request>()),
+                                               std::make_unique<Request>(request)),
                 0);
     } else {
       EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                               std::make_unique<Request>()),
+                                               std::make_unique<Request>(request)),
                 -2);
     }
   }
@@ -319,6 +338,7 @@ TEST_F(CommitmentTest, ProcessCommitMsgWithResponse) {
 
   BatchUserResponse batch_resp;
 
+  batch_resp.set_primary_id(1);
   batch_resp.set_proxy_id(1);
   batch_resp.set_seq(1);
   batch_resp.set_current_view(1);
@@ -330,6 +350,7 @@ TEST_F(CommitmentTest, ProcessCommitMsgWithResponse) {
   resp_request.set_current_view(1);
   resp_request.set_seq(1);
   resp_request.set_proxy_id(1);
+  resp_request.set_primary_id(1);
   batch_resp.SerializeToString(resp_request.mutable_data());
 
   EXPECT_CALL(replica_communicator_, SendMessage(EqualsProto(resp_request), 1))

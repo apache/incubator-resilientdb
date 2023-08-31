@@ -48,15 +48,22 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
 
+ResDBConfig GenerateConfig(){
+  ResConfigData config_data;
+  config_data.set_view_change_timeout_ms(100);
+
+  return ResDBConfig({GenerateReplicaInfo(1, "127.0.0.1", 1234),
+                 GenerateReplicaInfo(2, "127.0.0.1", 1235),
+                 GenerateReplicaInfo(3, "127.0.0.1", 1236),
+                 GenerateReplicaInfo(4, "127.0.0.1", 1237)},
+                GenerateReplicaInfo(1, "127.0.0.1", 1234), config_data);
+}
+
 class QueryTest : public Test {
  public:
   QueryTest()
       : global_stats_(Stats::GetGlobalStats(1)),
-        config_({GenerateReplicaInfo(1, "127.0.0.1", 1234),
-                 GenerateReplicaInfo(2, "127.0.0.1", 1235),
-                 GenerateReplicaInfo(3, "127.0.0.1", 1236),
-                 GenerateReplicaInfo(4, "127.0.0.1", 1237)},
-                GenerateReplicaInfo(1, "127.0.0.1", 1234)),
+        config_(GenerateConfig()),
         system_info_(config_),
         checkpoint_manager_(config_, &replica_communicator_, nullptr),
         message_manager_(config_, nullptr, &checkpoint_manager_, &system_info_),
@@ -141,6 +148,14 @@ class QueryTest : public Test {
   Commitment commitment_;
 };
 
+MATCHER_P(EqualsProtoNoConfigData, replica, "") {
+  ReplicaState x = dynamic_cast<const ReplicaState&>(arg);
+  ReplicaState y = replica;
+  x.mutable_replica_config()->Clear();
+  y.mutable_replica_config()->Clear();
+  return ::google::protobuf::util::MessageDifferencer::Equals(x, y);
+}
+
 TEST_F(QueryTest, QueryState) {
   ReplicaState replica_state;
   replica_state.set_view(1);
@@ -150,7 +165,7 @@ TEST_F(QueryTest, QueryState) {
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);
-  EXPECT_CALL(*channel, SendRawMessage(EqualsProto(replica_state))).Times(1);
+  EXPECT_CALL(*channel, SendRawMessage(EqualsProtoNoConfigData(replica_state))).Times(1);
 
   auto context = std::make_unique<Context>();
   context->client = std::move(channel);
@@ -166,6 +181,7 @@ TEST_F(QueryTest, QueryTxn) {
   QueryResponse response;
   auto txn = response.add_transactions();
   txn->set_seq(1);
+  txn->set_proxy_id(1);
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);

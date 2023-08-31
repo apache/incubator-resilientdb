@@ -43,9 +43,9 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
       txn_accessor_(config),
       highest_prepared_seq_(0) {
   current_stable_seq_ = 0;
-  // if (config_.GetConfigData().enable_viewchange()) {
-   config_.EnableCheckPoint(true);
-  // }
+  if (config_.GetConfigData().enable_viewchange()) {
+    config_.EnableCheckPoint(true);
+  }
   if (config_.IsCheckPointEnabled()) {
     stable_checkpoint_thread_ =
         std::thread(&CheckPointManager::UpdateStableCheckPointStatus, this);

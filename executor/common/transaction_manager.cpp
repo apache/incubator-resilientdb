@@ -45,7 +45,6 @@ std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
     const BatchUserRequest& request) {
   std::unique_ptr<BatchUserResponse> batch_response =
       std::make_unique<BatchUserResponse>();
-
   for (auto& sub_request : request.user_requests()) {
     std::unique_ptr<std::string> response =
         ExecuteData(sub_request.request().data());

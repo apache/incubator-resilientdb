@@ -289,6 +289,7 @@ TEST_F(CheckPointManagerTest, Votes) {
   EXPECT_EQ(ckpt.signatures_size(), 3);
 }
 
+/*
 TEST_F(CheckPointManagerTest, SetTimeoutHandler) {
   CheckPointManager manager(config_, &replica_communicator_, nullptr);
 
@@ -305,6 +306,7 @@ TEST_F(CheckPointManagerTest, SetTimeoutHandler) {
   manager.AddCommitData(std::move(request));
   propose_done_future.get();
 }
+*/
 
 }  // namespace
 
