@@ -1,3 +1,5 @@
+// This script is from https://github.com/shadowmoose/GHA-LoC-Badge/blob/master/src/index.js
+
 const { badgen } = require('badgen');
 const fs = require('fs').promises;
 const path = require('path');
@@ -93,14 +95,6 @@ function throttle(callback, limit=5) {
 
 
 function makeBadge(text, config) {
-	//let { label, color, style, scale, labelcolor } = (config || {});
-	//label = label || 'Lines of Code';
-	//color = color || 'blue';
-	//labelcolor = labelcolor || '555';
-	//style = style || 'classic';
-	//scale = scale? parseInt(scale) : 1;
-
-	// only `status` is required.
 	return badgen({
     label: "lines of code",
 		status: `${text}`,               // <Text>, required
@@ -109,14 +103,6 @@ function makeBadge(text, config) {
 
 
 getFiles(dir, patterns, ignore).then( async ret => {
-	core.info(`Counted ${ret.lines} Lines from ${ret.counted} Files, ignoring ${ret.ignored} Files.`)
-	core.info(`Took: ${Date.now() - st}`);
-
-	core.setOutput("total_lines", `${ret.lines}`);
-	core.setOutput("ignored_files", `${ret.ignored}`);
-	core.setOutput("counted_files", `${ret.counted}`);
-
 	await fs.mkdir(path.dirname(badge), { recursive: true })
-
 	await fs.writeFile(badge, makeBadge(ret.lines.toLocaleString(), badgeOpts));
 })

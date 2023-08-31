@@ -1,3 +1,4 @@
+# This script is from https://github.com/shadowmoose/GHA-LoC-Badge/blob/master/action.yml
 
 name: 'lines of code Badge'
 description: 'Generate a badge to display total Lines of Code'
