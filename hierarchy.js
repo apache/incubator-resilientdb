@@ -61,6 +61,7 @@ var hierarchy =
     [ "resdb::QueueItem", "df/d64/structresdb_1_1QueueItem.html", null ],
     [ "resdb::Recovery", "d1/d44/classresdb_1_1Recovery.html", null ],
     [ "resdb::ReplicaCommunicator", "d3/d5e/classresdb_1_1ReplicaCommunicator.html", [
+      [ "resdb::MockReplicaCommunicator", "d4/de4/classresdb_1_1MockReplicaCommunicator.html", null ],
       [ "resdb::MockReplicaCommunicator", "d4/de4/classresdb_1_1MockReplicaCommunicator.html", null ]
     ] ],
     [ "resdb::RequestInfo", "d8/d15/structresdb_1_1RequestInfo.html", null ],
@@ -69,6 +70,8 @@ var hierarchy =
     ] ],
     [ "resdb::ResDBStateAccessor", "d7/d30/classresdb_1_1ResDBStateAccessor.html", null ],
     [ "resdb::ResDBTxnAccessor", "da/d12/classresdb_1_1ResDBTxnAccessor.html", [
+      [ "resdb::MockResDBTxnAccessor", "d0/d8d/classresdb_1_1MockResDBTxnAccessor.html", null ],
+      [ "resdb::MockResDBTxnAccessor", "d0/d8d/classresdb_1_1MockResDBTxnAccessor.html", null ],
       [ "resdb::MockResDBTxnAccessor", "d0/d8d/classresdb_1_1MockResDBTxnAccessor.html", null ]
     ] ],
     [ "resdb::ResponseManager", "da/d2f/classresdb_1_1ResponseManager.html", null ],

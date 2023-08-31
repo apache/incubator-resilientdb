@@ -1,4 +1,4 @@
-/* The standard CSS for doxygen 1.9.7*/
+/* The standard CSS for doxygen 1.9.8*/
 
 body {
     background-color: black;
@@ -147,6 +147,12 @@ div.qindex{
 	line-height: 140%;
 	font-size: 130%;
 	color: #334975;
+}
+
+#main-menu a:focus {
+	outline: auto;
+	z-index: 10;
+	position: relative;
 }
 
 dt.alphachar{
@@ -347,6 +353,18 @@ div.line.glow {
 	box-shadow: 0 0 10px cyan;
 }
 
+span.fold {
+        margin-left: 5px;
+        margin-right: 1px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        padding: 0px;
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	background-repeat:no-repeat;
+        background-position:center;
+}
 
 span.lineno {
 	padding-right: 4px;
@@ -493,11 +511,11 @@ span.vhdldigit {
 }
 
 span.vhdlchar { 
-	color: #000000;
+	color: #C0C0C0;
 }
 
 span.vhdlkeyword { 
-	color: #700070;
+	color: #CF53C9;
 }
 
 span.vhdllogic { 
