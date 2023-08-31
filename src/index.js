@@ -102,6 +102,7 @@ function makeBadge(text, config) {
 
 	// only `status` is required.
 	return badgen({
+    label: "lines of code",
 		status: `${text}`,               // <Text>, required
 	});
 }
