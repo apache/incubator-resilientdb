@@ -1,0 +1,19 @@
+name: Doxygen Action
+
+on:
+  push
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Make Code Badge
+      uses: shadowmoose/GHA-LoC-Badge@1.0.0
+      id: badge
+      with:
+        debug: true
+        directory: ./
+        badge: ./output/badge.svg
+        patterns: '*.cpp'  # Patterns in the format of a '.gitignore' file, separated by pipes.
+        ignore: 'node_modules'
