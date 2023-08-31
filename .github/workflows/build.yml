@@ -8,7 +8,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: run
-      uses: ./
-      with:
-        args: build //...
+    - name: Run bazel --version
+      shell: bash
+      run: 
+        `bazel ...`
+
