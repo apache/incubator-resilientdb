@@ -1,0 +1,13 @@
+on: push
+name: My Action
+jobs:
+  checks:
+    name: run
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: run
+      uses: ./
+      with:
+        args: build //...
