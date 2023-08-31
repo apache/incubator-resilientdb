@@ -1,7 +1,9 @@
 name: Unite Test 
 
 on:
-  push: {}
+  push: 
+    branches:
+      - master
 
 jobs:
   ubuntu-build:
