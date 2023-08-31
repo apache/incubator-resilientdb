@@ -49,7 +49,7 @@ class CollectorPoolTest : public Test {
     return collector->AddRequest(
         std::make_unique<Request>(request), SignatureInfo(), false,
         [](const Request&, int, TransactionCollector::CollectorDataType*,
-           std::atomic<TransactionStatue>*) {});
+           std::atomic<TransactionStatue>*, bool) {});
   }
 };
 

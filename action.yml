@@ -48,12 +48,6 @@ outputs:
     description: 'The total line count.'
   counted_files:
     description: 'A count of all files that were included in the total.'
-  elapsed_ms:
-    description: 'The time that this scan took.'
-  output_path:
-    description: 'The absolute path to the SVG that was generated.'
-  output_dir:
-    description: 'The absolute path to the directory that contains the output svg.'
 
 runs:
   using: 'node12'
