@@ -125,166 +125,163 @@ $(document).ready(function(){initNavTree('df/dd5/duplicate__manager_8cpp_source.
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> *</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> */</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;glog/logging.h&gt;</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &quot;<a class="code" href="../../d7/dd0/duplicate__manager_8h.html">platform/consensus/execution/duplicate_manager.h</a>&quot;</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a>{</div>
-<div class="foldopen" id="foldopen00031" data-start="{" data-end="}">
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">   31</a></span>  <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">DuplicateManager::DuplicateManager</a>(<span class="keyword">const</span> <a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&amp; config):<a class="code hl_variable" href="../../db/ddf/resdb__state__accessor__test_8cpp.html#a4b1f98004f89e2582b05ad244479770e">config_</a>(config){</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordflow">if</span>(config.<a class="code hl_function" href="../../db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">GetConfigData</a>().duplicate_check_frequency_useconds() &gt; 0){</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>      frequency_useconds_ = config.<a class="code hl_function" href="../../db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">GetConfigData</a>().duplicate_check_frequency_useconds();</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    }</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    stop_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    update_thread_ = std::thread(&amp;<a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">DuplicateManager::UpdateRecentHash</a>, <span class="keyword">this</span>);</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../d7/dd0/duplicate__manager_8h.html">platform/consensus/execution/duplicate_manager.h</a>&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;glog/logging.h&gt;</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
+<div class="foldopen" id="foldopen00032" data-start="{" data-end="}">
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">   32</a></span><a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">DuplicateManager::DuplicateManager</a>(<span class="keyword">const</span> <a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>&amp; config)</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    : <a class="code hl_variable" href="../../db/ddf/resdb__state__accessor__test_8cpp.html#a4b1f98004f89e2582b05ad244479770e">config_</a>(config) {</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>  <span class="keywordflow">if</span> (config.<a class="code hl_function" href="../../db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">GetConfigData</a>().duplicate_check_frequency_useconds() &gt; 0) {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>    frequency_useconds_ =</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        config.<a class="code hl_function" href="../../db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">GetConfigData</a>().duplicate_check_frequency_useconds();</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  }</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  stop_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  update_thread_ = std::thread(&amp;<a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">DuplicateManager::UpdateRecentHash</a>, <span class="keyword">this</span>);</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>}</div>
 </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="foldopen" id="foldopen00039" data-start="{" data-end="}">
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">   39</a></span>  <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">DuplicateManager::~DuplicateManager</a>(){</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    stop_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordflow">if</span>(update_thread_.joinable()){</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      update_thread_.join();</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    }</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  }</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="foldopen" id="foldopen00042" data-start="{" data-end="}">
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">   42</a></span><a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">DuplicateManager::~DuplicateManager</a>() {</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  stop_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  <span class="keywordflow">if</span> (update_thread_.joinable()) {</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    update_thread_.join();</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  }</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>}</div>
 </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordtype">bool</span> DuplicateManager::IsStop(){</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    <span class="keywordflow">return</span> stop_;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  }</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="foldopen" id="foldopen00050" data-start="{" data-end="}">
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">   50</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">DuplicateManager::CheckIfProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordflow">return</span> proposed_hash_set_.find(hash) != proposed_hash_set_.end();</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  }</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="keywordtype">bool</span> DuplicateManager::IsStop() { <span class="keywordflow">return</span> stop_; }</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="foldopen" id="foldopen00051" data-start="{" data-end="}">
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">   51</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">DuplicateManager::CheckIfProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  <span class="keywordflow">return</span> proposed_hash_set_.find(hash) != proposed_hash_set_.end();</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>}</div>
 </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="foldopen" id="foldopen00055" data-start="{" data-end="}">
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">   55</a></span>  uint64_t <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">DuplicateManager::CheckIfExecuted</a>(<span class="keyword">const</span> std::string&amp; hash){</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordflow">if</span> (executed_hash_set_.find(hash) != executed_hash_set_.end()) {</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>      <span class="keywordflow">return</span> executed_hash_seq_[hash];</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    }</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>      <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    }</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  }</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="foldopen" id="foldopen00056" data-start="{" data-end="}">
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">   56</a></span>uint64_t <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">DuplicateManager::CheckIfExecuted</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keywordflow">if</span> (executed_hash_set_.find(hash) != executed_hash_set_.end()) {</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordflow">return</span> executed_hash_seq_[hash];</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  }</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>}</div>
 </div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
 <div class="foldopen" id="foldopen00065" data-start="{" data-end="}">
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a1148d998b8978109823d540d6b0701a0">   65</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a1148d998b8978109823d540d6b0701a0">DuplicateManager::AddProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    proposed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    proposed_hash_set_.insert(hash);</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  }</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a1148d998b8978109823d540d6b0701a0">   65</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a1148d998b8978109823d540d6b0701a0">DuplicateManager::AddProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  proposed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>  proposed_hash_set_.insert(hash);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>}</div>
 </div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
 <div class="foldopen" id="foldopen00071" data-start="{" data-end="}">
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">   71</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">DuplicateManager::AddExecuted</a>(<span class="keyword">const</span> std::string&amp; hash, uint64_t seq) {</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    executed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    executed_hash_set_.insert(hash);</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    executed_hash_seq_[hash] = seq;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  }</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">   71</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">DuplicateManager::AddExecuted</a>(<span class="keyword">const</span> std::string&amp; hash, uint64_t seq) {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>  std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  executed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  executed_hash_set_.insert(hash);</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  executed_hash_seq_[hash] = seq;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>}</div>
 </div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
 <div class="foldopen" id="foldopen00078" data-start="{" data-end="}">
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf">   78</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf">DuplicateManager::CheckAndAddProposed</a>(<span class="keyword">const</span> std::string&amp; hash){</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordflow">if</span> (proposed_hash_set_.find(hash) != proposed_hash_set_.end()) {</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    }</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    proposed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    proposed_hash_set_.insert(hash);</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  }</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf">   78</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf">DuplicateManager::CheckAndAddProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  <span class="keywordflow">if</span> (proposed_hash_set_.find(hash) != proposed_hash_set_.end()) {</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  }</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  proposed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  proposed_hash_set_.insert(hash);</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>}</div>
 </div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
 <div class="foldopen" id="foldopen00088" data-start="{" data-end="}">
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165">   88</a></span>  <span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165">DuplicateManager::CheckAndAddExecuted</a>(<span class="keyword">const</span> std::string&amp; hash, uint64_t seq) {</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="keywordflow">if</span> (executed_hash_set_.find(hash) != executed_hash_set_.end()) {</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    }</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    executed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    executed_hash_set_.insert(hash);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    executed_hash_seq_[hash] = seq;</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  }</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165">   88</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165">DuplicateManager::CheckAndAddExecuted</a>(<span class="keyword">const</span> std::string&amp; hash,</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>                                           uint64_t seq) {</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  <span class="keywordflow">if</span> (executed_hash_set_.find(hash) != executed_hash_set_.end()) {</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  }</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  executed_hash_time_queue_.push(std::make_pair(hash, <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>()));</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  executed_hash_set_.insert(hash);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  executed_hash_seq_[hash] = seq;</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>}</div>
 </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
-<div class="foldopen" id="foldopen00099" data-start="{" data-end="}">
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">   99</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">DuplicateManager::EraseProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    proposed_hash_set_.erase(hash);</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  }</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
+<div class="foldopen" id="foldopen00100" data-start="{" data-end="}">
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">  100</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">DuplicateManager::EraseProposed</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  proposed_hash_set_.erase(hash);</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>}</div>
 </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
-<div class="foldopen" id="foldopen00104" data-start="{" data-end="}">
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">  104</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">DuplicateManager::EraseExecuted</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    executed_hash_set_.erase(hash);</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    executed_hash_seq_.erase(hash);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="foldopen" id="foldopen00105" data-start="{" data-end="}">
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">  105</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">DuplicateManager::EraseExecuted</a>(<span class="keyword">const</span> std::string&amp; hash) {</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  executed_hash_set_.erase(hash);</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  executed_hash_seq_.erase(hash);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>}</div>
 </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="foldopen" id="foldopen00110" data-start="{" data-end="}">
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">  110</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">DuplicateManager::UpdateRecentHash</a>() {</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    uint64_t time = <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>();</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keywordflow">while</span>(!IsStop()) {</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>        time = time + frequency_useconds_;</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>        <span class="keyword">auto</span> sleep_time = time - <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>();</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>        usleep(sleep_time);</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>        <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>          std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>          <span class="keywordflow">if</span>(!proposed_hash_time_queue_.empty()){</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>            <span class="keyword">auto</span> it = proposed_hash_time_queue_.front();</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>            <span class="keywordflow">if</span> (it.second + window_useconds_ &lt; time) {</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>                proposed_hash_time_queue_.pop();</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>                proposed_hash_set_.erase(it.first);</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>            } </div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>            <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>                <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>            }</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>          }</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>          <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>            <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>          }</div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>        }</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>        <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>          std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>          <span class="keywordflow">if</span>(!executed_hash_time_queue_.empty()) {</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>            <span class="keyword">auto</span> it = executed_hash_time_queue_.front();</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>            <span class="keywordflow">if</span> (it.second + window_useconds_ &lt; time) {</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>                executed_hash_time_queue_.pop();</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>                executed_hash_set_.erase(it.first);</div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>                executed_hash_seq_.erase(it.first);</div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>            } </div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>            <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>                <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>            }</div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>          }</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>          <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>            <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>          }</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>      }</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>    }</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>  }</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="foldopen" id="foldopen00111" data-start="{" data-end="}">
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno"><a class="line" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">  111</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">DuplicateManager::UpdateRecentHash</a>() {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  uint64_t time = <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>();</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    time = time + frequency_useconds_;</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keyword">auto</span> sleep_time = time - <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7">GetCurrentTime</a>();</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    usleep(sleep_time);</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>      std::lock_guard&lt;std::mutex&gt; lk(prop_mutex_);</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>      <span class="keywordflow">if</span> (!proposed_hash_time_queue_.empty()) {</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        <span class="keyword">auto</span> it = proposed_hash_time_queue_.front();</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        <span class="keywordflow">if</span> (it.second + window_useconds_ &lt; time) {</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>          proposed_hash_time_queue_.pop();</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>          proposed_hash_set_.erase(it.first);</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>          <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>        }</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>      }</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    }</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keywordflow">while</span> (<span class="keyword">true</span>) {</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>      std::lock_guard&lt;std::mutex&gt; lk(exec_mutex_);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>      <span class="keywordflow">if</span> (!executed_hash_time_queue_.empty()) {</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>        <span class="keyword">auto</span> it = executed_hash_time_queue_.front();</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>        <span class="keywordflow">if</span> (it.second + window_useconds_ &lt; time) {</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>          executed_hash_time_queue_.pop();</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>          executed_hash_set_.erase(it.first);</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>          executed_hash_seq_.erase(it.first);</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>          <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>        }</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>      } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>      }</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    }</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>  }</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>}</div>
 </div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>}</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a0c1c2af80dcfa6a648bfe526f860f165"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165">resdb::DuplicateManager::CheckAndAddExecuted</a></div><div class="ttdeci">bool CheckAndAddExecuted(const std::string &amp;hash, uint64_t seq)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00088">duplicate_manager.cpp:88</a></div></div>
 <div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a1148d998b8978109823d540d6b0701a0"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a1148d998b8978109823d540d6b0701a0">resdb::DuplicateManager::AddProposed</a></div><div class="ttdeci">void AddProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00065">duplicate_manager.cpp:65</a></div></div>
 <div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a284c912374deb68fc40693048e51d85a"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">resdb::DuplicateManager::AddExecuted</a></div><div class="ttdeci">void AddExecuted(const std::string &amp;hash, uint64_t seq)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00071">duplicate_manager.cpp:71</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a3de559ef87d74da42404fba014a6657f"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">resdb::DuplicateManager::UpdateRecentHash</a></div><div class="ttdeci">void UpdateRecentHash()</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00110">duplicate_manager.cpp:110</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a437d8fdb66cd62ea669522338b139f33"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">resdb::DuplicateManager::DuplicateManager</a></div><div class="ttdeci">DuplicateManager(const ResDBConfig &amp;config)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00031">duplicate_manager.cpp:31</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a5fafa3f2e0bded283aef23a6e6eb5bcc"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">resdb::DuplicateManager::~DuplicateManager</a></div><div class="ttdeci">~DuplicateManager()</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00039">duplicate_manager.cpp:39</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a3de559ef87d74da42404fba014a6657f"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a3de559ef87d74da42404fba014a6657f">resdb::DuplicateManager::UpdateRecentHash</a></div><div class="ttdeci">void UpdateRecentHash()</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00111">duplicate_manager.cpp:111</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a437d8fdb66cd62ea669522338b139f33"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a437d8fdb66cd62ea669522338b139f33">resdb::DuplicateManager::DuplicateManager</a></div><div class="ttdeci">DuplicateManager(const ResDBConfig &amp;config)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00032">duplicate_manager.cpp:32</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a5fafa3f2e0bded283aef23a6e6eb5bcc"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a5fafa3f2e0bded283aef23a6e6eb5bcc">resdb::DuplicateManager::~DuplicateManager</a></div><div class="ttdeci">~DuplicateManager()</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00042">duplicate_manager.cpp:42</a></div></div>
 <div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a76d211c0491b2f28d67bfe5f1fc414cf"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf">resdb::DuplicateManager::CheckAndAddProposed</a></div><div class="ttdeci">bool CheckAndAddProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00078">duplicate_manager.cpp:78</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_aba84ef831020a64afb8c9ec3c0760ff5"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">resdb::DuplicateManager::EraseProposed</a></div><div class="ttdeci">void EraseProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00099">duplicate_manager.cpp:99</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_ae2f35d4503e0eb935397d201f723a58c"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">resdb::DuplicateManager::CheckIfProposed</a></div><div class="ttdeci">bool CheckIfProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00050">duplicate_manager.cpp:50</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_af8bd73e78c13634d84b201f8f0b28472"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">resdb::DuplicateManager::CheckIfExecuted</a></div><div class="ttdeci">uint64_t CheckIfExecuted(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00055">duplicate_manager.cpp:55</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_afd3d63e9b0b442012392edfb939a5e9c"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">resdb::DuplicateManager::EraseExecuted</a></div><div class="ttdeci">void EraseExecuted(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00104">duplicate_manager.cpp:104</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_aba84ef831020a64afb8c9ec3c0760ff5"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#aba84ef831020a64afb8c9ec3c0760ff5">resdb::DuplicateManager::EraseProposed</a></div><div class="ttdeci">void EraseProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00100">duplicate_manager.cpp:100</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_ae2f35d4503e0eb935397d201f723a58c"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#ae2f35d4503e0eb935397d201f723a58c">resdb::DuplicateManager::CheckIfProposed</a></div><div class="ttdeci">bool CheckIfProposed(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00051">duplicate_manager.cpp:51</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_af8bd73e78c13634d84b201f8f0b28472"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472">resdb::DuplicateManager::CheckIfExecuted</a></div><div class="ttdeci">uint64_t CheckIfExecuted(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00056">duplicate_manager.cpp:56</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_afd3d63e9b0b442012392edfb939a5e9c"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#afd3d63e9b0b442012392edfb939a5e9c">resdb::DuplicateManager::EraseExecuted</a></div><div class="ttdeci">void EraseExecuted(const std::string &amp;hash)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00105">duplicate_manager.cpp:105</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResDBConfig_html"><div class="ttname"><a href="../../db/ddb/classresdb_1_1ResDBConfig.html">resdb::ResDBConfig</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d9a/resdb__config_8h_source.html#l00034">resdb_config.h:34</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResDBConfig_html_a464cd1a715b8e103a24e17e43306c010"><div class="ttname"><a href="../../db/ddb/classresdb_1_1ResDBConfig.html#a464cd1a715b8e103a24e17e43306c010">resdb::ResDBConfig::GetConfigData</a></div><div class="ttdeci">ResConfigData GetConfigData() const</div><div class="ttdef"><b>Definition</b> <a href="../../d0/d41/resdb__config_8cpp_source.html#l00112">resdb_config.cpp:112</a></div></div>
 <div class="ttc" id="acommon_2utils_2utils_8h_html"><div class="ttname"><a href="../../d4/d71/common_2utils_2utils_8h.html">utils.h</a></div></div>

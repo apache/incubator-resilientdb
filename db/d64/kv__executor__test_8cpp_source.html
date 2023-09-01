@@ -130,144 +130,146 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;gmock/gmock.h&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;gtest/gtest.h&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d3/d16/resdb__config__utils_8h.html">platform/config/resdb_config_utils.h</a>&quot;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;proto/kv/kv.pb.h&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d9b/mock__storage_8h.html">chain/storage/mock_storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../df/d9b/mock__storage_8h.html">chain/storage/mock_storage.h</a>&quot;</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;<a class="code" href="../../d3/d16/resdb__config__utils_8h.html">platform/config/resdb_config_utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#include &quot;proto/kv/kv.pb.h&quot;</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">namespace </span>{</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>using ::testing::Return;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>using ::testing::Invoke;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>using ::testing::Invoke;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>using ::testing::Return;</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>using ::testing::Test;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="keyword">class </span>KVExecutorTest : <span class="keyword">public</span> Test {</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  KVExecutorTest() {</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    <span class="keyword">auto</span> mock_storage = std::make_unique&lt;MockStorage&gt;();</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a> = mock_storage.get();</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    impl_ = std::make_unique&lt;KVExecutor&gt;(std::make_unique&lt;ChainState&gt;(std::move(mock_storage)));</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  }</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keywordtype">int</span> Set(<span class="keyword">const</span> std::string&amp; key, <span class="keyword">const</span> std::string&amp; value) {</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    KVRequest request;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    request.set_cmd(KVRequest::SET);</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    request.set_key(key);</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    request.set_value(value);</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    std::string str;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>      <span class="keywordflow">return</span> -1;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    }</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    impl_-&gt;ExecuteData(str);</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  }</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  std::string Get(<span class="keyword">const</span> std::string&amp; key) {</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    KVRequest request;</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    request.set_cmd(KVRequest::GET);</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    request.set_key(key);</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    std::string str;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    }</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    }</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    KVResponse kv_response;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    }</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    <span class="keywordflow">return</span> kv_response.value();</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>  }</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  std::string GetValues() {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    KVRequest request;</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    request.set_cmd(KVRequest::GETVALUES);</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    std::string str;</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    }</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    }</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    KVResponse kv_response;</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    }</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keywordflow">return</span> kv_response.value();</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  }</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  std::string GetRange(<span class="keyword">const</span> std::string&amp; min_key, <span class="keyword">const</span> std::string&amp; max_key) {</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    KVRequest request;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    request.set_cmd(KVRequest::GETRANGE);</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    request.set_key(min_key);</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    request.set_value(max_key);</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    std::string str;</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    }</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    }</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    KVResponse kv_response;</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    }</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keywordflow">return</span> kv_response.value();</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>  }</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno"><a class="line" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">  125</a></span>  MockStorage* <a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>;</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> <span class="keyword">private</span>:</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>  std::unique_ptr&lt;KVExecutor&gt; impl_;</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>};</div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(KVExecutorTest, SetValue) {</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>  std::map&lt;std::string,std::string&gt; <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>;</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>))</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>      .WillOnce(Invoke([&amp;](<span class="keyword">const</span> std::string&amp; key, <span class="keyword">const</span> std::string&amp; value){</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>        <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>[key] = value;</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>      }));</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetValue(<span class="stringliteral">&quot;test_key&quot;</span>))</div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>      .WillOnce(Invoke([&amp;](<span class="keyword">const</span> std::string&amp; key){</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>         std::string ret = <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>[key];</div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>        <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>      }));</div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span> </div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetAllValues())</div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>      .WillOnce(Return(<span class="stringliteral">&quot;[]&quot;</span>))</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span> </div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>))</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span> </div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>  EXPECT_EQ(Set(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  EXPECT_EQ(Get(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span> </div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>  <span class="comment">// GetValues and GetRange may be out of order for in-memory, so we test up to</span></div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>  <span class="comment">// 1 key-value pair</span></div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  EXPECT_EQ(GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>}</div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>}  <span class="comment">// namespace</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="keyword">class </span>KVExecutorTest : <span class="keyword">public</span> Test {</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  KVExecutorTest() {</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keyword">auto</span> mock_storage = std::make_unique&lt;MockStorage&gt;();</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a> = mock_storage.get();</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    impl_ = std::make_unique&lt;KVExecutor&gt;(</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        std::make_unique&lt;ChainState&gt;(std::move(mock_storage)));</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  }</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  <span class="keywordtype">int</span> Set(<span class="keyword">const</span> std::string&amp; key, <span class="keyword">const</span> std::string&amp; value) {</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    KVRequest request;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    request.set_cmd(KVRequest::SET);</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    request.set_key(key);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    request.set_value(value);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    std::string str;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>      <span class="keywordflow">return</span> -1;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    }</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    impl_-&gt;ExecuteData(str);</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  }</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  std::string Get(<span class="keyword">const</span> std::string&amp; key) {</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    KVRequest request;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    request.set_cmd(KVRequest::GET);</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    request.set_key(key);</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    std::string str;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    }</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    }</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    KVResponse kv_response;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    }</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordflow">return</span> kv_response.value();</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  }</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  std::string GetValues() {</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    KVRequest request;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    request.set_cmd(KVRequest::GETVALUES);</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    std::string str;</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    }</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    }</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    KVResponse kv_response;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    }</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <span class="keywordflow">return</span> kv_response.value();</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>  std::string GetRange(<span class="keyword">const</span> std::string&amp; min_key, <span class="keyword">const</span> std::string&amp; max_key) {</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    KVRequest request;</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    request.set_cmd(KVRequest::GETRANGE);</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    request.set_key(min_key);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    request.set_value(max_key);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    std::string str;</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    }</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keyword">auto</span> resp = impl_-&gt;ExecuteData(str);</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    <span class="keywordflow">if</span> (resp == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    }</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    KVResponse kv_response;</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    <span class="keywordflow">if</span> (!kv_response.ParseFromString(*resp)) {</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>      <span class="keywordflow">return</span> <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    }</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    <span class="keywordflow">return</span> kv_response.value();</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  }</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno"><a class="line" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">  127</a></span>  MockStorage* <a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>;</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> <span class="keyword">private</span>:</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>  std::unique_ptr&lt;KVExecutor&gt; impl_;</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>};</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(KVExecutorTest, SetValue) {</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>  std::map&lt;std::string, std::string&gt; <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>;</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>))</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>      .WillOnce(Invoke([&amp;](<span class="keyword">const</span> std::string&amp; key, <span class="keyword">const</span> std::string&amp; value) {</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>        <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>[key] = value;</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>      }));</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetValue(<span class="stringliteral">&quot;test_key&quot;</span>))</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>      .WillOnce(Invoke([&amp;](<span class="keyword">const</span> std::string&amp; key) {</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>        std::string ret = <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>[key];</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>        <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>      }));</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span> </div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetAllValues())</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>      .WillOnce(Return(<span class="stringliteral">&quot;[]&quot;</span>))</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>))</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>  EXPECT_EQ(Set(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>  EXPECT_EQ(Get(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  <span class="comment">// GetValues and GetRange may be out of order for in-memory, so we test up to</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  <span class="comment">// 1 key-value pair</span></div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>  EXPECT_EQ(GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>}</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>}  <span class="comment">// namespace</span></div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="abatch__queue__test_8cpp_html_a8a036d3167ef9d3099cafcac54e25c72"><div class="ttname"><a href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a></div><div class="ttdeci">std::string data</div><div class="ttdef"><b>Definition</b> <a href="../../df/dba/batch__queue__test_8cpp_source.html#l00040">batch_queue_test.cpp:40</a></div></div>
 <div class="ttc" id="akv__executor_8h_html"><div class="ttname"><a href="../../d1/d72/kv__executor_8h.html">kv_executor.h</a></div></div>
-<div class="ttc" id="akv__executor__test_8cpp_html_acf492a9c89f2718e819eccd999a8cbba"><div class="ttname"><a href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a></div><div class="ttdeci">MockStorage * mock_storage_ptr_</div><div class="ttdef"><b>Definition</b> <a href="../../db/d64/kv__executor__test_8cpp_source.html#l00125">kv_executor_test.cpp:125</a></div></div>
+<div class="ttc" id="akv__executor__test_8cpp_html_acf492a9c89f2718e819eccd999a8cbba"><div class="ttname"><a href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a></div><div class="ttdeci">MockStorage * mock_storage_ptr_</div><div class="ttdef"><b>Definition</b> <a href="../../db/d64/kv__executor__test_8cpp_source.html#l00127">kv_executor_test.cpp:127</a></div></div>
 <div class="ttc" id="amock__storage_8h_html"><div class="ttname"><a href="../../df/d9b/mock__storage_8h.html">mock_storage.h</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_ab31c2875ec907efdbc2284cb1eabdc49"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">resdb::TEST_F</a></div><div class="ttdeci">TEST_F(ResDBTest, TestPBFTService)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d61/resdb__test_8cpp_source.html#l00154">resdb_test.cpp:154</a></div></div>

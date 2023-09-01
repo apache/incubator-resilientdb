@@ -145,13 +145,13 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  std::unique_ptr&lt;Request&gt; request = std::make_unique&lt;Request&gt;();</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  SignatureInfo signature;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  EXPECT_EQ(</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>      collector.AddRequest(std::move(request), signature,</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                           <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>                           [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>                               <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                               std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {}),</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      -2);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  EXPECT_EQ(collector.AddRequest(</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                std::move(request), signature,</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>                [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>                    <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                    std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {}),</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>            -2);</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ad80063b9797bc83c1fce71f3a06ce1b0">TEST</a>(TransactionCollectorTest, AddContextList) {</div>
