@@ -142,233 +142,236 @@ $(document).ready(function(){initNavTree('d7/d24/transaction__executor_8cpp_sour
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>      transaction_manager_(std::move(transaction_manager)),</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>      commit_queue_(<span class="stringliteral">&quot;order&quot;</span>),</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>      execute_queue_(<span class="stringliteral">&quot;execute&quot;</span>),</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      stop_(false) {</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  global_stats_ = <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">Stats::GetGlobalStats</a>();</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  ordering_thread_ = std::thread(&amp;TransactionExecutor::OrderMessage, <span class="keyword">this</span>);</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  execute_thread_ = std::thread(&amp;TransactionExecutor::ExecuteMessage, <span class="keyword">this</span>);</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    execute_OOO_thread_ =</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        std::thread(&amp;TransactionExecutor::ExecuteMessageOutOfOrder, <span class="keyword">this</span>);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot; is out of order:&quot;</span> &lt;&lt; transaction_manager_-&gt;IsOutOfOrder();</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  }</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>}</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>      stop_(false),</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>      duplicate_manager_(nullptr){</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  global_stats_ = <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">Stats::GetGlobalStats</a>();</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  ordering_thread_ = std::thread(&amp;TransactionExecutor::OrderMessage, <span class="keyword">this</span>);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  execute_thread_ = std::thread(&amp;TransactionExecutor::ExecuteMessage, <span class="keyword">this</span>);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    execute_OOO_thread_ =</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        std::thread(&amp;TransactionExecutor::ExecuteMessageOutOfOrder, <span class="keyword">this</span>);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot; is out of order:&quot;</span> &lt;&lt; transaction_manager_-&gt;IsOutOfOrder();</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  }</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
 </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">   54</a></span><a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">TransactionExecutor::~TransactionExecutor</a>() { <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">Stop</a>(); }</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
-<div class="foldopen" id="foldopen00056" data-start="{" data-end="}">
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">   56</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">TransactionExecutor::Stop</a>() {</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  stop_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keywordflow">if</span> (ordering_thread_.joinable()) {</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    ordering_thread_.join();</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  }</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  <span class="keywordflow">if</span> (execute_thread_.joinable()) {</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    execute_thread_.join();</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  }</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  <span class="keywordflow">if</span> (execute_OOO_thread_.joinable()) {</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    execute_OOO_thread_.join();</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>  }</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>}</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">   55</a></span><a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">TransactionExecutor::~TransactionExecutor</a>() { <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">Stop</a>(); }</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="foldopen" id="foldopen00057" data-start="{" data-end="}">
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">   57</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">TransactionExecutor::Stop</a>() {</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  stop_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keywordflow">if</span> (ordering_thread_.joinable()) {</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    ordering_thread_.join();</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  }</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>  <span class="keywordflow">if</span> (execute_thread_.joinable()) {</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    execute_thread_.join();</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  }</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  <span class="keywordflow">if</span> (execute_OOO_thread_.joinable()) {</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    execute_OOO_thread_.join();</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  }</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}</div>
 </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="foldopen" id="foldopen00069" data-start="{" data-end="}">
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">   69</a></span><a class="code hl_class" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a>* <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">TransactionExecutor::GetStorage</a>() {</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  <span class="keywordflow">return</span> transaction_manager_ ? transaction_manager_-&gt;GetStorage() : <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>}</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="foldopen" id="foldopen00070" data-start="{" data-end="}">
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">   70</a></span><a class="code hl_class" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a>* <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">TransactionExecutor::GetStorage</a>() {</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  <span class="keywordflow">return</span> transaction_manager_ ? transaction_manager_-&gt;GetStorage() : <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>}</div>
 </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="foldopen" id="foldopen00073" data-start="{" data-end="}">
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">   73</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">TransactionExecutor::SetPreExecuteFunc</a>(<a class="code hl_typedef" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ab3e79822f7f10906f57ab33d4ce97ca0">PreExecuteFunc</a> pre_exec_func) {</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>  pre_exec_func_ = pre_exec_func;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>}</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="foldopen" id="foldopen00074" data-start="{" data-end="}">
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">   74</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">TransactionExecutor::SetPreExecuteFunc</a>(<a class="code hl_typedef" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ab3e79822f7f10906f57ab33d4ce97ca0">PreExecuteFunc</a> pre_exec_func) {</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  pre_exec_func_ = pre_exec_func;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>}</div>
 </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="foldopen" id="foldopen00077" data-start="{" data-end="}">
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">   77</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">TransactionExecutor::SetSeqUpdateNotifyFunc</a>(<a class="code hl_typedef" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a611ce0a2cc0cacc5b2894c9862c745cf">SeqUpdateNotifyFunc</a> func) {</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  seq_update_notify_func_ = func;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>}</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="foldopen" id="foldopen00078" data-start="{" data-end="}">
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">   78</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">TransactionExecutor::SetSeqUpdateNotifyFunc</a>(<a class="code hl_typedef" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a611ce0a2cc0cacc5b2894c9862c745cf">SeqUpdateNotifyFunc</a> func) {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  seq_update_notify_func_ = func;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>}</div>
 </div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="keywordtype">bool</span> TransactionExecutor::IsStop() { <span class="keywordflow">return</span> stop_; }</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="foldopen" id="foldopen00083" data-start="{" data-end="}">
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">   83</a></span>uint64_t <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">TransactionExecutor::GetMaxPendingExecutedSeq</a>() {</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordflow">return</span> next_execute_seq_ - 1;</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>}</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="keywordtype">bool</span> TransactionExecutor::IsStop() { <span class="keywordflow">return</span> stop_; }</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
+<div class="foldopen" id="foldopen00084" data-start="{" data-end="}">
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">   84</a></span>uint64_t <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">TransactionExecutor::GetMaxPendingExecutedSeq</a>() {</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  <span class="keywordflow">return</span> next_execute_seq_ - 1;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>}</div>
 </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
-<div class="foldopen" id="foldopen00087" data-start="{" data-end="}">
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">   87</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">TransactionExecutor::NeedResponse</a>() {</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>  <span class="keywordflow">return</span> transaction_manager_ == <span class="keyword">nullptr</span> ||</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>         transaction_manager_-&gt;NeedResponse();</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>}</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
+<div class="foldopen" id="foldopen00088" data-start="{" data-end="}">
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">   88</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">TransactionExecutor::NeedResponse</a>() {</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  <span class="keywordflow">return</span> transaction_manager_ == <span class="keyword">nullptr</span> ||</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>         transaction_manager_-&gt;NeedResponse();</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>}</div>
 </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="foldopen" id="foldopen00092" data-start="{" data-end="}">
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">   92</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">TransactionExecutor::Commit</a>(std::unique_ptr&lt;Request&gt; message) {</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">IncPendingExecute</a>();</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="comment">// LOG(ERROR)&lt;&lt;&quot;add out of order exe:&quot;&lt;&lt;message-&gt;seq()&lt;&lt;&quot; from</span></div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="comment">// proxy:&quot;&lt;&lt;message-&gt;proxy_id();</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    std::unique_ptr&lt;Request&gt; msg = std::make_unique&lt;Request&gt;(*message);</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    execute_OOO_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(msg));</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  }</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>}</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
+<div class="foldopen" id="foldopen00093" data-start="{" data-end="}">
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">   93</a></span><span class="keywordtype">int</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">TransactionExecutor::Commit</a>(std::unique_ptr&lt;Request&gt; message) {</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">IncPendingExecute</a>();</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="comment">// LOG(ERROR)&lt;&lt;&quot;add out of order exe:&quot;&lt;&lt;message-&gt;seq()&lt;&lt;&quot; from</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="comment">// proxy:&quot;&lt;&lt;message-&gt;proxy_id();</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    std::unique_ptr&lt;Request&gt; msg = std::make_unique&lt;Request&gt;(*message);</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    execute_OOO_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(msg));</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>}</div>
 </div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="keywordtype">void</span> TransactionExecutor::AddNewData(std::unique_ptr&lt;Request&gt; message) {</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  candidates_.insert(std::make_pair(message-&gt;seq(), std::move(message)));</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>}</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>std::unique_ptr&lt;Request&gt; TransactionExecutor::GetNextData() {</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  <span class="keywordflow">if</span> (candidates_.empty() || candidates_.begin()-&gt;first != next_execute_seq_) {</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  }</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  <span class="keyword">auto</span> <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a> = std::move(candidates_.begin()-&gt;second);</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="keywordflow">if</span> (pre_exec_func_) {</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    pre_exec_func_(<a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a>.get());</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>  }</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  candidates_.erase(candidates_.begin());</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a>;</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>}</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keywordtype">void</span> TransactionExecutor::OrderMessage() {</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    <span class="keyword">auto</span> message = commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <span class="keywordflow">if</span> (message != <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>      global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">IncExecute</a>();</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>      uint64_t seq = message-&gt;seq();</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>      <span class="keywordflow">if</span> (next_execute_seq_ &gt; seq) {</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>        <span class="comment">// LOG(INFO) &lt;&lt; &quot;request seq:&quot; &lt;&lt; seq &lt;&lt; &quot; has been executed&quot;</span></div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>                  <span class="comment">// &lt;&lt; &quot; next seq:&quot; &lt;&lt; next_execute_seq_;</span></div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>        <span class="keywordflow">continue</span>;</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>      }</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>      AddNewData(std::move(message));</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    }</div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span> </div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    <span class="keywordflow">while</span> (!IsStop()) {</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>      std::unique_ptr&lt;Request&gt; message = GetNextData();</div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>      <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>        <span class="keywordflow">break</span>;</div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>      }</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>      execute_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>      next_execute_seq_++;</div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>      <span class="keywordflow">if</span> (seq_update_notify_func_) {</div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>        seq_update_notify_func_(next_execute_seq_);</div>
-<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>      }</div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>    }</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>  }</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>  <span class="keywordflow">return</span>;</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>}</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span><span class="keywordtype">void</span> TransactionExecutor::ExecuteMessage() {</div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>    <span class="keyword">auto</span> message = execute_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    }</div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <span class="keywordtype">bool</span> need_execute = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>    <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>      need_execute = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>    }</div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    Execute(std::move(message), need_execute);</div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>  }</div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>}</div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span> </div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="keywordtype">void</span> TransactionExecutor::ExecuteMessageOutOfOrder() {</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    <span class="keyword">auto</span> message = execute_OOO_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>      <span class="keywordflow">continue</span>;</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>    }</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    OnlyExecute(std::move(message));</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>  }</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>}</div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span> </div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span><span class="keywordtype">void</span> TransactionExecutor::OnlyExecute(std::unique_ptr&lt;Request&gt; request) {</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>  <span class="comment">// Only Execute the request.</span></div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>  BatchUserRequest batch_request;</div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>  <span class="keywordflow">if</span> (!batch_request.ParseFromString(request-&gt;data())) {</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>  }</div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>  batch_request.set_seq(request-&gt;seq());</div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>  batch_request.set_hash(request-&gt;hash());</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  batch_request.set_proxy_id(request-&gt;proxy_id());</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  <span class="keywordflow">if</span> (request-&gt;has_committed_certs()) {</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>    *batch_request.mutable_committed_certs() = request-&gt;committed_certs();</div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>  }</div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>  <span class="comment">// LOG(INFO) &lt;&lt; &quot; get request batch size:&quot;</span></div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>  <span class="comment">//          &lt;&lt; batch_request.user_requests_size()&lt;&lt;&quot; proxy</span></div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>  <span class="comment">//          id:&quot;&lt;&lt;request-&gt;proxy_id();</span></div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>  <span class="comment">// std::unique_ptr&lt;BatchUserResponse&gt; batch_response =</span></div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>  <span class="comment">//     std::make_unique&lt;BatchUserResponse&gt;();</span></div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>  std::unique_ptr&lt;BatchUserResponse&gt; response;</div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>  <span class="keywordflow">if</span> (transaction_manager_) {</div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    response = transaction_manager_-&gt;ExecuteBatch(batch_request);</div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>  }</div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span> </div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>  <span class="comment">// global_stats_-&gt;IncTotalRequest(batch_request.user_requests_size());</span></div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  <span class="comment">// global_stats_-&gt;IncExecuteDone();</span></div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>}</div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span><span class="keywordtype">void</span> TransactionExecutor::Execute(std::unique_ptr&lt;Request&gt; request,</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>                                  <span class="keywordtype">bool</span> need_execute) {</div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>  <span class="comment">// Execute the request, then send the response back to the user.</span></div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>  BatchUserRequest batch_request;</div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>  <span class="keywordflow">if</span> (!batch_request.ParseFromString(request-&gt;data())) {</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>  }</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>  batch_request.set_seq(request-&gt;seq());</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  batch_request.set_hash(request-&gt;hash());</div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>  batch_request.set_proxy_id(request-&gt;proxy_id());</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>  <span class="keywordflow">if</span> (request-&gt;has_committed_certs()) {</div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    *batch_request.mutable_committed_certs() = request-&gt;committed_certs();</div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>  }</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span> </div>
-<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>  <span class="comment">// LOG(INFO) &lt;&lt; &quot; get request batch size:&quot;</span></div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>  <span class="comment">//         &lt;&lt; batch_request.user_requests_size()&lt;&lt;&quot; proxy</span></div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>  <span class="comment">//         id:&quot;&lt;&lt;request-&gt;proxy_id()&lt;&lt;&quot; need execute:&quot;&lt;&lt;need_execute;</span></div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  <span class="comment">// std::unique_ptr&lt;BatchUserResponse&gt; batch_response =</span></div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>  <span class="comment">//     std::make_unique&lt;BatchUserResponse&gt;();</span></div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span> </div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>  std::unique_ptr&lt;BatchUserResponse&gt; response;</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; need_execute) {</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>    response = transaction_manager_-&gt;ExecuteBatch(batch_request);</div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>  }</div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span> </div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  duplicate_manager_-&gt;<a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#aaed3ced9a1b8001920041816e9469090">AddExecuted</a>(batch_request.hash(), batch_request.seq());</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span> </div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">IncTotalRequest</a>(batch_request.user_requests_size());</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  <span class="keywordflow">if</span> (response == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    response = std::make_unique&lt;BatchUserResponse&gt;();</div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  }</div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span> </div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>  response-&gt;set_createtime(batch_request.createtime());</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>  response-&gt;set_local_id(batch_request.local_id());</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>  response-&gt;set_hash(batch_request.hash());</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>  </div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>  post_exec_func_(std::move(request), std::move(response));</div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span> </div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">IncExecuteDone</a>();</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>}</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="keywordtype">void</span> TransactionExecutor::AddNewData(std::unique_ptr&lt;Request&gt; message) {</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  candidates_.insert(std::make_pair(message-&gt;seq(), std::move(message)));</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>}</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>std::unique_ptr&lt;Request&gt; TransactionExecutor::GetNextData() {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>  <span class="keywordflow">if</span> (candidates_.empty() || candidates_.begin()-&gt;first != next_execute_seq_) {</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  }</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>  <span class="keyword">auto</span> <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a> = std::move(candidates_.begin()-&gt;second);</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>  <span class="keywordflow">if</span> (pre_exec_func_) {</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    pre_exec_func_(<a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a>.get());</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  }</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  candidates_.erase(candidates_.begin());</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>  <span class="keywordflow">return</span> <a class="code hl_variable" href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">res</a>;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>}</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="keywordtype">void</span> TransactionExecutor::OrderMessage() {</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <span class="keyword">auto</span> message = commit_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    <span class="keywordflow">if</span> (message != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>      global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">IncExecute</a>();</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>      uint64_t seq = message-&gt;seq();</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>      <span class="keywordflow">if</span> (next_execute_seq_ &gt; seq) {</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>        <span class="comment">// LOG(INFO) &lt;&lt; &quot;request seq:&quot; &lt;&lt; seq &lt;&lt; &quot; has been executed&quot;</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>                  <span class="comment">// &lt;&lt; &quot; next seq:&quot; &lt;&lt; next_execute_seq_;</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>        <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>      }</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>      AddNewData(std::move(message));</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    }</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    <span class="keywordflow">while</span> (!IsStop()) {</div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>      std::unique_ptr&lt;Request&gt; message = GetNextData();</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>      <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>        <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>      }</div>
+<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>      execute_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">Push</a>(std::move(message));</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>      next_execute_seq_++;</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>      <span class="keywordflow">if</span> (seq_update_notify_func_) {</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>        seq_update_notify_func_(next_execute_seq_);</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>      }</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    }</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>  }</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>  <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>}</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span> </div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span><span class="keywordtype">void</span> TransactionExecutor::ExecuteMessage() {</div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    <span class="keyword">auto</span> message = execute_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    }</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>    <span class="keywordtype">bool</span> need_execute = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>    <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; transaction_manager_-&gt;IsOutOfOrder()) {</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>      need_execute = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    }</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>    Execute(std::move(message), need_execute);</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>  }</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>}</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span> </div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="keywordtype">void</span> TransactionExecutor::ExecuteMessageOutOfOrder() {</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>  <span class="keywordflow">while</span> (!IsStop()) {</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    <span class="keyword">auto</span> message = execute_OOO_queue_.<a class="code hl_function" href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">Pop</a>();</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keywordflow">if</span> (message == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>      <span class="keywordflow">continue</span>;</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    }</div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>    OnlyExecute(std::move(message));</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>  }</div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>}</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span><span class="keywordtype">void</span> TransactionExecutor::OnlyExecute(std::unique_ptr&lt;Request&gt; request) {</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>  <span class="comment">// Only Execute the request.</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>  BatchUserRequest batch_request;</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>  <span class="keywordflow">if</span> (!batch_request.ParseFromString(request-&gt;data())) {</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>  }</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>  batch_request.set_seq(request-&gt;seq());</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  batch_request.set_hash(request-&gt;hash());</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  batch_request.set_proxy_id(request-&gt;proxy_id());</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  <span class="keywordflow">if</span> (request-&gt;has_committed_certs()) {</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    *batch_request.mutable_committed_certs() = request-&gt;committed_certs();</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>  }</div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span> </div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>  <span class="comment">// LOG(INFO) &lt;&lt; &quot; get request batch size:&quot;</span></div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>  <span class="comment">//          &lt;&lt; batch_request.user_requests_size()&lt;&lt;&quot; proxy</span></div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>  <span class="comment">//          id:&quot;&lt;&lt;request-&gt;proxy_id();</span></div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>  <span class="comment">// std::unique_ptr&lt;BatchUserResponse&gt; batch_response =</span></div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>  <span class="comment">//     std::make_unique&lt;BatchUserResponse&gt;();</span></div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span> </div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>  std::unique_ptr&lt;BatchUserResponse&gt; response;</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>  <span class="keywordflow">if</span> (transaction_manager_) {</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    response = transaction_manager_-&gt;ExecuteBatch(batch_request);</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>  }</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span> </div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>  <span class="comment">// global_stats_-&gt;IncTotalRequest(batch_request.user_requests_size());</span></div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>  <span class="comment">// global_stats_-&gt;IncExecuteDone();</span></div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>}</div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span> </div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span><span class="keywordtype">void</span> TransactionExecutor::Execute(std::unique_ptr&lt;Request&gt; request,</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>                                  <span class="keywordtype">bool</span> need_execute) {</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>  <span class="comment">// Execute the request, then send the response back to the user.</span></div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>  BatchUserRequest batch_request;</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>  <span class="keywordflow">if</span> (!batch_request.ParseFromString(request-&gt;data())) {</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;parse data fail&quot;</span>;</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>  }</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  batch_request.set_seq(request-&gt;seq());</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>  batch_request.set_hash(request-&gt;hash());</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>  batch_request.set_proxy_id(request-&gt;proxy_id());</div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>  <span class="keywordflow">if</span> (request-&gt;has_committed_certs()) {</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>    *batch_request.mutable_committed_certs() = request-&gt;committed_certs();</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>  }</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>  <span class="comment">// LOG(INFO) &lt;&lt; &quot; get request batch size:&quot;</span></div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>  <span class="comment">//         &lt;&lt; batch_request.user_requests_size()&lt;&lt;&quot; proxy</span></div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  <span class="comment">//         id:&quot;&lt;&lt;request-&gt;proxy_id()&lt;&lt;&quot; need execute:&quot;&lt;&lt;need_execute;</span></div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>  <span class="comment">// std::unique_ptr&lt;BatchUserResponse&gt; batch_response =</span></div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  <span class="comment">//     std::make_unique&lt;BatchUserResponse&gt;();</span></div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span> </div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  std::unique_ptr&lt;BatchUserResponse&gt; response;</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>  <span class="keywordflow">if</span> (transaction_manager_ &amp;&amp; need_execute) {</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    response = transaction_manager_-&gt;ExecuteBatch(batch_request);</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>  }</div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span> </div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>  <span class="keywordflow">if</span>(duplicate_manager_){</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    duplicate_manager_-&gt;<a class="code hl_function" href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">AddExecuted</a>(batch_request.hash(), batch_request.seq());</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  }</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span> </div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">IncTotalRequest</a>(batch_request.user_requests_size());</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>  <span class="keywordflow">if</span> (response == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>    response = std::make_unique&lt;BatchUserResponse&gt;();</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>  }</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span> </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>  response-&gt;set_createtime(batch_request.createtime());</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>  response-&gt;set_local_id(batch_request.local_id());</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>  response-&gt;set_hash(batch_request.hash());</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>  </div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  post_exec_func_(std::move(request), std::move(response));</div>
 <div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
-<div class="foldopen" id="foldopen00245" data-start="{" data-end="}">
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">  245</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">TransactionExecutor::SetDuplicateManager</a>(<a class="code hl_class" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a>* manager){</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  duplicate_manager_ = manager;</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>}</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>  global_stats_-&gt;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">IncExecuteDone</a>();</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>}</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
+<div class="foldopen" id="foldopen00248" data-start="{" data-end="}">
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno"><a class="line" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">  248</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">TransactionExecutor::SetDuplicateManager</a>(<a class="code hl_class" href="../../d6/da0/classresdb_1_1DuplicateManager.html">DuplicateManager</a>* manager){</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>  duplicate_manager_ = manager;</div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>}</div>
 </div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span> </div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html">resdb::DuplicateManager</a></div><div class="ttdef"><b>Definition</b> <a href="../../d7/dd0/duplicate__manager_8h_source.html#l00039">duplicate_manager.h:39</a></div></div>
-<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_aaed3ced9a1b8001920041816e9469090"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#aaed3ced9a1b8001920041816e9469090">resdb::DuplicateManager::AddExecuted</a></div><div class="ttdeci">void AddExecuted(std::string hash, uint64_t seq)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00056">duplicate_manager.cpp:56</a></div></div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span> </div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html">resdb::DuplicateManager</a></div><div class="ttdef"><b>Definition</b> <a href="../../d7/dd0/duplicate__manager_8h_source.html#l00041">duplicate_manager.h:41</a></div></div>
+<div class="ttc" id="aclassresdb_1_1DuplicateManager_html_a284c912374deb68fc40693048e51d85a"><div class="ttname"><a href="../../d6/da0/classresdb_1_1DuplicateManager.html#a284c912374deb68fc40693048e51d85a">resdb::DuplicateManager::AddExecuted</a></div><div class="ttdeci">void AddExecuted(const std::string &amp;hash, uint64_t seq)</div><div class="ttdef"><b>Definition</b> <a href="../../df/dd5/duplicate__manager_8cpp_source.html#l00071">duplicate_manager.cpp:71</a></div></div>
 <div class="ttc" id="aclassresdb_1_1LockFreeQueue_html_a31109d24473eb39492d0c1ae959d0444"><div class="ttname"><a href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a31109d24473eb39492d0c1ae959d0444">resdb::LockFreeQueue::Push</a></div><div class="ttdeci">void Push(std::unique_ptr&lt; T &gt; data)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dc3/lock__free__queue_8h_source.html#l00041">lock_free_queue.h:41</a></div></div>
 <div class="ttc" id="aclassresdb_1_1LockFreeQueue_html_a411d447bf97a1628f11174d1d406d806"><div class="ttname"><a href="../../da/dd3/classresdb_1_1LockFreeQueue.html#a411d447bf97a1628f11174d1d406d806">resdb::LockFreeQueue::Pop</a></div><div class="ttdeci">std::unique_ptr&lt; T &gt; Pop(int timeout_ms=100)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dc3/lock__free__queue_8h_source.html#l00058">lock_free_queue.h:58</a></div></div>
 <div class="ttc" id="aclassresdb_1_1ResDBConfig_html"><div class="ttname"><a href="../../db/ddb/classresdb_1_1ResDBConfig.html">resdb::ResDBConfig</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d9a/resdb__config_8h_source.html#l00034">resdb_config.h:34</a></div></div>
@@ -379,20 +382,20 @@ $(document).ready(function(){initNavTree('d7/d24/transaction__executor_8cpp_sour
 <div class="ttc" id="aclassresdb_1_1Stats_html_a98133da01bbf496e220d7a62682c7afb"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">resdb::Stats::IncPendingExecute</a></div><div class="ttdeci">void IncPendingExecute()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00256">stats.cpp:256</a></div></div>
 <div class="ttc" id="aclassresdb_1_1Storage_html"><div class="ttname"><a href="../../d2/d14/classresdb_1_1Storage.html">resdb::Storage</a></div><div class="ttdef"><b>Definition</b> <a href="../../d8/d6b/storage_8h_source.html#l00032">storage.h:32</a></div></div>
 <div class="ttc" id="aclassresdb_1_1SystemInfo_html"><div class="ttname"><a href="../../d9/d27/classresdb_1_1SystemInfo.html">resdb::SystemInfo</a></div><div class="ttdef"><b>Definition</b> <a href="../../d2/d50/system__info_8h_source.html#l00037">system_info.h:37</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a090b64bc32c131d70a296e580fa3649c"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">resdb::TransactionExecutor::GetMaxPendingExecutedSeq</a></div><div class="ttdeci">uint64_t GetMaxPendingExecutedSeq()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00083">transaction_executor.cpp:83</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a1bb0c406fdb0817e29996a67e6e4c787"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">resdb::TransactionExecutor::~TransactionExecutor</a></div><div class="ttdeci">~TransactionExecutor()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00054">transaction_executor.cpp:54</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a090b64bc32c131d70a296e580fa3649c"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a090b64bc32c131d70a296e580fa3649c">resdb::TransactionExecutor::GetMaxPendingExecutedSeq</a></div><div class="ttdeci">uint64_t GetMaxPendingExecutedSeq()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00084">transaction_executor.cpp:84</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a1bb0c406fdb0817e29996a67e6e4c787"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bb0c406fdb0817e29996a67e6e4c787">resdb::TransactionExecutor::~TransactionExecutor</a></div><div class="ttdeci">~TransactionExecutor()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00055">transaction_executor.cpp:55</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a1bcfacc40f458986e634081d367c4b20"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a1bcfacc40f458986e634081d367c4b20">resdb::TransactionExecutor::TransactionExecutor</a></div><div class="ttdeci">TransactionExecutor(const ResDBConfig &amp;config, PostExecuteFunc post_exec_func, SystemInfo *system_info, std::unique_ptr&lt; TransactionManager &gt; transaction_manager)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00032">transaction_executor.cpp:32</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a283b962690108a1385ae038c2d81141d"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">resdb::TransactionExecutor::SetDuplicateManager</a></div><div class="ttdeci">void SetDuplicateManager(DuplicateManager *manager)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00245">transaction_executor.cpp:245</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a3b6aab58f6f0647c393b20a719bff7d4"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">resdb::TransactionExecutor::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00056">transaction_executor.cpp:56</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a3fd2e8afff02e8c55c5fda9beec3a9e7"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">resdb::TransactionExecutor::NeedResponse</a></div><div class="ttdeci">bool NeedResponse()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00087">transaction_executor.cpp:87</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a283b962690108a1385ae038c2d81141d"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a283b962690108a1385ae038c2d81141d">resdb::TransactionExecutor::SetDuplicateManager</a></div><div class="ttdeci">void SetDuplicateManager(DuplicateManager *manager)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00248">transaction_executor.cpp:248</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a3b6aab58f6f0647c393b20a719bff7d4"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3b6aab58f6f0647c393b20a719bff7d4">resdb::TransactionExecutor::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00057">transaction_executor.cpp:57</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a3fd2e8afff02e8c55c5fda9beec3a9e7"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a3fd2e8afff02e8c55c5fda9beec3a9e7">resdb::TransactionExecutor::NeedResponse</a></div><div class="ttdeci">bool NeedResponse()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00088">transaction_executor.cpp:88</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a611ce0a2cc0cacc5b2894c9862c745cf"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a611ce0a2cc0cacc5b2894c9862c745cf">resdb::TransactionExecutor::SeqUpdateNotifyFunc</a></div><div class="ttdeci">std::function&lt; void(uint64_t seq)&gt; SeqUpdateNotifyFunc</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/transaction__executor_8h_source.html#l00047">transaction_executor.h:47</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a8362ad75caf7b727aa2ea0e763d70b01"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">resdb::TransactionExecutor::SetPreExecuteFunc</a></div><div class="ttdeci">void SetPreExecuteFunc(PreExecuteFunc func)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00073">transaction_executor.cpp:73</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_aa2cb31010b591f79383027918784795c"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">resdb::TransactionExecutor::GetStorage</a></div><div class="ttdeci">Storage * GetStorage()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00069">transaction_executor.cpp:69</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_a8362ad75caf7b727aa2ea0e763d70b01"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#a8362ad75caf7b727aa2ea0e763d70b01">resdb::TransactionExecutor::SetPreExecuteFunc</a></div><div class="ttdeci">void SetPreExecuteFunc(PreExecuteFunc func)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00074">transaction_executor.cpp:74</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_aa2cb31010b591f79383027918784795c"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#aa2cb31010b591f79383027918784795c">resdb::TransactionExecutor::GetStorage</a></div><div class="ttdeci">Storage * GetStorage()</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00070">transaction_executor.cpp:70</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_ab3e79822f7f10906f57ab33d4ce97ca0"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ab3e79822f7f10906f57ab33d4ce97ca0">resdb::TransactionExecutor::PreExecuteFunc</a></div><div class="ttdeci">std::function&lt; void(Request *)&gt; PreExecuteFunc</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/transaction__executor_8h_source.html#l00046">transaction_executor.h:46</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_abdcf4b2d634e3ce26f383fd07b35b907"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">resdb::TransactionExecutor::SetSeqUpdateNotifyFunc</a></div><div class="ttdeci">void SetSeqUpdateNotifyFunc(SeqUpdateNotifyFunc func)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00077">transaction_executor.cpp:77</a></div></div>
-<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_ad420d6234095f3e9ebb70e424ecfdc56"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">resdb::TransactionExecutor::Commit</a></div><div class="ttdeci">int Commit(std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00092">transaction_executor.cpp:92</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_abdcf4b2d634e3ce26f383fd07b35b907"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#abdcf4b2d634e3ce26f383fd07b35b907">resdb::TransactionExecutor::SetSeqUpdateNotifyFunc</a></div><div class="ttdeci">void SetSeqUpdateNotifyFunc(SeqUpdateNotifyFunc func)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00078">transaction_executor.cpp:78</a></div></div>
+<div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_ad420d6234095f3e9ebb70e424ecfdc56"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#ad420d6234095f3e9ebb70e424ecfdc56">resdb::TransactionExecutor::Commit</a></div><div class="ttdeci">int Commit(std::unique_ptr&lt; Request &gt; request)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d24/transaction__executor_8cpp_source.html#l00093">transaction_executor.cpp:93</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionExecutor_html_af9aec46034e4178fa11e07f9dea6ae02"><div class="ttname"><a href="../../da/dfa/classresdb_1_1TransactionExecutor.html#af9aec46034e4178fa11e07f9dea6ae02">resdb::TransactionExecutor::PostExecuteFunc</a></div><div class="ttdeci">std::function&lt; void(std::unique_ptr&lt; Request &gt;, std::unique_ptr&lt; BatchUserResponse &gt; resp)&gt; PostExecuteFunc</div><div class="ttdef"><b>Definition</b> <a href="../../db/d8c/transaction__executor_8h_source.html#l00045">transaction_executor.h:45</a></div></div>
-<div class="ttc" id="acommitment__test_8cpp_html_a2e378ae4a550d2861bd568d217b338b9"><div class="ttname"><a href="../../d5/d74/commitment__test_8cpp.html#a2e378ae4a550d2861bd568d217b338b9">system_info_</a></div><div class="ttdeci">SystemInfo system_info_</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d74/commitment__test_8cpp_source.html#l00120">commitment_test.cpp:120</a></div></div>
+<div class="ttc" id="acommitment__test_8cpp_html_a2e378ae4a550d2861bd568d217b338b9"><div class="ttname"><a href="../../d5/d74/commitment__test_8cpp.html#a2e378ae4a550d2861bd568d217b338b9">system_info_</a></div><div class="ttdeci">SystemInfo system_info_</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d74/commitment__test_8cpp_source.html#l00127">commitment_test.cpp:127</a></div></div>
 <div class="ttc" id="anamespaceaddr_html_ac3f2d0ba2693edf985878b19b8a93a7b"><div class="ttname"><a href="../../d2/dd8/namespaceaddr.html#ac3f2d0ba2693edf985878b19b8a93a7b">addr.res</a></div><div class="ttdeci">res</div><div class="ttdef"><b>Definition</b> <a href="../../da/d4d/addr_8py_source.html#l00030">addr.py:30</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>
 <div class="ttc" id="aresdb__state__accessor__test_8cpp_html_a4b1f98004f89e2582b05ad244479770e"><div class="ttname"><a href="../../db/ddf/resdb__state__accessor__test_8cpp.html#a4b1f98004f89e2582b05ad244479770e">config_</a></div><div class="ttdeci">std::unique_ptr&lt; ResDBConfig &gt; config_</div><div class="ttdef"><b>Definition</b> <a href="../../db/ddf/resdb__state__accessor__test_8cpp_source.html#l00079">resdb_state_accessor_test.cpp:79</a></div></div>

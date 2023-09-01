@@ -1,0 +1,6 @@
+var searchData=
+[
+  ['history_0',['history',['../d4/d23/md__2github_2workspace_2node__modules_2glob-gitignore_2HISTORY.html',1,'History'],['../dc/dd2/md__2github_2workspace_2node__modules_2util_8inherits_2HISTORY.html',1,'History']]],
+  ['href_20https_3a_20travis_20ci_20org_20sindresorhus_20path_20is_20absolute_20img_20src_20https_3a_20travis_20ci_20org_20sindresorhus_20path_20is_20absolute_20svg_20branch_20master_20alt_20build_20status_20a_1',['path-is-absolute &lt;a href=&quot;https://travis-ci.org/sindresorhus/path-is-absolute&quot; &gt;&lt;img src=&quot;https://travis-ci.org/sindresorhus/path-is-absolute.svg?branch=master&quot; alt=&quot;Build Status&quot;/&gt;&lt;/a&gt;',['../d8/d5a/md__2github_2workspace_2node__modules_2path-is-absolute_2readme.html',1,'']]],
+  ['https_3a_20travis_20ci_20org_20sindresorhus_20path_20is_20absolute_20img_20src_20https_3a_20travis_20ci_20org_20sindresorhus_20path_20is_20absolute_20svg_20branch_20master_20alt_20build_20status_20a_2',['path-is-absolute &lt;a href=&quot;https://travis-ci.org/sindresorhus/path-is-absolute&quot; &gt;&lt;img src=&quot;https://travis-ci.org/sindresorhus/path-is-absolute.svg?branch=master&quot; alt=&quot;Build Status&quot;/&gt;&lt;/a&gt;',['../d8/d5a/md__2github_2workspace_2node__modules_2path-is-absolute_2readme.html',1,'']]]
+];

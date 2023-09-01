@@ -152,21 +152,20 @@ $(document).ready(function(){initNavTree('d1/d14/transaction__manager_8cpp_sourc
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keyword">const</span> BatchUserRequest&amp; request) {</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  std::unique_ptr&lt;BatchUserResponse&gt; batch_response =</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>      std::make_unique&lt;BatchUserResponse&gt;();</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; sub_request : request.user_requests()) {</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    std::unique_ptr&lt;std::string&gt; response =</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>        <a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">ExecuteData</a>(sub_request.request().data());</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordflow">if</span> (response == <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>      response = std::make_unique&lt;std::string&gt;();</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    }</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    batch_response-&gt;add_response()-&gt;swap(*response);</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  }</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  <span class="keywordflow">return</span> batch_response;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; sub_request : request.user_requests()) {</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    std::unique_ptr&lt;std::string&gt; response =</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        <a class="code hl_function" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">ExecuteData</a>(sub_request.request().data());</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordflow">if</span> (response == <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      response = std::make_unique&lt;std::string&gt;();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    }</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    batch_response-&gt;add_response()-&gt;swap(*response);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  }</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  <span class="keywordflow">return</span> batch_response;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>}</div>
 </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aclassresdb_1_1TransactionManager_html_a2052d912a5ff5488106cf3af32ca66b6"><div class="ttname"><a href="../../df/d01/classresdb_1_1TransactionManager.html#a2052d912a5ff5488106cf3af32ca66b6">resdb::TransactionManager::TransactionManager</a></div><div class="ttdeci">TransactionManager(bool is_out_of_order=false, bool need_response=true)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d14/transaction__manager_8cpp_source.html#l00032">transaction_manager.cpp:32</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionManager_html_a59e2a453cd7534781a1535c882af50e8"><div class="ttname"><a href="../../df/d01/classresdb_1_1TransactionManager.html#a59e2a453cd7534781a1535c882af50e8">resdb::TransactionManager::ExecuteBatch</a></div><div class="ttdeci">virtual std::unique_ptr&lt; BatchUserResponse &gt; ExecuteBatch(const BatchUserRequest &amp;request)</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d14/transaction__manager_8cpp_source.html#l00044">transaction_manager.cpp:44</a></div></div>
 <div class="ttc" id="aclassresdb_1_1TransactionManager_html_ac314189b56cc00ea67255df26fde171d"><div class="ttname"><a href="../../df/d01/classresdb_1_1TransactionManager.html#ac314189b56cc00ea67255df26fde171d">resdb::TransactionManager::NeedResponse</a></div><div class="ttdeci">bool NeedResponse()</div><div class="ttdef"><b>Definition</b> <a href="../../d1/d14/transaction__manager_8cpp_source.html#l00037">transaction_manager.cpp:37</a></div></div>

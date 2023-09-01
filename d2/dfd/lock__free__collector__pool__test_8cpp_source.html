@@ -151,7 +151,7 @@ $(document).ready(function(){initNavTree('d2/dfd/lock__free__collector__pool__te
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordflow">return</span> collector-&gt;AddRequest(</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        std::make_unique&lt;Request&gt;(request), SignatureInfo(), <span class="keyword">false</span>,</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>        [](<span class="keyword">const</span> Request&amp;, <span class="keywordtype">int</span>, <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>*,</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>           std::atomic&lt;TransactionStatue&gt;*) {});</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>           std::atomic&lt;TransactionStatue&gt;*, <span class="keywordtype">bool</span>) {});</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  }</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>};</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>

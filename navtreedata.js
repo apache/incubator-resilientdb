@@ -67,13 +67,13 @@ var NAVTREEINDEX =
 "d1/d66/custom__query_8h_source.html",
 "d3/d5e/classresdb_1_1ReplicaCommunicator.html#aeeebc36ed04f78d5a75ae56adb8cabeb",
 "d4/dbb/classresdb_1_1KVClient.html#aaed2de9ab574fb16bf6da111e5afbc77",
-"d6/dff/contract__tools_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627",
-"d8/d54/namespacecalculate__result.html#a4e5a360bbed73492f4946a8ddb62739b",
-"da/d19/classresdb_1_1ConsensusManager.html#a6ee5d408e5db8134290afa5dbe162568",
-"db/dc1/async__acceptor__test_8cpp_source.html",
-"dc/db0/classresdb_1_1CheckPointManager.html#aee51af13557dd31e832534cbd2e94cb3",
-"de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb",
-"df/d98/checkpoint__manager_8cpp_source.html"
+"d6/dff/contract__tools_8cpp.html",
+"d8/d54/namespacecalculate__result.html",
+"da/d19/classresdb_1_1ConsensusManager.html#a5d13be9749d0960aab81fef99500b3c7",
+"db/da7/batch__queue_8h_source.html",
+"dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7",
+"de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf",
+"df/d98/checkpoint__manager_8cpp.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

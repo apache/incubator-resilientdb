@@ -150,7 +150,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                           <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>                           [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>                               <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                               std::atomic&lt;TransactionStatue&gt;* status) {}),</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>                               std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {}),</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      -2);</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>}</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
@@ -181,7 +181,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>                           <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>                           [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>                               <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>                               std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>                               std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>                             EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>                             EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>                             EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -209,7 +209,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -228,7 +228,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -258,7 +258,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -279,7 +279,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -301,7 +301,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -324,7 +324,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>                    EXPECT_EQ(received_count, 2);</div>
 <div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -347,7 +347,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>                    EXPECT_EQ(*status, TransactionStatue::Prepare);</div>
@@ -369,7 +369,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>                    EXPECT_EQ(received_count, 3);</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>                    EXPECT_EQ(*status, TransactionStatue::Prepare);</div>
@@ -400,7 +400,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -420,7 +420,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">true</span>,</div>
 <div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -444,7 +444,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>                    EXPECT_EQ(received_count, 2);</div>
 <div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>                    EXPECT_EQ(*status, TransactionStatue::None);</div>
@@ -467,7 +467,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>                    EXPECT_EQ(received_count, 1);</div>
 <div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>                    EXPECT_EQ(*status, TransactionStatue::Prepare);</div>
@@ -489,7 +489,7 @@ $(document).ready(function(){initNavTree('d8/dcf/transaction__collector__test_8c
 <div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>                  <span class="comment">/* is_main_request =*/</span><span class="keyword">false</span>,</div>
 <div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>                  [&amp;](<span class="keyword">const</span> Request&amp; request, <span class="keywordtype">int</span> received_count,</div>
 <div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>                      <a class="code hl_typedef" href="../../d7/d95/classresdb_1_1TransactionCollector.html#ab3d0f2bed3225bc3356e528d2d26a28d">TransactionCollector::CollectorDataType</a>* <a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>,</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>                      std::atomic&lt;TransactionStatue&gt;* status) {</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>                      std::atomic&lt;TransactionStatue&gt;* status, <span class="keywordtype">bool</span>) {</div>
 <div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>                    EXPECT_THAT(request, EqualsProto(expect_request));</div>
 <div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>                    EXPECT_EQ(received_count, 3);</div>
 <div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>                    EXPECT_EQ(*status, TransactionStatue::Prepare);</div>
