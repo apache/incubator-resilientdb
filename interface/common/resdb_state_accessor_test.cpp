@@ -93,11 +93,9 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   EXPECT_CALL(client, GetNetChannel)
       .Times(1)
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
-        LOG(ERROR)<<"get channel:"<<ip<<port;
         auto client = std::make_unique<MockNetChannel>(ip, port);
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-              LOG(ERROR)<<"recv message:";
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));

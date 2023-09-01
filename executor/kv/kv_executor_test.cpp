@@ -28,9 +28,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "chain/storage/mock_storage.h"
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
-#include "chain/storage/mock_storage.h"
 
 namespace resdb {
 namespace {
@@ -38,6 +38,7 @@ namespace {
 using ::testing::Return;
 using ::testing::Invoke;
 using ::testing::Test;
+
 class KVExecutorTest : public Test {
  public:
   KVExecutorTest() {
