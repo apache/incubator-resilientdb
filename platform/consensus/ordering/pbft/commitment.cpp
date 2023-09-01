@@ -71,7 +71,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
-  if (uint64_t seq = duplicate_manager_->CheckIfExecuted(user_request->hash())) {
+  if (uint64_t seq =
+          duplicate_manager_->CheckIfExecuted(user_request->hash())) {
     LOG(ERROR) << "This request is already executed with seq: " << seq;
     user_request->set_seq(seq);
     message_manager_->SendResponse(std::move(user_request));
@@ -84,28 +85,29 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << " seq:" << user_request->seq()
     //            << " hash:" << user_request->hash();
     replica_communicator_->SendMessage(*user_request,
-                                  message_manager_->GetCurrentPrimary());
+                                       message_manager_->GetCurrentPrimary());
     {
       std::lock_guard<std::mutex> lk(rc_mutex_);
-      request_complained_.push(std::make_pair(std::move(context), std::move(user_request)));
+      request_complained_.push(
+          std::make_pair(std::move(context), std::move(user_request)));
     }
-    
+
     return -3;
   }
 
   /*
-  if(SignatureVerifier::CalculateHash(user_request->data()) != user_request->hash()){
-    LOG(ERROR) << "the hash and data of the user request don't match, reject";
-    return -2;
+  if(SignatureVerifier::CalculateHash(user_request->data()) !=
+  user_request->hash()){ LOG(ERROR) << "the hash and data of the user request
+  don't match, reject"; return -2;
   }
   */
 
   // check signatures
-  bool valid =
-        verifier_->VerifyMessage(user_request->data(), user_request->data_signature());
+  bool valid = verifier_->VerifyMessage(user_request->data(),
+                                        user_request->data_signature());
   if (!valid) {
     LOG(ERROR) << "request is not valid:"
-              << user_request->data_signature().DebugString();
+               << user_request->data_signature().DebugString();
     LOG(ERROR) << " msg:" << user_request->data().size();
     return -2;
   }
@@ -117,14 +119,12 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 
   global_stats_->IncClientRequest();
   if (duplicate_manager_->CheckAndAddProposed(user_request->hash())) {
-    LOG(ERROR)<<"duplicate check fail:";
+    LOG(ERROR) << "duplicate check fail:";
     return -2;
   }
   auto seq = message_manager_->AssignNextSeq();
 
   // Artificially make the primary stop proposing new trasactions.
-  
-
 
   if (!seq.ok()) {
     duplicate_manager_->EraseProposed(user_request->hash());
@@ -135,7 +135,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     request.set_proxy_id(user_request->proxy_id());
     request.set_ret(-2);
     request.set_hash(user_request->hash());
-    
+
     replica_communicator_->SendMessage(request, request.proxy_id());
     return -2;
   }
@@ -173,13 +173,13 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
 
-/*
-  if(request->hash() != "null" + std::to_string(request->seq()) 
-      && SignatureVerifier::CalculateHash(request->data()) != request->hash()) {
-    LOG(ERROR) << "the hash and data of the request don't match, reject";
-    return -2;
-  }
-  */
+  /*
+    if(request->hash() != "null" + std::to_string(request->seq())
+        && SignatureVerifier::CalculateHash(request->data()) != request->hash())
+    { LOG(ERROR) << "the hash and data of the request don't match, reject";
+      return -2;
+    }
+    */
 
   if (request->sender_id() != config_.GetSelfInfo().id()) {
     if (pre_verify_func_ && !pre_verify_func_(*request)) {
@@ -200,7 +200,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
       LOG(ERROR) << " msg:" << request->data().size();
       return -2;
     }
-    if (duplicate_manager_->CheckAndAddProposed(request->hash())){
+    if (duplicate_manager_->CheckAndAddProposed(request->hash())) {
       LOG(INFO) << "The request is already proposed, reject";
       return -2;
     }
@@ -244,7 +244,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {
-    if (message_manager_->GetHighestPreparedSeq() < seq_){
+    if (message_manager_->GetHighestPreparedSeq() < seq_) {
       message_manager_->SetHighestPreparedSeq(seq_);
     }
     // If need qc, sign the data
@@ -307,7 +307,7 @@ int Commitment::PostProcessExecutedMsg() {
   return 0;
 }
 
-DuplicateManager* Commitment::GetDuplicateManager(){
+DuplicateManager* Commitment::GetDuplicateManager() {
   return duplicate_manager_.get();
 }
 

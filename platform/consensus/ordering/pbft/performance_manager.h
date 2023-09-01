@@ -25,9 +25,10 @@
 
 #pragma once
 
+#include <semaphore.h>
+
 #include <future>
 #include <queue>
-#include <semaphore.h>
 
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/lock_free_collector_pool.h"
@@ -37,16 +38,15 @@
 
 namespace resdb {
 
-class PerformanceClientTimeout{
-public:
-    PerformanceClientTimeout(std::string hash_, uint64_t time_);
-    PerformanceClientTimeout(const PerformanceClientTimeout& other);
-    bool operator<(const PerformanceClientTimeout& other) const;
+class PerformanceClientTimeout {
+ public:
+  PerformanceClientTimeout(std::string hash_, uint64_t time_);
+  PerformanceClientTimeout(const PerformanceClientTimeout& other);
+  bool operator<(const PerformanceClientTimeout& other) const;
 
-    std::string hash;
-    uint64_t timeout_time;
+  std::string hash;
+  uint64_t timeout_time;
 };
-
 
 class PerformanceManager {
  public:

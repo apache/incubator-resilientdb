@@ -25,13 +25,13 @@
 
 #include <glog/logging.h>
 
+#include "chain/state/chain_state.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
 #include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
 #include "proto/kv/kv.pb.h"
-#include "chain/state/chain_state.h"
 
 using namespace resdb;
 

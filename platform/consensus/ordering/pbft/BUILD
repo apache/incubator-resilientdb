@@ -88,10 +88,10 @@ cc_library(
         "//common/utils",
         "//platform/common/queue:batch_queue",
         "//platform/config:resdb_config",
+        "//platform/consensus/execution:duplicate_manager",
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
-        "//platform/consensus/execution:duplicate_manager",
     ],
 )
 
@@ -116,13 +116,13 @@ cc_library(
         ":transaction_utils",
         "//chain/storage:txn_memory_db",
         "//common/crypto:signature_verifier",
+        "//interface/common:resdb_txn_accessor",
         "//platform/config:resdb_config",
         "//platform/consensus/checkpoint",
+        "//platform/consensus/execution:transaction_executor",
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
-        "//interface/common:resdb_txn_accessor",
-        "//platform/consensus/execution:transaction_executor",
     ],
 )
 

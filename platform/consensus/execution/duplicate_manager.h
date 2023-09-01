@@ -27,19 +27,20 @@
 
 #include <stdint.h>
 #include <unistd.h>
+
 #include <map>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <set>
 #include <thread>
-#include <mutex>
 
 #include "platform/config/resdb_config.h"
 
 namespace resdb {
 
-class DuplicateManager{
-public:
+class DuplicateManager {
+ public:
   DuplicateManager(const ResDBConfig& config);
   ~DuplicateManager();
 
@@ -53,10 +54,10 @@ public:
   bool CheckAndAddExecuted(const std::string& hash, uint64_t seq);
   void UpdateRecentHash();
 
-private:
-    bool IsStop();
+ private:
+  bool IsStop();
 
-private:
+ private:
   ResDBConfig config_;
   std::set<std::string> proposed_hash_set_;
   std::set<std::string> executed_hash_set_;
@@ -66,10 +67,9 @@ private:
   std::thread update_thread_;
   std::mutex prop_mutex_;
   std::mutex exec_mutex_;
-  uint64_t frequency_useconds_ = 5000000; // 5s
-  uint64_t window_useconds_ = 20000000; // 20s
+  uint64_t frequency_useconds_ = 5000000;  // 5s
+  uint64_t window_useconds_ = 20000000;    // 20s
   bool stop_ = false;
 };
-
 
 }  // namespace resdb

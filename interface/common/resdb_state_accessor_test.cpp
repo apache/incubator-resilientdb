@@ -93,11 +93,9 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   EXPECT_CALL(client, GetNetChannel)
       .Times(1)
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
-        LOG(ERROR)<<"get channel:"<<ip<<port;
         auto client = std::make_unique<MockNetChannel>(ip, port);
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-              LOG(ERROR)<<"recv message:";
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
@@ -107,17 +105,15 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   EXPECT_TRUE(ret.ok());
   std::set<int> results;
   for (auto& state : *ret) {
-    auto it =
-        std::find_if(replicas_.begin(), replicas_.end(),
-                     [&](const ReplicaInfo& info) {
-                       return MessageDifferencer::Equals(info, state.replica_info());
-                     });
+    auto it = std::find_if(
+        replicas_.begin(), replicas_.end(), [&](const ReplicaInfo& info) {
+          return MessageDifferencer::Equals(info, state.replica_info());
+        });
     EXPECT_TRUE(it != replicas_.end());
     results.insert(it - replicas_.begin());
   }
   EXPECT_EQ(results.size(), 4);
 }
-
 
 }  // namespace
 

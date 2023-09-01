@@ -25,11 +25,11 @@
 
 #include <glog/logging.h>
 
+#include "chain/state/chain_state.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
-#include "chain/state/chain_state.h"
 #ifdef ENABLE_LEVELDB
 #include "chain/storage/res_leveldb.h"
 #endif
@@ -44,7 +44,7 @@ void ShowUsage() {
 }
 
 std::unique_ptr<ChainState> NewState(const std::string& cert_file,
-                                    const ResConfigData& config_data) {
+                                     const ResConfigData& config_data) {
   std::unique_ptr<Storage> storage = nullptr;
 
 #ifdef ENABLE_ROCKSDB
@@ -56,7 +56,8 @@ std::unique_ptr<ChainState> NewState(const std::string& cert_file,
   storage = NewResLevelDB(cert_file.c_str(), config_data);
   LOG(INFO) << "use leveldb storage.";
 #endif
-  std::unique_ptr<ChainState> state  = std::make_unique<ChainState>(std::move(storage));
+  std::unique_ptr<ChainState> state =
+      std::make_unique<ChainState>(std::move(storage));
   return state;
 }
 

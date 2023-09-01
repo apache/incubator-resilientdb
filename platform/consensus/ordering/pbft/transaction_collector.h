@@ -72,7 +72,7 @@ class AtomicUniquePtr {
     return ptr_.get();
   }
 
-  void Clear(){
+  void Clear() {
     v_ = 0;
     ptr_ = nullptr;
   }
@@ -105,13 +105,13 @@ class TransactionCollector {
 
   // Add a message and count by its hash value.
   // After it is done call_back will be triggered.
-  int AddRequest(std::unique_ptr<Request> request,
-                 const SignatureInfo& signature, bool is_main_request,
-                 std::function<void(const Request&, int received_count,
-                                    CollectorDataType* data,
-                                    std::atomic<TransactionStatue>* status, 
-                                    bool force)>
-                     call_back);
+  int AddRequest(
+      std::unique_ptr<Request> request, const SignatureInfo& signature,
+      bool is_main_request,
+      std::function<void(const Request&, int received_count,
+                         CollectorDataType* data,
+                         std::atomic<TransactionStatue>* status, bool force)>
+          call_back);
 
   std::vector<RequestInfo> GetPreparedProof();
   TransactionStatue GetStatus() const;

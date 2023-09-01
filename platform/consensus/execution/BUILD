@@ -24,6 +24,7 @@ cc_library(
     srcs = ["transaction_executor.cpp"],
     hdrs = ["transaction_executor.h"],
     deps = [
+        ":duplicate_manager",
         ":system_info",
         "//common:comm",
         "//executor/common:transaction_manager",
@@ -31,7 +32,6 @@ cc_library(
         "//platform/config:resdb_config",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
-        ":duplicate_manager",
     ],
 )
 
@@ -101,7 +101,6 @@ cc_test(
         "//platform/networkstrate:mock_replica_communicator",
     ],
 )
-
 
 cc_library(
     name = "duplicate_manager",

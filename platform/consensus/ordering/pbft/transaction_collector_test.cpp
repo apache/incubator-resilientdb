@@ -43,13 +43,13 @@ TEST(TransactionCollectorTest, SeqError) {
   std::unique_ptr<Request> request = std::make_unique<Request>();
   SignatureInfo signature;
 
-  EXPECT_EQ(
-      collector.AddRequest(std::move(request), signature,
-                           /* is_main_request =*/true,
-                           [&](const Request& request, int received_count,
-                               TransactionCollector::CollectorDataType* data,
-                               std::atomic<TransactionStatue>* status, bool) {}),
-      -2);
+  EXPECT_EQ(collector.AddRequest(
+                std::move(request), signature,
+                /* is_main_request =*/true,
+                [&](const Request& request, int received_count,
+                    TransactionCollector::CollectorDataType* data,
+                    std::atomic<TransactionStatue>* status, bool) {}),
+            -2);
 }
 
 TEST(TransactionCollectorTest, AddContextList) {

@@ -29,9 +29,9 @@
 #include <optional>
 #include <unordered_map>
 
+#include "chain/state/chain_state.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
-#include "chain/state/chain_state.h"
 
 namespace resdb {
 

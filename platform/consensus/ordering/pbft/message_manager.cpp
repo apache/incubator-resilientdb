@@ -25,9 +25,9 @@
 
 #include "platform/consensus/ordering/pbft/message_manager.h"
 
-#include "common/utils/utils.h"
-
 #include <glog/logging.h>
+
+#include "common/utils/utils.h"
 
 namespace resdb {
 
@@ -51,7 +51,8 @@ MessageManager::MessageManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             resp_msg->set_primary_id(GetCurrentPrimary());
-            if (transaction_executor_->NeedResponse() && resp_msg->proxy_id() != 0) {
+            if (transaction_executor_->NeedResponse() &&
+                resp_msg->proxy_id() != 0) {
               queue_.Push(std::move(resp_msg));
             }
             if (checkpoint_manager_) {
@@ -99,7 +100,8 @@ absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   global_stats_->SeqGap(next_seq_ - max_executed_seq);
   if (next_seq_ - max_executed_seq >
       static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
-    // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " << max_executed_seq;
+    // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " <<
+    // max_executed_seq;
     return absl::InvalidArgumentError("Seq has been used up.");
   }
   return next_seq_++;
@@ -133,7 +135,8 @@ bool MessageManager::IsValidMsg(const Request& request) {
 }
 
 bool MessageManager::MayConsensusChangeStatus(
-    int type, int received_count, std::atomic<TransactionStatue>* status, bool ret) {
+    int type, int received_count, std::atomic<TransactionStatue>* status,
+    bool ret) {
   switch (type) {
     case Request::TYPE_PRE_PREPARE:
       if (*status == TransactionStatue::None) {
@@ -191,10 +194,9 @@ CollectorResultCode MessageManager::AddConsensusMsg(
           resp_received_count = 1;
         }
       });
-  if (ret == 1){
+  if (ret == 1) {
     SetLastCommittedTime(proxy_id);
-  }
-  else if (ret != 0) {
+  } else if (ret != 0) {
     return CollectorResultCode::INVALID;
   }
   if (resp_received_count > 0) {
@@ -270,12 +272,13 @@ void MessageManager::SetHighestPreparedSeq(uint64_t seq) {
   return checkpoint_manager_->SetHighestPreparedSeq(seq);
 }
 
-void MessageManager::SetDuplicateManager(DuplicateManager *manager) {
+void MessageManager::SetDuplicateManager(DuplicateManager* manager) {
   transaction_executor_->SetDuplicateManager(manager);
 }
 
 void MessageManager::SendResponse(std::unique_ptr<Request> request) {
-  std::unique_ptr<BatchUserResponse> response = std::make_unique<BatchUserResponse>();
+  std::unique_ptr<BatchUserResponse> response =
+      std::make_unique<BatchUserResponse>();
   response->set_createtime(GetCurrentTime());
   // response->set_local_id(batch_request.local_id());
   response->set_hash(request->hash());
@@ -291,6 +294,5 @@ void MessageManager::SendResponse(std::unique_ptr<Request> request) {
 LockFreeCollectorPool* MessageManager::GetCollectorPool() {
   return collector_pool_.get();
 }
-
 
 }  // namespace resdb

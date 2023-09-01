@@ -25,17 +25,18 @@
 
 #pragma once
 
+#include <semaphore.h>
+
 #include "chain/storage/txn_memory_db.h"
 #include "common/crypto/signature_verifier.h"
+#include "interface/common/resdb_txn_accessor.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/checkpoint/checkpoint.h"
+#include "platform/consensus/execution/transaction_executor.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/checkpoint_info.pb.h"
 #include "platform/proto/resdb.pb.h"
-#include "interface/common/resdb_txn_accessor.h"
-#include "platform/consensus/execution/transaction_executor.h"
-#include <semaphore.h>
 
 namespace resdb {
 
@@ -68,9 +69,7 @@ class CheckPointManager : public CheckPoint {
   void WaitSignal();
   std::unique_ptr<std::pair<uint64_t, std::string>> PopStableSeqHash();
 
-  void SetExecutor(TransactionExecutor* executor){
-    executor_ = executor;
-  }
+  void SetExecutor(TransactionExecutor* executor) { executor_ = executor; }
 
   uint64_t GetHighestPreparedSeq();
 
@@ -83,9 +82,9 @@ class CheckPointManager : public CheckPoint {
  private:
   void UpdateCheckPointStatus();
   void UpdateStableCheckPointStatus();
-  void BroadcastCheckPoint(uint64_t seq, const std::string& hash, 
-                            const std::vector<std::string>& stable_hashs, 
-                            const std::vector<uint64_t>& stable_seqs);
+  void BroadcastCheckPoint(uint64_t seq, const std::string& hash,
+                           const std::vector<std::string>& stable_hashs,
+                           const std::vector<uint64_t>& stable_seqs);
 
   void Notify();
   bool Wait();

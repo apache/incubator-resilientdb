@@ -33,7 +33,6 @@
 #include "common/test/test_macros.h"
 #include "executor/common/mock_transaction_manager.h"
 
-
 namespace resdb {
 namespace {
 

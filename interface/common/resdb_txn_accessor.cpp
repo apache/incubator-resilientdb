@@ -151,6 +151,6 @@ absl::StatusOr<std::vector<Request>> ResDBTxnAccessor::GetRequestFromReplica(
     txn_resp.push_back(transaction);
   }
   return txn_resp;
- }
+}
 
 }  // namespace resdb
