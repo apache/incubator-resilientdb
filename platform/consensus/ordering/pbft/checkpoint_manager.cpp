@@ -104,7 +104,7 @@ bool CheckPointManager::IsValidCheckpointProof(
     }
     senders.insert(signature.node_id());
   }
-  
+
   return (senders.size() >= config_.GetMinDataReceiveNum()) ||
          (stable_ckpt.seq() == 0 && senders.size() == 0);
 }
@@ -145,9 +145,11 @@ int CheckPointManager::ProcessCheckPoint(std::unique_ptr<Context> context,
           .push_back(checkpoint_data.hash_signature());
       new_data_++;
     }
-    if (sender_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())].size() == 1) {
-      for(auto &hash_: checkpoint_data.hashs()){
-          hash_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())].push_back(hash_);
+    if (sender_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())]
+            .size() == 1) {
+      for (auto& hash_ : checkpoint_data.hashs()) {
+        hash_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())]
+            .push_back(hash_);
       }
     }
     Notify();
@@ -180,30 +182,38 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       std::lock_guard<std::mutex> lk(mutex_);
       for (auto it : sender_ckpt_) {
         if (it.second.size() >=
-          static_cast<size_t>(config_.GetMinCheckpointReceiveNum())) {
+            static_cast<size_t>(config_.GetMinCheckpointReceiveNum())) {
           committable_seq_ = it.first.first;
           committable_hash_ = it.first.second;
-          std::set<uint32_t> senders_ = sender_ckpt_[std::make_pair(committable_seq_, committable_hash_)];
+          std::set<uint32_t> senders_ =
+              sender_ckpt_[std::make_pair(committable_seq_, committable_hash_)];
           sem_post(&committable_seq_signal_);
-          if (last_seq_ < committable_seq_ && last_committable_seq < committable_seq_){
+          if (last_seq_ < committable_seq_ &&
+              last_committable_seq < committable_seq_) {
             auto replicas_ = config_.GetReplicaInfos();
-            for(auto &replica_: replicas_){
+            for (auto& replica_ : replicas_) {
               std::string last_hash;
               uint64_t last_seq;
               {
                 std::lock_guard<std::mutex> lk(lt_mutex_);
                 last_hash = last_hash_;
-                // last_seq_ = last_seq > last_committable_seq ? last_seq : last_committable_seq;
+                // last_seq_ = last_seq > last_committable_seq ? last_seq :
+                // last_committable_seq;
                 last_seq = last_seq_;
               }
-              if(senders_.count(replica_.id()) && last_seq < committable_seq_){
-                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << " " << committable_seq_;
-                auto requests = txn_accessor_.GetRequestFromReplica(last_seq + 1, committable_seq_, replica_);
-                if(requests.ok()){
+              if (senders_.count(replica_.id()) &&
+                  last_seq < committable_seq_) {
+                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << "
+                // " << committable_seq_;
+                auto requests = txn_accessor_.GetRequestFromReplica(
+                    last_seq + 1, committable_seq_, replica_);
+                if (requests.ok()) {
                   bool fail = false;
-                  for (auto& request: *requests){
-                    if (SignatureVerifier::CalculateHash(request.data()) != request.hash()) {
-                      LOG(ERROR) << "The hash of the request does not match the data.";
+                  for (auto& request : *requests) {
+                    if (SignatureVerifier::CalculateHash(request.data()) !=
+                        request.hash()) {
+                      LOG(ERROR)
+                          << "The hash of the request does not match the data.";
                       fail = true;
                       break;
                     }
@@ -211,13 +221,12 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
                   }
                   if (fail) {
                     continue;
-                  }
-                  else if (last_hash != committable_hash_) {
-                    LOG(ERROR) << "The hash of requests returned do not match. " << last_seq + 1 << " " << committable_seq_;
-                  }
-                  else {
+                  } else if (last_hash != committable_hash_) {
+                    LOG(ERROR) << "The hash of requests returned do not match. "
+                               << last_seq + 1 << " " << committable_seq_;
+                  } else {
                     last_committable_seq = committable_seq_;
-                    for (auto& request: *requests) { 
+                    for (auto& request : *requests) {
                       if (executor_) {
                         executor_->Commit(std::make_unique<Request>(request));
                       }
@@ -230,8 +239,8 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
               }
             }
           }
-         }
-         if (it.second.size() >=
+        }
+        if (it.second.size() >=
             static_cast<size_t>(config_.GetMinDataReceiveNum())) {
           stable_seq = it.first.first;
           stable_hash = it.first.second;
@@ -241,12 +250,13 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
     }
 
     // LOG(ERROR) << "current stable seq:" << current_stable_seq_
-              //  << " stable seq:" << stable_seq;
+    //  << " stable seq:" << stable_seq;
     std::vector<SignatureInfo> votes;
     if (current_stable_seq_ < stable_seq) {
       std::lock_guard<std::mutex> lk(mutex_);
       votes = sign_ckpt_[std::make_pair(stable_seq, stable_hash)];
-      std::set<uint32_t> senders_ = sender_ckpt_[std::make_pair(stable_seq, stable_hash)];
+      std::set<uint32_t> senders_ =
+          sender_ckpt_[std::make_pair(stable_seq, stable_hash)];
 
       auto it = sender_ckpt_.begin();
       while (it != sender_ckpt_.end()) {
@@ -319,10 +329,10 @@ void CheckPointManager::UpdateCheckPointStatus() {
   return;
 }
 
-void CheckPointManager::BroadcastCheckPoint(uint64_t seq, 
-                                            const std::string& hash, 
-                                            const std::vector<std::string>& stable_hashs, 
-                                            const std::vector<uint64_t>& stable_seqs) {
+void CheckPointManager::BroadcastCheckPoint(
+    uint64_t seq, const std::string& hash,
+    const std::vector<std::string>& stable_hashs,
+    const std::vector<uint64_t>& stable_seqs) {
   CheckPointData checkpoint_data;
   std::unique_ptr<Request> checkpoint_request = NewRequest(
       Request::TYPE_CHECKPOINT, Request(), config_.GetSelfInfo().id());
@@ -341,12 +351,13 @@ void CheckPointManager::BroadcastCheckPoint(uint64_t seq,
   replica_communicator_->BroadCast(*checkpoint_request);
 }
 
-void CheckPointManager::WaitSignal(){
+void CheckPointManager::WaitSignal() {
   std::unique_lock<std::mutex> lk(mutex_);
-  signal_.wait(lk, [&]{ return !stable_hash_queue_.Empty(); });
+  signal_.wait(lk, [&] { return !stable_hash_queue_.Empty(); });
 }
 
-std::unique_ptr<std::pair<uint64_t, std::string>> CheckPointManager::PopStableSeqHash(){
+std::unique_ptr<std::pair<uint64_t, std::string>>
+CheckPointManager::PopStableSeqHash() {
   return stable_hash_queue_.Pop();
 }
 

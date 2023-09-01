@@ -30,10 +30,10 @@
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"
+#include "platform/consensus/execution/duplicate_manager.h"
 #include "platform/consensus/execution/system_info.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
-#include "platform/consensus/execution/duplicate_manager.h"
 
 namespace resdb {
 
@@ -101,7 +101,7 @@ class TransactionExecutor {
   LockFreeQueue<Request> commit_queue_, execute_queue_, execute_OOO_queue_;
   std::atomic<bool> stop_;
   Stats* global_stats_ = nullptr;
-  DuplicateManager *duplicate_manager_;
+  DuplicateManager* duplicate_manager_;
 };
 
 }  // namespace resdb

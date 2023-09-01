@@ -103,7 +103,7 @@ class MessageManager {
   Storage* GetStorage();
 
   void SetLastCommittedTime(uint64_t proxy_id);
-  
+
   uint64_t GetLastCommittedTime(uint64_t proxy_id);
 
   bool IsPreapared(uint64_t seq);
@@ -112,7 +112,7 @@ class MessageManager {
 
   void SetHighestPreparedSeq(uint64_t seq);
 
-  void SetDuplicateManager(DuplicateManager *manager);
+  void SetDuplicateManager(DuplicateManager* manager);
 
   void SendResponse(std::unique_ptr<Request> request);
 
@@ -122,7 +122,8 @@ class MessageManager {
   bool IsValidMsg(const Request& request);
 
   bool MayConsensusChangeStatus(int type, int received_count,
-                                std::atomic<TransactionStatue>* status, bool force);
+                                std::atomic<TransactionStatue>* status,
+                                bool force);
 
  private:
   ResDBConfig config_;
@@ -144,7 +145,6 @@ class MessageManager {
 
   std::mutex lct_lock_;
   std::map<uint64_t, uint64_t> last_committed_time_;
-
 };
 
 }  // namespace resdb

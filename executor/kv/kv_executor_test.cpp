@@ -35,8 +35,8 @@
 namespace resdb {
 namespace {
 
-using ::testing::Return;
 using ::testing::Invoke;
+using ::testing::Return;
 using ::testing::Test;
 
 class KVExecutorTest : public Test {
@@ -44,7 +44,8 @@ class KVExecutorTest : public Test {
   KVExecutorTest() {
     auto mock_storage = std::make_unique<MockStorage>();
     mock_storage_ptr_ = mock_storage.get();
-    impl_ = std::make_unique<KVExecutor>(std::make_unique<ChainState>(std::move(mock_storage)));
+    impl_ = std::make_unique<KVExecutor>(
+        std::make_unique<ChainState>(std::move(mock_storage)));
   }
 
   int Set(const std::string& key, const std::string& value) {
@@ -130,17 +131,17 @@ class KVExecutorTest : public Test {
 };
 
 TEST_F(KVExecutorTest, SetValue) {
-  std::map<std::string,std::string> data;
+  std::map<std::string, std::string> data;
 
   EXPECT_CALL(*mock_storage_ptr_, SetValue("test_key", "test_value"))
-      .WillOnce(Invoke([&](const std::string& key, const std::string& value){
+      .WillOnce(Invoke([&](const std::string& key, const std::string& value) {
         data[key] = value;
         return 0;
       }));
 
   EXPECT_CALL(*mock_storage_ptr_, GetValue("test_key"))
-      .WillOnce(Invoke([&](const std::string& key){
-         std::string ret = data[key];
+      .WillOnce(Invoke([&](const std::string& key) {
+        std::string ret = data[key];
         return ret;
       }));
 

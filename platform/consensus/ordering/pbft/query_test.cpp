@@ -48,15 +48,15 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
 
-ResDBConfig GenerateConfig(){
+ResDBConfig GenerateConfig() {
   ResConfigData config_data;
   config_data.set_view_change_timeout_ms(100);
 
   return ResDBConfig({GenerateReplicaInfo(1, "127.0.0.1", 1234),
-                 GenerateReplicaInfo(2, "127.0.0.1", 1235),
-                 GenerateReplicaInfo(3, "127.0.0.1", 1236),
-                 GenerateReplicaInfo(4, "127.0.0.1", 1237)},
-                GenerateReplicaInfo(1, "127.0.0.1", 1234), config_data);
+                      GenerateReplicaInfo(2, "127.0.0.1", 1235),
+                      GenerateReplicaInfo(3, "127.0.0.1", 1236),
+                      GenerateReplicaInfo(4, "127.0.0.1", 1237)},
+                     GenerateReplicaInfo(1, "127.0.0.1", 1234), config_data);
 }
 
 class QueryTest : public Test {
@@ -165,7 +165,8 @@ TEST_F(QueryTest, QueryState) {
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);
-  EXPECT_CALL(*channel, SendRawMessage(EqualsProtoNoConfigData(replica_state))).Times(1);
+  EXPECT_CALL(*channel, SendRawMessage(EqualsProtoNoConfigData(replica_state)))
+      .Times(1);
 
   auto context = std::make_unique<Context>();
   context->client = std::move(channel);

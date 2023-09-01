@@ -31,20 +31,22 @@
 
 namespace resdb {
 
-PerformanceClientTimeout::PerformanceClientTimeout(std::string hash_, uint64_t time_){
-    this->hash = hash_;
-    this->timeout_time = time_;
+PerformanceClientTimeout::PerformanceClientTimeout(std::string hash_,
+                                                   uint64_t time_) {
+  this->hash = hash_;
+  this->timeout_time = time_;
 }
 
-PerformanceClientTimeout::PerformanceClientTimeout(const PerformanceClientTimeout& other){
-    this->hash = other.hash;
-    this->timeout_time = other.timeout_time;
+PerformanceClientTimeout::PerformanceClientTimeout(
+    const PerformanceClientTimeout& other) {
+  this->hash = other.hash;
+  this->timeout_time = other.timeout_time;
 }
 
-bool PerformanceClientTimeout::operator<(const PerformanceClientTimeout& other) const{
-    return timeout_time > other.timeout_time;
+bool PerformanceClientTimeout::operator<(
+    const PerformanceClientTimeout& other) const {
+  return timeout_time > other.timeout_time;
 }
-
 
 PerformanceManager::PerformanceManager(
     const ResDBConfig& config, ReplicaCommunicator* replica_communicator,
@@ -70,14 +72,15 @@ PerformanceManager::PerformanceManager(
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
   }
-  
-  checking_timeout_thread_ = std::thread(&PerformanceManager::MonitoringClientTimeOut, this);
+
+  checking_timeout_thread_ =
+      std::thread(&PerformanceManager::MonitoringClientTimeOut, this);
   global_stats_ = Stats::GetGlobalStats();
-  for (size_t i = 0; i <= config_.GetReplicaNum(); i++){
+  for (size_t i = 0; i <= config_.GetReplicaNum(); i++) {
     send_num_.push_back(0);
   }
   total_num_ = 0;
-  timeout_length_ = 10000000; // 10s
+  timeout_length_ = 10000000;  // 10s
 }
 
 PerformanceManager::~PerformanceManager() {
@@ -152,9 +155,9 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   if (ret == CollectorResultCode::STATE_CHANGED) {
     BatchUserResponse batch_response;
     if (batch_response.ParseFromString(response->data())) {
-      if(seq > highest_seq_){
+      if (seq > highest_seq_) {
         highest_seq_ = seq;
-        if(highest_seq_primary_id_ != primary_id){
+        if (highest_seq_primary_id_ != primary_id) {
           system_info_->SetPrimary(primary_id);
           highest_seq_primary_id_ = primary_id;
         }
@@ -229,7 +232,7 @@ void PerformanceManager::SendResponseToClient(
   }
   {
     // std::lock_guard<std::mutex> lk(mutex_);
-    if(send_num_[batch_response.primary_id()] > 0){
+    if (send_num_[batch_response.primary_id()] > 0) {
       send_num_[batch_response.primary_id()]--;
     }
   }
@@ -330,48 +333,53 @@ int PerformanceManager::DoBatch(
   return 0;
 }
 
-void PerformanceManager::AddWaitingResponseRequest(std::unique_ptr<Request> request){
-  if(!config_.GetConfigData().enable_viewchange()){
+void PerformanceManager::AddWaitingResponseRequest(
+    std::unique_ptr<Request> request) {
+  if (!config_.GetConfigData().enable_viewchange()) {
     return;
   }
   pm_lock_.lock();
   uint64_t time = GetCurrentTime() + this->timeout_length_;
-  client_timeout_min_heap_.push(PerformanceClientTimeout(request->hash(), time));
-  waiting_response_batches_.insert(make_pair(request->hash(), std::move(request)));
+  client_timeout_min_heap_.push(
+      PerformanceClientTimeout(request->hash(), time));
+  waiting_response_batches_.insert(
+      make_pair(request->hash(), std::move(request)));
   pm_lock_.unlock();
   sem_post(&request_sent_signal_);
 }
 
-void PerformanceManager::RemoveWaitingResponseRequest(std::string hash){
-  if(!config_.GetConfigData().enable_viewchange()){
+void PerformanceManager::RemoveWaitingResponseRequest(std::string hash) {
+  if (!config_.GetConfigData().enable_viewchange()) {
     return;
   }
   pm_lock_.lock();
-  if(waiting_response_batches_.find(hash) != waiting_response_batches_.end()){
+  if (waiting_response_batches_.find(hash) != waiting_response_batches_.end()) {
     waiting_response_batches_.erase(waiting_response_batches_.find(hash));
   }
   pm_lock_.unlock();
 }
 
-bool PerformanceManager::CheckTimeOut(std::string hash){
+bool PerformanceManager::CheckTimeOut(std::string hash) {
   pm_lock_.lock();
-  bool value = (waiting_response_batches_.find(hash) != waiting_response_batches_.end());
+  bool value =
+      (waiting_response_batches_.find(hash) != waiting_response_batches_.end());
   pm_lock_.unlock();
   return value;
 }
 
-std::unique_ptr<Request> PerformanceManager::GetTimeOutRequest(std::string hash){
+std::unique_ptr<Request> PerformanceManager::GetTimeOutRequest(
+    std::string hash) {
   pm_lock_.lock();
   auto value = std::move(waiting_response_batches_.find(hash)->second);
   pm_lock_.unlock();
   return value;
 }
 
-void PerformanceManager::MonitoringClientTimeOut(){
-  while(!stop_){
+void PerformanceManager::MonitoringClientTimeOut() {
+  while (!stop_) {
     sem_wait(&request_sent_signal_);
     pm_lock_.lock();
-    if(client_timeout_min_heap_.empty()){
+    if (client_timeout_min_heap_.empty()) {
       pm_lock_.unlock();
       continue;
     }
@@ -379,13 +387,13 @@ void PerformanceManager::MonitoringClientTimeOut(){
     client_timeout_min_heap_.pop();
     pm_lock_.unlock();
 
-    if(client_timeout.timeout_time > GetCurrentTime()){
+    if (client_timeout.timeout_time > GetCurrentTime()) {
       usleep(client_timeout.timeout_time - GetCurrentTime());
     }
 
-    if(CheckTimeOut(client_timeout.hash)){
+    if (CheckTimeOut(client_timeout.hash)) {
       auto request = GetTimeOutRequest(client_timeout.hash);
-      if(request){
+      if (request) {
         LOG(ERROR) << "Client Request Timeout " << client_timeout.hash;
         replica_communicator_->BroadCast(*request);
       }

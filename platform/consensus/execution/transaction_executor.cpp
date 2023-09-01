@@ -40,7 +40,7 @@ TransactionExecutor::TransactionExecutor(
       commit_queue_("order"),
       execute_queue_("execute"),
       stop_(false),
-      duplicate_manager_(nullptr){
+      duplicate_manager_(nullptr) {
   global_stats_ = Stats::GetGlobalStats();
   ordering_thread_ = std::thread(&TransactionExecutor::OrderMessage, this);
   execute_thread_ = std::thread(&TransactionExecutor::ExecuteMessage, this);
@@ -128,7 +128,7 @@ void TransactionExecutor::OrderMessage() {
       uint64_t seq = message->seq();
       if (next_execute_seq_ > seq) {
         // LOG(INFO) << "request seq:" << seq << " has been executed"
-                  // << " next seq:" << next_execute_seq_;
+        // << " next seq:" << next_execute_seq_;
         continue;
       }
 
@@ -227,7 +227,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
 
-  if(duplicate_manager_){
+  if (duplicate_manager_) {
     duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());
   }
 
@@ -239,13 +239,13 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_createtime(batch_request.createtime());
   response->set_local_id(batch_request.local_id());
   response->set_hash(batch_request.hash());
-  
+
   post_exec_func_(std::move(request), std::move(response));
 
   global_stats_->IncExecuteDone();
 }
 
-void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager){
+void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
   duplicate_manager_ = manager;
 }
 

@@ -47,15 +47,14 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
 
-ResDBConfig GenerateConfig(){
+ResDBConfig GenerateConfig() {
   ResConfigData data;
   data.set_duplicate_check_frequency_useconds(100000);
   return ResDBConfig({GenerateReplicaInfo(1, "127.0.0.1", 1234),
-      GenerateReplicaInfo(2, "127.0.0.1", 1235),
-      GenerateReplicaInfo(3, "127.0.0.1", 1236),
-      GenerateReplicaInfo(4, "127.0.0.1", 1237)},
-      GenerateReplicaInfo(1, "127.0.0.1", 1234), data);
-
+                      GenerateReplicaInfo(2, "127.0.0.1", 1235),
+                      GenerateReplicaInfo(3, "127.0.0.1", 1236),
+                      GenerateReplicaInfo(4, "127.0.0.1", 1237)},
+                     GenerateReplicaInfo(1, "127.0.0.1", 1234), data);
 }
 
 class CommitmentTest : public Test {
@@ -199,15 +198,15 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
     auto context = std::make_unique<Context>();
     context->signature.set_signature("signature");
     Request request;
-    request.set_data("sig"+std::to_string(i));
-    request.set_hash("hash"+std::to_string(i));
+    request.set_data("sig" + std::to_string(i));
+    request.set_hash("hash" + std::to_string(i));
     if (i < 2) {
-      EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                               std::make_unique<Request>(request)),
+      EXPECT_EQ(commitment_->ProcessNewRequest(
+                    std::move(context), std::make_unique<Request>(request)),
                 0);
     } else {
-      EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                               std::make_unique<Request>(request)),
+      EXPECT_EQ(commitment_->ProcessNewRequest(
+                    std::move(context), std::make_unique<Request>(request)),
                 -2);
     }
   }

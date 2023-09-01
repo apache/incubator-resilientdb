@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <semaphore.h>
+
 #include "common/crypto/signature_verifier.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/system_info.h"
@@ -32,20 +34,16 @@
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/viewchange_message.pb.h"
-#include <semaphore.h>
 
 namespace resdb {
 
-enum ViewChangeTimerType{
-   TYPE_COMPLAINT,
-   TYPE_VIEWCHANGE,
-   TYPE_NEWVIEW
- };
+enum ViewChangeTimerType { TYPE_COMPLAINT, TYPE_VIEWCHANGE, TYPE_NEWVIEW };
 
- class ViewChangeTimeout {
+class ViewChangeTimeout {
  public:
-  ViewChangeTimeout(ViewChangeTimerType type, uint64_t view, uint64_t proxy_id, std::string hash,
-              uint64_t start_time, uint64_t timeout_length_)
+  ViewChangeTimeout(ViewChangeTimerType type, uint64_t view, uint64_t proxy_id,
+                    std::string hash, uint64_t start_time,
+                    uint64_t timeout_length_)
       : type(type),
         view(view),
         proxy_id(proxy_id),
@@ -59,25 +57,25 @@ enum ViewChangeTimerType{
   std::string hash;
   uint64_t start_time;
   uint64_t timeout_time;
-  
 
-  bool operator<(const ViewChangeTimeout& other) const{
+  bool operator<(const ViewChangeTimeout& other) const {
     return timeout_time > other.timeout_time;
   }
 };
 
 class ComplaningClients {
-  public:
+ public:
   ComplaningClients();
   ComplaningClients(uint64_t proxy_id);
-  std::shared_ptr<ViewChangeTimeout> SetComplaining(std::string hash, uint64_t view);
+  std::shared_ptr<ViewChangeTimeout> SetComplaining(std::string hash,
+                                                    uint64_t view);
   void ReleaseComplaining(std::string hash);
   void set_proxy_id(uint64_t proxy_id) { this->proxy_id = proxy_id; }
 
   uint CountViewChangeTimeout(std::string hash);
   void EraseViewChangeTimeout(std::string hash);
 
-  protected:
+ protected:
   uint64_t proxy_id;
   bool is_complaining;
   uint64_t timeout_length_;
@@ -153,7 +151,8 @@ class ViewChangeManager {
   sem_t timeout_cnt_;
   sem_t viewchange_timer_signal_;
   // LockFreeQueue<ViewChangeTimeout> timeout_info_queue;
-  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>> viewchange_timeout_min_heap_;
+  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>>
+      viewchange_timeout_min_heap_;
   std::map<uint64_t, ComplaningClients> complaining_clients_;
   std::atomic<bool> stop_;
   uint64_t timeout_length_ = 10000000;

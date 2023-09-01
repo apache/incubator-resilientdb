@@ -27,11 +27,11 @@
 
 #include "platform/common/queue/batch_queue.h"
 #include "platform/config/resdb_config.h"
+#include "platform/consensus/execution/duplicate_manager.h"
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/consensus/ordering/pbft/response_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/statistic/stats.h"
-#include "platform/consensus/execution/duplicate_manager.h"
 
 namespace resdb {
 
@@ -56,7 +56,7 @@ class Commitment {
   void SetNeedCommitQC(bool need_qc);
 
   std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
-       request_complained_;
+      request_complained_;
 
   std::mutex rc_mutex_;
 
