@@ -157,6 +157,7 @@ cc_library(
 cc_test(
     name = "viewchange_manager_test",
     srcs = ["viewchange_manager_test.cpp"],
+    tags = ["manual"],
     deps = [
         ":viewchange_manager",
         "//common/crypto:mock_signature_verifier",

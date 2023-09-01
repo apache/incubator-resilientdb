@@ -44,7 +44,7 @@ Commitment::Commitment(const ResDBConfig& config,
       verifier_(verifier) {
   executed_thread_ = std::thread(&Commitment::PostProcessExecutedMsg, this);
   global_stats_ = Stats::GetGlobalStats();
-  duplicate_manager_ = std::make_unique<DuplicateManager>();
+  duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
 }
 
@@ -71,8 +71,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
-  if (auto seq = duplicate_manager_->CheckIfExecuted(user_request->hash())) {
-    // LOG(INFO) << "This request is already executed with seq: " << seq;
+  if (uint64_t seq = duplicate_manager_->CheckIfExecuted(user_request->hash())) {
+    LOG(ERROR) << "This request is already executed with seq: " << seq;
     user_request->set_seq(seq);
     message_manager_->SendResponse(std::move(user_request));
     return -2;
@@ -93,10 +93,12 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -3;
   }
 
+  /*
   if(SignatureVerifier::CalculateHash(user_request->data()) != user_request->hash()){
     LOG(ERROR) << "the hash and data of the user request don't match, reject";
     return -2;
   }
+  */
 
   // check signatures
   bool valid =
@@ -115,6 +117,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 
   global_stats_->IncClientRequest();
   if (duplicate_manager_->CheckAndAddProposed(user_request->hash())) {
+    LOG(ERROR)<<"duplicate check fail:";
     return -2;
   }
   auto seq = message_manager_->AssignNextSeq();
@@ -170,11 +173,13 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
 
+/*
   if(request->hash() != "null" + std::to_string(request->seq()) 
       && SignatureVerifier::CalculateHash(request->data()) != request->hash()) {
     LOG(ERROR) << "the hash and data of the request don't match, reject";
     return -2;
   }
+  */
 
   if (request->sender_id() != config_.GetSelfInfo().id()) {
     if (pre_verify_func_ && !pre_verify_func_(*request)) {

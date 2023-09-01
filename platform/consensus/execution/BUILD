@@ -110,5 +110,6 @@ cc_library(
     deps = [
         "//common:comm",
         "//common/utils",
+        "//platform/config:resdb_config",
     ],
 )

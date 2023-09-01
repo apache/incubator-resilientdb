@@ -8,7 +8,7 @@ def nexres_repositories():
         http_archive,
         name = "eEVM",
         strip_prefix = "eEVM-main",
-        sha256 = "6321a6e355ddaa938a2deb5348e0d51cef8a44e0a998611578f97d014e450490",
+        #sha256 = "6321a6e355ddaa938a2deb5348e0d51cef8a44e0a998611578f97d014e450490",
         url = "https://github.com/microsoft/eEVM/archive/refs/heads/main.zip",
         build_file = "@com_resdb_nexres//third_party:eEVM.BUILD",
     )

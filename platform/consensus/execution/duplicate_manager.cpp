@@ -28,16 +28,31 @@
 
 #include "common/utils/utils.h"
 namespace resdb{
-  DuplicateManager::DuplicateManager(){
+  DuplicateManager::DuplicateManager(const ResDBConfig& config):config_(config){
+    if(config.GetConfigData().duplicate_check_frequency_useconds() > 0){
+      frequency_useconds_ = config.GetConfigData().duplicate_check_frequency_useconds();
+    }
+    stop_ = false;
     update_thread_ = std::thread(&DuplicateManager::UpdateRecentHash, this);
   }
 
-  bool DuplicateManager::CheckIfProposed(std::string hash) {
+  DuplicateManager::~DuplicateManager(){
+    stop_ = true;
+    if(update_thread_.joinable()){
+      update_thread_.join();
+    }
+  }
+
+  bool DuplicateManager::IsStop(){
+    return stop_;
+  }
+
+  bool DuplicateManager::CheckIfProposed(const std::string& hash) {
     std::lock_guard<std::mutex> lk(prop_mutex_);
     return proposed_hash_set_.find(hash) != proposed_hash_set_.end();
   }
 
-  uint64_t DuplicateManager::CheckIfExecuted(std::string hash){
+  uint64_t DuplicateManager::CheckIfExecuted(const std::string& hash){
     std::lock_guard<std::mutex> lk(exec_mutex_);
     if (executed_hash_set_.find(hash) != executed_hash_set_.end()) {
       return executed_hash_seq_[hash];
@@ -47,20 +62,20 @@ namespace resdb{
     }
   }
 
-  void DuplicateManager::AddProposed(std::string hash) {
+  void DuplicateManager::AddProposed(const std::string& hash) {
     std::lock_guard<std::mutex> lk(prop_mutex_);
     proposed_hash_time_queue_.push(std::make_pair(hash, GetCurrentTime()));
     proposed_hash_set_.insert(hash);
   }
 
-  void DuplicateManager::AddExecuted(std::string hash, uint64_t seq) {
+  void DuplicateManager::AddExecuted(const std::string& hash, uint64_t seq) {
     std::lock_guard<std::mutex> lk(exec_mutex_);
     executed_hash_time_queue_.push(std::make_pair(hash, GetCurrentTime()));
     executed_hash_set_.insert(hash);
     executed_hash_seq_[hash] = seq;
   }
 
-  bool DuplicateManager::CheckAndAddProposed(std::string hash){
+  bool DuplicateManager::CheckAndAddProposed(const std::string& hash){
     std::lock_guard<std::mutex> lk(prop_mutex_);
     if (proposed_hash_set_.find(hash) != proposed_hash_set_.end()) {
         return true;
@@ -70,7 +85,7 @@ namespace resdb{
     return false;
   }
 
-  bool DuplicateManager::CheckAndAddExecuted(std::string hash, uint64_t seq) {
+  bool DuplicateManager::CheckAndAddExecuted(const std::string& hash, uint64_t seq) {
     std::lock_guard<std::mutex> lk(exec_mutex_);
     if (executed_hash_set_.find(hash) != executed_hash_set_.end()) {
         return true;
@@ -81,12 +96,12 @@ namespace resdb{
     return false;
   }
 
-  void DuplicateManager::EraseProposed(std::string hash) {
+  void DuplicateManager::EraseProposed(const std::string& hash) {
     std::lock_guard<std::mutex> lk(prop_mutex_);
     proposed_hash_set_.erase(hash);
   }
 
-  void DuplicateManager::EraseExecuted(std::string hash) {
+  void DuplicateManager::EraseExecuted(const std::string& hash) {
     std::lock_guard<std::mutex> lk(exec_mutex_);
     executed_hash_set_.erase(hash);
     executed_hash_seq_.erase(hash);
@@ -94,7 +109,7 @@ namespace resdb{
 
   void DuplicateManager::UpdateRecentHash() {
     uint64_t time = GetCurrentTime();
-    while(true) {
+    while(!IsStop()) {
         time = time + frequency_useconds_;
         auto sleep_time = time - GetCurrentTime();
         usleep(sleep_time);

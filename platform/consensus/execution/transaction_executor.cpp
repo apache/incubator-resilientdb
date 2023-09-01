@@ -39,7 +39,8 @@ TransactionExecutor::TransactionExecutor(
       transaction_manager_(std::move(transaction_manager)),
       commit_queue_("order"),
       execute_queue_("execute"),
-      stop_(false) {
+      stop_(false),
+      duplicate_manager_(nullptr){
   global_stats_ = Stats::GetGlobalStats();
   ordering_thread_ = std::thread(&TransactionExecutor::OrderMessage, this);
   execute_thread_ = std::thread(&TransactionExecutor::ExecuteMessage, this);
@@ -226,7 +227,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
 
-  duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());
+  if(duplicate_manager_){
+    duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());
+  }
 
   global_stats_->IncTotalRequest(batch_request.user_requests_size());
   if (response == nullptr) {

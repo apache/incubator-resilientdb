@@ -25,3 +25,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: documents/doxygen/html
         cname: api.resilientdb.com
+

@@ -6,7 +6,6 @@ deploy/kv_server/output/
 bazel-*
 *.log
 *.bak
-node_modules/
 venv
 sdk_validator/venv
 __pycache__
