@@ -4,6 +4,7 @@
 ![GitHub](https://img.shields.io/github/license/resilientdb/resilientdb)
 ![Generated Button](https://raw.githubusercontent.com/resilientdb/resilientdb/image-data/badge.svg)
 ![build](https://github.com/resilientdb/resilientdb/workflows/bazel-build%20CI/badge.svg)
+![build](https://github.com/resilientdb/resilientdb/workflows/Unite%20Test/badge.svg)
 
 
 
