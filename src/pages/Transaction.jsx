@@ -1,7 +1,6 @@
 /*global chrome*/
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import '../App.css';
-import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 import { sendRequest } from '../client';
@@ -9,7 +8,6 @@ import React, { useEffect } from 'react';
 
 function Transaction(props) {
   const location = useLocation();
-  props.setFooter("footerLogin");
   var content;
 
   if (location.state.from === 'commit') {
@@ -306,7 +304,6 @@ const recipientPublicKey = location.state.recipientPublicKey !== null ? `"${loca
             <img src={logo} alt="logo" />
           </div>
           <div className="paymentTopKey vcenter">
-            <p className="publicKeyStyle" style={{color: 'white'}}><b>Account:</b> {location.state.publicKey}</p>
             <button className="buttonSignOut" data-inline="true" onClick={back}><ExitToAppIcon /></button>
           </div>
         </div>
@@ -321,7 +318,9 @@ const recipientPublicKey = location.state.recipientPublicKey !== null ? `"${loca
         <button className="buttonCreate center" data-inline="true" onClick={submit}> Submit </button>
       </div>
 
-      <Footer {...props} />
+      <div className="footerLogin">
+            <p className="special"><b>Account:</b> {location.state.publicKey}</p>
+      </div>
     </div>
   </div>
   )

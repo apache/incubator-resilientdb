@@ -1,13 +1,11 @@
 /*global chrome*/
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import '../App.css';
-import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 
 function Dashboard(props) {
   const location = useLocation();
-  props.setFooter("footerLogin");
   
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if ((msg.from === 'commit')) {
@@ -83,7 +81,6 @@ function Dashboard(props) {
             <img src={logo} alt="logo" />
           </div>
           <div className="paymentTopKey vcenter">
-            <p className="publicKeyStyle" style={{color: 'white'}}><b>Account:</b> {location.state.publicKey}</p>
             <button className="buttonSignOut" data-inline="true" onClick={back}><ExitToAppIcon /></button>
           </div>
         </div>
@@ -101,7 +98,9 @@ function Dashboard(props) {
         <button className="buttonCreate center" data-inline="true"> Submit </button>
       </div>
 
-      <Footer {...props} />
+      <div className="footerLogin">
+            <p className="special"><b>Account:</b> {location.state.publicKey}</p>
+      </div>
     </div>
   </div>
   )

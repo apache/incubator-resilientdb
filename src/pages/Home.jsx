@@ -1,8 +1,7 @@
 /*global chrome*/
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import '../App.css';
 import CryptoJS from "crypto-js";
-import Footer from "../components/Footer";
 import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
@@ -35,8 +34,12 @@ function Home(props) {
     });
   });
 
+  const inputStyles = {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    height: 50
+  };
+
   const alert = useAlert();
-  props.setFooter("footer");
 
   const salt = bcrypt.genSaltSync(10);
 
@@ -119,7 +122,7 @@ function Home(props) {
           className="inputStyle"
           value={props.values.password}
           disableUnderline
-          style={{ height: 50 }}
+          style={inputStyles}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -140,7 +143,7 @@ function Home(props) {
           className="inputStyle"
           value={props.confirmValues.password}
           disableUnderline
-          style={{ height: 50 }}
+          style={inputStyles}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -157,8 +160,6 @@ function Home(props) {
       <div className="payment vcenter">
       <button className="buttonCreate center" onClick={createAccount}>Create Account</button>
       </div>
-
-      <Footer {...props} />
     </div>
   </div>
   )

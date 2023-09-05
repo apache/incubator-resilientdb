@@ -1,7 +1,6 @@
 /*global chrome*/
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import '../App.css';
-import Footer from "../components/Footer";
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 import { useEffect } from 'react';
@@ -11,7 +10,6 @@ function Logs(props) {
   })
 
   const location = useLocation();
-  props.setFooter("footerLogin");
 
   const back = async () => {
     const store = location.state;
@@ -37,7 +35,6 @@ function Logs(props) {
             <img src={logo} alt="logo" />
           </div>
           <div className="paymentTopKey vcenter">
-            <p className="publicKeyStyle" style={{color: 'white'}}><b>Account ID:</b> {location.state.publicKey}</p>
             <button className="buttonSignOut" data-inline="true" onClick={back}><ExitToAppIcon /></button>
           </div>
         </div>
@@ -51,7 +48,9 @@ function Logs(props) {
         <button className="buttonCreate center" data-inline="true" onClick={dashboard}> Back </button>
       </div>
 
-      <Footer {...props} />
+      <div className="footerLogin">
+            <p className="special"><b>Account:</b> {location.state.publicKey}</p>
+      </div>
     </div>
   </div>
   )

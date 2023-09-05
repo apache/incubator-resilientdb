@@ -13,9 +13,11 @@ body{
   width: 350px;
   height: 520px;
   margin: 0 auto;
-  box-shadow:0 0 10px #2323;
   margin-top: 50px;
-  background:white;
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Ccircle cx='400' cy='400' r='600'/%3E%3Ccircle fill='%23230046' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f0052' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%233b075e' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%2348156a' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23527' cx='400' cy='400' r='100'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-size: cover;
+  box-shadow: inset 0 0 0 2000px rgba(91,118,200,.75);
 }
 .cardHolder {
   height: 240px;
@@ -58,8 +60,8 @@ body{
 }
 
 .logo img{
-  height: 100px;
-  margin-left: -10px;
+  margin-left: -96px;
+  width: 250px;
 }
 
 .card{
@@ -298,21 +300,8 @@ h5{
   outline: none;
   border-style: none;
   cursor: pointer;
-}
-
-.footer {
-  width: 100%;
-  background:linear-gradient(
-    to right,
-    #6480ef,
-    #7775e8,
-    #806ce8
-  );
-  color: white;
-  text-align: center;
-  margin-top: 45px;
-  padding: 15px 0;
-  text-align: center;
+  margin-top: -404px;
+  margin-left: 296px;
 }
 
 .footerLogin {
@@ -379,6 +368,7 @@ h5{
 .special {
   margin-top: 0rem;
   margin-bottom: 0rem;
+  font-size:10px;
 }
 
 .routing {

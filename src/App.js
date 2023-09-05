@@ -47,7 +47,6 @@ function App() {
     data,
     accountAddress,
     componentAddress,
-    footer,
     values,
     loginValues,
     confirmValues
@@ -64,7 +63,6 @@ function App() {
     setData,
     setAccountAddress,
     setComponentAddress,
-    setFooter,
     setValues,
     setLoginValues,
     setConfirmValues

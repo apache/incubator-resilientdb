@@ -1,8 +1,7 @@
 /*global chrome*/
-import logo from '../logo.png';
+import logo from '../logo.svg';
 import '../App.css';
 import CryptoJS from "crypto-js";
-import Footer from "../components/Footer";
 import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
@@ -16,7 +15,6 @@ import { useLocation } from "react-router-dom";
 function Login(props) {
   const alert = useAlert();
   const location = useLocation();
-  props.setFooter("footerLogin");
 
   const removeAccount = async () => {
     chrome.storage.sync.clear(function(){
@@ -24,6 +22,11 @@ function Login(props) {
     });
     props.navigate("/");
   }
+
+  const inputStyles = {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    height: 50
+  };
 
   const loginAccount = async () => {
     if(bcrypt.compareSync(props.loginValues.password, location.state.hash)){
@@ -80,7 +83,7 @@ function Login(props) {
           className="inputStyle"
           value={props.loginValues.password}
           disableUnderline
-          style={{ height: 50 }}
+          style={inputStyles}
           endAdornment={
             <InputAdornment position="end">
               <IconButton
@@ -101,8 +104,6 @@ function Login(props) {
       <div className="payment vcenter">
       <button className="buttonCreate center" onClick={removeAccount}><DeleteForeverIcon />  Remove Account</button>
       </div>
-
-      <Footer {...props} />
     </div>
   </div>
   )
