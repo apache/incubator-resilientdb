@@ -53,6 +53,8 @@ Ubuntu 20.*
 
 ## Build and Deploy ResilientDB
 
+Next, we show how to quickly build ResilientDB and deploy 4 replicas and 1 client proxy on your local machine. The proxy acts as an interface for all the clients. It batches client requests and forwards these batches to the replica designated as the leader. The 4 replicas participate in the PBFT consensus to order and execute these batches. Post execution, they return the response to the leader.
+
 Install dependencies:
 
     ./INSTALL.sh
@@ -62,7 +64,7 @@ Run ResilientDB (Providing a Key-Value Service):
 
     ./service/tools/kv/server_tools/start_kv_service.sh
     
-- This script will start 4 replica and 1 client. Each replica instantiates a key-value store.
+- This script starts 4 replicas and 1 client. Each replica instantiates a key-value store.
 
 Build Interactive Tools:
 
@@ -92,4 +94,6 @@ You will see the following result if successful:
 
     client getvalues value = [test_value]
 
+## Deployment Script
 
+We also provide access to a [deployment script](https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy) that allows deployment on distinct machines.
