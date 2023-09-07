@@ -24,7 +24,7 @@ var searchData=
   ['patterns_20options_21',['patterns options',['../d7/d78/md__2github_2workspace_2node__modules_2glob-gitignore_2README.html#autotoc_md69',1,'glob(patterns, options)'],['../d7/d78/md__2github_2workspace_2node__modules_2glob-gitignore_2README.html#autotoc_md72',1,'hasMagic(patterns, [options])'],['../d7/d78/md__2github_2workspace_2node__modules_2glob-gitignore_2README.html#autotoc_md71',1,'sync(patterns, options)']]],
   ['patterns_3a_20array_20string_20ignore_20_3a_20this_22',['.add(patterns: Array&lt;string | Ignore&gt;): this',['../d4/dec/md__2github_2workspace_2node__modules_2ignore_2README.html#autotoc_md127',1,'']]],
   ['pbft_20consensus_20flow_20charts_23',['PBFT Consensus Flow Charts',['../d7/d8c/md__2github_2workspace_2platform_2consensus_2ordering_2pbft_2README.html',1,'']]],
-  ['performance_24',['Test Performance',['../d7/dbd/md__2github_2workspace_2scripts_2deploy_2README.html#autotoc_md233',1,'']]],
+  ['performance_24',['Test Performance',['../d7/dbd/md__2github_2workspace_2scripts_2deploy_2README.html#autotoc_md234',1,'']]],
   ['performance_5fmanager_2ecpp_25',['performance_manager.cpp',['../d8/d2c/performance__manager_8cpp.html',1,'']]],
   ['performance_5fmanager_2eh_26',['performance_manager.h',['../dc/d42/performance__manager_8h.html',1,'']]],
   ['performance_5fmanager_5f_27',['performance_manager_',['../d0/ded/classresdb_1_1ConsensusManagerPBFT.html#a322584e996a88e4b6e9a1d378be54acf',1,'resdb::ConsensusManagerPBFT']]],
