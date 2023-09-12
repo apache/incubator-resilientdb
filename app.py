@@ -113,6 +113,8 @@ class Query:
     @strawberry.field
     def getFilteredTransactions(self, filter: Optional[FilterKeys]) -> List[RetrieveTransaction]:
         url = f"{protocol}{db_root_url}{fetch_all_endpoint}"
+        filter.ownerPublicKey = filter.ownerPublicKey if filter.ownerPublicKey.strip() else None
+        filter.recipientPublicKey = filter.recipientPublicKey if filter.recipientPublicKey.strip() else None
         json_data = filter_by_keys(url, filter.ownerPublicKey, filter.recipientPublicKey)
         records = []
         for data in json_data:
