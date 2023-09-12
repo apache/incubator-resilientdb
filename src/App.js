@@ -1,10 +1,11 @@
 /*global chrome*/
-import './App.css';
+import './css/App.css';
 import React, { useState } from 'react';
 import Home from "./pages/Home";
+import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Transaction from "./pages/Transaction";
+import Transaction from './pages/Transaction';
 import Logs from "./pages/Logs";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -21,7 +22,6 @@ function App() {
   const [data, setData] = useState("");
   const [accountAddress, setAccountAddress] = useState("");
   const [componentAddress, setComponentAddress] = useState("");
-  const [footer, setFooter] = useState("");
   const [values, setValues] = useState({
     password: "",
     showPassword: false,
@@ -38,31 +38,12 @@ function App() {
   const props = {
     navigate,
     isLoading,
-    publicKey,
-    privateKey,
-    encryptedPrivateKey,
-    hash,
-    operation,
-    amount,
-    data,
-    accountAddress,
-    componentAddress,
     values,
     loginValues,
     confirmValues
   }
 
   const propsChange = {
-    setLoading,
-    setPublicKey,
-    setPrivateKey,
-    setEncryptedPrivateKey,
-    setHash,
-    setOperation,
-    setAmount,
-    setData,
-    setAccountAddress,
-    setComponentAddress,
     setValues,
     setLoginValues,
     setConfirmValues
@@ -71,6 +52,7 @@ function App() {
   return (
     <Routes>
       <Route path='/' element={<Home {...props} {...propsChange} />} />
+      <Route path='/signup' element={<SignUp {...props} {...propsChange} />} />
       <Route path='/login' element={<Login {...props} {...propsChange} />} />
       <Route path='/dashboard' element={<Dashboard {...props} {...propsChange} />} />
       <Route path='/transaction' element={<Transaction {...props} {...propsChange} />} />

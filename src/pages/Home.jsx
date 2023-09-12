@@ -1,17 +1,9 @@
 /*global chrome*/
-import logo from '../logo.svg';
-import '../App.css';
+import '../css/App.css';
 import CryptoJS from "crypto-js";
-import { useAlert } from 'react-alert'
-import IconButton from "@material-ui/core/IconButton";
-import Visibility from "@material-ui/icons/Visibility";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import Input from "@material-ui/core/Input";
-import bcrypt from 'bcryptjs';
 import React, { useEffect } from 'react';
-import Base58 from 'bs58';
-import nacl from 'tweetnacl';
+import { useLocation } from "react-router-dom";
+import splash from "../images/splash.png";
 
 function Home(props) {
   useEffect(() => {
@@ -19,7 +11,6 @@ function Home(props) {
       if(res.store.publicKey){
         chrome.storage.local.get(["password"], (result) => {
           if(!result.password) {
-            props.setHash(res.store.hash);
             props.navigate("/login", {state: res.store} );
           }
           else {
@@ -33,135 +24,26 @@ function Home(props) {
       }
     });
   });
+  const location = useLocation();
 
-  const inputStyles = {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    height: 50
-  };
-
-  const alert = useAlert();
-
-  const salt = bcrypt.genSaltSync(10);
-
-  function generateKeyPair(){
-    var keyPair = nacl.sign.keyPair();
-    var pk = Base58.encode(keyPair.publicKey);
-    var sk = Base58.encode(keyPair.secretKey.slice(0,32));
-    return {publicKey: pk, privateKey: sk};
-  };
-
-  const createAccount = async () => {
-    if(props.values.password===props.confirmValues.password){
-      chrome.storage.sync.clear(async function(){
-        const keys = generateKeyPair();
-        var publicKey = keys.publicKey;
-        var privateKey = keys.privateKey;
-        const phrase = CryptoJS.AES.encrypt(
-          JSON.stringify(privateKey),
-          props.values.password
-        ).toString();
-        var hash = bcrypt.hashSync(props.values.password, salt);
-        const store = {publicKey: publicKey, encryptedPrivateKey: phrase, hash: hash};
-        var password = {password: props.values.password};
-        chrome.storage.local.set({ password }, () => {});
-        chrome.storage.sync.set({ store }, () => {
-          store.privateKey = privateKey;
-          props.navigate("/dashboard", {state: store} );
-        });  
-    });
-    }
-    else {
-      alert.show("Passwords don't match.");
-    }
-    
+  const signup = async () => {
+    props.navigate("/signup", {state: location.state});
   }
 
-  const handleClickShowPassword = () => {
-    props.setValues({ ...props.values, showPassword: !props.values.showPassword });
-  };
-  
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-  
-  const handlePasswordChange = (prop) => (event) => {
-    props.setValues({ ...props.values, [prop]: event.target.value });
-  };
-
-  const handleClickShowConfirmPassword = () => {
-    props.setConfirmValues({ ...props.confirmValues, showPassword: !props.confirmValues.showPassword });
-  };
-  
-  const handleMouseDownConfirmPassword = (event) => {
-    event.preventDefault();
-  };
-  
-  const handleConfirmPasswordChange = (prop) => (event) => {
-    props.setConfirmValues({ ...props.confirmValues, [prop]: event.target.value });
-  };
- 
-
   return (
-  <div className="App">
-    <div className="mainContainer">
-      <div className="cardHolder">
-        <div className="header">
-          <div className="heading center">Global-Scale Blockchain Fabric</div>
-          <div className="stepHeading center">NexRes Wallet</div>
-          <div className="logo">
-            <img src={logo} alt="logo" />
-          </div>
-        </div>
-      </div>
-
-      <div className="paymentTop vcenter">
-        <Input
-          type={props.values.showPassword ? "text" : "password"}
-          onChange={handlePasswordChange("password")}
-          placeholder="Password"
-          className="inputStyle"
-          value={props.values.password}
-          disableUnderline
-          style={inputStyles}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
-              >
-                {props.values.showPassword ? <Visibility /> : <VisibilityOff />}
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </div>
-      <div className="paymentBottom vcenter">
-      <Input
-          type={props.confirmValues.showPassword ? "text" : "password"}
-          onChange={handleConfirmPasswordChange("password")}
-          placeholder="Confirm Password"
-          className="inputStyle"
-          value={props.confirmValues.password}
-          disableUnderline
-          style={inputStyles}
-          endAdornment={
-            <InputAdornment position="end">
-              <IconButton
-                onClick={handleClickShowConfirmPassword}
-                onMouseDown={handleMouseDownConfirmPassword}
-              >
-                {props.confirmValues.showPassword ? <Visibility /> : <VisibilityOff />}
-              </IconButton>
-            </InputAdornment>
-          }
-        />
-      </div>
-    
-      <div className="payment vcenter">
-      <button className="buttonCreate center" onClick={createAccount}>Create Account</button>
+    <div className="page page--splash" data-page="splash">
+    <div className="splash">
+    <div className="splash__content">
+      <div className="splash__logo">Res<strong>Vault</strong></div>
+      <div className="splash__image"><img src={splash} alt="" title=""/></div>
+      <div className="splash__text"></div>
+      <div className="splash__buttons">
+        <button className="button button--full button--main" onClick={signup}>Signup</button>
       </div>
     </div>
-  </div>
+    </div>
+    <p className="bottom-navigation" style={{backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px'}}>ResVault v0.0.1 Alpha Release</p>
+    </div>
   )
 }
 
