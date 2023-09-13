@@ -12,16 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 function App() {
   const navigate = useNavigate();
-  const [isLoading, setLoading] = useState(true);
-  const [publicKey, setPublicKey] = useState("");
-  const [privateKey, setPrivateKey] = useState("");
-  const [encryptedPrivateKey, setEncryptedPrivateKey] = useState("");
-  const [hash, setHash] = useState("");
-  const [operation, setOperation] = useState("");
-  const [amount, setAmount] = useState("");
-  const [data, setData] = useState("");
-  const [accountAddress, setAccountAddress] = useState("");
-  const [componentAddress, setComponentAddress] = useState("");
   const [values, setValues] = useState({
     password: "",
     showPassword: false,
@@ -37,7 +27,6 @@ function App() {
 
   const props = {
     navigate,
-    isLoading,
     values,
     loginValues,
     confirmValues

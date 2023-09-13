@@ -66,5 +66,9 @@
       "last 1 safari version"
     ],
     "proxy": "http://localhost:8000"
+  },
+  "devDependencies": {
+    "browserslist": "^4.21.10",
+    "react-password-strength-bar": "^0.4.1"
   }
 }

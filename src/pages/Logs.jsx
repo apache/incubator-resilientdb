@@ -17,8 +17,12 @@ function Logs(props) {
         props.navigate("/dashboard", {state: location.state});
     }
 
-    const originalTxnId = "433fb52cef02f90b9147aed4371afadfafeeaeb1c8e6751a3ba973ab621c6fe5";
-    const shortenedId = `${originalTxnId.slice(0, 7)}...${originalTxnId.slice(-7)}`;
+    const store = location.state;
+    const reversedData = [...store.history].reverse();
+    const transactionsToDisplay = reversedData.slice(0, 5);
+    const shortenTransactionId = (originalTxnId) => {
+        return `${originalTxnId.slice(0, 7)}...${originalTxnId.slice(-7)}`;
+    };
 
     return (
         <div className="page page--main" data-page="buy"> 
@@ -40,24 +44,19 @@ function Logs(props) {
 			    </div>		
 				
 				  <div className="cards cards--11">
-					  <p className="card-coin" style={{cursor: "pointer"}}>
-						  <div className="card-coin__logo"><img src={icon} alt="currency" /><span>Transaction ID<b>{shortenedId}</b></span></div>
-					  </p>
-                      <p className="card-coin" style={{cursor: "pointer"}}>
-						  <div className="card-coin__logo"><img src={icon} alt="currency" /><span>Transaction ID<b>{shortenedId}</b></span></div>
-					  </p>
-					  <p className="card-coin" style={{cursor: "pointer"}}>
-						  <div className="card-coin__logo"><img src={icon} alt="currency" /><span>Transaction ID<b>{shortenedId}</b></span></div>
-					  </p>
-					  <p className="card-coin" style={{cursor: "pointer"}}>
-						  <div className="card-coin__logo"><img src={icon} alt="currency" /><span>Transaction ID<b>{shortenedId}</b></span></div>
-					  </p>
-					  <p className="card-coin" style={{cursor: "pointer"}}>
-						  <div className="card-coin__logo"><img src={icon} alt="currency" /><span>Transaction ID<b>{shortenedId}</b></span></div>
-					  </p>
+                  {transactionsToDisplay.map((transactionId, index) => (
+                        <p className="card-coin" style={{ cursor: 'pointer' }} key={index}>
+                        <div className="card-coin__logo">
+                            <img src={icon} alt="currency" />
+                            <span>
+                            Transaction ID <b>{shortenTransactionId(transactionId)}</b>
+                            </span>
+                        </div>
+                        </p>
+                    ))}
 				  </div>
 				  
-				 <div className="w-100 text-center"><button style={{color: '#47e7ce', fontWeight: '600', fontSize: '1.2rem', background: 'transparent', border: 'none', 'outline': 'none', 'cursor': 'pointer'}}>View all transactions</button></div>
+				 {/*<div className="w-100 text-center"><button style={{color: '#47e7ce', fontWeight: '600', fontSize: '1.2rem', background: 'transparent', border: 'none', 'outline': 'none', 'cursor': 'pointer'}}>View all transactions</button></div>*/}
                  <p className="bottom-navigation" style={{backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px'}}>ResVault v0.0.1 Alpha Release</p>
             </div> 
         </div>

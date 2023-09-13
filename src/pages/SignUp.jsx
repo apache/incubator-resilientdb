@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs';
 import Base58 from 'bs58';
 import nacl from 'tweetnacl';
 import { useLocation } from "react-router-dom";
+import PasswordStrengthBar from 'react-password-strength-bar';
 import backicon from "../images/icons/arrow-back.svg";
 
 function SignUp(props) {
@@ -52,6 +53,7 @@ function SignUp(props) {
             const store = {publicKey: publicKey, encryptedPrivateKey: phrase, hash: hash};
             var password = {password: props.values.password};
             chrome.storage.local.set({ password }, () => {});
+            store.history = [];
             chrome.storage.sync.set({ store }, () => {
             store.privateKey = privateKey;
             props.navigate("/dashboard", {state: store} );
@@ -59,7 +61,7 @@ function SignUp(props) {
         });
         }
         else {
-        alert.show("Passwords don't match.");
+            alert.show("Passwords don't match.");
         }
         
     }
@@ -149,6 +151,7 @@ function SignUp(props) {
                             }
                             />
 						</div>
+                        <PasswordStrengthBar password={props.values.password} />
 						<div className="login-form__row">
 							<button className="login-form__submit button button--main button--full" id="submit" onClick={createAccount}>
                                 Create Account

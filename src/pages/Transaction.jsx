@@ -170,7 +170,10 @@ function Transaction(props) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, store.id)
             });
-            props.navigate("/logs", { state: store });
+            store.history.push(store.id);
+            chrome.storage.sync.set({ store }, () => {
+                props.navigate("/logs", { state: store });
+            }); 
         });
         }
 
@@ -196,7 +199,10 @@ function Transaction(props) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, res.data.getTransaction)
             });
-            props.navigate("/logs", {state: store});
+            store.history.push(store.id);
+            chrome.storage.sync.set({ store }, () => {
+                props.navigate("/logs", { state: store });
+            }); 
         });
         }
 
@@ -245,7 +251,10 @@ function Transaction(props) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, res.data.updateTransaction)
             });
-            props.navigate("/logs", { state: store });
+            store.history.push(store.id);
+            chrome.storage.sync.set({ store }, () => {
+                props.navigate("/logs", { state: store });
+            }); 
         });
         }
 
@@ -304,7 +313,10 @@ function Transaction(props) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, res.data.updateMultipleTransaction)
             });
-            props.navigate("/logs", { state: store });
+            store.history.push(store.id);
+            chrome.storage.sync.set({ store }, () => {
+                props.navigate("/logs", { state: store });
+            }); 
         });
         }
 
@@ -334,14 +346,17 @@ function Transaction(props) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, res.data.getFilteredTransactions)
             });
+            props.navigate("/logs", { state: store });
         });
         }
 
         else if ((location.state.from === 'account')) {
-        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+            const store = location.state;
+            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             // Send a message to the content script
             chrome.tabs.sendMessage(tabs[0].id, location.state.publicKey)
-        });
+            });
+            props.navigate("/logs", { state: store });
         }
     }
 
