@@ -31,14 +31,14 @@
 #include <fstream>
 
 #include "common/proto/signature_info.pb.h"
+#include "interface/kv/kv_client.h"
 #include "platform/config/resdb_config_utils.h"
-#include "service/kv_service/interface/resdb_kv_client.h"
 
 using resdb::GenerateReplicaInfo;
 using resdb::GenerateResDBConfig;
+using resdb::KVClient;
 using resdb::ReplicaInfo;
 using resdb::ResDBConfig;
-using resdb::ResDBKVClient;
 
 int main(int argc, char** argv) {
   if (argc < 2) {
@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
   config.SetClientTimeoutMs(100000);
 
-  ResDBKVClient client(config);
+  KVClient client(config);
 
   client.Set("start", "value");
   printf("start benchmark\n");
