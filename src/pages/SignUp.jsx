@@ -1,22 +1,20 @@
 /*global chrome*/
 import '../css/App.css';
 import CryptoJS from "crypto-js";
-import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
-import bcrypt from 'bcryptjs';
 import Base58 from 'bs58';
 import nacl from 'tweetnacl';
 import { useLocation } from "react-router-dom";
 import PasswordStrengthBar from 'react-password-strength-bar';
 import backicon from "../images/icons/arrow-back.svg";
+import React from 'react';
 
 function SignUp(props) {
     const location = useLocation();
-    const alert = useAlert();
     
     const back = async () => {
         props.navigate("/", {state: location.state});
@@ -29,8 +27,6 @@ function SignUp(props) {
         boxShadow: 'none', // Remove shadow
         outline: 'none', // Remove focus outline
     };
-
-    const salt = bcrypt.genSaltSync(10);
 
     function generateKeyPair(){
         var keyPair = nacl.sign.keyPair();
@@ -49,7 +45,7 @@ function SignUp(props) {
             JSON.stringify(privateKey),
             props.values.password
             ).toString();
-            var hash = bcrypt.hashSync(props.values.password, salt);
+            var hash = CryptoJS.SHA256(props.values.password).toString(CryptoJS.enc.Hex);
             const store = {publicKey: publicKey, encryptedPrivateKey: phrase, hash: hash};
             var password = {password: props.values.password};
             chrome.storage.local.set({ password }, () => {});
@@ -61,7 +57,7 @@ function SignUp(props) {
         });
         }
         else {
-            alert.show("Passwords don't match.");
+            props.navigate("/signup");
         }
         
     }

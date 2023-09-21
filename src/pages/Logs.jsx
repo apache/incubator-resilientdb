@@ -3,6 +3,7 @@ import '../css/App.css';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
 import icon from "../images/logos/bitcoin.png";
+import React from 'react';
 
 function Logs(props) {
     const location = useLocation();

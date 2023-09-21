@@ -1,17 +1,15 @@
 /*global chrome*/
 import '../css/App.css';
 import CryptoJS from "crypto-js";
-import { useAlert } from 'react-alert'
 import IconButton from "@material-ui/core/IconButton";
 import Visibility from "@material-ui/icons/Visibility";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
-import bcrypt from 'bcryptjs';
 import { useLocation } from "react-router-dom";
+import React from 'react';
 
 function Login(props) {
-    const alert = useAlert();
     const location = useLocation();
 
     const removeAccount = async () => {
@@ -22,7 +20,7 @@ function Login(props) {
     }
 
     const loginAccount = async () => {
-    if(bcrypt.compareSync(props.loginValues.password, location.state.hash)){
+    if(CryptoJS.SHA256(props.loginValues.password).toString(CryptoJS.enc.Hex) === location.state.hash){
         try {
         const bytes = CryptoJS.AES.decrypt(location.state.encryptedPrivateKey, props.loginValues.password);
         const data = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
@@ -33,12 +31,12 @@ function Login(props) {
         props.navigate("/dashboard", {state: store});
         }
         catch(err) {
-        alert.show("Incorrect password.");
+        props.navigate("/login");
         }
         
     }
     else {
-        alert.show("Incorrect password.");
+        props.navigate("/login");
     }
     }
 

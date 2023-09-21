@@ -3,7 +3,7 @@ import '../css/App.css';
 import CryptoJS from "crypto-js";
 import React, { useEffect } from 'react';
 import { useLocation } from "react-router-dom";
-import splash from "../images/splash.png";
+import splash from "../images/splash.svg";
 
 function Home(props) {
   useEffect(() => {

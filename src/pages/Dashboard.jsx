@@ -120,10 +120,10 @@ function Dashboard(props) {
                                 <p className="form__input form__input--23">
                                     0
                                 </p>
-                                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
                             </div>
 
-                            <div className="form__coin-total">ROK 0.00</div>
+                            <div className="form__coin-total">RoK 0.00</div>
                         </form>
                     </div>
                 </div>

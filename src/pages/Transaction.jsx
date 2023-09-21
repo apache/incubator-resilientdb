@@ -25,10 +25,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     {location.state.amount}
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK {location.state.amount}.00</div>
+            <div className="form__coin-total">RoK {location.state.amount}.00</div>
         </form>
     )
     } else if (location.state.from === 'get') {
@@ -45,10 +45,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     0
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK 0.00</div>
+            <div className="form__coin-total">RoK 0.00</div>
             </form>
         )
     } else if (location.state.from === 'update') {
@@ -65,10 +65,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     {location.state.amount}
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK {location.state.amount}.00</div>
+            <div className="form__coin-total">RoK {location.state.amount}.00</div>
             </form>
         )
     } else if (location.state.from === 'update-multi') {
@@ -85,10 +85,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     0
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK 0.00</div>
+            <div className="form__coin-total">RoK 0.00</div>
             </form>
         )
     } else if (location.state.from === 'filter') {
@@ -105,10 +105,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     0
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK 0.00</div>
+            <div className="form__coin-total">RoK 0.00</div>
             </form>
         )
     } else if (location.state.from === 'account') {
@@ -125,10 +125,10 @@ function Transaction(props) {
                 <p className="form__input form__input--23">
                     0
                 </p>
-                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>ROK</span></div>
+                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
             </div>
 
-            <div className="form__coin-total">ROK 0.00</div>
+            <div className="form__coin-total">RoK 0.00</div>
             </form>
         )
     }
@@ -163,7 +163,7 @@ function Transaction(props) {
             }
         }`
 
-        const result = sendRequest(query).then(res => { 
+        sendRequest(query).then(res => { 
             const store = location.state;
             store.id = res.data.postTransaction.id;
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -192,7 +192,7 @@ function Transaction(props) {
             }
         }`
 
-        const result = sendRequest(query).then(res => { 
+        sendRequest(query).then(res => { 
             const store = location.state;
             store.id = res.data.getTransaction.id;
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -244,7 +244,7 @@ function Transaction(props) {
             }
         }`
 
-        const result = sendRequest(query).then(res => { 
+        sendRequest(query).then(res => { 
             const store = location.state;
             store.id = res.data.updateTransaction.id;
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -306,7 +306,7 @@ function Transaction(props) {
             }
         }`
 
-        const result = sendRequest(query).then(res => { 
+        sendRequest(query).then(res => { 
             const store = location.state;
             store.id = res.data.updateMultipleTransaction[0].id;
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -340,7 +340,7 @@ function Transaction(props) {
             } 
         }`
 
-        const result = sendRequest(query).then(res => { 
+        sendRequest(query).then(res => { 
             const store = location.state;
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
             // Send a message to the content script
