@@ -1,0 +1,46 @@
+name: Release CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 14 # Specify the Node.js version you want to use
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build and test
+      run: npm run build
+
+    - name: Create Temporary Tag
+      run: |
+        TAG_NAME="Release-$(date +'%Y%m%d%H%M%S')"
+        echo "::set-output name=tag::$TAG_NAME"
+      id: create_tag
+
+    - name: Create ZIP Archive
+      run: |
+        cd build
+        zip -r build.zip .
+      shell: bash
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./build/build.zip
+        tag_name: ${{ steps.create_tag.outputs.tag }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
