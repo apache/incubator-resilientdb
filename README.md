@@ -50,8 +50,8 @@ Coming Soon
 **NodeJS is required.**  
 Open `terminal` and execute:
 ```shell
-git clone https://github.com/ResilientApp/NexresWallet.git
-cd NexresWallet
+git clone https://github.com/ResilientApp/ResVault.git
+cd ResVault
 npm install
 npm run build
 ```
