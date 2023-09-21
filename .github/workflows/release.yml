@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Release CI
 
 on:
   push:
@@ -26,29 +26,21 @@ jobs:
 
     - name: Create Temporary Tag
       run: |
-        TAG_NAME="temp-$(date +'%Y%m%d%H%M%S')"
+        TAG_NAME="release-$(date +'%Y%m%d%H%M%S')"
         echo "::set-output name=tag::$TAG_NAME"
       id: create_tag
+
+    - name: Organize Build Contents
+      run: |
+        mkdir -p build/release
+        mv build/* build/release/
+      shell: bash
 
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: ./build/*
+        files: ./build/release/* # Upload all files in the release subfolder
         tag_name: ${{ steps.create_tag.outputs.tag }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Publish Release
-      run: |
-        echo "Publishing Release..."
-        RELEASE_ID="${{ steps.create_release.outputs.id }}"
-        URL="https://api.github.com/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=build"
-        curl \
-          --request POST \
-          --url $URL \
-          --header "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          --header "Content-Type: application/zip" \
-          --data-binary "@./build.zip"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
