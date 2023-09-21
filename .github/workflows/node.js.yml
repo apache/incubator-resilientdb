@@ -24,11 +24,18 @@ jobs:
     - name: Build and test
       run: npm run build
 
+    - name: Create Temporary Tag
+      run: |
+        TAG_NAME="temp-$(date +'%Y%m%d%H%M%S')"
+        echo "::set-output name=tag::$TAG_NAME"
+      id: create_tag
+
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
         files: ./build/*
+        tag_name: ${{ steps.create_tag.outputs.tag }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
