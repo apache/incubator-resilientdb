@@ -36,11 +36,16 @@ jobs:
         mv build/* build/release/
       shell: bash
 
+    - name: Create ZIP Archive
+      run: |
+        zip -r build.zip build/release/
+      shell: bash
+
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: ./build/release/* # Upload all files in the release subfolder
+        files: ./build.zip
         tag_name: ${{ steps.create_tag.outputs.tag }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
