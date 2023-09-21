@@ -68,11 +68,11 @@ Coming Soon
 
 Before creating an issue, please ensure that it hasn't already been reported/suggested.
 
-The issue tracker is only for bug reports and enhancement suggestions. If you have a question, please reach out to [mo.sadoghi@expolab.org](mo.sadoghi@expolab.org) instead of opening an issue – you will get redirected there anyway.
+The issue tracker is only for bug reports and enhancement suggestions. If you have a question, please reach out to [apratim@expolab.org](apratim@expolab.org) instead of opening an issue – you will get redirected there anyway.
 
-If you wish to contribute to the Enyo codebase or documentation, feel free to fork the repository and submit a pull request.
+If you wish to contribute to the ResVault codebase or documentation, feel free to fork the repository and submit a pull request.
 
 ## Help 
 
 If you don't understand something in the documentation, you are experiencing problems, or you just need a gentle
-nudge in the right direction, please don't hesitate to reach out to [mo.sadoghi@expolab.org](mo.sadoghi@expolab.org).
+nudge in the right direction, please don't hesitate to reach out to [apratim@expolab.org](apratim@expolab.org).
