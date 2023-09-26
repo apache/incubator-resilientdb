@@ -50,40 +50,39 @@ def prepare_transaction(
     asset=None,
     metadata=None,
     inputs=None
-):
-    """Prepares a transaction payload, ready to be fulfilled. Depending on
+) -> dict:
+    """! Prepares a transaction payload, ready to be fulfilled. Depending on
     the value of ``operation``, simply dispatches to either
     :func:`~.prepare_create_transaction` or
     :func:`~.prepare_transfer_transaction`.
 
-    Args:
-        operation (str): The operation to perform. Must be ``'CREATE'``
+    @param operation (str): The operation to perform. Must be ``'CREATE'``
             or ``'TRANSFER'``. Case insensitive. Defaults to ``'CREATE'``.
-        signers (:obj:`list` | :obj:`tuple` | :obj:`str`, optional):
+    @param signers (:obj:`list` | :obj:`tuple` | :obj:`str`, optional): 
             One or more public keys representing the issuer(s) of
             the asset being created. Only applies for ``'CREATE'``
             operations. Defaults to ``None``.
-        recipients (:obj:`list` | :obj:`tuple` | :obj:`str`, optional):
+    @param recipients (:obj:`list` | :obj:`tuple` | :obj:`str`, optional): 
             One or more public keys representing the new recipients(s)
             of the asset being created or transferred.
             Defaults to ``None``.
-        asset (:obj:`dict`, optional): The asset to be created or
-            transferred. MUST be supplied for ``'TRANSFER'`` operations.
+    @param asset (:obj:`dict`, optional): 
+            The asset to be created orctransferred. 
+            MUST be supplied for ``'TRANSFER'`` operations.
             Defaults to ``None``.
-        metadata (:obj:`dict`, optional): Metadata associated with the
+    @param metadata (:obj:`dict`, optional): 
+            Metadata associated with the
             transaction. Defaults to ``None``.
-        inputs (:obj:`dict` | :obj:`list` | :obj:`tuple`, optional):
+    @param inputs (:obj:`dict` | :obj:`list` | :obj:`tuple`, optional):
             One or more inputs holding the condition(s) that this
             transaction intends to fulfill. Each input is expected to
             be a :obj:`dict`. Only applies to, and MUST be supplied for,
             ``'TRANSFER'`` operations.
 
-    Returns:
-        dict: The prepared transaction.
+    @return The prepared transaction
 
-    Raises:
-        :class:`~.exceptions.ResdbException`: If ``operation`` is
-            not ``'CREATE'`` or ``'TRANSFER'``.
+    @exception :class:`~.exceptions.ResdbException`: If ``operation`` is
+        not ``'CREATE'`` or ``'TRANSFER'``.
 
     .. important::
 
@@ -131,23 +130,19 @@ def prepare_transaction(
 
 
 def prepare_create_transaction(*, signers, recipients=None, asset=None, metadata=None):
-    """Prepares a ``"CREATE"`` transaction payload, ready to be
+    """! Prepares a ``"CREATE"`` transaction payload, ready to be
     fulfilled.
 
-    Args:
-        signers (:obj:`list` | :obj:`tuple` | :obj:`str`): One
-            or more public keys representing the issuer(s) of the asset
-            being created.
-        recipients (:obj:`list` | :obj:`tuple` | :obj:`str`, optional):
-            One or more public keys representing the new recipients(s)
-            of the asset being created. Defaults to ``None``.
-        asset (:obj:`dict`, optional): The asset to be created.
-            Defaults to ``None``.
-        metadata (:obj:`dict`, optional): Metadata associated with the
-            transaction. Defaults to ``None``.
+    @param signers (:obj:`list` | :obj:`tuple` | :obj:`str`): 
+            One or more public keys representing 
+            the issuer(s) of the asset being created.
+    @param recipients (:obj:`list` | :obj:`tuple` | :obj:`str`, optional): 
+            One or more public keys representing 
+            the new recipients(s) of the asset being created. Defaults to ``None``.
+    @param asset (:obj:`dict`, optional): The asset to be created. Defaults to ``None``.
+    @param metadata (:obj:`dict`, optional): Metadata associated with the transaction. Defaults to ``None``.
 
-    Returns:
-        dict: The prepared ``"CREATE"`` transaction.
+    @return The prepared ``"CREATE"`` transaction.
 
     .. important::
 
@@ -192,24 +187,23 @@ def prepare_create_transaction(*, signers, recipients=None, asset=None, metadata
 
 
 def prepare_transfer_transaction(*, inputs, recipients, asset, metadata=None):
-    """Prepares a ``"TRANSFER"`` transaction payload, ready to be
+    """! Prepares a ``"TRANSFER"`` transaction payload, ready to be
     fulfilled.
 
-    Args:
-        inputs (:obj:`dict` | :obj:`list` | :obj:`tuple`): One or more
-            inputs holding the condition(s) that this transaction
-            intends to fulfill. Each input is expected to be a
-            :obj:`dict`.
-        recipients (:obj:`str` | :obj:`list` | :obj:`tuple`): One or
-            more public keys representing the new recipients(s) of the
+    @param inputs (:obj:`dict` | :obj:`list` | :obj:`tuple`): 
+                One or more inputs holding the condition(s) that this transaction
+                intends to fulfill. Each input is expected to be a
+                :obj:`dict`.
+    @param recipients (:obj:`str` | :obj:`list` | :obj:`tuple`): 
+            One or more public keys representing the 
+            new recipients(s) of the
             asset being transferred.
-        asset (:obj:`dict`): A single-key dictionary holding the ``id``
+    @param asset (:obj:`dict`): A single-key dictionary holding the ``id``
             of the asset being transferred with this transaction.
-        metadata (:obj:`dict`): Metadata associated with the
+    @param metadata (:obj:`dict`): Metadata associated with the
             transaction. Defaults to ``None``.
 
-    Returns:
-        dict: The prepared ``"TRANSFER"`` transaction.
+    @return The prepared ``"TRANSFER"`` transaction.
 
     .. important::
 
@@ -221,7 +215,7 @@ def prepare_transfer_transaction(*, inputs, recipients, asset, metadata=None):
 
     Example:
 
-        .. todo:: Replace this section with docs.
+        # .. todo:: Replace this section with docs.
 
         In case it may not be clear what an input should look like, say
         Alice (public key: ``'3Cxh1eKZk3Wp9KGBWFS7iVde465UvqUKnEqTg2MW4wNf'``)
@@ -257,7 +251,7 @@ def prepare_transfer_transaction(*, inputs, recipients, asset, metadata=None):
                     'output_index': output_index,
                     'transaction_id': tx['id'],
                 },
-                'owners_before': output['owners_after'],
+                'owners_before': output['public_keys'],
             }
 
         Displaying the input on the prompt would look like::
@@ -311,23 +305,18 @@ def prepare_transfer_transaction(*, inputs, recipients, asset, metadata=None):
     return transaction.to_dict()
 
 
-def fulfill_transaction(transaction, *, private_keys):
-    """Fulfills the given transaction.
+def fulfill_transaction(transaction, *, private_keys) -> dict:
+    """! Fulfills the given transaction.
 
-    Args:
-        transaction (dict): The transaction to be fulfilled.
-        private_keys (:obj:`str` | :obj:`list` | :obj:`tuple`): One or
-            more private keys to be used for fulfilling the
-            transaction.
+    @param transaction The transaction to be fulfilled.
+    @param private_keys One or more private keys to be 
+            used for fulfilling the transaction.
 
-    Returns:
-        dict: The fulfilled transaction payload, ready to be sent to a
-        ResDB federation.
+    @return The fulfilled transaction payload, ready to be sent to a
+            ResDB federation.
 
-    Raises:
-        :exc:`~.exceptions.MissingPrivateKeyError`: If a private
-            key is missing.
-
+    @exception :exc:`~.exceptions.MissingPrivateKeyError`: If a private
+        key is missing.
     """
     if not isinstance(private_keys, (list, tuple)):
         private_keys = [private_keys]

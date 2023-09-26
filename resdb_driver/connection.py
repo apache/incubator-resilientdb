@@ -15,16 +15,16 @@ HttpResponse = namedtuple("HttpResponse", ("status_code", "headers", "data"))
 
 
 class Connection:
-    """A Connection object to make HTTP requests to a particular node."""
+    """! A Connection object to make HTTP requests to a particular node."""
 
     def __init__(self, *, node_url: str, headers: dict = None):
-        """Initializes a :class:`~resdb_driver.connection.Connection`
+        """! Initializes a :class:`~resdb_driver.connection.Connection`
         instance.
 
-        Args:
-            node_url (str):  Url of the node to connect to.
-            headers (dict): Optional headers to send with each request.
+            @param node_url (str): Url of the node to connect to.
+            @param headers (dict): Optional headers to send with each request.
 
+            @return An instance of the Connection class 
         """
         self.node_url = node_url
         self.session = Session()
@@ -46,35 +46,33 @@ class Connection:
         backoff_cap: int = None,
         **kwargs
     ) -> HttpResponse:
-        """Performs an HTTP request with the given parameters.
+        """! Performs an HTTP request with the given parameters. Implements exponential backoff.
 
-           Implements exponential backoff.
+        If `ConnectionError` occurs, a timestamp equal to now +
+        the default delay (`BACKOFF_DELAY`) is assigned to the object.
+        The timestamp is in UTC. Next time the function is called, it either
+        waits till the timestamp is passed or raises `TimeoutError`.
 
-           If `ConnectionError` occurs, a timestamp equal to now +
-           the default delay (`BACKOFF_DELAY`) is assigned to the object.
-           The timestamp is in UTC. Next time the function is called, it either
-           waits till the timestamp is passed or raises `TimeoutError`.
+        If `ConnectionError` occurs two or more times in a row,
+        the retry count is incremented and the new timestamp is calculated
+        as now + the default delay multiplied by two to the power of the
+        number of retries.
 
-           If `ConnectionError` occurs two or more times in a row,
-           the retry count is incremented and the new timestamp is calculated
-           as now + the default delay multiplied by two to the power of the
-           number of retries.
+        If a request is successful, the backoff timestamp is removed,
+        the retry count is back to zero.
 
-           If a request is successful, the backoff timestamp is removed,
-           the retry count is back to zero.
+        @param method (str): HTTP method (e.g.: ``'GET'``).
+        @param path (str): API endpoint path (e.g.: ``'/transactions'``).
+        @param json (dict): JSON data to send along with the request.
+        @param params (dict): Dictionary of URL (query) parameters.
+        @param headers (dict): Optional headers to pass to the request.
+        @param timeout (int): Optional timeout in seconds.
+        @param backoff_cap (int): The maximal allowed backoff delay in seconds to be assigned to a node.
+        @param kwargs: Optional keyword arguments.
 
-        Args:
-            method (str): HTTP method (e.g.: ``'GET'``).
-            path (str): API endpoint path (e.g.: ``'/transactions'``).
-            json (dict): JSON data to send along with the request.
-            params (dict): Dictionary of URL (query) parameters.
-            headers (dict): Optional headers to pass to the request.
-            timeout (int): Optional timeout in seconds.
-            backoff_cap (int): The maximal allowed backoff delay in seconds
-                               to be assigned to a node.
-            kwargs: Optional keyword arguments.
-
+        @return Response of the HTTP request.
         """
+
         backoff_timedelta = self.get_backoff_timedelta()
 
         if timeout is not None and timeout < backoff_timedelta:
@@ -99,7 +97,8 @@ class Connection:
             connExc = err
             raise err
         finally:
-            self.update_backoff_time(success=connExc is None, backoff_cap=backoff_cap)
+            self.update_backoff_time(
+                success=connExc is None, backoff_cap=backoff_cap)
         return response
 
     def get_backoff_timedelta(self) -> float:

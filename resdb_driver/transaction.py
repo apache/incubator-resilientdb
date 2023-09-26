@@ -1,4 +1,4 @@
-"""
+"""!
 Transaction related models to parse and construct transaction
 payloads.
 
@@ -50,28 +50,27 @@ UnspentOutput = namedtuple(
 
 
 class Input(object):
-    """A Input is used to spend assets locked by an Output.
+    """! A Input is used to spend assets locked by an Output.
     Wraps around a Crypto-condition Fulfillment.
-        Attributes:
-            fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
-                to be signed with a private key.
-            owners_before (:obj:`list` of :obj:`str`): A list of owners after a
-                Transaction was confirmed.
-            fulfills (:class:`~resdb.common.transaction. TransactionLink`,
-                optional): A link representing the input of a `TRANSFER`
-                Transaction.
+
+    fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
+        to be signed with a private key.
+    owners_before (:obj:`list` of :obj:`str`): A list of owners after a
+        Transaction was confirmed.
+    fulfills (:class:`~resdb.transaction. TransactionLink`,
+        optional): A link representing the input of a `TRANSFER`
+        Transaction.
     """
 
     def __init__(self, fulfillment, owners_before, fulfills=None):
-        """Create an instance of an :class:`~.Input`.
-        Args:
-            fulfillment (:class:`cryptoconditions.Fulfillment`): A
-                Fulfillment to be signed with a private key.
-            owners_before (:obj:`list` of :obj:`str`): A list of owners
-                after a Transaction was confirmed.
-            fulfills (:class:`~resdb.common.transaction.
+        """! Create an instance of an :class:`~.Input`.
+        @param fulfillment (:class:`cryptoconditions.Fulfillment`): A
+            Fulfillment to be signed with a private key.
+        @param owners_before (:obj:`list` of :obj:`str`): A list of owners
+            after a Transaction was confirmed.
+        @param fulfills (:class:`~resdb.transaction.
                 TransactionLink`, optional): A link representing the input
-                of a `TRANSFER` Transaction.
+            of a `TRANSFER` Transaction.
         """
         if fulfills is not None and not isinstance(fulfills, TransactionLink):
             raise TypeError("`fulfills` must be a TransactionLink instance")
@@ -87,12 +86,11 @@ class Input(object):
         return self.to_dict() == other.to_dict()
 
     def to_dict(self):
-        """Transforms the object to a Python dictionary.
-        Note:
-            If an Input hasn't been signed yet, this method returns a
-            dictionary representation.
-        Returns:
-            dict: The Input as an alternative serialization format.
+        """! Transforms the object to a Python dictionary.
+        If an Input hasn't been signed yet, this method returns a
+        dictionary representation.
+
+        @return dict: The Input as an alternative serialization format.
         """
         try:
             fulfillment = self.fulfillment.serialize_uri()
@@ -122,16 +120,14 @@ class Input(object):
 
     @classmethod
     def from_dict(cls, data):
-        """Transforms a Python dictionary to an Input object.
+        """! Transforms a Python dictionary to an Input object.
         Note:
             Optionally, this method can also serialize a Cryptoconditions-
             Fulfillment that is not yet signed.
-        Args:
-            data (dict): The Input to be transformed.
-        Returns:
-            :class:`~resdb.common.transaction.Input`
-        Raises:
-            InvalidSignature: If an Input's URI couldn't be parsed.
+
+        @param data (dict): The Input to be transformed.
+        @return :class:`~resdb.transaction.Input`
+        @exception InvalidSignature: If an Input's URI couldn't be parsed.
         """
         fulfillment = data["fulfillment"]
         if not isinstance(fulfillment, (Fulfillment, type(None))):
@@ -150,9 +146,9 @@ class Input(object):
 
 
 def _fulfillment_to_details(fulfillment):
-    """Encode a fulfillment as a details dictionary
+    """! Encode a fulfillment as a details dictionary
     Args:
-        fulfillment: Crypto-conditions Fulfillment object
+        @param fulfillment (:class:`cryptoconditions.Fulfillment`): Crypto-conditions Fulfillment object
     """
 
     if fulfillment.type_name == "ed25519-sha-256":
@@ -175,9 +171,8 @@ def _fulfillment_to_details(fulfillment):
 
 
 def _fulfillment_from_details(data, _depth=0):
-    """Load a fulfillment for a signing spec dictionary
-    Args:
-        data: tx.output[].condition.details dictionary
+    """! Load a fulfillment for a signing spec dictionary
+        @param data tx.output[].condition.details dictionary
     """
     if _depth == 100:
         raise ThresholdTooDeep()
@@ -197,7 +192,7 @@ def _fulfillment_from_details(data, _depth=0):
 
 
 class TransactionLink(object):
-    """An object for unidirectional linking to a Transaction's Output.
+    """! An object for unidirectional linking to a Transaction's Output.
     Attributes:
         txid (str, optional): A Transaction to link to.
         output (int, optional): An output's index in a Transaction with id
@@ -205,16 +200,16 @@ class TransactionLink(object):
     """
 
     def __init__(self, txid=None, output=None):
-        """Create an instance of a :class:`~.TransactionLink`.
+        """! Create an instance of a :class:`~.TransactionLink`.
         Note:
             In an IPLD implementation, this class is not necessary anymore,
             as an IPLD link can simply point to an object, as well as an
             objects properties. So instead of having a (de)serializable
             class, we can have a simple IPLD link of the form:
             `/<tx_id>/transaction/outputs/<output>/`.
-        Args:
-            txid (str, optional): A Transaction to link to.
-            output (int, optional): An Outputs's index in a Transaction
+
+            @param txid (str): A Transaction to link to.
+            @param output An (int): Outputs's index in a Transaction
             with id `txid`.
         """
         self.txid = txid
@@ -232,11 +227,11 @@ class TransactionLink(object):
 
     @classmethod
     def from_dict(cls, link):
-        """Transforms a Python dictionary to a TransactionLink object.
-        Args:
-            link (dict): The link to be transformed.
-        Returns:
-            :class:`~resdb.common.transaction.TransactionLink`
+        """! Transforms a Python dictionary to a TransactionLink object.
+
+            @param link (dict): The link to be transformed.
+
+            @return :class:`~resdb.transaction.TransactionLink`
         """
         try:
             return cls(link["transaction_id"], link["output_index"])
@@ -244,9 +239,8 @@ class TransactionLink(object):
             return cls()
 
     def to_dict(self):
-        """Transforms the object to a Python dictionary.
-        Returns:
-            (dict|None): The link as an alternative serialization format.
+        """! Transforms the object to a Python dictionary.
+            @return The link as an alternative serialization format.
         """
         if self.txid is None and self.output is None:
             return None
@@ -263,7 +257,7 @@ class TransactionLink(object):
 
 
 class Output(object):
-    """An Output is used to lock an asset.
+    """! An Output is used to lock an asset.
     Wraps around a Crypto-condition Condition.
         Attributes:
             fulfillment (:class:`cryptoconditions.Fulfillment`): A Fulfillment
@@ -275,16 +269,16 @@ class Output(object):
     MAX_AMOUNT = 9 * 10**18
 
     def __init__(self, fulfillment, public_keys=None, amount=1):
-        """Create an instance of a :class:`~.Output`.
+        """! Create an instance of a :class:`~.Output`.
         Args:
-            fulfillment (:class:`cryptoconditions.Fulfillment`): A
+            @param fulfillment (:class:`cryptoconditions.Fulfillment`): A
                 Fulfillment to extract a Condition from.
-            public_keys (:obj:`list` of :obj:`str`, optional): A list of
+            @param public_keys (:obj:`list` of :obj:`str`, optional): A list of
                 owners before a Transaction was confirmed.
-            amount (int): The amount of Assets to be locked with this
+            @param amount (int): The amount of Assets to be locked with this
                 Output.
-        Raises:
-            TypeError: if `public_keys` is not instance of `list`.
+
+            @exception TypeError: if `public_keys` is not instance of `list`.
         """
         if not isinstance(public_keys, list) and public_keys is not None:
             raise TypeError("`public_keys` must be a list instance or None")
@@ -304,12 +298,12 @@ class Output(object):
         return self.to_dict() == other.to_dict()
 
     def to_dict(self):
-        """Transforms the object to a Python dictionary.
+        """! Transforms the object to a Python dictionary.
         Note:
             A dictionary serialization of the Input the Output was
             derived from is always provided.
-        Returns:
-            dict: The Output as an alternative serialization format.
+
+            @return The Output as an alternative serialization format.
         """
         # TODO FOR CC: It must be able to recognize a hashlock condition
         #              and fulfillment!
@@ -333,22 +327,21 @@ class Output(object):
 
     @classmethod
     def generate(cls, public_keys, amount):
-        """Generates a Output from a specifically formed tuple or list.
+        """! Generates a Output from a specifically formed tuple or list.
         Note:
             If a ThresholdCondition has to be generated where the threshold
             is always the number of subconditions it is split between, a
             list of the following structure is sufficient:
             [(address|condition)*, [(address|condition)*, ...], ...]
-        Args:
-            public_keys (:obj:`list` of :obj:`str`): The public key of
-                the users that should be able to fulfill the Condition
-                that is being created.
-            amount (:obj:`int`): The amount locked by the Output.
-        Returns:
-            An Output that can be used in a Transaction.
-        Raises:
-            TypeError: If `public_keys` is not an instance of `list`.
-            ValueError: If `public_keys` is an empty list.
+
+        @param public_keys (:obj:`list` of :obj:`str`): The public key of
+            the users that should be able to fulfill the Condition
+            that is being created.
+        @param amount (:obj:`int`): The amount locked by the Output.
+        @return An Output that can be used in a Transaction.
+
+        @exception TypeError: If `public_keys` is not an instance of `list`.
+        @exception ValueError: If `public_keys` is an empty list.
         """
         threshold = len(public_keys)
         if not isinstance(amount, int):
@@ -358,32 +351,34 @@ class Output(object):
         if not isinstance(public_keys, list):
             raise TypeError("`public_keys` must be an instance of list")
         if len(public_keys) == 0:
-            raise ValueError("`public_keys` needs to contain at least one" "owner")
+            raise ValueError(
+                "`public_keys` needs to contain at least one" "owner")
         elif len(public_keys) == 1 and not isinstance(public_keys[0], list):
             if isinstance(public_keys[0], Fulfillment):
                 ffill = public_keys[0]
             else:
-                ffill = Ed25519Sha256(public_key=base58.b58decode(public_keys[0]))
+                ffill = Ed25519Sha256(
+                    public_key=base58.b58decode(public_keys[0]))
             return cls(ffill, public_keys, amount=amount)
         else:
+            # Threshold conditions not supported by resdb yet
             initial_cond = ThresholdSha256(threshold=threshold)
-            threshold_cond = reduce(cls._gen_condition, public_keys, initial_cond)
+            threshold_cond = reduce(
+                cls._gen_condition, public_keys, initial_cond)
             return cls(threshold_cond, public_keys, amount=amount)
 
     @classmethod
     def _gen_condition(cls, initial, new_public_keys):
-        """Generates ThresholdSha256 conditions from a list of new owners.
+        """! Generates ThresholdSha256 conditions from a list of new owners.
         Note:
             This method is intended only to be used with a reduce function.
             For a description on how to use this method, see
             :meth:`~.Output.generate`.
         Args:
-            initial (:class:`cryptoconditions.ThresholdSha256`):
-                A Condition representing the overall root.
-            new_public_keys (:obj:`list` of :obj:`str`|str): A list of new
+            @param initial (:class:`cryptoconditions.ThresholdSha256`): A Condition representing the overall root.
+            @param new_public_keys (:obj:`list` of :obj:`str`|str): A list of new
                 owners or a single new owner.
-        Returns:
-            :class:`cryptoconditions.ThresholdSha256`:
+            @return :class:`cryptoconditions.ThresholdSha256`:
         """
         try:
             threshold = len(new_public_keys)
@@ -409,25 +404,26 @@ class Output(object):
             if isinstance(new_public_keys, Fulfillment):
                 ffill = new_public_keys
             else:
-                ffill = Ed25519Sha256(public_key=base58.b58decode(new_public_keys))
+                ffill = Ed25519Sha256(
+                    public_key=base58.b58decode(new_public_keys))
         initial.add_subfulfillment(ffill)
         return initial
 
     @classmethod
     def from_dict(cls, data):
-        """Transforms a Python dictionary to an Output object.
+        """! Transforms a Python dictionary to an Output object.
         Note:
             To pass a serialization cycle multiple times, a
             Cryptoconditions Fulfillment needs to be present in the
             passed-in dictionary, as Condition URIs are not serializable
             anymore.
-        Args:
-            data (dict): The dict to be transformed.
-        Returns:
-            :class:`~resdb.common.transaction.Output`
+
+        @param data (dict): The dict to be transformed.
+        @return :class:`~resdb.transaction.Output`
         """
         try:
-            fulfillment = _fulfillment_from_details(data["condition"]["details"])
+            fulfillment = _fulfillment_from_details(
+                data["condition"]["details"])
         except KeyError:
             # NOTE: Hashlock condition case
             fulfillment = data["condition"]["uri"]
@@ -439,16 +435,16 @@ class Output(object):
 
 
 class Transaction(object):
-    """A Transaction is used to create and transfer assets.
+    """! A Transaction is used to create and transfer assets.
     Note:
         For adding Inputs and Outputs, this class provides methods
         to do so.
     Attributes:
         operation (str): Defines the operation of the Transaction.
-        inputs (:obj:`list` of :class:`~resdb.common.
+        inputs (:obj:`list` of :class:`~resdb.
             transaction.Input`, optional): Define the assets to
             spend.
-        outputs (:obj:`list` of :class:`~resdb.common.
+        outputs (:obj:`list` of :class:`~resdb.
             transaction.Output`, optional): Define the assets to lock.
         asset (dict): Asset payload for this Transaction. ``CREATE``
             Transactions require a dict with a ``data``
@@ -474,26 +470,23 @@ class Transaction(object):
         version=None,
         hash_id=None,
     ):
-        """The constructor allows to create a customizable Transaction.
+        """! The constructor allows to create a customizable Transaction.
         Note:
             When no `version` is provided, one is being
             generated by this method.
-        Args:
-            operation (str): Defines the operation of the Transaction.
-            asset (dict): Asset payload for this Transaction.
-            inputs (:obj:`list` of :class:`~resdb.common.
-                transaction.Input`, optional): Define the assets to
-            outputs (:obj:`list` of :class:`~resdb.common.
-                transaction.Output`, optional): Define the assets to
-                lock.
-            metadata (dict): Metadata to be stored along with the
-                Transaction.
-            version (string): Defines the version number of a Transaction.
-            hash_id (string): Hash id of the transaction.
+
+        @param operation (str): Defines the operation of the Transaction.
+        @param asset (dict): Asset payload for this Transaction.
+        @param inputs (:obj:`list` of :class:`~resdb.transaction.Input`, optional):Define the assets to
+        @param outputs (:obj:`list` of :class:`~resdb.transaction.Output`, optional):Define the assets to lock.
+        @param metadata (dict): Metadata to be stored along with the Transaction.
+        @param version (string): Defines the version number of a Transaction.
+        @param hash_id (string): Hash id of the transaction.
         """
         if operation not in Transaction.ALLOWED_OPERATIONS:
             allowed_ops = ", ".join(self.__class__.ALLOWED_OPERATIONS)
-            raise ValueError("`operation` must be one of {}".format(allowed_ops))
+            raise ValueError(
+                "`operation` must be one of {}".format(allowed_ops))
 
         # Asset payloads for 'CREATE' operations must be None or
         # dicts holding a `data` property. Asset payloads for 'TRANSFER'
@@ -539,7 +532,7 @@ class Transaction(object):
 
     @property
     def unspent_outputs(self):
-        """UnspentOutput: The outputs of this transaction, in a data
+        """! UnspentOutput: The outputs of this transaction, in a data
         structure containing relevant information for storing them in
         a UTXO set, and performing validation.
         """
@@ -560,7 +553,7 @@ class Transaction(object):
 
     @property
     def spent_outputs(self):
-        """Tuple of :obj:`dict`: Inputs of this transaction. Each input
+        """! Tuple of :obj:`dict`: Inputs of this transaction. Each input
         is represented as a dictionary containing a transaction id and
         output index.
         """
@@ -575,7 +568,7 @@ class Transaction(object):
 
     @classmethod
     def create(cls, tx_signers, recipients, metadata=None, asset=None):
-        """A simple way to generate a `CREATE` transaction.
+        """! A simple way to generate a `CREATE` transaction.
         Note:
             This method currently supports the following Cryptoconditions
             use cases:
@@ -584,18 +577,18 @@ class Transaction(object):
             Additionally, it provides support for the following Resdb
             use cases:
                 - Multiple inputs and outputs.
-        Args:
-            tx_signers (:obj:`list` of :obj:`str`): A list of keys that
-                represent the signers of the CREATE Transaction.
-            recipients (:obj:`list` of :obj:`tuple`): A list of
-                ([keys],amount) that represent the recipients of this
-                Transaction.
-            metadata (dict): The metadata to be stored along with the
-                Transaction.
-            asset (dict): The metadata associated with the asset that will
-                be created in this Transaction.
-        Returns:
-            :class:`~resdb.common.transaction.Transaction`
+
+        @param tx_signers (:obj:`list` of :obj:`str`): A list of keys that
+            represent the signers of the CREATE Transaction.
+        @param recipients (:obj:`list` of :obj:`tuple`): A list of
+            ([keys],amount) that represent the recipients of this
+            Transaction.
+        @param metadata (dict): The metadata to be stored along with the
+            Transaction.
+        @param asset (dict): The metadata associated with the asset that will
+            be created in this Transaction.
+
+        @return :class:`~resdb.transaction.Transaction`
         """
         if not isinstance(tx_signers, list):
             raise TypeError("`tx_signers` must be a list instance")
@@ -631,7 +624,7 @@ class Transaction(object):
 
     @classmethod
     def transfer(cls, inputs, recipients, asset_id, metadata=None):
-        """A simple way to generate a `TRANSFER` transaction.
+        """! A simple way to generate a `TRANSFER` transaction.
         Note:
             Different cases for threshold conditions:
             Combining multiple `inputs` with an arbitrary number of
@@ -648,19 +641,18 @@ class Transaction(object):
                     `a`'s signature would have a 50% weight on `inp1`
                     compared to `b` and `c` that share 25% of the leftover
                     weight respectively. `inp2` is owned completely by `d`.
-        Args:
-            inputs (:obj:`list` of :class:`~resdb.common.transaction.
-                Input`): Converted `Output`s, intended to
-                be used as inputs in the transfer to generate.
-            recipients (:obj:`list` of :obj:`tuple`): A list of
-                ([keys],amount) that represent the recipients of this
-                Transaction.
-            asset_id (str): The asset ID of the asset to be transferred in
-                this Transaction.
-            metadata (dict): Python dictionary to be stored along with the
-                Transaction.
-        Returns:
-            :class:`~resdb.common.transaction.Transaction`
+
+        @param inputs (:obj:`list` of :class:`~resdb.transaction.Input`): Converted `Output`s, intended to
+            be used as inputs in the transfer to generate.
+        @param recipients (:obj:`list` of :obj:`tuple`): A list of
+            ([keys],amount) that represent the recipients of this
+            Transaction.
+        @param asset_id (str): The asset ID of the asset to be transferred in
+            this Transaction.
+        @param metadata (dict): Python dictionary to be stored along with the
+            Transaction.
+
+        @return :class:`~resdb.transaction.Transaction`
         """
         if not isinstance(inputs, list):
             raise TypeError("`inputs` must be a list instance")
@@ -698,7 +690,7 @@ class Transaction(object):
         return self.to_dict() == other
 
     def to_inputs(self, indices=None):
-        """Converts a Transaction's outputs to spendable inputs.
+        """! Converts a Transaction's outputs to spendable inputs.
         Note:
             Takes the Transaction's outputs and derives inputs
             from that can then be passed into `Transaction.transfer` as
@@ -707,12 +699,11 @@ class Transaction(object):
             defines which outputs should be returned as inputs.
             If no `indices` are passed (empty list or None) all
             outputs of the Transaction are returned.
-        Args:
-            indices (:obj:`list` of int): Defines which
-                outputs should be returned as inputs.
-        Returns:
-            :obj:`list` of :class:`~resdb.common.transaction.
-                Input`
+
+        @param indices (:obj:`list` of int): Defines which
+            outputs should be returned as inputs.
+        @return :obj:`list` of :class:`~resdb.transaction.
+            Input`
         """
         # NOTE: If no indices are passed, we just assume to take all outputs
         #       as inputs.
@@ -727,28 +718,26 @@ class Transaction(object):
         ]
 
     def add_input(self, input_):
-        """Adds an input to a Transaction's list of inputs.
-        Args:
-            input_ (:class:`~resdb.common.transaction.
-                Input`): An Input to be added to the Transaction.
+        """! Adds an input to a Transaction's list of inputs.
+        @param input_ (:class:`~resdb.transaction.
+            Input`): An Input to be added to the Transaction.
         """
         if not isinstance(input_, Input):
             raise TypeError("`input_` must be a Input instance")
         self.inputs.append(input_)
 
     def add_output(self, output):
-        """Adds an output to a Transaction's list of outputs.
-        Args:
-            output (:class:`~resdb.common.transaction.
-                Output`): An Output to be added to the
-                Transaction.
+        """! Adds an output to a Transaction's list of outputs.
+        @param output (:class:`~resdb.transaction.
+            Output`): An Output to be added to the
+            Transaction.
         """
         if not isinstance(output, Output):
             raise TypeError("`output` must be an Output instance or None")
         self.outputs.append(output)
 
     def sign(self, private_keys):
-        """Fulfills a previous Transaction's Output by signing Inputs.
+        """! Fulfills a previous Transaction's Output by signing Inputs.
         Note:
             This method works only for the following Cryptoconditions
             currently:
@@ -757,12 +746,11 @@ class Transaction(object):
             Furthermore, note that all keys required to fully sign the
             Transaction have to be passed to this method. A subset of all
             will cause this method to fail.
-        Args:
-            private_keys (:obj:`list` of :obj:`str`): A complete list of
-                all private keys needed to sign all Fulfillments of this
-                Transaction.
-        Returns:
-            :class:`~resdb.common.transaction.Transaction`
+
+        @param private_keys (:obj:`list` of :obj:`str`): A complete list of
+            all private keys needed to sign all Fulfillments of this
+            Transaction.
+        @return :class:`~resdb.transaction.Transaction`
         """
         # TODO: Singing should be possible with at least one of all private
         #       keys supplied to this method.
@@ -801,17 +789,16 @@ class Transaction(object):
 
     @classmethod
     def _sign_input(cls, input_, message, key_pairs):
-        """Signs a single Input.
+        """! Signs a single Input.
         Note:
             This method works only for the following Cryptoconditions
             currently:
                 - Ed25519Fulfillment
                 - ThresholdSha256.
-        Args:
-            input_ (:class:`~resdb.common.transaction.
-                Input`) The Input to be signed.
-            message (str): The message to be signed
-            key_pairs (dict): The keys to sign the Transaction with.
+
+        @param input_ (:class:`~resdb.transaction.Input`) The Input to be signed.
+        @param message (str): The message to be signed
+        @param key_pairs (dict): The keys to sign the Transaction with.
         """
         if isinstance(input_.fulfillment, Ed25519Sha256):
             return cls._sign_simple_signature_fulfillment(input_, message, key_pairs)
@@ -825,12 +812,11 @@ class Transaction(object):
 
     @classmethod
     def _sign_simple_signature_fulfillment(cls, input_, message, key_pairs):
-        """Signs a Ed25519Fulfillment.
-        Args:
-            input_ (:class:`~resdb.common.transaction.
-                Input`) The input to be signed.
-            message (str): The message to be signed
-            key_pairs (dict): The keys to sign the Transaction with.
+        """! Signs a Ed25519Fulfillment.
+
+        @param input_ (:class:`~resdb.transaction.Input`) The Input to be signed.
+        @param message (str): The message to be signed
+        @param key_pairs (dict): The keys to sign the Transaction with.
         """
         # NOTE: To eliminate the dangers of accidentally signing a condition by
         #       reference, we remove the reference of input_ here
@@ -841,14 +827,16 @@ class Transaction(object):
         message = sha3_256(message.encode())
         if input_.fulfills:
             message.update(
-                "{}{}".format(input_.fulfills.txid, input_.fulfills.output).encode()
+                "{}{}".format(input_.fulfills.txid,
+                              input_.fulfills.output).encode()
             )
 
         try:
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             input_.fulfillment.sign(
-                message.digest(), base58.b58decode(key_pairs[public_key].encode())
+                message.digest(), base58.b58decode(
+                    key_pairs[public_key].encode())
             )
         except KeyError:
             raise KeypairMismatchException(
@@ -859,18 +847,18 @@ class Transaction(object):
 
     @classmethod
     def _sign_threshold_signature_fulfillment(cls, input_, message, key_pairs):
-        """Signs a ThresholdSha256.
-        Args:
-            input_ (:class:`~resdb.common.transaction.
-                Input`) The Input to be signed.
-            message (str): The message to be signed
-            key_pairs (dict): The keys to sign the Transaction with.
+        """! Signs a ThresholdSha256.
+
+        @param input_ (:class:`~resdb.transaction.Input`) The Input to be signed.
+        @param message (str): The message to be signed
+        @param key_pairs (dict): The keys to sign the Transaction with.
         """
         input_ = deepcopy(input_)
         message = sha3_256(message.encode())
         if input_.fulfills:
             message.update(
-                "{}{}".format(input_.fulfills.txid, input_.fulfills.output).encode()
+                "{}{}".format(input_.fulfills.txid,
+                              input_.fulfills.output).encode()
             )
 
         for owner_before in set(input_.owners_before):
@@ -884,7 +872,8 @@ class Transaction(object):
             # TODO FOR CC: `get_subcondition` is singular. One would not
             #              expect to get a list back.
             ccffill = input_.fulfillment
-            subffills = ccffill.get_subcondition_from_vk(base58.b58decode(owner_before))
+            subffills = ccffill.get_subcondition_from_vk(
+                base58.b58decode(owner_before))
             if not subffills:
                 raise KeypairMismatchException(
                     "Public key {} cannot be found "
@@ -901,22 +890,22 @@ class Transaction(object):
             # cryptoconditions makes no assumptions of the encoding of the
             # message to sign or verify. It only accepts bytestrings
             for subffill in subffills:
-                subffill.sign(message.digest(), base58.b58decode(private_key.encode()))
+                subffill.sign(message.digest(),
+                              base58.b58decode(private_key.encode()))
         return input_
 
     def inputs_valid(self, outputs=None):
-        """Validates the Inputs in the Transaction against given
+        """! Validates the Inputs in the Transaction against given
         Outputs.
             Note:
                 Given a `CREATE` Transaction is passed,
                 dummy values for Outputs are submitted for validation that
                 evaluate parts of the validation-checks to `True`.
-            Args:
-                outputs (:obj:`list` of :class:`~resdb.common.
-                    transaction.Output`): A list of Outputs to check the
-                    Inputs against.
-            Returns:
-                bool: If all Inputs are valid.
+
+        @param outputs (:obj:`list` of :class:`~resdb.
+            transaction.Output`): A list of Outputs to check the
+            Inputs against.
+        @return If all Inputs are valid.
         """
         if self.operation == Transaction.CREATE:
             # NOTE: Since in the case of a `CREATE`-transaction we do not have
@@ -930,18 +919,18 @@ class Transaction(object):
             )
         else:
             allowed_ops = ", ".join(self.__class__.ALLOWED_OPERATIONS)
-            raise TypeError("`operation` must be one of {}".format(allowed_ops))
+            raise TypeError(
+                "`operation` must be one of {}".format(allowed_ops))
 
     def _inputs_valid(self, output_condition_uris):
-        """Validates an Input against a given set of Outputs.
+        """!Validates an Input against a given set of Outputs.
         Note:
             The number of `output_condition_uris` must be equal to the
             number of Inputs a Transaction has.
-        Args:
-            output_condition_uris (:obj:`list` of :obj:`str`): A list of
-                Outputs to check the Inputs against.
-        Returns:
-            bool: If all Outputs are valid.
+
+        @param output_condition_uris (:obj:`list` of :obj:`str`): A list of
+            Outputs to check the Inputs against.
+        @return If all Outputs are valid.
         """
 
         if len(self.inputs) != len(output_condition_uris):
@@ -964,19 +953,17 @@ class Transaction(object):
 
     @staticmethod
     def _input_valid(input_, operation, message, output_condition_uri=None):
-        """Validates a single Input against a single Output.
+        """! Validates a single Input against a single Output.
         Note:
             In case of a `CREATE` Transaction, this method
             does not validate against `output_condition_uri`.
-        Args:
-            input_ (:class:`~resdb.common.transaction.
-                Input`) The Input to be signed.
-            operation (str): The type of Transaction.
-            message (str): The fulfillment message.
-            output_condition_uri (str, optional): An Output to check the
-                Input against.
-        Returns:
-            bool: If the Input is valid.
+
+        @param input_ (:class:`~resdb.transaction.Input`) The Input to be signed.
+        @param operation (str): The type of Transaction.
+        @param message (str): The fulfillment message.
+        @param output_condition_uri (str, optional): An Output to check the
+            Input against.
+        @return If the Input is valid.
         """
         ccffill = input_.fulfillment
         try:
@@ -994,7 +981,8 @@ class Transaction(object):
         message = sha3_256(message.encode())
         if input_.fulfills:
             message.update(
-                "{}{}".format(input_.fulfills.txid, input_.fulfills.output).encode()
+                "{}{}".format(input_.fulfills.txid,
+                              input_.fulfills.output).encode()
             )
 
         # NOTE: We pass a timestamp to `.validate`, as in case of a timeout
@@ -1006,9 +994,8 @@ class Transaction(object):
         return output_valid and ffill_valid
 
     def to_dict(self):
-        """Transforms the object to a Python dictionary.
-        Returns:
-            dict: The Transaction as an alternative serialization format.
+        """! Transforms the object to a Python dictionary.
+        @return The Transaction as an alternative serialization format.
         """
         return {
             "inputs": [input_.to_dict() for input_ in self.inputs],
@@ -1023,11 +1010,9 @@ class Transaction(object):
     @staticmethod
     # TODO: Remove `_dict` prefix of variable.
     def _remove_signatures(tx_dict):
-        """Takes a Transaction dictionary and removes all signatures.
-        Args:
-            tx_dict (dict): The Transaction to remove all signatures from.
-        Returns:
-            dict
+        """! Takes a Transaction dictionary and removes all signatures.
+        @param (dict): tx_dict The Transaction to remove all signatures from.
+        @return dict
         """
         # NOTE: We remove the reference since we need `tx_dict` only for the
         #       transaction's hash
@@ -1062,19 +1047,16 @@ class Transaction(object):
 
     @staticmethod
     def get_asset_id(transactions):
-        """Get the asset id from a list of :class:`~.Transactions`.
+        """! Get the asset id from a list of :class:`~.Transactions`.
         This is useful when we want to check if the multiple inputs of a
         transaction are related to the same asset id.
         Args:
-            transactions (:obj:`list` of :class:`~resdb.common.
-                transaction.Transaction`): A list of Transactions.
+            @param transactions (:obj:`list` of :class:`~resdb.transaction.Transaction`):
+                A list of Transactions.
                 Usually input Transactions that should have a matching
                 asset ID.
-        Returns:
-            str: ID of the asset.
-        Raises:
-            :exc:`AssetIdMismatch`: If the inputs are related to different
-                assets.
+            @return ID of the asset.
+            @exception If the inputs are related to different assets.
         """
 
         if not isinstance(transactions, list):
@@ -1098,9 +1080,8 @@ class Transaction(object):
 
     @staticmethod
     def validate_id(tx_body):
-        """Validate the transaction ID of a transaction
-        Args:
-            tx_body (dict): The Transaction to be transformed.
+        """! Validate the transaction ID of a transaction
+        @param tx_body (dict): The Transaction to be transformed.
         """
         # NOTE: Remove reference to avoid side effects
         tx_body = deepcopy(tx_body)
@@ -1122,15 +1103,17 @@ class Transaction(object):
             raise InvalidHash(err_msg.format(proposed_tx_id))
 
     @classmethod
-    def from_dict(cls, tx):
-        """Transforms a Python dictionary to a Transaction object.
-        Args:
-            tx_body (dict): The Transaction to be transformed.
-        Returns:
-            :class:`~resdb.common.transaction.Transaction`
+    def from_dict(cls, tx, skip_schema_validation=True):
+        """! Transforms a Python dictionary to a Transaction object.
+        @param tx_body (dict): The Transaction to be transformed.
+        @return :class:`~resdb.transaction.Transaction`
         """
         inputs = [Input.from_dict(input_) for input_ in tx["inputs"]]
         outputs = [Output.from_dict(output) for output in tx["outputs"]]
+
+        if not skip_schema_validation:
+            cls.validate_id(tx)
+            cls.validate_schema(tx)
         return cls(
             tx["operation"],
             tx["asset"],
@@ -1143,18 +1126,16 @@ class Transaction(object):
 
     @classmethod
     def from_db(cls, resdb, tx_dict_list):
-        """Helper method that reconstructs a transaction dict that was returned
+        """! Helper method that reconstructs a transaction dict that was returned
         from the database. It checks what asset_id to retrieve, retrieves the
         asset from the asset table and reconstructs the transaction.
 
-        Args:
-            resdb: An instance
-                of ResDB used to perform database queries.
-            tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
-                list of transaction dict as returned from the database.
 
-        Returns:
-            :class:`~Transaction`
+        @param resdb An instance of ResDB used to perform database queries.
+        @param tx_dict_list (:list:`dict` or :obj:`dict`): The transaction dict or
+            list of transaction dict as returned from the database.
+
+        @return :class:`~Transaction`
 
         """
         return_list = True
@@ -1198,13 +1179,15 @@ class Transaction(object):
         Transaction.type_registry[tx_type] = tx_class
 
     def resolve_class(operation):
-        """For the given `tx` based on the `operation` key return its implementation class"""
+        """! For the given `tx` based on the `operation` key return its implementation class
+        """
 
         create_txn_class = Transaction.type_registry.get(Transaction.CREATE)
         return Transaction.type_registry.get(operation, create_txn_class)
 
     @classmethod
     def validate_schema(cls, tx):
+        # TODO
         pass
 
     def validate_transfer_inputs(self, resdb, current_transactions=[]):
@@ -1222,13 +1205,15 @@ class Transaction(object):
                         input_tx = ctxn
 
             if input_tx is None:
-                raise InputDoesNotExist("input `{}` doesn't exist".format(input_txid))
+                raise InputDoesNotExist(
+                    "input `{}` doesn't exist".format(input_txid))
 
             spent = resdb.get_spent(
                 input_txid, input_.fulfills.output, current_transactions
             )
             if spent:
-                raise DoubleSpend("input `{}` was already spent".format(input_txid))
+                raise DoubleSpend(
+                    "input `{}` was already spent".format(input_txid))
 
             output = input_tx.outputs[input_.fulfills.output]
             input_conditions.append(output)

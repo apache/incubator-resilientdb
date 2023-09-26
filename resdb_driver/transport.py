@@ -12,15 +12,15 @@ NO_TIMEOUT_BACKOFF_CAP = 10  # seconds
 
 
 class Transport:
-    """Transport class."""
+    """! Transport class.
+    """
 
     def __init__(self, *nodes: list, timeout: int = None):
-        """Initializes an instance of
-        :class:`~resdb_driver.transport.Transport`.
-        Args:
-            nodes: each node is a dictionary with the keys `endpoint` and
-                   `headers`
-            timeout (int): Optional timeout in seconds.
+        """! Initializes an instance of
+            :class:`~resdb_driver.transport.Transport`.
+        @param nodes Each node is a dictionary with the keys `endpoint` and
+                `headers`
+        @param timeout (int): Optional timeout in seconds.
         """
         self.nodes = nodes
         self.timeout = timeout
@@ -39,7 +39,7 @@ class Transport:
         params: dict = None,
         headers: dict = None,
     ) -> Response.json:
-        """Makes HTTP requests to the configured nodes.
+        """! Makes HTTP requests to the configured nodes.
            Retries connection errors
            (e.g. DNS failures, refused connection, etc).
            A user may choose to retry other errors
@@ -49,15 +49,16 @@ class Transport:
            Backoff delays are expressed as timestamps stored on the object and
            they are not reset in between multiple function calls.
            Times out when `self.timeout` is expired, if not `None`.
-        Args:
-            method (str): HTTP method name (e.g.: ``'GET'``).
-            path (str): Path to be appended to the base url of a node. E.g.:
-                ``'/transactions'``).
-            json (dict): Payload to be sent with the HTTP request.
-            params (dict)): Dictionary of URL (query) parameters.
-            headers (dict): Optional headers to pass to the request.
-        Returns:
-            dict: Result of :meth:`requests.models.Response.json`
+
+        @param method (str): HTTP method name (e.g.: ``'GET'``).
+        @param path (str): Path to be appended to the base url of a node. E.g.:
+            ``'/transactions'``).
+        @param json (dict): Payload to be sent with the HTTP request.
+        @param params (dict): Dictionary of URL (query) parameters.
+        @param headers (dict): Optional headers to pass to the request.
+
+        @return Result of :meth:`requests.models.Response.json`
+
         """
         error_trace = []
         timeout = self.timeout

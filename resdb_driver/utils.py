@@ -1,3 +1,4 @@
+from urllib.parse import urlparse, urlunparse
 import rapidjson
 import time
 import re
@@ -7,7 +8,7 @@ from .exceptions import ValidationError
 
 
 def serialize(data: dict) -> str:
-    """Serialize a dict into a JSON formatted string.
+    """! Serialize a dict into a JSON formatted string.
 
     This function enforces rules like the separator and order of keys.
     This ensures that all dicts are serialized in the same way.
@@ -17,36 +18,33 @@ def serialize(data: dict) -> str:
     hash mismatches for the same structure due to serialization
     differences.
 
-    Args:
-        data (dict): dict to serialize
+    @param data (dict): Data to serialize
 
-    Returns:
-        str: JSON formatted string
+    @return JSON formatted string
 
     """
     return rapidjson.dumps(data, skipkeys=False, ensure_ascii=False, sort_keys=True)
 
 
 def gen_timestamp():
-    """The Unix time, rounded to the nearest second.
+    """! The Unix time, rounded to the nearest second.
     See https://en.wikipedia.org/wiki/Unix_time
-    Returns:
-        str: the Unix time
+    @return The Unix time
     """
     return str(round(time.time()))
 
-
-from urllib.parse import urlparse, urlunparse
 
 DEFAULT_NODE = "http://localhost:9984"
 
 
 class CreateOperation:
-    """Class representing the ``'CREATE'`` transaction operation."""
+    """! Class representing the ``'CREATE'`` transaction operation.
+    """
 
 
 class TransferOperation:
-    """Class representing the ``'TRANSFER'`` transaction operation."""
+    """! Class representing the ``'TRANSFER'`` transaction operation.
+    """
 
 
 ops_map = {
@@ -56,17 +54,15 @@ ops_map = {
 
 
 def _normalize_operation(operation):
-    """Normalizes the given operation string. For now, this simply means
+    """! Normalizes the given operation string. For now, this simply means
     converting the given string to uppercase, looking it up in
     :attr:`~.ops_map`, and returning the corresponding class if
     present.
 
-    Args:
-        operation (str): The operation string to convert.
+    @param operation (str): The operation string to convert.
 
-    Returns:
-        The class corresponding to the given string,
-        :class:`~.CreateOperation` or :class:`~TransferOperation`.
+    @return The class corresponding to the given string,
+            :class:`~.CreateOperation` or :class:`~TransferOperation`.
 
         .. important:: If the :meth:`str.upper` step, or the
             :attr:`~.ops_map` lookup fails, the given ``operation``
@@ -91,7 +87,7 @@ def _get_default_port(scheme):
 
 
 def normalize_url(node):
-    """Normalizes the given node url"""
+    """! Normalizes the given node url"""
     if not node:
         node = DEFAULT_NODE
     elif "://" not in node:
@@ -103,7 +99,7 @@ def normalize_url(node):
 
 
 def normalize_node(node, headers=None):
-    """Normalizes given node as str or dict with headers"""
+    """! Normalizes given node as str or dict with headers"""
     headers = {} if headers is None else headers
     if isinstance(node, str):
         url = normalize_url(node)
@@ -115,7 +111,7 @@ def normalize_node(node, headers=None):
 
 
 def normalize_nodes(*nodes, headers=None):
-    """Normalizes given dict or array of driver nodes"""
+    """! Normalizes given dict or array of driver nodes"""
     if not nodes:
         return (normalize_node(DEFAULT_NODE, headers),)
 

@@ -2,7 +2,8 @@
 
 from resdb_driver import Resdb
 
-db_root_url = "https://resdb.free.beeceptor.com"
+db_root_url = "http://127.0.0.1:18000"
+#db_root_url = "https://resdb.free.beeceptor.com"
 
 db = Resdb(db_root_url)
 from resdb_driver.crypto import generate_keypair

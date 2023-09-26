@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package sdk;
+
+message KVRequest {
+    enum CMD {
+        NONE = 0;
+        SET = 1;
+        GET = 2;
+        GETVALUES = 3;
+        GETRANGE = 4;
+    }
+    CMD cmd = 1;
+    string key = 2;
+    bytes value = 3;
+}
+
+message KVResponse {
+    string key = 1;
+    bytes value = 2;
+}
+
