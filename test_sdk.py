@@ -30,12 +30,13 @@ prepared_token_tx = db.transactions.prepare(
 )
 
 #%%
-# fulfill the tnx
+# fulfill the txn by signing it with the private key
 fulfilled_token_tx = db.transactions.fulfill(
     prepared_token_tx, private_keys=alice.private_key
 )
 
 #%%
+# send the txn to ResDB
 db.transactions.send_commit(fulfilled_token_tx)
 
 #%%
@@ -49,7 +50,6 @@ transfer_input = {
 }
 
 #%%
-
 prepared_transfer_tx = db.transactions.prepare(
     operation="TRANSFER",
     asset=transfer_asset,
@@ -58,23 +58,31 @@ prepared_transfer_tx = db.transactions.prepare(
 )
 
 #%%
-
+# fulfill the transfer txn by signing it with the private key
 fulfilled_transfer_tx = db.transactions.fulfill(
     prepared_transfer_tx, private_keys=bob.private_key
 )
 
 #%%
-
+# send the transfer txn to ResDB
 sent_transfer_tx = db.transactions.send_commit(fulfilled_transfer_tx)
 
 
 # %%
-## replace `testId` with the txid for the transaction to retrieve
-db.transactions.retrieve(txid="testId")
+## set `testId` with the txid for the transaction to retrieve
+retrieve_id = fulfilled_token_tx["id"]
+retrieved_txn = db.transactions.retrieve(txid=retrieve_id)
+
+# print(retrieved_txn)
 
 #%%
-# TODO valide a tx object
-# from resdb_driver.validate import Transaction
+# valide a tx object
+from resdb_driver.validate import Transaction
 
-# t = Transaction.from_dict(fulfilled_token_tx)
-# t.validate()
+t = Transaction.from_dict(fulfilled_token_tx)
+
+try:
+    result = t.validate(resdb=db)
+    print("The retrieved txn is successfully validated")
+except:
+    print("An exception occurred")
