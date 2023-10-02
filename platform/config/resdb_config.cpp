@@ -105,6 +105,26 @@ void ResDBConfig::SetConfigData(const ResConfigData& config_data) {
 
 KeyInfo ResDBConfig::GetPrivateKey() const { return private_key_; }
 
+void ResDBConfig::AddNewReplica(const ReplicaInfo& info) {
+
+  auto check_duplicate = [&](const ReplicaInfo& check_replica) {
+    return info.ip() == check_replica.ip();
+  };
+
+  if(std::find_if(replicas_.begin(), replicas_.end(), check_duplicate) != replicas_.end()){
+    LOG(ERROR)<<"Skip to add. replica has already been added:"<<info.id()<<" ip:"<<info.ip()<<" port:"<<info.port();
+    return;
+  }
+
+  replicas_.push_back(info);
+  // Also add to the config
+  for (auto& region : *config_data_.mutable_region()) {
+    if (region.region_id() == config_data_.self_region_id()) {
+      *region.add_replica_info() = info;
+    }
+  }
+}
+
 CertificateInfo ResDBConfig::GetPublicKeyCertificateInfo() const {
   return public_key_cert_info_;
 }

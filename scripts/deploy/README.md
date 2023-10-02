@@ -43,3 +43,19 @@ Run the script:
 	./performance/run_performance.sh config/kv_performance_server.conf
 
 Results will be saved locally and be shown on the screen as well.
+
+
+
+### Tools ###
+
+Kill all the service from the ip_list in the configuration file:
+  ./script/kill_all.sh ./config/kv_server_new.conf
+
+Deploy the KV service to all the replica in the ip_list from the configuration file:
+  ./script/^Cploy.sh config/kv_server.conf
+
+Add a new replica to the cluster. 
+Add a new configuration `./config/kv_server_new.conf`, update the iplist and add the new replica ip in the new_iplist.
+  ./script/add_replica.sh ./config/kv_server_new.conf
+
+

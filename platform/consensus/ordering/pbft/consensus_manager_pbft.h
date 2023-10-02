@@ -61,6 +61,8 @@ class ConsensusManagerPBFT : public ConsensusManager {
   void SetPreVerifyFunc(std::function<bool(const Request&)>);
   void SetNeedCommitQC(bool need_qc);
 
+  void NewReplicaArrive(const ReplicaInfo& info) override;
+
  protected:
   int InternalConsensusCommit(std::unique_ptr<Context> context,
                               std::unique_ptr<Request> request);

@@ -56,6 +56,7 @@ class ResDBConfig {
   // Each replica infomation, including the binding urls(or ip,port).
   const std::vector<ReplicaInfo>& GetReplicaInfos() const;
 
+  void AddNewReplica(const ReplicaInfo& info);
   ResConfigData GetConfigData() const;
 
   // The current replica infomation, including the binding urls(or ip,port).

@@ -99,6 +99,20 @@ void ReplicaCommunicator::UpdateClientReplicas(
   clients_ = replicas;
 }
 
+void ReplicaCommunicator::AddReplica(const ReplicaInfo& replica) {
+
+  auto check_duplicate = [&](const ReplicaInfo& check_replica) {
+    return replica.ip() == check_replica.ip();
+  };
+
+  if(std::find_if(replicas_.begin(), replicas_.end(), check_duplicate) != replicas_.end()){
+    LOG(ERROR)<<"Skip to add. replica has already been added:"<<replica.id()<<" ip:"<<replica.ip()<<" port:"<<replica.port();
+    return;
+  }
+  LOG(ERROR)<<"replica has been added to client successfully:"<<replica.id()<<" ip:"<<replica.ip()<<" port:"<<replica.port();
+  replicas_.push_back(replica);
+}
+
 std::vector<ReplicaInfo> ReplicaCommunicator::GetClientReplicas() {
   return clients_;
 }

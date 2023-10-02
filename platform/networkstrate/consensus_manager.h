@@ -81,7 +81,10 @@ class ConsensusManager : public ServiceInterface {
   virtual std::vector<ReplicaInfo> GetReplicas() = 0;
   std::vector<ReplicaInfo> GetAllReplicas();
   virtual std::vector<ReplicaInfo> GetClientReplicas();
-  virtual void AddNewReplica(const ReplicaInfo& info);
+
+  void ReceiveNewReplica(const ReplicaInfo& info);
+
+  virtual void NewReplicaArrive(const ReplicaInfo& info);
   virtual uint32_t GetPrimary();
   virtual uint32_t GetVersion();
   virtual void SetPrimary(uint32_t primary, uint64_t version);

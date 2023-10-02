@@ -144,7 +144,7 @@ void ConsensusManager::HeartBeat() {
       if (config_.IsTestMode()) {
         sleep_time = 1;
       } else {
-        sleep_time = 60 * 2;
+        sleep_time = 30;
       }
     }
   }
@@ -241,8 +241,8 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
     }
     if (request->region_info().region_id() !=
         config_.GetConfigData().self_region_id()) {
-      // LOG(ERROR) << "key from other region:"
-      //           << request->region_info().region_id();
+      //LOG(ERROR) << "key from other region:"
+       //         << request->region_info().region_id();
       continue;
     }
 
@@ -259,7 +259,7 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
     if (public_key.public_key_info().type() == CertificateKeyInfo::REPLICA) {
       replica_num++;
       if (!ReplicaExisted(info, replicas)) {
-        // AddNewReplica(info);
+        ReceiveNewReplica(info);
       }
     } else {
       if (!ReplicaExisted(info, clients_)) {
@@ -334,7 +334,14 @@ std::unique_ptr<ReplicaCommunicator> ConsensusManager::GetReplicaClient(
       is_use_long_conn, config_.GetOutputWorkerNum(), config_.GetTcpBatchNum());
 }
 
-void ConsensusManager::AddNewReplica(const ReplicaInfo& info) {}
+void ConsensusManager::ReceiveNewReplica(const ReplicaInfo& info) {
+  config_.AddNewReplica(info);
+  bc_client_->AddReplica(info);
+  NewReplicaArrive(info);
+}
+
+void ConsensusManager::NewReplicaArrive(const ReplicaInfo& info) {
+}
 
 void ConsensusManager::AddNewClient(const ReplicaInfo& info) {
   clients_.push_back(info);

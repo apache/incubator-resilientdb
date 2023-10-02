@@ -26,10 +26,10 @@ output_cert_path=${output_key_path}
 
 admin_key_path=${script_path}/deploy/data/cert
 
-rm -rf ${output_path}
 mkdir -p ${output_path}
 
-deploy_iplist=${iplist[@]}
+new_config_iplist=${iplist[@]}
+deploy_iplist=${new_iplist[@]}
 
 
 echo "server src path:"${server_path}
@@ -43,9 +43,10 @@ echo "deploy to :"${deploy_iplist[@]}
 
 cd ${script_path}
 echo "where am i:"$PWD
+echo "??iplist:"${new_config_iplist[@]}
 
 #deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#iplist[@]}
-deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
+deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${new_config_iplist[@]}
 
 # build kv server
 bazel build ${server}
@@ -61,6 +62,7 @@ function run_cmd(){
   count=1
   for ip in ${deploy_iplist[@]};
   do
+    echo "run cmd to:"${ip}
      ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" &
     ((count++))
   done
@@ -94,17 +96,33 @@ while [ $count -gt 0 ]; do
   count=`expr $count - 1`
 done
 
+function find_ip_idx(){
+search_ip=$1
+idx=1
+for ip in ${new_config_iplist[@]};
+do
+  echo "search ip:"$search_ip
+  echo "get ip:"$ip
+  if [ "$ip" == "$search_ip" ];then
+    echo "return idx:"$idx
+    return $idx
+  fi
+  ((idx++))
+done
+}
+
 echo "start to run"
 # Start server
-idx=1
 count=0
 for ip in ${deploy_iplist[@]};
 do
+  find_ip_idx ${ip}
+  idx=$?
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
+  echo "get ip:"${ip}" idx:"${idx}
   run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}.log 2>&1 &" &
   ((count++))
-  ((idx++))
 done
 
 while [ $count -gt 0 ]; do
@@ -113,18 +131,16 @@ while [ $count -gt 0 ]; do
 done
 
 # Check ready logs
-idx=1
 for ip in ${deploy_iplist[@]};
 do
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#new_config_iplist[@]}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     fi
   done
-  ((idx++))
 done
 
 echo "Servers are running....."

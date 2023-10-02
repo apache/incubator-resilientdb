@@ -83,6 +83,12 @@ void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
   commitment_->SetNeedCommitQC(need_qc);
 }
 
+void ConsensusManagerPBFT::NewReplicaArrive(const ReplicaInfo& info) {
+  LOG(ERROR)<<"detect a new replica";
+  //TODO do a consensus to accept the replica and update the replica list in message_manager(GetReplicas()).
+  // Otherwise, this function will keep calling.
+}
+
 void ConsensusManagerPBFT::Start() { ConsensusManager::Start(); }
 
 std::vector<ReplicaInfo> ConsensusManagerPBFT::GetReplicas() {

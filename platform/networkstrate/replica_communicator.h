@@ -61,8 +61,10 @@ class ReplicaCommunicator {
       const std::vector<std::unique_ptr<Request>>& messages,
       const ReplicaInfo& replica_info);
 
+  void AddReplica(const ReplicaInfo& replica);
   void UpdateClientReplicas(const std::vector<ReplicaInfo>& replicas);
   std::vector<ReplicaInfo> GetClientReplicas();
+
 
  protected:
   virtual std::unique_ptr<NetChannel> GetClient(const std::string& ip,
