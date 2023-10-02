@@ -1,32 +1,72 @@
 # NexresGraphQL
 Nexres GraphQL Server
 
-# Start
-`python app.py`
-
-OR
+# Get Prepared 
 
 (If you're using this for the first time, the steps below would be useful)
 
-Installation steps for Windows 21H2 ecosystem:
-
-1.  Install Ubuntu 20.04 from the Microsoft Windows store
+1. Install **Ubuntu 20.04** on your local machine
 
 2. Once installed, go to File Explorer -> Linux -> Ubuntu 20.04
 
-3. In the home directory, once the password is configured, copy/clone this directory
+3. Clone this repository
 
-4. Install python3 (version - 3.10.7) and ensure pip is installed using the command
+4. Install python3 (version - 3.9.18) and ensure pip is installed using the command
 
 `sudo apt-get install python3-pip`
 
 5. Also make sure to install the venv module which creates a virtual Python environment that helps encapsulate the project's dependencies and prevents possible conflicts with the global Python environment. The command is:
 
-`sudo apt-get install -y python3-venv`
+`sudo apt-get install -y python3.9-venv`
 
-6. To start a virtual env:
+6. Create a veritual environment:
+
+`python3 -m venv venv`
+
+7. Start a virtual environment:
 
 `source venv/bin/activate`
+
+8. Go back from the virtual environment when you no longer need it:
+
+`deactivate`
+
+# Using the SDK 
+
+1. To use the SDK, you need to start a KV service first, which you can refer to the [resilientdb repo](https://github.com/resilientdb/resilientdb) and the [blog](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html). 
+
+2. Then you should start the crow http service, which may take a few minutes at the first time.
+
+`bazel build service/http_server:crow_service_main`
+`bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config`
+
+3. After starting the crow service,you can test it by using the **curl** command to send HTTP requests.
+
+`curl -X POST -d '{"id":"key1","value":"value1"}' 127.0.0.1:18000/v1/transactions/commit` 
+`curl 127.0.0.1:18000/v1/transactions/key1`
+
+The expected output of the two commands above are:
+
+`id: key1`
+`{"id":"key1","value":"value1"}`
+
+4. Start your virtual environment
+
+`source venv/bin/activate`
+
+5. Run the requirements.txt command to install the SDK related dependencies
+
+`python3 -m pip install -r requirements.txt`
+
+6. Try the test script 
+
+`python3 test_sdk.py`
+
+You have successfully run the script if you see the following output:
+
+`The retrieved txn is successfully validated`
+
+# GraphQL (To be finished by Apratim)
 
 7. (Temporary resolve) Copy app.py to the nexres_sdk folder to ensure execution
 
