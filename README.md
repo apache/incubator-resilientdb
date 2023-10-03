@@ -66,7 +66,7 @@ You have successfully run the script if you see the following output:
 
 `The retrieved txn is successfully validated`
 
-# GraphQL (To be finished by Apratim)
+# GraphQL
 
 7. (Temporary resolve) Copy app.py to the nexres_sdk folder to ensure execution
 
@@ -89,11 +89,7 @@ Note: If there is an error with the pip version, use the command:
 `python3 -m pip install strawberry-graphql`
 `python3 -m pip install flask_cors`
 
-11. Run the requirements.txt command to install the SDK related dependencies
-
-`python3 -m pip install -r requirements.txt`
-
-12. **BUG FIX**: in the case requirements.txt doesn't work, and the `cloud-init` version is not found, edit the file to be:
+11. **BUG FIX**: in the case requirements.txt doesn't work, and the `cloud-init` version is not found, edit the file to be:
 ```C
 aiohttp==3.8.3
 aiohttp-cors==0.7.0
