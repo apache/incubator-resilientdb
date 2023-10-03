@@ -174,7 +174,7 @@ ModuleNotFoundError: No module named 'base58'
 
 Start the app using:
 
-    python3 app.py
+    > python3 app.py
 
 This would be hosted on your local server to test the React App/Frontend.
 Also, this would give info on the console about the POST command, which are used to create an account. This consists of 3 stages: publicKey. AES encrypted private key and decrypted privateKey
