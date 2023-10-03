@@ -48,10 +48,9 @@ After starting the crow service, you can optionally test it by using the **curl*
     curl 127.0.0.1:18000/v1/transactions/key1
 
 The expected output of the two commands above are:
+`id: key1`
 
-    `id: key1`
-
-    `{"id":"key1","value":"value1"}`
+`{"id":"key1","value":"value1"}`
 
 Start your virtual environment
 
