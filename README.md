@@ -11,13 +11,13 @@ ResilientDB GraphQL Server
 
 3. Clone this repository
 
-4. Install python3 (version - 3.9.18) and ensure pip is installed using the command
+4. Install python3 (version - 3.9+) and ensure pip is installed using the command
 
 `sudo apt-get install python3-pip`
 
 5. Also make sure to install the venv module which creates a virtual Python environment that helps encapsulate the project's dependencies and prevents possible conflicts with the global Python environment. The command is:
 
-`sudo apt-get install -y python3.9-venv`
+`sudo apt-get install -y python3.10-venv`
 
 6. Create a veritual environment:
 
@@ -33,63 +33,69 @@ ResilientDB GraphQL Server
 
 # Using the SDK 
 
-1. To use the SDK, you need to start a KV service first, which you can refer to the [resilientdb repo](https://github.com/resilientdb/resilientdb) and the [blog](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html). 
+1. To use the SDK, you need to start a KV service first, which you can refer to the [resilientdb](https://github.com/resilientdb/resilientdb) repository and the [blog](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html). 
 
 2. Then you should start the crow http service, which may take a few minutes at the first time.
 
-`bazel build service/http_server:crow_service_main`
-`bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config`
+    > bazel build service/http_server:crow_service_main
 
-3. After starting the crow service,you can test it by using the **curl** command to send HTTP requests.
+    > bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
 
-`curl -X POST -d '{"id":"key1","value":"value1"}' 127.0.0.1:18000/v1/transactions/commit` 
-`curl 127.0.0.1:18000/v1/transactions/key1`
+3. After starting the crow service, you can optionally test it by using the **curl** command to send HTTP requests.
 
-The expected output of the two commands above are:
+    > curl -X POST -d '{"id":"key1","value":"value1"}' 127.0.0.1:18000/v1/transactions/commit
 
-`id: key1`
-`{"id":"key1","value":"value1"}`
+    > curl 127.0.0.1:18000/v1/transactions/key1
+
+    The expected output of the two commands above are:
+
+    > id: key1
+
+    > {"id":"key1","value":"value1"}
 
 4. Start your virtual environment
 
-`source venv/bin/activate`
+    > source venv/bin/activate
 
 5. Run the requirements.txt command to install the SDK related dependencies
 
-`python3 -m pip install -r requirements.txt`
+    > python3 -m pip install -r requirements.txt
 
 6. Try the test script 
 
-`python3 test_sdk.py`
+    > python3 test_sdk.py
 
-You have successfully run the script if you see the following output:
+    You have successfully run the script if you see the following output:
 
-`The retrieved txn is successfully validated`
+    > The retrieved txn is successfully validated
 
 # GraphQL
 
-7. (Temporary resolve) Copy app.py to the nexres_sdk folder to ensure execution
+<!-- 7. (Temporary resolve) Copy app.py to the nexres_sdk folder to ensure execution -->
 
-8. (Optional) If there is an error while running any command relating to NexRes, this command below may help:
+7. (Optional) If there is an error while running any command relating to NexRes, this command below may help:
 
-`sudo apt-get install python3.10-distutils`
+    > sudo apt-get install python3.10-distutils
 
 Note: If there is an error with the pip version, use the command:
-`curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10`
 
-9. Open a venv in the Ubuntu server and run the command: 
+    > curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 
-`source venv/bin/activate`
-`sudo apt-get install cloud-init`
+8. Open a venv in the Ubuntu server and run the command: 
+
+    > source venv/bin/activate
+
+    > sudo apt-get install cloud-init
 
 `deactivate` would take you back to the Ubuntu environment
 
-10. Install the remaining dependencies in venv
+9. Install the remaining dependencies in venv
 
-`python3 -m pip install strawberry-graphql`
-`python3 -m pip install flask_cors`
+    > python3 -m pip install strawberry-graphql
 
-11. **BUG FIX**: in the case requirements.txt doesn't work, and the `cloud-init` version is not found, edit the file to be:
+    > python3 -m pip install flask_cors
+
+10. **BUG FIX**: in the case requirements.txt doesn't work, and the `cloud-init` version is not found, edit the file to be:
 ```C
 aiohttp==3.8.3
 aiohttp-cors==0.7.0
@@ -170,7 +176,7 @@ ModuleNotFoundError: No module named 'base58'
 
 Start the app using:
 
-`python3 app.py`
+> python3 app.py
 
 This would be hosted on your local server to test the React App/Frontend.
 Also, this would give info on the console about the POST command, which are used to create an account. This consists of 3 stages: publicKey. AES encrypted private key and decrypted privateKey
