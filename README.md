@@ -47,26 +47,21 @@ After starting the crow service, you can optionally test it by using the **curl*
 
     curl 127.0.0.1:18000/v1/transactions/key1
 
-The expected output of the two commands above are:
-`id: key1`
+The expected output of the two commands above are: `id: key1` and `{"id":"key1","value":"value1"}`, respectively.
 
-`{"id":"key1","value":"value1"}`
-
-Start your virtual environment
+Start your virtual environment.
 
     source venv/bin/activate
 
-Run the requirements.txt command to install the SDK related dependencies
+Run the requirements.txt command to install the SDK related dependencies.
 
     python3 -m pip install -r requirements.txt
 
-Try the test script 
+Try the test script.
 
     python3 test_sdk.py
 
-You have successfully run the script if you see the following output:
-
-    The retrieved txn is successfully validated
+You have successfully run the script if you see the output: `The retrieved txn is successfully validated`
 
 # GraphQL
 
