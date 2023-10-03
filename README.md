@@ -1,5 +1,5 @@
-# NexresGraphQL
-Nexres GraphQL Server
+# ResilientDB GraphQL
+ResilientDB GraphQL Server
 
 # Get Prepared 
 
