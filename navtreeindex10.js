@@ -1,10 +1,5 @@
 var NAVTREEINDEX10 =
 {
-"df/d98/checkpoint__manager_8cpp.html":[2,0,6,2,2,2,0],
-"df/d98/checkpoint__manager_8cpp.html#ab2cf1b4bf34a1ea57df6cbeaa24acc09":[2,0,6,2,2,2,0,0],
-"df/d98/checkpoint__manager_8cpp_source.html":[2,0,6,2,2,2,0],
-"df/d9b/mock__storage_8h.html":[2,0,1,1,0],
-"df/d9b/mock__storage_8h_source.html":[2,0,1,1,0],
 "df/da2/async__acceptor_8h.html":[2,0,6,3,1],
 "df/da2/async__acceptor_8h_source.html":[2,0,6,3,1],
 "df/da4/mock__socket_8h.html":[2,0,6,0,1,0],

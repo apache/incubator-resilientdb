@@ -144,8 +144,6 @@ var namespaceresdb =
     [ "GetCurrentTime", "d5/d10/namespaceresdb.html#a60842c77d7913e381a97c08279a383a7", null ],
     [ "GetDNSName", "d5/d10/namespaceresdb.html#ac6bc2e098eb060942e97f31c12d3660a", null ],
     [ "GetHash", "d5/d10/namespaceresdb.html#ab2cf1b4bf34a1ea57df6cbeaa24acc09", null ],
-    [ "GetServerClock", "d5/d10/namespaceresdb.html#ae736dc8df15beb705246e09f68f98923", null ],
-    [ "GetSysClock", "d5/d10/namespaceresdb.html#a530bc4bc75a952a7e2268b306c2763c0", null ],
     [ "GetTcpUrl", "d5/d10/namespaceresdb.html#ab7bef7d6e060002099f2b78248b34cbc", null ],
     [ "NewRequest", "d5/d10/namespaceresdb.html#a26e13db44e53ac446f5fc96fb4cf4848", null ],
     [ "NewRequest", "d5/d10/namespaceresdb.html#a56d3b8c76b7936e7fc14a38d5ef31745", null ],
