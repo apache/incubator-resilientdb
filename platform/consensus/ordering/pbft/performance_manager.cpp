@@ -225,7 +225,7 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   uint64_t local_id = batch_response.local_id();
   if (create_time > 0) {
-    uint64_t run_time = GetSysClock() - create_time;
+    uint64_t run_time = GetCurrentTime() - create_time;
     global_stats_->AddLatency(run_time);
   } else {
     LOG(ERROR) << "seq:" << local_id << " no resp";
@@ -304,7 +304,7 @@ int PerformanceManager::DoBatch(
     req->set_id(i);
   }
 
-  batch_request.set_createtime(GetSysClock());
+  batch_request.set_createtime(GetCurrentTime());
   batch_request.SerializeToString(new_request->mutable_data());
   if (verifier_) {
     auto signature_or = verifier_->SignMessage(new_request->data());
