@@ -32,8 +32,7 @@ function Login(props) {
         }
         catch(err) {
         props.navigate("/login");
-        }
-        
+        }  
     }
     else {
         props.navigate("/login");
@@ -69,6 +68,7 @@ function Login(props) {
                                     value={props.loginValues.password}
                                     style={{color: 'white', width: '100%'}}
                                     disableUnderline
+                                    required
                                     endAdornment={
                                         <InputAdornment position="end">
                                         <IconButton
@@ -83,7 +83,7 @@ function Login(props) {
                                     />
                             </div>
                             <div className="login-form__row">
-                                <button className="login-form__submit button button--main button--full" id="submit" onClick={loginAccount}>
+                                <button disabled={!props.loginValues.password} className="login-form__submit button button--main button--full" id="submit" onClick={loginAccount}>
                                     Login
                                 </button>
                             </div>

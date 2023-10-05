@@ -111,6 +111,7 @@ function SignUp(props) {
                             value={props.values.password}
                             style={{color: 'white', width: '100%'}}
                             disableUnderline
+                            required
                             endAdornment={
                                 <InputAdornment position="end">
                                 <IconButton
@@ -134,6 +135,7 @@ function SignUp(props) {
                             value={props.confirmValues.password}
                             style={{color: 'white', width: '100%'}}
                             disableUnderline
+                            required
                             endAdornment={
                                 <InputAdornment position="end">
                                 <IconButton
@@ -149,7 +151,7 @@ function SignUp(props) {
 						</div>
                         <PasswordStrengthBar password={props.values.password} />
 						<div className="login-form__row">
-							<button className="login-form__submit button button--main button--full" id="submit" onClick={createAccount}>
+							<button disabled={!props.values.password && !props.confirmValues.password} className="login-form__submit button button--main button--full" id="submit" onClick={createAccount}>
                                 Create Account
                             </button>
 						</div>
