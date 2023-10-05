@@ -19,7 +19,7 @@ Also make sure to install the venv module which creates a virtual Python environ
 
     sudo apt-get install -y python3.10-venv
 
-Create a veritual environment:
+Create a virtual environment:
 
     python3 -m venv venv
 
