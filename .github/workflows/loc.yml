@@ -23,7 +23,7 @@ jobs:
          debug: true
          directory: ./
          patterns: '**/*.h|**/*.cpp'
-         badge: ./output/badge.svg
+         badge: ./img/badge.svg
          ignore: 'node_modules/|README'
 
      - name: Commit files
