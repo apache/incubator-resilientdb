@@ -23,7 +23,7 @@
  *
  */
 
-#include "executor/kv/kv_executor.h"
+#include "executor/kv/quecc_executor.h"
 
 #include <glog/logging.h>
 #include <gmock/gmock.h>
@@ -31,25 +31,23 @@
 
 #include <chrono>
 #include <future>
-#include <vector>
 
 #include "chain/storage/mock_storage.h"
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
-
 namespace resdb {
 namespace {
 
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
-using namespace std;
-class KVExecutorTest : public Test {
+
+class QueccTest : public Test {
  public:
-  KVExecutorTest() {
+  QueccTest() {
     auto mock_storage = std::make_unique<MockStorage>();
     mock_storage_ptr_ = mock_storage.get();
-    impl_ = std::make_unique<KVExecutor>(
+    impl_ = std::make_unique<QueccExecutor>(
         std::make_unique<ChainState>(std::move(mock_storage)));
   }
 
@@ -132,10 +130,10 @@ class KVExecutorTest : public Test {
   MockStorage* mock_storage_ptr_;
 
  private:
-  std::unique_ptr<KVExecutor> impl_;
+  std::unique_ptr<QueccExecutor> impl_;
 };
 
-TEST_F(KVExecutorTest, SetValue) {
+TEST_F(QueccTest, SetValue) {
   std::map<std::string, std::string> data;
 
   EXPECT_CALL(*mock_storage_ptr_, SetValue("test_key", "test_value"))
@@ -167,7 +165,63 @@ TEST_F(KVExecutorTest, SetValue) {
   EXPECT_EQ(GetRange("a", "z"), "[test_value]");
 }
 
-TEST_F(KVExecutorTest, ExecuteMany) {
+TEST_F(QueccTest, ExecuteOne) {
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+
+  KVRequest request;
+  request.set_cmd(KVRequest::SET);
+  request.set_key("test");
+  request.set_value("1234");
+
+  BatchUserRequest batch_request;
+  std::string str;
+  if (!request.SerializeToString(&str)) {
+    ADD_FAILURE();
+  }
+  batch_request.add_user_requests()->mutable_request()->set_data(str);
+  auto mock_storage = std::make_unique<MockStorage>();
+  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+
+  // Test expects ExecuteData call, checks if batch_user_response has a response
+  // for the one txn
+  EXPECT_EQ(executor.ExecuteBatch(batch_request).get()->response_size(), 1);
+  done.set_value(true);
+  done_future.get();
+}
+
+TEST_F(QueccTest, ExecuteMany) {
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+  BatchUserRequest batch_request;
+
+  vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
+
+  for (int i = 0; i < 10; i++) {
+    KVRequest request;
+    request.set_cmd(KVRequest::SET);
+    request.set_key(keys[i % 5]);
+    request.set_value(to_string(i));
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      ADD_FAILURE();
+    }
+    batch_request.add_user_requests()->mutable_request()->set_data(str);
+  }
+
+  auto mock_storage = std::make_unique<MockStorage>();
+
+  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+
+  // Test expects ExecuteData call, checks if batch_user_response has a response
+  // for the one txn
+  EXPECT_EQ(executor.ExecuteBatch(batch_request).get()->response_size(), 10);
+  done.set_value(true);
+  done_future.get();
+}
+
+TEST_F(QueccTest, ExecuteManyEqualSplitBenchmark) {
   std::promise<bool> done;
   std::future<bool> done_future = done.get_future();
   BatchUserRequest batch_request;
@@ -189,7 +243,7 @@ TEST_F(KVExecutorTest, ExecuteMany) {
 
   auto mock_storage = std::make_unique<MockStorage>();
 
-  KVExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -203,6 +257,88 @@ TEST_F(KVExecutorTest, ExecuteMany) {
   done_future.get();
 }
 
-}  // namespace
+TEST_F(QueccTest, ExecuteManySameKeyBenchmark) {
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+  BatchUserRequest batch_request;
 
+  vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
+
+  for (int i = 0; i < 1000; i++) {
+    KVRequest request;
+    request.set_cmd(KVRequest::SET);
+    request.set_key(keys[0]);
+    request.set_value(to_string(i));
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      ADD_FAILURE();
+    }
+    batch_request.add_user_requests()->mutable_request()->set_data(str);
+  }
+
+  auto mock_storage = std::make_unique<MockStorage>();
+
+  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+
+  // Test expects ExecuteData call, checks if batch_user_response has a response
+  // for the one txn
+  auto start_time = std::chrono::high_resolution_clock::now();
+  EXPECT_EQ(executor.ExecuteBatch(batch_request).get()->response_size(), 1000);
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
+  LOG(ERROR) << "Time Taken: " << duration.count();
+  done.set_value(true);
+  done_future.get();
+}
+
+TEST_F(QueccTest, TwoBatches) {
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+  BatchUserRequest batch_request;
+
+  vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
+
+  for (int i = 0; i < 10; i++) {
+    KVRequest request;
+    request.set_cmd(KVRequest::SET);
+    request.set_key(keys[i % 5]);
+    request.set_value(to_string(i));
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      ADD_FAILURE();
+    }
+    batch_request.add_user_requests()->mutable_request()->set_data(str);
+  }
+
+  auto mock_storage = std::make_unique<MockStorage>();
+
+  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+
+  // Test expects ExecuteData call, checks if batch_user_response has a response
+  // for the one txn
+  EXPECT_EQ(executor.ExecuteBatch(batch_request).get()->response_size(), 10);
+  BatchUserRequest batch_request2;
+
+  for (int i = 0; i < 10; i++) {
+    KVRequest request;
+    request.set_cmd(KVRequest::GET);
+    request.set_key(keys[i % 5]);
+    request.set_value(to_string(i));
+
+    std::string str;
+    if (!request.SerializeToString(&str)) {
+      ADD_FAILURE();
+    }
+    batch_request2.add_user_requests()->mutable_request()->set_data(str);
+  }
+  EXPECT_EQ(executor.ExecuteBatch(batch_request2).get()->response_size(), 10);
+
+  done.set_value(true);
+  done_future.get();
+}
+
+}  // namespace
 }  // namespace resdb

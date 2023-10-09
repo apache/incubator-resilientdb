@@ -2,21 +2,41 @@ syntax = "proto3";
 
 package resdb;
 
+message KVOperation {
+	enum CMD {
+			NONE = 0;
+			SET = 1;
+			GET = 2;
+			GETVALUES = 3;
+			GETRANGE = 4;
+	}
+	CMD cmd = 1;
+	string key = 2;
+	bytes value = 3;
+	uint64 txn_id = 4;
+}
+
 message KVRequest {
-    enum CMD {
-        NONE = 0;
-        SET = 1;
-        GET = 2;
-        GETVALUES = 3;
-        GETRANGE = 4;
-    }
-    CMD cmd = 1;
-    string key = 2;
-    bytes value = 3;
+	enum CMD {
+		NONE = 0;
+		SET = 1;
+		GET = 2;
+		GETVALUES = 3;
+		GETRANGE = 4;
+	}
+	repeated KVOperation ops = 1;
+	CMD cmd = 2;
+	string key = 3;
+	bytes value = 4;
+	uint64 txn_id = 5;
 }
 
 message KVResponse {
     string key = 1;
     bytes value = 2;
+    message Resp {
+      string key = 1;
+      bytes value = 2;
+    }
+    repeated Resp resp_info = 3;
 }
-

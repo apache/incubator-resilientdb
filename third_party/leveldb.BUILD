@@ -19,6 +19,9 @@ cc_library(
           "util/testutil.h",
           ],
     ),
+    copts = [
+        "-std=c++17",
+    ],
     defines = [
         "LEVELDB_PLATFORM_POSIX=1",
         "LEVELDB_IS_BIG_ENDIAN=0",

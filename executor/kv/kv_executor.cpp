@@ -44,14 +44,30 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
-  if (kv_request.cmd() == KVRequest::SET) {
-    Set(kv_request.key(), kv_request.value());
-  } else if (kv_request.cmd() == KVRequest::GET) {
-    kv_response.set_value(Get(kv_request.key()));
-  } else if (kv_request.cmd() == KVRequest::GETVALUES) {
-    kv_response.set_value(GetValues());
-  } else if (kv_request.cmd() == KVRequest::GETRANGE) {
-    kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
+  if (kv_request.ops_size()) {
+    for (const auto& op : kv_request.ops()) {
+      auto resp_info = kv_response.add_resp_info();
+      resp_info->set_key(op.key());
+      if (op.cmd() == KVOperation::SET) {
+        Set(op.key(), op.value());
+      } else if (op.cmd() == KVOperation::GET) {
+        resp_info->set_value(Get(op.key()));
+      } else if (op.cmd() == KVOperation::GETVALUES) {
+        resp_info->set_value(GetValues());
+      } else if (op.cmd() == KVOperation::GETRANGE) {
+        resp_info->set_value(GetRange(op.key(), op.value()));
+      }
+    }
+  } else {
+    if (kv_request.cmd() == KVRequest::SET) {
+      Set(kv_request.key(), kv_request.value());
+    } else if (kv_request.cmd() == KVRequest::GET) {
+      kv_response.set_value(Get(kv_request.key()));
+    } else if (kv_request.cmd() == KVRequest::GETVALUES) {
+      kv_response.set_value(GetValues());
+    } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+      kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
+    }
   }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
@@ -63,6 +79,9 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
+  if (!VerifyRequest(key, value)) {
+    return;
+  }
   state_->SetValue(key, value);
 }
 
@@ -77,5 +96,7 @@ std::string KVExecutor::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
   return state_->GetRange(min_key, max_key);
 }
+
+Storage* KVExecutor::GetStorage() { return state_->GetStorage(); }
 
 }  // namespace resdb
