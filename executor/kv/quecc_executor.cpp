@@ -160,9 +160,9 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   rid_to_range_.clear();
   transaction_tracker_.clear();
 
-  for (int i = 0; i < (int)batch_array_.size(); i++) {
-    batch_array_[i].clear();
-  }
+  // for (int i = 0; i < (int)batch_array_.size(); i++) {
+  //   batch_array_[i].clear();
+  // }
   int batch_number = 0;
 
   std::vector<unique_ptr<KVRequest>> txn_list;
