@@ -29,6 +29,8 @@ jobs:
      - name: Commit files
        id: commit-files
        run: |
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
             git add output/badge.svg
             git commit -m "update loc"
             echo "hasChange=true" >> $GITHUB_OUTPUT
