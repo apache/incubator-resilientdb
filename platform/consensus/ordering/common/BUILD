@@ -40,3 +40,29 @@ cc_library(
     deps = [
     ],
 )
+
+cc_library(
+    name = "commitment_basic",
+    srcs = ["commitment_basic.cpp"],
+    hdrs = ["commitment_basic.h"],
+    deps = [
+        ":message_manager_basic",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/networkstrate:server_comm",
+    ],
+)
+
+cc_library(
+    name = "message_manager_basic",
+    srcs = ["message_manager_basic.cpp"],
+    hdrs = ["message_manager_basic.h"],
+    deps = [
+        "//executor/common:transaction_manager",
+        "//platform/common/queue:lock_free_queue",
+        "//platform/config:resdb_config",
+        "//platform/consensus/execution:system_info",
+        "//platform/consensus/execution:transaction_executor",
+        "//platform/networkstrate:server_comm",
+        "//platform/proto:resdb_cc_proto",
+    ],
+)
