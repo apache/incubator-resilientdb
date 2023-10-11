@@ -166,7 +166,37 @@ Build and Deploy ResilientDB</h2>
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client getvalues value = [test_value]
 </pre> <h2><a class="anchor" id="autotoc_md230"></a>
 Deployment Script</h2>
-<p>We also provide access to a <a href="https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy">deployment script</a> that allows deployment on distinct machines. </p>
+<p>We also provide access to a <a href="https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy">deployment script</a> that allows deployment on distinct machines.</p>
+<h2><a class="anchor" id="autotoc_md231"></a>
+Deploy via Docker</h2>
+<ol type="1">
+<li><b>Install Docker</b> <br  />
+ Before getting started, make sure you have Docker installed on your system. If you don't have Docker already, you can download and install it from the official <a href="https://www.docker.com/products/docker-desktop/">Docker website</a>.</li>
+<li><b>Pull the Latest ResilientDB Image</b> <br  />
+ Choose the appropriate <a href="https://hub.docker.com/repository/docker/expolab/resdb/general">ResilientDB image</a> for your machine's architecture:<ul>
+<li>For amd architecture, run: <div class="fragment"><div class="line">docker pull expolab/resdb:amd64</div>
+</div><!-- fragment --></li>
+<li>For Apple Silicon (M1/M2) architecture, run: <code>shell docker pull expolab/resdb:arm64 </code></li>
+</ul>
+</li>
+<li><b>Run a Container with the Pulled Image</b> <br  />
+ Launch a Docker container using the ResilientDB image you just pulled:<ul>
+<li>For amd architecture, run: <div class="fragment"><div class="line">docker run -it expolab/resdb:amd64 bash</div>
+</div><!-- fragment --></li>
+<li>For Apple Silicon (M1/M2) architecture, run: <code>shell docker run -it expolab/resdb:arm64 bash </code></li>
+</ul>
+</li>
+<li><b>Start the kv_service within the Container</b> <br  />
+ Once you're inside the container, start the <code>kv_service</code> by running the following command: <div class="fragment"><div class="line">./service/tools/kv/server_tools/start_kv_service.sh</div>
+</div><!-- fragment --></li>
+<li><b>Test with Set and Get Commands</b> Verify the functionality of the service by performing set and get operations:<ul>
+<li>Set a test value: <div class="fragment"><div class="line">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test</div>
+</div><!-- fragment --></li>
+<li>Retrieve the test value: <div class="fragment"><div class="line">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test</div>
+</div><!-- fragment --> </li>
+</ul>
+</li>
+</ol>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
