@@ -139,7 +139,7 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
 
    - Set a test value:
    ```shell
-   bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test
+   bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
    ```
 
    - Retrieve the test value:
