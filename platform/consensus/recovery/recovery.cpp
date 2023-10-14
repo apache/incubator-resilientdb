@@ -66,7 +66,7 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
     buffer_size_ = 1024;
   }
 
-  LOG(ERROR) << "file path:" << file_path_
+  LOG(INFO) << "file path:" << file_path_
              << " dir:" << std::filesystem::path(file_path_).parent_path();
 
   recovery_ckpt_time_s_ = config_.GetConfigData().recovery_ckpt_time_s();
@@ -77,14 +77,18 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
   int ret =
       mkdir(std::filesystem::path(file_path_).parent_path().c_str(), 0777);
   if (ret) {
-    LOG(ERROR) << "mkdir fail:" << ret << " error:" << strerror(errno);
+    LOG(INFO) << "mkdir fail:" << ret << " error:" << strerror(errno);
   }
 
   fd_ = -1;
+  stop_ = false;
+  Init();
+}
+
+void Recovery::Init(){
   GetLastFile();
   SwitchFile(file_path_);
 
-  stop_ = false;
   ckpt_thread_ = std::thread(&Recovery::UpdateStableCheckPoint, this);
 }
 
@@ -184,7 +188,7 @@ void Recovery::FinishFile(int64_t seq) {
 
   std::rename(file_path_.c_str(), new_file_path.c_str());
 
-  LOG(ERROR) << "rename:" << file_path_ << " to:" << new_file_path;
+  LOG(INFO) << "rename:" << file_path_ << " to:" << new_file_path;
   std::string next_file_path = GenerateFile(seq, -1, -1);
   file_path_ = next_file_path;
 
@@ -212,7 +216,6 @@ void Recovery::SwitchFile(const std::string& file_path) {
 }
 
 void Recovery::OpenFile(const std::string& path) {
-  LOG(ERROR) << "open file:" << path;
   if (fd_ >= 0) {
     close(fd_);
   }
@@ -222,20 +225,20 @@ void Recovery::OpenFile(const std::string& path) {
   }
 
   int pos = lseek(fd_, 0, SEEK_END);
-  LOG(INFO) << "file path:" << path << " len:" << pos;
+  LOG(INFO) << "file path:" << path << " len:" << pos<<" fd:"<<fd_;
+  
   if (pos == 0) {
     WriteSystemInfo();
   }
 
   lseek(fd_, 0, SEEK_END);
-  LOG(ERROR) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR);
+  LOG(INFO) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR)<<" fd:"<<fd_;
   assert(fd_ >= 0);
 }
 
 void Recovery::WriteSystemInfo() {
   int view = system_info_->GetCurrentView();
   int primary_id = system_info_->GetPrimaryId();
-  LOG(ERROR) << "write system info:" << view << " primary id:" << primary_id;
   SystemInfoData data;
   data.set_view(view);
   data.set_primary_id(primary_id);
@@ -358,6 +361,7 @@ void Recovery::Flush() {
   Write(reinterpret_cast<const char*>(&len), sizeof(len));
   Write(reinterpret_cast<const char*>(buffer_.c_str()), len);
   buffer_.clear();
+  fsync(fd_);
 }
 
 void Recovery::Write(const char* data, size_t len) {
@@ -457,10 +461,11 @@ void Recovery::ReadLogsFromFiles(
     std::function<void(std::unique_ptr<Context> context,
                        std::unique_ptr<Request> request)>
         call_back) {
-  int fd = open(path.c_str(), O_CREAT | O_RDWR, 0666);
+  int fd = open(path.c_str(), O_CREAT | O_RDONLY, 0666);
   if (fd < 0) {
     LOG(ERROR) << " open file fail:" << path;
   }
+  LOG(INFO)<<"read logs:"<<path<<" pos:"<<lseek(fd, 0, SEEK_CUR);
   assert(fd >= 0);
 
   size_t data_len = 0;
@@ -481,7 +486,7 @@ void Recovery::ReadLogsFromFiles(
       LOG(ERROR) << "parse info fail:" << data.size();
       return;
     }
-    LOG(ERROR) << "read system info:" << info.DebugString();
+    LOG(INFO) << "read system info:" << info.DebugString();
     if (file_idx == 0) {
       system_callback(info);
     }
@@ -519,7 +524,7 @@ void Recovery::ReadLogsFromFiles(
     }
   }
 
-  LOG(ERROR) << "read log from files:" << path << " done";
+  LOG(INFO) << "read log from files:" << path << " done";
 
   close(fd);
 }

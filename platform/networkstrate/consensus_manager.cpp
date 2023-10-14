@@ -147,6 +147,7 @@ void ConsensusManager::HeartBeat() {
         sleep_time = 60 * 2;
       }
     }
+  LOG(INFO) << "heart beat end";
   }
 }
 
@@ -273,6 +274,7 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
                   "=====================";
     is_ready_ = true;
   }
+  LOG(ERROR) << "============ Process HB done";
   return 0;
 }
 

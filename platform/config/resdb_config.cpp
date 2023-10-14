@@ -82,6 +82,7 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
   if (config_data_.tcp_batch_num() == 0) {
     config_data_.set_tcp_batch_num(100);
   }
+  config_data_.set_recovery_enabled(true);
 }
 
 void ResDBConfig::SetConfigData(const ResConfigData& config_data) {

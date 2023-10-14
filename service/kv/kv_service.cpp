@@ -76,11 +76,9 @@ int main(int argc, char** argv) {
     logging_dir = argv[5];
   }
 
-  if (argc >= 5) {
-    auto monitor_port = Stats::GetGlobalStats(5);
-    monitor_port->SetPrometheus(argv[4]);
-    LOG(ERROR) << "prot:" << argv[4];
-  }
+  auto monitor_port = Stats::GetGlobalStats(5);
+  monitor_port->SetPrometheus("0.0.0.0:8090");
+  LOG(ERROR) << "monitoring prot:" << "0.0.0.0:8090";
 
   std::unique_ptr<ResDBConfig> config =
       GenerateResDBConfig(config_file, private_key_file, cert_file);

@@ -112,6 +112,7 @@ void Stats::MonitorGlobal() {
 
   while (!stop_) {
     sleep(monitor_sleep_time_);
+    LOG(ERROR)<<"monitoring start";
     time += monitor_sleep_time_;
     seq_fail = seq_fail_;
     socket_recv = socket_recv_;
@@ -215,6 +216,7 @@ void Stats::MonitorGlobal() {
     last_total_request = total_request;
     last_total_geo_request = total_geo_request;
     last_geo_request = geo_request;
+    LOG(ERROR)<<"monitoring end";
   }
 }
 
