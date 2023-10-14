@@ -43,6 +43,8 @@ class Recovery {
            SystemInfo* system_info, Storage* storage);
   virtual ~Recovery();
 
+  void Init();
+
   virtual void AddRequest(const Context* context, const Request* request);
 
   void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
