@@ -58,7 +58,7 @@ QueccExecutor::QueccExecutor(std::unique_ptr<ChainState> state)
   std::unique_ptr<BatchUserResponse> batch_output =
       std::make_unique<BatchUserResponse>();
   for (int thread_number = 0; thread_number < thread_count_; thread_number++) {
-    batch_array_.push_back(std::vector<unique_ptr<KVRequest>>());
+    batch_array_.push_back(std::vector<unique_ptr<KVOperation>>());
     sorted_transactions_.push_back(
         std::vector<std::vector<unique_ptr<KVOperation>>>(thread_count_));
     batch_ready_.push_back(false);
@@ -95,6 +95,15 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
   return ExecuteData(kv_request);
 }
 
+void QueccExecutor::CreateRanges(){
+  int range_current_weight[thread_count_] = {};
+  int weight_threshold= total_weight_/thread_count_;
+  for(const auto& pair: key_weight_){
+    //Add keys to range until it passes weight, then swap to next key
+    //if all ranges are past weight threshold, start placing them in smallest weight range
+  }
+}
+
 // Using threadnumber, can know which position in vector to pull for planner
 // thread and which range to pull for executor thread
 void QueccExecutor::PlannerThread(const int thread_number) {
@@ -111,14 +120,12 @@ void QueccExecutor::PlannerThread(const int thread_number) {
     }
 
     // Planner
-    std::vector<unique_ptr<KVRequest>> batch =
+    std::vector<unique_ptr<KVOperation>> batch =
         std::move(batch_array_[thread_number]);
 
-    for (const auto& txn : batch) {
-      for (const auto& op : txn->ops()) {
-        this->sorted_transactions_[thread_number][rid_to_range_.at(op.key())]
-            .push_back(make_unique<KVOperation>(op));
-      }
+    for (const auto& oper : batch) {
+      this->sorted_transactions_[thread_number][rid_to_range_.at(oper->op.key())]
+          .push_back(make_unique<KVOperation>(oper));
     }
 
     batch_array_[thread_number].clear();
@@ -159,14 +166,15 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   this->batch_response_ = std::make_unique<BatchUserResponse>();
   rid_to_range_.clear();
   transaction_tracker_.clear();
+  operation_list_.clear();
+  key_weight_.clear();
+  total_weight_=0;
 
-  // for (int i = 0; i < (int)batch_array_.size(); i++) {
-  //   batch_array_[i].clear();
-  // }
+  for (int i = 0; i < (int)batch_array_.size(); i++) {
+    batch_array_[i].clear();
+  }
   int batch_number = 0;
-
-  std::vector<unique_ptr<KVRequest>> txn_list;
-
+  int txn_id=0;
   // process through transactions
   for (const auto& sub_request : request.user_requests()) {
     KVRequest kv_request;
@@ -176,30 +184,53 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
     }
 
     // printf("txn id: %lu\n", kv_request.txn_id());
-    // printf("kv_request size: %d\n", kv_request.ops_size());
-    transaction_tracker_[kv_request.txn_id()] = 0;
-
+    // printf("kv_request size: %d\n", kv_request.ops_size());    
     if (kv_request.ops_size()) {
-      transaction_tracker_[kv_request.txn_id()] = kv_request.ops_size();
+      transaction_tracker_[txn_id] = kv_request.ops_size();
+      for(const auto& op : kv_request.ops()){
+        KVOperation newOp;
+        newOp.transaction_number=txn_id;
+        newOp.op= op;
+        operation_list_.push_back(newOp);
+        if(!key_weight_.count(op.key())){
+          key_weight_[op.key()]=0;
+        }
+        //Add weight, tune weights to estimated cost ratio between set and get
+        if(op.cmd == Operation::SET){
+          key_weight_[op.key()]=key_weight_[op.key()]+5;
+          total_weight_=total_weight_+5;
+        }
+        else{
+          key_weight_[op.key()]=key_weight_[op.key()]+1;
+          total_weight_=total_weight_+1;
+        }
+      }
     } else {
-      transaction_tracker_[kv_request.txn_id()]++;
-    }
+      KVOperation newOp;
+      newOp.transaction_number=txn_id;
+      newOp.op.set_cmd(kv_request.cmd());
+      newOp.op.set_key(kv_request.key());
+      newOp.op.set_value(kv_request.value());
+      operation_list_.push_back(newOp);
 
-    txn_list.push_back(make_unique<KVRequest>(kv_request));
+      if(kv_request.cmd == Operation::SET){
+        key_weight_[kv_request.key()]=key_weight_[kv_request.key()]+5;
+        total_weight_=total_weight_+5;
+      }
+      else{
+        key_weight_[kv_request.key()]=key_weight_[kv_request.key()]+1;
+        total_weight_=total_weight_+1;
+      }
+      transaction_tracker_[txn_id]=1;
+    }
+    txn_id++;
   }
 
   int planner_vector_size =
-      (txn_list.size() + thread_count_ - 1) / thread_count_;
-  for (unique_ptr<KVRequest>& txn : txn_list) {
-    // Set rid into hash map and push txn into correct vector
-    for (const auto& op : txn->ops()) {
-      unordered_map<string, int>::iterator it =
-          this->rid_to_range_.find(op.key());
-      if (it == this->rid_to_range_.end()) {
-        this->rid_to_range_[op.key()] = 1;
-      }
-    }
-    batch_array_[batch_number].push_back(std::move(txn));
+      (operation_list_.size() + thread_count_ - 1) / thread_count_;
+  for (const auto& op : operation_list_) {
+    //Push txn into correct vector
+    batch_array_[batch_number].push_back(std::move(op));
     if ((int)batch_array_[batch_number].size() >= planner_vector_size) {
       batch_number++;
     }
@@ -231,16 +262,16 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   return std::move(this->batch_response_);
 }
 
-std::unique_ptr<std::string> QueccExecutor::ExecuteData(const KVOperation& op) {
+std::unique_ptr<std::string> QueccExecutor::ExecuteData(const KVOperation& oper) {
   KVResponse kv_response;
-  if (op.cmd() == KVOperation::SET) {
-    Set(op.key(), op.value());
-  } else if (op.cmd() == KVOperation::GET) {
-    kv_response.set_value(Get(op.key()));
-  } else if (op.cmd() == KVOperation::GETVALUES) {
+  if (oper.op.cmd() == Operation::SET) {
+    Set(oper.op.key(), oper.op.value());
+  } else if (oper.op.cmd() == Operation::GET) {
+    kv_response.set_value(Get(oper.op.key()));
+  } else if (oper.op.cmd() == Operation::GETVALUES) {
     kv_response.set_value(GetValues());
-  } else if (op.cmd() == KVOperation::GETRANGE) {
-    kv_response.set_value(GetRange(op.key(), op.value()));
+  } else if (oper.op.cmd() == Operation::GETRANGE) {
+    kv_response.set_value(GetRange(oper.op.key(), oper.op.value()));
   }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
@@ -263,13 +294,13 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
     for (const auto& op : kv_request.ops()) {
       auto resp_info = kv_response.add_resp_info();
       resp_info->set_key(op.key());
-      if (op.cmd() == KVOperation::SET) {
+      if (op.cmd() == Operation::SET) {
         Set(op.key(), op.value());
-      } else if (op.cmd() == KVOperation::GET) {
+      } else if (op.cmd() == Operation::GET) {
         resp_info->set_value(Get(op.key()));
-      } else if (op.cmd() == KVOperation::GETVALUES) {
+      } else if (op.cmd() == Operation::GETVALUES) {
         resp_info->set_value(GetValues());
-      } else if (op.cmd() == KVOperation::GETRANGE) {
+      } else if (op.cmd() == Operation::GETRANGE) {
         resp_info->set_value(GetRange(op.key(), op.value()));
       }
     }

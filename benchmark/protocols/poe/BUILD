@@ -8,7 +8,7 @@ cc_binary(
     deps = [
         "//executor/kv:kv_executor",
         "//platform/config:resdb_config_utils",
-        "//platform/consensus/ordering/poe:consensus_manager_poe",
+        "//platform/consensus/ordering/poe/mac:consensus",
         "//service/utils:server_factory",
     ],
 )
@@ -20,6 +20,16 @@ cc_binary(
         "//executor/kv:quecc_executor",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/poe:consensus_manager_poe",
+        "//service/utils:server_factory",
+    ],
+)
+cc_binary(
+    name = "kv_server_performance_nomac",
+    srcs = ["kv_server_performance_nomac.cpp"],
+    deps = [
+        "//executor/kv:kv_executor",
+        "//platform/config:resdb_config_utils",
+        "//platform/consensus/ordering/poe/nomac:consensus",
         "//service/utils:server_factory",
     ],
 )

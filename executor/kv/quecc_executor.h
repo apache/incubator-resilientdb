@@ -43,7 +43,11 @@
 #include "proto/kv/kv.pb.h"
 using namespace std;
 namespace resdb {
-
+  
+struct KVOperation{
+  int transaction_number;
+  Operation op;
+};
 class QueccExecutor : public TransactionManager {
  public:
   QueccExecutor(std::unique_ptr<ChainState> state);
@@ -63,6 +67,7 @@ class QueccExecutor : public TransactionManager {
   std::string GetValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
+  void CreateRanges();
   virtual bool VerifyRequest(const std::string& key, const std::string& value) {
     return true;
   }
@@ -78,13 +83,17 @@ class QueccExecutor : public TransactionManager {
   bool is_stop_ = false;
   unordered_map<string, int> rid_to_range_;
   // keeps track of # of operations per txn
-  unordered_map<uint64_t, int> transaction_tracker_;
+  unordered_map<int, int> transaction_tracker_;
+  //weight per key
+  unordered_map<string, int> key_weight_;
+  int total_weight_;
   // Each Planner thread uses its corresponding vector pos
-  vector<vector<unique_ptr<KVRequest>>> batch_array_;
+  vector<vector<unique_ptr<KVOperation>>> batch_array_;
   // sorted_transactions[i] is what planner thread i outputs
   // sorted_transactions[i][j] is range j from planner thread i
   // Iterate through the list at sorted_transactions[i][j] to perform all txns
   vector<vector<vector<unique_ptr<KVOperation>>>> sorted_transactions_;
+  std::vector<KVOperation> operation_list_;
   int thread_count_;
   vector<bool> batch_ready_;
   vector<thread> thread_list_;

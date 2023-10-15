@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package resdb;
 
-message KVOperation {
+message Operation {
 	enum CMD {
 			NONE = 0;
 			SET = 1;
@@ -13,7 +13,6 @@ message KVOperation {
 	CMD cmd = 1;
 	string key = 2;
 	bytes value = 3;
-	uint64 txn_id = 4;
 }
 
 message KVRequest {
@@ -24,11 +23,10 @@ message KVRequest {
 		GETVALUES = 3;
 		GETRANGE = 4;
 	}
-	repeated KVOperation ops = 1;
+	repeated Operation ops = 1;
 	CMD cmd = 2;
 	string key = 3;
 	bytes value = 4;
-	uint64 txn_id = 5;
 }
 
 message KVResponse {

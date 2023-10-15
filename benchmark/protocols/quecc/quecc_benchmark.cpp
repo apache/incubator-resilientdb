@@ -55,18 +55,6 @@ void ShowUsage() {
       "<config> <private_key> <cert_file> <durability_option> [logging_dir]\n");
 }
 
-int timestamp(int offset) {
-  // adds an offset in the case that multiple requests/txns are processed in one
-  // millisecond
-  auto currentTime = std::chrono::system_clock::now();
-  auto duration = currentTime.time_since_epoch();
-  auto milliseconds =
-      std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-  uint64_t millisecondsSinceEpoch = milliseconds.count() + offset;
-
-  return millisecondsSinceEpoch;
-}
-
 BatchUserRequest EqualDistribution() {
   BatchUserRequest batch_request;
 
@@ -75,7 +63,6 @@ BatchUserRequest EqualDistribution() {
   for (int i = 0; i < 10000; i++) {
     // add transaction
     KVRequest request;
-    request.set_txn_id(timestamp(i));
 
     for (int j = 0; j < 100; j++) {
       // add operation
@@ -83,7 +70,6 @@ BatchUserRequest EqualDistribution() {
       op->set_cmd(KVOperation::SET);
       op->set_key(keys[i % 5]);
       op->set_value(to_string(j));
-      op->set_txn_id(request.txn_id());
     }
 
     std::string req_str;
@@ -101,7 +87,6 @@ BatchUserRequest NoDistribution() {
 
   for (int i = 0; i < 10000; i++) {
     KVRequest request;
-    request.set_txn_id(timestamp(i));
 
     for (int j = 0; j < 100; j++) {
       // add operation
@@ -109,7 +94,6 @@ BatchUserRequest NoDistribution() {
       op->set_cmd(KVOperation::SET);
       op->set_key("test6");
       op->set_value(to_string(j));
-      op->set_txn_id(request.txn_id());
     }
 
     std::string str;
@@ -128,7 +112,6 @@ BatchUserRequest RandomDistribution() {
 
   for (int i = 0; i < 10000; i++) {
     KVRequest request;
-    request.set_txn_id(timestamp(i));
 
     for (int j = 0; j < 100; j++) {
       // add operation
@@ -136,7 +119,6 @@ BatchUserRequest RandomDistribution() {
       op->set_cmd(KVOperation::SET);
       op->set_key(keys[rand() % 5]);
       op->set_value(to_string(j));
-      op->set_txn_id(request.txn_id());
     }
 
     std::string str;

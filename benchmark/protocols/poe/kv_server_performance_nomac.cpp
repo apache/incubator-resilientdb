@@ -28,7 +28,7 @@
 #include "chain/state/chain_state.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/consensus/ordering/poe/mac/consensus.h"
+#include "platform/consensus/ordering/poe/nomac/consensus.h"
 #include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
 #include "proto/kv/kv.pb.h"
