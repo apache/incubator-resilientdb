@@ -190,7 +190,7 @@ Deploy via Docker</h2>
  Once you're inside the container, start the <code>kv_service</code> by running the following command: <div class="fragment"><div class="line">./service/tools/kv/server_tools/start_kv_service.sh</div>
 </div><!-- fragment --></li>
 <li><b>Test with Set and Get Commands</b> Verify the functionality of the service by performing set and get operations:<ul>
-<li>Set a test value: <div class="fragment"><div class="line">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test</div>
+<li>Set a test value: <div class="fragment"><div class="line">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value</div>
 </div><!-- fragment --></li>
 <li>Retrieve the test value: <div class="fragment"><div class="line">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test</div>
 </div><!-- fragment --> </li>
