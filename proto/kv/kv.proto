@@ -16,15 +16,8 @@ message Operation {
 }
 
 message KVRequest {
-	enum CMD {
-		NONE = 0;
-		SET = 1;
-		GET = 2;
-		GETVALUES = 3;
-		GETRANGE = 4;
-	}
 	repeated Operation ops = 1;
-	CMD cmd = 2;
+	Operation.CMD cmd = 2;
 	string key = 3;
 	bytes value = 4;
 }

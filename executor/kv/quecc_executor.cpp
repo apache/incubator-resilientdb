@@ -58,9 +58,9 @@ QueccExecutor::QueccExecutor(std::unique_ptr<ChainState> state)
   std::unique_ptr<BatchUserResponse> batch_output =
       std::make_unique<BatchUserResponse>();
   for (int thread_number = 0; thread_number < thread_count_; thread_number++) {
-    batch_array_.push_back(std::vector<unique_ptr<KVOperation>>());
+    batch_array_.push_back(std::vector<KVOperation>());
     sorted_transactions_.push_back(
-        std::vector<std::vector<unique_ptr<KVOperation>>>(thread_count_));
+        std::vector<std::vector<KVOperation>>(thread_count_));
     batch_ready_.push_back(false);
 
     std::thread planner(&QueccExecutor::PlannerThread, this, thread_number);
@@ -98,9 +98,20 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
 void QueccExecutor::CreateRanges(){
   int range_current_weight[thread_count_] = {};
   int weight_threshold= total_weight_/thread_count_;
+  vector<pair<string, int>> sort_list;
+  bool assigned=false;
+  int pos=0;
+
   for(const auto& pair: key_weight_){
-    //Add keys to range until it passes weight, then swap to next key
-    //if all ranges are past weight threshold, start placing them in smallest weight range
+    sort_list.push_back(pair);
+  }
+  sort(sort_list.begin(), sort_list.end(), [](const auto& a, const auto& b){
+    return a.second>b.second;
+  });
+
+  for(const auto& pair: sort_list){
+    //Find range with lowest weight
+    //Add key to range and weight to range
   }
 }
 
@@ -120,12 +131,12 @@ void QueccExecutor::PlannerThread(const int thread_number) {
     }
 
     // Planner
-    std::vector<unique_ptr<KVOperation>> batch =
+    std::vector<KVOperation> batch =
         std::move(batch_array_[thread_number]);
 
     for (const auto& oper : batch) {
-      this->sorted_transactions_[thread_number][rid_to_range_.at(oper->op.key())]
-          .push_back(make_unique<KVOperation>(oper));
+      this->sorted_transactions_[thread_number][rid_to_range_.at(oper.op.key())]
+          .push_back(oper);
     }
 
     batch_array_[thread_number].clear();
@@ -135,10 +146,10 @@ void QueccExecutor::PlannerThread(const int thread_number) {
 
     // Executor
     for (int priority = 0; priority < thread_count_; priority++) {
-      std::vector<unique_ptr<KVOperation>>& range_ops =
+      std::vector<KVOperation>& range_ops =
           this->sorted_transactions_[priority][range_being_executed];
-      for (unique_ptr<KVOperation>& op : range_ops) {
-        std::unique_ptr<std::string> response = ExecuteData(*op);
+      for (KVOperation& op : range_ops) {
+        std::unique_ptr<std::string> response = ExecuteData(op);
         if (response == nullptr) {
           response = std::make_unique<std::string>();
         }
@@ -196,7 +207,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
           key_weight_[op.key()]=0;
         }
         //Add weight, tune weights to estimated cost ratio between set and get
-        if(op.cmd == Operation::SET){
+        if(op.cmd() == Operation::SET){
           key_weight_[op.key()]=key_weight_[op.key()]+5;
           total_weight_=total_weight_+5;
         }
@@ -213,7 +224,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       newOp.op.set_value(kv_request.value());
       operation_list_.push_back(newOp);
 
-      if(kv_request.cmd == Operation::SET){
+      if(kv_request.cmd() == Operation::SET){
         key_weight_[kv_request.key()]=key_weight_[kv_request.key()]+5;
         total_weight_=total_weight_+5;
       }
@@ -305,13 +316,13 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
       }
     }
   } else {
-    if (kv_request.cmd() == KVRequest::SET) {
+    if (kv_request.cmd() == Operation::SET) {
       Set(kv_request.key(), kv_request.value());
-    } else if (kv_request.cmd() == KVRequest::GET) {
+    } else if (kv_request.cmd() == Operation::GET) {
       kv_response.set_value(Get(kv_request.key()));
-    } else if (kv_request.cmd() == KVRequest::GETVALUES) {
+    } else if (kv_request.cmd() == Operation::GETVALUES) {
       kv_response.set_value(GetValues());
-    } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    } else if (kv_request.cmd() == Operation::GETRANGE) {
       kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
     }
   }

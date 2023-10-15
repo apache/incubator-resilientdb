@@ -88,11 +88,11 @@ class QueccExecutor : public TransactionManager {
   unordered_map<string, int> key_weight_;
   int total_weight_;
   // Each Planner thread uses its corresponding vector pos
-  vector<vector<unique_ptr<KVOperation>>> batch_array_;
+  vector<vector<KVOperation>> batch_array_;
   // sorted_transactions[i] is what planner thread i outputs
   // sorted_transactions[i][j] is range j from planner thread i
   // Iterate through the list at sorted_transactions[i][j] to perform all txns
-  vector<vector<vector<unique_ptr<KVOperation>>>> sorted_transactions_;
+  vector<vector<vector<KVOperation>>> sorted_transactions_;
   std::vector<KVOperation> operation_list_;
   int thread_count_;
   vector<bool> batch_ready_;

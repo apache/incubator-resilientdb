@@ -66,8 +66,8 @@ BatchUserRequest EqualDistribution() {
 
     for (int j = 0; j < 100; j++) {
       // add operation
-      KVOperation* op = request.add_ops();
-      op->set_cmd(KVOperation::SET);
+      resdb::Operation* op = request.add_ops();
+      op->set_cmd(resdb::Operation::SET);
       op->set_key(keys[i % 5]);
       op->set_value(to_string(j));
     }
@@ -90,8 +90,8 @@ BatchUserRequest NoDistribution() {
 
     for (int j = 0; j < 100; j++) {
       // add operation
-      KVOperation* op = request.add_ops();
-      op->set_cmd(KVOperation::SET);
+      resdb::Operation* op = request.add_ops();
+      op->set_cmd(resdb::Operation::SET);
       op->set_key("test6");
       op->set_value(to_string(j));
     }
@@ -115,8 +115,8 @@ BatchUserRequest RandomDistribution() {
 
     for (int j = 0; j < 100; j++) {
       // add operation
-      KVOperation* op = request.add_ops();
-      op->set_cmd(KVOperation::SET);
+      resdb::Operation* op = request.add_ops();
+      op->set_cmd(resdb::Operation::SET);
       op->set_key(keys[rand() % 5]);
       op->set_value(to_string(j));
     }
