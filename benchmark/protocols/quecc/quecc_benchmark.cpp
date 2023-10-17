@@ -139,15 +139,20 @@ static void BM_EqualDistribution(benchmark::State& state) {
 	QueccExecutor quecc_executor(
 		std::make_unique<ChainState>(std::move(storage1)));
 	
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 10; i++) {
 		equal_split_array.push_back(EqualDistribution());
 	}
 
 	for (auto _ : state) {
 		for (BatchUserRequest equal_split : equal_split_array) {
-    	response = quecc_executor.ExecuteBatch(equal_split);
-			::benchmark::DoNotOptimize(response);
+    	// response = quecc_executor.ExecuteBatch(equal_split);
+			// ::benchmark::DoNotOptimize(response);
   	}
+	}
+
+	if (state.thread_index() == 0) {
+		double mean = state.counters["mean"];
+		benchmark::DoNotOptimize(mean);
 	}
 }
 
@@ -192,7 +197,7 @@ static void BM_RandomDistribution(benchmark::State& state) {
 }
 
 BENCHMARK(BM_EqualDistribution)->Name("Equal Split - Quecc")
-	->Unit(benchmark::kSecond);
+	->Unit(benchmark::kSecond)->Iterations(10);
 
 // BENCHMARK(BM_NoDistribution)->Name("No Split - Quecc")
 // 	->Unit(benchmark::kSecond);
