@@ -6,6 +6,7 @@ cc_binary(
     name = "quecc_benchmark",
     srcs = ["quecc_benchmark.cpp"],
     deps = [
+				"@benchmark//:benchmark",
         "//chain/state:chain_state",
         "//chain/storage:res_leveldb",
         "//chain/storage:res_rocksdb",
