@@ -36,6 +36,7 @@
 #include <thread>
 #include <unordered_map>
 #include <vector>
+#include <queue>
 
 #include "chain/state/chain_state.h"
 #include "chain/storage/storage.h"
@@ -95,22 +96,35 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
   return ExecuteData(kv_request);
 }
 
+struct CompareWeight {
+    bool operator()(const std::pair<int, int>& left, const std::pair<int, int>& right) const {
+        return left.second > right.second;
+    }
+};
+
 void QueccExecutor::CreateRanges(){
-  int range_current_weight[thread_count_] = {};
+  priority_queue<pair<int, int>, vector<pair<int, int>>, CompareWeight> range_current_weight;
+  for(int i=0; i<thread_count_; i++){
+    range_current_weight.push({i, 0});
+  }
   int weight_threshold= total_weight_/thread_count_;
   vector<pair<string, int>> sort_list;
   bool assigned=false;
   int pos=0;
-
   for(const auto& pair: key_weight_){
     sort_list.push_back(pair);
   }
   sort(sort_list.begin(), sort_list.end(), [](const auto& a, const auto& b){
     return a.second>b.second;
   });
-
+  pair<int, int> smallest_range;
   for(const auto& pair: sort_list){
     //Find range with lowest weight
+    smallest_range= range_current_weight.top();
+    range_current_weight.pop();
+    rid_to_range_[pair.first]=smallest_range.first;
+    smallest_range.second=smallest_range.second+pair.second;
+    range_current_weight.push(smallest_range);
     //Add key to range and weight to range
   }
 }
@@ -246,7 +260,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       batch_number++;
     }
   }
-
+/*
   // RIDs in hash map are now equal to which range they go into
   int range_count = 0;
   int range_size = ((rid_to_range_.size() - 1) / thread_count_) + 1;
@@ -254,7 +268,9 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
     rid_to_range_[key.first] = range_count / range_size;
     range_count++;
   }
-
+*/
+  CreateRanges();
+  
   ready_planner_count_.fetch_add(thread_count_);
   // Allows planner threads to start consuming
   for (int i = 0; i < thread_count_; i++) {
