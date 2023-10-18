@@ -1,6 +1,13 @@
 workspace(name = "com_resdb_nexres")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "benchmark",
+    urls = ["https://github.com/google/benchmark/archive/main.zip"],
+    strip_prefix = "benchmark-main",
+)
+
 load("//:repositories.bzl", "nexres_repositories")
 
 nexres_repositories()

@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <ctime>
 
+#include <benchmark/benchmark.h>
 #include "chain/storage/res_leveldb.h"
 #include "chain/storage/res_rocksdb.h"
 #include "executor/kv/kv_executor.h"
@@ -42,7 +43,7 @@ using resdb::BatchUserResponse;
 using resdb::ChainState;
 using resdb::GenerateResDBConfig;
 using resdb::KVExecutor;
-using resdb::KVOperation;
+using resdb::Operation;
 using resdb::KVRequest;
 using resdb::NewResLevelDB;
 using resdb::NewResRocksDB;
@@ -50,36 +51,36 @@ using resdb::QueccExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
 using resdb::Storage;
+
 void ShowUsage() {
   printf(
       "<config> <private_key> <cert_file> <durability_option> [logging_dir]\n");
 }
 
 BatchUserRequest EqualDistribution() {
-  BatchUserRequest batch_request;
+	BatchUserRequest batch_request;
 
-  vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
+	vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
+		for (int i = 0; i < 10000; i++) {
+			// add transaction
+			KVRequest request;
 
-  for (int i = 0; i < 10000; i++) {
-    // add transaction
-    KVRequest request;
+			for (int j = 0; j < 100; j++) {
+				// add operation
+				resdb::Operation* op = request.add_ops();
+				op->set_cmd(resdb::Operation::SET);
+				op->set_key(keys[i % 5]);
+				op->set_value(to_string(j));
+			}
 
-    for (int j = 0; j < 100; j++) {
-      // add operation
-      resdb::Operation* op = request.add_ops();
-      op->set_cmd(resdb::Operation::SET);
-      op->set_key(keys[i % 5]);
-      op->set_value(to_string(j));
-    }
+			std::string req_str;
+			if (!request.SerializeToString(&req_str)) {
+				exit(0);
+			}
+			batch_request.add_user_requests()->mutable_request()->set_data(req_str);
+		}
 
-    std::string req_str;
-    if (!request.SerializeToString(&req_str)) {
-      exit(0);
-    }
-    batch_request.add_user_requests()->mutable_request()->set_data(req_str);
-  }
-
-  return batch_request;
+	return batch_request;
 }
 
 BatchUserRequest NoDistribution() {
@@ -88,7 +89,7 @@ BatchUserRequest NoDistribution() {
   for (int i = 0; i < 10000; i++) {
     KVRequest request;
 
-    for (int j = 0; j < 100; j++) {
+    for (int j = 0; j < 10; j++) {
       // add operation
       resdb::Operation* op = request.add_ops();
       op->set_cmd(resdb::Operation::SET);
@@ -130,85 +131,82 @@ BatchUserRequest RandomDistribution() {
   return batch_request;
 }
 
+static void BM_EqualDistribution(benchmark::State& state) {
+	std::unique_ptr<Storage> storage1 = nullptr;
+	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	std::unique_ptr<BatchUserResponse> response;
+	vector<BatchUserRequest> equal_split_array;
+	QueccExecutor quecc_executor(
+		std::make_unique<ChainState>(std::move(storage1)));
+	
+	for (int i = 0; i < 10; i++) {
+		equal_split_array.push_back(EqualDistribution());
+	}
+
+	for (auto _ : state) {
+		for (BatchUserRequest equal_split : equal_split_array) {
+    	// response = quecc_executor.ExecuteBatch(equal_split);
+			// ::benchmark::DoNotOptimize(response);
+  	}
+	}
+
+	if (state.thread_index() == 0) {
+		double mean = state.counters["mean"];
+		benchmark::DoNotOptimize(mean);
+	}
+}
+
+static void BM_NoDistribution(benchmark::State& state) {
+	std::unique_ptr<Storage> storage1 = nullptr;
+	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	std::unique_ptr<BatchUserResponse> response;
+	vector<BatchUserRequest> no_split_array;
+	QueccExecutor quecc_executor(
+		std::make_unique<ChainState>(std::move(storage1)));
+	
+	for (int i = 0; i < 10; i++) {
+		no_split_array.push_back(NoDistribution());
+	}
+
+	for (auto _ : state) {
+		for (BatchUserRequest no_split : no_split_array) {
+    	response = quecc_executor.ExecuteBatch(no_split);
+			::benchmark::DoNotOptimize(response);
+  	}
+	}
+}
+
+static void BM_RandomDistribution(benchmark::State& state) {
+	std::unique_ptr<Storage> storage1 = nullptr;
+	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	std::unique_ptr<BatchUserResponse> response;
+	vector<BatchUserRequest> random_split_array;
+	QueccExecutor quecc_executor(
+		std::make_unique<ChainState>(std::move(storage1)));
+	
+	for (int i = 0; i < 10; i++) {
+		random_split_array.push_back(RandomDistribution());
+	}
+
+	for (auto _ : state) {
+		for (BatchUserRequest rand_split : random_split_array) {
+    	response = quecc_executor.ExecuteBatch(rand_split);
+			::benchmark::DoNotOptimize(response);
+  	}
+	}
+}
+
+BENCHMARK(BM_EqualDistribution)->Name("Equal Split - Quecc")
+	->Unit(benchmark::kSecond)->Iterations(10);
+
+// BENCHMARK(BM_NoDistribution)->Name("No Split - Quecc")
+// 	->Unit(benchmark::kSecond);
+
+// BENCHMARK(BM_RandomDistribution)->Name("Random Split - Quecc")
+// 	->Unit(benchmark::kSecond);
+
 int main(int argc, char** argv) {
-  std::unique_ptr<Storage> storage1 = nullptr;
-  storage1 = NewResRocksDB(nullptr, std::nullopt);
-
-  // storage1 = NewResLevelDB(cert_file.c_str(), config_data);
-  vector<BatchUserRequest> equal_split_array;
-  vector<BatchUserRequest> no_split_array;
-  vector<BatchUserRequest> random_split_array;
-  for (int i = 0; i < 1; i++) {
-    equal_split_array.push_back(EqualDistribution());
-    // no_split_array.push_back(NoDistribution());
-    // random_split_array.push_back(RandomDistribution());
-  }
-  KVExecutor kv_executor(std::make_unique<ChainState>(std::move(storage1)));
-
-  QueccExecutor quecc_executor(
-      std::make_unique<ChainState>(std::move(storage1)));
-
-  std::unique_ptr<BatchUserResponse> response;
-  // Equal Split Comparison
-  printf("Equal Split Times\n");
-
-  auto start_time = std::chrono::high_resolution_clock::now();
-  for (BatchUserRequest equal_split : equal_split_array) {
-    response = quecc_executor.ExecuteBatch(equal_split);
-  }
-
-  auto end_time = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-      end_time - start_time);
-  printf("Quecc Time Taken: %d\n", (int)duration.count());
-  start_time = std::chrono::high_resolution_clock::now();
-
-  for (BatchUserRequest equal_split : equal_split_array) {
-    response = kv_executor.ExecuteBatch(equal_split);
-  }
-  end_time = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
-                                                                   start_time);
-  printf("KV Time Taken: %d\n", (int)duration.count());
-
-  // // No Split Comparison
-  // printf("Worst Split Times\n");
-
-  // start_time = std::chrono::high_resolution_clock::now();
-  // for (BatchUserRequest worst_split : no_split_array) {
-  //   response = quecc_executor.ExecuteBatch(worst_split);
-  // }
-  // end_time = std::chrono::high_resolution_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
-  //                                                                  start_time);
-  // printf("Quecc Time Taken: %d\n", (int)duration.count());
-
-  // start_time = std::chrono::high_resolution_clock::now();
-  // for (BatchUserRequest worst_split : no_split_array) {
-  //   response = kv_executor.ExecuteBatch(worst_split);
-  // }
-  // end_time = std::chrono::high_resolution_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
-  //                                                                  start_time);
-  // printf("KV Time Taken: %d\n", (int)duration.count());
-
-  // // Random Split Comparison
-  // printf("Random Split Times\n");
-  // start_time = std::chrono::high_resolution_clock::now();
-  // for (BatchUserRequest random_case : random_split_array) {
-  //   response = quecc_executor.ExecuteBatch(random_case);
-  // }
-  // end_time = std::chrono::high_resolution_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
-  //                                                                  start_time);
-  // printf("Quecc Time Taken: %d\n", (int)duration.count());
-
-  // start_time = std::chrono::high_resolution_clock::now();
-  // for (BatchUserRequest random_case : random_split_array) {
-  //   response = kv_executor.ExecuteBatch(random_case);
-  // }
-  // end_time = std::chrono::high_resolution_clock::now();
-  // duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
-  //                                                                  start_time);
-  // printf("KV Time Taken: %d\n", (int)duration.count());
+	::benchmark::Initialize(&argc, argv);
+	::benchmark::RunSpecifiedBenchmarks();
+	::benchmark::Shutdown();
 }
