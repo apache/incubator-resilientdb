@@ -1,5 +1,7 @@
 var NAVTREEINDEX9 =
 {
+"de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb":[0,0,6,72,10],
+"de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d":[0,0,6,72,6],
 "de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d":[1,0,0,69,6],
 "de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205":[0,0,6,72,19],
 "de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205":[1,0,0,69,19],
@@ -247,7 +249,5 @@ var NAVTREEINDEX9 =
 "df/d82/namespaceresdb_1_1coin_1_1utils.html#a35643a882b65863597c78e372c0708d4":[0,0,6,0,0,1],
 "df/d98/checkpoint__manager_8cpp.html":[2,0,6,2,2,2,0],
 "df/d98/checkpoint__manager_8cpp.html#ab2cf1b4bf34a1ea57df6cbeaa24acc09":[2,0,6,2,2,2,0,0],
-"df/d98/checkpoint__manager_8cpp_source.html":[2,0,6,2,2,2,0],
-"df/d9b/mock__storage_8h.html":[2,0,1,1,0],
-"df/d9b/mock__storage_8h_source.html":[2,0,1,1,0]
+"df/d98/checkpoint__manager_8cpp_source.html":[2,0,6,2,2,2,0]
 };

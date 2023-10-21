@@ -5,6 +5,7 @@ var classresdb_1_1Recovery =
     [ "AddRequest", "d1/d44/classresdb_1_1Recovery.html#a9487fb3d0eb4075dc8498b8d4994fda1", null ],
     [ "GetMaxSeq", "d1/d44/classresdb_1_1Recovery.html#acf1e0b15359a0db222327b53ab42b1a8", null ],
     [ "GetMinSeq", "d1/d44/classresdb_1_1Recovery.html#a3c94d7c50cd3e24d66f5e3beb13ec15e", null ],
+    [ "Init", "d1/d44/classresdb_1_1Recovery.html#ac922b8ba07f71955df51b91084587ec4", null ],
     [ "ReadLogs", "d1/d44/classresdb_1_1Recovery.html#a61a5e9bb6293c982f9b158f76b0d9542", null ],
     [ "base_file_path_", "d1/d44/classresdb_1_1Recovery.html#a4702da091d77fff4b8189454ca6576c1", null ],
     [ "buffer_", "d1/d44/classresdb_1_1Recovery.html#a16d630355aca59e4cf89d258939d761e", null ],

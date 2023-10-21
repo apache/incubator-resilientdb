@@ -64,16 +64,16 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/d66/custom__query_8h_source.html",
-"d3/d5e/classresdb_1_1ReplicaCommunicator.html#aeeebc36ed04f78d5a75ae56adb8cabeb",
-"d4/dbb/classresdb_1_1KVClient.html#aaed2de9ab574fb16bf6da111e5afbc77",
-"d6/dff/contract__tools_8cpp.html#a91da2a7f6c244a57f3f8a5fa094dcb7b",
-"d8/d54/namespacecalculate__result.html#a659010e7ae3ab15439cde90a2a68cf4a",
-"da/d19/classresdb_1_1ConsensusManager.html#a6ee5d408e5db8134290afa5dbe162568",
-"db/dc9/txn__memory__db__test_8cpp.html",
-"dc/db0/classresdb_1_1CheckPointManager.html#af2ea5f3e75e2a5ff3a1f4abde74fd290",
-"de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d",
-"df/da2/async__acceptor_8h.html"
+"d1/d44/classresdb_1_1Recovery.html#af407e64394ef0e17bb1395342bb4cf2b",
+"d3/d5e/classresdb_1_1ReplicaCommunicator.html#ae93d03a61ab026c280b2a85da8b99076",
+"d4/dbb/classresdb_1_1KVClient.html#a86e4c8f24692c4e81ddef18cfa8686ee",
+"d6/dff/contract__tools_8cpp.html#a2e7b5ba98265d8b97c0981a40dc2541d",
+"d8/d54/namespacecalculate__result.html#a233a7bb6dbe0581c88e2a30745f60979",
+"da/d19/classresdb_1_1ConsensusManager.html#a5d13be9749d0960aab81fef99500b3c7",
+"db/dc1/async__acceptor__test_8cpp.html",
+"dc/db0/classresdb_1_1CheckPointManager.html#aee51af13557dd31e832534cbd2e94cb3",
+"de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb",
+"df/d9b/mock__storage_8h.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
