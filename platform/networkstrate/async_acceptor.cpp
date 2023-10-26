@@ -60,8 +60,10 @@ void AsyncAcceptor::Session::StartRead() {
   if (status_ == 0) {
     // read len
     recv_buffer_ = reinterpret_cast<char*>(&data_size_);
+    data_size_ = 0;
     need_size_ = sizeof(data_size_);
     current_idx_ = 0;
+    memset(recv_buffer_, 0, need_size_);
     OnRead();
   } else {
     need_size_ = data_size_;
@@ -70,6 +72,7 @@ void AsyncAcceptor::Session::StartRead() {
       delete recv_buffer_;
     }
     recv_buffer_ = new char[need_size_];
+    memset(recv_buffer_, 0, need_size_);
     OnRead();
   }
 }
@@ -80,6 +83,11 @@ void AsyncAcceptor::Session::ReadDone() {
     delete recv_buffer_;
   } else {
     data_size_ = *reinterpret_cast<size_t*>(recv_buffer_);
+    if(data_size_>1e6){
+        LOG(ERROR)<<"read data size:"<<data_size_<<" data size:"<<sizeof(data_size_)<<" close socket";
+	Close();
+	return;
+    }
   }
   status_ ^= 1;
   recv_buffer_ = nullptr;
