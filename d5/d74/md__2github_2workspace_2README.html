@@ -101,10 +101,10 @@ $(document).ready(function(){initNavTree('d5/d74/md__2github_2workspace_2README.
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><img src="https://img.shields.io/github/v/release/resilientdb/resilientdb" alt="" class="inline"/> <img src="https://img.shields.io/badge/language-c++-orange.svg" alt="" style="pointer-events: none;" class="inline"/> <img src="https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg" alt="" style="pointer-events: none;" class="inline"/> <img src="https://img.shields.io/github/license/resilientdb/resilientdb" alt="GitHub" class="inline"/> <img src="https://raw.githubusercontent.com/resilientdb/resilientdb/image-data/badge.svg" alt="Generated Button" style="pointer-events: none;" class="inline"/> <img src="https://github.com/resilientdb/resilientdb/workflows/bazel-build%20CI/badge.svg" alt="build" style="pointer-events: none;" class="inline"/> <img src="https://github.com/resilientdb/resilientdb/workflows/Unite%20Test/badge.svg" alt="build" style="pointer-events: none;" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md222"></a>
+<h1><a class="anchor" id="autotoc_md226"></a>
 ResilientDB: Global-Scale Sustainable Blockchain Fabric</h1>
 <p><b><a href="https://resilientdb.com/">ResilientDB</a></b> is a <b>High Throughput Yielding Permissioned Blockchain Fabric</b> founded by <b><a href="https://expolab.org/">ExpoLab</a></b> at <b><a href="https://www.ucdavis.edu/">UC Davis</a></b> in 2018. ResilientDB advocates a <b>system-centric</b> design by adopting a <b>multi-threaded architecture</b> that encompasses <b>deep pipelines</b>. Further, ResilientDB <b>separates</b> the ordering of client transactions from their execution, which allows it to <b>process messages out-of-order</b>.</p>
-<h3><a class="anchor" id="autotoc_md223"></a>
+<h3><a class="anchor" id="autotoc_md227"></a>
 Quick Facts on ResilientDB</h3>
 <ol type="1">
 <li>ResilientDB orders client transactions through a highly optimized implementation of the <b><a href="https://pmg.csail.mit.edu/papers/osdi99.pdf">PBFT</a></b> [Castro and Liskov, 1998] protocol, which helps to achieve consensus among its replicas. ResilientDB also supports deploying other state-of-the-art consensus protocols <em>[release are planned]</em> such as <b><a href="http://www.vldb.org/pvldb/vol13/p868-gupta.pdf">GeoBFT</a></b> [<b><a href="https://blog.resilientdb.com/2023/03/07/GeoBFT.html">blog</a>, <a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.1.0">released</a></b>], <b><a href="https://openproceedings.org/2021/conf/edbt/p111.pdf">PoE</a></b>, <b><a href="https://arxiv.org/abs/1911.00837">RCC</a></b>, <b><a href="https://openproceedings.org/2022/conf/edbt/paper-73.pdf">RingBFT</a></b>, <b><a href="https://arxiv.org/abs/2302.02325">PoC</a></b>, <b><a href="https://arxiv.org/abs/2302.02118">SpotLess</a></b>, <b><a href="https://arxiv.org/abs/1803.05069">HotStuff</a></b>, and <b><a href="https://arxiv.org/pdf/2105.11827.pdf">DAG</a></b>.</li>
@@ -116,10 +116,10 @@ Quick Facts on ResilientDB</h3>
 <li><b>[Historial Facts]</b> The ResilientDB project was founded by <b><a href="https://expolab.org/">Mohammad Sadoghi</a></b> along with his students (<a href="https://gupta-suyash.github.io/index.html">Suyash Gupta</a> as the lead Architect, <a href="https://sajjadrahnama.com/">Sajjad Rahnama</a>, <a href="https://www.jhellings.nl/">Jelle Hellings</a>) at <b><a href="https://www.ucdavis.edu/">UC Davis</a></b> in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected (<a href="https://github.com/cjcchen">Junchao Chen</a> as the lead Architect along with the entire <a href="https://resilientdb.com/">NexRes Team</a>), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for <b><a href="https://resilientdb.com/">ResilientDB</a></b>.</li>
 </ol>
 <hr  />
-<h2><a class="anchor" id="autotoc_md225"></a>
+<h2><a class="anchor" id="autotoc_md229"></a>
 Online Documentation:</h2>
 <p>The latest ResilientDB documentation, including a programming guide, is available on our <b><a href="https://blog.resilientdb.com/archive.html?tag=NexRes">blog repository</a></b>. This README file provides basic setup instructions.</p>
-<h4><a class="anchor" id="autotoc_md226"></a>
+<h4><a class="anchor" id="autotoc_md230"></a>
 Table of Contents</h4>
 <ol type="1">
 <li>Software Stack Architecture<ul>
@@ -145,11 +145,11 @@ Table of Contents</h4>
 </li>
 </ol>
 <p><img src="../.././img/nexres.png" alt="Nexres" class="inline"/></p>
-<h2><a class="anchor" id="autotoc_md227"></a>
+<h2><a class="anchor" id="autotoc_md231"></a>
 OS Requirements</h2>
 <p>Ubuntu 20.*</p>
 <hr  />
-<h2><a class="anchor" id="autotoc_md229"></a>
+<h2><a class="anchor" id="autotoc_md233"></a>
 Build and Deploy ResilientDB</h2>
 <p>Next, we show how to quickly build ResilientDB and deploy 4 replicas and 1 client proxy on your local machine. The proxy acts as an interface for all the clients. It batches client requests and forwards these batches to the replica designated as the leader. The 4 replicas participate in the PBFT consensus to order and execute these batches. Post execution, they return the response to the leader.</p>
 <p>Install dependencies: </p><pre class="fragment">./INSTALL.sh
@@ -164,10 +164,10 @@ Build and Deploy ResilientDB</h2>
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client get value = test_value
 </pre><p> Run tools to get all values that have been set: </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client getvalues value = [test_value]
-</pre> <h2><a class="anchor" id="autotoc_md230"></a>
+</pre> <h2><a class="anchor" id="autotoc_md234"></a>
 Deployment Script</h2>
 <p>We also provide access to a <a href="https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy">deployment script</a> that allows deployment on distinct machines.</p>
-<h2><a class="anchor" id="autotoc_md231"></a>
+<h2><a class="anchor" id="autotoc_md235"></a>
 Deploy via Docker</h2>
 <ol type="1">
 <li><b>Install Docker</b> <br  />

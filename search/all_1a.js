@@ -8,5 +8,5 @@ var searchData=
   ['queryexecutor_5',['queryexecutor',['../d0/da0/classresdb_1_1utxo_1_1QueryExecutor.html',1,'resdb::utxo::QueryExecutor'],['../d0/da0/classresdb_1_1utxo_1_1QueryExecutor.html#aa945659cf8c7b943aeab9be8e7807a66',1,'resdb::utxo::QueryExecutor::QueryExecutor()']]],
   ['queue_5f_6',['queue_',['../d9/d92/classresdb_1_1GeoTransactionExecutor.html#a016a171a0bc2f6f88532bc27b499592c',1,'resdb::GeoTransactionExecutor']]],
   ['queueitem_7',['queueitem',['../dc/d89/structresdb_1_1ConsensusManager_1_1QueueItem.html',1,'resdb::ConsensusManager::QueueItem'],['../df/d64/structresdb_1_1QueueItem.html',1,'resdb::QueueItem']]],
-  ['quick_20facts_20on_20resilientdb_8',['Quick Facts on ResilientDB',['../d5/d74/md__2github_2workspace_2README.html#autotoc_md223',1,'']]]
+  ['quick_20facts_20on_20resilientdb_8',['Quick Facts on ResilientDB',['../d5/d74/md__2github_2workspace_2README.html#autotoc_md227',1,'']]]
 ];

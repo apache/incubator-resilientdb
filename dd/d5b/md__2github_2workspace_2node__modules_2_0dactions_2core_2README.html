@@ -100,37 +100,37 @@ $(document).ready(function(){initNavTree('dd/d5b/md__2github_2workspace_2node__m
   <div class="headertitle"><div class="title">&lt;tt&gt;\@actions/core&lt;/tt&gt;</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md26"></a> </p><blockquote class="doxtable">
+<div class="textblock"><p><a class="anchor" id="autotoc_md30"></a> </p><blockquote class="doxtable">
 <p>&zwj;Core functions for setting results, logging, registering secrets and exporting variables across actions </p>
 </blockquote>
-<h1><a class="anchor" id="autotoc_md27"></a>
+<h1><a class="anchor" id="autotoc_md31"></a>
 Usage</h1>
-<h2><a class="anchor" id="autotoc_md28"></a>
+<h2><a class="anchor" id="autotoc_md32"></a>
 Import the package</h2>
 <div class="fragment"><div class="line">// javascript</div>
 <div class="line">const core = require(&#39;@actions/core&#39;);</div>
 <div class="line"> </div>
 <div class="line">// typescript</div>
 <div class="line">import * as core from &#39;@actions/core&#39;;</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md29"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md33"></a>
 Inputs/Outputs</h3>
 <p>Action inputs can be read with <code>getInput</code>. Outputs can be set with <code>setOutput</code> which makes them available to be mapped into inputs of other actions to ensure they are decoupled.</p>
 <div class="fragment"><div class="line">const myInput = core.getInput(&#39;inputName&#39;, { required: true });</div>
 <div class="line"> </div>
 <div class="line">core.setOutput(&#39;outputKey&#39;, &#39;outputVal&#39;);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md30"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md34"></a>
 Exporting variables</h3>
 <p>Since each step runs in a separate process, you can use <code>exportVariable</code> to add it to this step and future steps environment blocks.</p>
 <div class="fragment"><div class="line">core.exportVariable(&#39;envVar&#39;, &#39;Val&#39;);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md31"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md35"></a>
 Setting a secret</h3>
 <p>Setting a secret registers the secret with the runner to ensure it is masked in logs.</p>
 <div class="fragment"><div class="line">core.setSecret(&#39;myPassword&#39;);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md32"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md36"></a>
 PATH Manipulation</h3>
 <p>To make a tool's path available in the path for the remainder of the job (without altering the machine or containers state), use <code>addPath</code>. The runner will prepend the path given to the jobs PATH.</p>
 <div class="fragment"><div class="line">core.addPath(&#39;/path/to/mytool&#39;);</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md33"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md37"></a>
 Exit codes</h3>
 <p>You should use this library to set the failing exit code for your action. If status is not set and the script runs to completion, that will lead to a success.</p>
 <div class="fragment"><div class="line">const core = require(&#39;@actions/core&#39;);</div>
@@ -144,7 +144,7 @@ Exit codes</h3>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line">Note that `setNeutral` is not yet implemented in actions V2 but equivalent functionality is being planned.</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md34"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md38"></a>
 Logging</h3>
 <p>Finally, this library provides some utilities for logging. Note that debug logging is hidden from the logs by default. This behavior can be toggled by enabling the <a href="../../../../docs/action-debugging.md#step-debug-logs">Step Debug Logs</a>.</p>
 <div class="fragment"><div class="line">const core = require(&#39;@actions/core&#39;);</div>
@@ -181,7 +181,7 @@ Logging</h3>
 <div class="line">  const response = await doSomeHTTPRequest()</div>
 <div class="line">  return response</div>
 <div class="line">})</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md35"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md39"></a>
 Action state</h3>
 <p>You can use this library to save state and get state for sharing information between a given wrapper action:</p>
 <p><b>action.yml</b> </p><div class="fragment"><div class="line">name: &#39;Wrapper action sample&#39;</div>

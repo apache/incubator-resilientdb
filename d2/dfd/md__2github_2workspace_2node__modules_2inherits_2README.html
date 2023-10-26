@@ -104,11 +104,11 @@ $(document).ready(function(){initNavTree('d2/dfd/md__2github_2workspace_2node__m
 <p>This package exports standard <code>inherits</code> from node.js <code>util</code> module in node environment, but also provides alternative browser-friendly implementation through <a href="https://gist.github.com/shtylman/4339901">browser field</a>. Alternative implementation is a literal copy of standard one located in standalone module to avoid requiring of <code>util</code>. It also has a shim for old browsers with no <code>Object.create</code> support.</p>
 <p>While keeping you sure you are using standard <code>inherits</code> implementation in node.js environment, it allows bundlers such as <a href="https://github.com/substack/node-browserify">browserify</a> to not include full <code>util</code> package to your client code if all you need is just <code>inherits</code> function. It worth, because browser shim for <code>util</code> package is large and <code>inherits</code> is often the single function you need from it.</p>
 <p>It's recommended to use this package instead of &lsquo;require('util&rsquo;).inherits` for any code that has chances to be used not only in node.js but in browser too.</p>
-<h2><a class="anchor" id="autotoc_md136"></a>
+<h2><a class="anchor" id="autotoc_md140"></a>
 usage</h2>
 <div class="fragment"><div class="line">var inherits = require(&#39;inherits&#39;);</div>
 <div class="line">// then use exactly as the standard one</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md137"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md141"></a>
 note on version ~1.0</h2>
 <p>Version ~1.0 had completely different motivation and is not compatible neither with 2.0 nor with standard node.js <code>inherits</code>.</p>
 <p>If you are using version ~1.0 and planning to switch to ~2.0, be careful:</p>

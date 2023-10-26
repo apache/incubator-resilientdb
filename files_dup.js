@@ -5,6 +5,7 @@ var files_dup =
     [ "common", "dir_bdd9a5d540de89e9fe90efdfc6973a4f.html", "dir_bdd9a5d540de89e9fe90efdfc6973a4f" ],
     [ "executor", "dir_7c2730fb8449c1fd3c0779d2ebca1b41.html", "dir_7c2730fb8449c1fd3c0779d2ebca1b41" ],
     [ "interface", "dir_b31d54d5631803016a26f28213a41162.html", "dir_b31d54d5631803016a26f28213a41162" ],
+    [ "monitoring", "dir_62029a7095150ca557d10310a8fae4d0.html", null ],
     [ "node_modules", "dir_acd06b18086a0dd2ae699b1e0b775be8.html", "dir_acd06b18086a0dd2ae699b1e0b775be8" ],
     [ "platform", "dir_c5a52a81292cf9a5167198f4f346d6d9.html", "dir_c5a52a81292cf9a5167198f4f346d6d9" ],
     [ "scripts", "dir_53e6fa9553ac22a5646d2a2b2d7b97a1.html", "dir_53e6fa9553ac22a5646d2a2b2d7b97a1" ],

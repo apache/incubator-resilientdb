@@ -101,14 +101,14 @@ $(document).ready(function(){initNavTree('d7/d78/md__2github_2workspace_2node__m
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a href="https://travis-ci.org/kaelzhang/node-glob-gitignore"><img src="https://travis-ci.org/kaelzhang/node-glob-gitignore.svg?branch=master" alt="Build Status" style="pointer-events: none;" class="inline"/></a></p>
-<h1><a class="anchor" id="autotoc_md65"></a>
+<h1><a class="anchor" id="autotoc_md69"></a>
 glob-gitignore</h1>
 <p>Extends <a href="https://www.npmjs.com/package/glob"><code>glob</code></a> with support for filtering files according to gitignore rules and exposes an optional Promise API, based on <a href="https://www.npmjs.com/package/ignore"><code>node-ignore</code></a>.</p>
 <p>This module is built to solve performance issues, see Why.</p>
-<h2><a class="anchor" id="autotoc_md66"></a>
+<h2><a class="anchor" id="autotoc_md70"></a>
 Install</h2>
 <div class="fragment"><div class="line">$ npm i glob-gitignore --save</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md67"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md71"></a>
 Usage</h2>
 <div class="fragment"><div class="line">import {</div>
 <div class="line">  glob,</div>
@@ -138,14 +138,14 @@ Usage</h2>
 <div class="line">const files = sync(&#39;**&#39;, {ignore: &#39;*.bak&#39;})</div>
 <div class="line"> </div>
 <div class="line">hasMagic(&#39;a/{b/c,x/y}&#39;)  // true</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md68"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md72"></a>
 Why</h2>
 <ol type="1">
 <li>The <code>options.ignore</code> of <code>node-glob</code> does not support gitignore rules.</li>
 <li>It is better <b>NOT</b> to glob things then filter them by gitignore rules. Because by doing this, there will be so much unnecessary harddisk traversing, and cause performance issues, especially if there are tremendous files and directories inside the working directory. For the situation, you'd better to use this module.</li>
 </ol>
 <p><code>glob-gitignore</code> does the filtering at the very process of each decending down.</p>
-<h2><a class="anchor" id="autotoc_md69"></a>
+<h2><a class="anchor" id="autotoc_md73"></a>
 glob(patterns, options)</h2>
 <p>Returns a <code>Promise</code></p>
 <ul>
@@ -156,7 +156,7 @@ glob(patterns, options)</h2>
 </div><!-- fragment --><ul>
 <li><b>options</b> <code>Object</code> the <a href="https://www.npmjs.com/package/glob#options">glob options</a> except for <code>options.ignore</code></li>
 </ul>
-<h3><a class="anchor" id="autotoc_md70"></a>
+<h3><a class="anchor" id="autotoc_md74"></a>
 &lt;tt&gt;options.ignore&lt;/tt&gt;</h3>
 <p>Could be a <code>String</code>, an array of <code>String</code>s, or an instance of <a href="https://www.npmjs.com/package/ignore">node-<code>ignore</code></a></p>
 <p>Not setting this is kind of silly, since that's the whole purpose of this lib, but it is optional though.</p>
@@ -167,10 +167,10 @@ glob(patterns, options)</h2>
 <div class="line">glob(&#39;**&#39;, {</div>
 <div class="line">  ignore: ignore().add(&#39;*.js&#39;)</div>
 <div class="line">})</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md71"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md75"></a>
 sync(patterns, options)</h2>
 <p>The synchronous globber, which returns an <code>Array.&lt;path&gt;</code>.</p>
-<h2><a class="anchor" id="autotoc_md72"></a>
+<h2><a class="anchor" id="autotoc_md76"></a>
 hasMagic(patterns, [options])</h2>
 <p>This method extends <code>glob.hasMagic(pattern)</code> and supports an array of patterns.</p>
 <p>Returns</p>
@@ -182,7 +182,7 @@ hasMagic(patterns, [options])</h2>
 <div class="line">hasMagic([&#39;a/{b/c,x/y}&#39;, &#39;a&#39;])        // true</div>
 <div class="line">hasMagic([&#39;a&#39;])                       // false</div>
 </div><!-- fragment --><p>Note that the options affect the results. If <code>noext:true</code> is set in the options object, then <code>+(a|b)</code> will not be considered a magic pattern. If the pattern has a brace expansion, like <code>a/{b/c,x/y}</code> then that is considered magical, unless <code>nobrace:true</code> is set in the options.</p>
-<h2><a class="anchor" id="autotoc_md73"></a>
+<h2><a class="anchor" id="autotoc_md77"></a>
 License</h2>
 <p>MIT </p>
 </div></div><!-- contents -->

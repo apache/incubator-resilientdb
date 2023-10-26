@@ -100,10 +100,10 @@ $(document).ready(function(){initNavTree('de/d15/md__2github_2workspace_2node__m
   <div class="headertitle"><div class="title">balanced-match</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md41"></a> Match balanced string pairs, like <code>{</code> and <code>}</code> or <code>&lt;b&gt;</code> and <code>&lt;/b&gt;</code>. Supports regular expressions as well!</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md45"></a> Match balanced string pairs, like <code>{</code> and <code>}</code> or <code>&lt;b&gt;</code> and <code>&lt;/b&gt;</code>. Supports regular expressions as well!</p>
 <p><a href="http://travis-ci.org/juliangruber/balanced-match"><img src="https://secure.travis-ci.org/juliangruber/balanced-match.svg" alt="build status" style="pointer-events: none;" class="inline"/></a> <a href="https://www.npmjs.org/package/balanced-match"><img src="https://img.shields.io/npm/dm/balanced-match.svg" alt="downloads" style="pointer-events: none;" class="inline"/></a></p>
 <p><a href="https://ci.testling.com/juliangruber/balanced-match"><img src="https://ci.testling.com/juliangruber/balanced-match.png" alt="testling badge" class="inline"/></a></p>
-<h1><a class="anchor" id="autotoc_md42"></a>
+<h1><a class="anchor" id="autotoc_md46"></a>
 Example</h1>
 <p>Get the first matching pair of braces:</p>
 <div class="fragment"><div class="line">var balanced = require(&#39;balanced-match&#39;);</div>
@@ -120,9 +120,9 @@ Example</h1>
 <div class="line">  body: &#39;first&#39;,</div>
 <div class="line">  post: &#39;between{second}post&#39; }</div>
 <div class="line">{ start: 3, end: 17, pre: &#39;pre&#39;, body: &#39;in{nest}&#39;, post: &#39;post&#39; }</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md43"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md47"></a>
 API</h1>
-<h2><a class="anchor" id="autotoc_md44"></a>
+<h2><a class="anchor" id="autotoc_md48"></a>
 var m = balanced(a, b, str)</h2>
 <p>For the first non-nested matching pair of <code>a</code> and <code>b</code> in <code>str</code>, return an object with those keys:</p>
 <ul>
@@ -134,16 +134,16 @@ var m = balanced(a, b, str)</h2>
 </ul>
 <p>If there's no match, <code>undefined</code> will be returned.</p>
 <p>If the <code>str</code> contains more <code>a</code> than <code>b</code> / there are unmatched pairs, the first match that was closed will be used. For example, <code>{{a}</code> will match &lsquo;[&rsquo;{', 'a', '']<code>and</code>{a}}<code>will match</code>['', 'a', '}']`.</p>
-<h2><a class="anchor" id="autotoc_md45"></a>
+<h2><a class="anchor" id="autotoc_md49"></a>
 var r = balanced.range(a, b, str)</h2>
 <p>For the first non-nested matching pair of <code>a</code> and <code>b</code> in <code>str</code>, return an array with indexes: <code>[ &lt;a index&gt;, &lt;b index&gt; ]</code>.</p>
 <p>If there's no match, <code>undefined</code> will be returned.</p>
 <p>If the <code>str</code> contains more <code>a</code> than <code>b</code> / there are unmatched pairs, the first match that was closed will be used. For example, <code>{{a}</code> will match <code>[ 1, 3 ]</code> and <code>{a}}</code> will match <code>[0, 2]</code>.</p>
-<h1><a class="anchor" id="autotoc_md46"></a>
+<h1><a class="anchor" id="autotoc_md50"></a>
 Installation</h1>
 <p>With <a href="https://npmjs.org">npm</a> do:</p>
 <div class="fragment"><div class="line">npm install balanced-match</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md47"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md51"></a>
 License</h1>
 <p>(MIT)</p>
 <p>Copyright (c) 2013 Julian Gruber &lt;<a href="#" onclick="location.href='mai'+'lto:'+'jul'+'ia'+'n@j'+'ul'+'ian'+'gr'+'ube'+'r.'+'com'; return false;">julia<span class="obfuscator">.nosp@m.</span>n@ju<span class="obfuscator">.nosp@m.</span>liang<span class="obfuscator">.nosp@m.</span>rube<span class="obfuscator">.nosp@m.</span>r.com</a>&gt;</p>
