@@ -70,16 +70,14 @@ int main(int argc, char** argv) {
   char* config_file = argv[1];
   char* private_key_file = argv[2];
   char* cert_file = argv[3];
-  char* logging_dir = nullptr;
 
-  if (argc >= 6) {
-    logging_dir = argv[5];
-  }
+  if (argc == 5){
+	  std::string grafana_port = argv[4];
+	  std::string grafana_address = "0.0.0.0:"+grafana_port;
 
-  if (argc >= 5) {
-    auto monitor_port = Stats::GetGlobalStats(5);
-    monitor_port->SetPrometheus(argv[4]);
-    LOG(ERROR) << "prot:" << argv[4];
+	  auto monitor_port = Stats::GetGlobalStats(5);
+	  monitor_port->SetPrometheus(grafana_address);
+	  LOG(ERROR) << "monitoring prot:" << grafana_address;
   }
 
   std::unique_ptr<ResDBConfig> config =
@@ -89,6 +87,6 @@ int main(int argc, char** argv) {
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
       std::make_unique<KVExecutor>(NewState(cert_file, config_data)),
-      logging_dir);
+      nullptr);
   server->Run();
 }
