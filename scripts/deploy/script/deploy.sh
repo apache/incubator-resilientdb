@@ -18,6 +18,7 @@ server_path=`echo "$server" | sed 's/:/\//g'`
 server_path=${server_path:1}
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
+grafna_port=8090
 
 bin_path=${BAZEL_WORKSPACE_PATH}/bazel-bin/${server_path}
 output_path=${script_path}/deploy/config_out
@@ -102,7 +103,7 @@ for ip in ${deploy_iplist[@]};
 do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
-  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}.log 2>&1 &" &
+  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &" &
   ((count++))
   ((idx++))
 done
