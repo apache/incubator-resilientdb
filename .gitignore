@@ -1,5 +1,4 @@
 deps/*/
-deploy/kv_server/output/
 .idea/
 .vscode/
 .DS_Store
@@ -9,3 +8,4 @@ bazel-*
 venv
 sdk_validator/venv
 __pycache__
+scripts/deploy/config_out/

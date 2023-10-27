@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+import "common/proto/signature_info.proto";
+
+package resdb;
+
+message HotStuffRequest {
+    enum Type {
+      TYPE_NONE = 0;
+      TYPE_CLIENT_REQUEST = 1;
+      TYPE_NEWREQUEST = 2;
+      TYPE_PREPARE = 3;
+      TYPE_PREPARE_VOTE = 4;
+      TYPE_PRECOMMIT = 5;
+      TYPE_PRECOMMIT_VOTE = 6;
+      TYPE_COMMIT = 7;
+      TYPE_COMMIT_VOTE = 8;
+      TYPE_DECIDE = 9;
+      TYPE_NEWVIEW = 10;
+      NUM_OF_TYPE = 11; 
+    };
+  
+    int32 type = 1;
+    int32 sender_id = 3;
+    int64 view = 4;
+    QC qc = 5;
+    QC pre = 6;
+    NodeInfo node = 2;
+    SignatureInfo node_signature = 7;
+    HotStuffRequest new_user_request = 8; // for prepare message that combine the new request.
+    HotStuffRequest prepare_request = 9; // for prepare message that combine the new request.
+    HotStuffRequest precommit_request = 10; // for prepare message that combine the new request.
+    HotStuffRequest commit_request = 11; // for prepare message that combine the new request.
+}
+
+message NodeInfo {
+  message Info {
+    int64 view = 1;   
+    bytes hash = 2;
+ }
+  bytes data = 1;
+  Info info = 2;
+  Info pre = 3;
+  int32 proxy_id = 4;
+}
+
+message QC {
+  HotStuffRequest.Type type = 1;
+  NodeInfo node = 2;
+  repeated SignatureInfo signatures = 3;
+}
+
+message BatchHotStuffRequest{
+  repeated HotStuffRequest requests = 1;
+}
+
+
