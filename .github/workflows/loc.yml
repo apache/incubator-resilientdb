@@ -23,15 +23,32 @@ jobs:
          debug: true
          directory: ./
          patterns: '**/*.h|**/*.cpp'
-         badge: ./output/badge.svg
+         badge: ./img/badge.svg
          ignore: 'node_modules/|README'
 
-     - name: Deploy to image-data branch
-       uses: peaceiris/actions-gh-pages@v3
+     - name: Commit files
+       id: commit-files
+       run: |
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add img/badge.svg
+            git commit -m "update loc"
+            echo "hasChange=true" >> $GITHUB_OUTPUT
+     - name: Push changes
+       uses: ad-m/github-push-action@master
+       if: ${{ steps.commit-files.outputs.hasChange == 'true' }}
        with:
-         publish_dir: ./output
-         publish_branch: image-data
-         github_token: ${{ secrets.GITHUB_TOKEN }}
-         user_name: 'github-actions[bot]'
-         user_email: 'github-actions[bot]@users.noreply.github.com'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+
+     #- name: Deploy to image-data branch
+     #  uses: peaceiris/actions-gh-pages@v3
+     #  with:
+     #    publish_dir: ./output
+     #    destination_dir: img
+     #    publish_branch: master
+     #    github_token: ${{ secrets.GITHUB_TOKEN }}
+     #    user_name: 'github-actions[bot]'
+     #    user_email: 'github-actions[bot]@users.noreply.github.com'
 
