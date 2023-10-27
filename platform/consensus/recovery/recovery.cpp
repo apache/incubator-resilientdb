@@ -67,7 +67,7 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
   }
 
   LOG(INFO) << "file path:" << file_path_
-             << " dir:" << std::filesystem::path(file_path_).parent_path();
+            << " dir:" << std::filesystem::path(file_path_).parent_path();
 
   recovery_ckpt_time_s_ = config_.GetConfigData().recovery_ckpt_time_s();
   if (recovery_ckpt_time_s_ == 0) {
@@ -85,7 +85,7 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
   Init();
 }
 
-void Recovery::Init(){
+void Recovery::Init() {
   GetLastFile();
   SwitchFile(file_path_);
 
@@ -225,14 +225,15 @@ void Recovery::OpenFile(const std::string& path) {
   }
 
   int pos = lseek(fd_, 0, SEEK_END);
-  LOG(INFO) << "file path:" << path << " len:" << pos<<" fd:"<<fd_;
-  
+  LOG(INFO) << "file path:" << path << " len:" << pos << " fd:" << fd_;
+
   if (pos == 0) {
     WriteSystemInfo();
   }
 
   lseek(fd_, 0, SEEK_END);
-  LOG(INFO) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR)<<" fd:"<<fd_;
+  LOG(INFO) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR)
+            << " fd:" << fd_;
   assert(fd_ >= 0);
 }
 
@@ -465,7 +466,7 @@ void Recovery::ReadLogsFromFiles(
   if (fd < 0) {
     LOG(ERROR) << " open file fail:" << path;
   }
-  LOG(INFO)<<"read logs:"<<path<<" pos:"<<lseek(fd, 0, SEEK_CUR);
+  LOG(INFO) << "read logs:" << path << " pos:" << lseek(fd, 0, SEEK_CUR);
   assert(fd >= 0);
 
   size_t data_len = 0;
