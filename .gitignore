@@ -1,4 +1,6 @@
 deps/*/
+scripts/deploy/config/key.conf
+scripts/deploy/config_out/
 deploy/kv_server/output/
 .idea/
 .vscode/

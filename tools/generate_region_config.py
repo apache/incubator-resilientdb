@@ -6,10 +6,8 @@ from google.protobuf.json_format import MessageToJson
 from google.protobuf.json_format import Parse, ParseDict
 
 
-def GenerateJsonConfig(file_name, output_file):
+def GenerateJsonConfig(file_name, output_file, template_file):
     config_data=ResConfigData() 
-    config_data.enable_viewchange = False
-    config_data.max_client_complaint_num = 10
     tmp_config={}
     with open(file_name) as f:
         for line in f.readlines():
@@ -39,5 +37,31 @@ def GenerateJsonConfig(file_name, output_file):
     with open(output_file,"w") as f:
         f.write(json_obj)
 
+    if template_file:
+      old_json = None
+      with open(output_file) as f:
+        lines=f.readlines()
+        for l in lines:
+          l=l.strip()
+        s=''.join(lines)
+        old_json=json.loads(s)
+
+      template_json = {}
+      with open(template_file) as f:
+        lines=f.readlines()
+        for l in lines:
+          l=l.strip()
+        s=''.join(lines)
+        template_json=json.loads(s)
+  
+      for (k,v) in template_json.items():
+        old_json[k] = v
+
+      with open(output_file,"w") as f:
+        json.dump(old_json, f)
+
 if __name__ == "__main__":
-    GenerateJsonConfig(sys.argv[1], sys.argv[2])
+    template_config = None
+    if len(sys.argv)>3:
+      template_config = sys.argv[3]
+    GenerateJsonConfig(sys.argv[1], sys.argv[2], template_config)
