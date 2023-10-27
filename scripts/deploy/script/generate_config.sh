@@ -60,5 +60,5 @@ do
   idx=$(($idx+1))
 done
 
-python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json
+python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ../config/template.config
 mv server.config.json server.config
