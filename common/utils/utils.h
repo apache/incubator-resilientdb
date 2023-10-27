@@ -29,6 +29,6 @@
 
 namespace resdb {
 
-uint64_t GetSysClock();
 uint64_t GetCurrentTime();
+
 }  // namespace resdb

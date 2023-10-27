@@ -32,7 +32,7 @@ The latest ResilientDB documentation, including a programming guide, is availabl
 1. Software Stack Architecture 
    - SDK, Interface/API, Platform, Execution, and Chain Layers 
    - Detailed API Documentation: **[Core](https://api.resilientdb.com/)** and **[SDK](https://sdk.resilientdb.com/)**
-2. **SDK Layer:** **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)**
+2. **SDK Layer:** **[Python SDK](https://blog.resilientdb.com/2023/02/01/UsingPythonSDK.html)** and **[Wallet - ResVault](https://blog.resilientdb.com/2023/09/21/ResVault.html)**
 3. **Interface Layer:** **[Key-Value](https://blog.resilientdb.com/2022/09/28/GettingStartedNexRes.html)**, **[Solidity Smart Contract](https://blog.resilientdb.com/2023/01/15/GettingStartedSmartContract.html)**, **[Unspent Transaction Output (UTXO) Model](https://blog.resilientdb.com/2023/02/12/UtxoOnNexres.html)**, ResilientDB Database Connectivity (RDBC) API
 4. **Platform Layer:** **[Consensus Manager Architecture (ordering, recovery, network, chain management)](https://blog.resilientdb.com/2022/09/27/What_Is_NexRes.html)**
    - **[Recovery & Checkpoint Design](https://blog.resilientdb.com/2023/08/22/ViewChangeInNexRes.html)**
@@ -97,3 +97,52 @@ You will see the following result if successful:
 ## Deployment Script
 
 We also provide access to a [deployment script](https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy) that allows deployment on distinct machines.
+
+## Deploy via Docker
+
+1. **Install Docker**  
+   Before getting started, make sure you have Docker installed on your system. If you don't have Docker already, you can download and install it from the official [Docker website](https://www.docker.com/products/docker-desktop/).
+
+2. **Pull the Latest ResilientDB Image**  
+   Choose the appropriate [ResilientDB image](https://hub.docker.com/repository/docker/expolab/resdb/general) for your machine's architecture:
+
+   - For amd architecture, run:
+     ```shell
+     docker pull expolab/resdb:amd64
+     ```
+
+   - For Apple Silicon (M1/M2) architecture, run:
+     ```shell
+     docker pull expolab/resdb:arm64
+     ```
+
+3. **Run a Container with the Pulled Image**  
+   Launch a Docker container using the ResilientDB image you just pulled:
+
+   - For amd architecture, run:
+     ```shell
+     docker run -it expolab/resdb:amd64 bash
+     ```
+
+   - For Apple Silicon (M1/M2) architecture, run:
+     ```shell
+     docker run -it expolab/resdb:arm64 bash
+     ```
+
+4. **Start the kv_service within the Container**  
+   Once you're inside the container, start the `kv_service` by running the following command:
+   ```shell
+   ./service/tools/kv/server_tools/start_kv_service.sh
+   ```
+5. **Test with Set and Get Commands**
+   Verify the functionality of the service by performing set and get operations:
+
+   - Set a test value:
+   ```shell
+   bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
+   ```
+
+   - Retrieve the test value:
+   ```
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test
+   ```
