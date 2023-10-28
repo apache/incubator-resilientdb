@@ -30,13 +30,46 @@
 
 #include "platform/statistic/prometheus_handler.h"
 
+namespace std{
 namespace resdb {
+
+struct VisualData{
+    //Set when initializing
+    int replica_id;
+    //Initially Set when intiializing, update after view change
+    int primary_id;
+
+    //Set when new txn is received
+    //Need to figure out how to parse message at this stage for this data
+    string txn_key;
+    string txn_value;
+    string txn_command;
+
+    //Reset after sending summary
+
+    //Request state if primary_id==replica_id, pre_prepare state otherwise
+    chrono::system_clock::time_point request_pre_prepare_state_time;
+    chrono::system_clock::time_point prepare_state_time;
+    vector<int> prepare_message_count_list;
+    vector<chrono::system_clock::time_point> prepare_message_count_times_list;
+    chrono::system_clock::time_point commit_state_time;
+    vector<int> commit_message_count_list;
+    vector<chrono::system_clock::time_point> commit_message_count_times_list;
+    chrono::system_clock::time_point execution_time;
+};
 
 class Stats {
  public:
   static Stats* GetGlobalStats(int sleep_seconds = 5);
 
   void Stop();
+
+    void RetrieveProgress();
+    void SetId(int replica_id);
+    void SetPrimary(int primary_id);
+    void RecordStateTime(string state);
+    void SendSummary();
+
 
   void AddLatency(uint64_t run_time);
 
@@ -98,7 +131,10 @@ class Stats {
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
+    VisualData transaction_summary_;
+
   std::unique_ptr<PrometheusHandler> prometheus_;
 };
 
 }  // namespace resdb
+}  // namespace std

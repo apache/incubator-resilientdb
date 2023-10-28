@@ -46,6 +46,9 @@ Commitment::Commitment(const ResDBConfig& config,
   global_stats_ = Stats::GetGlobalStats();
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
+
+  global_stats_->SetId(config_.GetSelfInfo().id());
+  global_stats_->SetPrimaryId(message_manager_->GetCurrentPrimary());
 }
 
 Commitment::~Commitment() {

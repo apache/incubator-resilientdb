@@ -29,6 +29,7 @@
 
 #include "common/utils/utils.h"
 
+namespace std{
 namespace resdb {
 
 std::mutex g_mutex;
@@ -65,9 +66,13 @@ Stats::Stats(int sleep_time) {
   send_broad_cast_msg_ = 0;
 
   prometheus_ = nullptr;
-
   global_thread_ =
       std::thread(&Stats::MonitorGlobal, this);  // pass by reference
+
+  //Setup websocket here
+
+  //Thread to collect message collection progress
+  summary_thread_ = std::thread(&Stats::RetrieveProgress, this);  // pass by reference
 }
 
 void Stats::Stop() { stop_ = true; }
@@ -77,6 +82,60 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
+  if (summary_thread_.joinable()) {
+    summary_thread_.join();
+  }
+}
+
+void Stats::RetrieveProgress(){
+  while(!stop_){
+    //Customize sleep time to whatever gathers progress effectively
+    sleep(1);
+    //Add lock here
+    if(transaction_summary_.request_pre_prepare_state_time){
+      if(transaction_summary_.prepare_state_time){
+        if(!transaction_summary_.commit_state_time){
+          transaction_summary_.commit_message_count_list.push_back(num_commit_-last_num_commit_);
+          transaction_summary_.commit_message_count_times_list.push_back(chrono::system_clock::now());
+        }
+      }
+      else{
+        transaction_summary_.prepare_message_count_list.push_back(num_prepare_-last_num_prepare_);
+        transaction_summary_.prepare_message_count_times_list.push_back(chrono::system_clock::now());
+      }
+    }
+  }
+}
+
+void Stats::SetId(int replica_id){
+  transaction_summary_.replica_id=replica_id;
+}
+
+void Stats::SetPrimaryId(int primary_id){
+  transaction_summary_.primary_id=primary_id;
+}
+
+void Stats::RecordStateTime(string state){
+  if(state=="request" || state=="pre-prepare"){
+    transaction_summary_.request_pre_prepare_state_time=chrono::system_clock::now();
+  }
+  else if(state=="prepare"){
+    transaction_summary_.prepare_state_time=chrono::system_clock::now();
+  }
+  else if(state=="commit"){
+    transaction_summary_.commit_state_time=chrono::system_clock::now();
+  }
+}
+
+void Stats::SendSummary(){
+  transaction_summary_.execution_time=chrono::system_clock::now();
+
+  //Convert Transaction Summary to JSON
+
+  //Send Summary via Websocket
+
+  //Reset Transaction Summary Parameters
+
 }
 
 void Stats::MonitorGlobal() {
@@ -253,7 +312,9 @@ void Stats::IncCommit() {
   num_commit_++;
 }
 
-void Stats::IncPendingExecute() { pending_execute_++; }
+void Stats::IncPendingExecute() {
+  pending_execute_++; 
+}
 
 void Stats::IncExecute() { execute_++; }
 
@@ -314,3 +375,4 @@ void Stats::SetPrometheus(const std::string& prometheus_address) {
 }
 
 }  // namespace resdb
+}  // namespace std
