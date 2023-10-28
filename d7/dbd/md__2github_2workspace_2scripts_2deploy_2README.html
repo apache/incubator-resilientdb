@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('d7/dbd/md__2github_2workspace_2scripts
 Usage</h1>
 <h2><a class="anchor" id="autotoc_md237"></a>
 Deploy KV Service</h2>
-<p>Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file <a href="https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf">config/kv_server.conf</a>. We recommend using private IP addresses of each machine.</p>
+<p>Add the IP addresses of the machines where you wish to deploy ResilientDB replicas and client proxy in the file <a href="../../config/kv_server.conf">config/kv_server.conf</a>. Create the ssh key file in the config "config/key.conf" and put your ssh key there (See the <a href="../../config/key_example.conf">key_example.conf</a> as an example). We recommend using private IP addresses of each machine.</p>
 <ul>
 <li>If you do not require any SSH key to log in to a machine, then you would need to update the scripts.</li>
 <li>In these scripts, we assume that the <code>root</code> is <code>ubuntu</code> and the current working directory is located at <code>/home/ubuntu/</code>. If this is not the case for your machines, you would need to update the scripts.</li>

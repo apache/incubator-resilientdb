@@ -23,7 +23,8 @@ var namespaces_dup =
       [ "files", "df/d44/namespacegenerate__mulregion__config.html#af21cc9094201404d11e3ffe1b1dca000", null ]
     ] ],
     [ "generate_region_config", "d8/dab/namespacegenerate__region__config.html", [
-      [ "GenerateJsonConfig", "d8/dab/namespacegenerate__region__config.html#ac8f2620c2c3dd4501e03ae05aae1b725", null ]
+      [ "GenerateJsonConfig", "d8/dab/namespacegenerate__region__config.html#a350c3cc35c2019ffc1120d296af7c033", null ],
+      [ "template_config", "d8/dab/namespacegenerate__region__config.html#a56aa3d70cc1ca27d68352f5508297e6a", null ]
     ] ],
     [ "key_tester", "df/d50/namespacekey__tester.html", [
       [ "pri_key", "df/d50/namespacekey__tester.html#a7839bbd6d1e002da20cf3d9cb2130328", null ],

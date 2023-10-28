@@ -1,5 +1,6 @@
 var NAVTREEINDEX8 =
 {
+"dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7":[1,0,0,10,47],
 "dc/db0/classresdb_1_1CheckPointManager.html#aee51af13557dd31e832534cbd2e94cb3":[1,0,0,10,36],
 "dc/db0/classresdb_1_1CheckPointManager.html#aee51af13557dd31e832534cbd2e94cb3":[0,0,6,13,36],
 "dc/db0/classresdb_1_1CheckPointManager.html#af2ea5f3e75e2a5ff3a1f4abde74fd290":[0,0,6,13,23],
@@ -248,6 +249,5 @@ var NAVTREEINDEX8 =
 "de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c":[0,0,6,72,7],
 "de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c":[1,0,0,69,7],
 "de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf":[0,0,6,72,1],
-"de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf":[1,0,0,69,1],
-"de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb":[1,0,0,69,10]
+"de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf":[1,0,0,69,1]
 };

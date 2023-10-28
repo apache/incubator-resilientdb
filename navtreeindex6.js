@@ -1,5 +1,6 @@
 var NAVTREEINDEX6 =
 {
+"da/d19/classresdb_1_1ConsensusManager.html#a5d13be9749d0960aab81fef99500b3c7":[0,0,6,16,11],
 "da/d19/classresdb_1_1ConsensusManager.html#a5d13be9749d0960aab81fef99500b3c7":[1,0,0,13,11],
 "da/d19/classresdb_1_1ConsensusManager.html#a6ee5d408e5db8134290afa5dbe162568":[1,0,0,13,24],
 "da/d19/classresdb_1_1ConsensusManager.html#a6ee5d408e5db8134290afa5dbe162568":[0,0,6,16,24],
@@ -248,6 +249,5 @@ var NAVTREEINDEX6 =
 "db/d8c/res__rocksdb_8cpp_source.html":[2,0,1,1,4],
 "db/d8c/transaction__executor_8h.html":[2,0,7,2,1,13],
 "db/d8c/transaction__executor_8h_source.html":[2,0,7,2,1,13],
-"db/da7/batch__queue_8h.html":[2,0,7,0,2,0],
-"db/da7/batch__queue_8h_source.html":[2,0,7,0,2,0]
+"db/da7/batch__queue_8h.html":[2,0,7,0,2,0]
 };

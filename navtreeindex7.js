@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"db/da7/batch__queue_8h_source.html":[2,0,7,0,2,0],
 "db/dc1/async__acceptor__test_8cpp.html":[2,0,7,3,2],
 "db/dc1/async__acceptor__test_8cpp_source.html":[2,0,7,3,2],
 "db/dc9/txn__memory__db__test_8cpp.html":[2,0,1,1,10],
@@ -248,6 +249,5 @@ var NAVTREEINDEX7 =
 "dc/db0/classresdb_1_1CheckPointManager.html#ae280bb2fb8018c3a5cc2ad2712730934":[1,0,0,10,30],
 "dc/db0/classresdb_1_1CheckPointManager.html#ae6249edf685aa8de090d4b26170b1892":[1,0,0,10,40],
 "dc/db0/classresdb_1_1CheckPointManager.html#ae6249edf685aa8de090d4b26170b1892":[0,0,6,13,40],
-"dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7":[0,0,6,13,47],
-"dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7":[1,0,0,10,47]
+"dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7":[0,0,6,13,47]
 };

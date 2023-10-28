@@ -1,5 +1,7 @@
 var NAVTREEINDEX10 =
 {
+"df/d98/checkpoint__manager_8cpp.html#ab2cf1b4bf34a1ea57df6cbeaa24acc09":[2,0,7,2,2,2,0,0],
+"df/d98/checkpoint__manager_8cpp_source.html":[2,0,7,2,2,2,0],
 "df/d9b/mock__storage_8h.html":[2,0,1,1,0],
 "df/d9b/mock__storage_8h_source.html":[2,0,1,1,0],
 "df/da2/async__acceptor_8h.html":[2,0,7,3,1],
@@ -11,8 +13,8 @@ var NAVTREEINDEX10 =
 "df/dba/batch__queue__test_8cpp_source.html":[2,0,7,0,2,1],
 "df/dcb/resdb__config__test_8cpp.html":[2,0,7,1,2],
 "df/dcb/resdb__config__test_8cpp_source.html":[2,0,7,1,2],
-"df/dcf/classresdb_1_1PrometheusHandler.html":[1,0,0,46],
 "df/dcf/classresdb_1_1PrometheusHandler.html":[0,0,6,49],
+"df/dcf/classresdb_1_1PrometheusHandler.html":[1,0,0,46],
 "df/dcf/classresdb_1_1PrometheusHandler.html#a22f8993b00dbfea349e441c5a0aa8690":[0,0,6,49,2],
 "df/dcf/classresdb_1_1PrometheusHandler.html#a22f8993b00dbfea349e441c5a0aa8690":[1,0,0,46,2],
 "df/dcf/classresdb_1_1PrometheusHandler.html#a2d645f7f2d16fab74f8ee54d72243089":[0,0,6,49,0],
@@ -33,8 +35,8 @@ var NAVTREEINDEX10 =
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html":[1,0,0,1,5],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#a0f581241631638a4ff3c31806ee04cc3":[0,0,6,4,5,3],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#a0f581241631638a4ff3c31806ee04cc3":[1,0,0,1,5,3],
-"df/ddc/classresdb_1_1utxo_1_1Wallet.html#a231235c4069d9538b664b1e56583c56c":[0,0,6,4,5,0],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#a231235c4069d9538b664b1e56583c56c":[1,0,0,1,5,0],
+"df/ddc/classresdb_1_1utxo_1_1Wallet.html#a231235c4069d9538b664b1e56583c56c":[0,0,6,4,5,0],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#a85e5152fb6fa6127906811bacf504a2d":[1,0,0,1,5,1],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#a85e5152fb6fa6127906811bacf504a2d":[0,0,6,4,5,1],
 "df/ddc/classresdb_1_1utxo_1_1Wallet.html#ad9a03cf31bdf5d0b7baf8b4e7a7d0734":[0,0,6,4,5,2],
