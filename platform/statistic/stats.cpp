@@ -130,6 +130,22 @@ void Stats::RecordStateTime(string state){
 void Stats::SendSummary(){
   transaction_summary_.execution_time=chrono::system_clock::now();
 
+  LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id 
+            <<"Primary ID:"<< transaction_summary_.primary_id 
+            <<"Propose/pre-prepare time:"<< transaction_summary_.request_pre_prepare_state_time 
+            <<"Prepare time:"<< transaction_summary_.prepare_state_time 
+            <<"Commit time:"<< transaction_summary_.commit_state_time 
+            <<"Execution time:"<< transaction_summary_.execution_time;
+  for(int i=0; i<transaction_summary_.prepare_message_count_list.size(); i++){
+    LOG(ERROR)<<"Timestamp 1: "
+    LOG(ERROR)<<"Prepare Message Count: "<< transaction_summary_.prepare_message_count_list[i]
+              <<" Prepare Message Count Time: " << transaction_summary_.prepare_message_count_times_list[i];
+  } 
+  for(int i=0; i<transaction_summary_.commit_message_count_list.size(); i++){
+    LOG(ERROR)<<"Timestamp 1: "
+    LOG(ERROR)<<"Commit Message Count: "<< transaction_summary_.commit_message_count_list[i]
+              <<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i];
+  } 
   //Convert Transaction Summary to JSON
 
   //Send Summary via Websocket

@@ -143,6 +143,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
+  global_stats_->RecordStateTime("request");
+
   user_request->set_type(Request::TYPE_PRE_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
   user_request->set_seq(*seq);
@@ -210,6 +212,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   }
 
   global_stats_->IncPropose();
+  global_stats_->RecordStateTime("pre-prepare");
   std::unique_ptr<Request> prepare_request = resdb::NewRequest(
       Request::TYPE_PREPARE, *request, config_.GetSelfInfo().id());
   prepare_request->clear_data();
@@ -261,6 +264,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       // LOG(ERROR) << "sign hash"
       //           << commit_request->data_signature().DebugString();
     }
+    global_stats_->RecordStateTime("prepare");
     replica_communicator_->BroadCast(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
@@ -284,6 +288,9 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
   // commit the request.
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
+  if (ret == CollectorResultCode::STATE_CHANGED) {
+    global_stats_->RecordStateTime("commit");
+  }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
@@ -295,6 +302,7 @@ int Commitment::PostProcessExecutedMsg() {
     if (batch_resp == nullptr) {
       continue;
     }
+    global_stats_->SendSummary();
     Request request;
     request.set_hash(batch_resp->hash());
     request.set_seq(batch_resp->seq());
