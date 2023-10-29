@@ -30,7 +30,6 @@
 
 #include "platform/statistic/prometheus_handler.h"
 
-namespace std{
 namespace resdb {
 
 struct VisualData{
@@ -41,21 +40,21 @@ struct VisualData{
 
     //Set when new txn is received
     //Need to figure out how to parse message at this stage for this data
-    string txn_key;
-    string txn_value;
-    string txn_command;
+    std::string txn_key;
+    std::string txn_value;
+    std::string txn_command;
 
     //Reset after sending summary
 
     //Request state if primary_id==replica_id, pre_prepare state otherwise
-    chrono::system_clock::time_point request_pre_prepare_state_time;
-    chrono::system_clock::time_point prepare_state_time;
-    vector<int> prepare_message_count_list;
-    vector<chrono::system_clock::time_point> prepare_message_count_times_list;
-    chrono::system_clock::time_point commit_state_time;
-    vector<int> commit_message_count_list;
-    vector<chrono::system_clock::time_point> commit_message_count_times_list;
-    chrono::system_clock::time_point execution_time;
+    std::chrono::system_clock::time_point request_pre_prepare_state_time;
+    std::chrono::system_clock::time_point prepare_state_time;
+    std::vector<uint64_t> prepare_message_count_list;
+    std::vector<std::chrono::system_clock::time_point> prepare_message_count_times_list;
+    std::chrono::system_clock::time_point commit_state_time;
+    std::vector<uint64_t> commit_message_count_list;
+    std::vector<std::chrono::system_clock::time_point> commit_message_count_times_list;
+    std::chrono::system_clock::time_point execution_time;
 };
 
 class Stats {
@@ -66,8 +65,8 @@ class Stats {
 
     void RetrieveProgress();
     void SetId(int replica_id);
-    void SetPrimary(int primary_id);
-    void RecordStateTime(string state);
+    void SetPrimaryId(int primary_id);
+    void RecordStateTime(std::string state);
     void SendSummary();
 
 
@@ -131,10 +130,12 @@ class Stats {
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
+  std::thread summary_thread_;
     VisualData transaction_summary_;
+  std::atomic<uint64_t> prev_num_prepare_;
+  std::atomic<uint64_t> prev_num_commit_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
 };
 
 }  // namespace resdb
-}  // namespace std
