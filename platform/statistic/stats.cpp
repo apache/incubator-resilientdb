@@ -70,8 +70,6 @@ Stats::Stats(int sleep_time) {
 
   //Setup websocket here
 
-  //Thread to collect message collection progress
-  summary_thread_ = std::thread(&Stats::RetrieveProgress, this);  // pass by reference
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.commit_state_time=std::chrono::system_clock::time_point::min();
@@ -84,29 +82,6 @@ Stats::~Stats() {
   stop_ = true;
   if (global_thread_.joinable()) {
     global_thread_.join();
-  }
-  if (summary_thread_.joinable()) {
-    summary_thread_.join();
-  }
-}
-
-void Stats::RetrieveProgress(){
-  while(!stop_){
-    //Customize sleep time to whatever gathers progress effectively
-    sleep(.01);
-    //Add lock here
-    if(transaction_summary_.request_pre_prepare_state_time!=std::chrono::system_clock::time_point::min()){
-      if(transaction_summary_.prepare_state_time!=std::chrono::system_clock::time_point::min()){
-        if(transaction_summary_.commit_state_time==std::chrono::system_clock::time_point::min()){
-          transaction_summary_.commit_message_count_list.push_back(num_commit_);
-          transaction_summary_.commit_message_count_times_list.push_back(std::chrono::system_clock::now());
-        }
-      }
-      else{
-        transaction_summary_.prepare_message_count_list.push_back(num_prepare_);
-        transaction_summary_.prepare_message_count_times_list.push_back(std::chrono::system_clock::now());
-      }
-    }
   }
 }
 
@@ -124,11 +99,9 @@ void Stats::RecordStateTime(std::string state){
   }
   else if(state=="prepare"){
     transaction_summary_.prepare_state_time=std::chrono::system_clock::now();
-    prev_num_prepare_.store(num_prepare_.load());
   }
   else if(state=="commit"){
     transaction_summary_.commit_state_time=std::chrono::system_clock::now();
-    prev_num_commit_.store(num_commit_.load());
   }
 }
 
@@ -141,27 +114,24 @@ void Stats::SendSummary(){
   LOG(ERROR)<<"Prepare time:"<< transaction_summary_.prepare_state_time.time_since_epoch().count();
   LOG(ERROR)<<"Commit time:"<< transaction_summary_.commit_state_time.time_since_epoch().count();
   LOG(ERROR)<<"Execution time:"<< transaction_summary_.execution_time.time_since_epoch().count();
-  for(size_t i=0; i<transaction_summary_.prepare_message_count_list.size(); i++){
-    LOG(ERROR)<<"Timestamp 1: ";
-    LOG(ERROR)<<"Prepare Message Count: "<< transaction_summary_.prepare_message_count_list[i];
+  for(size_t i=0; i<transaction_summary_.prepare_message_count_times_list.size(); i++){
     LOG(ERROR)<<" Prepare Message Count Time: " << transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count();
   } 
-  for(size_t i=0; i<transaction_summary_.commit_message_count_list.size(); i++){
-    LOG(ERROR)<<"Timestamp 1: ";
-    LOG(ERROR)<<"Commit Message Count: "<< transaction_summary_.commit_message_count_list[i];
+  for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
     LOG(ERROR)<<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count();
-  } 
-  LOG(ERROR)<<"Prev Prepare messages:" <<prev_num_prepare_;
-  LOG(ERROR)<<"Prepare messages:" <<num_prepare_;
-  LOG(ERROR)<<"Prev Commit messages:" <<prev_num_commit_;
-  LOG(ERROR)<<"Commit messages:" <<num_commit_;
+  }
 
   //Convert Transaction Summary to JSON
 
   //Send Summary via Websocket
 
   //Reset Transaction Summary Parameters
-
+  transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
+  transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
+  transaction_summary_.commit_state_time=std::chrono::system_clock::time_point::min();
+  transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
+  transaction_summary_.prepare_message_count_times_list.clear();
+  transaction_summary_.commit_message_count_times_list.clear();
 }
 
 void Stats::MonitorGlobal() {
@@ -329,7 +299,7 @@ void Stats::IncPrepare() {
     prometheus_->Inc(PREPARE, 1);
   }
   num_prepare_++;
-  LOG(ERROR)<<"New prepare message "<< num_prepare_;
+  transaction_summary_.prepare_message_count_times_list.push_back(std::chrono::system_clock::now());
 }
 
 void Stats::IncCommit() {
@@ -337,7 +307,7 @@ void Stats::IncCommit() {
     prometheus_->Inc(COMMIT, 1);
   }
   num_commit_++;
-  LOG(ERROR)<<"New commit message "<< num_commit_;
+  transaction_summary_.commit_message_count_times_list.push_back(std::chrono::system_clock::now());
 }
 
 void Stats::IncPendingExecute() {

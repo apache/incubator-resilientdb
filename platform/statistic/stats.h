@@ -38,6 +38,8 @@ struct VisualData{
     //Initially Set when intiializing, update after view change
     int primary_id;
 
+    //Might want to add port for the replica here
+
     //Set when new txn is received
     //Need to figure out how to parse message at this stage for this data
     std::string txn_key;
@@ -49,10 +51,8 @@ struct VisualData{
     //Request state if primary_id==replica_id, pre_prepare state otherwise
     std::chrono::system_clock::time_point request_pre_prepare_state_time;
     std::chrono::system_clock::time_point prepare_state_time;
-    std::vector<uint64_t> prepare_message_count_list;
     std::vector<std::chrono::system_clock::time_point> prepare_message_count_times_list;
     std::chrono::system_clock::time_point commit_state_time;
-    std::vector<uint64_t> commit_message_count_list;
     std::vector<std::chrono::system_clock::time_point> commit_message_count_times_list;
     std::chrono::system_clock::time_point execution_time;
 };
