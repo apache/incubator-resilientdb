@@ -4,7 +4,8 @@ This directory includes deployment scripts that help to deploy ResilientDB on mu
 
 ## Deploy KV Service
 
-Add the IP addresses and the SSH key of the machines where you wish to deploy ResilientDB replicas and client proxy in the file [config/kv_server.conf](https://github.com/msadoghi/nexres/blob/master/deploy/config/kv_server.conf). 
+Add the IP addresses of the machines where you wish to deploy ResilientDB replicas and client proxy in the file [config/kv_server.conf](config/kv_server.conf). 
+Create the ssh key file in the config "config/key.conf" and put your ssh key there (See the [key_example.conf](config/key_example.conf) as an example). 
 We recommend using private IP addresses of each machine.
 
 * If you do not require any SSH key to log in to a machine, then you would need to update the scripts.
