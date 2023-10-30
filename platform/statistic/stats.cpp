@@ -129,19 +129,15 @@ void Stats::SendSummary(){
   nlohmann::json summary_json;
   summary_json["replica_id"]=transaction_summary_.replica_id;
   summary_json["primary_id"]=transaction_summary_.primary_id;
-  std::time_t request_pre_prepare_time=std::chrono::system_clock::to_time_t(transaction_summary_.request_pre_prepare_state_time);
-  summary_json["propose_pre-prepare_time"]=std::ctime(&request_pre_prepare_time);
-  std::time_t prepare_time=std::chrono::system_clock::to_time_t(transaction_summary_.prepare_state_time);
-  summary_json["prepare_time"]=std::ctime(&prepare_time);
-  std::time_t commit_time=std::chrono::system_clock::to_time_t(transaction_summary_.commit_state_time);
-  summary_json["commit_time"]=std::ctime(&commit_time);
-  std::time_t execution_time=std::chrono::system_clock::to_time_t(transaction_summary_.execution_time);
-  summary_json["execution_time"]=std::ctime(&execution_time);
+  summary_json["propose_pre-prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
+  summary_json["prepare_time"]=transaction_summary_.prepare_state_time.time_since_epoch().count();
+  summary_json["commit_time"]=transaction_summary_.commit_state_time.time_since_epoch().count();
+  summary_json["execution_time"]=transaction_summary_.execution_time.time_since_epoch().count();
   for(size_t i=0; i<transaction_summary_.prepare_message_count_times_list.size(); i++){
-    summary_json["prepare_message_timestamps"].push_back(std::chrono::system_clock::to_time_t(transaction_summary_.prepare_message_count_times_list[i]));
+    summary_json["prepare_message_timestamps"].push_back(transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count());
   }
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
-    summary_json["commit_message_timestamps"].push_back(std::chrono::system_clock::to_time_t(transaction_summary_.commit_message_count_times_list[i]));
+    summary_json["commit_message_timestamps"].push_back(transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count());
   }
 
   LOG(ERROR)<<summary_json.dump();
