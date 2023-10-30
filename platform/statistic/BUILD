@@ -8,6 +8,7 @@ cc_library(
     srcs = ["stats.cpp"],
     hdrs = ["stats.h"],
     deps = [
+        "//common:json",
         ":prometheus_handler",
         "//common:comm",
         "//common/utils",
