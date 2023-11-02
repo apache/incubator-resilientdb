@@ -71,7 +71,7 @@ class Stats {
     void SetProps(int replica_id, std::string ip, int port);
     void SetPrimaryId(int primary_id);
     void RecordStateTime(std::string state);
-    void GetTransactionDetails(std::unique_ptr<Request> request);
+    void GetTransactionDetails(BatchUserRequest batch_request);
     void SendSummary();
 
 

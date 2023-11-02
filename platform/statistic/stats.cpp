@@ -108,9 +108,10 @@ void Stats::RecordStateTime(std::string state){
   }
 }
 
-void Stats::GetTransactionDetails(std::unique_ptr<Request> request){
-  BatchUserRequest batch_request;
-  batch_request.ParseFromString(request->data());
+void Stats::GetTransactionDetails(BatchUserRequest batch_request){
+  transaction_summary_.txn_command.clear();
+  transaction_summary_.txn_key.clear();
+  transaction_summary_.txn_value.clear();
   for (auto& sub_request : batch_request.user_requests()) {
     KVRequest kv_request;
     if(!kv_request.ParseFromString(sub_request.request().data())){
@@ -123,6 +124,7 @@ void Stats::GetTransactionDetails(std::unique_ptr<Request> request){
     } else if (kv_request.cmd() == KVRequest::GET) {
       transaction_summary_.txn_command.push_back("GET");
       transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back("");
     } else if (kv_request.cmd() == KVRequest::GETVALUES) {
       transaction_summary_.txn_command.push_back("GETVALUES");
       transaction_summary_.txn_key.push_back(kv_request.key());
@@ -138,7 +140,7 @@ void Stats::GetTransactionDetails(std::unique_ptr<Request> request){
 void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::now();
 
-  // Can print stat values
+  /* Can print stat values
   LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id;
   LOG(ERROR)<<"Primary ID:"<< transaction_summary_.primary_id;
   LOG(ERROR)<<"Propose/pre-prepare time:"<< transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
@@ -151,7 +153,7 @@ void Stats::SendSummary(){
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
     LOG(ERROR)<<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count();
   }
-  
+  */
  
   //Convert Transaction Summary to JSON
   nlohmann::json summary_json;
@@ -190,9 +192,6 @@ void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_message_count_times_list.clear();
   transaction_summary_.commit_message_count_times_list.clear();
-  transaction_summary_.txn_command.clear();
-  transaction_summary_.txn_key.clear();
-  transaction_summary_.txn_value.clear();
 }
 
 void Stats::MonitorGlobal() {
