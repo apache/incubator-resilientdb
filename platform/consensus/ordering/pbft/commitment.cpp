@@ -47,7 +47,7 @@ Commitment::Commitment(const ResDBConfig& config,
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
 
-  global_stats_->SetId(config_.GetSelfInfo().id());
+  global_stats_->SetProps(config_.GetSelfInfo().id(), config_.GetSelfInfo().ip(), config_.GetSelfInfo().port());
   global_stats_->SetPrimaryId(message_manager_->GetCurrentPrimary());
 }
 
@@ -191,6 +191,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
       LOG(ERROR) << " check by the user func fail";
       return -2;
     }
+    //global_stats_->GetTransactionDetails(std::move(request));
     BatchUserRequest batch_request;
     batch_request.ParseFromString(request->data());
     batch_request.clear_createtime();

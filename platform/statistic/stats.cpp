@@ -86,9 +86,10 @@ Stats::~Stats() {
   }
 }
 
-void Stats::SetId(int replica_id){
-
+void Stats::SetProps(int replica_id, std::string ip, int port){
   transaction_summary_.replica_id=replica_id;
+  transaction_summary_.ip=ip;
+  transaction_summary_.port=port;
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -107,10 +108,37 @@ void Stats::RecordStateTime(std::string state){
   }
 }
 
+void Stats::GetTransactionDetails(std::unique_ptr<Request> request){
+  BatchUserRequest batch_request;
+  batch_request.ParseFromString(request->data());
+  for (auto& sub_request : batch_request.user_requests()) {
+    KVRequest kv_request;
+    if(!kv_request.ParseFromString(sub_request.request().data())){
+      break;
+    }
+    if (kv_request.cmd() == KVRequest::SET) {
+      transaction_summary_.txn_command.push_back("SET");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back(kv_request.value());
+    } else if (kv_request.cmd() == KVRequest::GET) {
+      transaction_summary_.txn_command.push_back("GET");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+    } else if (kv_request.cmd() == KVRequest::GETVALUES) {
+      transaction_summary_.txn_command.push_back("GETVALUES");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back("");
+    } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+      transaction_summary_.txn_command.push_back("GETRANGE");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back(kv_request.value());
+    }
+  }
+}
+
 void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::now();
 
-  /* Can print stat values
+  // Can print stat values
   LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id;
   LOG(ERROR)<<"Primary ID:"<< transaction_summary_.primary_id;
   LOG(ERROR)<<"Propose/pre-prepare time:"<< transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
@@ -123,11 +151,13 @@ void Stats::SendSummary(){
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
     LOG(ERROR)<<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count();
   }
-  */
+  
  
   //Convert Transaction Summary to JSON
   nlohmann::json summary_json;
   summary_json["replica_id"]=transaction_summary_.replica_id;
+  summary_json["ip"]=transaction_summary_.ip;
+  summary_json["port"]=transaction_summary_.port;
   summary_json["primary_id"]=transaction_summary_.primary_id;
   summary_json["propose_pre-prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
   summary_json["prepare_time"]=transaction_summary_.prepare_state_time.time_since_epoch().count();
@@ -138,6 +168,15 @@ void Stats::SendSummary(){
   }
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
     summary_json["commit_message_timestamps"].push_back(transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count());
+  }
+  for(size_t i=0; i<transaction_summary_.txn_command.size(); i++){
+    summary_json["txn_commands"].push_back(transaction_summary_.txn_command[i]);
+  }
+  for(size_t i=0; i<transaction_summary_.txn_key.size(); i++){
+    summary_json["txn_keys"].push_back(transaction_summary_.txn_key[i]);
+  }
+  for(size_t i=0; i<transaction_summary_.txn_value.size(); i++){
+    summary_json["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
   LOG(ERROR)<<summary_json.dump();
@@ -151,6 +190,9 @@ void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_message_count_times_list.clear();
   transaction_summary_.commit_message_count_times_list.clear();
+  transaction_summary_.txn_command.clear();
+  transaction_summary_.txn_key.clear();
+  transaction_summary_.txn_value.clear();
 }
 
 void Stats::MonitorGlobal() {

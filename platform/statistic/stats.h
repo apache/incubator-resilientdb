@@ -29,6 +29,8 @@
 #include <future>
 
 #include "platform/statistic/prometheus_handler.h"
+#include "platform/proto/resdb.pb.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -37,14 +39,16 @@ struct VisualData{
     int replica_id;
     //Initially Set when intiializing, update after view change
     int primary_id;
+    std::string ip;
+    int port;
 
     //Might want to add port for the replica here
 
     //Set when new txn is received
     //Need to figure out how to parse message at this stage for this data
-    std::string txn_key;
-    std::string txn_value;
-    std::string txn_command;
+    std::vector<std::string> txn_command;
+    std::vector<std::string> txn_key;
+    std::vector<std::string> txn_value;
 
     //Reset after sending summary
 
@@ -64,9 +68,10 @@ class Stats {
   void Stop();
 
     void RetrieveProgress();
-    void SetId(int replica_id);
+    void SetProps(int replica_id, std::string ip, int port);
     void SetPrimaryId(int primary_id);
     void RecordStateTime(std::string state);
+    void GetTransactionDetails(std::unique_ptr<Request> request);
     void SendSummary();
 
 
