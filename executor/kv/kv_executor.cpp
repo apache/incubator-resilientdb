@@ -48,8 +48,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
-  } else if (kv_request.cmd() == KVRequest::GETVALUES) {
-    kv_response.set_value(GetValues());
+  } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+    kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
     kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   }
@@ -70,7 +70,7 @@ std::string KVExecutor::Get(const std::string& key) {
   return state_->GetValue(key);
 }
 
-std::string KVExecutor::GetValues() { return state_->GetAllValues(); }
+std::string KVExecutor::GetAllValues() { return state_->GetAllValues(); }
 
 // Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,
