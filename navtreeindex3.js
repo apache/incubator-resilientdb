@@ -1,10 +1,10 @@
 var NAVTREEINDEX3 =
 {
-"d4/dbb/classresdb_1_1KVClient.html#a86e4c8f24692c4e81ddef18cfa8686ee":[1,0,0,24,2],
-"d4/dbb/classresdb_1_1KVClient.html#aaed2de9ab574fb16bf6da111e5afbc77":[0,0,6,27,3],
-"d4/dbb/classresdb_1_1KVClient.html#aaed2de9ab574fb16bf6da111e5afbc77":[1,0,0,24,3],
+"d4/dbb/classresdb_1_1KVClient.html#a86e4c8f24692c4e81ddef18cfa8686ee":[1,0,0,24,3],
 "d4/dbb/classresdb_1_1KVClient.html#aaf4cd3dcba0b942e1f8d7c378a2470ce":[0,0,6,27,0],
 "d4/dbb/classresdb_1_1KVClient.html#aaf4cd3dcba0b942e1f8d7c378a2470ce":[1,0,0,24,0],
+"d4/dbb/classresdb_1_1KVClient.html#ae7e7eb056eeb0a534ed757929fdb0fc4":[0,0,6,27,2],
+"d4/dbb/classresdb_1_1KVClient.html#ae7e7eb056eeb0a534ed757929fdb0fc4":[1,0,0,24,2],
 "d4/dbb/classresdb_1_1KVClient.html#aeb8ba2021b40e6fa1eff734d6cfa1324":[0,0,6,27,1],
 "d4/dbb/classresdb_1_1KVClient.html#aeb8ba2021b40e6fa1eff734d6cfa1324":[1,0,0,24,1],
 "d4/dc2/utxo__client_8cpp.html":[2,0,4,4,0],

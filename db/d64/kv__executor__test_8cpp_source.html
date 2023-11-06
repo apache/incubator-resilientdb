@@ -185,9 +185,9 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordflow">return</span> kv_response.value();</div>
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  }</div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  std::string GetValues() {</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  std::string GetAllValues() {</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    KVRequest request;</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    request.set_cmd(KVRequest::GETVALUES);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    request.set_cmd(KVRequest::GETALLVALUES);</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    std::string str;</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordflow">if</span> (!request.SerializeToString(&amp;str)) {</div>
@@ -254,13 +254,13 @@ $(document).ready(function(){initNavTree('db/d64/kv__executor__test_8cpp_source.
 <div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>  EXPECT_CALL(*<a class="code hl_variable" href="../../db/d64/kv__executor__test_8cpp.html#acf492a9c89f2718e819eccd999a8cbba">mock_storage_ptr_</a>, GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>))</div>
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>      .WillOnce(Return(<span class="stringliteral">&quot;[test_value]&quot;</span>));</div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>  EXPECT_EQ(GetAllValues(), <span class="stringliteral">&quot;[]&quot;</span>);</div>
 <div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>  EXPECT_EQ(Set(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>  EXPECT_EQ(Get(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span> </div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  <span class="comment">// GetValues and GetRange may be out of order for in-memory, so we test up to</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  <span class="comment">// GetAllValues and GetRange may be out of order for in-memory, so we test up to</span></div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>  <span class="comment">// 1 key-value pair</span></div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  EXPECT_EQ(GetValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>  EXPECT_EQ(GetAllValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>  EXPECT_EQ(GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>}</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span> </div>

@@ -162,8 +162,8 @@ Build and Deploy ResilientDB</h2>
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client set ret = 0
 </pre><p> Run tools to get value by a key (for example, get the value with key "test"): </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test 
 </pre><p> You will see the following result if successful: </p><pre class="fragment">client get value = test_value
-</pre><p> Run tools to get all values that have been set: </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
-</pre><p> You will see the following result if successful: </p><pre class="fragment">client getvalues value = [test_value]
+</pre><p> Run tools to get all values that have been set: </p><pre class="fragment">bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getallvalues
+</pre><p> You will see the following result if successful: </p><pre class="fragment">client getallvalues value = [test_value]
 </pre> <h2><a class="anchor" id="autotoc_md234"></a>
 Deployment Script</h2>
 <p>We also provide access to a <a href="https://github.com/resilientdb/resilientdb/tree/master/scripts/deploy">deployment script</a> that allows deployment on distinct machines.</p>

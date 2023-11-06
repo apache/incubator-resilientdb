@@ -140,7 +140,7 @@ $(document).ready(function(){initNavTree('d4/d63/chain__state__test_8cpp_source.
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  EXPECT_EQ(state.SetValue(<span class="stringliteral">&quot;test_key&quot;</span>, <span class="stringliteral">&quot;test_value&quot;</span>), 0);</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>  EXPECT_EQ(state.GetValue(<span class="stringliteral">&quot;test_key&quot;</span>), <span class="stringliteral">&quot;test_value&quot;</span>);</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="comment">// GetValues and GetRange may be out of order for in-memory, so we test up to</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  <span class="comment">// GetAllValues and GetRange may be out of order for in-memory, so we test up to</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  <span class="comment">// 1 key-value pair</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  EXPECT_EQ(state.GetAllValues(), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  EXPECT_EQ(state.GetRange(<span class="stringliteral">&quot;a&quot;</span>, <span class="stringliteral">&quot;z&quot;</span>), <span class="stringliteral">&quot;[test_value]&quot;</span>);</div>
