@@ -7,7 +7,7 @@ message Operation {
 			NONE = 0;
 			SET = 1;
 			GET = 2;
-			GETVALUES = 3;
+			GETALLVALUES = 3;
 			GETRANGE = 4;
 	}
 	CMD cmd = 1;

@@ -38,7 +38,7 @@ TEST(KVServerExecutorTest, SetValue) {
   EXPECT_EQ(state.SetValue("test_key", "test_value"), 0);
   EXPECT_EQ(state.GetValue("test_key"), "test_value");
 
-  // GetValues and GetRange may be out of order for in-memory, so we test up to
+  // GetAllValues and GetRange may be out of order for in-memory, so we test up to
   // 1 key-value pair
   EXPECT_EQ(state.GetAllValues(), "[test_value]");
   EXPECT_EQ(state.GetRange("a", "z"), "[test_value]");

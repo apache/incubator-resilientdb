@@ -52,8 +52,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
         Set(op.key(), op.value());
       } else if (op.cmd() == Operation::GET) {
         resp_info->set_value(Get(op.key()));
-      } else if (op.cmd() == Operation::GETVALUES) {
-        resp_info->set_value(GetValues());
+      } else if (op.cmd() == Operation::GETALLVALUES) {
+        resp_info->set_value(GetAllValues());
       } else if (op.cmd() == Operation::GETRANGE) {
         resp_info->set_value(GetRange(op.key(), op.value()));
       }
@@ -63,8 +63,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
       Set(kv_request.key(), kv_request.value());
     } else if (kv_request.cmd() == Operation::GET) {
       kv_response.set_value(Get(kv_request.key()));
-    } else if (kv_request.cmd() == Operation::GETVALUES) {
-      kv_response.set_value(GetValues());
+    } else if (kv_request.cmd() == Operation::GETALLVALUES) {
+      kv_response.set_value(GetAllValues());
     } else if (kv_request.cmd() == Operation::GETRANGE) {
       kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
     }
@@ -89,7 +89,7 @@ std::string KVExecutor::Get(const std::string& key) {
   return state_->GetValue(key);
 }
 
-std::string KVExecutor::GetValues() { return state_->GetAllValues(); }
+std::string KVExecutor::GetAllValues() { return state_->GetAllValues(); }
 
 // Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,

@@ -86,11 +86,11 @@ You will see the following result if successful:
 
 Run tools to get all values that have been set:
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getallvalues
 
 You will see the following result if successful:
 
-    client getvalues value = [test_value]
+    client getallvalues value = [test_value]
 
 ## Deployment Script
 

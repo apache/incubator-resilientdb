@@ -88,9 +88,9 @@ class KVExecutorTest : public Test {
     return kv_response.value();
   }
 
-  std::string GetValues() {
+  std::string GetAllValues() {
     KVRequest request;
-    request.set_cmd(KVRequest::GETVALUES);
+    request.set_cmd(KVRequest::GETALLVALUES);
 
     std::string str;
     if (!request.SerializeToString(&str)) {
@@ -157,13 +157,13 @@ TEST_F(KVExecutorTest, SetValue) {
   EXPECT_CALL(*mock_storage_ptr_, GetRange("a", "z"))
       .WillOnce(Return("[test_value]"));
 
-  EXPECT_EQ(GetValues(), "[]");
+  EXPECT_EQ(GetAllValues(), "[]");
   EXPECT_EQ(Set("test_key", "test_value"), 0);
   EXPECT_EQ(Get("test_key"), "test_value");
 
-  // GetValues and GetRange may be out of order for in-memory, so we test up to
+  // GetAllValues and GetRange may be out of order for in-memory, so we test up to
   // 1 key-value pair
-  EXPECT_EQ(GetValues(), "[test_value]");
+  EXPECT_EQ(GetAllValues(), "[test_value]");
   EXPECT_EQ(GetRange("a", "z"), "[test_value]");
 }
 

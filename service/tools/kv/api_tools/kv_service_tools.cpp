@@ -43,14 +43,14 @@ using resdb::ResDBConfig;
 int main(int argc, char** argv) {
   if (argc < 3) {
     printf(
-        "<config path> <cmd>(set/get/getvalues/getrange), [key] "
+        "<config path> <cmd>(set/get/getallvalues/getrange), [key] "
         "[value/key2]\n");
     return 0;
   }
   std::string client_config_file = argv[1];
   std::string cmd = argv[2];
   std::string key;
-  if (cmd != "getvalues") {
+  if (cmd != "getallvalues") {
     key = argv[3];
   }
   std::string value;
@@ -79,12 +79,12 @@ int main(int argc, char** argv) {
     } else {
       printf("client get value fail\n");
     }
-  } else if (cmd == "getvalues") {
-    auto res = client.GetValues();
+  } else if (cmd == "getallvalues") {
+    auto res = client.GetAllValues();
     if (res != nullptr) {
-      printf("client getvalues value = %s\n", res->c_str());
+      printf("client getallvalues value = %s\n", res->c_str());
     } else {
-      printf("client getvalues value fail\n");
+      printf("client getallvalues value fail\n");
     }
   } else if (cmd == "getrange") {
     auto res = client.GetRange(key, key2);
