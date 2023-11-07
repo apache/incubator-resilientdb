@@ -29,6 +29,7 @@
 #include <nlohmann/json.hpp>
 #include <ctime>
 #include "common/utils/utils.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -125,8 +126,8 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
       transaction_summary_.txn_command.push_back("GET");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back("");
-    } else if (kv_request.cmd() == KVRequest::GETVALUES) {
-      transaction_summary_.txn_command.push_back("GETVALUES");
+    } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+      transaction_summary_.txn_command.push_back("GETALLVALUES");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back("");
     } else if (kv_request.cmd() == KVRequest::GETRANGE) {
