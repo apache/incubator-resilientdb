@@ -88,11 +88,11 @@ You will see the following result if successful:
 
 Run tools to get all values that have been set:
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getvalues
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getallvalues
 
 You will see the following result if successful:
 
-    client getvalues value = [test_value]
+    client getallvalues value = [test_value]
 
 ## Deployment Script
 
@@ -121,20 +121,20 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
 
    - For amd architecture, run:
      ```shell
-     docker run -it expolab/resdb:amd64 bash
+     docker run -d --name myserver expolab/resdb:amd64
      ```
 
    - For Apple Silicon (M1/M2) architecture, run:
      ```shell
-     docker run -it expolab/resdb:arm64 bash
+     docker run -d --name myserver expolab/resdb:arm64
      ```
 
-4. **Start the kv_service within the Container**  
-   Once you're inside the container, start the `kv_service` by running the following command:
+4. **Test with Set and Get Commands**
+   Exec into the running server:
    ```shell
-   ./service/tools/kv/server_tools/start_kv_service.sh
+   docker exec -it myserver bash
    ```
-5. **Test with Set and Get Commands**
+
    Verify the functionality of the service by performing set and get operations:
 
    - Set a test value:
