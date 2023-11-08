@@ -38,6 +38,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     const std::string& request) {
   KVRequest kv_request;
   KVResponse kv_response;
+  LOG(ERROR)<<"EXEC TEST";
 
   if (!kv_request.ParseFromString(request)) {
     LOG(ERROR) << "parse data fail";

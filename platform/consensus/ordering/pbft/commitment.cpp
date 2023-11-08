@@ -292,6 +292,7 @@ int Commitment::PostProcessExecutedMsg() {
     if (batch_resp == nullptr) {
       continue;
     }
+    LOG(ERROR)<<"TEST4";
     Request request;
     request.set_hash(batch_resp->hash());
     request.set_seq(batch_resp->seq());

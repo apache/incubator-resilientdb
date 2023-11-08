@@ -43,6 +43,7 @@ std::unique_ptr<std::string> TransactionManager::ExecuteData(
 
 std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
     const BatchUserRequest& request) {
+  LOG(ERROR)<<"EXEC BATCH TEST";
   std::unique_ptr<BatchUserResponse> batch_response =
       std::make_unique<BatchUserResponse>();
   for (auto& sub_request : request.user_requests()) {

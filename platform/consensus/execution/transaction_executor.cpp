@@ -240,6 +240,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_local_id(batch_request.local_id());
   response->set_hash(batch_request.hash());
 
+  LOG(ERROR)<<"TXN EXEC";
   post_exec_func_(std::move(request), std::move(response));
 
   global_stats_->IncExecuteDone();
