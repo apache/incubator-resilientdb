@@ -64,7 +64,7 @@ class QueccExecutor : public TransactionManager {
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
-  std::string GetValues();
+  std::string GetAllValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
   void CreateRanges();

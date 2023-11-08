@@ -295,8 +295,8 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(const KVOperation& oper)
     Set(oper.op.key(), oper.op.value());
   } else if (oper.op.cmd() == Operation::GET) {
     kv_response.set_value(Get(oper.op.key()));
-  } else if (oper.op.cmd() == Operation::GETVALUES) {
-    kv_response.set_value(GetValues());
+  } else if (oper.op.cmd() == Operation::GETALLVALUES) {
+    kv_response.set_value(GetAllValues());
   } else if (oper.op.cmd() == Operation::GETRANGE) {
     kv_response.set_value(GetRange(oper.op.key(), oper.op.value()));
   }
@@ -325,8 +325,8 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
         Set(op.key(), op.value());
       } else if (op.cmd() == Operation::GET) {
         resp_info->set_value(Get(op.key()));
-      } else if (op.cmd() == Operation::GETVALUES) {
-        resp_info->set_value(GetValues());
+      } else if (op.cmd() == Operation::GETALLVALUES) {
+        resp_info->set_value(GetAllValues());
       } else if (op.cmd() == Operation::GETRANGE) {
         resp_info->set_value(GetRange(op.key(), op.value()));
       }
@@ -336,8 +336,8 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
       Set(kv_request.key(), kv_request.value());
     } else if (kv_request.cmd() == Operation::GET) {
       kv_response.set_value(Get(kv_request.key()));
-    } else if (kv_request.cmd() == Operation::GETVALUES) {
-      kv_response.set_value(GetValues());
+    } else if (kv_request.cmd() == Operation::GETALLVALUES) {
+      kv_response.set_value(GetAllValues());
     } else if (kv_request.cmd() == Operation::GETRANGE) {
       kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
     }
@@ -362,7 +362,7 @@ std::string QueccExecutor::Get(const std::string& key) {
   return state_->GetValue(key);
 }
 
-std::string QueccExecutor::GetValues() { return state_->GetAllValues(); }
+std::string QueccExecutor::GetAllValues() { return state_->GetAllValues(); }
 
 // Get values on a range of keys
 std::string QueccExecutor::GetRange(const std::string& min_key,
