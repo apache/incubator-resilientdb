@@ -175,7 +175,6 @@ int main(int argc, char** argv) {
 
   ResDBConfig config = GenerateResDBConfig(client_config_file);
   config.SetClientTimeoutMs(100000);
-  printf("???\n");
   UTXOClient client(config);
   if (cmd == "transfer") {
     Transfer(&client, transaction_id, address, ParseString(to_address), ParseValue(value), private_key,
