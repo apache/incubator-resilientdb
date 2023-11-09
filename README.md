@@ -22,9 +22,9 @@
 7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/), [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** officially was accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
 
 <div align = "center">
-<img src="https://github.com/resilientdb/resilientdb/assets/57961394/9da04f38-2d1e-4553-8bed-cced67f24e95" width="110">
-<img src="https://github.com/resilientdb/resilientdb/assets/57961394/87329142-16ad-4a92-a4a5-85349d7116c3" width="450">
-<img src="https://github.com/resilientdb/resilientdb/assets/57961394/0f40a133-8f04-43b4-a4d0-bbaeabac976d" width="250">
+<img src="./img/apache-resdb.png" width="110">
+<img src="./img/apache-incubator.png" width="450">
+<img src="./img/resdb.png" width="250">
 </div>
 
 ---
