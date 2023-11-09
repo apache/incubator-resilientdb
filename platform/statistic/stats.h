@@ -42,10 +42,9 @@ struct VisualData{
     std::string ip;
     int port;
 
-    //Might want to add port for the replica here
-
     //Set when new txn is received
     //Need to figure out how to parse message at this stage for this data
+    int txn_number;
     std::vector<std::string> txn_command;
     std::vector<std::string> txn_key;
     std::vector<std::string> txn_value;

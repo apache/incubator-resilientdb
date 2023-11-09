@@ -76,6 +76,7 @@ Stats::Stats(int sleep_time) {
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.commit_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
+  transaction_summary_.txn_number=0;
 }
 
 void Stats::Stop() { stop_ = true; }
@@ -140,7 +141,7 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
 
 void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::now();
-
+  transaction_summary_.txn_number=transaction_summary_.txn_number+1;
   /* Can print stat values
   LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id;
   LOG(ERROR)<<"Primary ID:"<< transaction_summary_.primary_id;
@@ -162,7 +163,7 @@ void Stats::SendSummary(){
   summary_json["ip"]=transaction_summary_.ip;
   summary_json["port"]=transaction_summary_.port;
   summary_json["primary_id"]=transaction_summary_.primary_id;
-  summary_json["propose_pre-prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
+  summary_json["propose_pre_prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
   summary_json["prepare_time"]=transaction_summary_.prepare_state_time.time_since_epoch().count();
   summary_json["commit_time"]=transaction_summary_.commit_state_time.time_since_epoch().count();
   summary_json["execution_time"]=transaction_summary_.execution_time.time_since_epoch().count();
@@ -172,6 +173,7 @@ void Stats::SendSummary(){
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
     summary_json["commit_message_timestamps"].push_back(transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count());
   }
+  summary_json["txn_number"]=transaction_summary_.txn_number;
   for(size_t i=0; i<transaction_summary_.txn_command.size(); i++){
     summary_json["txn_commands"].push_back(transaction_summary_.txn_command[i]);
   }
