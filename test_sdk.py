@@ -3,7 +3,6 @@
 from resdb_driver import Resdb
 
 db_root_url = "http://127.0.0.1:18000"
-#db_root_url = "https://resdb.free.beeceptor.com"
 
 db = Resdb(db_root_url)
 from resdb_driver.crypto import generate_keypair
@@ -11,22 +10,35 @@ from resdb_driver.crypto import generate_keypair
 alice, bob = generate_keypair(), generate_keypair()
 #%%
 
-# create a digital asset for Alice
-game_boy_token = {
+#%%
+
+"""
+----- SET OPERATION -----
+Creating a transaction with a digital asset and issuing 10 tokens for it
+
+The owner's private key is used for signing the transaction and the recipient is identified by their public key
+In the example below: Alice is the owner and Bob is the recipient
+"""
+
+"""
+Creating a digital asset, you can add any data here in the form of a Python dictionary
+Example: {"data": {"key": "value"}}
+"""
+asset = {
     "data": {
-        "token_for": {"game_boy": {"serial_number": "LR35902"}},
-        "description": "Time share token. Each token equals one hour of usage.",
+        "description": "Any data goes here."
     },
 }
 
-#%%
+# The number of tokens you want to issue
+amount = 10
 
-# prepare the transaction with the digital asset and issue 10 tokens for Bob
+# Preparing the transaction
 prepared_token_tx = db.transactions.prepare(
     operation="CREATE",
     signers=alice.public_key,
-    recipients=[([bob.public_key], 10)],
-    asset=game_boy_token,
+    recipients=[([bob.public_key], amount)],
+    asset=asset,
 )
 
 #%%
@@ -36,7 +48,7 @@ fulfilled_token_tx = db.transactions.fulfill(
 )
 
 #%%
-# send the txn to ResDB
+# send the txn to ResDB, and completion of SET operation
 db.transactions.send_commit(fulfilled_token_tx)
 
 #%%
@@ -69,10 +81,18 @@ sent_transfer_tx = db.transactions.send_commit(fulfilled_transfer_tx)
 
 
 # %%
+
+"""
+----- GET OPERATION -----
+Retrieving a transaction using the transaction ID
+
+fulfilled_token_tx["id"] contains the ID of the transaction that was signed earlier, completion of the SET transaction via db.transactions.send_commit(fulfilled_token_tx) also returns this ID
+"""
 ## set `testId` with the txid for the transaction to retrieve
 retrieve_id = fulfilled_token_tx["id"]
 retrieved_txn = db.transactions.retrieve(txid=retrieve_id)
 
+# You can now print the transaction information using the returned value
 # print(retrieved_txn)
 
 #%%
