@@ -23,7 +23,7 @@
 
 <div align = "center">
 <img src="./img/apache-resdb.png" width="110">
-<img src="./img/apache-incubator.png" width="450">
+<img src="./img/apache-incubator.png" width="420">
 <img src="./img/resdb.png" width="250">
 </div>
 
