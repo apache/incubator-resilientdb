@@ -1,4 +1,4 @@
-# resilientDB-rust-sdk
+# resdb_rust_sdk
 Rust SDK for ResilientDB
 
 ### Setup
