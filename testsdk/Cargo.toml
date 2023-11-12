@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 resdb_rust_sdk = {path = "/Users/dhruv/Desktop/Repositories/resdb_rust_sdk"}
+tokio = { version = "1", features = ["full"] }

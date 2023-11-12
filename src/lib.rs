@@ -1,10 +1,11 @@
 // This is the main entry point for the library.
 
-use reqwest::Error;
+// use reqwest::Error;
 use serde::Deserialize;
+use anyhow::Error;
 
 #[derive(Debug, Deserialize)]
-struct ApiResponse {
+pub struct ApiResponse {
     inputs: Vec<Input>,
     outputs: Vec<Output>,
     operation: String,
@@ -15,47 +16,51 @@ struct ApiResponse {
 }
 
 #[derive(Debug, Deserialize)]
-struct Input {
+pub struct Input {
     owners_before: Vec<String>,
     fulfills: Option<serde_json::Value>,
     fulfillment: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct Output {
+pub struct Output {
     public_keys: Vec<String>,
     condition: Condition,
     amount: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct Condition {
+pub struct Condition {
     details: ConditionDetails,
     uri: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct ConditionDetails {
+pub struct ConditionDetails {
     #[serde(rename = "type")]
     condition_type: String,
     public_key: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct Asset {
+pub struct Asset {
     data: serde_json::Value,
 }
 
-pub async fn get_data_from_api(api_url: &str) -> Result<ApiResponse, Error> {
+pub async fn get_data_from_api(api_url: &str) -> Result<ApiResponse, anyhow::Error> {
     // Make an asynchronous GET request to the specified API endpoint
-    let response = reqwest::get(api_url).await?;
+    let response_text = reqwest::get(api_url)
+        .await?
+        .text()
+        .await?;
 
-    // Check if the response has a successful status code
-    response.error_for_status()?;
-
+    println!("{}", response_text);
     // If successful, deserialize the JSON response
-    let response_text = response.text().await?;
-    let response: ApiResponse = serde_json::from_str(&response_text)?;
+    let response: Result<ApiResponse, serde_json::Error> = serde_json::from_str(&response_text);
 
-    Ok(response)
+    // Handle the deserialization result
+    match response {
+        Ok(parsed_response) => Ok(parsed_response),
+        Err(err) => Err(anyhow::Error::from(err)),
+    }
 }
