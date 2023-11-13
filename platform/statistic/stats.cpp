@@ -26,10 +26,13 @@
 #include "platform/statistic/stats.h"
 
 #include <glog/logging.h>
-#include <nlohmann/json.hpp>
 #include <ctime>
 #include "common/utils/utils.h"
 #include "proto/kv/kv.pb.h"
+
+namespace asio = boost::asio;
+namespace beast = boost::beast;
+using tcp = asio::ip::tcp;
 
 namespace resdb {
 
@@ -70,13 +73,16 @@ Stats::Stats(int sleep_time) {
   global_thread_ =
       std::thread(&Stats::MonitorGlobal, this);  // pass by reference
 
-  //Setup websocket here
+  transaction_summary_.port=-1;
 
+  //Setup websocket here
+  sendSummary.store(false);
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.commit_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.txn_number=0;
+  
 }
 
 void Stats::Stop() { stop_ = true; }
@@ -86,12 +92,40 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
+  if(summary_thread_.joinable()){
+    summary_thread_.join();
+  }
+}
+
+void Stats::SocketManagement(){
+  try{
+    LOG(ERROR)<<"Port:" <<transaction_summary_.port;
+    asio::io_context io_context;
+    tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
+    tcp::socket socket(io_context);
+    acceptor.accept(socket);
+    beast::websocket::stream<tcp::socket> ws(std::move(socket));
+    ws.accept();
+    while(!stop_){
+      if(sendSummary.load()){
+        ws.write(asio::buffer(summary_json_.dump()));
+        summary_json_={};
+        LOG(ERROR)<<"SENT MESSAGE";
+        sendSummary.store(false);
+      }
+    }
+    sleep(1);
+  }
+  catch( const std::exception& e){
+    LOG(ERROR)<<"Exception: " <<e.what();
+  }
 }
 
 void Stats::SetProps(int replica_id, std::string ip, int port){
   transaction_summary_.replica_id=replica_id;
   transaction_summary_.ip=ip;
   transaction_summary_.port=port;
+  summary_thread_ = std::thread(&Stats::SocketManagement, this);
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -158,36 +192,37 @@ void Stats::SendSummary(){
   */
  
   //Convert Transaction Summary to JSON
-  nlohmann::json summary_json;
-  summary_json["replica_id"]=transaction_summary_.replica_id;
-  summary_json["ip"]=transaction_summary_.ip;
-  summary_json["port"]=transaction_summary_.port;
-  summary_json["primary_id"]=transaction_summary_.primary_id;
-  summary_json["propose_pre_prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
-  summary_json["prepare_time"]=transaction_summary_.prepare_state_time.time_since_epoch().count();
-  summary_json["commit_time"]=transaction_summary_.commit_state_time.time_since_epoch().count();
-  summary_json["execution_time"]=transaction_summary_.execution_time.time_since_epoch().count();
+  summary_json_["replica_id"]=transaction_summary_.replica_id;
+  summary_json_["ip"]=transaction_summary_.ip;
+  summary_json_["port"]=transaction_summary_.port;
+  summary_json_["primary_id"]=transaction_summary_.primary_id;
+  summary_json_["propose_pre_prepare_time"]=transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
+  summary_json_["prepare_time"]=transaction_summary_.prepare_state_time.time_since_epoch().count();
+  summary_json_["commit_time"]=transaction_summary_.commit_state_time.time_since_epoch().count();
+  summary_json_["execution_time"]=transaction_summary_.execution_time.time_since_epoch().count();
   for(size_t i=0; i<transaction_summary_.prepare_message_count_times_list.size(); i++){
-    summary_json["prepare_message_timestamps"].push_back(transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count());
+    summary_json_["prepare_message_timestamps"].push_back(transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count());
   }
   for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
-    summary_json["commit_message_timestamps"].push_back(transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count());
+    summary_json_["commit_message_timestamps"].push_back(transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count());
   }
-  summary_json["txn_number"]=transaction_summary_.txn_number;
+  summary_json_["txn_number"]=transaction_summary_.txn_number;
   for(size_t i=0; i<transaction_summary_.txn_command.size(); i++){
-    summary_json["txn_commands"].push_back(transaction_summary_.txn_command[i]);
+    summary_json_["txn_commands"].push_back(transaction_summary_.txn_command[i]);
   }
   for(size_t i=0; i<transaction_summary_.txn_key.size(); i++){
-    summary_json["txn_keys"].push_back(transaction_summary_.txn_key[i]);
+    summary_json_["txn_keys"].push_back(transaction_summary_.txn_key[i]);
   }
   for(size_t i=0; i<transaction_summary_.txn_value.size(); i++){
-    summary_json["txn_values"].push_back(transaction_summary_.txn_value[i]);
+    summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
-  LOG(ERROR)<<summary_json.dump();
+  LOG(ERROR)<<summary_json_.dump();
 
   //Send Summary via Websocket
 
+  sendSummary.store(true);
+  while(!sendSummary.load()){}
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();

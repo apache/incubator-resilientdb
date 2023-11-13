@@ -31,6 +31,14 @@
 #include "platform/statistic/prometheus_handler.h"
 #include "platform/proto/resdb.pb.h"
 #include "proto/kv/kv.pb.h"
+#include "platform/common/network/tcp_socket.h"
+#include <nlohmann/json.hpp>
+#include "boost/asio.hpp"
+#include "boost/beast.hpp"
+
+namespace asio = boost::asio;
+namespace beast = boost::beast;
+using tcp = asio::ip::tcp;
 
 namespace resdb {
 
@@ -72,6 +80,7 @@ class Stats {
     void RecordStateTime(std::string state);
     void GetTransactionDetails(BatchUserRequest batch_request);
     void SendSummary();
+    void SocketManagement();
 
 
   void AddLatency(uint64_t run_time);
@@ -135,9 +144,11 @@ class Stats {
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::thread summary_thread_;
-    VisualData transaction_summary_;
+  VisualData transaction_summary_;
+  std::atomic<bool> sendSummary;
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
+  nlohmann::json summary_json_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
 };
