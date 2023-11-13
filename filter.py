@@ -1,9 +1,12 @@
 import requests
 import json
+import re
 
 def fix_json_with_commas(json_str):
     fixed_json = json_str.replace('}{', '},{')
-    return f"[{fixed_json}]"
+    # Remove single characters and extra commas using regular expressions
+    filtered_data = re.sub(r',\s*\b\w\b', '', fixed_json)
+    return f"[{filtered_data}]"
 
 def get_json_objects_by_public_key(json_data, owner_public_key=None, recipient_public_key=None):
     matching_objects = []
