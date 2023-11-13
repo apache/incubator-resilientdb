@@ -60,8 +60,8 @@ std::unique_ptr<std::string> KVServiceTransactionManager::ExecuteData(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
-  } else if (kv_request.cmd() == KVRequest::GETVALUES) {
-    kv_response.set_value(GetValues());
+  } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+    kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
     kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   }
@@ -88,7 +88,7 @@ std::string KVServiceTransactionManager::Get(const std::string& key) {
   return state_->GetValue(key);
 }
 
-std::string KVServiceTransactionManager::GetValues() {
+std::string KVServiceTransactionManager::GetAllValues() {
   return state_->GetAllValues();
 }
 

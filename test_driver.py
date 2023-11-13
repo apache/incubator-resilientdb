@@ -3,6 +3,7 @@
 from resdb_driver import Resdb
 
 db_root_url = "http://127.0.0.1:18000"
+#db_root_url = "https://resdb.free.beeceptor.com"
 
 db = Resdb(db_root_url)
 from resdb_driver.crypto import generate_keypair
@@ -49,13 +50,11 @@ transfer_input = {
 
 #%%
 
-# Bob transfers 5 tokens to Alice, and is left with 5 tokens
-# The sums of amounts in recipients must match the input amount (10)
 prepared_transfer_tx = db.transactions.prepare(
     operation="TRANSFER",
     asset=transfer_asset,
     inputs=transfer_input,
-    recipients=[([alice.public_key], 5), ([bob.public_key], 5)],
+    recipients=[([alice.public_key], 3), ([bob.public_key], 8)],
 )
 
 #%%
@@ -71,7 +70,7 @@ sent_transfer_tx = db.transactions.send_commit(fulfilled_transfer_tx)
 
 # %%
 ## replace `testId` with the txid for the transaction to retrieve
-db.transactions.retrieve(txid=sent_transfer_tx)
+db.transactions.retrieve(txid="testId")
 
 #%%
 # TODO valide a tx object

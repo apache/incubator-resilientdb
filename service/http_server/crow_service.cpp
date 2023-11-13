@@ -68,9 +68,9 @@ void CrowService::run() {
   // Get all values
   CROW_ROUTE(app, "/v1/transactions")
   ([this](const crow::request& req, response& res) {
-    auto values = kv_client_.GetValues();
+    auto values = kv_client_.GetAllValues();
     if (values != nullptr) {
-      LOG(INFO) << "client getvalues value = " << values->c_str();
+      LOG(INFO) << "client getallvalues value = " << values->c_str();
 
       // Send updated blocks list to websocket
       if (users.size() > 0) {
@@ -83,7 +83,7 @@ void CrowService::run() {
     } else {
       res.code = 500;
       res.set_header("Content-Type", "text/plain");
-      res.end("getvalues fail");
+      res.end("getallvalues fail");
     }
   });
 
@@ -396,11 +396,11 @@ std::string CrowService::ParseKVRequest(const KVRequest& kv_request) {
     rapidjson::Value val(rapidjson::kObjectType);
     doc.AddMember("cmd", "GET", allocator);
     doc.AddMember("key", kv_request.key(), allocator);
-  } else if (kv_request.cmd() == 3) {  // GETVALUES
+  } else if (kv_request.cmd() == 3) {  // GETALLVALUES
     doc.SetObject();
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
     rapidjson::Value val(rapidjson::kObjectType);
-    doc.AddMember("cmd", "GETVALUES", allocator);
+    doc.AddMember("cmd", "GETALLVALUES", allocator);
   } else if (kv_request.cmd() == 4) {  // GETRANGE
     doc.SetObject();
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
@@ -422,8 +422,25 @@ std::string CrowService::ParseCreateTime(uint64_t createtime) {
 
   std::tm *tm_gmt = std::gmtime((time_t*) &sec);
   int year = tm_gmt->tm_year + 1900;
-  timestr += std::to_string(tm_gmt->tm_mon + 1) + "/" + std::to_string(tm_gmt->tm_mday) + "/" + std::to_string(year) + " ";
-  timestr += std::to_string(tm_gmt->tm_hour) + ":" + std::to_string(tm_gmt->tm_min) + ":" + std::to_string(tm_gmt->tm_sec) + " GMT";
+  int month = tm_gmt->tm_mon; // 0-indexed
+  int day = tm_gmt-> tm_mday;
+  
+  std::string months[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+  // Using date time string format to support the Explorer transaction chart
+  if (day < 10) timestr += "0";
+  timestr += std::to_string(day) + " " + months[month] + " " + std::to_string(year) + " ";
+
+  std::string hour_str = std::to_string(tm_gmt->tm_hour);
+  std::string min_str = std::to_string(tm_gmt->tm_min);
+  std::string sec_str = std::to_string(tm_gmt->tm_sec);
+  
+  if (tm_gmt->tm_hour < 10) hour_str = "0" + hour_str;
+  if (tm_gmt->tm_min < 10) min_str = "0" + min_str;
+  if (tm_gmt->tm_sec < 10) sec_str = "0" + sec_str;
+  
+  LOG(INFO) << "sec_str " << sec_str;
+  timestr += hour_str + ":" + min_str + ":" + sec_str + " GMT";
 
   return timestr;
 }
