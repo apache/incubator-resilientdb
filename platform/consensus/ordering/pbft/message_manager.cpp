@@ -45,6 +45,9 @@ MessageManager::MessageManager(
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchUserResponse> resp_msg) {
             if (request->is_recovery()) {
+              if (checkpoint_manager_) {
+                checkpoint_manager_->AddCommitData(std::move(request));
+              }
               return;
             }
             resp_msg->set_proxy_id(request->proxy_id());

@@ -310,14 +310,14 @@ void CheckPointManager::UpdateCheckPointStatus() {
     }
     std::string hash_ = request->hash();
     uint64_t current_seq = request->seq();
-    if (current_seq != last_seq_ + 1) {
+    if (current_seq < last_seq_ + 1) {
       LOG(ERROR) << "seq invalid:" << last_seq_ << " current:" << current_seq;
       continue;
     }
     {
       std::lock_guard<std::mutex> lk(lt_mutex_);
       last_hash_ = GetHash(last_hash_, request->hash());
-      last_seq_++;
+      last_seq_ = current_seq;
     }
     txn_db_->Put(std::move(request));
 
