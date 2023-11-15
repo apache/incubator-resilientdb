@@ -65,12 +65,15 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
     ths.push_back(std::thread(
         [&](NetChannel* client) {
           std::string response_str;
-          int ret = client->SendRequest(request, Request::TYPE_QUERY);
-          if (ret) {
-            return;
+          int ret = -1;
+          for(int i = 0; i < 3 && ret <0; ++i){
+            ret = client->SendRequest(request, Request::TYPE_QUERY);
+            if (ret) {
+              return;
+            }
+            client->SetRecvTimeout(1000);
+            ret = client->RecvRawMessageStr(&response_str);
           }
-          client->SetRecvTimeout(1000);
-          ret = client->RecvRawMessageStr(&response_str);
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
