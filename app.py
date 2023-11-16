@@ -134,7 +134,7 @@ class Query:
                 ))
             except Exception as e:
                 print(e)
-            return records
+        return records
 
 @strawberry.type
 class Mutation:
