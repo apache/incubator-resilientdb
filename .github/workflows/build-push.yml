@@ -30,6 +30,7 @@ jobs:
         with:
           file: ./Docker/Dockerfile
           context: .
+          platforms: linux/amd64
           push: true
           tags: expolab/resdb:amd64
 
@@ -39,5 +40,6 @@ jobs:
         with:
           file: ./Docker/Dockerfile_mac
           context: .
+          platforms: linux/arm64
           push: true
           tags: expolab/resdb:arm64
