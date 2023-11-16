@@ -76,7 +76,8 @@ Stats::Stats(int sleep_time) {
   transaction_summary_.port=-1;
 
   //Setup websocket here
-  sendSummary.store(false);
+  send_summary_.store(false);
+  make_faulty_.store(false);
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.commit_state_time=std::chrono::system_clock::time_point::min();
@@ -95,29 +96,59 @@ Stats::~Stats() {
   if(summary_thread_.joinable()){
     summary_thread_.join();
   }
+  if(faulty_thread_.joinable()){
+    faulty_thread_.join();
+  }
 }
 
-void Stats::SocketManagement(){
-  try{
-    LOG(ERROR)<<"Port:" <<transaction_summary_.port;
-    asio::io_context io_context;
-    tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
-    tcp::socket socket(io_context);
-    acceptor.accept(socket);
-    beast::websocket::stream<tcp::socket> ws(std::move(socket));
-    ws.accept();
-    while(!stop_){
-      if(sendSummary.load()){
-        ws.write(asio::buffer(summary_json_.dump()));
-        summary_json_={};
-        LOG(ERROR)<<"SENT MESSAGE";
-        sendSummary.store(false);
+void Stats::SocketManagementWrite(){
+  while(!stop_){
+    try{
+      LOG(ERROR)<<"Port:" <<transaction_summary_.port;
+      asio::io_context io_context;
+      tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
+      tcp::socket socket(io_context);
+      acceptor.accept(socket);
+      beast::websocket::stream<tcp::socket> ws(std::move(socket));
+      ws.accept();
+      while(!stop_){
+        if(send_summary_.load()){
+          ws.write(asio::buffer(summary_json_.dump()));
+          summary_json_={};
+          LOG(ERROR)<<"SENT MESSAGE";
+          send_summary_.store(false);
+        }
+        if(!ws.is_open()){
+          break;
+        }
       }
+      sleep(1);
     }
-    sleep(1);
+    catch( const std::exception& e){
+      LOG(ERROR)<<"Exception: " <<e.what();
+    }
   }
-  catch( const std::exception& e){
-    LOG(ERROR)<<"Exception: " <<e.what();
+}
+
+void Stats::SocketManagementRead(){
+  while(!stop_){
+    try{
+      LOG(ERROR)<<"Read Port:" <<transaction_summary_.port;
+      asio::io_context io_context;
+      tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(12000+transaction_summary_.port)});
+      tcp::socket socket(io_context);
+      acceptor.accept(socket);
+      beast::websocket::stream<tcp::socket> ws(std::move(socket));
+      ws.accept();
+      beast::flat_buffer data;
+      ws.read(data);
+      make_faulty_.store(true);
+      LOG(ERROR)<<"Received Message on port "<<transaction_summary_.port;
+      ws.close("Message Received");
+    }
+    catch( const std::exception& e){
+      LOG(ERROR)<<"Exception: " <<e.what();
+    }
   }
 }
 
@@ -125,7 +156,8 @@ void Stats::SetProps(int replica_id, std::string ip, int port){
   transaction_summary_.replica_id=replica_id;
   transaction_summary_.ip=ip;
   transaction_summary_.port=port;
-  summary_thread_ = std::thread(&Stats::SocketManagement, this);
+  summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
+  faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -221,8 +253,8 @@ void Stats::SendSummary(){
 
   //Send Summary via Websocket
 
-  sendSummary.store(true);
-  while(!sendSummary.load()){}
+  send_summary_.store(true);
+  while(!send_summary_.load()){}
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();

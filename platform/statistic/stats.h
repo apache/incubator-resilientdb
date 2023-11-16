@@ -68,7 +68,7 @@ struct VisualData{
     std::chrono::system_clock::time_point execution_time;
 };
 
-class Stats {
+class Stats{
  public:
   static Stats* GetGlobalStats(int sleep_seconds = 5);
 
@@ -80,7 +80,8 @@ class Stats {
     void RecordStateTime(std::string state);
     void GetTransactionDetails(BatchUserRequest batch_request);
     void SendSummary();
-    void SocketManagement();
+    void SocketManagementWrite();
+    void SocketManagementRead();
 
 
   void AddLatency(uint64_t run_time);
@@ -144,8 +145,10 @@ class Stats {
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::thread summary_thread_;
+  std::thread faulty_thread_;
   VisualData transaction_summary_;
-  std::atomic<bool> sendSummary;
+  std::atomic<bool> send_summary_;
+  std::atomic<bool> make_faulty_;
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
   nlohmann::json summary_json_;
