@@ -1683,21 +1683,3 @@ details[open]>summary::before {
     font-size: 80%;
 }
 
-body {
-    scrollbar-color: #283A5D #070B11;
-}
-
-::-webkit-scrollbar {
-        background-color: #070B11;
-        height: 12px;
-        width: 12px;
-}
-::-webkit-scrollbar-thumb {
-        border-radius: 6px;
-        box-shadow: inset 0 0 12px 12px #283A5D;
-        border: solid 2px transparent;
-}
-::-webkit-scrollbar-corner {
-        background-color: #070B11;
-}
-
