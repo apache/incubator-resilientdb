@@ -211,11 +211,11 @@ void CrowService::run() {
         first_iteration = false;
 
         // id
-        uint64_t local_id = request.local_id();
-        cur_batch_str.append("{\"id\": " + std::to_string(local_id));
+        uint64_t seq = txn.first;
+        cur_batch_str.append("{\"id\": " + std::to_string(seq));
 
         // number
-        cur_batch_str.append(", \"number\": \"" + std::to_string(local_id) + "\"");
+        cur_batch_str.append(", \"number\": \"" + std::to_string(seq) + "\"");
 
         // transactions
         cur_batch_str.append(", \"transactions\": [");
@@ -338,11 +338,11 @@ std::string CrowService::GetAllBlocks(int batch_size) {
         first_batch_element = false;
 
         // id
-        uint64_t local_id = request.local_id();
-        cur_batch_str.append("{\"id\": " + std::to_string(local_id));
+        uint64_t seq = txn.first;
+        cur_batch_str.append("{\"id\": " + std::to_string(seq));
 
         // number
-        cur_batch_str.append(", \"number\": \"" + std::to_string(local_id) + "\"");
+        cur_batch_str.append(", \"number\": \"" + std::to_string(seq) + "\"");
 
         // transactions
         cur_batch_str.append(", \"transactions\": [");
@@ -439,7 +439,6 @@ std::string CrowService::ParseCreateTime(uint64_t createtime) {
   if (tm_gmt->tm_min < 10) min_str = "0" + min_str;
   if (tm_gmt->tm_sec < 10) sec_str = "0" + sec_str;
   
-  LOG(INFO) << "sec_str " << sec_str;
   timestr += hour_str + ":" + min_str + ":" + sec_str + " GMT";
 
   return timestr;
