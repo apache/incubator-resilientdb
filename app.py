@@ -120,18 +120,21 @@ class Query:
         json_data = filter_by_keys(url, filter.ownerPublicKey, filter.recipientPublicKey)
         records = []
         for data in json_data:
-            records.append(RetrieveTransaction(
-            id=data["id"],
-            version=data["version"],
-            amount=data["outputs"][0]["amount"],
-            uri=data["outputs"][0]["condition"]["uri"],
-            type=data["outputs"][0]["condition"]["details"]["type"],
-            publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
-            operation=data["operation"],
-            metadata=data["metadata"],
-            asset=str(data["asset"])
-            ))
-        return records
+            try:
+                records.append(RetrieveTransaction(
+                id=data["id"],
+                version=data["version"],
+                amount=data["outputs"][0]["amount"],
+                uri=data["outputs"][0]["condition"]["uri"],
+                type=data["outputs"][0]["condition"]["details"]["type"],
+                publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
+                operation=data["operation"],
+                metadata=data["metadata"],
+                asset=str(data["asset"])
+                ))
+            except Exception as e:
+                print(e)
+            return records
 
 @strawberry.type
 class Mutation:
