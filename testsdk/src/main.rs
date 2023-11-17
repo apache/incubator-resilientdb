@@ -1,20 +1,27 @@
 // This is the main file for a project that uses the library.
-extern crate resdb_rust_sdk;
-use tokio::main;
+use resdb_rust_sdk::ResDB;
 
 #[tokio::main]
 async fn main() {
     // Specify the URL of the JSON API endpoint
-    let api_url = "https://crow.resilientdb.com/v1/transactions";
-
-    match resdb_rust_sdk::get_data_from_api(api_url).await {
-        Ok(response) => {
-            println!("Response: {:?}", response);
-            // Handle the response data as needed
+    let database_url = "https://crow.resilientdb.com/v1/transactions";
+    let res_db = ResDB::new(database_url);
+    let transactions = res_db.get_all_transactions();
+    
+    // Call the asynchronous function and await the result
+    match res_db.get_all_transactions().await {
+        Ok(transactions) => {
+            if let Some(first_transaction) = transactions.first() {
+                // Access fields of the first transaction (replace with the desired field)
+                println!("{:?}", first_transaction.inputs);
+            } else {
+                println!("No transactions available");
+            }
         }
-        Err(err) => {
-            eprintln!("Error: {:?}", err);
+        Err(error) => {
             // Handle the error
+            eprintln!("Error: {}", error);
         }
     }
+
 }
