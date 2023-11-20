@@ -12,19 +12,31 @@ def get_json_objects_by_public_key(json_data, owner_public_key=None, recipient_p
     matching_objects = []
     if owner_public_key != None and recipient_public_key != None:
         for obj in json_data[0]:
-            if owner_public_key in obj['inputs'][0]['owners_before'] and recipient_public_key in obj['outputs'][0]['public_keys']:
-                matching_objects.append(obj)
+            try:
+                if owner_public_key in obj['inputs'][0]['owners_before'] and recipient_public_key in obj['outputs'][0]['public_keys']:
+                    matching_objects.append(obj)
+            except Exception as e:
+                print(e)
     elif owner_public_key == None and recipient_public_key != None:
         for obj in json_data[0]:
-            if recipient_public_key in obj['outputs'][0]['public_keys']:
-                matching_objects.append(obj)
+            try:
+                if recipient_public_key in obj['outputs'][0]['public_keys']:
+                    matching_objects.append(obj)
+            except Exception as e:
+                print(e)
     elif owner_public_key != None and recipient_public_key == None:
         for obj in json_data[0]:
-            if owner_public_key in obj['inputs'][0]['owners_before']:
-                matching_objects.append(obj)
+            try:
+                if owner_public_key in obj['inputs'][0]['owners_before']:
+                    matching_objects.append(obj)
+            except Exception as e:
+                print(e)
     else:
         for obj in json_data[0]:
-            matching_objects.append(obj)
+            try:
+                matching_objects.append(obj)
+            except Exception as e:
+                print(e)
     return matching_objects
 
 def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
