@@ -112,14 +112,14 @@ void Stats::SocketManagementWrite(){
       beast::websocket::stream<tcp::socket> ws(std::move(socket));
       ws.accept();
       while(!stop_){
+        if(!ws.is_open()){
+          break;
+        }
         if(send_summary_.load()){
           ws.write(asio::buffer(summary_json_.dump()));
           summary_json_={};
           LOG(ERROR)<<"SENT MESSAGE";
           send_summary_.store(false);
-        }
-        if(!ws.is_open()){
-          break;
         }
       }
       sleep(1);
@@ -150,6 +150,15 @@ void Stats::SocketManagementRead(){
       LOG(ERROR)<<"Exception: " <<e.what();
     }
   }
+}
+
+bool Stats::IsFaulty(){
+  return make_faulty_.load();
+}
+
+void Stats::ChangePrimary(int primary_id){
+  transaction_summary_.primary_id;
+  make_faulty_.store(false);
 }
 
 void Stats::SetProps(int replica_id, std::string ip, int port){

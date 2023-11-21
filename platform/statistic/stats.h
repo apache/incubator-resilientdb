@@ -82,6 +82,8 @@ class Stats{
     void SendSummary();
     void SocketManagementWrite();
     void SocketManagementRead();
+    bool IsFaulty();
+    void ChangePrimary(int primary_id);
 
 
   void AddLatency(uint64_t run_time);

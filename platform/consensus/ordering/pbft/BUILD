@@ -151,6 +151,7 @@ cc_library(
         "//platform/consensus/execution:system_info",
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:viewchange_message_cc_proto",
+        "//platform/statistic:stats",
     ],
 )
 

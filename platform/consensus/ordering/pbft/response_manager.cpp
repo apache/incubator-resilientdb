@@ -299,7 +299,10 @@ int ResponseManager::DoBatch(
   batch_request.SerializeToString(new_request->mutable_data());
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
-  replica_communicator_->SendMessage(*new_request, GetPrimary());
+  for(int i=1; i<=4; i++){
+      replica_communicator_->SendMessage(*new_request, i);
+  }
+  //replica_communicator_->SendMessage(*new_request, GetPrimary());
   send_num_++;
   LOG(INFO) << "send msg to primary:" << GetPrimary()
             << " batch size:" << batch_req.size();
