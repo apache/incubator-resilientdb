@@ -8,7 +8,7 @@ Rust Software Developement Kit that allows Rust users to interface with [Resilie
 ## Usage
 Currently the SDK is able to fetch transactions from a database instance. 
 
-### Our dev environement setup
+### Our dev environment setup
 The repository includes a dockerfile that can be used to build a container.
 
 To start the dev environment on your system, run the following command:  
