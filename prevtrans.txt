@@ -1,0 +1,114 @@
+/**
+use super::ResDB;
+
+impl Transaction {
+    
+    pub fn new() -> Self {
+        // Implementation for creating a new Transaction instance
+        Transaction {
+            inputs: Vec::new(),
+            outputs: Vec::new(),
+            operation: String::new(),
+            metadata: None,
+            asset: Asset { data: serde_json::Value::Null },
+            version: String::new(),
+            id: String::new(),
+        }
+    }
+
+    // implementation of GET v1/transactions
+    pub async fn get_all_transactions(api_url: &str) -> Result<Vec<Transaction>, anyhow::Error> {
+        // Make an asynchronous GET request to the specified API endpoint
+        // let response_text = reqwest::get(api_url).await?;
+        
+        // Open the file -> REPLACE THIS CODE
+        let mut file = File::open("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions.json").expect("Unable to open the file");
+        // Read the file content into a string
+        let mut content = String::new();
+        file.read_to_string(&mut content).expect("Unable to read the file");
+    
+    
+        let json_array: Vec<serde_json::Value> = serde_json::from_str(&content)?;
+        let mut transactions = Vec::new();
+    
+        for json_obj in json_array{
+            let transaction: Transaction = serde_json::from_value(json_obj)?;
+            transactions.push(transaction);
+        }
+        
+        // let response: Result<Transaction, serde_json::Error> = serde_json::from_str(&content);
+        let response: Result<Vec<Transaction>, serde_json::Error> = Ok(transactions);
+    
+        // Handle the deserialization result
+        match response {
+            Ok(parsed_response) => Ok(parsed_response),
+            Err(err) => Err(anyhow::Error::from(err)),
+        }
+    }
+
+    // implementation of GET v1/transactions/<string>    
+    pub async fn get_transaction_by_id(api_url: &str, id: &str) -> Result<Transaction, anyhow::Error> {
+
+        let endpoint_url = format!("{}/{}", api_url, id);
+
+        // Make an asynchronous GET request to the specified API endpoint
+        // let response_text = reqwest::get(&endpoint_url).await?;
+        
+        // Open the file -> REPLACE THIS CODE
+        let mut file = File::open("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions:id.json").expect("Unable to open the file");
+        // Read the file content into a string
+        let mut content = String::new();
+        file.read_to_string(&mut content).expect("Unable to read the file");
+    
+        
+        // let response: Result<Transaction, serde_json::Error> = serde_json::from_str(&content);
+        // let response: Result<Transaction, serde_json::Error> = Ok(transactions);
+        let response: Result<Transaction, serde_json::Error> = serde_json::from_str(&content);
+        // Handle the deserialization result
+        match response {
+            Ok(parsed_response) => Ok(parsed_response),
+            Err(err) => Err(anyhow::Error::from(err)),
+        }
+    }
+
+    // implementation of GET v1/transactions/<string>/<string>
+
+    pub async fn get_transaction_by_key_range(api_url: &str, key1: &str, key2: &str) -> Result<Vec<Transaction>, anyhow::Error> {
+        let endpoint_url = format!("{}/{}/{}", api_url, key1, key2);
+
+        // Make an asynchronous GET request to the specified API endpoint
+        // let response_text = reqwest::get(api_url).await?;
+        
+        // Open the file -> REPLACE THIS CODE
+        let mut file = File::open("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions.json").expect("Unable to open the file");
+        // Read the file content into a string
+        let mut content = String::new();
+        file.read_to_string(&mut content).expect("Unable to read the file");
+    
+    
+        let json_array: Vec<serde_json::Value> = serde_json::from_str(&content)?;
+        let mut transactions = Vec::new();
+    
+        for json_obj in json_array{
+            let transaction: Transaction = serde_json::from_value(json_obj)?;
+            transactions.push(transaction);
+        }
+        
+        // let response: Result<Transaction, serde_json::Error> = serde_json::from_str(&content);
+        let response: Result<Vec<Transaction>, serde_json::Error> = Ok(transactions);
+    
+        // Handle the deserialization result
+        match response {
+            Ok(parsed_response) => Ok(parsed_response),
+            Err(err) => Err(anyhow::Error::from(err)),
+        }
+    }
+
+    // implementation of POST v1/transactions/commit
+
+    // pub async fn commit_transaction(api_url: &str) -> Result<Vec<Transaction>, anyhow::Error> {
+
+    // }
+}
+
+**/

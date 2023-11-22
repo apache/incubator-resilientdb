@@ -1,62 +1,83 @@
 // resdb.rs
-use crate::transaction::Transaction;
-// use crate::blocks::Blocks;
 
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
-pub struct ResDB {
-    pub database_url: String,
-}
+use crate::transaction;
+use crate::blocks;
+pub struct ResDB;
 
 impl ResDB {
-
-    //constructor for the ResDB object
-    pub fn new(database_url: &str) -> Self {
-        // Implementation for creating a new ResDB instance
-        ResDB {
-            database_url: database_url.to_string(),
-        }
+    pub fn new() -> Self {
+        ResDB
     }
 
-    // all functions relating to the transactions endpoints
-    pub fn create_transaction(&self) -> Transaction {
-        Transaction::new()
+    /** Below are the APIs provided for the transaction endpoint **/
+
+    pub fn create_object<T>(&self) -> T
+    where
+        T: Default,
+    {
+        T::default()
     }
 
-    pub async fn get_all_transactions(&self) -> Result<Vec<Transaction>, anyhow::Error> {
-        Transaction::get_all_transactions(&self.database_url).await
+    pub async fn get_all_transactions<T>(&self, api_url: &str) -> Result<Vec<T>, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        transaction::get_all_transactions(api_url).await
     }
 
-    pub async fn get_transaction_by_id(&self, id: &str) {
-        let transactions = Transaction::get_transaction_by_id(&self.database_url);
+    pub async fn get_transaction_by_id<T>(
+        &self,
+        api_url: &str,
+        id: &str,
+    ) -> Result<T, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned + std::default::Default,
+    {
+        transaction::get_transaction_by_id(api_url, id).await
     }
 
+    pub async fn get_transaction_by_key_range<T>(
+        &self,
+        api_url: &str,
+        key1: &str,
+        key2: &str,
+    ) -> Result<Vec<T>, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        transaction::get_transaction_by_key_range(api_url, key1, key2).await
+    }
 
-    // pub fn get_transaction_by_key_range(&self, key1: &str, key2: &str) {
-    //     let transaction = Transaction::new();  // Create a new instance of Transaction
-    //     transaction.get_transaction_by_key_range(&self.database_url, key1, key2);
-    // }
+    /** Below are the APIs provided for the Blocks endpoint **/
 
-    // pub fn commit_transaction(&self) {
-    //     let transaction = Transaction::new();  // Create a new instance of Transaction
-    //     transaction.commit_transaction(&self.database_url);
-    // }
+    pub async fn get_all_blocks<T>(&self, api_url: &str) -> Result<Vec<T>, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        blocks::get_all_blocks(api_url).await
+    }
 
-    // functions relating to the blocks endpoints: TO-DO!
+    pub async fn get_all_blocks_grouped<T>(&self, api_url: &str, _batch_size: &i64) -> Result<Vec<T>, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned + std::default::Default,
+    {
+        blocks::get_all_blocks_grouped(api_url, _batch_size).await
+    }
 
-    // // retrive all the blocks within the chain
-    // pub fn get_all_blocks(&self) {
-    //     blocks.commit_transaction(&self.database_url);
-    // }
+    pub async fn get_blocks_by_range<T>(
+        &self,
+        api_url: &str,
+        range_begin: &i64,
+        range_end: &i64,
+    ) -> Result<Vec<T>, anyhow::Error>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        blocks::get_blocks_by_range(api_url, range_begin, range_end).await
+    }
 
-    // // retrive blocks in batch sizes, order remains the same
-    // pub fn get_blocks_by_batch(&self, size: &[int32]) {
-    //     blocks.commit_transaction(&self.database_url);
-    // }
-
-    // // retrive blocks within the chain within a range. Ex. 1 -> 10
-    // pub fn get_blocks_by_range(&self, int32: size) {
-    //     blocks.commit_transaction(&self.database_url);
-    // }
 }
-
-
