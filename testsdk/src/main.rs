@@ -1,9 +1,12 @@
 // main.rs
 
 use resdb_rust_sdk::ResDB;
+
 mod models;
 use models::Transaction;
 use models::Block;
+
+use std::collections::HashMap;
 
 #[tokio::main]
 async fn test_transaction_api() {
@@ -31,7 +34,7 @@ async fn test_transaction_api() {
     // Call the asynchronous function to get a transaction by ID
     match res_db.get_transaction_by_id::<Transaction>(
         "https://crow.resilientdb.com/v1/transactions",
-        "8fPAqJvAFAkqGs8GdmDDrkHyR7hHsscVjes39TVVfN54",
+        "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
     )
     .await
     {
@@ -64,6 +67,66 @@ async fn test_transaction_api() {
 }
 
 #[tokio::main]
+async fn test_transaction_api_map() {
+    let data_map = HashMap::new();
+    let res_db = ResDB::new();
+    
+    match res_db.get_all_transactions_map(
+        "https://crow.resilientdb.com/v1/transactions",
+        data_map,
+    )
+    .await
+    {
+        Ok(map) => {
+            // Access fields of the transaction (replace with the desired field)
+            println!("{:?}", map[10]);
+        }
+        Err(error) => {
+            // Handle the error
+            eprintln!("Error: {}", error);
+        }
+    }
+
+    let data_map = HashMap::new();
+    match res_db.get_transaction_by_id_map(
+        "https://crow.resilientdb.com/v1/transactions",
+        "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
+        data_map,
+    )
+    .await
+    {
+        Ok(map) => {
+            // Access fields of the transaction (replace with the desired field)
+            println!("{:?}", map);
+        }
+        Err(error) => {
+            // Handle the error
+            eprintln!("Error: {}", error);
+        }
+    }
+
+    let data_map = HashMap::new();
+    match res_db.get_transaction_by_key_range_map(
+        "https://crow.resilientdb.com/v1/transactions",
+        "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
+        "2e11fb1f6d235a49f4f2a85c6c57f2ddc9a650fb0f0a6e88ea469584294c03cb",
+        data_map,
+    )
+    .await
+    {
+        Ok(map) => {
+            // Access fields of the transaction (replace with the desired field)
+            println!("{:?}", map);
+        }
+        Err(error) => {
+            // Handle the error
+            eprintln!("Error: {}", error);
+        }
+    }
+}
+
+
+#[tokio::main]
 async fn test_blocks_api() {
     let res_db = ResDB::new();
 
@@ -87,7 +150,7 @@ async fn test_blocks_api() {
     }
 
     // Call the asynchronous function to get a transaction by ID
-    match res_db.get_all_blocks_grouped::<Block>("https://crow.resilientdb.com/v1/blocks", &5)
+    match res_db.get_blocks_grouped::<Block>("https://crow.resilientdb.com/v1/blocks", &5)
     .await
     {
         Ok(blocks) => {
@@ -104,7 +167,7 @@ async fn test_blocks_api() {
         }
     }
 
-    // Call the asynchronous function to get transactions by key range
+    // Call the asynchronous function to get blocks
     match res_db
         .get_blocks_by_range::<Block>("https://crow.resilientdb.com/v1/blocks", &1, &10)
         .await
@@ -126,5 +189,6 @@ async fn test_blocks_api() {
 
 fn main(){
     // test_transaction_api();
-    test_blocks_api()
+    test_transaction_api_map();
+    // test_blocks_api()
 }

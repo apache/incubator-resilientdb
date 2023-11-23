@@ -69,7 +69,27 @@ where
     Ok(transactions)
 }
 
+pub async fn get_blocks_by_range_map(
+    _api_url: &str, 
+    _range_begin: &str, 
+    _range_end: &str, 
+    _map: HashMap<&str, &str>
+) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
+where
+{
+    let endpoint_url = format!("{}/{}/{}", _api_url, _range_begin, _range_end);
 
+    // Make an asynchronous GET request to the specified API endpoint
+    let response = reqwest::get(endpoint_url).await?;
+    let transactions: Vec<HashMap<String, Value>> = response.json().await?;
+
+    // let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions:id.json").await?;
+    // let mut transactions = Vec::new();
+
+    // Deserialize JSON into a vector of HashMaps
+    // let transactions: Vec<HashMap<String, Value>> = serde_json::from_value(serde_json::Value::Array(json_array))?;
+    Ok(transactions)
+}
 
 
 
