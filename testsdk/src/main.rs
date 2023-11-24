@@ -166,10 +166,54 @@ async fn test_blocks_api() {
             eprintln!("Error: {}", error);
         }
     }
+}
+
+#[tokio::main]
+async fn test_blocks_api_map() {
+    let res_db = ResDB::new();
+    let data_map = HashMap::new();
 
     // Call the asynchronous function to get blocks
     match res_db
-        .get_blocks_by_range::<Block>("https://crow.resilientdb.com/v1/blocks", &1, &10)
+        .get_all_blocks_map("https://crow.resilientdb.com/v1/blocks", data_map)
+        .await
+    {
+        Ok(blocks) => {
+            if let Some(first_block) = blocks.first() {
+                // Access fields of the first transaction (replace with the desired field)
+                println!("{:?}", first_block);
+            } else {
+                println!("No transactions available");
+            }
+        }
+        Err(error) => {
+            // Handle the error
+            eprintln!("Error: {}", error);
+        }
+    }
+
+    let data_map = HashMap::new();
+    match res_db
+        .get_blocks_by_range_map("https://crow.resilientdb.com/v1/blocks", &1, &10, data_map)
+        .await
+    {
+        Ok(blocks) => {
+            if let Some(first_block) = blocks.first() {
+                // Access fields of the first transaction (replace with the desired field)
+                println!("{:?}", first_block);
+            } else {
+                println!("No transactions available");
+            }
+        }
+        Err(error) => {
+            // Handle the error
+            eprintln!("Error: {}", error);
+        }
+    }
+
+    let data_map = HashMap::new();
+    match res_db
+        .get_blocks_grouped_map("https://crow.resilientdb.com/v1/blocks", &10, data_map)
         .await
     {
         Ok(blocks) => {
@@ -187,8 +231,10 @@ async fn test_blocks_api() {
     }
 }
 
+
 fn main(){
-    // test_transaction_api();
+    test_transaction_api();
     test_transaction_api_map();
-    // test_blocks_api()
+    test_blocks_api();
+    test_blocks_api_map()
 }

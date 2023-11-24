@@ -37,7 +37,7 @@ where
     // let response = reqwest::get(&*_api_url).await?;
     // let transactions: Vec<T> = response.json().await?;
 
-    let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions.json").await?;
+    let json_array = get_json_from_file("/Users/dhruv/Desktop/Repositories/resdb_rust_sdk/json_data/transactions.json").await?;
     let mut transactions = Vec::new();
 
     for json_obj in json_array{
@@ -58,7 +58,7 @@ where
     // let response = reqwest::get(&*_api_url).await?;
     // let transactions: Vec<T> = response.json().await?;
 
-    let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions.json").await?;
+    let json_array = get_json_from_file("/Users/dhruv/Desktop/Repositories/resdb_rust_sdk/json_data/transactions.json").await?;
     // let mut transactions = Vec::new();
 
     // Deserialize JSON into a vector of HashMaps
@@ -77,7 +77,7 @@ where
     // let response = reqwest::get(endpoint_url).await?;
     // let transactions: Vec<T> = response.json().await?;
 
-    let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions:id.json").await?;
+    let json_array = get_json_from_file("/Users/dhruv/Desktop/Repositories/resdb_rust_sdk/json_data/transactions:id.json").await?;
 
     // Check if there's a transaction with the specified ID
     if let Some(json_obj) = json_array.into_iter().next() {
@@ -100,7 +100,7 @@ where
     // let response = reqwest::get(&*_api_url).await?;
     // let transactions: Vec<T> = response.json().await?;
 
-    let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions:id.json").await?;
+    let json_array = get_json_from_file("/Users/dhruv/Desktop/Repositories/resdb_rust_sdk/json_data/transactions:id.json").await?;
     // let mut transactions = Vec::new();
 
     // Deserialize JSON into a vector of HashMaps
@@ -108,7 +108,7 @@ where
     Ok(transactions)
 }
 
-pub async fn get_transaction_by_key_range<T>(
+pub async fn get_transaction_by_key_range<T> (
     _api_url: &str,
     _key1: &str,
     _key2: &str,
