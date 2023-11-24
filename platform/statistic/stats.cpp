@@ -263,7 +263,14 @@ void Stats::SendSummary(){
   //Send Summary via Websocket
 
   send_summary_.store(true);
-  while(!send_summary_.load()){}
+  int count =0;
+  while(send_summary_.load() && count<5){
+    sleep(1);
+    count=count+1;
+  }
+  if(send_summary_.load()){
+    send_summary_.store(false);
+  }
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();

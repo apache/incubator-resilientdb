@@ -88,7 +88,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << message_manager_->GetCurrentPrimary()
     //            << " seq:" << user_request->seq()
     //            << " hash:" << user_request->hash();
-    LOG(ERROR)<<"NOT PRIMARY";
+    LOG(ERROR)<<"NOT PRIMARY, Primary is "<<message_manager_->GetCurrentPrimary();
     replica_communicator_->SendMessage(*user_request,
                                        message_manager_->GetCurrentPrimary());
     {
