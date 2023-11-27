@@ -83,8 +83,8 @@ std::vector<ReplicaInfo> Consensus::GetReplicas() {
 
 int Consensus::ConsensusCommit(std::unique_ptr<Context> context,
                                std::unique_ptr<Request> request) {
-   LOG(ERROR) << "get request:" << Request::Type_Name(request->type())
-           << " from:" << request->sender_id()<<" seq:"<<request->seq();
+   //LOG(ERROR) << "get request:" << Request::Type_Name(request->type())
+   //        << " from:" << request->sender_id()<<" seq:"<<request->seq();
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
       if (config_.IsPerformanceRunning()) {
@@ -127,10 +127,8 @@ int Consensus::SendMessage(int user_type,
     request.set_sender_id(config_.GetSelfInfo().id());
     msg.SerializeToString(request.mutable_data());
     if (proxy_id == -1) {
-      LOG(ERROR)<<"send msg type:"<<request.type()<<" communicator:"<<(communicator_==nullptr);
       communicator_->BroadCast(request);
     } else {
-      LOG(ERROR)<<"send msg type:"<<request.type()<<" proxy id:"<<proxy_id;
       communicator_->SendMessage(request, proxy_id);
     }
   }
