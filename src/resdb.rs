@@ -130,7 +130,7 @@ impl ResDB {
         &self, 
         api_url: &str, 
         _batch_size: &i64
-    ) -> Result<Vec<T>, anyhow::Error>
+    ) -> Result<Vec<Vec<T>>, anyhow::Error>
     where
         T: serde::de::DeserializeOwned + std::default::Default,
     {
@@ -143,7 +143,7 @@ impl ResDB {
         api_url: &str, 
         _batch_size: &i64,
         map: HashMap<&str, &str>,
-    ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
+    ) -> Result<Vec<Vec<HashMap<String, Value>>>, anyhow::Error>
     where
     {
         blocks::get_blocks_grouped_map(api_url, _batch_size, map).await

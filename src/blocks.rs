@@ -74,14 +74,14 @@ pub async fn get_blocks_grouped_map(
     _api_url: &str, 
     _batch_size : &i64,
     _map: HashMap<&str, &str>
-) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
+) -> Result<Vec<Vec<HashMap<String, Value>>>, anyhow::Error>
 where
 {
     let endpoint_url = format!("{}/{}", _api_url, _batch_size);
 
     // Make an asynchronous GET request to the specified API endpoint
     let response = reqwest::get(endpoint_url).await?;
-    let blocks: Vec<HashMap<String, Value>> = response.json().await?;
+    let blocks: Vec<Vec<HashMap<String, Value>>> = response.json().await?;
 
     // let json_array = get_json_from_file("/mnt/c/Users/dsang/OneDrive/Desktop/resdb_rust_sdk/json_data/transactions:id.json").await?;
     // let mut transactions = Vec::new();
