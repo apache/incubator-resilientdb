@@ -110,7 +110,7 @@ impl Default for Asset {
 #[derive(Debug, Deserialize)]
 pub struct BlockTransaction {
     pub cmd: String,
-    pub key: String,
+    pub key: Option<String>,
     pub value: Option<String>, // Use Option<String> to handle cases where "value" is missing
 }
 
@@ -118,7 +118,7 @@ impl Default for BlockTransaction {
     fn default() -> Self {
         BlockTransaction {
             cmd: String::new(),
-            key: String::new(),
+            key: None,
             value: None,
         }
     }
@@ -130,7 +130,7 @@ pub struct Block {
     pub number: String,
     pub transactions: Vec<BlockTransaction>,
     pub size: i64,
-    pub created_at: String,
+    pub createdAt: String,
 }
 
 impl Default for Block {
@@ -140,7 +140,7 @@ impl Default for Block {
             number: String::new(),
             transactions: Vec::new(),
             size: 0,
-            created_at: String::new(),
+            createdAt: String::new(),
         }
     }
 }
