@@ -64,9 +64,14 @@ class KeyValueStorage : public Storage {
   int SetValueWithVersion(const std::string& key, const std::string& value, int version) override;
   std::pair<std::string,int> GetValueWithVersion(const std::string& key, int version) override;
 
+  // Return a map of <key, <value, version>>
   std::map<std::string,std::pair<std::string,int>> GetAllValuesWithVersion() override;
   std::map<std::string,std::pair<std::string,int>> GetRangeWithVersion(
     const std::string& min_key, const std::string& max_key) override;
+
+  // Return a list of <value, version>
+  std::vector<std::pair<std::string,int>> GetHistory(
+    const std::string& key, const int& min_version, const int& max_version) override;
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;

@@ -44,9 +44,14 @@ class Storage {
   virtual int SetValueWithVersion(const std::string& key, const std::string& value, int version) = 0;
   virtual std::pair<std::string,int> GetValueWithVersion(const std::string& key, int version) = 0;
 
+  // Return a map of <key, <value, version>>
   virtual std::map<std::string,std::pair<std::string,int>> GetAllValuesWithVersion() = 0;
   virtual std::map<std::string,std::pair<std::string,int>> GetRangeWithVersion(
     const std::string& min_key, const std::string& max_key) = 0;
+
+  // Return a list of <value, version> from a key
+  virtual std::vector<std::pair<std::string,int>> GetHistory(
+    const std::string& key, const int& min_version, const int& max_version) = 0;
 };
 
 }  // namespace resdb

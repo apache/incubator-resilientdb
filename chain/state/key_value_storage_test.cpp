@@ -188,6 +188,46 @@ TEST(KVServerExecutorTest, GetRangeWithVersion) {
   }
 }
 
+TEST(KVServerExecutorTest, GetHistory) {
+  KeyValueStorage storage;
+
+  {
+  std::vector<std::pair<std::string, int> > expected_list {
+    };
+    EXPECT_EQ(storage.GetHistory("1", 1,5), expected_list);
+  }
+  {
+    std::vector<std::pair<std::string, int> > expected_list {
+      std::make_pair("value1",1),
+      std::make_pair("value2",2),
+      std::make_pair("value3",3)
+    };
+
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value1", 0), 0);
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value2", 1), 0);
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value3", 2), 0);
+
+    EXPECT_EQ(storage.GetHistory("1", 1,5), expected_list);
+  }
+
+  {
+    std::vector<std::pair<std::string, int> > expected_list {
+      std::make_pair("value1",1),
+      std::make_pair("value2",2),
+      std::make_pair("value3",3),
+      std::make_pair("value4",4),
+      std::make_pair("value5",5)
+    };
+
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value4", 3), 0);
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value5", 4), 0);
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value6", 5), 0);
+    EXPECT_EQ(storage.SetValueWithVersion("1", "value7", 6), 0);
+
+    EXPECT_EQ(storage.GetHistory("1", 1,5), expected_list);
+  }
+}
+
 
 
 

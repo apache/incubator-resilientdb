@@ -116,7 +116,7 @@ std::map<std::string, std::pair<std::string, int>>
     KeyValueStorage::GetAllValuesWithVersion() {
   std::map<std::string,std::pair<std::string,int>> resp;
 
-  for(auto it : kv_map_with_v_){
+  for(const auto& it : kv_map_with_v_){
     resp.insert(std::make_pair(it.first, it.second.back()));
   }
   return resp;
@@ -127,12 +127,31 @@ std::map<std::string,std::pair<std::string,int>>
     const std::string& min_key, const std::string& max_key) {
 
   std::map<std::string, std::pair<std::string,int>> resp;
-  for(auto it : kv_map_with_v_){
+  for(const auto& it : kv_map_with_v_){
     if (it.first >= min_key && it.first <= max_key){
       resp.insert(std::make_pair(it.first, it.second.back()));
     }
   }
   return resp;
+}
+
+std::vector<std::pair<std::string,int>> KeyValueStorage::GetHistory(
+    const std::string& key, const int& min_version, const int& max_version) {
+
+  std::vector<std::pair<std::string,int>> resp;
+  auto search_it = kv_map_with_v_.find(key);
+  if(search_it == kv_map_with_v_.end()){
+    return resp;
+  }
+
+  for(const auto& it : search_it->second) {
+    if(it.second >= min_version && it.second <= max_version){
+      resp.push_back(it);
+    }
+  }
+  return resp;
+
+
 }
 
 }  // namespace resdb
