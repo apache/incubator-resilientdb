@@ -26,6 +26,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace resdb {
 
@@ -34,22 +35,18 @@ class Storage {
   Storage() = default;
   virtual ~Storage() = default;
 
-  // Set value by key
-  // Return >=0 if success.
   virtual int SetValue(const std::string& key, const std::string& value) = 0;
-
-  // Get value by key
   virtual std::string GetValue(const std::string& key) = 0;
-
-  // Get all values in db
   virtual std::string GetAllValues() = 0;
-
-  // Get values on a range of keys
   virtual std::string GetRange(const std::string& min_key,
                                const std::string& max_key) = 0;
 
-  // Flush data to disk
-  virtual bool Flush() = 0;
+  virtual int SetValueWithVersion(const std::string& key, const std::string& value, int version) = 0;
+  virtual std::pair<std::string,int> GetValueWithVersion(const std::string& key, int version) = 0;
+
+  virtual std::map<std::string,std::pair<std::string,int>> GetAllValuesWithVersion() = 0;
+  virtual std::map<std::string,std::pair<std::string,int>> GetRangeWithVersion(
+    const std::string& min_key, const std::string& max_key) = 0;
 };
 
 }  // namespace resdb
