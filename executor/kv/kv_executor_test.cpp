@@ -28,8 +28,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "chain/storage/storage.h"
 #include "chain/storage/memory_db.h"
+#include "chain/storage/storage.h"
 #include "common/test/test_macros.h"
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
@@ -37,8 +37,8 @@
 namespace resdb {
 namespace {
 
-using storage::MemoryDB;
 using ::resdb::testing::EqualsProto;
+using storage::MemoryDB;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
@@ -48,8 +48,7 @@ class KVExecutorTest : public Test {
   KVExecutorTest() {
     auto storage = std::make_unique<MemoryDB>();
     storage_ptr_ = storage.get();
-    impl_ = std::make_unique<KVExecutor>(
-        std::move(storage));
+    impl_ = std::make_unique<KVExecutor>(std::move(storage));
   }
 
   int Set(const std::string& key, const std::string& value) {
@@ -234,9 +233,6 @@ class KVExecutorTest : public Test {
     return kv_response.items();
   }
 
-
-
-
  protected:
   Storage* storage_ptr_;
 
@@ -251,8 +247,8 @@ TEST_F(KVExecutorTest, SetValue) {
   EXPECT_EQ(Set("test_key", "test_value"), 0);
   EXPECT_EQ(Get("test_key"), "test_value");
 
-  // GetAllValues and GetRange may be out of order for in-memory, so we test up to
-  // 1 key-value pair
+  // GetAllValues and GetRange may be out of order for in-memory, so we test up
+  // to 1 key-value pair
   EXPECT_EQ(GetAllValues(), "[test_value]");
   EXPECT_EQ(GetRange("a", "z"), "[test_value]");
 }
@@ -261,56 +257,56 @@ TEST_F(KVExecutorTest, SetValueWithVersion) {
   std::map<std::string, std::string> data;
 
   {
-    EXPECT_EQ(Set("test_key", "test_value",0), 0);
+    EXPECT_EQ(Set("test_key", "test_value", 0), 0);
     ValueInfo expected_info;
     expected_info.set_value("test_value");
     expected_info.set_version(1);
-    EXPECT_THAT(Get("test_key",1), EqualsProto(expected_info));
+    EXPECT_THAT(Get("test_key", 1), EqualsProto(expected_info));
   }
 
   {
-    EXPECT_EQ(Set("test_key", "test_value1",1), 0);
+    EXPECT_EQ(Set("test_key", "test_value1", 1), 0);
     ValueInfo expected_info;
     expected_info.set_value("test_value1");
     expected_info.set_version(2);
-    EXPECT_THAT(Get("test_key",2), EqualsProto(expected_info));
+    EXPECT_THAT(Get("test_key", 2), EqualsProto(expected_info));
   }
   {
-    EXPECT_EQ(Set("test_key", "test_value1",1), 0);
+    EXPECT_EQ(Set("test_key", "test_value1", 1), 0);
     ValueInfo expected_info;
     expected_info.set_value("test_value");
     expected_info.set_version(1);
-    EXPECT_THAT(Get("test_key",1), EqualsProto(expected_info));
+    EXPECT_THAT(Get("test_key", 1), EqualsProto(expected_info));
   }
 
   {
-    EXPECT_EQ(Set("test_key1", "test_key1",0), 0);
+    EXPECT_EQ(Set("test_key1", "test_key1", 0), 0);
     ValueInfo expected_info;
     expected_info.set_value("test_key1");
     expected_info.set_version(1);
-    EXPECT_THAT(Get("test_key1",1), EqualsProto(expected_info));
+    EXPECT_THAT(Get("test_key1", 1), EqualsProto(expected_info));
 
     ValueInfo expected_info2;
     expected_info2.set_value("test_value");
     expected_info2.set_version(1);
-    EXPECT_THAT(Get("test_key",1), EqualsProto(expected_info2));
+    EXPECT_THAT(Get("test_key", 1), EqualsProto(expected_info2));
 
     ValueInfo expected_info3;
     expected_info3.set_value("test_value1");
     expected_info3.set_version(2);
-    EXPECT_THAT(Get("test_key",0), EqualsProto(expected_info3));
+    EXPECT_THAT(Get("test_key", 0), EqualsProto(expected_info3));
   }
 
   {
     Items items;
     {
-      Item * item = items.add_item();
+      Item* item = items.add_item();
       item->set_key("test_key");
       item->mutable_value_info()->set_value("test_value1");
       item->mutable_value_info()->set_version(2);
     }
     {
-      Item * item = items.add_item();
+      Item* item = items.add_item();
       item->set_key("test_key1");
       item->mutable_value_info()->set_value("test_key1");
       item->mutable_value_info()->set_version(1);
@@ -322,7 +318,7 @@ TEST_F(KVExecutorTest, SetValueWithVersion) {
   {
     Items items;
     {
-      Item * item = items.add_item();
+      Item* item = items.add_item();
       item->set_key("test_key");
       item->mutable_value_info()->set_value("test_value1");
       item->mutable_value_info()->set_version(2);
@@ -333,21 +329,20 @@ TEST_F(KVExecutorTest, SetValueWithVersion) {
   {
     Items items;
     {
-      Item * item = items.add_item();
+      Item* item = items.add_item();
       item->set_key("test_key");
       item->mutable_value_info()->set_value("test_value1");
       item->mutable_value_info()->set_version(2);
     }
     {
-      Item * item = items.add_item();
+      Item* item = items.add_item();
       item->set_key("test_key");
       item->mutable_value_info()->set_value("test_value");
       item->mutable_value_info()->set_version(1);
     }
-    EXPECT_THAT(GetHistory("test_key",0,2), EqualsProto(items));
+    EXPECT_THAT(GetHistory("test_key", 0, 2), EqualsProto(items));
   }
 }
-
 
 }  // namespace
 

@@ -32,7 +32,7 @@
 #include <queue>
 #include <set>
 
-#include "chain/storage/txn_memory_db.h"
+#include "chain/state/txn_memory_db.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"

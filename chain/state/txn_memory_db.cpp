@@ -23,39 +23,28 @@
  *
  */
 
-#pragma once
+#include "chain/state/txn_memory_db.h"
 
-#include <optional>
-#include <string>
-
-#include "chain/storage/storage.h"
-#include "platform/proto/replica_info.pb.h"
-#include "rocksdb/db.h"
-#include "rocksdb/write_batch.h"
+#include <glog/logging.h>
 
 namespace resdb {
 
-std::unique_ptr<Storage> NewResRocksDB(
-    const char* cert_file, std::optional<resdb::ResConfigData> config_data);
+TxnMemoryDB::TxnMemoryDB() : max_seq_(0) {}
 
-class ResRocksDB : public Storage {
- public:
-  ResRocksDB(const char* cert_file, std::optional<ResConfigData> config_data);
-  virtual ~ResRocksDB();
-  int SetValue(const std::string& key, const std::string& value) override;
-  std::string GetValue(const std::string& key) override;
-  std::string GetAllValues(void) override;
-  std::string GetRange(const std::string& min_key,
-                       const std::string& max_key) override;
+Request* TxnMemoryDB::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
+}
 
-  bool Flush() override;
+void TxnMemoryDB::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
+}
 
- private:
-  std::unique_ptr<rocksdb::DB> db_ = nullptr;
-  rocksdb::WriteBatch batch_;
-  unsigned int num_threads_ = 1;
-  unsigned int write_buffer_size_ = 64 << 20;
-  unsigned int write_batch_size_ = 1;
-};
+uint64_t TxnMemoryDB::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb

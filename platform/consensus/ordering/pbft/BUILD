@@ -61,7 +61,7 @@ cc_library(
         ":lock_free_collector_pool",
         ":transaction_collector",
         ":transaction_utils",
-        "//chain/storage:txn_memory_db",
+        "//chain/state:txn_memory_db",
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config",
         "//platform/networkstrate:server_comm",
@@ -114,7 +114,7 @@ cc_library(
     hdrs = ["checkpoint_manager.h"],
     deps = [
         ":transaction_utils",
-        "//chain/storage:txn_memory_db",
+        "//chain/state:txn_memory_db",
         "//common/crypto:signature_verifier",
         "//interface/common:resdb_txn_accessor",
         "//platform/config:resdb_config",

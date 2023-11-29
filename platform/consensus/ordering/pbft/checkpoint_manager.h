@@ -27,7 +27,7 @@
 
 #include <semaphore.h>
 
-#include "chain/storage/txn_memory_db.h"
+#include "chain/state/txn_memory_db.h"
 #include "common/crypto/signature_verifier.h"
 #include "interface/common/resdb_txn_accessor.h"
 #include "platform/config/resdb_config.h"

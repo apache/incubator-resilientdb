@@ -78,13 +78,82 @@ Build Interactive Tools:
 
     bazel build service/tools/kv/api_tools/kv_service_tools
 
-Run tools to set a value by a key (for example, set the value with key "test" and value "test_value"):
+## Functions ##
+Version based functions are not compatible with non-version based functions. Do not use both.
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
-    
-You will see the following result if successful:
+### Version Based ###
+### Get ###
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_with_version --key key1 --version 0
+client get key = key1, value = value: "v2"
+version: 2
 
-    client set ret = 0
+### Set ###
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set_with_version --key key1 --version 0 --value v1
+
+client set key = key1, value = v3, version = 2 done, ret = 0
+current value value = value: "v3"
+version: 3
+
+### Get Key History ###
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_history --key key1 --min_version 1 --max_version 2
+get history key = key1, min version = 1, max version = 2
+ value = item {
+  key: "key1"
+  value_info {
+    value: "v1"
+    version: 2
+  }
+}
+item {
+  key: "key1"
+  value_info {
+    value: "v0"
+    version: 1
+  }
+}
+
+### Get Top ###
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_top --key key1 --top 2
+key = key1, top 2
+ value = item {
+  key: "key1"
+  value_info {
+    value: "v2"
+    version: 3
+  }
+}
+
+### Get Key Range ###
+Do not use this function in your practise code
+
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range_with_version --min_key key1 --max_key key3
+min key = key1 max key = key3
+client getrange value = item {
+  key: "key1"
+  value_info {
+    value: "v0"
+    version: 1
+  }
+}
+
+
+### Raw Function ###
+### Raw Set ####
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set --key key1 --value value1
+
+client set key = key1, value = v1, done, ret = 0
+
+### Raw Get ###
+    bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get --key key1
+
+    client get key = key1, value =
+
+### Get Key Range ###
+Do not use this function in your practise code
+
+bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range --min_key key1 --max_key key3
+getrange min key = key1, max key = key3
+ value = [v3,v2,v1]
 
 Run tools to get value by a key (for example, get the value with key "test"):
 

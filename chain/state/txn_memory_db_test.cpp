@@ -23,7 +23,7 @@
  *
  */
 
-#include "database/txn_memory_db.h"
+#include "chain/state/txn_memory_db.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

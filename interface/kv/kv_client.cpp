@@ -27,8 +27,6 @@
 
 #include <glog/logging.h>
 
-#include "proto/kv/kv.pb.h"
-
 namespace resdb {
 
 KVClient::KVClient(const ResDBConfig& config)
@@ -80,6 +78,77 @@ std::unique_ptr<std::string> KVClient::GetRange(const std::string& min_key,
     return nullptr;
   }
   return std::make_unique<std::string>(response.value());
+}
+
+int KVClient::Set(const std::string& key, const std::string& data,
+                  int version) {
+  KVRequest request;
+  request.set_cmd(KVRequest::SET_WITH_VERSION);
+  request.set_key(key);
+  request.set_value(data);
+  request.set_version(version);
+  return SendRequest(request);
+}
+
+std::unique_ptr<ValueInfo> KVClient::Get(const std::string& key, int version) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET_WITH_VERSION);
+  request.set_key(key);
+  request.set_version(version);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<ValueInfo>(response.value_info());
+}
+
+std::unique_ptr<Items> KVClient::GetKeyRange(const std::string& min_key,
+                                             const std::string& max_key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET_KEY_RANGE);
+  request.set_min_key(min_key);
+  request.set_max_key(max_key);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<Items>(response.items());
+}
+
+std::unique_ptr<Items> KVClient::GetKeyHistory(const std::string& key,
+                                               int min_version,
+                                               int max_version) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET_HISTORY);
+  request.set_key(key);
+  request.set_min_version(min_version);
+  request.set_max_version(max_version);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<Items>(response.items());
+}
+
+std::unique_ptr<Items> KVClient::GetKeyTopHistory(const std::string& key,
+                                                  int top_number) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET_TOP);
+  request.set_key(key);
+  request.set_top_number(top_number);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<Items>(response.items());
 }
 
 }  // namespace resdb
