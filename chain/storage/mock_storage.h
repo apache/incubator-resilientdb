@@ -54,8 +54,7 @@ class MockStorage : public Storage {
               (override));
   MOCK_METHOD(ValuesType, GetHistory, (const std::string&, int, int),
               (override));
-  MOCK_METHOD(ValuesType, GetTopHistory, (const std::string&, int),
-              (override));
+  MOCK_METHOD(ValuesType, GetTopHistory, (const std::string&, int), (override));
 
   MOCK_METHOD(bool, Flush, (), (override));
 };
