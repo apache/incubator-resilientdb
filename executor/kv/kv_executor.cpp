@@ -72,8 +72,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   if (!kv_response.SerializeToString(resp_str.get())) {
     return nullptr;
   }
-
-  LOG(ERROR) << "get datai done:";
   return resp_str;
 }
 
