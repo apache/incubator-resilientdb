@@ -55,7 +55,7 @@ The latest ResilientDB documentation, including a programming guide, is availabl
 </div>
 
 ## OS Requirements
-Ubuntu 20.*
+Ubuntu 20+
 
 ---
 
@@ -79,97 +79,218 @@ Build Interactive Tools:
     bazel build service/tools/kv/api_tools/kv_service_tools
 
 ## Functions ##
-Version based functions are not compatible with non-version based functions. Do not use both.
+ResilientDB supports two types of functions: version-based and non-version-based.
+Version-based functions will leverage versions to protect each update, versions must be obtained before updating a key.
 
-### Version Based ###
-### Get ###
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_with_version --key key1 --version 0
-client get key = key1, value = value: "v2"
-version: 2
+***Note***: Version-based functions are not compatible with non-version-based functions. Do not use both in your applications.
 
-### Set ###
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set_with_version --key key1 --version 0 --value v1
+We show the functions below and show how to use [kv_service_tools](service/tools/kv/api_tools/kv_service_tools.cpp) to test the function.
 
-client set key = key1, value = v3, version = 2 done, ret = 0
-current value value = value: "v3"
-version: 3
+### Version-Based Functions ###
+#### Get ####
+Obtain the value of `key` with a specific version `v`.
 
-### Get Key History ###
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_history --key key1 --min_version 1 --max_version 2
-get history key = key1, min version = 1, max version = 2
- value = item {
-  key: "key1"
-  value_info {
-    value: "v1"
-    version: 2
-  }
-}
-item {
-  key: "key1"
-  value_info {
-    value: "v0"
-    version: 1
-  }
-}
+      kv_service_tools --config config_file --cmd get_with_version --key key --version v
 
-### Get Top ###
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_top --key key1 --top 2
-key = key1, top 2
- value = item {
-  key: "key1"
-  value_info {
-    value: "v2"
-    version: 3
-  }
-}
-
-### Get Key Range ###
-Do not use this function in your practise code
-
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range_with_version --min_key key1 --max_key key3
-min key = key1 max key = key3
-client getrange value = item {
-  key: "key1"
-  value_info {
-    value: "v0"
-    version: 1
-  }
-}
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_with_version |
+| key  | the key you want to obtain |
+| version | the version you want to obtain. (If the `v` is 0, it will return the latest version |
 
 
-### Raw Function ###
-### Raw Set ####
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set --key key1 --value value1
+Example:
 
-client set key = key1, value = v1, done, ret = 0
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_with_version --key key1 --version 0
 
-### Raw Get ###
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get --key key1
+Results:
+> get key = key1, value = value: "v2"
+> version: 2
 
-    client get key = key1, value =
+#### Set ####
+Set `value` to the key `key` based on version `v`.
 
-### Get Key Range ###
-Do not use this function in your practise code
+      kv_service_tools --config config_file --cmd set_with_version --key key --version v --value value
 
-bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range --min_key key1 --max_key key3
-getrange min key = key1, max key = key3
- value = [v3,v2,v1]
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | set_with_version |
+| key  | the key you want to set |
+| version | the version you have obtained. (If the version has been changed during the update, the transaction will be ignored) |
+| value | the new value |
 
-Run tools to get value by a key (for example, get the value with key "test"):
+Example:
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test 
-    
-You will see the following result if successful:
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set_with_version --key key1 --version 0 --value v1
 
-    client get value = test_value
+Results:
+> set key = key1, value = v3, version = 2 done, ret = 0
+> 
+> current value = value: "v3"
+> version: 3
 
-Run tools to get all values that have been set:
+#### Get Key History ####
+Obtain the update history of key `key` within the versions [`v1`, `v2`].
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getallvalues
+      kv_service_tools --config config_file --cmd get_history --key key --min_version v1 --max_version v2
 
-You will see the following result if successful:
 
-    client getallvalues value = [test_value]
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_history |
+| key  | the key you want to obtain |
+| min_version | the minimum version you want to obtain |
+| max_version | the maximum version you want to obtain |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_history --key key1 --min_version 1 --max_version 2
+
+Results:
+
+> get history key = key1, min version = 1, max version = 2 <br>
+>  value = <br>
+> item { <br>
+>  &ensp; key: "key1" <br>
+>  &ensp; value_info { <br>
+>  &ensp;&ensp; value: "v1" <br>
+>  &ensp;&ensp; version: 2 <br>
+> &ensp;} <br>
+> } <br>
+> item { <br>
+> &ensp; key: "key1" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp; value: "v0" <br>
+> &ensp;&ensp; version: 1 <br>
+> &ensp;} <br>
+> } 
+
+#### Get Top ####
+Obtain the recent `top_number` history of the key `key`.
+
+      kv_service_tools --config config_path --cmd get_top --key key --top top_number
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_top |
+| key  | the key you want to obtain |
+| top | the number of the recent updates |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_top --key key1 --top 1
+
+Results:
+
+>key = key1, top 1 <br>
+> value = <br>
+> item { <br>
+>&ensp;key: "key1" <br>
+>  &ensp;value_info { <br>
+>  &ensp;&ensp;  value: "v2" <br>
+>  &ensp;&ensp;  version: 3 <br>
+>  &ensp;} <br>
+>}
+
+#### Get Key Range ####
+Obtain the values of the keys in the ranges [`key1`, `key2`]. Do not use this function in your practice code
+
+      kv_service_tools --config config_file --cmd get_key_range_with_version --min_key key1 --max_key key2
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_key_range_with_version |
+| min_key  | the minimum key  |
+| max_key | the maximum key |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range_with_version --min_key key1 --max_key key3
+
+Results:
+
+>min key = key1 max key = key2 <br>
+> getrange value = <br>
+> item { <br>
+> &ensp; key: "key1" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp;   value: "v0" <br>
+> &ensp;&ensp;   version: 1 <br>
+> &ensp; } <br>
+> } <br>
+> item { <br>
+> &ensp; key: "key2" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp;   value: "v1" <br>
+> &ensp;&ensp;   version: 1 <br>
+> &ensp; } <br>
+>}
+
+
+### Non-Version-Based Function ###
+#### Set #####
+Set `value` to the key `key`.
+
+      kv_service_tools --config config_file --cmd set --key key --value value
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | set |
+| key  | the key you want to set |
+| value | the new value |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set --key key1 --value value1
+
+Results:
+> set key = key1, value = v1, done, ret = 0
+
+#### Get ####
+Obtain the value of `key`.
+
+      kv_service_tools --config config_file --cmd get --key key
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get |
+| key  | the key you want to obtain |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get --key key1
+
+Results:
+> get key = key1, value = "v2"
+
+
+#### Get Key Range ####
+Obtain the values of the keys in the ranges [`key1`, `key2`]. Do not use this function in your practice code
+
+      kv_service_tools --config config_path --cmd get_key_range --min_key key1 --max_key key2
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_key_range |
+| min_key  | the minimum key  |
+| max_key | the maximum key |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range --min_key key1 --max_key key3
+
+Results:
+> getrange min key = key1, max key = key3 <br>
+> value = [v3,v2,v1]
+
 
 ## Deployment Script
 
@@ -212,14 +333,4 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    docker exec -it myserver bash
    ```
 
-   Verify the functionality of the service by performing set and get operations:
-
-   - Set a test value:
-   ```shell
-   bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
-   ```
-
-   - Retrieve the test value:
-   ```
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test
-   ```
+   Verify the functionality of the service by performing set and get operations provided above.
