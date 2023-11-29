@@ -37,7 +37,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   KVRequest kv_request;
   KVResponse kv_response;
 
-  LOG(ERROR) << "get data:";
   if (!kv_request.ParseFromString(request)) {
     LOG(ERROR) << "parse data fail";
     return nullptr;
@@ -50,7 +49,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
-    LOG(ERROR) << "get range:" << kv_request.key() << " " << kv_request.value();
     kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   } else if (kv_request.cmd() == KVRequest::SET_WITH_VERSION) {
     SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
@@ -60,8 +58,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   } else if (kv_request.cmd() == KVRequest::GET_ALL_ITEMS) {
     GetAllItems(kv_response.mutable_items());
   } else if (kv_request.cmd() == KVRequest::GET_KEY_RANGE) {
-    LOG(ERROR) << "get key range:" << kv_request.min_key() << " "
-               << kv_request.max_key();
     GetKeyRange(kv_request.min_key(), kv_request.max_key(),
                 kv_response.mutable_items());
   } else if (kv_request.cmd() == KVRequest::GET_HISTORY) {
@@ -124,7 +120,6 @@ void KVExecutor::GetKeyRange(const std::string& min_key,
                              const std::string& max_key, Items* items) {
   const std::map<std::string, std::pair<std::string, int>>& ret =
       storage_->GetKeyRange(min_key, max_key);
-  LOG(ERROR) << "get key:" << ret.size();
   for (auto it : ret) {
     Item* item = items->add_item();
     item->set_key(it.first);
