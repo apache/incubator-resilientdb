@@ -333,4 +333,4 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    docker exec -it myserver bash
    ```
 
-   Verify the functionality of the service by performing set and get operations provided above.
+   Verify the functionality of the service by performing set and get operations provided above [functions](README.md#functions).
