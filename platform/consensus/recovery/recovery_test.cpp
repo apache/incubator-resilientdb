@@ -112,7 +112,7 @@ TEST_F(RecoveryTest, ReadLog) {
 
     EXPECT_EQ(list.size(), expected_types.size());
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
   }
@@ -153,7 +153,7 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
 
     EXPECT_EQ(list.size(), expected_types.size());
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
   }
@@ -219,7 +219,7 @@ TEST_F(RecoveryTest, CheckPoint) {
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
   }
@@ -296,7 +296,7 @@ TEST_F(RecoveryTest, CheckPoint2) {
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
 
@@ -333,7 +333,7 @@ TEST_F(RecoveryTest, CheckPoint2) {
 
     EXPECT_EQ(list.size(), types.size() * 9);
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
     EXPECT_EQ(recovery.GetMinSeq(), 30);
@@ -415,7 +415,7 @@ TEST_F(RecoveryTest, SystemInfo) {
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
 
@@ -455,7 +455,7 @@ TEST_F(RecoveryTest, SystemInfo) {
     EXPECT_EQ(data.primary_id(), 2);
     EXPECT_EQ(list.size(), types.size() * 9);
 
-    for (int i = 0; i < expected_types.size(); ++i) {
+    for (size_t i = 0; i < expected_types.size(); ++i) {
       EXPECT_EQ(list[i].type(), expected_types[i]);
     }
     EXPECT_EQ(recovery.GetMinSeq(), 30);

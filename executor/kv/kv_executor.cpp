@@ -27,7 +27,6 @@
 
 #include <glog/logging.h>
 
-
 namespace resdb {
 
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
@@ -38,6 +37,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   KVRequest kv_request;
   KVResponse kv_response;
 
+  LOG(ERROR) << "get data:";
   if (!kv_request.ParseFromString(request)) {
     LOG(ERROR) << "parse data fail";
     return nullptr;
@@ -50,25 +50,34 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    LOG(ERROR) << "get range:" << kv_request.key() << " " << kv_request.value();
     kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
   } else if (kv_request.cmd() == KVRequest::SET_WITH_VERSION) {
     SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
   } else if (kv_request.cmd() == KVRequest::GET_WITH_VERSION) {
-    GetWithVersion(kv_request.key(), kv_request.version(), kv_response.mutable_value_info());
+    GetWithVersion(kv_request.key(), kv_request.version(),
+                   kv_response.mutable_value_info());
   } else if (kv_request.cmd() == KVRequest::GET_ALL_ITEMS) {
     GetAllItems(kv_response.mutable_items());
   } else if (kv_request.cmd() == KVRequest::GET_KEY_RANGE) {
-    GetKeyRange(kv_request.min_key(), kv_request.max_key(), kv_response.mutable_items());
+    LOG(ERROR) << "get key range:" << kv_request.min_key() << " "
+               << kv_request.max_key();
+    GetKeyRange(kv_request.min_key(), kv_request.max_key(),
+                kv_response.mutable_items());
   } else if (kv_request.cmd() == KVRequest::GET_HISTORY) {
-    GetHistory(kv_request.key(), kv_request.min_version(), kv_request.max_version(), kv_response.mutable_items());
+    GetHistory(kv_request.key(), kv_request.min_version(),
+               kv_request.max_version(), kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_TOP) {
+    GetTopHistory(kv_request.key(), kv_request.top_number(),
+                  kv_response.mutable_items());
   }
-
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
   if (!kv_response.SerializeToString(resp_str.get())) {
     return nullptr;
   }
 
+  LOG(ERROR) << "get datai done:";
   return resp_str;
 }
 
@@ -88,48 +97,64 @@ std::string KVExecutor::GetRange(const std::string& min_key,
   return storage_->GetRange(min_key, max_key);
 }
 
-void KVExecutor::SetWithVersion(const std::string& key, const std::string& value, int version) {
+void KVExecutor::SetWithVersion(const std::string& key,
+                                const std::string& value, int version) {
   storage_->SetValueWithVersion(key, value, version);
 }
 
-void KVExecutor::GetWithVersion(const std::string& key, int version, ValueInfo* info) {
+void KVExecutor::GetWithVersion(const std::string& key, int version,
+                                ValueInfo* info) {
   std::pair<std::string, int> ret = storage_->GetValueWithVersion(key, version);
   info->set_value(ret.first);
   info->set_version(ret.second);
 }
 
-void KVExecutor::GetAllItems(Items * items) {
-  const std::map<std::string,std::pair<std::string,int>>& ret = storage_->GetAllItems();
-  for( auto it : ret) {
-    Item * item = items->add_item();
+void KVExecutor::GetAllItems(Items* items) {
+  const std::map<std::string, std::pair<std::string, int>>& ret =
+      storage_->GetAllItems();
+  for (auto it : ret) {
+    Item* item = items->add_item();
     item->set_key(it.first);
     item->mutable_value_info()->set_value(it.second.first);
     item->mutable_value_info()->set_version(it.second.second);
   }
 }
 
-void KVExecutor::GetKeyRange(const std::string& min_key, 
-    const std::string& max_key, Items * items) {
-  const std::map<std::string,std::pair<std::string,int>>& ret = storage_->GetKeyRange(min_key, max_key);
-  for( auto it : ret) {
-    Item * item = items->add_item();
+void KVExecutor::GetKeyRange(const std::string& min_key,
+                             const std::string& max_key, Items* items) {
+  const std::map<std::string, std::pair<std::string, int>>& ret =
+      storage_->GetKeyRange(min_key, max_key);
+  LOG(ERROR) << "get key:" << ret.size();
+  for (auto it : ret) {
+    Item* item = items->add_item();
     item->set_key(it.first);
     item->mutable_value_info()->set_value(it.second.first);
     item->mutable_value_info()->set_version(it.second.second);
   }
 }
 
-void KVExecutor::GetHistory(const std::string& key, int min_version, 
-    int max_version, Items * items) {
-  const std::vector<std::pair<std::string,int>>& ret = storage_->GetHistory(
-    key, min_version, max_version);
-  for( auto it : ret) {
-    Item * item = items->add_item();
+void KVExecutor::GetHistory(const std::string& key, int min_version,
+                            int max_version, Items* items) {
+  const std::vector<std::pair<std::string, int>>& ret =
+      storage_->GetHistory(key, min_version, max_version);
+  for (auto it : ret) {
+    Item* item = items->add_item();
     item->set_key(key);
     item->mutable_value_info()->set_value(it.first);
     item->mutable_value_info()->set_version(it.second);
   }
 }
 
+void KVExecutor::GetTopHistory(const std::string& key, int top_number,
+                               Items* items) {
+  const std::vector<std::pair<std::string, int>>& ret =
+      storage_->GetTopHistory(key, top_number);
+  for (auto it : ret) {
+    Item* item = items->add_item();
+    item->set_key(key);
+    item->mutable_value_info()->set_value(it.first);
+    item->mutable_value_info()->set_version(it.second);
+  }
+}
 
 }  // namespace resdb

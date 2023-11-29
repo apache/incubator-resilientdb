@@ -1,20 +1,20 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "key_value_storage",
-    srcs = ["key_value_storage.cpp"],
-    hdrs = ["key_value_storage.h"],
+    name = "chain_state",
+    srcs = ["chain_state.cpp"],
+    hdrs = ["chain_state.h"],
     deps = [
-        "//chain/storage:storage",
         "//common:comm",
+        "//platform/proto:resdb_cc_proto",
     ],
 )
 
 cc_test(
-    name = "key_value_storage_test",
-    srcs = ["key_value_storage_test.cpp"],
+    name = "chain_state_test",
+    srcs = ["chain_state_test.cpp"],
     deps = [
-        ":key_value_storage",
+        ":chain_state",
         "//common/test:test_main",
     ],
 )

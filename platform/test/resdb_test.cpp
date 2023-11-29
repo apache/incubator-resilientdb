@@ -109,7 +109,7 @@ class ResDBTest : public Test {
 
   void WaitExecutorDone(int received_num) {
     for (auto executor : executors_) {
-      while (executor->GetSeqs().size() < received_num) {
+      while (static_cast<int>(executor->GetSeqs().size()) < received_num) {
         usleep(10000);
       }
     }

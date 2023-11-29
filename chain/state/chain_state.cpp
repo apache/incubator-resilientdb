@@ -23,49 +23,28 @@
  *
  */
 
-#include "database/txn_memory_db.h"
+#include "chain/state/chain_state.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
-#include "common/test/test_macros.h"
+#include <glog/logging.h>
 
 namespace resdb {
-namespace {
 
-using ::resdb::testing::EqualsProto;
-using ::testing::Pointee;
+ChainState::ChainState() : max_seq_(0) {}
 
-TEST(TxnMemoryDBTest, GetEmptyValue) {
-  TxnMemoryDB db;
-  EXPECT_EQ(db.Get(1), nullptr);
+Request* ChainState::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
 }
 
-TEST(TxnMemoryDBTest, GetValue) {
-  Request request;
-  request.set_seq(1);
-  request.set_data("test");
-
-  TxnMemoryDB db;
-  db.Put(std::make_unique<Request>(request));
-  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
+void ChainState::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
 }
 
-TEST(TxnMemoryDBTest, GetSecondValue) {
-  Request request;
-  request.set_seq(1);
-  request.set_data("test");
-
-  TxnMemoryDB db;
-  db.Put(std::make_unique<Request>(request));
-
-  request.set_seq(1);
-  request.set_data("test_1");
-  db.Put(std::make_unique<Request>(request));
-
-  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
-}
-
-}  // namespace
+uint64_t ChainState::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb

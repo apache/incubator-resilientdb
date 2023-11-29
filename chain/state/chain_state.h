@@ -23,28 +23,26 @@
  *
  */
 
-#include "chain/storage/txn_memory_db.h"
+#pragma once
 
-#include <glog/logging.h>
+#include <map>
+#include <unordered_map>
+
+#include "platform/proto/resdb.pb.h"
 
 namespace resdb {
 
-TxnMemoryDB::TxnMemoryDB() : max_seq_(0) {}
+class ChainState {
+ public:
+  ChainState();
+  Request* Get(uint64_t seq);
+  void Put(std::unique_ptr<Request> request);
+  uint64_t GetMaxSeq();
 
-Request* TxnMemoryDB::Get(uint64_t seq) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  if (data_.find(seq) == data_.end()) {
-    return nullptr;
-  }
-  return data_[seq].get();
-}
-
-void TxnMemoryDB::Put(std::unique_ptr<Request> request) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  max_seq_ = request->seq();
-  data_[max_seq_] = std::move(request);
-}
-
-uint64_t TxnMemoryDB::GetMaxSeq() { return max_seq_; }
+ private:
+  std::mutex mutex_;
+  std::unordered_map<uint64_t, std::unique_ptr<Request> > data_;
+  std::atomic<uint64_t> max_seq_;
+};
 
 }  // namespace resdb

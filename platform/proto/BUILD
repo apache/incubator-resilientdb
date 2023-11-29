@@ -19,7 +19,8 @@ proto_library(
     name = "replica_info_proto",
     srcs = ["replica_info.proto"],
     deps = [
-        ":durable_proto",
+        "//chain/storage/proto:leveldb_config_proto",
+        "//chain/storage/proto:rocksdb_config_proto",
         "//common/proto:signature_info_proto",
     ],
 )
@@ -34,23 +35,12 @@ cc_proto_library(
 python_proto_library(
     name = "replica_info_py_proto",
     protos = [
-        ":durable_proto",
         ":replica_info_proto",
+        "//chain/storage/proto:leveldb_config_proto",
+        "//chain/storage/proto:rocksdb_config_proto",
     ],
     deps = [
         "//common/proto:signature_info_py_proto",
-    ],
-)
-
-proto_library(
-    name = "durable_proto",
-    srcs = ["durable.proto"],
-)
-
-cc_proto_library(
-    name = "durable_cc_proto",
-    deps = [
-        ":durable_proto",
     ],
 )
 

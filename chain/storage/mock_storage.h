@@ -38,6 +38,25 @@ class MockStorage : public Storage {
   MOCK_METHOD(std::string, GetAllValues, (), (override));
   MOCK_METHOD(std::string, GetRange, (const std::string&, const std::string&),
               (override));
+
+  MOCK_METHOD(int, SetValueWithVersion,
+              (const std::string& key, const std::string& value, int version),
+              (override));
+
+  using ValueType = std::pair<std::string, int>;
+  using ItemsType = std::map<std::string, ValueType>;
+  using ValuesType = std::vector<ValueType>;
+
+  MOCK_METHOD(ValueType, GetValueWithVersion,
+              (const std::string& key, int version), (override));
+  MOCK_METHOD(ItemsType, GetAllItems, (), (override));
+  MOCK_METHOD(ItemsType, GetKeyRange, (const std::string&, const std::string&),
+              (override));
+  MOCK_METHOD(ValuesType, GetHistory, (const std::string&, int, int),
+              (override));
+  MOCK_METHOD(ValuesType, GetTopHistory, (const std::string&, int),
+              (override));
+
   MOCK_METHOD(bool, Flush, (), (override));
 };
 

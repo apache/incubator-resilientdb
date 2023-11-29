@@ -48,11 +48,15 @@ class KVExecutor : public TransactionManager {
   std::string GetAllValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
-  void SetWithVersion(const std::string& key, const std::string& value, int version);
+  void SetWithVersion(const std::string& key, const std::string& value,
+                      int version);
   void GetWithVersion(const std::string& key, int version, ValueInfo* info);
-  void GetAllItems(Items * items);
-  void GetKeyRange(const std::string& min_key, const std::string& max_key, Items * items);
-  void GetHistory(const std::string& key, int min_key, int max_key, Items * items);
+  void GetAllItems(Items* items);
+  void GetKeyRange(const std::string& min_key, const std::string& max_key,
+                   Items* items);
+  void GetHistory(const std::string& key, int min_key, int max_key,
+                  Items* items);
+  void GetTopHistory(const std::string& key, int top_number, Items* items);
 
  private:
   std::unique_ptr<Storage> storage_;

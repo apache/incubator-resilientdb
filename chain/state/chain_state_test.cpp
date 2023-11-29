@@ -23,26 +23,49 @@
  *
  */
 
-#pragma once
+#include "chain/state/chain_state.h"
 
-#include <map>
-#include <unordered_map>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-#include "platform/proto/resdb.pb.h"
+#include "common/test/test_macros.h"
 
 namespace resdb {
+namespace {
 
-class TxnMemoryDB {
- public:
-  TxnMemoryDB();
-  Request* Get(uint64_t seq);
-  void Put(std::unique_ptr<Request> request);
-  uint64_t GetMaxSeq();
+using ::resdb::testing::EqualsProto;
+using ::testing::Pointee;
 
- private:
-  std::mutex mutex_;
-  std::unordered_map<uint64_t, std::unique_ptr<Request> > data_;
-  std::atomic<uint64_t> max_seq_;
-};
+TEST(ChainStateTest, GetEmptyValue) {
+  ChainState db;
+  EXPECT_EQ(db.Get(1), nullptr);
+}
+
+TEST(ChainStateTest, GetValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
+}
+
+TEST(ChainStateTest, GetSecondValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+
+  request.set_seq(1);
+  request.set_data("test_1");
+  db.Put(std::make_unique<Request>(request));
+
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
+}
+
+}  // namespace
 
 }  // namespace resdb

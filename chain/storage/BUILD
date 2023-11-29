@@ -16,55 +16,49 @@ cc_library(
 )
 
 cc_library(
-    name = "res_leveldb",
-    srcs = ["res_leveldb.cpp"],
-    hdrs = ["res_leveldb.h"],
+    name = "memory_db",
+    srcs = ["memory_db.cpp"],
+    hdrs = ["memory_db.h"],
     deps = [
         ":storage",
         "//common:comm",
-        "//platform/proto:replica_info_cc_proto",
-        "//third_party:leveldb",
-    ],
-)
-
-cc_test(
-    name = "res_leveldb_test",
-    srcs = ["res_leveldb_test.cpp"],
-    deps = [
-        ":res_leveldb",
-        "//common/test:test_main",
     ],
 )
 
 cc_library(
-    name = "res_rocksdb",
-    srcs = ["res_rocksdb.cpp"],
-    hdrs = ["res_rocksdb.h"],
+    name = "leveldb",
+    srcs = ["leveldb.cpp"],
+    hdrs = ["leveldb.h"],
+    deps = [
+        ":storage",
+        "//chain/storage/proto:kv_cc_proto",
+        "//chain/storage/proto:leveldb_config_cc_proto",
+        "//common:comm",
+        "//third_party:leveldb",
+    ],
+)
+
+cc_library(
+    name = "rocksdb",
+    srcs = ["rocksdb.cpp"],
+    hdrs = ["rocksdb.h"],
     tags = ["manual"],
     deps = [
         ":storage",
+        "//chain/storage/proto:kv_cc_proto",
+        "//chain/storage/proto:rocksdb_config_cc_proto",
         "//common:comm",
-        "//platform/proto:replica_info_cc_proto",
         "//third_party:rocksdb",
     ],
 )
 
 cc_test(
-    name = "res_rocksdb_test",
-    srcs = ["res_rocksdb_test.cpp"],
-    tags = ["manual"],
+    name = "kv_storage_test",
+    srcs = ["kv_storage_test.cpp"],
     deps = [
-        ":res_rocksdb",
+        ":leveldb",
+        ":memory_db",
+        ":rocksdb",
         "//common/test:test_main",
-    ],
-)
-
-cc_library(
-    name = "txn_memory_db",
-    srcs = ["txn_memory_db.cpp"],
-    hdrs = ["txn_memory_db.h"],
-    deps = [
-        "//common:comm",
-        "//platform/proto:resdb_cc_proto",
     ],
 )
