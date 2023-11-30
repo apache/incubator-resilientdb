@@ -97,18 +97,18 @@ $(document).ready(function(){initNavTree('d1/d5d/md__2github_2workspace_2node__m
   <div class="headertitle"><div class="title">minimatch</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md149"></a> A minimal matching utility.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md150"></a> A minimal matching utility.</p>
 <p><a href="http://travis-ci.org/isaacs/minimatch"><img src="https://secure.travis-ci.org/isaacs/minimatch.svg" alt="Build Status" style="pointer-events: none;" class="inline"/></a></p>
 <p>This is the matching library used internally by npm.</p>
 <p>It works by converting glob expressions into JavaScript <code>RegExp</code> objects.</p>
-<h1><a class="anchor" id="autotoc_md150"></a>
+<h1><a class="anchor" id="autotoc_md151"></a>
 Usage</h1>
 <div class="fragment"><div class="line">var minimatch = require(&quot;minimatch&quot;)</div>
 <div class="line"> </div>
 <div class="line">minimatch(&quot;bar.foo&quot;, &quot;*.foo&quot;) // true!</div>
 <div class="line">minimatch(&quot;bar.foo&quot;, &quot;*.bar&quot;) // false!</div>
 <div class="line">minimatch(&quot;bar.foo&quot;, &quot;*.+(bar|foo)&quot;, { debug: true }) // true, and noisy!</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md151"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md152"></a>
 Features</h1>
 <p>Supports these glob features:</p>
 <ul>
@@ -123,12 +123,12 @@ Features</h1>
 <li><code>man 3 fnmatch</code></li>
 <li><code>man 5 gitignore</code></li>
 </ul>
-<h1><a class="anchor" id="autotoc_md152"></a>
+<h1><a class="anchor" id="autotoc_md153"></a>
 Minimatch Class</h1>
 <p>Create a minimatch object by instantiating the <code>minimatch.Minimatch</code> class.</p>
 <div class="fragment"><div class="line">var Minimatch = require(&quot;minimatch&quot;).Minimatch</div>
 <div class="line">var mm = new Minimatch(pattern, options)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md153"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md154"></a>
 Properties</h2>
 <ul>
 <li><code>pattern</code> The original pattern the minimatch object represents.</li>
@@ -141,7 +141,7 @@ Properties</h2>
 <li><code>comment</code> True if the pattern is a comment.</li>
 <li><code>empty</code> True if the pattern is <code>""</code>.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md154"></a>
+<h2><a class="anchor" id="autotoc_md155"></a>
 Methods</h2>
 <ul>
 <li><code>makeRe</code> Generate the <code>regexp</code> member if necessary, and return it. Will return <code>false</code> if the pattern is invalid.</li>
@@ -149,59 +149,59 @@ Methods</h2>
 <li><code>matchOne(fileArray, patternArray, partial)</code> Take a <code>/</code>-split filename, and match it against a single row in the <code>regExpSet</code>. This method is mainly for internal use, but is exposed so that it can be used by a glob-walker that needs to avoid excessive filesystem calls.</li>
 </ul>
 <p>All other methods are internal, and will be called as necessary.</p>
-<h2><a class="anchor" id="autotoc_md155"></a>
+<h2><a class="anchor" id="autotoc_md156"></a>
 minimatch(path, pattern, options)</h2>
 <p>Main export. Tests a path against the pattern using the options.</p>
 <div class="fragment"><div class="line">var isJS = minimatch(file, &quot;*.js&quot;, { matchBase: true })</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md156"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md157"></a>
 minimatch.filter(pattern, options)</h2>
 <p>Returns a function that tests its supplied argument, suitable for use with <code>Array.filter</code>. Example:</p>
 <div class="fragment"><div class="line">var javascripts = fileList.filter(minimatch.filter(&quot;*.js&quot;, {matchBase: true}))</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md157"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md158"></a>
 minimatch.match(list, pattern, options)</h2>
 <p>Match against the list of files, in the style of fnmatch or glob. If nothing is matched, and options.nonull is set, then return a list containing the pattern itself.</p>
 <div class="fragment"><div class="line">var javascripts = minimatch.match(fileList, &quot;*.js&quot;, {matchBase: true}))</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md158"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md159"></a>
 minimatch.makeRe(pattern, options)</h2>
 <p>Make a regular expression object from the pattern.</p>
-<h1><a class="anchor" id="autotoc_md159"></a>
+<h1><a class="anchor" id="autotoc_md160"></a>
 Options</h1>
 <p>All options are <code>false</code> by default.</p>
-<h2><a class="anchor" id="autotoc_md160"></a>
+<h2><a class="anchor" id="autotoc_md161"></a>
 debug</h2>
 <p>Dump a ton of stuff to stderr.</p>
-<h2><a class="anchor" id="autotoc_md161"></a>
+<h2><a class="anchor" id="autotoc_md162"></a>
 nobrace</h2>
 <p>Do not expand <code>{a,b}</code> and <code>{1..3}</code> brace sets.</p>
-<h2><a class="anchor" id="autotoc_md162"></a>
+<h2><a class="anchor" id="autotoc_md163"></a>
 noglobstar</h2>
 <p>Disable <code>**</code> matching against multiple folder names.</p>
-<h2><a class="anchor" id="autotoc_md163"></a>
+<h2><a class="anchor" id="autotoc_md164"></a>
 dot</h2>
 <p>Allow patterns to match filenames starting with a period, even if the pattern does not explicitly have a period in that spot.</p>
 <p>Note that by default, <code>a/**/b</code> will <b>not</b> match <code>a/.d/b</code>, unless <code>dot</code> is set.</p>
-<h2><a class="anchor" id="autotoc_md164"></a>
+<h2><a class="anchor" id="autotoc_md165"></a>
 noext</h2>
 <p>Disable "extglob" style patterns like <code>+(a|b)</code>.</p>
-<h2><a class="anchor" id="autotoc_md165"></a>
+<h2><a class="anchor" id="autotoc_md166"></a>
 nocase</h2>
 <p>Perform a case-insensitive match.</p>
-<h2><a class="anchor" id="autotoc_md166"></a>
+<h2><a class="anchor" id="autotoc_md167"></a>
 nonull</h2>
 <p>When a match is not found by <code>minimatch.match</code>, return a list containing the pattern itself if this option is set. When not set, an empty list is returned if there are no matches.</p>
-<h2><a class="anchor" id="autotoc_md167"></a>
+<h2><a class="anchor" id="autotoc_md168"></a>
 matchBase</h2>
 <p>If set, then patterns without slashes will be matched against the basename of the path if it contains slashes. For example, <code>a?b</code> would match the path <code>/xyz/123/acb</code>, but not <code>/xyz/acb/123</code>.</p>
-<h2><a class="anchor" id="autotoc_md168"></a>
+<h2><a class="anchor" id="autotoc_md169"></a>
 nocomment</h2>
 <p>Suppress the behavior of treating <code>#</code> at the start of a pattern as a comment.</p>
-<h2><a class="anchor" id="autotoc_md169"></a>
+<h2><a class="anchor" id="autotoc_md170"></a>
 nonegate</h2>
 <p>Suppress the behavior of treating a leading <code>!</code> character as negation.</p>
-<h2><a class="anchor" id="autotoc_md170"></a>
+<h2><a class="anchor" id="autotoc_md171"></a>
 flipNegate</h2>
 <p>Returns from negate expressions the same as if they were not negated. (Ie, true on a hit, false on a miss.)</p>
-<h1><a class="anchor" id="autotoc_md171"></a>
+<h1><a class="anchor" id="autotoc_md172"></a>
 Comparisons to other fnmatch/glob implementations</h1>
 <p>While strict compliance with the existing standards is a worthwhile goal, some discrepancies exist between minimatch and other implementations, and are intentional.</p>
 <p>If the pattern starts with a <code>!</code> character, then it is negated. Set the <code>nonegate</code> flag to suppress this behavior, and treat leading <code>!</code> characters normally. This is perhaps relevant if you wish to start the pattern with a negative extglob pattern like <code>!(a|B)</code>. Multiple <code>!</code> characters at the start of a pattern will negate the pattern multiple times.</p>

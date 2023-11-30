@@ -103,12 +103,12 @@ $(document).ready(function(){initNavTree('d4/dec/md__2github_2workspace_2node__m
 <tr>
 <td colspan="2" align="center"><a href="https://travis-ci.org/kaelzhang/node-ignore"><img src="https://travis-ci.org/kaelzhang/node-ignore.svg?branch=master" alt="Build Status" style="pointer-events: none;" class="inline"/></a>  </td><td align="center"><a href="https://ci.appveyor.com/project/kaelzhang/node-ignore"><img src="https://ci.appveyor.com/api/projects/status/github/kaelzhang/node-ignore?branch=master&amp;svg=true" alt="Windows Build Status" class="inline"/></a>  </td><td align="center"><a href="https://codecov.io/gh/kaelzhang/node-ignore"><img src="https://codecov.io/gh/kaelzhang/node-ignore/branch/master/graph/badge.svg" alt="Coverage Status" style="pointer-events: none;" class="inline"/></a>  </td><td align="center"><a href="https://www.npmjs.org/package/ignore"><img src="http://img.shields.io/npm/dm/ignore.svg" alt="npm module downloads per month" style="pointer-events: none;" class="inline"/></a>  </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md117"></a>
+<h1><a class="anchor" id="autotoc_md118"></a>
 ignore</h1>
 <p><code>ignore</code> is a manager, filter and parser which implemented in pure JavaScript according to the .gitignore <a href="http://git-scm.com/docs/gitignore">spec</a>.</p>
 <p><code>ignore</code> is used by eslint, gitbook and <a href="https://www.npmjs.com/browse/depended/ignore">many others</a>.</p>
 <p>Pay attention that <a href="https://www.npmjs.org/package/minimatch"><code>minimatch</code></a> does not work in the gitignore way. To filter filenames according to .gitignore file, I recommend this module.</p>
-<h3><a class="anchor" id="autotoc_md118"></a>
+<h3><a class="anchor" id="autotoc_md119"></a>
 Tested on</h3>
 <p><code>ignore</code> is fully tested, and has more than <b>five hundreds</b> of unit tests.</p>
 <ul>
@@ -117,7 +117,7 @@ Tested on</h3>
 </ul>
 <p>Actually, <code>ignore</code> does not rely on any versions of node specially.</p>
 <p>Since <code>4.0.0</code>, ignore will no longer support <code>node &lt; 6</code> by default, to use in node &lt; 6, &lsquo;require('ignore/legacy&rsquo;)`. For details, see <a href="https://github.com/kaelzhang/node-ignore/blob/master/CHANGELOG.md">CHANGELOG</a>.</p>
-<h2><a class="anchor" id="autotoc_md119"></a>
+<h2><a class="anchor" id="autotoc_md120"></a>
 Table Of Main Contents</h2>
 <ul>
 <li>Usage</li>
@@ -128,14 +128,14 @@ Table Of Main Contents</h2>
 </li>
 <li>Upgrade Guide</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md120"></a>
+<h2><a class="anchor" id="autotoc_md121"></a>
 Install</h2>
 <div class="fragment"><div class="line">npm i ignore</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md121"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md122"></a>
 Usage</h2>
 <div class="fragment"><div class="line">import ignore from &#39;ignore&#39;</div>
 <div class="line">const ig = ignore().add([&#39;.abc/*&#39;, &#39;!.abc/d/&#39;])</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md122"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md123"></a>
 Filter the given paths</h3>
 <div class="fragment"><div class="line">const paths = [</div>
 <div class="line">  &#39;.abc/a.js&#39;,    // filtered out</div>
@@ -144,15 +144,15 @@ Filter the given paths</h3>
 <div class="line"> </div>
 <div class="line">ig.filter(paths)        // [&#39;.abc/d/e.js&#39;]</div>
 <div class="line">ig.ignores(&#39;.abc/a.js&#39;) // true</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md123"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md124"></a>
 As the filter function</h3>
 <div class="fragment"><div class="line">paths.filter(ig.createFilter()); // [&#39;.abc/d/e.js&#39;]</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md124"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md125"></a>
 Win32 paths will be handled</h3>
 <div class="fragment"><div class="line">ig.filter([&#39;.abc\\a.js&#39;, &#39;.abc\\d\\e.js&#39;])</div>
 <div class="line">// if the code above runs on windows, the result will be</div>
 <div class="line">// [&#39;.abc\\d\\e.js&#39;]</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md125"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md126"></a>
 Why another ignore?</h2>
 <ul>
 <li><code>ignore</code> is a standalone module, and is much simpler so that it could easy work with other programs, unlike <a href="https://npmjs.org/~isaacs">isaacs</a>'s <a href="https://npmjs.org/package/fstream-ignore">fstream-ignore</a> which must work with the modules of the fstream family.</li>
@@ -173,11 +173,11 @@ Why another ignore?</h2>
 </ul>
 </li>
 </ul>
-<h1><a class="anchor" id="autotoc_md126"></a>
+<h1><a class="anchor" id="autotoc_md127"></a>
 Methods</h1>
-<h2><a class="anchor" id="autotoc_md127"></a>
-.add(pattern: string | Ignore): this</h2>
 <h2><a class="anchor" id="autotoc_md128"></a>
+.add(pattern: string | Ignore): this</h2>
+<h2><a class="anchor" id="autotoc_md129"></a>
 .add(patterns: Array&lt;string | Ignore&gt;): this</h2>
 <ul>
 <li><b>pattern</b> <code>String | Ignore</code> An ignore pattern string, or the <code>Ignore</code> instance</li>
@@ -193,7 +193,7 @@ Methods</h1>
 <div class="line">.add(fs.readFileSync(filenameOfGitignore).toString())</div>
 <div class="line">.filter(filenames)</div>
 </div><!-- fragment --><p><code>pattern</code> could also be an <code>ignore</code> instance, so that we could easily inherit the rules of another <code>Ignore</code> instance.</p>
-<h2><a class="anchor" id="autotoc_md129"></a>
+<h2><a class="anchor" id="autotoc_md130"></a>
 &lt;strike&gt;.addIgnoreFile(path)&lt;/strike&gt;</h2>
 <p>REMOVED in <code>3.x</code> for now.</p>
 <p>To upgrade <code>ignore@2.x</code> up to <code>3.x</code>, use</p>
@@ -203,16 +203,16 @@ Methods</h1>
 <div class="line">  ignore().add(fs.readFileSync(filename).toString())</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>instead.</p>
-<h2><a class="anchor" id="autotoc_md130"></a>
+<h2><a class="anchor" id="autotoc_md131"></a>
 .filter(paths: Array&lt;Pathname&gt;): Array&lt;Pathname&gt;</h2>
 <div class="fragment"><div class="line">type Pathname = string</div>
 </div><!-- fragment --><p>Filters the given array of pathnames, and returns the filtered array.</p>
 <ul>
 <li><b>paths</b> <code>Array.&lt;Pathname&gt;</code> The array of <code>pathname</code>s to be filtered.</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md131"></a>
+<h3><a class="anchor" id="autotoc_md132"></a>
 &lt;tt&gt;Pathname&lt;/tt&gt; Conventions:</h3>
-<h4><a class="anchor" id="autotoc_md132"></a>
+<h4><a class="anchor" id="autotoc_md133"></a>
 1. &lt;tt&gt;Pathname&lt;/tt&gt; should be a &lt;tt&gt;path.relative()&lt;/tt&gt;d pathname</h4>
 <p><code>Pathname</code> should be a string that have been <code>path.join()</code>ed, or the return value of <code>path.relative()</code> to the current directory,</p>
 <div class="fragment"><div class="line">// WRONG, an error will be thrown</div>
@@ -286,7 +286,7 @@ Methods</h1>
 <div class="line"> </div>
 <div class="line">Since `4.0.0`, `ignore` will no longer support node &lt; 6, to use `ignore` in node &lt; 6:</div>
 </div><!-- fragment --><p> js var ignore = require('ignore/legacy') ```</p>
-<h2><a class="anchor" id="autotoc_md133"></a>
+<h2><a class="anchor" id="autotoc_md134"></a>
 Upgrade 2.x -&gt; 3.x</h2>
 <ul>
 <li>All <code>options</code> of 2.x are unnecessary and removed, so just remove them.</li>
@@ -294,7 +294,7 @@ Upgrade 2.x -&gt; 3.x</h2>
 <li><code>.addIgnoreFile()</code> is removed, see the .addIgnoreFile section for details.</li>
 </ul>
 <hr  />
-<h1><a class="anchor" id="autotoc_md134"></a>
+<h1><a class="anchor" id="autotoc_md135"></a>
 Collaborators</h1>
 <ul>
 <li><a href="https://github.com/whitecolor">@whitecolor</a> <em>Alex</em></li>

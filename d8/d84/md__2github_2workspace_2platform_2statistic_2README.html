@@ -97,44 +97,44 @@ $(document).ready(function(){initNavTree('d8/d84/md__2github_2workspace_2platfor
   <div class="headertitle"><div class="title">Introduction</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md198"></a>Nexres dynamic dashboard is a Grafana base dashboard for Nexres. It aims to provide a simple real-time interface for developers to monitor and diagnose Nexres. The data is stored in the Prometheus time-series database and queried by Grafana using PromeQL. The system usage data is provided by Prometheus third-party exporter Node Exporter.</p>
-<h1><a class="anchor" id="autotoc_md199"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md199"></a>Nexres dynamic dashboard is a Grafana base dashboard for Nexres. It aims to provide a simple real-time interface for developers to monitor and diagnose Nexres. The data is stored in the Prometheus time-series database and queried by Grafana using PromeQL. The system usage data is provided by Prometheus third-party exporter Node Exporter.</p>
+<h1><a class="anchor" id="autotoc_md200"></a>
 Requirements</h1>
 <p>Using Nexres dynamic dashboard requires the installation of Prometheus, Node Exporter, Prometheus-cpp, and Grafana. It has been successfully tested with Bazel building in C++17 on Ubuntu 20.04.4 LTS (Windows 11 WSL) and Visual Studio Code.</p>
-<h1><a class="anchor" id="autotoc_md200"></a>
+<h1><a class="anchor" id="autotoc_md201"></a>
 Installation</h1>
-<h2><a class="anchor" id="autotoc_md201"></a>
+<h2><a class="anchor" id="autotoc_md202"></a>
 Install Prometheus</h2>
 <p>go to <a href="https://prometheus.io/download/">https://prometheus.io/download/</a> download prometheus </p><div class="fragment"><div class="line">tar xvfz (your-prometheus-tar-file)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md202"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md203"></a>
 Install node_exporter</h2>
 <p>go to <a href="https://github.com/prometheus/node_exporter">https://github.com/prometheus/node_exporter</a> download the lastest version of node_exporter from release </p><div class="fragment"><div class="line">tar xvfz (your-node-exporter-tar-file)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md203"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md204"></a>
 Install grafana</h2>
 <div class="fragment"><div class="line">wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -</div>
 <div class="line">sudo add-apt-repository &quot;deb https://packages.grafana.com/oss/deb stable main&quot;</div>
 <div class="line">sudo apt update </div>
 <div class="line">sudo apt install grafana</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md204"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md205"></a>
 Change endpoint's server address</h2>
 <p>Edit <a href="../..//example/start_kv_server.sh">example/start_kv_server.sh</a>, sets the new endpoint address in command line arguments.</p>
-<h1><a class="anchor" id="autotoc_md205"></a>
+<h1><a class="anchor" id="autotoc_md206"></a>
 Start the dashboard</h1>
 <p>Prometheus endpoint starts automatically with nexres. To start nexres: </p><div class="fragment"><div class="line">sh example/kv_server.sh</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md206"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md207"></a>
 Prometheus</h2>
 <p>Default prometheus port is 9090 </p><div class="fragment"><div class="line">./prometheus</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md207"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md208"></a>
 Node_exporter</h2>
 <p>Default node exporter port is 9100 </p><div class="fragment"><div class="line">./node_exporter</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md208"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md209"></a>
 Grafana</h2>
 <p>Default grafana port is 3000 </p><div class="fragment"><div class="line">sudo service grafana-server start</div>
 <div class="line">sudo service grafana-server enable</div>
 </div><!-- fragment --><p> <em>Stop grafana: sudo service grafana-server stop</em></p>
-<h1><a class="anchor" id="autotoc_md209"></a>
+<h1><a class="anchor" id="autotoc_md210"></a>
 Configure prometheus</h1>
-<h2><a class="anchor" id="autotoc_md210"></a>
+<h2><a class="anchor" id="autotoc_md211"></a>
 Add prometheus endpoint:</h2>
 <p>Edit “prometheus.yml” under your prometheus folder add the following code after “scrape_configs” </p><div class="fragment"><div class="line">- job_name: &quot;your_job_name&quot;</div>
 <div class="line">    static_configs:</div>
@@ -142,33 +142,33 @@ Add prometheus endpoint:</h2>
 </div><!-- fragment --><p> Here is the current “scrape_configs” structure, you can find this yml file at <a href="../..//documents/file/prometheus.yml">here</a>.</p>
 <p><img src="../..//documents/image/dashboard/yml_config.png" alt="yam_config" class="inline"/></p>
 <p>After setup your endpoint information, restart prometheus.</p>
-<h2><a class="anchor" id="autotoc_md211"></a>
+<h2><a class="anchor" id="autotoc_md212"></a>
 Change prometheus scraping interval:</h2>
 <p>change scrape_interval and evaluation_interval.</p>
 <p><img src="../..//documents/image/dashboard/yml_interval.png" alt="yml_interval" class="inline"/></p>
-<h2><a class="anchor" id="autotoc_md212"></a>
+<h2><a class="anchor" id="autotoc_md213"></a>
 Prometheus target:</h2>
 <p>To check your endpoint status. Start prometheus, go to localhost:9090, and click Targets under Status menu.</p>
 <p><img src="../..//documents/image/dashboard/target.png" alt="target" class="inline"/></p>
 <p>This page shows all your endpoints' status. If the endpoint does not show up on this page, remember to set up your endpoint information in prometheus.yml and restart the database.</p>
 <p><img src="../..//documents/image/dashboard/target%20list.png" alt="target_list" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md213"></a>
+<h1><a class="anchor" id="autotoc_md214"></a>
 Setup grafana:</h1>
-<h2><a class="anchor" id="autotoc_md214"></a>
+<h2><a class="anchor" id="autotoc_md215"></a>
 Prometheus connection</h2>
 <p>Please follow this link to set up the connection between grafana and prometheus. </p><blockquote class="doxtable">
 <p>&zwj;<a href="https://prometheus.io/docs/visualization/grafana/">https://prometheus.io/docs/visualization/grafana/</a> </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md215"></a>
+<h2><a class="anchor" id="autotoc_md216"></a>
 Import Nexres dynamic dashboard.</h2>
 <p>Locate the import button under create menu.</p>
 <p><img src="../..//documents/image/dashboard/import.png" alt="import" class="inline"/></p>
 <p>Download the grafana json from this <a href="../..//documents/file/Nexres-1654906717062.json">link</a> and import to grafana.</p>
-<h2><a class="anchor" id="autotoc_md216"></a>
+<h2><a class="anchor" id="autotoc_md217"></a>
 Change plot</h2>
 <p>Go to grafana configuration and click data source. Select your prometheus database and click to change setting, locate "Scrape interval" and change it to 5s.</p>
 <p><img src="../..//documents/image/dashboard/resolution.png" alt="resolution" class="inline"/></p>
-<h1><a class="anchor" id="autotoc_md217"></a>
+<h1><a class="anchor" id="autotoc_md218"></a>
 Prometheus metrics development:</h1>
 <p>All the prometheus endpoint code and metrics builder are located under Stats class. There are three types of metric variables you can utilize according to the demand. They are Counter, Gauge, and Histogram. You can discover their using scenario in this <a href="https://prometheus.io/docs/concepts/metric_types/">link</a>.</p>
 <p>To properly integrate these metric types to the code, check prometheus-cpp documentation (<a href="https://jupp0r.github.io/prometheus-cpp/">Documentation</a>, <a href="https://github.com/jupp0r/prometheus-cpp">Example</a>). Here is an example of starting a prometheus endpoint and adding a metric to the database.</p>
@@ -184,18 +184,18 @@ Prometheus metrics development:</h1>
 </div><!-- fragment --><p>Ask the exposer to scrape the registry on incoming HTTP requests </p><div class="fragment"><div class="line">exposer.RegisterCollectable(registry);</div>
 </div><!-- fragment --><p>Set numerical value to gauge variable </p><div class="fragment"><div class="line">tcp_rx_gauge.Set(123);</div>
 </div><!-- fragment --><p>To setup these variables in header file, following the code structure in <a href="../..//statistic/stats.h">Stats.h</a>.</p>
-<h1><a class="anchor" id="autotoc_md218"></a>
+<h1><a class="anchor" id="autotoc_md219"></a>
 Testing</h1>
-<h2><a class="anchor" id="autotoc_md219"></a>
+<h2><a class="anchor" id="autotoc_md220"></a>
 Set random data into nexres</h2>
 <div class="fragment"><div class="line">bazel run statistic/set_random_data &lt;test/loop&gt; &lt;value&gt;</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md220"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md221"></a>
 Bazel build</h2>
 <p>Run this command at nexres directory </p><div class="fragment"><div class="line">bazel build ...</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md221"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md222"></a>
 Bazel test</h2>
 <p>Run this command at nexres directory </p><div class="fragment"><div class="line">bazel test ...</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md222"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md223"></a>
 Future works</h1>
 <ul>
 <li>Research and discover more performance metrics into the dashboard.</li>

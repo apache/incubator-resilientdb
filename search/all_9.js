@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['_3a_20array_20lt_20pathname_20gt_0',['.filter(paths: Array&amp;lt;Pathname&amp;gt;): Array&amp;lt;Pathname&amp;gt;',['../d4/dec/md__2github_2workspace_2node__modules_2ignore_2README.html#autotoc_md130',1,'']]],
-  ['_3a_20this_1',[': this',['../d4/dec/md__2github_2workspace_2node__modules_2ignore_2README.html#autotoc_md127',1,'.add(pattern: string | Ignore): this'],['../d4/dec/md__2github_2workspace_2node__modules_2ignore_2README.html#autotoc_md128',1,'.add(patterns: Array&lt;string | Ignore&gt;): this']]]
+  ['9_200_20a_20href_20https_3a_20github_20com_20resilientdb_20resilientdb_20releases_20tag_20nexres_20v1_209_200_202023_2011_2029_20a_0',['NexRes v1.9.0 (&lt;a href=&quot;https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.9.0&quot; &gt;2023-11-29&lt;/a&gt;)',['../d9/d7c/md__2github_2workspace_2CHANGELOG.html#autotoc_md1',1,'']]]
 ];
