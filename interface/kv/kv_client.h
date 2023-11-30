@@ -35,16 +35,17 @@ class KVClient : public TransactionConstructor {
  public:
   KVClient(const ResDBConfig& config);
 
+  //Version-based interfaces.
   // Obtain the current version before setting a new data
   int Set(const std::string& key, const std::string& data, int version);
 
-  // Obtain the value with specific version.
-  // If version is zero, it will return the data with current version in the
-  // database. ValueInfo contains the version and its version. Return nullptr if
-  // there is an error.
+  // Obtain the value with a specific version.
+  // If the version parameter is zero, it will return the data with the current version in the
+  // database. ValueInfo contains the version and its version. 
+  // Return nullptr if there is an error.
   std::unique_ptr<ValueInfo> Get(const std::string& key, int version);
 
-  // Obtain the values of the keys within [min_key, max_key].
+  // Obtain the latest values of the keys within [min_key, max_key].
   // Keys should be comparable.
   std::unique_ptr<Items> GetKeyRange(const std::string& min_key,
                                      const std::string& max_key);
@@ -58,8 +59,8 @@ class KVClient : public TransactionConstructor {
   std::unique_ptr<Items> GetKeyTopHistory(const std::string& key,
                                           int top_number);
 
-  // Interfaces without version protected.
-  // These interfaces are not compatible with the version based infaterfaces
+  // Non-version-based Interfaces.
+  // These interfaces are not compatible with the version-based interfaces
   // above.
   int Set(const std::string& key, const std::string& data);
   std::unique_ptr<std::string> Get(const std::string& key);
