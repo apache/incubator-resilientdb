@@ -26,6 +26,7 @@
 #pragma once
 
 #include "interface/rdbc/transaction_constructor.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -34,6 +35,33 @@ class KVClient : public TransactionConstructor {
  public:
   KVClient(const ResDBConfig& config);
 
+  //Version-based interfaces.
+  // Obtain the current version before setting a new data
+  int Set(const std::string& key, const std::string& data, int version);
+
+  // Obtain the value with a specific version.
+  // If the version parameter is zero, it will return the data with the current version in the
+  // database. ValueInfo contains the version and its version. 
+  // Return nullptr if there is an error.
+  std::unique_ptr<ValueInfo> Get(const std::string& key, int version);
+
+  // Obtain the latest values of the keys within [min_key, max_key].
+  // Keys should be comparable.
+  std::unique_ptr<Items> GetKeyRange(const std::string& min_key,
+                                     const std::string& max_key);
+
+  // Obtain the histories of `key` with the versions in [min_version,
+  // max_version]
+  std::unique_ptr<Items> GetKeyHistory(const std::string& key, int min_version,
+                                       int max_version);
+
+  // Obtain the top `top_number` histories of the `key`.
+  std::unique_ptr<Items> GetKeyTopHistory(const std::string& key,
+                                          int top_number);
+
+  // Non-version-based Interfaces.
+  // These interfaces are not compatible with the version-based interfaces
+  // above.
   int Set(const std::string& key, const std::string& data);
   std::unique_ptr<std::string> Get(const std::string& key);
   std::unique_ptr<std::string> GetAllValues();

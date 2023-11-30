@@ -32,7 +32,7 @@
 #include <queue>
 #include <set>
 
-#include "chain/storage/txn_memory_db.h"
+#include "chain/state/chain_state.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/config/resdb_config.h"
@@ -130,7 +130,7 @@ class MessageManager {
   uint64_t next_seq_ = 1;
 
   LockFreeQueue<BatchUserResponse> queue_;
-  TxnMemoryDB* txn_db_;
+  ChainState* txn_db_;
   SystemInfo* system_info_;
   CheckPointManager* checkpoint_manager_;
   std::map<uint64_t, std::vector<std::unique_ptr<RequestInfo>>>

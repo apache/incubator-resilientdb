@@ -27,7 +27,7 @@
 
 #include <semaphore.h>
 
-#include "chain/storage/txn_memory_db.h"
+#include "chain/state/chain_state.h"
 #include "common/crypto/signature_verifier.h"
 #include "interface/common/resdb_txn_accessor.h"
 #include "platform/config/resdb_config.h"
@@ -47,7 +47,7 @@ class CheckPointManager : public CheckPoint {
                     SignatureVerifier* verifier);
   virtual ~CheckPointManager();
 
-  TxnMemoryDB* GetTxnDB();
+  ChainState* GetTxnDB();
   uint64_t GetMaxTxnSeq();
 
   void AddCommitData(std::unique_ptr<Request> request);
@@ -92,7 +92,7 @@ class CheckPointManager : public CheckPoint {
  protected:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
-  std::unique_ptr<TxnMemoryDB> txn_db_;
+  std::unique_ptr<ChainState> txn_db_;
   std::thread checkpoint_thread_, stable_checkpoint_thread_;
   SignatureVerifier* verifier_;
   std::atomic<bool> stop_;

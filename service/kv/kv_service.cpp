@@ -25,40 +25,39 @@
 
 #include <glog/logging.h>
 
-#include "chain/state/chain_state.h"
+#include "chain/storage/memory_db.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
 #ifdef ENABLE_LEVELDB
-#include "chain/storage/res_leveldb.h"
+#include "chain/storage/leveldb.h"
 #endif
 #ifdef ENABLE_ROCKSDB
-#include "chain/storage/res_rocksdb.h"
+#include "chain/storage/rocksdb.h"
 #endif
 
 using namespace resdb;
+using namespace resdb::storage;
 
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
 
-std::unique_ptr<ChainState> NewState(const std::string& cert_file,
-                                     const ResConfigData& config_data) {
-  std::unique_ptr<Storage> storage = nullptr;
-
+std::unique_ptr<Storage> NewStorage(const std::string& db_path,
+                                    const ResConfigData& config_data) {
 #ifdef ENABLE_ROCKSDB
-  storage = NewResRocksDB(cert_file.c_str(), config_data);
   LOG(INFO) << "use rocksdb storage.";
+  return NewResRocksDB(db_path, config_data);
 #endif
 
 #ifdef ENABLE_LEVELDB
-  storage = NewResLevelDB(cert_file.c_str(), config_data);
   LOG(INFO) << "use leveldb storage.";
+  return NewResLevelDB(db_path, config_data);
 #endif
-  std::unique_ptr<ChainState> state =
-      std::make_unique<ChainState>(std::move(storage));
-  return state;
+
+  LOG(INFO) << "use memory storage.";
+  return NewMemoryDB();
 }
 
 int main(int argc, char** argv) {
@@ -66,6 +65,7 @@ int main(int argc, char** argv) {
     ShowUsage();
     exit(0);
   }
+  google::InitGoogleLogging(argv[0]);
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];
@@ -84,8 +84,11 @@ int main(int argc, char** argv) {
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
 
+  std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+  LOG(INFO) << "db path:" << db_path;
+
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(NewState(cert_file, config_data)), nullptr);
+      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr);
   server->Run();
 }

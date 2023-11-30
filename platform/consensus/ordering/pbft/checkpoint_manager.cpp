@@ -37,7 +37,7 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
                                      SignatureVerifier* verifier)
     : config_(config),
       replica_communicator_(replica_communicator),
-      txn_db_(std::make_unique<TxnMemoryDB>()),
+      txn_db_(std::make_unique<ChainState>()),
       verifier_(verifier),
       stop_(false),
       txn_accessor_(config),
@@ -71,7 +71,7 @@ std::string GetHash(const std::string& h1, const std::string& h2) {
   return SignatureVerifier::CalculateHash(h1 + h2);
 }
 
-TxnMemoryDB* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
+ChainState* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
 
 uint64_t CheckPointManager::GetMaxTxnSeq() { return txn_db_->GetMaxSeq(); }
 
@@ -105,7 +105,7 @@ bool CheckPointManager::IsValidCheckpointProof(
     senders.insert(signature.node_id());
   }
 
-  return (senders.size() >= config_.GetMinDataReceiveNum()) ||
+  return (static_cast<int>(senders.size()) >= config_.GetMinDataReceiveNum()) ||
          (stable_ckpt.seq() == 0 && senders.size() == 0);
 }
 
@@ -171,7 +171,6 @@ bool CheckPointManager::Wait() {
 
 void CheckPointManager::UpdateStableCheckPointStatus() {
   uint64_t last_committable_seq = 0;
-  int water_mark = config_.GetCheckPointWaterMark();
   while (!stop_) {
     if (!Wait()) {
       continue;

@@ -28,25 +28,42 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "common/test/test_macros.h"
+
 namespace resdb {
 namespace {
 
-TEST(KVServerExecutorTest, SetValue) {
-  ChainState state;
+using ::resdb::testing::EqualsProto;
+using ::testing::Pointee;
 
-  EXPECT_EQ(state.GetAllValues(), "[]");
-  EXPECT_EQ(state.SetValue("test_key", "test_value"), 0);
-  EXPECT_EQ(state.GetValue("test_key"), "test_value");
-
-  // GetAllValues and GetRange may be out of order for in-memory, so we test up to
-  // 1 key-value pair
-  EXPECT_EQ(state.GetAllValues(), "[test_value]");
-  EXPECT_EQ(state.GetRange("a", "z"), "[test_value]");
+TEST(ChainStateTest, GetEmptyValue) {
+  ChainState db;
+  EXPECT_EQ(db.Get(1), nullptr);
 }
 
-TEST(KVServerExecutorTest, GetValue) {
-  ChainState state;
-  EXPECT_EQ(state.GetValue("test_key"), "");
+TEST(ChainStateTest, GetValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
+}
+
+TEST(ChainStateTest, GetSecondValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+
+  request.set_seq(1);
+  request.set_data("test_1");
+  db.Put(std::make_unique<Request>(request));
+
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
 }
 
 }  // namespace
