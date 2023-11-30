@@ -100,8 +100,9 @@ $(document).ready(function(){initNavTree('d9/d7c/md__2github_2workspace_2CHANGEL
 <div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> </p>
 <h2><a class="anchor" id="autotoc_md1"></a>
 NexRes v1.9.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.9.0" &gt;2023-11-29&lt;/a&gt;)</h2>
-<p><b>Implemented Enhancements:</b> Support version-based key-value service. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</p><ul>
-<li>Get and Set need to provide a version to protect the data.</li>
+<p>Support Multi-version Key-Value Interface. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</p>
+<ul>
+<li>Get and Set need to provide a version number to fetch the correct version of the data (if exists) or write to the correct version of data (if not overwritten already), respectively.</li>
 <li>Provide interfaces to obtain historical data with a specific version or a range of versions.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md2"></a>
