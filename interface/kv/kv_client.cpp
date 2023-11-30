@@ -34,7 +34,7 @@ KVClient::KVClient(const ResDBConfig& config)
 
 int KVClient::Set(const std::string& key, const std::string& data) {
   KVRequest request;
-  request.set_cmd(KVRequest::SET);
+  request.set_cmd(Operation::SET);
   request.set_key(key);
   request.set_value(data);
   return SendRequest(request);
@@ -42,7 +42,7 @@ int KVClient::Set(const std::string& key, const std::string& data) {
 
 std::unique_ptr<std::string> KVClient::Get(const std::string& key) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET);
+  request.set_cmd(Operation::GET);
   request.set_key(key);
   KVResponse response;
   int ret = SendRequest(request, &response);
@@ -55,7 +55,7 @@ std::unique_ptr<std::string> KVClient::Get(const std::string& key) {
 
 std::unique_ptr<std::string> KVClient::GetAllValues() {
   KVRequest request;
-  request.set_cmd(KVRequest::GETALLVALUES);
+  request.set_cmd(Operation::GETALLVALUES);
   KVResponse response;
   int ret = SendRequest(request, &response);
   if (ret != 0) {
@@ -68,7 +68,7 @@ std::unique_ptr<std::string> KVClient::GetAllValues() {
 std::unique_ptr<std::string> KVClient::GetRange(const std::string& min_key,
                                                 const std::string& max_key) {
   KVRequest request;
-  request.set_cmd(KVRequest::GETRANGE);
+  request.set_cmd(Operation::GETRANGE);
   request.set_key(min_key);
   request.set_value(max_key);
   KVResponse response;
@@ -83,7 +83,7 @@ std::unique_ptr<std::string> KVClient::GetRange(const std::string& min_key,
 int KVClient::Set(const std::string& key, const std::string& data,
                   int version) {
   KVRequest request;
-  request.set_cmd(KVRequest::SET_WITH_VERSION);
+  request.set_cmd(Operation::SET_WITH_VERSION);
   request.set_key(key);
   request.set_value(data);
   request.set_version(version);
@@ -92,7 +92,7 @@ int KVClient::Set(const std::string& key, const std::string& data,
 
 std::unique_ptr<ValueInfo> KVClient::Get(const std::string& key, int version) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET_WITH_VERSION);
+  request.set_cmd(Operation::GET_WITH_VERSION);
   request.set_key(key);
   request.set_version(version);
   KVResponse response;
@@ -107,7 +107,7 @@ std::unique_ptr<ValueInfo> KVClient::Get(const std::string& key, int version) {
 std::unique_ptr<Items> KVClient::GetKeyRange(const std::string& min_key,
                                              const std::string& max_key) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET_KEY_RANGE);
+  request.set_cmd(Operation::GET_KEY_RANGE);
   request.set_min_key(min_key);
   request.set_max_key(max_key);
   KVResponse response;
@@ -123,7 +123,7 @@ std::unique_ptr<Items> KVClient::GetKeyHistory(const std::string& key,
                                                int min_version,
                                                int max_version) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET_HISTORY);
+  request.set_cmd(Operation::GET_HISTORY);
   request.set_key(key);
   request.set_min_version(min_version);
   request.set_max_version(max_version);
@@ -139,7 +139,7 @@ std::unique_ptr<Items> KVClient::GetKeyHistory(const std::string& key,
 std::unique_ptr<Items> KVClient::GetKeyTopHistory(const std::string& key,
                                                   int top_number) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET_TOP);
+  request.set_cmd(Operation::GET_TOP);
   request.set_key(key);
   request.set_top_number(top_number);
   KVResponse response;

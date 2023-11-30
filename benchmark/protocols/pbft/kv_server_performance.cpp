@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
       *config, std::make_unique<KVExecutor>(std::make_unique<MemoryDB>()));
   performance_consens->SetupPerformanceDataFunc([]() {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(GetRandomKey());
     request.set_value("helloworld");
     std::string request_data;

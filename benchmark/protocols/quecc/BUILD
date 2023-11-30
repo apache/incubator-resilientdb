@@ -8,11 +8,10 @@ cc_binary(
     deps = [
 				"@benchmark//:benchmark",
         "//chain/state:chain_state",
-        "//chain/storage:res_leveldb",
-        "//chain/storage:res_rocksdb",
         "//executor/kv:kv_executor",
         "//executor/kv:quecc_executor",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
+        "//chain/storage:memory_db",
     ],
 )

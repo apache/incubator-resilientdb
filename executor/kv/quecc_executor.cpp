@@ -38,7 +38,6 @@
 #include <vector>
 #include <queue>
 
-#include "chain/state/chain_state.h"
 #include "chain/storage/storage.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
@@ -52,8 +51,8 @@ mutex results_mutex;
 
 namespace resdb {
 
-QueccExecutor::QueccExecutor(std::unique_ptr<ChainState> state)
-    : state_(std::move(state)) {
+QueccExecutor::QueccExecutor(std::unique_ptr<Storage> storage)
+    : storage_(std::move(storage)) {
   thread_count_ = 5;
   atomic<int> ready_planner_count_(0);
   std::unique_ptr<BatchUserResponse> batch_output =
@@ -317,7 +316,7 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
     const KVRequest& kv_request) {
   KVResponse kv_response;
 
-  if (kv_request.ops_size()) {
+  /*if (kv_request.ops_size()) {
     for (const auto& op : kv_request.ops()) {
       auto resp_info = kv_response.add_resp_info();
       resp_info->set_key(op.key());
@@ -331,7 +330,7 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
         resp_info->set_value(GetRange(op.key(), op.value()));
       }
     }
-  } else {
+  } else {*/
     if (kv_request.cmd() == Operation::SET) {
       Set(kv_request.key(), kv_request.value());
     } else if (kv_request.cmd() == Operation::GET) {
@@ -341,7 +340,7 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
     } else if (kv_request.cmd() == Operation::GETRANGE) {
       kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
     }
-  }
+  //}
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
   if (!kv_response.SerializeToString(resp_str.get())) {
@@ -352,24 +351,19 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(
 }
 
 void QueccExecutor::Set(const std::string& key, const std::string& value) {
-  if (!VerifyRequest(key, value)) {
-    return;
-  }
-  state_->SetValue(key, value);
+   storage_->SetValue(key, value);
 }
 
 std::string QueccExecutor::Get(const std::string& key) {
-  return state_->GetValue(key);
+  return storage_->GetValue(key);
 }
 
-std::string QueccExecutor::GetAllValues() { return state_->GetAllValues(); }
+std::string QueccExecutor::GetAllValues() { return storage_->GetAllValues(); }
 
 // Get values on a range of keys
 std::string QueccExecutor::GetRange(const std::string& min_key,
                                     const std::string& max_key) {
-  return state_->GetRange(min_key, max_key);
+  return storage_->GetRange(min_key, max_key);
 }
-
-Storage* QueccExecutor::GetStorage() { return state_->GetStorage(); }
 
 }  // namespace resdb

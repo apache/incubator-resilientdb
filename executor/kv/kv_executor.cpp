@@ -36,7 +36,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     const std::string& request) {
   KVRequest kv_request;
   KVResponse kv_response;
-  LOG(ERROR)<<"EXEC TEST";
 
   if (!kv_request.ParseFromString(request)) {
     LOG(ERROR) << "parse data fail";
@@ -150,7 +149,5 @@ void KVExecutor::GetTopHistory(const std::string& key, int top_number,
     item->mutable_value_info()->set_version(it.second);
   }
 }
-
-Storage* KVExecutor::GetStorage() { return state_->GetStorage(); }
 
 }  // namespace resdb

@@ -31,8 +31,7 @@
 
 #include <chrono>
 #include <future>
-
-#include "chain/storage/mock_storage.h"
+#include "chain/storage/memory_db.h"
 #include "platform/config/resdb_config_utils.h"
 #include "proto/kv/kv.pb.h"
 namespace resdb {
@@ -41,19 +40,18 @@ namespace {
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
-
+using namespace resdb::storage;
 class QueccTest : public Test {
  public:
   QueccTest() {
-    auto mock_storage = std::make_unique<MockStorage>();
-    mock_storage_ptr_ = mock_storage.get();
-    impl_ = std::make_unique<QueccExecutor>(
-        std::make_unique<ChainState>(std::move(mock_storage)));
+    auto storage = std::make_unique<MemoryDB>();
+    storage_ptr_ = storage.get();
+    impl_ = std::make_unique<QueccExecutor>(std::move(storage));
   }
 
   int Set(const std::string& key, const std::string& value) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(key);
     request.set_value(value);
 
@@ -68,7 +66,7 @@ class QueccTest : public Test {
 
   std::string Get(const std::string& key) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET);
+    request.set_cmd(Operation::GET);
     request.set_key(key);
 
     std::string str;
@@ -88,7 +86,7 @@ class QueccTest : public Test {
 
   std::string GetAllValues() {
     KVRequest request;
-    request.set_cmd(KVRequest::GETALLVALUES);
+    request.set_cmd(Operation::GETALLVALUES);
 
     std::string str;
     if (!request.SerializeToString(&str)) {
@@ -107,7 +105,7 @@ class QueccTest : public Test {
 
   std::string GetRange(const std::string& min_key, const std::string& max_key) {
     KVRequest request;
-    request.set_cmd(KVRequest::GETRANGE);
+    request.set_cmd(Operation::GETRANGE);
     request.set_key(min_key);
     request.set_value(max_key);
 
@@ -127,7 +125,7 @@ class QueccTest : public Test {
   }
 
  protected:
-  MockStorage* mock_storage_ptr_;
+  Storage* storage_ptr_;
 
  private:
   std::unique_ptr<QueccExecutor> impl_;
@@ -135,25 +133,6 @@ class QueccTest : public Test {
 
 TEST_F(QueccTest, SetValue) {
   std::map<std::string, std::string> data;
-
-  EXPECT_CALL(*mock_storage_ptr_, SetValue("test_key", "test_value"))
-      .WillOnce(Invoke([&](const std::string& key, const std::string& value) {
-        data[key] = value;
-        return 0;
-      }));
-
-  EXPECT_CALL(*mock_storage_ptr_, GetValue("test_key"))
-      .WillOnce(Invoke([&](const std::string& key) {
-        std::string ret = data[key];
-        return ret;
-      }));
-
-  EXPECT_CALL(*mock_storage_ptr_, GetAllValues())
-      .WillOnce(Return("[]"))
-      .WillOnce(Return("[test_value]"));
-
-  EXPECT_CALL(*mock_storage_ptr_, GetRange("a", "z"))
-      .WillOnce(Return("[test_value]"));
 
   EXPECT_EQ(GetAllValues(), "[]");
   EXPECT_EQ(Set("test_key", "test_value"), 0);
@@ -170,7 +149,7 @@ TEST_F(QueccTest, ExecuteOne) {
   std::future<bool> done_future = done.get_future();
 
   KVRequest request;
-  request.set_cmd(KVRequest::SET);
+  request.set_cmd(Operation::SET);
   request.set_key("test");
   request.set_value("1234");
 
@@ -180,8 +159,8 @@ TEST_F(QueccTest, ExecuteOne) {
     ADD_FAILURE();
   }
   batch_request.add_user_requests()->mutable_request()->set_data(str);
-  auto mock_storage = std::make_unique<MockStorage>();
-  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  auto storage = NewMemoryDB();
+  QueccExecutor executor(std::move(storage));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -199,7 +178,7 @@ TEST_F(QueccTest, ExecuteMany) {
 
   for (int i = 0; i < 10; i++) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(keys[i % 5]);
     request.set_value(to_string(i));
 
@@ -210,9 +189,8 @@ TEST_F(QueccTest, ExecuteMany) {
     batch_request.add_user_requests()->mutable_request()->set_data(str);
   }
 
-  auto mock_storage = std::make_unique<MockStorage>();
-
-  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  auto storage = NewMemoryDB();
+  QueccExecutor executor(std::move(storage));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -230,7 +208,7 @@ TEST_F(QueccTest, ExecuteManyEqualSplitBenchmark) {
 
   for (int i = 0; i < 1000; i++) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(keys[i % 5]);
     request.set_value(to_string(i));
 
@@ -241,9 +219,8 @@ TEST_F(QueccTest, ExecuteManyEqualSplitBenchmark) {
     batch_request.add_user_requests()->mutable_request()->set_data(str);
   }
 
-  auto mock_storage = std::make_unique<MockStorage>();
-
-  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  auto storage = NewMemoryDB();
+  QueccExecutor executor(std::move(storage));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -266,7 +243,7 @@ TEST_F(QueccTest, ExecuteManySameKeyBenchmark) {
 
   for (int i = 0; i < 1000; i++) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(keys[0]);
     request.set_value(to_string(i));
 
@@ -277,9 +254,8 @@ TEST_F(QueccTest, ExecuteManySameKeyBenchmark) {
     batch_request.add_user_requests()->mutable_request()->set_data(str);
   }
 
-  auto mock_storage = std::make_unique<MockStorage>();
-
-  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  auto storage = NewMemoryDB();
+  QueccExecutor executor(std::move(storage));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -302,7 +278,7 @@ TEST_F(QueccTest, TwoBatches) {
 
   for (int i = 0; i < 10; i++) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(keys[i % 5]);
     request.set_value(to_string(i));
 
@@ -313,9 +289,8 @@ TEST_F(QueccTest, TwoBatches) {
     batch_request.add_user_requests()->mutable_request()->set_data(str);
   }
 
-  auto mock_storage = std::make_unique<MockStorage>();
-
-  QueccExecutor executor(std::make_unique<ChainState>(std::move(mock_storage)));
+  auto storage = NewMemoryDB();
+  QueccExecutor executor(std::move(storage));
 
   // Test expects ExecuteData call, checks if batch_user_response has a response
   // for the one txn
@@ -324,7 +299,7 @@ TEST_F(QueccTest, TwoBatches) {
 
   for (int i = 0; i < 10; i++) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET);
+    request.set_cmd(Operation::GET);
     request.set_key(keys[i % 5]);
     request.set_value(to_string(i));
 

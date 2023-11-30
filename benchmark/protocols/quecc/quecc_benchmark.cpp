@@ -28,10 +28,8 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
-
+#include "chain/storage/memory_db.h"
 #include <benchmark/benchmark.h>
-#include "chain/storage/res_leveldb.h"
-#include "chain/storage/res_rocksdb.h"
 #include "executor/kv/kv_executor.h"
 #include "executor/kv/quecc_executor.h"
 #include "platform/config/resdb_config_utils.h"
@@ -40,17 +38,16 @@
 
 using resdb::BatchUserRequest;
 using resdb::BatchUserResponse;
-using resdb::ChainState;
 using resdb::GenerateResDBConfig;
 using resdb::KVExecutor;
 using resdb::Operation;
 using resdb::KVRequest;
-using resdb::NewResLevelDB;
-using resdb::NewResRocksDB;
 using resdb::QueccExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
 using resdb::Storage;
+
+using namespace resdb::storage;
 
 void ShowUsage() {
   printf(
@@ -133,11 +130,10 @@ BatchUserRequest RandomDistribution() {
 
 static void BM_EqualDistribution(benchmark::State& state) {
 	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	storage1 = NewMemoryDB();
 	std::unique_ptr<BatchUserResponse> response;
 	vector<BatchUserRequest> equal_split_array;
-	QueccExecutor quecc_executor(
-		std::make_unique<ChainState>(std::move(storage1)));
+	QueccExecutor quecc_executor(std::move(storage1));
 	
 	for (int i = 0; i < 10; i++) {
 		equal_split_array.push_back(EqualDistribution());
@@ -158,11 +154,10 @@ static void BM_EqualDistribution(benchmark::State& state) {
 
 static void BM_NoDistribution(benchmark::State& state) {
 	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	storage1 = NewMemoryDB();
 	std::unique_ptr<BatchUserResponse> response;
 	vector<BatchUserRequest> no_split_array;
-	QueccExecutor quecc_executor(
-		std::make_unique<ChainState>(std::move(storage1)));
+	QueccExecutor quecc_executor(std::move(storage1));
 	
 	for (int i = 0; i < 10; i++) {
 		no_split_array.push_back(NoDistribution());
@@ -178,11 +173,10 @@ static void BM_NoDistribution(benchmark::State& state) {
 
 static void BM_RandomDistribution(benchmark::State& state) {
 	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewResRocksDB(nullptr, std::nullopt);
+	storage1 = NewMemoryDB();
 	std::unique_ptr<BatchUserResponse> response;
 	vector<BatchUserRequest> random_split_array;
-	QueccExecutor quecc_executor(
-		std::make_unique<ChainState>(std::move(storage1)));
+	QueccExecutor quecc_executor(std::move(storage1));
 	
 	for (int i = 0; i < 10; i++) {
 		random_split_array.push_back(RandomDistribution());

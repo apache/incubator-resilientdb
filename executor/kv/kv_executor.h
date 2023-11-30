@@ -42,8 +42,6 @@ class KVExecutor : public TransactionManager {
 
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
 
-  Storage* GetStorage() override;
-
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);

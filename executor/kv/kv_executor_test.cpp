@@ -33,7 +33,6 @@
 #include <future>
 #include <vector>
 
-#include "chain/storage/mock_storage.h"
 #include "chain/storage/memory_db.h"
 #include "chain/storage/storage.h"
 #include "common/test/test_macros.h"
@@ -59,7 +58,7 @@ class KVExecutorTest : public Test {
 
   int Set(const std::string& key, const std::string& value) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET);
+    request.set_cmd(Operation::SET);
     request.set_key(key);
     request.set_value(value);
 
@@ -74,7 +73,7 @@ class KVExecutorTest : public Test {
 
   std::string Get(const std::string& key) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET);
+    request.set_cmd(Operation::GET);
     request.set_key(key);
 
     std::string str;
@@ -94,7 +93,7 @@ class KVExecutorTest : public Test {
 
   std::string GetAllValues() {
     KVRequest request;
-    request.set_cmd(KVRequest::GETALLVALUES);
+    request.set_cmd(Operation::GETALLVALUES);
 
     std::string str;
     if (!request.SerializeToString(&str)) {
@@ -113,7 +112,7 @@ class KVExecutorTest : public Test {
 
   std::string GetRange(const std::string& min_key, const std::string& max_key) {
     KVRequest request;
-    request.set_cmd(KVRequest::GETRANGE);
+    request.set_cmd(Operation::GETRANGE);
     request.set_key(min_key);
     request.set_value(max_key);
 
@@ -134,7 +133,7 @@ class KVExecutorTest : public Test {
 
   int Set(const std::string& key, const std::string& value, int version) {
     KVRequest request;
-    request.set_cmd(KVRequest::SET_WITH_VERSION);
+    request.set_cmd(Operation::SET_WITH_VERSION);
     request.set_key(key);
     request.set_value(value);
     request.set_version(version);
@@ -150,7 +149,7 @@ class KVExecutorTest : public Test {
 
   ValueInfo Get(const std::string& key, int version) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET_WITH_VERSION);
+    request.set_cmd(Operation::GET_WITH_VERSION);
     request.set_key(key);
     request.set_version(version);
 
@@ -173,7 +172,7 @@ class KVExecutorTest : public Test {
 
   Items GetAllItems() {
     KVRequest request;
-    request.set_cmd(KVRequest::GET_ALL_ITEMS);
+    request.set_cmd(Operation::GET_ALL_ITEMS);
 
     std::string str;
     if (!request.SerializeToString(&str)) {
@@ -194,7 +193,7 @@ class KVExecutorTest : public Test {
 
   Items GetKeyRange(const std::string& min_key, const std::string& max_key) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET_KEY_RANGE);
+    request.set_cmd(Operation::GET_KEY_RANGE);
     request.set_min_key(min_key);
     request.set_max_key(max_key);
 
@@ -217,7 +216,7 @@ class KVExecutorTest : public Test {
 
   Items GetHistory(const std::string& key, int min_version, int max_version) {
     KVRequest request;
-    request.set_cmd(KVRequest::GET_HISTORY);
+    request.set_cmd(Operation::GET_HISTORY);
     request.set_key(key);
     request.set_min_version(min_version);
     request.set_max_version(max_version);

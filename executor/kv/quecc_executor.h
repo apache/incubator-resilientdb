@@ -35,7 +35,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "chain/state/chain_state.h"
 #include "chain/storage/storage.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
@@ -50,7 +49,7 @@ struct KVOperation{
 };
 class QueccExecutor : public TransactionManager {
  public:
-  QueccExecutor(std::unique_ptr<ChainState> state);
+  QueccExecutor(std::unique_ptr<Storage> storage);
   virtual ~QueccExecutor();
 
   std::unique_ptr<BatchUserResponse> ExecuteBatch(
@@ -58,8 +57,6 @@ class QueccExecutor : public TransactionManager {
   std::unique_ptr<std::string> ExecuteData(const KVOperation& operation);
   std::unique_ptr<std::string> ExecuteData(const KVRequest& kv_request);
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
-
-  Storage* GetStorage() override;
 
  protected:
   virtual void Set(const std::string& key, const std::string& value);
@@ -99,7 +96,7 @@ class QueccExecutor : public TransactionManager {
   vector<thread> thread_list_;
   atomic<int> ready_planner_count_;
   std::unique_ptr<BatchUserResponse> batch_response_;
-  std::unique_ptr<ChainState> state_;
+  std::unique_ptr<Storage> storage_;
 };
 
 }  // namespace resdb
