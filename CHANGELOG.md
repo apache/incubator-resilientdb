@@ -1,5 +1,12 @@
 # Change Log
 
+### NexRes v1.9.0 ([2023-11-29](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.9.0))
+
+**Implemented Enhancements:** Support version-based key-value service. ([Junchao Chen](https://github.com/cjcchen))
+* Get and Set need to provide  a version to protect the data.
+* Provide interfaces to obtain historical data with a specific version or a range of versions. 
+
+
 ### NexRes v1.8.0 ([2023-08-21](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.8.0))
 
 **Implemented Enhancements:** The view-change recovery protocol was extensively expanded to support the following Byzantine failures through primary/leader replacement and replica recovery. ([Dakai Kang](https://github.com/DakaiKang))
