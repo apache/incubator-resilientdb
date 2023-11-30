@@ -1,4 +1,4 @@
-killall -9 utxo_server
+killall -9 utxo_service
 
 SERVER_PATH=./bazel-bin/service/utxo/utxo_service
 SERVER_CONFIG=service/tools/config/server/server.config

@@ -17,7 +17,13 @@
 4. ResilientDB exposes a wide range of interfaces such as a **Key-Value** store, **Smart Contracts**, **UTXO**, and **Python SDK**. Following are some of the decentralized applications (DApps) built on top of ResilientDB: **[NFT Marketplace](https://nft.resilientdb.com/)** and **[Debitable](https://debitable.resilientdb.com/)**.
 5. To persist blockchain, chain state, and metadata, ResilientDB provides durability through  **LevelDB** and **RocksDB**.
 6. ResilientDB provides access to a seamless **GUI display** for deployment and maintenance, and supports  **Grafana** for plotting monitoring data. 
-7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/), [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect along with the entire [NexRes Team](https://resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**.
+7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/), [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
+
+<div align = "center">
+<img src="./img/resdb-v2.png" width="220">
+<img src="./img/apache-resdb.png" width="80">
+<img src="./img/apache-incubator.png" width="250">
+</div>
 
 ---
 
@@ -42,10 +48,12 @@ The latest ResilientDB documentation, including a programming guide, is availabl
    - System Parameters & Configuration   
    - Continuous Integration & Testing 
 
-![Nexres](./img/nexres.png)
+<div align = "center">
+<img src="./img/nexres.png" width="600">
+</div>
 
 ## OS Requirements
-Ubuntu 20.*
+Ubuntu 20+
 
 ---
 
@@ -68,29 +76,219 @@ Build Interactive Tools:
 
     bazel build service/tools/kv/api_tools/kv_service_tools
 
-Run tools to set a value by a key (for example, set the value with key "test" and value "test_value"):
+## Functions ##
+ResilientDB supports two types of functions: version-based and non-version-based.
+Version-based functions will leverage versions to protect each update, versions must be obtained before updating a key.
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
-    
-You will see the following result if successful:
+***Note***: Version-based functions are not compatible with non-version-based functions. Do not use both in your applications.
 
-    client set ret = 0
+We show the functions below and show how to use [kv_service_tools](service/tools/kv/api_tools/kv_service_tools.cpp) to test the function.
 
-Run tools to get value by a key (for example, get the value with key "test"):
+### Version-Based Functions ###
+#### Get ####
+Obtain the value of `key` with a specific version `v`.
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test 
-    
-You will see the following result if successful:
+      kv_service_tools --config config_file --cmd get_with_version --key key --version v
 
-    client get value = test_value
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_with_version |
+| key  | the key you want to obtain |
+| version | the version you want to obtain. (If the `v` is 0, it will return the latest version |
 
-Run tools to get all values that have been set:
 
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config getallvalues
+Example:
 
-You will see the following result if successful:
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_with_version --key key1 --version 0
 
-    client getallvalues value = [test_value]
+Results:
+> get key = key1, value = value: "v2"
+> version: 2
+
+#### Set ####
+Set `value` to the key `key` based on version `v`.
+
+      kv_service_tools --config config_file --cmd set_with_version --key key --version v --value value
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | set_with_version |
+| key  | the key you want to set |
+| version | the version you have obtained. (If the version has been changed during the update, the transaction will be ignored) |
+| value | the new value |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set_with_version --key key1 --version 0 --value v1
+
+Results:
+> set key = key1, value = v3, version = 2 done, ret = 0
+> 
+> current value = value: "v3"
+> version: 3
+
+#### Get Key History ####
+Obtain the update history of key `key` within the versions [`v1`, `v2`].
+
+      kv_service_tools --config config_file --cmd get_history --key key --min_version v1 --max_version v2
+
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_history |
+| key  | the key you want to obtain |
+| min_version | the minimum version you want to obtain |
+| max_version | the maximum version you want to obtain |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_history --key key1 --min_version 1 --max_version 2
+
+Results:
+
+> get history key = key1, min version = 1, max version = 2 <br>
+>  value = <br>
+> item { <br>
+>  &ensp; key: "key1" <br>
+>  &ensp; value_info { <br>
+>  &ensp;&ensp; value: "v1" <br>
+>  &ensp;&ensp; version: 2 <br>
+> &ensp;} <br>
+> } <br>
+> item { <br>
+> &ensp; key: "key1" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp; value: "v0" <br>
+> &ensp;&ensp; version: 1 <br>
+> &ensp;} <br>
+> } 
+
+#### Get Top ####
+Obtain the recent `top_number` history of the key `key`.
+
+      kv_service_tools --config config_path --cmd get_top --key key --top top_number
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_top |
+| key  | the key you want to obtain |
+| top | the number of the recent updates |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_top --key key1 --top 1
+
+Results:
+
+>key = key1, top 1 <br>
+> value = <br>
+> item { <br>
+>&ensp;key: "key1" <br>
+>  &ensp;value_info { <br>
+>  &ensp;&ensp;  value: "v2" <br>
+>  &ensp;&ensp;  version: 3 <br>
+>  &ensp;} <br>
+>}
+
+#### Get Key Range ####
+Obtain the values of the keys in the ranges [`key1`, `key2`]. Do not use this function in your practice code
+
+      kv_service_tools --config config_file --cmd get_key_range_with_version --min_key key1 --max_key key2
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_key_range_with_version |
+| min_key  | the minimum key  |
+| max_key | the maximum key |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range_with_version --min_key key1 --max_key key3
+
+Results:
+
+>min key = key1 max key = key2 <br>
+> getrange value = <br>
+> item { <br>
+> &ensp; key: "key1" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp;   value: "v0" <br>
+> &ensp;&ensp;   version: 1 <br>
+> &ensp; } <br>
+> } <br>
+> item { <br>
+> &ensp; key: "key2" <br>
+> &ensp; value_info { <br>
+> &ensp;&ensp;   value: "v1" <br>
+> &ensp;&ensp;   version: 1 <br>
+> &ensp; } <br>
+>}
+
+
+### Non-Version-Based Function ###
+#### Set #####
+Set `value` to the key `key`.
+
+      kv_service_tools --config config_file --cmd set --key key --value value
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | set |
+| key  | the key you want to set |
+| value | the new value |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd set --key key1 --value value1
+
+Results:
+> set key = key1, value = v1, done, ret = 0
+
+#### Get ####
+Obtain the value of `key`.
+
+      kv_service_tools --config config_file --cmd get --key key
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get |
+| key  | the key you want to obtain |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get --key key1
+
+Results:
+> get key = key1, value = "v2"
+
+
+#### Get Key Range ####
+Obtain the values of the keys in the ranges [`key1`, `key2`]. Do not use this function in your practice code
+
+      kv_service_tools --config config_path --cmd get_key_range --min_key key1 --max_key key2
+
+|  parameters   |  descriptions |
+|  ----  | ----  |
+| config  | the path of the client config which points to the db entrance |
+| cmd  | get_key_range |
+| min_key  | the minimum key  |
+| max_key | the maximum key |
+
+Example:
+
+      bazel-bin/service/tools/kv/api_tools/kv_service_tools --config service/tools/config/interface/service.config --cmd get_key_range --min_key key1 --max_key key3
+
+Results:
+> getrange min key = key1, max key = key3 <br>
+> value = [v3,v2,v1]
+
 
 ## Deployment Script
 
@@ -133,14 +331,4 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    docker exec -it myserver bash
    ```
 
-   Verify the functionality of the service by performing set and get operations:
-
-   - Set a test value:
-   ```shell
-   bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config set test test_value
-   ```
-
-   - Retrieve the test value:
-   ```
-    bazel-bin/service/tools/kv/api_tools/kv_service_tools service/tools/config/interface/service.config get test
-   ```
+   Verify the functionality of the service by performing set and get operations provided above [functions](README.md#functions).

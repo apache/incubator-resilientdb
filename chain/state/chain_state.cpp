@@ -29,64 +29,22 @@
 
 namespace resdb {
 
-ChainState::ChainState(std::unique_ptr<Storage> storage)
-    : storage_(std::move(storage)) {}
+ChainState::ChainState() : max_seq_(0) {}
 
-Storage* ChainState::GetStorage() {
-  return storage_ ? storage_.get() : nullptr;
+Request* ChainState::Get(uint64_t seq) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  if (data_.find(seq) == data_.end()) {
+    return nullptr;
+  }
+  return data_[seq].get();
 }
 
-int ChainState::SetValue(const std::string& key, const std::string& value) {
-  if (storage_) {
-    return storage_->SetValue(key, value);
-  }
-  kv_map_[key] = value;
-  return 0;
+void ChainState::Put(std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(mutex_);
+  max_seq_ = request->seq();
+  data_[max_seq_] = std::move(request);
 }
 
-std::string ChainState::GetValue(const std::string& key) {
-  if (storage_) {
-    return storage_->GetValue(key);
-  }
-  auto search = kv_map_.find(key);
-  if (search != kv_map_.end())
-    return search->second;
-  else {
-    return "";
-  }
-}
-
-std::string ChainState::GetAllValues(void) {
-  if (storage_) {
-    return storage_->GetAllValues();
-  }
-  std::string values = "[";
-  bool first_iteration = true;
-  for (auto kv : kv_map_) {
-    if (!first_iteration) values.append(",");
-    first_iteration = false;
-    values.append(kv.second);
-  }
-  values.append("]");
-  return values;
-}
-
-std::string ChainState::GetRange(const std::string& min_key,
-                                 const std::string& max_key) {
-  if (storage_) {
-    return storage_->GetRange(min_key, max_key);
-  }
-  std::string values = "[";
-  bool first_iteration = true;
-  for (auto kv : kv_map_) {
-    if (kv.first >= min_key && kv.first <= max_key) {
-      if (!first_iteration) values.append(",");
-      first_iteration = false;
-      values.append(kv.second);
-    }
-  }
-  values.append("]");
-  return values;
-}
+uint64_t ChainState::GetMaxSeq() { return max_seq_; }
 
 }  // namespace resdb
