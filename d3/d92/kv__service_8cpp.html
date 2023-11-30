@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('d3/d92/kv__service_8cpp.html','../../'
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;glog/logging.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../d0/dee/chain__state_8h_source.html">chain/state/chain_state.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/dd0/memory__db_8h_source.html">chain/storage/memory_db.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d1/d72/kv__executor_8h_source.html">executor/kv/kv_executor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d3/d16/resdb__config__utils_8h_source.html">platform/config/resdb_config_utils.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d9/d9b/stats_8h_source.html">platform/statistic/stats.h</a>&quot;</code><br />
@@ -112,8 +112,8 @@ $(document).ready(function(){initNavTree('d3/d92/kv__service_8cpp.html','../../'
 Functions</h2></td></tr>
 <tr class="memitem:a91da2a7f6c244a57f3f8a5fa094dcb7b" id="r_a91da2a7f6c244a57f3f8a5fa094dcb7b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d92/kv__service_8cpp.html#a91da2a7f6c244a57f3f8a5fa094dcb7b">ShowUsage</a> ()</td></tr>
 <tr class="separator:a91da2a7f6c244a57f3f8a5fa094dcb7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a097165c94ce94c760674185380442536" id="r_a097165c94ce94c760674185380442536"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d8/d22/classresdb_1_1ChainState.html">ChainState</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d92/kv__service_8cpp.html#a097165c94ce94c760674185380442536">NewState</a> (const std::string &amp;cert_file, const ResConfigData &amp;config_data)</td></tr>
-<tr class="separator:a097165c94ce94c760674185380442536"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f4ea6ca06eed62fa84e296355827198" id="r_a3f4ea6ca06eed62fa84e296355827198"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d92/kv__service_8cpp.html#a3f4ea6ca06eed62fa84e296355827198">NewStorage</a> (const std::string &amp;db_path, const ResConfigData &amp;config_data)</td></tr>
+<tr class="separator:a3f4ea6ca06eed62fa84e296355827198"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c04138a5bfe5d72780bb7e82a18e627" id="r_a3c04138a5bfe5d72780bb7e82a18e627"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d92/kv__service_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> (int argc, char **argv)</td></tr>
 <tr class="separator:a3c04138a5bfe5d72780bb7e82a18e627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -144,21 +144,21 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00064">64</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00063">63</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a097165c94ce94c760674185380442536" name="a097165c94ce94c760674185380442536"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a097165c94ce94c760674185380442536">&#9670;&#160;</a></span>NewState()</h2>
+<a id="a3f4ea6ca06eed62fa84e296355827198" name="a3f4ea6ca06eed62fa84e296355827198"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f4ea6ca06eed62fa84e296355827198">&#9670;&#160;</a></span>NewStorage()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::unique_ptr&lt; <a class="el" href="../../d8/d22/classresdb_1_1ChainState.html">ChainState</a> &gt; NewState </td>
+          <td class="memname">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt; NewStorage </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>cert_file</em>, </td>
+          <td class="paramname"><em>db_path</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -174,7 +174,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00046">46</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00047">47</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
 
 </div>
 </div>
@@ -193,7 +193,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00042">42</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d92/kv__service_8cpp_source.html#l00043">43</a> of file <a class="el" href="../../d3/d92/kv__service_8cpp_source.html">kv_service.cpp</a>.</p>
 
 </div>
 </div>

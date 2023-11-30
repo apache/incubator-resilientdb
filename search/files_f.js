@@ -22,8 +22,5 @@ var searchData=
   ['transaction_5futils_2eh_19',['transaction_utils.h',['../dd/de5/common_2transaction__utils_8h.html',1,'(Global Namespace)'],['../d7/d6f/pbft_2transaction__utils_8h.html',1,'(Global Namespace)']]],
   ['tx_5fmempool_2ecpp_20',['tx_mempool.cpp',['../df/d3e/tx__mempool_8cpp.html',1,'']]],
   ['tx_5fmempool_2eh_21',['tx_mempool.h',['../d9/dcc/tx__mempool_8h.html',1,'']]],
-  ['tx_5fmempool_5ftest_2ecpp_22',['tx_mempool_test.cpp',['../dc/d0b/tx__mempool__test_8cpp.html',1,'']]],
-  ['txn_5fmemory_5fdb_2ecpp_23',['txn_memory_db.cpp',['../d4/d34/txn__memory__db_8cpp.html',1,'']]],
-  ['txn_5fmemory_5fdb_2eh_24',['txn_memory_db.h',['../d2/dd0/txn__memory__db_8h.html',1,'']]],
-  ['txn_5fmemory_5fdb_5ftest_2ecpp_25',['txn_memory_db_test.cpp',['../db/dc9/txn__memory__db__test_8cpp.html',1,'']]]
+  ['tx_5fmempool_5ftest_2ecpp_22',['tx_mempool_test.cpp',['../dc/d0b/tx__mempool__test_8cpp.html',1,'']]]
 ];

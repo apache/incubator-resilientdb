@@ -5,7 +5,7 @@ var searchData=
   ['calculatehash_2',['CalculateHash',['../d4/d30/classresdb_1_1SignatureVerifier.html#acf7b6e124421e09d9f13155a3daea5f5',1,'resdb::SignatureVerifier']]],
   ['calculateripemd160hash_3',['CalculateRIPEMD160Hash',['../da/d1b/namespaceresdb_1_1utils.html#a0fb26398b123f4828c8a3336ed4db061',1,'resdb::utils']]],
   ['calculatesha256hash_4',['CalculateSHA256Hash',['../da/d1b/namespaceresdb_1_1utils.html#ab61a2f1c731d3cf28006f7e31b6659eb',1,'resdb::utils']]],
-  ['chainstate_5',['ChainState',['../d8/d22/classresdb_1_1ChainState.html#a80a53c3132882bcee1000c24a9258368',1,'resdb::ChainState']]],
+  ['chainstate_5',['ChainState',['../d8/d22/classresdb_1_1ChainState.html#a1d5aaa494f0401c2c8f75f110d1e50fa',1,'resdb::ChainState']]],
   ['check_5fand_5fadd_6',['check_and_add',['../d4/d35/classresdb_1_1SpinLockSet.html#a7a26518e7ec6248b548034f2dd562b79',1,'resdb::SpinLockSet']]],
   ['checkandaddexecuted_7',['CheckAndAddExecuted',['../d6/da0/classresdb_1_1DuplicateManager.html#a0c1c2af80dcfa6a648bfe526f860f165',1,'resdb::DuplicateManager']]],
   ['checkandaddproposed_8',['CheckAndAddProposed',['../d6/da0/classresdb_1_1DuplicateManager.html#a76d211c0491b2f28d67bfe5f1fc414cf',1,'resdb::DuplicateManager']]],

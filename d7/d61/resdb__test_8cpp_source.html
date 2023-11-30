@@ -222,7 +222,7 @@ $(document).ready(function(){initNavTree('d7/d61/resdb__test_8cpp_source.html','
 <div class="foldopen" id="foldopen00110" data-start="{" data-end="}">
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="../../dd/d33/classresdb_1_1ResDBTest.html#ae13cd064b3bc5461e332cf86d87ddbdf">  110</a></span>  <span class="keywordtype">void</span> <a class="code hl_function" href="../../dd/d33/classresdb_1_1ResDBTest.html#ae13cd064b3bc5461e332cf86d87ddbdf">WaitExecutorDone</a>(<span class="keywordtype">int</span> received_num) {</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keywordflow">for</span> (<span class="keyword">auto</span> executor : <a class="code hl_variable" href="../../dd/d33/classresdb_1_1ResDBTest.html#a36dd1b079900a620b2a87e4df8cc7309">executors_</a>) {</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>      <span class="keywordflow">while</span> (executor-&gt;GetSeqs().size() &lt; received_num) {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>      <span class="keywordflow">while</span> (<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(executor-&gt;GetSeqs().size()) &lt; received_num) {</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>        usleep(10000);</div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>      }</div>
 <div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    }</div>

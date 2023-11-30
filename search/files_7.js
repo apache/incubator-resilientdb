@@ -16,5 +16,6 @@ var searchData=
   ['kv_5fexecutor_5ftest_2ecpp_13',['kv_executor_test.cpp',['../db/d64/kv__executor__test_8cpp.html',1,'']]],
   ['kv_5fserver_5fperformance_2ecpp_14',['kv_server_performance.cpp',['../df/d28/kv__server__performance_8cpp.html',1,'']]],
   ['kv_5fservice_2ecpp_15',['kv_service.cpp',['../d3/d92/kv__service_8cpp.html',1,'']]],
-  ['kv_5fservice_5ftools_2ecpp_16',['kv_service_tools.cpp',['../d6/dc8/benchmark_2protocols_2pbft_2kv__service__tools_8cpp.html',1,'(Global Namespace)'],['../d8/d80/service_2tools_2kv_2api__tools_2kv__service__tools_8cpp.html',1,'(Global Namespace)']]]
+  ['kv_5fservice_5ftools_2ecpp_16',['kv_service_tools.cpp',['../d8/d80/service_2tools_2kv_2api__tools_2kv__service__tools_8cpp.html',1,'(Global Namespace)'],['../d6/dc8/benchmark_2protocols_2pbft_2kv__service__tools_8cpp.html',1,'(Global Namespace)']]],
+  ['kv_5fstorage_5ftest_2ecpp_17',['kv_storage_test.cpp',['../d3/d51/kv__storage__test_8cpp.html',1,'']]]
 ];

@@ -97,8 +97,8 @@ $(document).ready(function(){initNavTree('d9/d7c/md__2github_2workspace_2CHANGEL
   <div class="headertitle"><div class="title">Change Log</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md3"></a> </p>
-<h2><a class="anchor" id="autotoc_md4"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> </p>
+<h2><a class="anchor" id="autotoc_md1"></a>
 NexRes v1.8.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.8.0" &gt;2023-08-21&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b> The view-change recovery protocol was extensively expanded to support the following Byzantine failures through primary/leader replacement and replica recovery. (<a href="https://github.com/DakaiKang">Dakai Kang</a>)</p>
 <ul>
@@ -107,10 +107,10 @@ NexRes v1.8.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/t
 <li>Byzantine replicas try to keep some non-faulty replicas in the dark.</li>
 <li>Byzantine new primary becomes non-responsive, refusing to broadcast New-View messages.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md5"></a>
+<h2><a class="anchor" id="autotoc_md2"></a>
 NexRes v1.7.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.7.0" &gt;2023-08-04&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b> For each replica local recovery from durable storage upon system restart was added.(<a href="https://github.com/cjcchen">Junchao Chen</a>)</p>
-<h2><a class="anchor" id="autotoc_md6"></a>
+<h2><a class="anchor" id="autotoc_md3"></a>
 NexRes v1.6.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.6.0" &gt;2023-05-30&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b> Refactoring and enhancement of the codebase to highlight the entire software stack of ResilientDB consisting of the following layers (<a href="https://github.com/cjcchen">Junchao Chen</a>)</p>
 <ul>
@@ -121,17 +121,17 @@ NexRes v1.6.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/t
 <li>Transaction Layer (execution runtime and in-memory chain state)</li>
 <li>Storage Layer (chain and chain state durability)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
 NexRes v1.5.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.5.0" &gt;2023-04-04&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>A complete refactoring of the codebase such that (1) the core engine code is now moved to the platform folder, including the formwork architectures and protocols implementations; (2) the API/interface-related code is moved to the service folder, including UTXO, smart contract, and key-value interface; (3) the python SDK code is moved to a different repository <a href="https://github.com/resilientdb/sdk">here</a> (<a href="https://github.com/cjcchen">Junchao Chen</a>).</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md8"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 NexRes v1.4.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v.1.4.0" &gt;2023-02-28&lt;/a&gt;)</h2>
 <p>Major Changes</p><ul>
 <li>Support of UTXO model and wallet integration: <a href="https://blog.resilientdb.com/2023/02/12/GettingStartedOnUtxo.html">Detailed Documentation</a> (<a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md9"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
 NexRes v1.3.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.3.0" &gt;2023-02-22&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>Added Python SDK that supports UTXO-like transactions such as asset creation, transfer, and multi-party validations. (<a href="https://github.com/royari">Arindaam Roy</a>, <a href="https://github.com/glenn-chen">Glenn Chen</a>, and <a href="https://github.com/juduarte00">Julieta Duarte</a>)</li>
@@ -141,26 +141,26 @@ NexRes v1.3.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/t
 <p><b>Fixed Bugs:</b></p><ul>
 <li>Fixed KV service queries on all values retrieving empty placeholder values (<a href="https://github.com/glenn-chen">Glenn Chen</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md10"></a>
+<h2><a class="anchor" id="autotoc_md7"></a>
 NexRes v1.2.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.2.0" &gt;2023-01-29&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>Support smart contract compiled from Solidity. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 <li>Use eEVM as a back-end service to execute the contract functions. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md11"></a>
+<h2><a class="anchor" id="autotoc_md8"></a>
 NexRes v1.1.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.1.0" &gt;2023-01-03&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p>
 <ul>
 <li>Added Geo-Scale Byzantine Fault-tolerant consensus protocol, referred to as GeoBFT. It is designed for excellent scalability by using a topological-aware grouping of replicas in local clusters, giving rise to parallelization of consensus at the local level and by minimizing communication between clusters. (<a href="https://github.com/WayneJa">WayneWang</a>)</li>
 </ul>
 <p>ResilientDB: Global Scale Resilient Blockchain Fabric, VLDB 2020</p>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md9"></a>
 NexRes v1.0.1 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.0.1" &gt;2022-10-13&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p>
 <ul>
 <li>Add node manager backend for resilientdb.com to launch NexRes locally. (<a href="https://github.com/sheshavpd">Vishnu</a> and <a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md13"></a>
+<h2><a class="anchor" id="autotoc_md10"></a>
 NexRes v1.0.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.0.0" &gt;2022-09-30&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p>
 <ul>
@@ -171,21 +171,21 @@ NexRes v1.0.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/t
 <li>Add implementation of Dashboard. (<a href="https://github.com/jyu25utk">Jianxio</a>)</li>
 <li>Add the recovery protocol and checkpoint on PBFT. (<a href="https://github.com/cjcchen">Junchao Chen</a> and <a href="https://github.com/sheshavpd">Vishnu</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md14"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 NexRes v1.0.0-alpha (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/nexres-alpha" &gt;2022-09-22&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>Release the next generation of RelisientDB, a complete rewrite and re-architecting, referred to as NexRes. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 <li>NexRes supports PBFT as the default core protocol and provides a KV-Server as a service. (<a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 <li>NexRes also supports LevelDB and RocksDB as the durable storage layer. (<a href="https://github.com/glenn-chen">Glenn Chen</a>, <a href="https://github.com/juduarte00">Julieta Duarte</a>, and <a href="https://github.com/cjcchen">Junchao Chen</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md15"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 v3.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v3.0" &gt;2021-09-30&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>GeoBFT Protocol Added (<a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a>)</li>
 <li>Work Queue structure changed (<a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a>)</li>
 <li>Refactoring, and added Statistics and Scripts (<a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md16"></a>
+<h2><a class="anchor" id="autotoc_md13"></a>
 v2.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v2.0" &gt;2020-02-29&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>A GUI display for ResilientDB to ease user interaction and analysis. <a href="https://github.com/resilientdb/resilientdb/issues/9">#9</a> (<a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a> and <a href="https://github.com/RohanSogani">RohanSogani</a>)</li>
@@ -196,7 +196,7 @@ v2.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v2.0" 
 <p><b>Fixed Bugs:</b></p><ul>
 <li>Bug in the Chain Initialization <a href="https://github.com/resilientdb/resilientdb/issues/5">#5</a> (<a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a>)</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md17"></a>
+<h2><a class="anchor" id="autotoc_md14"></a>
 v1.1 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v1.1" &gt;2019-12-05&lt;/a&gt;)</h2>
 <p><b>Implemented Enhancements:</b></p><ul>
 <li>Defined class to represent ledger. <a href="https://github.com/resilientdb/resilientdb/commit/56f500fe5e4749c45f57dc8e62d12bc7a218ce69">6b0fdc5</a> (<a href="https://github.com/gupta-suyash">Suyash Gupta</a>)</li>
@@ -205,7 +205,7 @@ v1.1 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v1.1" 
 <li>Docker script fails to run for multiple client <a href="https://github.com/resilientdb/resilientdb/issues/1">#1</a> (<a href="https://github.com/RohanSogani">RohanSogani</a>) <br  />
 </li>
 </ul>
-<h2><a class="anchor" id="autotoc_md18"></a>
+<h2><a class="anchor" id="autotoc_md15"></a>
 v1.0 (&lt;a href="https://github.com/resilientdb/resilientdb/releases/tag/v1.0" &gt;2019-11-24&lt;/a&gt;)</h2>
 <p>Launched ResilientDB (<a href="https://github.com/gupta-suyash">Suyash Gupta</a> and <a href="https://github.com/sajjadrahnama">Sajjad Rahnama</a>) </p>
 </div></div><!-- contents -->

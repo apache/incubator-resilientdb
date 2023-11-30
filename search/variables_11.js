@@ -10,6 +10,6 @@ var searchData=
   ['timeout_5ftime_7',['timeout_time',['../d7/dbd/classresdb_1_1PerformanceClientTimeout.html#a9f3bf51f5e7bef1c57312c49e68f990c',1,'resdb::PerformanceClientTimeout::timeout_time'],['../d9/d00/classresdb_1_1ViewChangeTimeout.html#a496a1bbeca7a76d12324ab90b947eaec',1,'resdb::ViewChangeTimeout::timeout_time']]],
   ['tps_8',['tps',['../d8/d54/namespacecalculate__result.html#ae1fbf3fa2a9030100bc693cad754de10',1,'calculate_result']]],
   ['txn_5faccessor_5f_9',['txn_accessor_',['../dc/db0/classresdb_1_1CheckPointManager.html#a3f47514c194ba66e77554552feeae5cf',1,'resdb::CheckPointManager']]],
-  ['txn_5fdb_5f_10',['txn_db_',['../dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7',1,'resdb::CheckPointManager']]],
+  ['txn_5fdb_5f_10',['txn_db_',['../dc/db0/classresdb_1_1CheckPointManager.html#a4397054cefc9d5ae52c0a9a458346149',1,'resdb::CheckPointManager']]],
   ['type_11',['type',['../d9/d00/classresdb_1_1ViewChangeTimeout.html#a2a188f53d564dbb04f6178088346203b',1,'resdb::ViewChangeTimeout']]]
 ];

@@ -9,7 +9,7 @@ var classresdb_1_1CheckPointManager =
     [ "GetMaxTxnSeq", "dc/db0/classresdb_1_1CheckPointManager.html#ae05581eae257b0b5fb901cf74a833980", null ],
     [ "GetStableCheckpoint", "dc/db0/classresdb_1_1CheckPointManager.html#a9ee2716c726f5bade01d56cd09c8d880", null ],
     [ "GetStableCheckpointWithVotes", "dc/db0/classresdb_1_1CheckPointManager.html#ab12ae64e561933759ad360830c061d2e", null ],
-    [ "GetTxnDB", "dc/db0/classresdb_1_1CheckPointManager.html#a232cc7220d8960dde9b57f60b782a532", null ],
+    [ "GetTxnDB", "dc/db0/classresdb_1_1CheckPointManager.html#a765d9a64c832cb1ded51a38d91be2314", null ],
     [ "IsValidCheckpointProof", "dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf", null ],
     [ "PopStableSeqHash", "dc/db0/classresdb_1_1CheckPointManager.html#a900e7f2a4f7043cdba68bd34303bdfb0", null ],
     [ "ProcessCheckPoint", "dc/db0/classresdb_1_1CheckPointManager.html#a9e3c9dbedd4383b65a359c00e10d1101", null ],
@@ -47,6 +47,6 @@ var classresdb_1_1CheckPointManager =
     [ "stop_", "dc/db0/classresdb_1_1CheckPointManager.html#ab83898cbc4b5f881ad04c96edb936d06", null ],
     [ "timeout_handler_", "dc/db0/classresdb_1_1CheckPointManager.html#a90893732db0d37125ac3c82cb62d1848", null ],
     [ "txn_accessor_", "dc/db0/classresdb_1_1CheckPointManager.html#a3f47514c194ba66e77554552feeae5cf", null ],
-    [ "txn_db_", "dc/db0/classresdb_1_1CheckPointManager.html#aedc8343a1b68e4b967028064e35909c7", null ],
+    [ "txn_db_", "dc/db0/classresdb_1_1CheckPointManager.html#a4397054cefc9d5ae52c0a9a458346149", null ],
     [ "verifier_", "dc/db0/classresdb_1_1CheckPointManager.html#a2277111dccaaf881af206a4ce7efa0b8", null ]
 ];

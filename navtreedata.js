@@ -64,16 +64,17 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/d44/classresdb_1_1Recovery.html#af407e64394ef0e17bb1395342bb4cf2b",
-"d3/d5e/classresdb_1_1ReplicaCommunicator.html#ae93d03a61ab026c280b2a85da8b99076",
-"d4/dbb/classresdb_1_1KVClient.html#a7921a07f8bf2c2192a5b03601af22dfd",
-"d6/ddf/async__replica__client_8h_source.html",
-"d8/d4f/classresdb_1_1MockAsyncReplicaClient.html#ac8f429827cd7036ed9db66c2def6ff8b",
-"da/d19/classresdb_1_1ConsensusManager.html#a5a706d7931fb764202c4d9076c888a33",
-"db/d8c/transaction__executor_8h_source.html",
-"dc/db0/classresdb_1_1CheckPointManager.html#ae6249edf685aa8de090d4b26170b1892",
-"de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf",
-"df/d82/namespaceresdb_1_1coin_1_1utils.html#a35643a882b65863597c78e372c0708d4"
+"d1/d89/classresdb_1_1PerformanceManager.html#ac532335c144ea148f52df8ad2822fda2",
+"d3/d51/kv__storage__test_8cpp.html#a679ba61b4152f83a46a4bb88b1cd7ca1",
+"d4/dac/classresdb_1_1MockNetChannel.html#a0cbb2349f4d390c3a506cc5749d8a9fe",
+"d6/da0/classresdb_1_1DuplicateManager.html#af8bd73e78c13634d84b201f8f0b28472",
+"d8/d22/classresdb_1_1ChainState.html#a8fca837b597b970808b5e09a536ed2e1",
+"d9/dc2/response__manager__test_8cpp.html#a2e378ae4a550d2861bd568d217b338b9",
+"da/dfa/classresdb_1_1TransactionExecutor.html",
+"dc/db0/classresdb_1_1CheckPointManager.html#a227d132998f3ffdde9aef287a6956cdf",
+"dd/dd7/classresdb_1_1MockSocket.html",
+"de/de1/consensus__manager__pbft_8cpp.html",
+"functions_func_r.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -7,6 +7,11 @@ var annotated_dup =
         [ "ContractManager", "d6/d7d/classresdb_1_1contract_1_1ContractManager.html", "d6/d7d/classresdb_1_1contract_1_1ContractManager" ],
         [ "ContractTransactionManager", "d7/d96/classresdb_1_1contract_1_1ContractTransactionManager.html", "d7/d96/classresdb_1_1contract_1_1ContractTransactionManager" ]
       ] ],
+      [ "storage", "dd/dae/namespaceresdb_1_1storage.html", [
+        [ "MemoryDB", "da/d75/classresdb_1_1storage_1_1MemoryDB.html", "da/d75/classresdb_1_1storage_1_1MemoryDB" ],
+        [ "ResLevelDB", "d3/d39/classresdb_1_1storage_1_1ResLevelDB.html", "d3/d39/classresdb_1_1storage_1_1ResLevelDB" ],
+        [ "ResRocksDB", "d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html", "d9/d1d/classresdb_1_1storage_1_1ResRocksDB" ]
+      ] ],
       [ "utxo", "d1/d74/namespaceresdb_1_1utxo.html", [
         [ "QueryExecutor", "d0/da0/classresdb_1_1utxo_1_1QueryExecutor.html", "d0/da0/classresdb_1_1utxo_1_1QueryExecutor" ],
         [ "Transaction", "d8/d15/classresdb_1_1utxo_1_1Transaction.html", "d8/d15/classresdb_1_1utxo_1_1Transaction" ],
@@ -72,9 +77,7 @@ var annotated_dup =
       [ "ResDBTestClient", "d8/d65/classresdb_1_1ResDBTestClient.html", "d8/d65/classresdb_1_1ResDBTestClient" ],
       [ "ResDBTestManager", "d0/d2a/classresdb_1_1ResDBTestManager.html", "d0/d2a/classresdb_1_1ResDBTestManager" ],
       [ "ResDBTxnAccessor", "da/d12/classresdb_1_1ResDBTxnAccessor.html", "da/d12/classresdb_1_1ResDBTxnAccessor" ],
-      [ "ResLevelDB", "d4/d91/classresdb_1_1ResLevelDB.html", "d4/d91/classresdb_1_1ResLevelDB" ],
       [ "ResponseManager", "da/d2f/classresdb_1_1ResponseManager.html", "da/d2f/classresdb_1_1ResponseManager" ],
-      [ "ResRocksDB", "d0/d5a/classresdb_1_1ResRocksDB.html", "d0/d5a/classresdb_1_1ResRocksDB" ],
       [ "ServerFactory", "da/d3b/classresdb_1_1ServerFactory.html", "da/d3b/classresdb_1_1ServerFactory" ],
       [ "ServiceInterface", "da/d3b/classresdb_1_1ServiceInterface.html", "da/d3b/classresdb_1_1ServiceInterface" ],
       [ "ServiceNetwork", "d4/d2d/classresdb_1_1ServiceNetwork.html", "d4/d2d/classresdb_1_1ServiceNetwork" ],
@@ -90,7 +93,6 @@ var annotated_dup =
       [ "TransactionConstructor", "d0/da5/classresdb_1_1TransactionConstructor.html", "d0/da5/classresdb_1_1TransactionConstructor" ],
       [ "TransactionExecutor", "da/dfa/classresdb_1_1TransactionExecutor.html", "da/dfa/classresdb_1_1TransactionExecutor" ],
       [ "TransactionManager", "df/d01/classresdb_1_1TransactionManager.html", "df/d01/classresdb_1_1TransactionManager" ],
-      [ "TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", "dd/dd3/classresdb_1_1TxnMemoryDB" ],
       [ "ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", "d1/db2/classresdb_1_1ViewChangeManager" ],
       [ "ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", "d9/d00/classresdb_1_1ViewChangeTimeout" ]
     ] ]

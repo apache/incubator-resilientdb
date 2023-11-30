@@ -117,6 +117,16 @@ Inheritance diagram for resdb::KVClient:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:aaf4cd3dcba0b942e1f8d7c378a2470ce" id="r_aaf4cd3dcba0b942e1f8d7c378a2470ce"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#aaf4cd3dcba0b942e1f8d7c378a2470ce">KVClient</a> (const <a class="el" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a> &amp;config)</td></tr>
 <tr class="separator:aaf4cd3dcba0b942e1f8d7c378a2470ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51f8f8bb730c43c71e97c9c7777a11fd" id="r_a51f8f8bb730c43c71e97c9c7777a11fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#a51f8f8bb730c43c71e97c9c7777a11fd">Set</a> (const std::string &amp;key, const std::string &amp;<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>, int version)</td></tr>
+<tr class="separator:a51f8f8bb730c43c71e97c9c7777a11fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf116a590c3c36a16dc4adf3b3ffee35" id="r_abf116a590c3c36a16dc4adf3b3ffee35"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; ValueInfo &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#abf116a590c3c36a16dc4adf3b3ffee35">Get</a> (const std::string &amp;key, int version)</td></tr>
+<tr class="separator:abf116a590c3c36a16dc4adf3b3ffee35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7d26563aa9fc214b8e419ea021db66a" id="r_ac7d26563aa9fc214b8e419ea021db66a"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; Items &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#ac7d26563aa9fc214b8e419ea021db66a">GetKeyRange</a> (const std::string &amp;min_key, const std::string &amp;max_key)</td></tr>
+<tr class="separator:ac7d26563aa9fc214b8e419ea021db66a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab013c9d8218f5b504e6ca3135c3a7369" id="r_ab013c9d8218f5b504e6ca3135c3a7369"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; Items &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#ab013c9d8218f5b504e6ca3135c3a7369">GetKeyHistory</a> (const std::string &amp;key, int min_version, int max_version)</td></tr>
+<tr class="separator:ab013c9d8218f5b504e6ca3135c3a7369"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60dd93413c7c2a0ce69bea3c79786da1" id="r_a60dd93413c7c2a0ce69bea3c79786da1"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; Items &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#a60dd93413c7c2a0ce69bea3c79786da1">GetKeyTopHistory</a> (const std::string &amp;key, int top_number)</td></tr>
+<tr class="separator:a60dd93413c7c2a0ce69bea3c79786da1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7921a07f8bf2c2192a5b03601af22dfd" id="r_a7921a07f8bf2c2192a5b03601af22dfd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#a7921a07f8bf2c2192a5b03601af22dfd">Set</a> (const std::string &amp;key, const std::string &amp;<a class="el" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>)</td></tr>
 <tr class="separator:a7921a07f8bf2c2192a5b03601af22dfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb8ba2021b40e6fa1eff734d6cfa1324" id="r_aeb8ba2021b40e6fa1eff734d6cfa1324"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dbb/classresdb_1_1KVClient.html#aeb8ba2021b40e6fa1eff734d6cfa1324">Get</a> (const std::string &amp;key)</td></tr>
@@ -208,7 +218,7 @@ Additional Inherited Members</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../d8/d48/kv__client_8h_source.html#l00033">33</a> of file <a class="el" href="../../d8/d48/kv__client_8h_source.html">kv_client.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/d48/kv__client_8h_source.html#l00034">34</a> of file <a class="el" href="../../d8/d48/kv__client_8h_source.html">kv_client.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aaf4cd3dcba0b942e1f8d7c378a2470ce" name="aaf4cd3dcba0b942e1f8d7c378a2470ce"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaf4cd3dcba0b942e1f8d7c378a2470ce">&#9670;&#160;</a></span>KVClient()</h2>
@@ -226,13 +236,13 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00032">32</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="aeb8ba2021b40e6fa1eff734d6cfa1324" name="aeb8ba2021b40e6fa1eff734d6cfa1324"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb8ba2021b40e6fa1eff734d6cfa1324">&#9670;&#160;</a></span>Get()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb8ba2021b40e6fa1eff734d6cfa1324">&#9670;&#160;</a></span>Get() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -247,7 +257,37 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00045">45</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00043">43</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+
+</div>
+</div>
+<a id="abf116a590c3c36a16dc4adf3b3ffee35" name="abf116a590c3c36a16dc4adf3b3ffee35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abf116a590c3c36a16dc4adf3b3ffee35">&#9670;&#160;</a></span>Get() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; ValueInfo &gt; resdb::KVClient::Get </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00093">93</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
 
 </div>
 </div>
@@ -266,7 +306,103 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00058">58</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00056">56</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ab013c9d8218f5b504e6ca3135c3a7369" name="ab013c9d8218f5b504e6ca3135c3a7369"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab013c9d8218f5b504e6ca3135c3a7369">&#9670;&#160;</a></span>GetKeyHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; Items &gt; resdb::KVClient::GetKeyHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>min_version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00122">122</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac7d26563aa9fc214b8e419ea021db66a" name="ac7d26563aa9fc214b8e419ea021db66a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7d26563aa9fc214b8e419ea021db66a">&#9670;&#160;</a></span>GetKeyRange()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; Items &gt; resdb::KVClient::GetKeyRange </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>min_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>max_key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00107">107</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a60dd93413c7c2a0ce69bea3c79786da1" name="a60dd93413c7c2a0ce69bea3c79786da1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60dd93413c7c2a0ce69bea3c79786da1">&#9670;&#160;</a></span>GetKeyTopHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt; Items &gt; resdb::KVClient::GetKeyTopHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>top_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00139">139</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
 
 </div>
 </div>
@@ -296,12 +432,12 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00070">70</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00068">68</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
 
 </div>
 </div>
 <a id="a7921a07f8bf2c2192a5b03601af22dfd" name="a7921a07f8bf2c2192a5b03601af22dfd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7921a07f8bf2c2192a5b03601af22dfd">&#9670;&#160;</a></span>Set()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7921a07f8bf2c2192a5b03601af22dfd">&#9670;&#160;</a></span>Set() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -326,7 +462,43 @@ Additional Inherited Members</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00037">37</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00035">35</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a51f8f8bb730c43c71e97c9c7777a11fd" name="a51f8f8bb730c43c71e97c9c7777a11fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51f8f8bb730c43c71e97c9c7777a11fd">&#9670;&#160;</a></span>Set() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int resdb::KVClient::Set </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html#l00083">83</a> of file <a class="el" href="../../d9/d6d/kv__client_8cpp_source.html">kv_client.cpp</a>.</p>
 
 </div>
 </div>

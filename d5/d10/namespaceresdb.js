@@ -2,6 +2,7 @@ var namespaceresdb =
 [
     [ "coin", "d9/ddc/namespaceresdb_1_1coin.html", "d9/ddc/namespaceresdb_1_1coin" ],
     [ "contract", "d8/d28/namespaceresdb_1_1contract.html", "d8/d28/namespaceresdb_1_1contract" ],
+    [ "storage", "dd/dae/namespaceresdb_1_1storage.html", "dd/dae/namespaceresdb_1_1storage" ],
     [ "testing", "d4/d47/namespaceresdb_1_1testing.html", [
       [ "MATCHER_P", "d4/d47/namespaceresdb_1_1testing.html#ad9c8f1de731bb888763780213a8a2c36", null ],
       [ "ParseFromText", "d4/d47/namespaceresdb_1_1testing.html#aa17aa374848a8922ab475aac71f90945", null ]
@@ -72,9 +73,7 @@ var namespaceresdb =
     [ "ResDBTestClient", "d8/d65/classresdb_1_1ResDBTestClient.html", "d8/d65/classresdb_1_1ResDBTestClient" ],
     [ "ResDBTestManager", "d0/d2a/classresdb_1_1ResDBTestManager.html", "d0/d2a/classresdb_1_1ResDBTestManager" ],
     [ "ResDBTxnAccessor", "da/d12/classresdb_1_1ResDBTxnAccessor.html", "da/d12/classresdb_1_1ResDBTxnAccessor" ],
-    [ "ResLevelDB", "d4/d91/classresdb_1_1ResLevelDB.html", "d4/d91/classresdb_1_1ResLevelDB" ],
     [ "ResponseManager", "da/d2f/classresdb_1_1ResponseManager.html", "da/d2f/classresdb_1_1ResponseManager" ],
-    [ "ResRocksDB", "d0/d5a/classresdb_1_1ResRocksDB.html", "d0/d5a/classresdb_1_1ResRocksDB" ],
     [ "ServerFactory", "da/d3b/classresdb_1_1ServerFactory.html", "da/d3b/classresdb_1_1ServerFactory" ],
     [ "ServiceInterface", "da/d3b/classresdb_1_1ServiceInterface.html", "da/d3b/classresdb_1_1ServiceInterface" ],
     [ "ServiceNetwork", "d4/d2d/classresdb_1_1ServiceNetwork.html", "d4/d2d/classresdb_1_1ServiceNetwork" ],
@@ -90,7 +89,6 @@ var namespaceresdb =
     [ "TransactionConstructor", "d0/da5/classresdb_1_1TransactionConstructor.html", "d0/da5/classresdb_1_1TransactionConstructor" ],
     [ "TransactionExecutor", "da/dfa/classresdb_1_1TransactionExecutor.html", "da/dfa/classresdb_1_1TransactionExecutor" ],
     [ "TransactionManager", "df/d01/classresdb_1_1TransactionManager.html", "df/d01/classresdb_1_1TransactionManager" ],
-    [ "TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", "dd/dd3/classresdb_1_1TxnMemoryDB" ],
     [ "ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", "d1/db2/classresdb_1_1ViewChangeManager" ],
     [ "ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", "d9/d00/classresdb_1_1ViewChangeTimeout" ],
     [ "ConfigGenFunc", "d5/d10/namespaceresdb.html#a031e2c65bfc513f03b13ea6181b0eb26", null ],
@@ -147,8 +145,6 @@ var namespaceresdb =
     [ "GetTcpUrl", "d5/d10/namespaceresdb.html#ab7bef7d6e060002099f2b78248b34cbc", null ],
     [ "NewRequest", "d5/d10/namespaceresdb.html#a26e13db44e53ac446f5fc96fb4cf4848", null ],
     [ "NewRequest", "d5/d10/namespaceresdb.html#a56d3b8c76b7936e7fc14a38d5ef31745", null ],
-    [ "NewResLevelDB", "d5/d10/namespaceresdb.html#ad1657351e0a5d089bbf7d890837a696c", null ],
-    [ "NewResRocksDB", "d5/d10/namespaceresdb.html#ac0095a195a7abbd4390576c5911cd07f", null ],
     [ "ReadConfig", "d5/d10/namespaceresdb.html#a67842a19269800fb4efcff8d4082118b", null ],
     [ "ReadConfigFromFile", "d5/d10/namespaceresdb.html#aa55fc1c659f788583d9b656c93a8455b", null ],
     [ "SendData", "d5/d10/namespaceresdb.html#a50f2133434c829fd6c5b4e980065a408", null ],

@@ -10,7 +10,7 @@ var searchData=
   ['resdbtestclient_7',['ResDBTestClient',['../d8/d65/classresdb_1_1ResDBTestClient.html',1,'resdb']]],
   ['resdbtestmanager_8',['ResDBTestManager',['../d0/d2a/classresdb_1_1ResDBTestManager.html',1,'resdb']]],
   ['resdbtxnaccessor_9',['ResDBTxnAccessor',['../da/d12/classresdb_1_1ResDBTxnAccessor.html',1,'resdb']]],
-  ['resleveldb_10',['ResLevelDB',['../d4/d91/classresdb_1_1ResLevelDB.html',1,'resdb']]],
+  ['resleveldb_10',['ResLevelDB',['../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html',1,'resdb::storage']]],
   ['responsemanager_11',['ResponseManager',['../da/d2f/classresdb_1_1ResponseManager.html',1,'resdb']]],
-  ['resrocksdb_12',['ResRocksDB',['../d0/d5a/classresdb_1_1ResRocksDB.html',1,'resdb']]]
+  ['resrocksdb_12',['ResRocksDB',['../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html',1,'resdb::storage']]]
 ];

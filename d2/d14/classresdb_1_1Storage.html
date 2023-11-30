@@ -108,9 +108,10 @@ Inheritance diagram for resdb::Storage:</div>
  <div class="center">
   <img src="../../d2/d14/classresdb_1_1Storage.png" usemap="#resdb::Storage_map" alt=""/>
   <map id="resdb::Storage_map" name="resdb::Storage_map">
-<area href="../../de/d28/classresdb_1_1MockStorage.html" alt="resdb::MockStorage" shape="rect" coords="0,56,125,80"/>
-<area href="../../d4/d91/classresdb_1_1ResLevelDB.html" alt="resdb::ResLevelDB" shape="rect" coords="135,56,260,80"/>
-<area href="../../d0/d5a/classresdb_1_1ResRocksDB.html" alt="resdb::ResRocksDB" shape="rect" coords="270,56,395,80"/>
+<area href="../../de/d28/classresdb_1_1MockStorage.html" alt="resdb::MockStorage" shape="rect" coords="0,56,170,80"/>
+<area href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html" alt="resdb::storage::MemoryDB" shape="rect" coords="180,56,350,80"/>
+<area href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html" alt="resdb::storage::ResLevelDB" shape="rect" coords="360,56,530,80"/>
+<area href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html" alt="resdb::storage::ResRocksDB" shape="rect" coords="540,56,710,80"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -128,12 +129,24 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a74b80a711f53c3c0bd98d5006a17c541"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f2a7fe32638e6b4a5a1e2597913a378" id="r_a4f2a7fe32638e6b4a5a1e2597913a378"><td class="memItemLeft" align="right" valign="top">virtual std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a4f2a7fe32638e6b4a5a1e2597913a378">GetRange</a> (const std::string &amp;min_key, const std::string &amp;max_key)=0</td></tr>
 <tr class="separator:a4f2a7fe32638e6b4a5a1e2597913a378"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63bd726417d38d67cc831f260cab0804" id="r_a63bd726417d38d67cc831f260cab0804"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a63bd726417d38d67cc831f260cab0804">Flush</a> ()=0</td></tr>
-<tr class="separator:a63bd726417d38d67cc831f260cab0804"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11e69abb13d31483642a2b03679394c7" id="r_a11e69abb13d31483642a2b03679394c7"><td class="memItemLeft" align="right" valign="top">virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a11e69abb13d31483642a2b03679394c7">SetValueWithVersion</a> (const std::string &amp;key, const std::string &amp;value, int version)=0</td></tr>
+<tr class="separator:a11e69abb13d31483642a2b03679394c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbaeab5c3ea6f88ae482fbb406a34f14" id="r_afbaeab5c3ea6f88ae482fbb406a34f14"><td class="memItemLeft" align="right" valign="top">virtual std::pair&lt; std::string, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#afbaeab5c3ea6f88ae482fbb406a34f14">GetValueWithVersion</a> (const std::string &amp;key, int version)=0</td></tr>
+<tr class="separator:afbaeab5c3ea6f88ae482fbb406a34f14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa34343e63f038d4c7f08d993453d1b5f" id="r_aa34343e63f038d4c7f08d993453d1b5f"><td class="memItemLeft" align="right" valign="top">virtual std::map&lt; std::string, std::pair&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#aa34343e63f038d4c7f08d993453d1b5f">GetAllItems</a> ()=0</td></tr>
+<tr class="separator:aa34343e63f038d4c7f08d993453d1b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac12cbf01977b673a990b54951e36d685" id="r_ac12cbf01977b673a990b54951e36d685"><td class="memItemLeft" align="right" valign="top">virtual std::map&lt; std::string, std::pair&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#ac12cbf01977b673a990b54951e36d685">GetKeyRange</a> (const std::string &amp;min_key, const std::string &amp;max_key)=0</td></tr>
+<tr class="separator:ac12cbf01977b673a990b54951e36d685"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fae8ec0b5a9b8fb95f5c8b7492e7fad" id="r_a0fae8ec0b5a9b8fb95f5c8b7492e7fad"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; std::pair&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a0fae8ec0b5a9b8fb95f5c8b7492e7fad">GetHistory</a> (const std::string &amp;key, int min_version, int max_version)=0</td></tr>
+<tr class="separator:a0fae8ec0b5a9b8fb95f5c8b7492e7fad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a71db9aedf6e52e752e46d29f219d45" id="r_a0a71db9aedf6e52e752e46d29f219d45"><td class="memItemLeft" align="right" valign="top">virtual std::vector&lt; std::pair&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a0a71db9aedf6e52e752e46d29f219d45">GetTopHistory</a> (const std::string &amp;key, int number)=0</td></tr>
+<tr class="separator:a0a71db9aedf6e52e752e46d29f219d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b7bfb9558caf0cd20bc4bdc35b1afe6" id="r_a2b7bfb9558caf0cd20bc4bdc35b1afe6"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d14/classresdb_1_1Storage.html#a2b7bfb9558caf0cd20bc4bdc35b1afe6">Flush</a> ()</td></tr>
+<tr class="separator:a2b7bfb9558caf0cd20bc4bdc35b1afe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="../../d8/d6b/storage_8h_source.html#l00032">32</a> of file <a class="el" href="../../d8/d6b/storage_8h_source.html">storage.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/d6b/storage_8h_source.html#l00034">34</a> of file <a class="el" href="../../d8/d6b/storage_8h_source.html">storage.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a043b87c929e00dd9cce9366f1d3c38c9" name="a043b87c929e00dd9cce9366f1d3c38c9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a043b87c929e00dd9cce9366f1d3c38c9">&#9670;&#160;</a></span>Storage()</h2>
@@ -186,8 +199,8 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a63bd726417d38d67cc831f260cab0804" name="a63bd726417d38d67cc831f260cab0804"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63bd726417d38d67cc831f260cab0804">&#9670;&#160;</a></span>Flush()</h2>
+<a id="a2b7bfb9558caf0cd20bc4bdc35b1afe6" name="a2b7bfb9558caf0cd20bc4bdc35b1afe6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b7bfb9558caf0cd20bc4bdc35b1afe6">&#9670;&#160;</a></span>Flush()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -204,12 +217,41 @@ Public Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Reimplemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#ae7e6c4c91c291b9b1463330137aeb245">resdb::storage::ResLevelDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#ad18db01a006d2bf643bcff371d328dce">resdb::storage::ResRocksDB</a>.</p>
+
+<p class="definition">Definition at line <a class="el" href="../../d8/d6b/storage_8h_source.html#l00063">63</a> of file <a class="el" href="../../d8/d6b/storage_8h_source.html">storage.h</a>.</p>
+
+</div>
+</div>
+<a id="aa34343e63f038d4c7f08d993453d1b5f" name="aa34343e63f038d4c7f08d993453d1b5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa34343e63f038d4c7f08d993453d1b5f">&#9670;&#160;</a></span>GetAllItems()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::map&lt; std::string, std::pair&lt; std::string, int &gt; &gt; resdb::Storage::GetAllItems </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
 <span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a4ba3d06a427186fa1c14e2068126ff03">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a6040606066f068d4cb4a0eec631a7c34">resdb::ResRocksDB</a>.</p>
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a5792ed38aa30ae0820c6177150a598fa">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a857c8a316b485f42bc22e96566c00cc4">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#afda0dadbd01dfe1b25305c76d662e26b">resdb::storage::ResRocksDB</a>.</p>
 
 </div>
 </div>
@@ -236,7 +278,89 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a5bdfc16ee6def9b9fc93d4e819eaee4b">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#ad0b4309f0962f4cd64d033bb1687511c">resdb::ResRocksDB</a>.</p>
+<p>Implemented in <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a36b6a0970e848012ae3bc40c8bede518">resdb::storage::MemoryDB</a>, <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a1f56778380ea8fc10284bde64eacf8b0">resdb::storage::ResLevelDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#adcda7ca24ad924de07d8b449f208dc26">resdb::storage::ResRocksDB</a>.</p>
+
+</div>
+</div>
+<a id="a0fae8ec0b5a9b8fb95f5c8b7492e7fad" name="a0fae8ec0b5a9b8fb95f5c8b7492e7fad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fae8ec0b5a9b8fb95f5c8b7492e7fad">&#9670;&#160;</a></span>GetHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::vector&lt; std::pair&lt; std::string, int &gt; &gt; resdb::Storage::GetHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>min_version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a73153dfddba6e3f04f5e626f798d0610">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a5cf374e364ea0ed65c12721b11654430">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#a6d5560b0bc9cb0ba39d642a366bdcae1">resdb::storage::ResRocksDB</a>.</p>
+
+</div>
+</div>
+<a id="ac12cbf01977b673a990b54951e36d685" name="ac12cbf01977b673a990b54951e36d685"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac12cbf01977b673a990b54951e36d685">&#9670;&#160;</a></span>GetKeyRange()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::map&lt; std::string, std::pair&lt; std::string, int &gt; &gt; resdb::Storage::GetKeyRange </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>min_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>max_key</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a19e2d7bf9dd1a5bf030253baa4e6c8cb">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#af1fb8cea5ed91abf154ce4fdb40f2a74">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#a4937f0a382576dfa1ccbd452b980e41a">resdb::storage::ResRocksDB</a>.</p>
 
 </div>
 </div>
@@ -274,7 +398,45 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a10de56deebe8fd30f8fbf67292bba564">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#adbd758032c11e03397db79310e05867f">resdb::ResRocksDB</a>.</p>
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a9a9ab59df1857e4918c36fe6566cea2b">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a68ff0bb9ae084d1b8be024def1b7a398">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#af6d15b96fefb25e4b01996f55b16265b">resdb::storage::ResRocksDB</a>.</p>
+
+</div>
+</div>
+<a id="a0a71db9aedf6e52e752e46d29f219d45" name="a0a71db9aedf6e52e752e46d29f219d45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0a71db9aedf6e52e752e46d29f219d45">&#9670;&#160;</a></span>GetTopHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::vector&lt; std::pair&lt; std::string, int &gt; &gt; resdb::Storage::GetTopHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a307fa3ab7aa36a5e634d58902f56acdc">resdb::storage::MemoryDB</a>, <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a6a3064c09f54d3e24886a6455d176ee3">resdb::storage::ResLevelDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#aef6477b168ddcc1b145740b8e9be93f4">resdb::storage::ResRocksDB</a>.</p>
 
 </div>
 </div>
@@ -302,7 +464,45 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#a09127e6633c6c5ed8fe9a56fba22db9f">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#adc9cf32bdbcc72e54e10e6180d655638">resdb::ResRocksDB</a>.</p>
+<p>Implemented in <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#a6c237c6bf8da34bf30efa38a08a04f59">resdb::storage::MemoryDB</a>, <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#ab727b1a4df6ea5487f68f05f10ab8916">resdb::storage::ResLevelDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#adc39bdb228ac0babd539f79814df8066">resdb::storage::ResRocksDB</a>.</p>
+
+</div>
+</div>
+<a id="afbaeab5c3ea6f88ae482fbb406a34f14" name="afbaeab5c3ea6f88ae482fbb406a34f14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbaeab5c3ea6f88ae482fbb406a34f14">&#9670;&#160;</a></span>GetValueWithVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual std::pair&lt; std::string, int &gt; resdb::Storage::GetValueWithVersion </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a827afdc30e1fd351d7c47917292e01bc">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#af0eb0bfb5573018d511fe66994244bfa">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#a188fee201c14a02306b2694937f1bd05">resdb::storage::ResRocksDB</a>.</p>
 
 </div>
 </div>
@@ -340,7 +540,51 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="../../d4/d91/classresdb_1_1ResLevelDB.html#adeda0dde2a2e402a51110a8169565498">resdb::ResLevelDB</a>, and <a class="el" href="../../d0/d5a/classresdb_1_1ResRocksDB.html#a4c02ca69e0572800072d9e2b57667bdd">resdb::ResRocksDB</a>.</p>
+<p>Implemented in <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#aee61c5a005d19be384ebd0ad0391e1ff">resdb::storage::MemoryDB</a>, <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a8292adeea1801c40b56dd31e0f057718">resdb::storage::ResLevelDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#a3e8d077f996ecf278eb14852ee190fde">resdb::storage::ResRocksDB</a>.</p>
+
+</div>
+</div>
+<a id="a11e69abb13d31483642a2b03679394c7" name="a11e69abb13d31483642a2b03679394c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a11e69abb13d31483642a2b03679394c7">&#9670;&#160;</a></span>SetValueWithVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual int resdb::Storage::SetValueWithVersion </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="../../d3/d39/classresdb_1_1storage_1_1ResLevelDB.html#a9dc1d4e300308de7a0399ed44be2c8d6">resdb::storage::ResLevelDB</a>, <a class="el" href="../../da/d75/classresdb_1_1storage_1_1MemoryDB.html#abcc808471821089bd071f53764abbcde">resdb::storage::MemoryDB</a>, and <a class="el" href="../../d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html#a8e1edd2c883988238bfcb4acbe7f9009">resdb::storage::ResRocksDB</a>.</p>
 
 </div>
 </div>

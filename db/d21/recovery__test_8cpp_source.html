@@ -211,7 +211,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    EXPECT_EQ(list.size(), expected_types.size());</div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    }</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>  }</div>
@@ -252,7 +252,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span> </div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>    EXPECT_EQ(list.size(), expected_types.size());</div>
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span> </div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    }</div>
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>  }</div>
@@ -318,7 +318,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
 <div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    EXPECT_EQ(list.size(), types.size() * 14);</div>
 <div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span> </div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    }</div>
 <div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  }</div>
@@ -327,7 +327,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(RecoveryTest, CheckPoint2) {</div>
 <div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  ResDBConfig config(GetConfigData(1024), ReplicaInfo(), KeyInfo(),</div>
 <div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>                     CertificateInfo());</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  MockStorage storage;</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  MockStorage <a class="code hl_variable" href="../../d3/d51/kv__storage__test_8cpp.html#ab382fa70e9d1c37c084744a3d9b18bf7">storage</a>;</div>
 <div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  EXPECT_CALL(storage, Flush).Times(2).WillRepeatedly(Return(<span class="keyword">true</span>));</div>
 <div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span> </div>
 <div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>  std::vector&lt;int&gt; types = {Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE,</div>
@@ -395,7 +395,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span> </div>
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>    EXPECT_EQ(list.size(), types.size() * 14);</div>
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span> </div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>    }</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span> </div>
@@ -432,7 +432,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span> </div>
 <div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>    EXPECT_EQ(list.size(), types.size() * 9);</div>
 <div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span> </div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    }</div>
 <div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>    EXPECT_EQ(recovery.GetMinSeq(), 30);</div>
@@ -443,7 +443,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span><a class="code hl_function" href="../../d5/d10/namespaceresdb.html#ab31c2875ec907efdbc2284cb1eabdc49">TEST_F</a>(RecoveryTest, SystemInfo) {</div>
 <div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>  ResDBConfig config(GetConfigData(1024), ReplicaInfo(), KeyInfo(),</div>
 <div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                     CertificateInfo());</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>  MockStorage storage;</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>  MockStorage <a class="code hl_variable" href="../../d3/d51/kv__storage__test_8cpp.html#ab382fa70e9d1c37c084744a3d9b18bf7">storage</a>;</div>
 <div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>  EXPECT_CALL(storage, Flush).Times(2).WillRepeatedly(Return(<span class="keyword">true</span>));</div>
 <div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span> </div>
 <div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>  std::vector&lt;int&gt; types = {Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE,</div>
@@ -514,7 +514,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span> </div>
 <div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>    EXPECT_EQ(list.size(), types.size() * 14);</div>
 <div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span> </div>
-<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>    }</div>
 <div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span> </div>
@@ -554,7 +554,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span>    EXPECT_EQ(<a class="code hl_variable" href="../../df/dba/batch__queue__test_8cpp.html#a8a036d3167ef9d3099cafcac54e25c72">data</a>.primary_id(), 2);</div>
 <div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span>    EXPECT_EQ(list.size(), types.size() * 9);</div>
 <div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span> </div>
-<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
+<div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; expected_types.size(); ++i) {</div>
 <div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>      EXPECT_EQ(list[i].type(), expected_types[i]);</div>
 <div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>    }</div>
 <div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span>    EXPECT_EQ(recovery.GetMinSeq(), 30);</div>
@@ -570,6 +570,7 @@ $(document).ready(function(){initNavTree('db/d21/recovery__test_8cpp_source.html
 <div class="ttc" id="aclassresdb_1_1SystemInfo_html_a252fcff099191e66fc26eceb27185c49"><div class="ttname"><a href="../../d9/d27/classresdb_1_1SystemInfo.html#a252fcff099191e66fc26eceb27185c49">resdb::SystemInfo::SetPrimary</a></div><div class="ttdeci">void SetPrimary(uint32_t id)</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d80/system__info_8cpp_source.html#l00042">system_info.cpp:42</a></div></div>
 <div class="ttc" id="acommitment__test_8cpp_html_a2e378ae4a550d2861bd568d217b338b9"><div class="ttname"><a href="../../d5/d74/commitment__test_8cpp.html#a2e378ae4a550d2861bd568d217b338b9">system_info_</a></div><div class="ttdeci">SystemInfo system_info_</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d74/commitment__test_8cpp_source.html#l00126">commitment_test.cpp:126</a></div></div>
 <div class="ttc" id="acommon_2transaction__utils_8h_html"><div class="ttname"><a href="../../dd/de5/common_2transaction__utils_8h.html">transaction_utils.h</a></div></div>
+<div class="ttc" id="akv__storage__test_8cpp_html_ab382fa70e9d1c37c084744a3d9b18bf7"><div class="ttname"><a href="../../d3/d51/kv__storage__test_8cpp.html#ab382fa70e9d1c37c084744a3d9b18bf7">storage</a></div><div class="ttdeci">std::unique_ptr&lt; Storage &gt; storage</div><div class="ttdef"><b>Definition</b> <a href="../../d3/d51/kv__storage__test_8cpp_source.html#l00069">kv_storage_test.cpp:69</a></div></div>
 <div class="ttc" id="amock__checkpoint_8h_html"><div class="ttname"><a href="../../d8/dc5/mock__checkpoint_8h.html">mock_checkpoint.h</a></div></div>
 <div class="ttc" id="amock__storage_8h_html"><div class="ttname"><a href="../../df/d9b/mock__storage_8h.html">mock_storage.h</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>

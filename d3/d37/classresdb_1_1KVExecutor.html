@@ -115,8 +115,8 @@ Inheritance diagram for resdb::KVExecutor:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae1f0b8e55b740302d8ad6292478a871a" id="r_ae1f0b8e55b740302d8ad6292478a871a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#ae1f0b8e55b740302d8ad6292478a871a">KVExecutor</a> (std::unique_ptr&lt; <a class="el" href="../../d8/d22/classresdb_1_1ChainState.html">ChainState</a> &gt; state)</td></tr>
-<tr class="separator:ae1f0b8e55b740302d8ad6292478a871a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ec649ca827f5ff9517b150f603dad38" id="r_a0ec649ca827f5ff9517b150f603dad38"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a0ec649ca827f5ff9517b150f603dad38">KVExecutor</a> (std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt; storage)</td></tr>
+<tr class="separator:a0ec649ca827f5ff9517b150f603dad38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28d823715dfc52b70fc2639a6333c911" id="r_a28d823715dfc52b70fc2639a6333c911"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a28d823715dfc52b70fc2639a6333c911">~KVExecutor</a> ()=default</td></tr>
 <tr class="separator:a28d823715dfc52b70fc2639a6333c911"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27c4c499cbed3ef12c867321a7a3e7f7" id="r_a27c4c499cbed3ef12c867321a7a3e7f7"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a27c4c499cbed3ef12c867321a7a3e7f7">ExecuteData</a> (const std::string &amp;request) override</td></tr>
@@ -145,13 +145,25 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:ab958cd67bf8e1314b74c51cbde85cc6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae1bd9798bbb262944cea9cbbc315d8ed" id="r_ae1bd9798bbb262944cea9cbbc315d8ed"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#ae1bd9798bbb262944cea9cbbc315d8ed">GetRange</a> (const std::string &amp;min_key, const std::string &amp;max_key)</td></tr>
 <tr class="separator:ae1bd9798bbb262944cea9cbbc315d8ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff681cee595d813ba4bb2c3edda4e490" id="r_aff681cee595d813ba4bb2c3edda4e490"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#aff681cee595d813ba4bb2c3edda4e490">SetWithVersion</a> (const std::string &amp;key, const std::string &amp;value, int version)</td></tr>
+<tr class="separator:aff681cee595d813ba4bb2c3edda4e490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d11dc1175612cfda038e34291bae2a3" id="r_a8d11dc1175612cfda038e34291bae2a3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a8d11dc1175612cfda038e34291bae2a3">GetWithVersion</a> (const std::string &amp;key, int version, ValueInfo *info)</td></tr>
+<tr class="separator:a8d11dc1175612cfda038e34291bae2a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5927c7bf0a96bab0fc732e5d1c5326b5" id="r_a5927c7bf0a96bab0fc732e5d1c5326b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a5927c7bf0a96bab0fc732e5d1c5326b5">GetAllItems</a> (Items *items)</td></tr>
+<tr class="separator:a5927c7bf0a96bab0fc732e5d1c5326b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cbe292a26d5a73bb4d00cc987ea43ea" id="r_a5cbe292a26d5a73bb4d00cc987ea43ea"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a5cbe292a26d5a73bb4d00cc987ea43ea">GetKeyRange</a> (const std::string &amp;min_key, const std::string &amp;max_key, Items *items)</td></tr>
+<tr class="separator:a5cbe292a26d5a73bb4d00cc987ea43ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ed5d64c27ec9484537bdb71eeed057e" id="r_a7ed5d64c27ec9484537bdb71eeed057e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a7ed5d64c27ec9484537bdb71eeed057e">GetHistory</a> (const std::string &amp;key, int min_key, int max_key, Items *items)</td></tr>
+<tr class="separator:a7ed5d64c27ec9484537bdb71eeed057e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a580829e2d906f08cd25dbbd7657ecca2" id="r_a580829e2d906f08cd25dbbd7657ecca2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d37/classresdb_1_1KVExecutor.html#a580829e2d906f08cd25dbbd7657ecca2">GetTopHistory</a> (const std::string &amp;key, int top_number, Items *items)</td></tr>
+<tr class="separator:a580829e2d906f08cd25dbbd7657ecca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
 <p class="definition">Definition at line <a class="el" href="../../d1/d72/kv__executor_8h_source.html#l00038">38</a> of file <a class="el" href="../../d1/d72/kv__executor_8h_source.html">kv_executor.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ae1f0b8e55b740302d8ad6292478a871a" name="ae1f0b8e55b740302d8ad6292478a871a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae1f0b8e55b740302d8ad6292478a871a">&#9670;&#160;</a></span>KVExecutor()</h2>
+<a id="a0ec649ca827f5ff9517b150f603dad38" name="a0ec649ca827f5ff9517b150f603dad38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ec649ca827f5ff9517b150f603dad38">&#9670;&#160;</a></span>KVExecutor()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,14 +171,14 @@ Protected Member Functions</h2></td></tr>
         <tr>
           <td class="memname">resdb::KVExecutor::KVExecutor </td>
           <td>(</td>
-          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../d8/d22/classresdb_1_1ChainState.html">ChainState</a> &gt;&#160;</td>
-          <td class="paramname"><em>state</em></td><td>)</td>
+          <td class="paramtype">std::unique_ptr&lt; <a class="el" href="../../d2/d14/classresdb_1_1Storage.html">Storage</a> &gt;&#160;</td>
+          <td class="paramname"><em>storage</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00034">34</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00032">32</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -222,7 +234,7 @@ Protected Member Functions</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="../../df/d01/classresdb_1_1TransactionManager.html#af426cffa031dac8e1930385dfdb1cd64">resdb::TransactionManager</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00037">37</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00035">35</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -250,7 +262,35 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00069">69</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00082">82</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a5927c7bf0a96bab0fc732e5d1c5326b5" name="a5927c7bf0a96bab0fc732e5d1c5326b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5927c7bf0a96bab0fc732e5d1c5326b5">&#9670;&#160;</a></span>GetAllItems()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::GetAllItems </td>
+          <td>(</td>
+          <td class="paramtype">Items *&#160;</td>
+          <td class="paramname"><em>items</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00106">106</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -277,7 +317,101 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00073">73</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00086">86</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a7ed5d64c27ec9484537bdb71eeed057e" name="a7ed5d64c27ec9484537bdb71eeed057e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ed5d64c27ec9484537bdb71eeed057e">&#9670;&#160;</a></span>GetHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::GetHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>min_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>max_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Items *&#160;</td>
+          <td class="paramname"><em>items</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00129">129</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a5cbe292a26d5a73bb4d00cc987ea43ea" name="a5cbe292a26d5a73bb4d00cc987ea43ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cbe292a26d5a73bb4d00cc987ea43ea">&#9670;&#160;</a></span>GetKeyRange()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::GetKeyRange </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>min_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>max_key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Items *&#160;</td>
+          <td class="paramname"><em>items</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00117">117</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -315,7 +449,95 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00076">76</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00089">89</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a580829e2d906f08cd25dbbd7657ecca2" name="a580829e2d906f08cd25dbbd7657ecca2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a580829e2d906f08cd25dbbd7657ecca2">&#9670;&#160;</a></span>GetTopHistory()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::GetTopHistory </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>top_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Items *&#160;</td>
+          <td class="paramname"><em>items</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00141">141</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a8d11dc1175612cfda038e34291bae2a3" name="a8d11dc1175612cfda038e34291bae2a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d11dc1175612cfda038e34291bae2a3">&#9670;&#160;</a></span>GetWithVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::GetWithVersion </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ValueInfo *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00099">99</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>
@@ -353,7 +575,51 @@ Protected Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00065">65</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00078">78</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aff681cee595d813ba4bb2c3edda4e490" name="aff681cee595d813ba4bb2c3edda4e490"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff681cee595d813ba4bb2c3edda4e490">&#9670;&#160;</a></span>SetWithVersion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void resdb::KVExecutor::SetWithVersion </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>version</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html#l00094">94</a> of file <a class="el" href="../../dd/d28/kv__executor_8cpp_source.html">kv_executor.cpp</a>.</p>
 
 </div>
 </div>

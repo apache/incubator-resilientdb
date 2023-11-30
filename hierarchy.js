@@ -98,8 +98,9 @@ var hierarchy =
     [ "resdb::Stats", "de/d0d/classresdb_1_1Stats.html", null ],
     [ "resdb::Storage", "d2/d14/classresdb_1_1Storage.html", [
       [ "resdb::MockStorage", "de/d28/classresdb_1_1MockStorage.html", null ],
-      [ "resdb::ResLevelDB", "d4/d91/classresdb_1_1ResLevelDB.html", null ],
-      [ "resdb::ResRocksDB", "d0/d5a/classresdb_1_1ResRocksDB.html", null ]
+      [ "resdb::storage::MemoryDB", "da/d75/classresdb_1_1storage_1_1MemoryDB.html", null ],
+      [ "resdb::storage::ResLevelDB", "d3/d39/classresdb_1_1storage_1_1ResLevelDB.html", null ],
+      [ "resdb::storage::ResRocksDB", "d9/d1d/classresdb_1_1storage_1_1ResRocksDB.html", null ]
     ] ],
     [ "resdb::SystemInfo", "d9/d27/classresdb_1_1SystemInfo.html", null ],
     [ "Test", null, [
@@ -119,7 +120,6 @@ var hierarchy =
       [ "resdb::utxo::UTXOExecutor", "de/de8/classresdb_1_1utxo_1_1UTXOExecutor.html", null ]
     ] ],
     [ "resdb::utxo::TxMempool", "d7/d32/classresdb_1_1utxo_1_1TxMempool.html", null ],
-    [ "resdb::TxnMemoryDB", "dd/dd3/classresdb_1_1TxnMemoryDB.html", null ],
     [ "resdb::ViewChangeManager", "d1/db2/classresdb_1_1ViewChangeManager.html", null ],
     [ "resdb::ViewChangeTimeout", "d9/d00/classresdb_1_1ViewChangeTimeout.html", null ],
     [ "resdb::utxo::Wallet", "df/ddc/classresdb_1_1utxo_1_1Wallet.html", null ]
