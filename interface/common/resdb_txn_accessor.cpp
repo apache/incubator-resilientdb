@@ -122,4 +122,17 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
   return txn_resp;
 }
 
+absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
+  auto status = GetTxn(1, 10000);
+  if(!status.ok()){
+    return status.status();
+  }
+  if((*status).empty()){
+    return 0;
+  }
+  else {
+    return (*status).back().first;
+  }
+}
+
 }  // namespace resdb

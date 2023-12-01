@@ -43,6 +43,8 @@ class ResDBTxnAccessor {
   virtual absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> GetTxn(
       uint64_t min_seq, uint64_t max_seq);
 
+  virtual absl::StatusOr<uint64_t> GetBlockNumbers();
+
  protected:
   virtual std::unique_ptr<NetChannel> GetNetChannel(const std::string& ip,
                                                     int port);
