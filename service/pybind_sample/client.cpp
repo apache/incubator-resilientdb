@@ -1,4 +1,24 @@
-#include <pybind11/embed.h>  // everything needed for embedding
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
+
+#include <pybind11/embed.h> // everything needed for embedding
 
 #include <fstream>
 #include <string>
@@ -6,14 +26,13 @@ namespace py = pybind11;
 using namespace py::literals;
 
 int main() {
-  py::scoped_interpreter guard{};  // start the interpreter and keep it alive
+  py::scoped_interpreter guard{}; // start the interpreter and keep it alive
 
   printf(
       "++++++++++PLEASE MAKE SURE YOU ARE IN THE PYBIND_SAMPLE DIRECTORY WHEN "
       "RUNNING THE BINARY+++++++++\n");
-  printf(
-      "This is so the program correctly finds the Python files in the "
-      "pybind_sample directory\n\n");
+  printf("This is so the program correctly finds the Python files in the "
+         "pybind_sample directory\n\n");
 
   printf("We can read a Python file into a string and execute its entirety\n");
   std::ifstream ifs("print_sample.py", std::ifstream::in);
@@ -62,5 +81,6 @@ int main() {
 
   auto is_valid = locals["is_valid"].cast<bool>();
 
-  if (is_valid) printf("Valid\n");
+  if (is_valid)
+    printf("Valid\n");
 }

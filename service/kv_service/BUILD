@@ -5,8 +5,8 @@ cc_library(
     srcs = ["resdb_kv_client.cpp"],
     hdrs = ["resdb_kv_client.h"],
     deps = [
-        "@com_resdb_nexres//interface/rdbc:transaction_constructor",
         "//service/kv_service/proto:kv_server_cc_proto",
+        "@com_resdb_nexres//interface/rdbc:transaction_constructor",
     ],
 )
 
@@ -17,7 +17,7 @@ cc_library(
     tags = ["manual"],
     deps = [
         "@com_resdb_nexres//common:comm",
-        "@pybind11//:pybind11_embed"
+        "@pybind11//:pybind11_embed",
     ],
 )
 
@@ -27,12 +27,12 @@ cc_library(
     hdrs = ["kv_service_transaction_manager.h"],
     deps = [
         ":py_verificator",
-        "@com_resdb_nexres//common:comm",
-        "@com_resdb_nexres//platform/config:resdb_config_utils",
-        "@com_resdb_nexres//executor/common:transaction_manager",
-        "@com_resdb_nexres//chain/state:chain_state",
         "//service/kv_service/proto:kv_server_cc_proto",
-    ]
+        "@com_resdb_nexres//chain/state:chain_state",
+        "@com_resdb_nexres//common:comm",
+        "@com_resdb_nexres//executor/common:transaction_manager",
+        "@com_resdb_nexres//platform/config:resdb_config_utils",
+    ],
 )
 
 cc_binary(
@@ -49,10 +49,8 @@ cc_binary(
     name = "kv_service_tools",
     srcs = ["kv_service_tools.cpp"],
     deps = [
+        "//service/kv_service:resdb_kv_client",
         "@com_resdb_nexres//common/proto:signature_info_cc_proto",
         "@com_resdb_nexres//platform/config:resdb_config_utils",
-        "//service/kv_service:resdb_kv_client",
     ],
 )
-
-

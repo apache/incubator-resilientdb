@@ -16,14 +16,14 @@ cc_library(
     deps = [
         ":sdk_transaction",
         "//service/kv_service:resdb_kv_client",
+        "//third_party:crow",
+        "//third_party:rapidjson",
         "@com_resdb_nexres//common:asio",
         "@com_resdb_nexres//common:boost_comm",
         "@com_resdb_nexres//common/proto:signature_info_cc_proto",
-        "@com_resdb_nexres//platform/config:resdb_config_utils",
+        "@com_resdb_nexres//interface/common:resdb_state_accessor",
         "@com_resdb_nexres//interface/common:resdb_txn_accessor",
-	"@com_resdb_nexres//interface/common:resdb_state_accessor",
-        "//third_party:crow",
-        "//third_party:rapidjson",
+        "@com_resdb_nexres//platform/config:resdb_config_utils",
     ],
 )
 

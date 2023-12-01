@@ -190,8 +190,35 @@ http_archive(
 git_repository(
     name = "com_resdb_nexres",
     branch = "resilient_v2",
-    remote = "https://github.com/resilientdb/resilientdb.git"
+    remote = "https://github.com/resilientdb/resilientdb.git",
+)
+
+http_archive(
+    name = "io_bazel_rules_go",
+    sha256 = "d6b2513456fe2229811da7eb67a444be7785f5323c6708b38d851d2b51e54d83",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.30.0/rules_go-v0.30.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.30.0/rules_go-v0.30.0.zip",
+    ],
+)
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains")
+
+go_register_toolchains(version = "1.19.5")
+
+http_archive(
+    name = "com_github_bazelbuild_buildtools",
+    sha256 = "518b2ce90b1f8ad7c9a319ca84fd7de9a0979dd91e6d21648906ea68faa4f37a",
+    strip_prefix = "buildtools-5.0.1",
+    urls = [
+        "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.0.1.zip",
+    ],
 )
 
 load("@com_resdb_nexres//:repositories.bzl", "nexres_repositories")
+
 nexres_repositories()

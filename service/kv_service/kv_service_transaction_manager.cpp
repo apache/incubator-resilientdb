@@ -1,34 +1,28 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "service/kv_service/kv_service_transaction_manager.h"
 
 #include <glog/logging.h>
 
-#include "service/kv_service/proto/kv_server.pb.h"
 #include "chain/state/chain_state.h"
+#include "service/kv_service/proto/kv_server.pb.h"
 
 #ifdef ENABLE_LEVELDB
 #include "chain/storage/res_leveldb.h"
@@ -40,14 +34,15 @@
 
 namespace sdk {
 
-using resdb::ResConfigData;
 using resdb::ChainState;
+using resdb::ResConfigData;
 
-KVServiceTransactionManager::KVServiceTransactionManager(std::unique_ptr<ChainState> state)
-    :state_(std::move(state)){} 
+KVServiceTransactionManager::KVServiceTransactionManager(
+    std::unique_ptr<ChainState> state)
+    : state_(std::move(state)) {}
 
-std::unique_ptr<std::string> KVServiceTransactionManager::ExecuteData(
-    const std::string& request) {
+std::unique_ptr<std::string>
+KVServiceTransactionManager::ExecuteData(const std::string &request) {
   KVRequest kv_request;
   KVResponse kv_response;
 
@@ -74,8 +69,8 @@ std::unique_ptr<std::string> KVServiceTransactionManager::ExecuteData(
   return resp_str;
 }
 
-void KVServiceTransactionManager::Set(const std::string& key,
-                                      const std::string& value) {
+void KVServiceTransactionManager::Set(const std::string &key,
+                                      const std::string &value) {
   bool is_valid = py_verificator_->Validate(value);
   if (!is_valid) {
     LOG(ERROR) << "Invalid transaction for " << key;
@@ -84,7 +79,7 @@ void KVServiceTransactionManager::Set(const std::string& key,
   state_->SetValue(key, value);
 }
 
-std::string KVServiceTransactionManager::Get(const std::string& key) {
+std::string KVServiceTransactionManager::Get(const std::string &key) {
   return state_->GetValue(key);
 }
 
@@ -93,9 +88,9 @@ std::string KVServiceTransactionManager::GetAllValues() {
 }
 
 // Get values on a range of keys
-std::string KVServiceTransactionManager::GetRange(const std::string& min_key,
-                                                  const std::string& max_key) {
+std::string KVServiceTransactionManager::GetRange(const std::string &min_key,
+                                                  const std::string &max_key) {
   return state_->GetRange(min_key, max_key);
 }
 
-}  // namespace resdb
+} // namespace sdk
