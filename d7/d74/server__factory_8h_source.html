@@ -98,44 +98,44 @@ $(document).ready(function(){initNavTree('d7/d74/server__factory_8h_source.html'
 </div><!--header-->
 <div class="contents">
 <a href="../../d7/d74/server__factory_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * Copyright (c) 2019-2022 ExpoLab, UC Davis</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * Permission is hereby granted, free of charge, to any person</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> * obtaining a copy of this software and associated documentation</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> * files (the &quot;Software&quot;), to deal in the Software without</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * restriction, including without limitation the rights to use,</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * copy, modify, merge, publish, distribute, sublicense, and/or</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * sell copies of the Software, and to permit persons to whom the</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> * Software is furnished to do so, subject to the following conditions:</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> * or more contributor license agreements.  See the NOTICE file</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * distributed with this work for additional information</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> * regarding copyright ownership.  The ASF licenses this file</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> * to you under the Apache License, Version 2.0 (the</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * &quot;License&quot;); you may not use this file except in compliance</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * with the License.  You may obtain a copy of the License at</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *   http://www.apache.org/licenses/LICENSE-2.0</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * The above copyright notice and this permission notice shall be</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * included in all copies or substantial portions of the Software.</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="comment"> * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="comment"> * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="comment"> * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="comment"> * DEALINGS IN THE SOFTWARE.</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> */</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#pragma once</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * Unless required by applicable law or agreed to in writing,</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * software distributed under the License is distributed on an</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> * KIND, either express or implied.  See the License for the</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * specific language governing permissions and limitations</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> * under the License.</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#pragma once</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &quot;<a class="code" href="../../d1/d66/custom__query_8h.html">executor/common/custom_query.h</a>&quot;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/dc0/transaction__manager_8h.html">executor/common/transaction_manager.h</a>&quot;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="../../d3/d16/resdb__config__utils_8h.html">platform/config/resdb_config_utils.h</a>&quot;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d6c/consensus__manager__pbft_8h.html">platform/consensus/ordering/pbft/consensus_manager_pbft.h</a>&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../d2/d22/service__network_8h.html">platform/networkstrate/service_network.h</a>&quot;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &quot;<a class="code" href="../../d1/d66/custom__query_8h.html">executor/common/custom_query.h</a>&quot;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &quot;<a class="code" href="../../d8/dc0/transaction__manager_8h.html">executor/common/transaction_manager.h</a>&quot;</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;<a class="code" href="../../d3/d16/resdb__config__utils_8h.html">platform/config/resdb_config_utils.h</a>&quot;</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d6c/consensus__manager__pbft_8h.html">platform/consensus/ordering/pbft/consensus_manager_pbft.h</a>&quot;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &quot;<a class="code" href="../../d2/d22/service__network_8h.html">platform/networkstrate/service_network.h</a>&quot;</span></div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="foldopen" id="foldopen00036" data-start="{" data-end="};">
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html">   36</a></span><span class="keyword">class </span><a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a> {</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#aadebfd20820b8f1de23788e612a8c5e5">CreateResDBServer</a>(</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html">   30</a></span><span class="keyword">class </span><a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a> {</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#aadebfd20820b8f1de23788e612a8c5e5">CreateResDBServer</a>(</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>      <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>      std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>      std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler);</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol = ConsensusManagerPBFT&gt;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>(</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>      <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>      std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>      std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler);</div>
@@ -143,19 +143,19 @@ $(document).ready(function(){initNavTree('d7/d74/server__factory_8h_source.html'
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol = ConsensusManagerPBFT&gt;</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>(</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>      <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>      std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>      std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler);</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol = ConsensusManagerPBFT&gt;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>(</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>      <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>      std::unique_ptr&lt;TransactionManager&gt; executor,</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>      std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>      std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler);</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>};</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>      std::unique_ptr&lt;TransactionManager&gt; executor,</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>      std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>      std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>};</div>
 </div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a92bea99ce90c0c721d002ab634ffa2b0">GenerateResDBServer</a>(</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a92bea99ce90c0c721d002ab634ffa2b0">GenerateResDBServer</a>(</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir = <span class="keyword">nullptr</span>,</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler = <span class="keyword">nullptr</span>);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir = <span class="keyword">nullptr</span>,</div>
 <div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler = <span class="keyword">nullptr</span>);</div>
@@ -163,89 +163,83 @@ $(document).ready(function(){initNavTree('d7/d74/server__factory_8h_source.html'
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir = <span class="keyword">nullptr</span>,</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler = <span class="keyword">nullptr</span>);</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler = <span class="keyword">nullptr</span>);</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="comment">// ===================================================================</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
-<div class="foldopen" id="foldopen00077" data-start="{" data-end="}">
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">   77</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">ServerFactory::CustomCreateResDBServer</a>(</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  std::unique_ptr&lt;ResDBConfig&gt; config =</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>      <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#aae9011388f6fd7b287566f37e31660fa">GenerateResDBConfig</a>(config_file, private_key_file, cert_file);</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  <span class="keywordflow">if</span> (config_handler) {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    config_handler(config.get());</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  }</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  <span class="keywordflow">return</span> std::make_unique&lt;ServiceNetwork&gt;(</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>      *config,</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>      std::make_unique&lt;ConsensusProtocol&gt;(*config, std::move(executor)));</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>}</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler = <span class="keyword">nullptr</span>);</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="comment">// ===================================================================</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
+<div class="foldopen" id="foldopen00071" data-start="{" data-end="}">
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">   71</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">ServerFactory::CustomCreateResDBServer</a>(</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>  std::unique_ptr&lt;ResDBConfig&gt; config =</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>      <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#aae9011388f6fd7b287566f37e31660fa">GenerateResDBConfig</a>(config_file, private_key_file, cert_file);</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>  <span class="keywordflow">if</span> (config_handler) {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    config_handler(config.get());</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  }</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  <span class="keywordflow">return</span> std::make_unique&lt;ServiceNetwork&gt;(</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>      *config,</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>      std::make_unique&lt;ConsensusProtocol&gt;(*config, std::move(executor)));</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>}</div>
 </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
-<div class="foldopen" id="foldopen00093" data-start="{" data-end="}">
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html#aa4e53e3a85ad4182338f446f1dd11674">   93</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">ServerFactory::CustomCreateResDBServer</a>(</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  std::unique_ptr&lt;ResDBConfig&gt; config =</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>      <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#aae9011388f6fd7b287566f37e31660fa">GenerateResDBConfig</a>(config_file, private_key_file, cert_file);</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  <span class="keywordflow">if</span> (config_handler) {</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    config_handler(config.get());</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  }</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  <span class="keywordflow">return</span> std::make_unique&lt;ServiceNetwork&gt;(</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>      *config, std::make_unique&lt;ConsensusProtocol&gt;(*config, std::move(executor),</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>                                                   std::move(query_executor)));</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>}</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
+<div class="foldopen" id="foldopen00087" data-start="{" data-end="}">
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno"><a class="line" href="../../da/d3b/classresdb_1_1ServerFactory.html#aa4e53e3a85ad4182338f446f1dd11674">   87</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">ServerFactory::CustomCreateResDBServer</a>(</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  std::unique_ptr&lt;ResDBConfig&gt; config =</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>      <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#aae9011388f6fd7b287566f37e31660fa">GenerateResDBConfig</a>(config_file, private_key_file, cert_file);</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="keywordflow">if</span> (config_handler) {</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    config_handler(config.get());</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>  }</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  <span class="keywordflow">return</span> std::make_unique&lt;ServiceNetwork&gt;(</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>      *config, std::make_unique&lt;ConsensusProtocol&gt;(*config, std::move(executor),</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>                                                   std::move(query_executor)));</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>}</div>
 </div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
-<div class="foldopen" id="foldopen00110" data-start="{" data-end="}">
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">  110</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>  <span class="keywordflow">return</span> <a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a>().<a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>&lt;ConsensusProtocol&gt;(</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>      config_file, private_key_file, cert_file, std::move(executor),</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>      logging_dir, config_handler);</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>}</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
+<div class="foldopen" id="foldopen00104" data-start="{" data-end="}">
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">  104</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    std::unique_ptr&lt;TransactionManager&gt; executor, <span class="keywordtype">char</span>* logging_dir,</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  <span class="keywordflow">return</span> <a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a>().<a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>&lt;ConsensusProtocol&gt;(</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>      config_file, private_key_file, cert_file, std::move(executor),</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>      logging_dir, config_handler);</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>}</div>
 </div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
-<div class="foldopen" id="foldopen00120" data-start="{" data-end="}">
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a5285e59a982e46c95d72f2bb08c4dc55">  120</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>  <span class="keywordflow">return</span> <a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a>().<a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>&lt;ConsensusProtocol&gt;(</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>      config_file, private_key_file, cert_file, std::move(executor),</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>      std::move(query_executor), config_handler);</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>}</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> ConsensusProtocol&gt;</div>
+<div class="foldopen" id="foldopen00114" data-start="{" data-end="}">
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a5285e59a982e46c95d72f2bb08c4dc55">  114</a></span>std::unique_ptr&lt;ServiceNetwork&gt; <a class="code hl_function" href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">CustomGenerateResDBServer</a>(</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    <span class="keywordtype">char</span>* config_file, <span class="keywordtype">char</span>* private_key_file, <span class="keywordtype">char</span>* cert_file,</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    std::unique_ptr&lt;TransactionManager&gt; executor,</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    std::unique_ptr&lt;CustomQuery&gt; query_executor,</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    std::function&lt;<span class="keywordtype">void</span>(<a class="code hl_class" href="../../db/ddb/classresdb_1_1ResDBConfig.html">ResDBConfig</a>* config)&gt; config_handler) {</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>  <span class="keywordflow">return</span> <a class="code hl_class" href="../../da/d3b/classresdb_1_1ServerFactory.html">ServerFactory</a>().<a class="code hl_function" href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">CustomCreateResDBServer</a>&lt;ConsensusProtocol&gt;(</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>      config_file, private_key_file, cert_file, std::move(executor),</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>      std::move(query_executor), config_handler);</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>}</div>
 </div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>}  <span class="comment">// namespace resdb</span></div>
 <div class="ttc" id="aclassresdb_1_1ResDBConfig_html"><div class="ttname"><a href="../../db/ddb/classresdb_1_1ResDBConfig.html">resdb::ResDBConfig</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d9a/resdb__config_8h_source.html#l00034">resdb_config.h:34</a></div></div>
-<div class="ttc" id="aclassresdb_1_1ServerFactory_html"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html">resdb::ServerFactory</a></div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00036">server_factory.h:36</a></div></div>
-<div class="ttc" id="aclassresdb_1_1ServerFactory_html_a269165ac4b6bcb126ff7543fa19790f9"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">resdb::ServerFactory::CustomCreateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CustomCreateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00077">server_factory.h:77</a></div></div>
-<div class="ttc" id="aclassresdb_1_1ServerFactory_html_aadebfd20820b8f1de23788e612a8c5e5"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html#aadebfd20820b8f1de23788e612a8c5e5">resdb::ServerFactory::CreateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CreateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d8/dee/server__factory_8cpp_source.html#l00030">server_factory.cpp:30</a></div></div>
+<div class="ttc" id="aclassresdb_1_1ServerFactory_html"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html">resdb::ServerFactory</a></div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00030">server_factory.h:30</a></div></div>
+<div class="ttc" id="aclassresdb_1_1ServerFactory_html_a269165ac4b6bcb126ff7543fa19790f9"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html#a269165ac4b6bcb126ff7543fa19790f9">resdb::ServerFactory::CustomCreateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CustomCreateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00071">server_factory.h:71</a></div></div>
+<div class="ttc" id="aclassresdb_1_1ServerFactory_html_aadebfd20820b8f1de23788e612a8c5e5"><div class="ttname"><a href="../../da/d3b/classresdb_1_1ServerFactory.html#aadebfd20820b8f1de23788e612a8c5e5">resdb::ServerFactory::CreateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CreateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d8/dee/server__factory_8cpp_source.html#l00024">server_factory.cpp:24</a></div></div>
 <div class="ttc" id="aconsensus__manager__pbft_8h_html"><div class="ttname"><a href="../../d9/d6c/consensus__manager__pbft_8h.html">consensus_manager_pbft.h</a></div></div>
 <div class="ttc" id="acustom__query_8h_html"><div class="ttname"><a href="../../d1/d66/custom__query_8h.html">custom_query.h</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00030">chain_state.cpp:30</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a92bea99ce90c0c721d002ab634ffa2b0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a92bea99ce90c0c721d002ab634ffa2b0">resdb::GenerateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; GenerateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d8/dee/server__factory_8cpp_source.html#l00045">server_factory.cpp:45</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a97c32c8baa5b98233ee9dc1cc0a30c13"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">resdb::CustomGenerateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CustomGenerateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir=nullptr, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00110">server_factory.h:110</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a92bea99ce90c0c721d002ab634ffa2b0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a92bea99ce90c0c721d002ab634ffa2b0">resdb::GenerateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; GenerateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir, std::function&lt; void(ResDBConfig *config)&gt; config_handler)</div><div class="ttdef"><b>Definition</b> <a href="../../d8/dee/server__factory_8cpp_source.html#l00039">server_factory.cpp:39</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a97c32c8baa5b98233ee9dc1cc0a30c13"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a97c32c8baa5b98233ee9dc1cc0a30c13">resdb::CustomGenerateResDBServer</a></div><div class="ttdeci">std::unique_ptr&lt; ServiceNetwork &gt; CustomGenerateResDBServer(char *config_file, char *private_key_file, char *cert_file, std::unique_ptr&lt; TransactionManager &gt; executor, char *logging_dir=nullptr, std::function&lt; void(ResDBConfig *config)&gt; config_handler=nullptr)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d74/server__factory_8h_source.html#l00104">server_factory.h:104</a></div></div>
 <div class="ttc" id="anamespaceresdb_html_aae9011388f6fd7b287566f37e31660fa"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#aae9011388f6fd7b287566f37e31660fa">resdb::GenerateResDBConfig</a></div><div class="ttdeci">std::unique_ptr&lt; ResDBConfig &gt; GenerateResDBConfig(const std::string &amp;config_file, const std::string &amp;private_key_file, const std::string &amp;cert_file, std::optional&lt; ReplicaInfo &gt; self_info, std::optional&lt; ConfigGenFunc &gt; gen_func)</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d97/resdb__config__utils_8cpp_source.html#l00131">resdb_config_utils.cpp:131</a></div></div>
 <div class="ttc" id="aresdb__config__utils_8h_html"><div class="ttname"><a href="../../d3/d16/resdb__config__utils_8h.html">resdb_config_utils.h</a></div></div>
 <div class="ttc" id="aservice__network_8h_html"><div class="ttname"><a href="../../d2/d22/service__network_8h.html">service_network.h</a></div></div>
