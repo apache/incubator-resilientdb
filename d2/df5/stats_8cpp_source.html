@@ -98,392 +98,386 @@ $(document).ready(function(){initNavTree('d2/df5/stats_8cpp_source.html','../../
 </div><!--header-->
 <div class="contents">
 <a href="../../d2/df5/stats_8cpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * Copyright (c) 2019-2022 ExpoLab, UC Davis</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * Permission is hereby granted, free of charge, to any person</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> * obtaining a copy of this software and associated documentation</span></div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> * files (the &quot;Software&quot;), to deal in the Software without</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * restriction, including without limitation the rights to use,</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * copy, modify, merge, publish, distribute, sublicense, and/or</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> * sell copies of the Software, and to permit persons to whom the</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> * Software is furnished to do so, subject to the following conditions:</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment"> * Licensed to the Apache Software Foundation (ASF) under one</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"> * or more contributor license agreements.  See the NOTICE file</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment"> * distributed with this work for additional information</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"> * regarding copyright ownership.  The ASF licenses this file</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"> * to you under the Apache License, Version 2.0 (the</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment"> * &quot;License&quot;); you may not use this file except in compliance</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment"> * with the License.  You may obtain a copy of the License at</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"> *</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment"> *   http://www.apache.org/licenses/LICENSE-2.0</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * The above copyright notice and this permission notice shall be</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * included in all copies or substantial portions of the Software.</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="comment"> * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="comment"> * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="comment"> * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="comment"> * DEALINGS IN THE SOFTWARE.</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="comment"> *</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment"> * Unless required by applicable law or agreed to in writing,</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment"> * software distributed under the License is distributed on an</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment"> * &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment"> * KIND, either express or implied.  See the License for the</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment"> * specific language governing permissions and limitations</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment"> * under the License.</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment"> */</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d9b/stats_8h.html">platform/statistic/stats.h</a>&quot;</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &lt;glog/logging.h&gt;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d9b/stats_8h.html">platform/statistic/stats.h</a>&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;glog/logging.h&gt;</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d71/common_2utils_2utils_8h.html">common/utils/utils.h</a>&quot;</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">namespace </span><a class="code hl_namespace" href="../../d5/d10/namespaceresdb.html">resdb</a> {</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">   34</a></span>std::mutex <a class="code hl_variable" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">g_mutex</a>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">   28</a></span>std::mutex <a class="code hl_variable" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">g_mutex</a>;</div>
+<div class="foldopen" id="foldopen00029" data-start="{" data-end="}">
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">   29</a></span><a class="code hl_class" href="../../de/d0d/classresdb_1_1Stats.html">Stats</a>* <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">Stats::GetGlobalStats</a>(<span class="keywordtype">int</span> seconds) {</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>  std::unique_lock&lt;std::mutex&gt; lk(<a class="code hl_variable" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">g_mutex</a>);</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>  <span class="keyword">static</span> <a class="code hl_class" href="../../de/d0d/classresdb_1_1Stats.html">Stats</a> stats(seconds);</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>  <span class="keywordflow">return</span> &amp;stats;</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>}</div>
+</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
 <div class="foldopen" id="foldopen00035" data-start="{" data-end="}">
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">   35</a></span><a class="code hl_class" href="../../de/d0d/classresdb_1_1Stats.html">Stats</a>* <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">Stats::GetGlobalStats</a>(<span class="keywordtype">int</span> seconds) {</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  std::unique_lock&lt;std::mutex&gt; lk(<a class="code hl_variable" href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">g_mutex</a>);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>  <span class="keyword">static</span> <a class="code hl_class" href="../../de/d0d/classresdb_1_1Stats.html">Stats</a> stats(seconds);</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  <span class="keywordflow">return</span> &amp;stats;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>}</div>
-</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
-<div class="foldopen" id="foldopen00041" data-start="{" data-end="}">
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">   41</a></span><a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">Stats::Stats</a>(<span class="keywordtype">int</span> sleep_time) {</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  monitor_sleep_time_ = sleep_time;</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#ifdef TEST_MODE</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  monitor_sleep_time_ = 1;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  num_call_ = 0;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  num_commit_ = 0;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  run_time_ = 0;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  run_call_ = 0;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  run_call_time_ = 0;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  server_call_ = 0;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  server_process_ = 0;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>  run_req_num_ = 0;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  run_req_run_time_ = 0;</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  seq_gap_ = 0;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>  total_request_ = 0;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  total_geo_request_ = 0;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  geo_request_ = 0;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  stop_ = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  begin_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">   35</a></span><a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">Stats::Stats</a>(<span class="keywordtype">int</span> sleep_time) {</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>  monitor_sleep_time_ = sleep_time;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#ifdef TEST_MODE</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>  monitor_sleep_time_ = 1;</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>  num_call_ = 0;</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>  num_commit_ = 0;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>  run_time_ = 0;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>  run_call_ = 0;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>  run_call_time_ = 0;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  server_call_ = 0;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  server_process_ = 0;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  run_req_num_ = 0;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  run_req_run_time_ = 0;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  seq_gap_ = 0;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>  total_request_ = 0;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>  total_geo_request_ = 0;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>  geo_request_ = 0;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>  stop_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>  begin_ = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>  socket_recv_ = 0;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>  broad_cast_msg_ = 0;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  send_broad_cast_msg_ = 0;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>  prometheus_ = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  socket_recv_ = 0;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>  broad_cast_msg_ = 0;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>  send_broad_cast_msg_ = 0;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>  global_thread_ =</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>      std::thread(&amp;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">Stats::MonitorGlobal</a>, <span class="keyword">this</span>);  <span class="comment">// pass by reference</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>}</div>
+</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>  prometheus_ = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">   67</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">Stats::Stop</a>() { stop_ = <span class="keyword">true</span>; }</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>  global_thread_ =</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>      std::thread(&amp;<a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">Stats::MonitorGlobal</a>, <span class="keyword">this</span>);  <span class="comment">// pass by reference</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>}</div>
+<div class="foldopen" id="foldopen00069" data-start="{" data-end="}">
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">   69</a></span><a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">Stats::~Stats</a>() {</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>  stop_ = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>  <span class="keywordflow">if</span> (global_thread_.joinable()) {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    global_thread_.join();</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>  }</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>}</div>
 </div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">   73</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">Stats::Stop</a>() { stop_ = <span class="keyword">true</span>; }</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
-<div class="foldopen" id="foldopen00075" data-start="{" data-end="}">
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">   75</a></span><a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">Stats::~Stats</a>() {</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>  stop_ = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  <span class="keywordflow">if</span> (global_thread_.joinable()) {</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    global_thread_.join();</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  }</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>}</div>
-</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="foldopen" id="foldopen00082" data-start="{" data-end="}">
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">   82</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">Stats::MonitorGlobal</a>() {</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;monitor:&quot;</span> &lt;&lt; name_ &lt;&lt; <span class="stringliteral">&quot; sleep time:&quot;</span> &lt;&lt; monitor_sleep_time_;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  uint64_t seq_fail = 0;</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  uint64_t client_call = 0, socket_recv = 0;</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  uint64_t num_client_req = 0, num_propose = 0, num_prepare = 0, num_commit = 0,</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>           pending_execute = 0, execute = 0, execute_done = 0;</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  uint64_t broad_cast_msg = 0, send_broad_cast_msg = 0;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  uint64_t send_broad_cast_msg_per_rep = 0;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>  uint64_t server_call = 0, server_process = 0;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  uint64_t seq_gap = 0;</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  uint64_t total_request = 0, total_geo_request = 0, geo_request = 0;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
+<div class="foldopen" id="foldopen00076" data-start="{" data-end="}">
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">   76</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">Stats::MonitorGlobal</a>() {</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>  LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;monitor:&quot;</span> &lt;&lt; name_ &lt;&lt; <span class="stringliteral">&quot; sleep time:&quot;</span> &lt;&lt; monitor_sleep_time_;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>  uint64_t seq_fail = 0;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>  uint64_t client_call = 0, socket_recv = 0;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>  uint64_t num_client_req = 0, num_propose = 0, num_prepare = 0, num_commit = 0,</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>           pending_execute = 0, execute = 0, execute_done = 0;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>  uint64_t broad_cast_msg = 0, send_broad_cast_msg = 0;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>  uint64_t send_broad_cast_msg_per_rep = 0;</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>  uint64_t server_call = 0, server_process = 0;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>  uint64_t seq_gap = 0;</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>  uint64_t total_request = 0, total_geo_request = 0, geo_request = 0;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>  <span class="comment">// ====== for client proxy ======</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>  uint64_t run_req_num = 0, run_req_run_time = 0;</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>  uint64_t last_run_req_num = 0, last_run_req_run_time = 0;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>  <span class="comment">// =============================</span></div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  <span class="comment">// ====== for client proxy ======</span></div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  uint64_t run_req_num = 0, run_req_run_time = 0;</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  uint64_t last_run_req_num = 0, last_run_req_run_time = 0;</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  <span class="comment">// =============================</span></div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  uint64_t last_seq_fail = 0;</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  uint64_t last_num_client_req = 0, last_num_propose = 0, last_num_prepare = 0,</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>           last_num_commit = 0;</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>  uint64_t last_pending_execute = 0, last_execute = 0, last_execute_done = 0;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>  uint64_t last_client_call = 0, last_socket_recv = 0;</div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  uint64_t last_broad_cast_msg = 0, last_send_broad_cast_msg = 0;</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  uint64_t last_send_broad_cast_msg_per_rep = 0;</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  uint64_t last_server_call = 0, last_server_process = 0;</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>  uint64_t last_total_request = 0, last_total_geo_request = 0,</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>           last_geo_request = 0;</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>  uint64_t time = 0;</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span> </div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>  <span class="keywordflow">while</span> (!stop_) {</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    sleep(monitor_sleep_time_);</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    time += monitor_sleep_time_;</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    seq_fail = seq_fail_;</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    socket_recv = socket_recv_;</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    client_call = client_call_;</div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    num_client_req = num_client_req_;</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    num_propose = num_propose_;</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    num_prepare = num_prepare_;</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    num_commit = num_commit_;</div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    pending_execute = pending_execute_;</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    execute = execute_;</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    execute_done = execute_done_;</div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    broad_cast_msg = broad_cast_msg_;</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    send_broad_cast_msg = send_broad_cast_msg_;</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    send_broad_cast_msg_per_rep = send_broad_cast_msg_per_rep_;</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>    server_call = server_call_;</div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    server_process = server_process_;</div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    seq_gap = seq_gap_;</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    total_request = total_request_;</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    total_geo_request = total_geo_request_;</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    geo_request = geo_request_;</div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    run_req_num = run_req_num_;</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    run_req_run_time = run_req_run_time_;</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;=========== monitor =========\n&quot;</span></div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>               &lt;&lt; <span class="stringliteral">&quot;server call:&quot;</span> &lt;&lt; server_call - last_server_call</div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>               &lt;&lt; <span class="stringliteral">&quot; server process:&quot;</span> &lt;&lt; server_process - last_server_process</div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>               &lt;&lt; <span class="stringliteral">&quot; socket recv:&quot;</span> &lt;&lt; socket_recv - last_socket_recv</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>  uint64_t last_seq_fail = 0;</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>  uint64_t last_num_client_req = 0, last_num_propose = 0, last_num_prepare = 0,</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>           last_num_commit = 0;</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>  uint64_t last_pending_execute = 0, last_execute = 0, last_execute_done = 0;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>  uint64_t last_client_call = 0, last_socket_recv = 0;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>  uint64_t last_broad_cast_msg = 0, last_send_broad_cast_msg = 0;</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>  uint64_t last_send_broad_cast_msg_per_rep = 0;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>  uint64_t last_server_call = 0, last_server_process = 0;</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  uint64_t last_total_request = 0, last_total_geo_request = 0,</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>           last_geo_request = 0;</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>  uint64_t time = 0;</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>  <span class="keywordflow">while</span> (!stop_) {</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    sleep(monitor_sleep_time_);</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    time += monitor_sleep_time_;</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    seq_fail = seq_fail_;</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    socket_recv = socket_recv_;</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    client_call = client_call_;</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    num_client_req = num_client_req_;</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    num_propose = num_propose_;</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    num_prepare = num_prepare_;</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    num_commit = num_commit_;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    pending_execute = pending_execute_;</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    execute = execute_;</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>    execute_done = execute_done_;</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>    broad_cast_msg = broad_cast_msg_;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    send_broad_cast_msg = send_broad_cast_msg_;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    send_broad_cast_msg_per_rep = send_broad_cast_msg_per_rep_;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    server_call = server_call_;</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    server_process = server_process_;</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    seq_gap = seq_gap_;</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    total_request = total_request_;</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    total_geo_request = total_geo_request_;</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>    geo_request = geo_request_;</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span> </div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    run_req_num = run_req_num_;</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>    run_req_run_time = run_req_run_time_;</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;=========== monitor =========\n&quot;</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>               &lt;&lt; <span class="stringliteral">&quot;server call:&quot;</span> &lt;&lt; server_call - last_server_call</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>               &lt;&lt; <span class="stringliteral">&quot; server process:&quot;</span> &lt;&lt; server_process - last_server_process</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>               &lt;&lt; <span class="stringliteral">&quot; socket recv:&quot;</span> &lt;&lt; socket_recv - last_socket_recv</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>                  <span class="stringliteral">&quot;client call:&quot;</span></div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>               &lt;&lt; client_call - last_client_call</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span>                  <span class="stringliteral">&quot;client req:&quot;</span></div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span>               &lt;&lt; num_client_req - last_num_client_req</div>
 <div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>                  <span class="stringliteral">&quot;client call:&quot;</span></div>
-<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>               &lt;&lt; client_call - last_client_call</div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span>                  <span class="stringliteral">&quot;broad_cast:&quot;</span></div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>               &lt;&lt; broad_cast_msg - last_broad_cast_msg</div>
 <div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>                  <span class="stringliteral">&quot;client req:&quot;</span></div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>               &lt;&lt; num_client_req - last_num_client_req</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>                  <span class="stringliteral">&quot;send broad_cast:&quot;</span></div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>               &lt;&lt; send_broad_cast_msg - last_send_broad_cast_msg</div>
 <div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>                  <span class="stringliteral">&quot;broad_cast:&quot;</span></div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>               &lt;&lt; broad_cast_msg - last_broad_cast_msg</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>                  <span class="stringliteral">&quot;per send broad_cast:&quot;</span></div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>               &lt;&lt; send_broad_cast_msg_per_rep - last_send_broad_cast_msg_per_rep</div>
 <div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>                  <span class="stringliteral">&quot;send broad_cast:&quot;</span></div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>               &lt;&lt; send_broad_cast_msg - last_send_broad_cast_msg</div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>                  <span class="stringliteral">&quot;propose:&quot;</span></div>
+<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>               &lt;&lt; num_propose - last_num_propose</div>
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>                  <span class="stringliteral">&quot;per send broad_cast:&quot;</span></div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>               &lt;&lt; send_broad_cast_msg_per_rep - last_send_broad_cast_msg_per_rep</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>                  <span class="stringliteral">&quot;prepare:&quot;</span></div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>               &lt;&lt; (num_prepare - last_num_prepare)</div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>                  <span class="stringliteral">&quot;propose:&quot;</span></div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>               &lt;&lt; num_propose - last_num_propose</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>                  <span class="stringliteral">&quot;commit:&quot;</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>               &lt;&lt; (num_commit - last_num_commit)</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>                  <span class="stringliteral">&quot;prepare:&quot;</span></div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>               &lt;&lt; (num_prepare - last_num_prepare)</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>                  <span class="stringliteral">&quot;pending execute:&quot;</span></div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>               &lt;&lt; pending_execute - last_pending_execute</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>                  <span class="stringliteral">&quot;commit:&quot;</span></div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>               &lt;&lt; (num_commit - last_num_commit)</div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>                  <span class="stringliteral">&quot;execute:&quot;</span></div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>               &lt;&lt; execute - last_execute</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>                  <span class="stringliteral">&quot;pending execute:&quot;</span></div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>               &lt;&lt; pending_execute - last_pending_execute</div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>                  <span class="stringliteral">&quot;execute:&quot;</span></div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>               &lt;&lt; execute - last_execute</div>
-<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>                  <span class="stringliteral">&quot;execute done:&quot;</span></div>
-<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>               &lt;&lt; execute_done - last_execute_done &lt;&lt; <span class="stringliteral">&quot; seq gap:&quot;</span> &lt;&lt; seq_gap</div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>               &lt;&lt; <span class="stringliteral">&quot; total request:&quot;</span> &lt;&lt; total_request - last_total_request</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>               &lt;&lt; <span class="stringliteral">&quot; txn:&quot;</span> &lt;&lt; (total_request - last_total_request) / 5</div>
-<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>               &lt;&lt; <span class="stringliteral">&quot; total geo request:&quot;</span></div>
-<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>               &lt;&lt; total_geo_request - last_total_geo_request</div>
-<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>               &lt;&lt; <span class="stringliteral">&quot; total geo request per:&quot;</span></div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>               &lt;&lt; (total_geo_request - last_total_geo_request) / 5</div>
-<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>               &lt;&lt; <span class="stringliteral">&quot; geo request:&quot;</span> &lt;&lt; (geo_request - last_geo_request)</div>
-<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>                  <span class="stringliteral">&quot;seq fail:&quot;</span></div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>               &lt;&lt; seq_fail - last_seq_fail &lt;&lt; <span class="stringliteral">&quot; time:&quot;</span> &lt;&lt; time</div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>                  <span class="stringliteral">&quot;\n--------------- monitor ------------&quot;</span>;</div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>    <span class="keywordflow">if</span> (run_req_num - last_run_req_num &gt; 0) {</div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>      LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;  req client latency:&quot;</span></div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>                 &lt;&lt; <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(run_req_run_time -</div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>                                        last_run_req_run_time) /</div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>                        (run_req_num - last_run_req_num) / 1000000000.0;</div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    }</div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span> </div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    last_seq_fail = seq_fail;</div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    last_socket_recv = socket_recv;</div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    last_client_call = client_call;</div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    last_num_client_req = num_client_req;</div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    last_num_propose = num_propose;</div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    last_num_prepare = num_prepare;</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    last_num_commit = num_commit;</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    last_pending_execute = pending_execute;</div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    last_execute = execute;</div>
-<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    last_execute_done = execute_done;</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span> </div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>    last_broad_cast_msg = broad_cast_msg;</div>
-<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    last_send_broad_cast_msg = send_broad_cast_msg;</div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    last_send_broad_cast_msg_per_rep = send_broad_cast_msg_per_rep;</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span> </div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    last_server_call = server_call;</div>
-<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    last_server_process = server_process;</div>
-<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span> </div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>    last_run_req_num = run_req_num;</div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span>    last_run_req_run_time = run_req_run_time;</div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span>    last_total_request = total_request;</div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>    last_total_geo_request = total_geo_request;</div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>    last_geo_request = geo_request;</div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>                  <span class="stringliteral">&quot;execute done:&quot;</span></div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>               &lt;&lt; execute_done - last_execute_done &lt;&lt; <span class="stringliteral">&quot; seq gap:&quot;</span> &lt;&lt; seq_gap</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>               &lt;&lt; <span class="stringliteral">&quot; total request:&quot;</span> &lt;&lt; total_request - last_total_request</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>               &lt;&lt; <span class="stringliteral">&quot; txn:&quot;</span> &lt;&lt; (total_request - last_total_request) / 5</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>               &lt;&lt; <span class="stringliteral">&quot; total geo request:&quot;</span></div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>               &lt;&lt; total_geo_request - last_total_geo_request</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>               &lt;&lt; <span class="stringliteral">&quot; total geo request per:&quot;</span></div>
+<div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>               &lt;&lt; (total_geo_request - last_total_geo_request) / 5</div>
+<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span>               &lt;&lt; <span class="stringliteral">&quot; geo request:&quot;</span> &lt;&lt; (geo_request - last_geo_request)</div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>                  <span class="stringliteral">&quot;seq fail:&quot;</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>               &lt;&lt; seq_fail - last_seq_fail &lt;&lt; <span class="stringliteral">&quot; time:&quot;</span> &lt;&lt; time</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>               &lt;&lt; <span class="stringliteral">&quot; &quot;</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>                  <span class="stringliteral">&quot;\n--------------- monitor ------------&quot;</span>;</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span>    <span class="keywordflow">if</span> (run_req_num - last_run_req_num &gt; 0) {</div>
+<div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>      LOG(ERROR) &lt;&lt; <span class="stringliteral">&quot;  req client latency:&quot;</span></div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>                 &lt;&lt; <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(run_req_run_time -</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>                                        last_run_req_run_time) /</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>                        (run_req_num - last_run_req_num) / 1000000000.0;</div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span>    }</div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span> </div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span>    last_seq_fail = seq_fail;</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    last_socket_recv = socket_recv;</div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>    last_client_call = client_call;</div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>    last_num_client_req = num_client_req;</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    last_num_propose = num_propose;</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    last_num_prepare = num_prepare;</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    last_num_commit = num_commit;</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    last_pending_execute = pending_execute;</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    last_execute = execute;</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    last_execute_done = execute_done;</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span> </div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    last_broad_cast_msg = broad_cast_msg;</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    last_send_broad_cast_msg = send_broad_cast_msg;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    last_send_broad_cast_msg_per_rep = send_broad_cast_msg_per_rep;</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    last_server_call = server_call;</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    last_server_process = server_process;</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span> </div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>    last_run_req_num = run_req_num;</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    last_run_req_run_time = run_req_run_time;</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    last_total_request = total_request;</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span>    last_total_geo_request = total_geo_request;</div>
+<div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span>    last_geo_request = geo_request;</div>
+<div class="line"><a id="l00212" name="l00212"></a><span class="lineno">  212</span>  }</div>
+<div class="line"><a id="l00213" name="l00213"></a><span class="lineno">  213</span>}</div>
+</div>
+<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span> </div>
+<div class="foldopen" id="foldopen00215" data-start="{" data-end="}">
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">  215</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">Stats::IncClientCall</a>() {</div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03">CLIENT_CALL</a>, 1);</div>
 <div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span>  }</div>
-<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>}</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>  client_call_++;</div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>}</div>
 </div>
-<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span> </div>
-<div class="foldopen" id="foldopen00221" data-start="{" data-end="}">
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">  221</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">Stats::IncClientCall</a>() {</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03">CLIENT_CALL</a>, 1);</div>
-<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>  }</div>
-<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  client_call_++;</div>
-<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>}</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span> </div>
+<div class="foldopen" id="foldopen00222" data-start="{" data-end="}">
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">  222</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">Stats::IncClientRequest</a>() {</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6">CLIENT_REQ</a>, 1);</div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  }</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>  num_client_req_++;</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>}</div>
 </div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
-<div class="foldopen" id="foldopen00228" data-start="{" data-end="}">
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">  228</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">Stats::IncClientRequest</a>() {</div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6">CLIENT_REQ</a>, 1);</div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>  }</div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  num_client_req_++;</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>}</div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span> </div>
+<div class="foldopen" id="foldopen00229" data-start="{" data-end="}">
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">  229</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">Stats::IncPropose</a>() {</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a">PROPOSE</a>, 1);</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>  }</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>  num_propose_++;</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>}</div>
 </div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span> </div>
-<div class="foldopen" id="foldopen00235" data-start="{" data-end="}">
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">  235</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">Stats::IncPropose</a>() {</div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a">PROPOSE</a>, 1);</div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>  }</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>  num_propose_++;</div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>}</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span> </div>
+<div class="foldopen" id="foldopen00236" data-start="{" data-end="}">
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">  236</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">Stats::IncPrepare</a>() {</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd">PREPARE</a>, 1);</div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>  }</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>  num_prepare_++;</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>}</div>
 </div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span> </div>
-<div class="foldopen" id="foldopen00242" data-start="{" data-end="}">
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">  242</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">Stats::IncPrepare</a>() {</div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd">PREPARE</a>, 1);</div>
-<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>  }</div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  num_prepare_++;</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>}</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span> </div>
+<div class="foldopen" id="foldopen00243" data-start="{" data-end="}">
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">  243</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">Stats::IncCommit</a>() {</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0">COMMIT</a>, 1);</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>  }</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>  num_commit_++;</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>}</div>
 </div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span> </div>
-<div class="foldopen" id="foldopen00249" data-start="{" data-end="}">
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">  249</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">Stats::IncCommit</a>() {</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0">COMMIT</a>, 1);</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>  }</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>  num_commit_++;</div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>}</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">  250</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">Stats::IncPendingExecute</a>() { pending_execute_++; }</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span> </div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">  252</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">Stats::IncExecute</a>() { execute_++; }</div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
+<div class="foldopen" id="foldopen00254" data-start="{" data-end="}">
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">  254</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">Stats::IncExecuteDone</a>() {</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806">EXECUTE</a>, 1);</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>  }</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>  execute_done_++;</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>}</div>
 </div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span> </div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">  256</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">Stats::IncPendingExecute</a>() { pending_execute_++; }</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span> </div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">  258</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">Stats::IncExecute</a>() { execute_++; }</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span> </div>
-<div class="foldopen" id="foldopen00260" data-start="{" data-end="}">
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">  260</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">Stats::IncExecuteDone</a>() {</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806">EXECUTE</a>, 1);</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  }</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  execute_done_++;</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>}</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span> </div>
+<div class="foldopen" id="foldopen00261" data-start="{" data-end="}">
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">  261</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">Stats::BroadCastMsg</a>() {</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d">BROAD_CAST</a>, 1);</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  }</div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>  broad_cast_msg_++;</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>}</div>
 </div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span> </div>
-<div class="foldopen" id="foldopen00267" data-start="{" data-end="}">
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">  267</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">Stats::BroadCastMsg</a>() {</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d">BROAD_CAST</a>, 1);</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>  }</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>  broad_cast_msg_++;</div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>}</div>
-</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span> </div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">  268</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">Stats::SendBroadCastMsg</a>(uint32_t num) { send_broad_cast_msg_ += num; }</div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span> </div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">  270</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">Stats::SendBroadCastMsgPerRep</a>() { send_broad_cast_msg_per_rep_++; }</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span> </div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">  272</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">Stats::SeqFail</a>() { seq_fail_++; }</div>
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">  274</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">Stats::SendBroadCastMsg</a>(uint32_t num) { send_broad_cast_msg_ += num; }</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span> </div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">  276</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">Stats::SendBroadCastMsgPerRep</a>() { send_broad_cast_msg_per_rep_++; }</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span> </div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">  278</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">Stats::SeqFail</a>() { seq_fail_++; }</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
-<div class="foldopen" id="foldopen00280" data-start="{" data-end="}">
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">  280</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">Stats::IncTotalRequest</a>(uint32_t num) {</div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e">NUM_EXECUTE_TX</a>, num);</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>  }</div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>  total_request_ += num;</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>}</div>
+<div class="foldopen" id="foldopen00274" data-start="{" data-end="}">
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">  274</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">Stats::IncTotalRequest</a>(uint32_t num) {</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e">NUM_EXECUTE_TX</a>, num);</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>  }</div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>  total_request_ += num;</div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>}</div>
 </div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span> </div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">  287</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">Stats::IncTotalGeoRequest</a>(uint32_t num) { total_geo_request_ += num; }</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span> </div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">  289</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">Stats::IncGeoRequest</a>() { geo_request_++; }</div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span> </div>
-<div class="foldopen" id="foldopen00291" data-start="{" data-end="}">
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">  291</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">Stats::ServerCall</a>() {</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628">SERVER_CALL_NAME</a>, 1);</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>  }</div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>  server_call_++;</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>}</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span> </div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">  281</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">Stats::IncTotalGeoRequest</a>(uint32_t num) { total_geo_request_ += num; }</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span> </div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">  283</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">Stats::IncGeoRequest</a>() { geo_request_++; }</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="foldopen" id="foldopen00285" data-start="{" data-end="}">
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">  285</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">Stats::ServerCall</a>() {</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628">SERVER_CALL_NAME</a>, 1);</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>  }</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>  server_call_++;</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>}</div>
 </div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span> </div>
-<div class="foldopen" id="foldopen00298" data-start="{" data-end="}">
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">  298</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">Stats::ServerProcess</a>() {</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b">SERVER_PROCESS</a>, 1);</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>  }</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  server_process_++;</div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>}</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span> </div>
+<div class="foldopen" id="foldopen00292" data-start="{" data-end="}">
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">  292</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">Stats::ServerProcess</a>() {</div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>  <span class="keywordflow">if</span> (prometheus_) {</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>    prometheus_-&gt;Inc(<a class="code hl_enumvalue" href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b">SERVER_PROCESS</a>, 1);</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>  }</div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>  server_process_++;</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>}</div>
 </div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">  305</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">Stats::SeqGap</a>(uint64_t seq_gap) { seq_gap_ = seq_gap; }</div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
-<div class="foldopen" id="foldopen00307" data-start="{" data-end="}">
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">  307</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">Stats::AddLatency</a>(uint64_t run_time) {</div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>  run_req_num_++;</div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>  run_req_run_time_ += run_time;</div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>}</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span> </div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">  299</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">Stats::SeqGap</a>(uint64_t seq_gap) { seq_gap_ = seq_gap; }</div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span> </div>
+<div class="foldopen" id="foldopen00301" data-start="{" data-end="}">
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">  301</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">Stats::AddLatency</a>(uint64_t run_time) {</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  run_req_num_++;</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>  run_req_run_time_ += run_time;</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>}</div>
 </div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span> </div>
-<div class="foldopen" id="foldopen00312" data-start="{" data-end="}">
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">  312</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">Stats::SetPrometheus</a>(<span class="keyword">const</span> std::string&amp; prometheus_address) {</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>  prometheus_ = std::make_unique&lt;PrometheusHandler&gt;(prometheus_address);</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>}</div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span> </div>
+<div class="foldopen" id="foldopen00306" data-start="{" data-end="}">
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno"><a class="line" href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">  306</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">Stats::SetPrometheus</a>(<span class="keyword">const</span> std::string&amp; prometheus_address) {</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>  prometheus_ = std::make_unique&lt;PrometheusHandler&gt;(prometheus_address);</div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>}</div>
 </div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span> </div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>}  <span class="comment">// namespace resdb</span></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html">resdb::Stats</a></div><div class="ttdef"><b>Definition</b> <a href="../../d9/d9b/stats_8h_source.html#l00035">stats.h:35</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a0e8304a71a601eac8afbe687617ac117"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">resdb::Stats::IncExecuteDone</a></div><div class="ttdeci">void IncExecuteDone()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00260">stats.cpp:260</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a16b7ccdd8a90a554b1e2161f66d3c650"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">resdb::Stats::BroadCastMsg</a></div><div class="ttdeci">void BroadCastMsg()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00267">stats.cpp:267</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a19bad9e11d3b57c8d21ad851b5a1960c"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">resdb::Stats::SeqFail</a></div><div class="ttdeci">void SeqFail()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00278">stats.cpp:278</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a1b1b788ce003d563d7e27b418a559910"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">resdb::Stats::IncTotalGeoRequest</a></div><div class="ttdeci">void IncTotalGeoRequest(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00287">stats.cpp:287</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a285b733a272c3f72bdda7889b9e0f2ed"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">resdb::Stats::GetGlobalStats</a></div><div class="ttdeci">static Stats * GetGlobalStats(int sleep_seconds=5)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00035">stats.cpp:35</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a334b60b9e70a30b4b851c747ec279160"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">resdb::Stats::IncClientRequest</a></div><div class="ttdeci">void IncClientRequest()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00228">stats.cpp:228</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a340c361f769600059a46107505f4c344"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">resdb::Stats::MonitorGlobal</a></div><div class="ttdeci">void MonitorGlobal()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00082">stats.cpp:82</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a37df304ee66997a3ef41ab34720bc50e"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">resdb::Stats::ServerProcess</a></div><div class="ttdeci">void ServerProcess()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00298">stats.cpp:298</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a37ed739bcd6532b2a66ea76393ac3ccd"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">resdb::Stats::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00073">stats.cpp:73</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a4a22b02b623ed9bd874f9fc84d2b72fa"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">resdb::Stats::IncTotalRequest</a></div><div class="ttdeci">void IncTotalRequest(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00280">stats.cpp:280</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a525c347734a3f1b3d63191f6225208ae"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">resdb::Stats::SendBroadCastMsg</a></div><div class="ttdeci">void SendBroadCastMsg(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00274">stats.cpp:274</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a5a69aa3878007488b4fdd4e0ccb1d0d0"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">resdb::Stats::IncPrepare</a></div><div class="ttdeci">void IncPrepare()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00242">stats.cpp:242</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a642612635fe28de5d3492bce6716632c"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">resdb::Stats::IncExecute</a></div><div class="ttdeci">void IncExecute()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00258">stats.cpp:258</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a834d3cec4dfb02876b510d7fc6fea4cf"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">resdb::Stats::~Stats</a></div><div class="ttdeci">~Stats()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00075">stats.cpp:75</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_a98133da01bbf496e220d7a62682c7afb"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">resdb::Stats::IncPendingExecute</a></div><div class="ttdeci">void IncPendingExecute()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00256">stats.cpp:256</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_aa1142bd90e709d6ef4320abe5c1d8e4d"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">resdb::Stats::IncCommit</a></div><div class="ttdeci">void IncCommit()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00249">stats.cpp:249</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_ac3ba2aa279dc1790a44dcc7e35267205"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">resdb::Stats::SendBroadCastMsgPerRep</a></div><div class="ttdeci">void SendBroadCastMsgPerRep()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00276">stats.cpp:276</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_ac7b8bcf2dc734310a3b987d926724087"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">resdb::Stats::AddLatency</a></div><div class="ttdeci">void AddLatency(uint64_t run_time)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00307">stats.cpp:307</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_acdb1b1505fa98609c78fb9fdeaa38d16"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">resdb::Stats::IncPropose</a></div><div class="ttdeci">void IncPropose()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00235">stats.cpp:235</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_ae4a4c59a88c0de9665851afc332c4a76"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">resdb::Stats::IncGeoRequest</a></div><div class="ttdeci">void IncGeoRequest()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00289">stats.cpp:289</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_af394c1231df947472d61b5ea6e82f476"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">resdb::Stats::SeqGap</a></div><div class="ttdeci">void SeqGap(uint64_t seq_gap)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00305">stats.cpp:305</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_af6ccaee5c902a286e3e4bac2a5c1e0eb"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">resdb::Stats::SetPrometheus</a></div><div class="ttdeci">void SetPrometheus(const std::string &amp;prometheus_address)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00312">stats.cpp:312</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_af710ffd1c7bb30359385e55da7965099"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">resdb::Stats::IncClientCall</a></div><div class="ttdeci">void IncClientCall()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00221">stats.cpp:221</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_af759d6f9f69374297546d3393b7e2856"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">resdb::Stats::Stats</a></div><div class="ttdeci">Stats(int sleep_time=5)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00041">stats.cpp:41</a></div></div>
-<div class="ttc" id="aclassresdb_1_1Stats_html_afb0aab3d8fd3cc67b5603cd5d313933b"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">resdb::Stats::ServerCall</a></div><div class="ttdeci">void ServerCall()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00291">stats.cpp:291</a></div></div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span> </div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>}  <span class="comment">// namespace resdb</span></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html">resdb::Stats</a></div><div class="ttdef"><b>Definition</b> <a href="../../d9/d9b/stats_8h_source.html#l00029">stats.h:29</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a0e8304a71a601eac8afbe687617ac117"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a0e8304a71a601eac8afbe687617ac117">resdb::Stats::IncExecuteDone</a></div><div class="ttdeci">void IncExecuteDone()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00254">stats.cpp:254</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a16b7ccdd8a90a554b1e2161f66d3c650"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a16b7ccdd8a90a554b1e2161f66d3c650">resdb::Stats::BroadCastMsg</a></div><div class="ttdeci">void BroadCastMsg()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00261">stats.cpp:261</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a19bad9e11d3b57c8d21ad851b5a1960c"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a19bad9e11d3b57c8d21ad851b5a1960c">resdb::Stats::SeqFail</a></div><div class="ttdeci">void SeqFail()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00272">stats.cpp:272</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a1b1b788ce003d563d7e27b418a559910"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a1b1b788ce003d563d7e27b418a559910">resdb::Stats::IncTotalGeoRequest</a></div><div class="ttdeci">void IncTotalGeoRequest(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00281">stats.cpp:281</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a285b733a272c3f72bdda7889b9e0f2ed"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a285b733a272c3f72bdda7889b9e0f2ed">resdb::Stats::GetGlobalStats</a></div><div class="ttdeci">static Stats * GetGlobalStats(int sleep_seconds=5)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00029">stats.cpp:29</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a334b60b9e70a30b4b851c747ec279160"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a334b60b9e70a30b4b851c747ec279160">resdb::Stats::IncClientRequest</a></div><div class="ttdeci">void IncClientRequest()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00222">stats.cpp:222</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a340c361f769600059a46107505f4c344"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a340c361f769600059a46107505f4c344">resdb::Stats::MonitorGlobal</a></div><div class="ttdeci">void MonitorGlobal()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00076">stats.cpp:76</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a37df304ee66997a3ef41ab34720bc50e"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a37df304ee66997a3ef41ab34720bc50e">resdb::Stats::ServerProcess</a></div><div class="ttdeci">void ServerProcess()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00292">stats.cpp:292</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a37ed739bcd6532b2a66ea76393ac3ccd"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a37ed739bcd6532b2a66ea76393ac3ccd">resdb::Stats::Stop</a></div><div class="ttdeci">void Stop()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00067">stats.cpp:67</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a4a22b02b623ed9bd874f9fc84d2b72fa"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a4a22b02b623ed9bd874f9fc84d2b72fa">resdb::Stats::IncTotalRequest</a></div><div class="ttdeci">void IncTotalRequest(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00274">stats.cpp:274</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a525c347734a3f1b3d63191f6225208ae"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a525c347734a3f1b3d63191f6225208ae">resdb::Stats::SendBroadCastMsg</a></div><div class="ttdeci">void SendBroadCastMsg(uint32_t num)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00268">stats.cpp:268</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a5a69aa3878007488b4fdd4e0ccb1d0d0"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a5a69aa3878007488b4fdd4e0ccb1d0d0">resdb::Stats::IncPrepare</a></div><div class="ttdeci">void IncPrepare()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00236">stats.cpp:236</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a642612635fe28de5d3492bce6716632c"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a642612635fe28de5d3492bce6716632c">resdb::Stats::IncExecute</a></div><div class="ttdeci">void IncExecute()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00252">stats.cpp:252</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a834d3cec4dfb02876b510d7fc6fea4cf"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a834d3cec4dfb02876b510d7fc6fea4cf">resdb::Stats::~Stats</a></div><div class="ttdeci">~Stats()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00069">stats.cpp:69</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_a98133da01bbf496e220d7a62682c7afb"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#a98133da01bbf496e220d7a62682c7afb">resdb::Stats::IncPendingExecute</a></div><div class="ttdeci">void IncPendingExecute()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00250">stats.cpp:250</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_aa1142bd90e709d6ef4320abe5c1d8e4d"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#aa1142bd90e709d6ef4320abe5c1d8e4d">resdb::Stats::IncCommit</a></div><div class="ttdeci">void IncCommit()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00243">stats.cpp:243</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_ac3ba2aa279dc1790a44dcc7e35267205"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ac3ba2aa279dc1790a44dcc7e35267205">resdb::Stats::SendBroadCastMsgPerRep</a></div><div class="ttdeci">void SendBroadCastMsgPerRep()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00270">stats.cpp:270</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_ac7b8bcf2dc734310a3b987d926724087"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ac7b8bcf2dc734310a3b987d926724087">resdb::Stats::AddLatency</a></div><div class="ttdeci">void AddLatency(uint64_t run_time)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00301">stats.cpp:301</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_acdb1b1505fa98609c78fb9fdeaa38d16"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#acdb1b1505fa98609c78fb9fdeaa38d16">resdb::Stats::IncPropose</a></div><div class="ttdeci">void IncPropose()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00229">stats.cpp:229</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_ae4a4c59a88c0de9665851afc332c4a76"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#ae4a4c59a88c0de9665851afc332c4a76">resdb::Stats::IncGeoRequest</a></div><div class="ttdeci">void IncGeoRequest()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00283">stats.cpp:283</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_af394c1231df947472d61b5ea6e82f476"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af394c1231df947472d61b5ea6e82f476">resdb::Stats::SeqGap</a></div><div class="ttdeci">void SeqGap(uint64_t seq_gap)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00299">stats.cpp:299</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_af6ccaee5c902a286e3e4bac2a5c1e0eb"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af6ccaee5c902a286e3e4bac2a5c1e0eb">resdb::Stats::SetPrometheus</a></div><div class="ttdeci">void SetPrometheus(const std::string &amp;prometheus_address)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00306">stats.cpp:306</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_af710ffd1c7bb30359385e55da7965099"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af710ffd1c7bb30359385e55da7965099">resdb::Stats::IncClientCall</a></div><div class="ttdeci">void IncClientCall()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00215">stats.cpp:215</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_af759d6f9f69374297546d3393b7e2856"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#af759d6f9f69374297546d3393b7e2856">resdb::Stats::Stats</a></div><div class="ttdeci">Stats(int sleep_time=5)</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00035">stats.cpp:35</a></div></div>
+<div class="ttc" id="aclassresdb_1_1Stats_html_afb0aab3d8fd3cc67b5603cd5d313933b"><div class="ttname"><a href="../../de/d0d/classresdb_1_1Stats.html#afb0aab3d8fd3cc67b5603cd5d313933b">resdb::Stats::ServerCall</a></div><div class="ttdeci">void ServerCall()</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00285">stats.cpp:285</a></div></div>
 <div class="ttc" id="acommon_2utils_2utils_8h_html"><div class="ttname"><a href="../../d4/d71/common_2utils_2utils_8h.html">utils.h</a></div></div>
 <div class="ttc" id="anamespaceresdb_html"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html">resdb</a></div><div class="ttdef"><b>Definition</b> <a href="../../d4/d85/chain__state_8cpp_source.html#l00024">chain_state.cpp:24</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a419042ff1af445279b6b4b68a676c181"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">resdb::g_mutex</a></div><div class="ttdeci">std::mutex g_mutex</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00034">stats.cpp:34</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e">resdb::NUM_EXECUTE_TX</a></div><div class="ttdeci">@ NUM_EXECUTE_TX</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00056">prometheus_handler.h:56</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6">resdb::CLIENT_REQ</a></div><div class="ttdeci">@ CLIENT_REQ</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00049">prometheus_handler.h:49</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03">resdb::CLIENT_CALL</a></div><div class="ttdeci">@ CLIENT_CALL</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00048">prometheus_handler.h:48</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806">resdb::EXECUTE</a></div><div class="ttdeci">@ EXECUTE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00055">prometheus_handler.h:55</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0">resdb::COMMIT</a></div><div class="ttdeci">@ COMMIT</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00054">prometheus_handler.h:54</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628">resdb::SERVER_CALL_NAME</a></div><div class="ttdeci">@ SERVER_CALL_NAME</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00046">prometheus_handler.h:46</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd">resdb::PREPARE</a></div><div class="ttdeci">@ PREPARE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00053">prometheus_handler.h:53</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a">resdb::PROPOSE</a></div><div class="ttdeci">@ PROPOSE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00052">prometheus_handler.h:52</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d">resdb::BROAD_CAST</a></div><div class="ttdeci">@ BROAD_CAST</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00051">prometheus_handler.h:51</a></div></div>
-<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b">resdb::SERVER_PROCESS</a></div><div class="ttdeci">@ SERVER_PROCESS</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00047">prometheus_handler.h:47</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a419042ff1af445279b6b4b68a676c181"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a419042ff1af445279b6b4b68a676c181">resdb::g_mutex</a></div><div class="ttdeci">std::mutex g_mutex</div><div class="ttdef"><b>Definition</b> <a href="../../d2/df5/stats_8cpp_source.html#l00028">stats.cpp:28</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a0c1472ae78252d10895510a09238f43e">resdb::NUM_EXECUTE_TX</a></div><div class="ttdeci">@ NUM_EXECUTE_TX</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00050">prometheus_handler.h:50</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a26e9b6c472b87513571f2fa5cc303bb6">resdb::CLIENT_REQ</a></div><div class="ttdeci">@ CLIENT_REQ</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00043">prometheus_handler.h:43</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a2aa1235a81ab3448971a24d5b1e59b03">resdb::CLIENT_CALL</a></div><div class="ttdeci">@ CLIENT_CALL</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00042">prometheus_handler.h:42</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a501e74995a321c83b4b9ec1235398806">resdb::EXECUTE</a></div><div class="ttdeci">@ EXECUTE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00049">prometheus_handler.h:49</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6a80909f02c65019795571076b49322fd0">resdb::COMMIT</a></div><div class="ttdeci">@ COMMIT</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00048">prometheus_handler.h:48</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ab56aeb8ddc6ae648e6b05e6b8cd97628">resdb::SERVER_CALL_NAME</a></div><div class="ttdeci">@ SERVER_CALL_NAME</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00040">prometheus_handler.h:40</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6abb6fe355b5f5a3a53e2aa82a8706d0bd">resdb::PREPARE</a></div><div class="ttdeci">@ PREPARE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00047">prometheus_handler.h:47</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6adf2613e6138905a43730bcb1544c971a">resdb::PROPOSE</a></div><div class="ttdeci">@ PROPOSE</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00046">prometheus_handler.h:46</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6ae5a039349fcc8f8d968133949cc0223d">resdb::BROAD_CAST</a></div><div class="ttdeci">@ BROAD_CAST</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00045">prometheus_handler.h:45</a></div></div>
+<div class="ttc" id="anamespaceresdb_html_a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b"><div class="ttname"><a href="../../d5/d10/namespaceresdb.html#a903a063ebd51c5fd151a96b7324b62f6afc68b5a2d424d9165e2f3612848a151b">resdb::SERVER_PROCESS</a></div><div class="ttdeci">@ SERVER_PROCESS</div><div class="ttdef"><b>Definition</b> <a href="../../db/d60/prometheus__handler_8h_source.html#l00041">prometheus_handler.h:41</a></div></div>
 <div class="ttc" id="astats_8h_html"><div class="ttname"><a href="../../d9/d9b/stats_8h.html">stats.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
