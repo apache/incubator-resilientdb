@@ -132,6 +132,26 @@ def create_instance(type):
     except Exception as error:
         click.echo(f"An unexpected error occurred: {error}", err=True)
 
+@cli.command()
+@click.argument("instance_id")
+def exec_into(instance_id):
+    """Bash into a running ResDB or PythonSDK instance"""
+    # Implement exec logic
+    try:
+        # Get the currently logged-in user
+        current_user = get_logged_in_user()
+        if not current_user:
+            click.echo("No user logged in. Please log in first.")
+            return
+
+        command = ["docker", "exec", "-it", instance_id, "bash"]
+        subprocess.run(command, check=True)
+
+    except subprocess.CalledProcessError as error:
+        click.echo(f"Error executing command: {error}", err=True)
+    except Exception as error:
+        click.echo(f"An unexpected error occurred: {error}", err=True)
+    
 
 @cli.command()
 def view_instances():
