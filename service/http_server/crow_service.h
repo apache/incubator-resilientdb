@@ -38,7 +38,7 @@ public:
   void run();
 
 private:
-  std::string GetAllBlocks(int batch_size);
+  std::string GetAllBlocks(int batch_size, bool make_sublists=false);
   std::string ParseKVRequest(const KVRequest &kv_request);
   std::string ParseCreateTime(uint64_t createtime);
   resdb::ResDBConfig config_;

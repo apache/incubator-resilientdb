@@ -155,7 +155,7 @@ void CrowService::run() {
 
   CROW_ROUTE(app, "/v1/blocks")
   ([this](const crow::request &req, response &res) {
-    auto values = GetAllBlocks(1);
+    auto values = GetAllBlocks(100);
     res.set_header("Content-Type", "application/json");
     res.end(values);
   });
@@ -163,7 +163,7 @@ void CrowService::run() {
   // Retrieve blocks in batches of size of the int parameter
   CROW_ROUTE(app, "/v1/blocks/<int>")
   ([this](const crow::request &req, response &res, int batch_size) {
-    auto values = GetAllBlocks(batch_size);
+    auto values = GetAllBlocks(batch_size, true);
     if (values == "") {
       res.code = 500;
       res.set_header("Content-Type", "text/plain");
@@ -305,7 +305,7 @@ void CrowService::run() {
 
 // If batch_size is 1, the function will not add the extra outer [] braces
 // Otherwise, a list of lists of blocks will be returned
-std::string CrowService::GetAllBlocks(int batch_size) {
+std::string CrowService::GetAllBlocks(int batch_size, bool make_sublists) {
   int min_seq = 1;
   bool full_batches = true;
 
@@ -315,7 +315,7 @@ std::string CrowService::GetAllBlocks(int batch_size) {
     std::string cur_batch_str = "";
     if (!first_batch)
       cur_batch_str.append(",\n");
-    if (batch_size > 1)
+    if (batch_size > 1 && make_sublists)
       cur_batch_str.append("[");
     first_batch = false;
 
@@ -375,7 +375,7 @@ std::string CrowService::GetAllBlocks(int batch_size) {
       cur_batch_str.append("}\n");
     }
     full_batches = cur_size == batch_size;
-    if (batch_size > 1)
+    if (batch_size > 1 && make_sublists)
       cur_batch_str.append("]");
 
     if (cur_size > 0)
