@@ -24,6 +24,7 @@
  */
 
 #pragma once
+#include <semaphore.h>
 
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/lock_free_collector_pool.h"
@@ -32,6 +33,16 @@
 #include "platform/statistic/stats.h"
 
 namespace resdb {
+
+class ResponseClientTimeout {
+ public:
+  ResponseClientTimeout(std::string hash_, uint64_t time_);
+  ResponseClientTimeout(const ResponseClientTimeout& other);
+  bool operator<(const ResponseClientTimeout& other) const;
+
+  std::string hash;
+  uint64_t timeout_time;
+};
 
 class ResponseManager {
  public:
@@ -71,6 +82,13 @@ class ResponseManager {
   int BatchProposeMsg();
   int GetPrimary();
 
+  void AddWaitingResponseRequest(std::unique_ptr<Request> request);
+  void RemoveWaitingResponseRequest(std::string hash);
+  bool CheckTimeOut(std::string hash);
+  void ResponseTimer(std::string hash);
+  void MonitoringClientTimeOut();
+  std::unique_ptr<Request> GetTimeOutRequest(std::string hash);
+
  private:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
@@ -83,6 +101,15 @@ class ResponseManager {
   SystemInfo* system_info_;
   std::atomic<int> send_num_;
   SignatureVerifier* verifier_;
+
+  std::thread checking_timeout_thread_;
+  std::map<std::string, std::unique_ptr<Request>> waiting_response_batches_;
+  std::priority_queue<ResponseClientTimeout> client_timeout_min_heap_;
+  std::mutex pm_lock_;
+  uint64_t timeout_length_;
+  sem_t request_sent_signal_;
+  uint64_t highest_seq_;
+  uint64_t highest_seq_primary_id_;
 };
 
 }  // namespace resdb

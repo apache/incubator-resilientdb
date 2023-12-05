@@ -69,7 +69,6 @@ void Commitment::SetNeedCommitQC(bool need_qc) { need_qc_ = need_qc; }
 // TODO if not a primary, redicet to the primary replica.
 int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> user_request) {
-  LOG(ERROR)<<"CHECK";
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
@@ -162,7 +161,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 // TODO check whether the sender is the primary.
 int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
-  if (context == nullptr || context->signature.signature().empty()) {
+  if (global_stats_->IsFaulty() || context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
@@ -234,7 +233,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
 // If receive 2f+1 prepare message, broadcast a commit message.
 int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
-  if (global_stats_->IsFaulty() || context == nullptr || context->signature.signature().empty()) {
+  if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }

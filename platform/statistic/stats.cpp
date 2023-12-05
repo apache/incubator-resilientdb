@@ -104,6 +104,7 @@ Stats::~Stats() {
 void Stats::SocketManagementWrite(){
   while(!stop_){
     try{
+      int count=0;
       LOG(ERROR)<<"Port:" <<transaction_summary_.port;
       asio::io_context io_context;
       tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
@@ -122,7 +123,6 @@ void Stats::SocketManagementWrite(){
           send_summary_.store(false);
         }
       }
-      sleep(1);
     }
     catch( const std::exception& e){
       LOG(ERROR)<<"Exception: " <<e.what();
@@ -142,7 +142,7 @@ void Stats::SocketManagementRead(){
       ws.accept();
       beast::flat_buffer data;
       ws.read(data);
-      make_faulty_.store(true);
+      make_faulty_.store(!make_faulty_.load());
       LOG(ERROR)<<"Received Message on port "<<transaction_summary_.port;
       ws.close("Message Received");
     }
