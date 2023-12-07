@@ -13,7 +13,8 @@ use reqwest::blocking::Client;
 use reqwest::StatusCode;
 use std::collections::HashMap;
 
-// tester function -> Not to be used in prduction.
+/// A testing function that reads JSON data from a file.
+/// Note: This function is intended for testing purposes and should not be used in production.
 pub async fn get_json_from_file(file_name: &str) -> Result<Vec<Value>, anyhow::Error> {
     let mut file = File::open(file_name)
         .expect("Unable to open the file");
@@ -24,7 +25,7 @@ pub async fn get_json_from_file(file_name: &str) -> Result<Vec<Value>, anyhow::E
     json_array.map_err(|err| anyhow::Error::from(err))
 }
 
-
+/// Fetch all transactions from the specified API endpoint.
 pub async fn get_all_transactions<T>(_api_url: &str) -> Result<Vec<T>, anyhow::Error>
 where
     T: serde::de::DeserializeOwned,
@@ -35,6 +36,7 @@ where
     Ok(transactions)
 }
 
+/// Fetch all transactions with additional parameters using a HashMap.
 pub async fn get_all_transactions_map(
     _api_url: &str, 
     _map: HashMap<&str, &str>
@@ -47,6 +49,7 @@ where
     Ok(transactions)
 }
 
+/// Fetch a specific transaction by ID.
 pub async fn get_transaction_by_id<T>(_api_url: &str, _id: &str) -> Result<Vec<T>, anyhow::Error>
 where
     T: serde::de::DeserializeOwned,
@@ -57,6 +60,7 @@ where
     Ok(transactions)
 }
 
+/// Fetch a specific transaction by ID with additional parameters using a HashMap.
 pub async fn get_transaction_by_id_map(
     _api_url: &str, 
     _id: &str, 
@@ -70,6 +74,7 @@ where
     Ok(transactions)
 }
 
+/// Fetch transactions within a specified key range.
 pub async fn get_transaction_by_key_range<T> (
     _api_url: &str,
     _key1: &str,
@@ -84,6 +89,7 @@ where
     Ok(transactions)
 }
 
+/// Fetch transactions within a specified key range with additional parameters using a HashMap.
 pub async fn get_transaction_by_key_range_map(
     _api_url: &str, 
     _key1: &str, 
@@ -97,6 +103,3 @@ where
     let transactions: Vec<HashMap<String, Value>> = response.json().await?;
     Ok(transactions)
 }
-
-
-
