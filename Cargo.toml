@@ -2,8 +2,9 @@
 name = "resilientdb_rust_sdk"
 version = "0.1.0"
 authors = ["Dhruv Sangamwar <dsangamwar@gmail.com>"]
-description = "A SDK for ResilientDB"
+description = "A SDK for interacting with ResilientDB"
 license = "Apache-2.0"
+publish = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
