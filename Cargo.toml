@@ -1,6 +1,7 @@
 [package]
 name = "resilientdb_rust_sdk"
 version = "0.1.0"
+edition = "2021"
 authors = ["Dhruv Sangamwar <dsangamwar@gmail.com>"]
 description = "A SDK for interacting with ResilientDB"
 license = "Apache-2.0"
