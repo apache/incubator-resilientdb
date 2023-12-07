@@ -56,9 +56,9 @@ impl ResDB {
         &self,
         api_url: &str,
         id: &str,
-    ) -> Result<T, anyhow::Error>
+    ) -> Result<Vec<T>, anyhow::Error>
     where
-        T: serde::de::DeserializeOwned + std::default::Default,
+        T: serde::de::DeserializeOwned,
     {
         transaction::get_transaction_by_id(api_url, id).await
     }
