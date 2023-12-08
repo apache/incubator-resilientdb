@@ -1,8 +1,9 @@
 # ResilientDB Rust SDK
 
+![Build](https://github.com/dhruvsangamwar/resilientdb_rust_sdk/actions/workflows/rust.yml/badge.svg)
 [![Crates.io](https://img.shields.io/crates/v/resilientdb_rust_sdk)](https://crates.io/crates/resilientdb_rust_sdk)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-![Build](https://github.com/dhruvsangamwar/resilientdb_rust_sdk/actions/workflows/rust.yml/badge.svg)
+
 
 ## Overview
 
