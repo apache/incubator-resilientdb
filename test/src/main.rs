@@ -1,6 +1,6 @@
 // main.rs
 
-use resdb_rust_sdk::ResDB;
+use resilientdb_rust_sdk::ResDB;
 
 mod models;
 use models::Transaction;
