@@ -7,6 +7,12 @@
 // Imports
 use crate::transaction;
 use crate::blocks;
+use crate::crypto;
+
+use openssl::rsa::Rsa;
+use openssl::pkey::PKey;
+use openssl::pkey::Private;
+
 use std::collections::HashMap;
 use serde_json::Value;
 
@@ -169,4 +175,20 @@ impl ResDB {
     {
         blocks::get_blocks_by_range_map(api_url, range_begin, range_end, map).await
     }
+
+    /** APIs provided to create public/private key pairs and Hashing **/
+    pub fn generate_keypair(key_size: usize) -> (Vec<u8>, PKey<Private>)
+    //pub fn generate_keypair() -> (Vec<u8>, PKey<Private>)
+    where
+    {
+        crypto::generate_keypair(key_size: usize)
+    }
+    
+     /** APIs provided to create hashed data using SHA3-256 **/
+    pub fn hash_data(data: &str) -> String
+    where
+    {
+        crypto::hash_data(data: &str)
+    }  
+    
 }

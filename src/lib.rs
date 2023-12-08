@@ -4,6 +4,7 @@
 pub mod resdb;
 pub mod transaction;
 pub mod blocks;
+pub mod crypto;
 
 /// Re-export ResDB from the resdb module for convenient use.
 pub use resdb::ResDB;
