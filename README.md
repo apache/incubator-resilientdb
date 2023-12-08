@@ -1,6 +1,6 @@
 # ResilientDB Rust SDK
 
-[![Crates.io](https://img.shields.io/crates/v/resilientdb_sdk)](https://crates.io/crates/resilientdb_rust_sdk)
+[![Crates.io](https://img.shields.io/crates/v/resilientdb_rust_sdk)](https://crates.io/crates/resilientdb_rust_sdk)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Overview
