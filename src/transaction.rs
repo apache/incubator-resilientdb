@@ -6,11 +6,14 @@
 
 use std::fs::File;
 use std::io::Read;
+use serde::Serialize; 
+use serde::Serializer;
 use serde::Deserialize;
 use anyhow::Error;
 use serde_json::Value;
+use serde_json::json;
+use reqwest::{header, StatusCode};
 use reqwest::blocking::Client;
-use reqwest::StatusCode;
 use std::collections::HashMap;
 
 /// A testing function that reads JSON data from a file.
@@ -102,4 +105,52 @@ where
     let response = reqwest::get(endpoint_url).await?;
     let transactions: Vec<HashMap<String, Value>> = response.json().await?;
     Ok(transactions)
+}
+
+/// Post transaction to an endpoint using a struct
+pub async fn post_transaction<T>(
+    _data: T,
+    _endpoint: &str,
+) -> Result<String, reqwest::Error>
+where
+    T: Serialize,
+{
+    let client = reqwest::Client::builder().build()?;
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        header::CONTENT_TYPE,
+        header::HeaderValue::from_static("application/json"),
+    );
+    let json = json!(_data);
+    let response = client
+        .post(_endpoint)
+        .headers(headers)
+        .json(&json)
+        .send()
+        .await?;
+
+    let body = response.text().await?;
+    Ok(body)
+}
+
+/// Post transaction to an endpoint using a map
+pub async fn post_transaction_map(
+    _data: HashMap<&str, Value>,
+    _endpoint: &str,
+) -> Result<String, reqwest::Error>
+{
+    let client = reqwest::Client::builder().build()?;
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        header::CONTENT_TYPE,
+        header::HeaderValue::from_static("application/json"),
+    );
+    let json = json!(_data);
+    let request = client.request(reqwest::Method::POST, _endpoint)
+        .headers(headers)
+        .json(&json);
+
+    let response = request.send().await?;
+    let body = response.text().await?;
+    Ok(body)
 }

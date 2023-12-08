@@ -15,6 +15,7 @@ use openssl::pkey::Private;
 
 use std::collections::HashMap;
 use serde_json::Value;
+use serde::Serialize; 
 
 /// A struct representing the resource database.
 pub struct ResDB;
@@ -176,19 +177,32 @@ impl ResDB {
         blocks::get_blocks_by_range_map(api_url, range_begin, range_end, map).await
     }
 
-    /** APIs provided to create public/private key pairs and Hashing **/
-    pub fn generate_keypair(key_size: usize) -> (Vec<u8>, PKey<Private>)
-    //pub fn generate_keypair() -> (Vec<u8>, PKey<Private>)
+    /// Provided function to create public/private key pairs
+    pub fn generate_keypair(&self, key_size: usize) -> (Vec<u8>, PKey<Private>)
     where
     {
         crypto::generate_keypair(key_size)
     }
     
-     /** APIs provided to create hashed data using SHA3-256 **/
-    pub fn hash_data(data: &str) -> String
+    /// Provided function to create hashed data using SHA3-256
+    pub fn hash_data(&self, data: &str) -> String
     where
     {
         crypto::hash_data(data)
     }  
     
+    /// Post a transaction by passing in data (Struct) and endpoint
+    pub async fn post_transaction<T>(&self, data: T, endpoint: &str) -> Result<String, reqwest::Error>
+    where
+        T: Serialize,
+    {
+        transaction::post_transaction(data, endpoint).await
+    }
+
+    /// Post a transaction by passing in data (Hash Map) and endpoint 
+    pub async fn post_transaction_map(&self, data: HashMap<&str, Value>, endpoint: &str) -> Result<String, reqwest::Error>
+    where
+    {
+        transaction::post_transaction_map(data, endpoint).await
+    }
 }
