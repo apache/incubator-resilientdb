@@ -7,6 +7,7 @@ use models::Transaction;
 use models::Block;
 
 use std::collections::HashMap;
+use serde_json::json;
 
 #[tokio::main]
 async fn test_transaction_api() {
@@ -232,25 +233,50 @@ async fn test_blocks_api_map() {
 }
 
 fn test_crypto() {
-    let keypair:  ResDB::generate_keypair();
-    println!("{:?}",)
+    let res_db = ResDB::new();
+    let keypair = res_db.generate_keypair(2048);
+    println!("{:?}", keypair)
 }
 
+#[tokio::main]
+async fn test_post() {
+    let res_db = ResDB::new();
+
+    let mut data = HashMap::new();
+    data.insert(
+        "query",
+        json!({
+            "mutation": {
+                "postTransaction": {
+                    "data": {
+                        "operation": "CREATE",
+                        "amount": 69,
+                        "signerPublicKey": "8fPAqJvAFAkqGs8GdmDDrkHyR7hHsscVjes39TVVfN54",
+                        "signerPrivateKey": "5R4ER6smR6c6fsWt3unPqP6Rhjepbn82Us7hoSj5ZYCc",
+                        "recipientPublicKey": "ECJksQuF9UWi3DPCYvQqJPjF6BqSbXrnDiXUjdiVvkyH",
+                        "asset": {
+                            "data": { "time": 444 }
+                        }
+                    }
+                }
+            }
+        }),
+    );
+
+    let endpoint = "https://cloud.resilientdb.com/graphql";
+
+    match res_db.post_transaction_map(data, endpoint).await {
+        Ok(body) => println!("{}", body),
+        Err(err) => eprintln!("Error: {}", err),
+    }
+
+}
 
 fn main(){
     // test_transaction_api();
     // test_transaction_api_map();
     // test_blocks_api();
     // test_blocks_api_map();
-    test_crypto()
-    // Testing code for crypto module
-    let keypair = crypto::generate_keypair(2048);
-    println!("Public Key: {:?}", keypair.0);
-    // Handle the private key securely
-    // Printing here for testing only
-    println!("Private Key: [hidden]");
-
-    let data = "Hello, World!";
-    let hashed_data = crypto::hash_data(data);
-    println!("Hashed Data: {}", hashed_data);
+    // test_crypto();
+    test_post()
 }
