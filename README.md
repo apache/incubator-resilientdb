@@ -1,6 +1,6 @@
 # ResilientDB Rust SDK
 
-[![Crates.io](https://img.shields.io/crates/v/resdb_sdk)](https://crates.io/crates/resdb_sdk)
+[![Crates.io](https://img.shields.io/crates/v/resilientdb_sdk)](https://crates.io/crates/resilientdb_rust_sdk)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Overview
@@ -48,9 +48,9 @@ let all_blocks = res_db.get_all_blocks::<T>("https://api.example.com/blocks").aw
 let grouped_blocks = res_db.get_blocks_grouped::<T>("https://api.example.com/blocks", &100).await;
 ```
 
-## Documentation
+<!-- ## Documentation
 
-For detailed information about the SDK's API and usage, refer to the [official documentation](https://your-crate-docs-url).
+For detailed information about the SDK's API and usage, refer to the [official documentation](https://your-crate-docs-url). -->
 
 ## Contributing
 
@@ -62,5 +62,5 @@ This SDK is licensed under the [Apache-2.0 License](https://opensource.org/licen
 
 ## Acknowledgments
 
-- Special thanks to [contributors](https://github.com/your_username/your_crate_name/graphs/contributors).
+- Special thanks to [contributors](https://github.com/dhruvsangamwar/resilientdb_rust_sdk/graphs/contributors).
 - This SDK leverages the power of [serde](https://crates.io/crates/serde) for serialization and deserialization.
