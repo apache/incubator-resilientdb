@@ -181,14 +181,14 @@ impl ResDB {
     //pub fn generate_keypair() -> (Vec<u8>, PKey<Private>)
     where
     {
-        crypto::generate_keypair(key_size: usize)
+        crypto::generate_keypair(key_size)
     }
     
      /** APIs provided to create hashed data using SHA3-256 **/
     pub fn hash_data(data: &str) -> String
     where
     {
-        crypto::hash_data(data: &str)
+        crypto::hash_data(data)
     }  
     
 }
