@@ -23,17 +23,16 @@ To use `resdb-cli`, you can download the binary from the [Releases](https://gith
 
 ## Configuration
 
-`resdb-cli` uses a configuration file (`config.ini`) to store settings such as the MongoDB URI. Follow the steps below to configure the CLI:
+`resdb-cli` uses a configuration file (`config.ini`) to store settings such as the flaskBaseUrl. Follow the steps below to configure the CLI:
 
-Create a configuration file named `config.ini`, Replace the MongoDB_URI value with the appropriate MongoDB connection string.:
+Create a configuration file named `config.ini`, Replace the flaskBaseUrl value with the appropriate Flask API server connection string.:
 
    ```ini
-    [Database]
-    MongoDB_URI = mongodb://localhost:27017/
-    name = resui
-
+    [Server]
+    flask_base_url = http://xyz:1234
+    
     [User]
-    current_user = gn@gmail.com
+    current_user = bob@gmail.com
    ```
 
 ## Usage
