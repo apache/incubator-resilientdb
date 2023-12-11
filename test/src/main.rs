@@ -1,10 +1,11 @@
 // main.rs
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
 use resilientdb_rust_sdk::ResDB;
 
 mod models;
-use models::Transaction;
-use models::Block;
+use models::{Transaction, Block};
 
 use std::collections::HashMap;
 use serde_json::json;
@@ -241,42 +242,23 @@ fn test_crypto() {
 #[tokio::main]
 async fn test_post() {
     let res_db = ResDB::new();
-
-    let mut data = HashMap::new();
-    data.insert(
-        "query",
-        json!({
-            "mutation": {
-                "postTransaction": {
-                    "data": {
-                        "operation": "CREATE",
-                        "amount": 69,
-                        "signerPublicKey": "8fPAqJvAFAkqGs8GdmDDrkHyR7hHsscVjes39TVVfN54",
-                        "signerPrivateKey": "5R4ER6smR6c6fsWt3unPqP6Rhjepbn82Us7hoSj5ZYCc",
-                        "recipientPublicKey": "ECJksQuF9UWi3DPCYvQqJPjF6BqSbXrnDiXUjdiVvkyH",
-                        "asset": {
-                            "data": { "time": 444 }
-                        }
-                    }
-                }
-            }
-        }),
-    );
-
+    let data = r#"
+    {
+        "query": "mutation { postTransaction(data: {\noperation: \"CREATE\"\namount: 1738\nsignerPublicKey: \"DJXXckE59dVE6gRfRB2SwCnu3tWBae1PZN2ZxZrhEhmY\"\nsignerPrivateKey: \"FUYntrdshSCBdUKfb8j29LF2HEbYwNphHucLDKKrwPcF\"\nrecipientPublicKey: \"ECJksQuF9UWi3DPCYvQqJPjF6BqSbXrnDiXUjdiVvkyH\"\nasset: \"\"\"{\n            \"data\": { \"time\": 1738\n            },\n          }\"\"\"\n      }) {\n  id\n  }\n}\n"
+    }
+    "#;
     let endpoint = "https://cloud.resilientdb.com/graphql";
-
-    match res_db.post_transaction_map(data, endpoint).await {
+    match res_db.post_transaction_string(data, endpoint).await {
         Ok(body) => println!("{}", body),
         Err(err) => eprintln!("Error: {}", err),
     }
-
 }
 
 fn main(){
-    // test_transaction_api();
-    // test_transaction_api_map();
-    // test_blocks_api();
-    // test_blocks_api_map();
-    // test_crypto();
+    test_transaction_api();
+    test_transaction_api_map();
+    test_blocks_api();
+    test_blocks_api_map();
+    test_crypto();
     test_post()
 }

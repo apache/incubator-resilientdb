@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
-
+use reqwest::{Error, header};
+use serde::{Serialize, Serializer, Deserialize};
 /** User Defined Struct for transaction endpoints **/ 
 
 #[derive(Debug, serde::Deserialize)]

@@ -4,16 +4,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use reqwest::{header, StatusCode, Error as otherError, blocking::Client};
+use serde::{Serialize, Serializer, Deserialize}; 
+use serde_json::{Map, Value, json};
 use std::fs::File;
 use std::io::Read;
-use serde::Serialize; 
-use serde::Serializer;
-use serde::Deserialize;
 use anyhow::Error;
-use serde_json::Value;
-use serde_json::json;
-use reqwest::{header, StatusCode};
-use reqwest::blocking::Client;
 use std::collections::HashMap;
 
 /// A testing function that reads JSON data from a file.
@@ -107,50 +103,88 @@ where
     Ok(transactions)
 }
 
-/// Post transaction to an endpoint using a struct
-pub async fn post_transaction<T>(
-    _data: T,
+// Post transaction to an endpoint using a struct
+// pub async fn post_transaction<T>(
+//     _data: T,
+//     _endpoint: &str,
+// ) -> Result<String, anyhow::Error>
+// where
+//     T: Serialize,
+// {
+//     let client = reqwest::Client::builder().build()?;
+
+//     let mut headers = reqwest::header::HeaderMap::new();
+//     headers.insert("Content-Type", "application/json".parse()?);
+
+//     let request = client
+//         .post(_endpoint)
+//         .headers(headers)
+//         .json(&_data);
+
+//     let response = request.send().await?;
+//     let body = response.text().await?;
+
+//     Ok(body)
+// }
+
+// Post transaction to an endpoint using a map
+// pub async fn post_transaction_map(
+//     _data: HashMap<&str, Value>,
+//     _endpoint: &str,
+// ) -> Result<String, anyhow::Error>
+// {
+//     let json: serde_json::Value = serde_json::Value::Object(
+//         _data.into_iter()
+//             .map(|(k, v)| (k.to_string(), v))
+//             .collect::<Map<String, Value>>(),
+//     );
+
+//     let json = serde_json::to_string_pretty(&json)?;
+
+//     println!("{:?}", json);
+
+//     let client = reqwest::Client::builder()
+//         .build()?;
+
+//     let mut headers = reqwest::header::HeaderMap::new();
+//     headers.insert("Content-Type", "application/json".parse()?);
+
+//     let request = client.request(reqwest::Method::POST, _endpoint)
+//         .headers(headers)
+//         .json(&json);
+
+//     let response = request.send().await?;
+//     let body = response.text().await?;
+    
+//     Ok(body)
+// }
+
+pub async fn post_transaction_string(
+    _data: &str,
     _endpoint: &str,
-) -> Result<String, reqwest::Error>
+) -> Result<String, anyhow::Error>
 where
-    T: Serialize,
 {
-    let client = reqwest::Client::builder().build()?;
-    let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        header::HeaderValue::from_static("application/json"),
-    );
-    let json = json!(_data);
-    let response = client
-        .post(_endpoint)
-        .headers(headers)
-        .json(&json)
-        .send()
-        .await?;
+    let json: serde_json::Value = match serde_json::from_str(_data) {
+        Ok(value) => value,
+        Err(err) => return Err(Error::from(err)),
+    };
 
-    let body = response.text().await?;
-    Ok(body)
-}
+    println!("{}", json);
 
-/// Post transaction to an endpoint using a map
-pub async fn post_transaction_map(
-    _data: HashMap<&str, Value>,
-    _endpoint: &str,
-) -> Result<String, reqwest::Error>
-{
-    let client = reqwest::Client::builder().build()?;
+    let client = reqwest::Client::builder()
+        .build()?;
+
     let mut headers = reqwest::header::HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        header::HeaderValue::from_static("application/json"),
-    );
-    let json = json!(_data);
+    headers.insert("Content-Type", "application/json".parse()?);
+
+
     let request = client.request(reqwest::Method::POST, _endpoint)
         .headers(headers)
         .json(&json);
 
     let response = request.send().await?;
     let body = response.text().await?;
+
     Ok(body)
 }

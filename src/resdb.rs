@@ -191,18 +191,24 @@ impl ResDB {
         crypto::hash_data(data)
     }  
     
-    /// Post a transaction by passing in data (Struct) and endpoint
-    pub async fn post_transaction<T>(&self, data: T, endpoint: &str) -> Result<String, reqwest::Error>
-    where
-        T: Serialize,
-    {
-        transaction::post_transaction(data, endpoint).await
-    }
+    //Post a transaction by passing in data (Struct) and endpoint
+    // pub async fn post_transaction<T>(&self, data: T, endpoint: &str) -> Result<String, anyhow::Error>
+    // where
+    //     T: Serialize + std::fmt::Debug,
+    // {
+    //     transaction::post_transaction(data, endpoint).await
+    // }
 
-    /// Post a transaction by passing in data (Hash Map) and endpoint 
-    pub async fn post_transaction_map(&self, data: HashMap<&str, Value>, endpoint: &str) -> Result<String, reqwest::Error>
+    // Post a transaction by passing in data (Hash Map) and endpoint 
+    // pub async fn post_transaction_map(&self, data: HashMap<&str, Value>, endpoint: &str) -> Result<String, anyhow::Error>
+    // where
+    // {
+    //     transaction::post_transaction_map(data, endpoint).await
+    // }
+
+    pub async fn post_transaction_string(&self, data: &str, endpoint: &str) -> Result<String, anyhow::Error>
     where
     {
-        transaction::post_transaction_map(data, endpoint).await
+        transaction::post_transaction_string(data, endpoint).await
     }
 }

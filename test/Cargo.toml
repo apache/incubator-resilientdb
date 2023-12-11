@@ -10,3 +10,4 @@ resilientdb_rust_sdk = {path = "/Users/dhruv/Desktop/Repositories/resdb/resilien
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+reqwest = {version = "0.11.22", features = ["blocking", "json"]}
