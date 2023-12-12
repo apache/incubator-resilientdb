@@ -1,5 +1,5 @@
-use reqwest::{Error, header};
-use serde::{Serialize, Serializer, Deserialize};
+
+use serde::Deserialize;
 /** User Defined Struct for transaction endpoints **/ 
 
 #[derive(Debug, serde::Deserialize)]
@@ -130,7 +130,7 @@ pub struct Block {
     pub number: String,
     pub transactions: Vec<BlockTransaction>,
     pub size: i64,
-    pub createdAt: String,
+    pub created_at: String,
 }
 
 impl Default for Block {
@@ -140,7 +140,7 @@ impl Default for Block {
             number: String::new(),
             transactions: Vec::new(),
             size: 0,
-            createdAt: String::new(),
+            created_at: String::new(),
         }
     }
 }

@@ -8,7 +8,7 @@ mod models;
 use models::{Transaction, Block};
 
 use std::collections::HashMap;
-use serde_json::json;
+
 
 #[tokio::main]
 async fn test_transaction_api() {
@@ -233,32 +233,36 @@ async fn test_blocks_api_map() {
     }
 }
 
-fn test_crypto() {
-    let res_db = ResDB::new();
-    let keypair = res_db.generate_keypair(2048);
-    println!("{:?}", keypair)
+fn test_crypto() -> (String, String){
+    let res_db = ResDB::new(); 
+
+    res_db.generate_keypair()
 }
 
 #[tokio::main]
-async fn test_post() {
+async fn test_post( keypair : (String, String) ) {
     let res_db = ResDB::new();
-    let data = r#"
-    {
-        "query": "mutation { postTransaction(data: {\noperation: \"CREATE\"\namount: 1738\nsignerPublicKey: \"DJXXckE59dVE6gRfRB2SwCnu3tWBae1PZN2ZxZrhEhmY\"\nsignerPrivateKey: \"FUYntrdshSCBdUKfb8j29LF2HEbYwNphHucLDKKrwPcF\"\nrecipientPublicKey: \"ECJksQuF9UWi3DPCYvQqJPjF6BqSbXrnDiXUjdiVvkyH\"\nasset: \"\"\"{\n            \"data\": { \"time\": 1738\n            },\n          }\"\"\"\n      }) {\n  id\n  }\n}\n"
-    }
-    "#;
+
+    let data = format!(r#"
+    {{
+        "query": "mutation {{ postTransaction(data: {{\noperation: \"CREATE\"\namount: 173812\nsignerPublicKey: \"{}\"\nsignerPrivateKey: \"{}\"\nrecipientPublicKey: \"ECJksQuF9UWi3DPCYvQqJPjF6BqSbXrnDiXUjdiVvkyH\"\nasset: \"\"\"{{\n            \"data\": {{ \"time\": 173812\n            }},\n          }}\"\"\"\n      }}) {{\n  id\n  }}\n}}\n"
+    }}
+    "#, keypair.0, keypair.1);
+
     let endpoint = "https://cloud.resilientdb.com/graphql";
-    match res_db.post_transaction_string(data, endpoint).await {
+    match res_db.post_transaction_string(&data, endpoint).await {
         Ok(body) => println!("{}", body),
         Err(err) => eprintln!("Error: {}", err),
     }
 }
 
 fn main(){
-    test_transaction_api();
-    test_transaction_api_map();
-    test_blocks_api();
-    test_blocks_api_map();
-    test_crypto();
-    test_post()
+    // test_transaction_api();
+    // test_transaction_api_map();
+    // test_blocks_api();
+    // test_blocks_api_map();
+    let keypair = test_crypto();
+    println!("Public Key: {:?}", keypair.0);
+    println!("Private Key: {:?}", keypair.1);
+    //test_post(keypair)
 }

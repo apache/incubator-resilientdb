@@ -4,28 +4,28 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::fs::File;
-use std::io::Read;
-use serde::Deserialize;
 use anyhow::Error;
-use serde_json::Value;
 use reqwest::blocking::Client;
 use reqwest::StatusCode;
+use serde::Deserialize;
+use serde_json::Value;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
 
 /// A testing function that reads JSON data from a file.
 /// Note: This function is intended for testing purposes and should not be used in production.
 pub async fn get_json_from_file(file_name: &str) -> Result<Vec<Value>, anyhow::Error> {
-    let mut file = File::open(file_name)
-        .expect("Unable to open the file");
-    
+    let mut file = File::open(file_name).expect("Unable to open the file");
+
     // Read the file content into a string
     let mut content = String::new();
-    file.read_to_string(&mut content).expect("Unable to read the file");
+    file.read_to_string(&mut content)
+        .expect("Unable to read the file");
 
     // Parse the JSON content
     let json_array: Result<Vec<Value>, _> = serde_json::from_str(&content);
-    
+
     // Return the result
     json_array.map_err(|err| anyhow::Error::from(err))
 }
@@ -43,8 +43,8 @@ where
 
 /// Fetch all blocks with additional parameters using a HashMap.
 pub async fn get_all_blocks_map(
-    _api_url: &str, 
-    _map: HashMap<&str, &str>
+    _api_url: &str,
+    _map: HashMap<&str, &str>,
 ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
 where
 {
@@ -55,7 +55,10 @@ where
 }
 
 /// Fetch grouped blocks with a specified batch size.
-pub async fn get_all_blocks_grouped<T>(_api_url: &str, _batch_size: &i64) -> Result<Vec<T>, anyhow::Error>
+pub async fn get_all_blocks_grouped<T>(
+    _api_url: &str,
+    _batch_size: &i64,
+) -> Result<Vec<T>, anyhow::Error>
 where
     T: serde::de::DeserializeOwned + std::default::Default,
 {
@@ -70,9 +73,9 @@ where
 
 /// Fetch grouped blocks with additional parameters using a HashMap.
 pub async fn get_blocks_grouped_map(
-    _api_url: &str, 
+    _api_url: &str,
     _batch_size: &i64,
-    _map: HashMap<&str, &str>
+    _map: HashMap<&str, &str>,
 ) -> Result<Vec<Vec<HashMap<String, Value>>>, anyhow::Error>
 where
 {
@@ -105,10 +108,10 @@ where
 
 /// Fetch blocks within a specified range with additional parameters using a HashMap.
 pub async fn get_blocks_by_range_map(
-    _api_url: &str, 
-    _range_begin: &i64, 
-    _range_end: &i64, 
-    _map: HashMap<&str, &str>
+    _api_url: &str,
+    _range_begin: &i64,
+    _range_end: &i64,
+    _map: HashMap<&str, &str>,
 ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
 where
 {

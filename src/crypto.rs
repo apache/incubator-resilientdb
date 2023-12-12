@@ -1,12 +1,10 @@
- #[allow(unused_imports)]
- /// OpenSSL is a robust, open-source implementation of the SSL (Secure Sockets Layer)
- /// and TLS (Transport Layer Security) protocols. It provides a toolkit for the
- /// implementation of secure communication over a computer network. 
+use ed25519_dalek::{Keypair, PublicKey, SecretKey};
+#[allow(unused_imports)]
+/// OpenSSL is a robust, open-source implementation of the SSL (Secure Sockets Layer)
+/// and TLS (Transport Layer Security) protocols. It provides a toolkit for the
+/// implementation of secure communication over a computer network.
 use openssl::rsa::Rsa;
-use openssl::pkey::PKey;
-use openssl::pkey::Private;
 use sha3::{Digest, Sha3_256};
-use std::convert::TryInto;
 
 /// Hash the provided data using SHA3-256, i.e., Secure Hash Algorithm 3 using 256 bits
 /// @param data Data to be hashed using SHA3-256
@@ -18,14 +16,21 @@ pub fn hash_data(data: &str) -> String {
 }
 
 /// Generates a cryptographic key pair using RSA
-/// RSA is a public-key cryptosystem, meaning it uses a pair of 
+/// RSA is a public-key cryptosystem, meaning it uses a pair of
 /// keys: a public key for encryption and a private key for decryption
-/// @param key-size
 /// @return tuple object containing the public and private keys
-pub fn generate_keypair(key_size: usize) -> (Vec<u8>, PKey<Private>) {
-    //let rsa = Rsa::generate(key_size).unwrap();
-    let rsa = Rsa::generate(key_size.try_into().unwrap()).unwrap();
-    let pkey = PKey::from_rsa(rsa).unwrap();
-    let pub_key: Vec<u8> = pkey.public_key_to_pem().unwrap();
-    (pub_key, pkey)
+pub fn generate_keypair() -> (String, String) {
+    let mut rng = rand::rngs::OsRng;
+    let keypair: Keypair = Keypair::generate(&mut rng);
+    let public_key: PublicKey = keypair.public;
+    let secret_key: SecretKey = keypair.secret;
+
+    let public_key_bytes: [u8; 32] = public_key.to_bytes();
+    let secret_key_bytes: [u8; 32] = secret_key.to_bytes();
+
+    // Encodes the public key bytes into a Base58 string representation.
+    let public_key_base58 = bs58::encode(public_key_bytes).into_string();
+    let secret_key_base58 = bs58::encode(secret_key_bytes).into_string();
+
+    (public_key_base58, secret_key_base58)
 }
