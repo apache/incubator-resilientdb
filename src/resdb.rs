@@ -75,7 +75,8 @@ impl ResDB {
     where
         T: serde::de::DeserializeOwned,
     {
-        transaction::get_all_transactions(api_url).await
+        let api_url = format!("{}/{}/{}", api_url, "v1", "transactions");
+        transaction::get_all_transactions(&api_url).await
     }
 
     /// Get all transactions of a specified type from the given API endpoint and map.
@@ -94,8 +95,10 @@ impl ResDB {
         api_url: &str,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
-where {
-        transaction::get_all_transactions_map(api_url, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}", api_url, "v1", "transactions");
+        transaction::get_all_transactions_map(&api_url, map).await
     }
 
     /// Get transactions of a certain ID from the given API endpoint.
@@ -120,7 +123,8 @@ where {
     where
         T: serde::de::DeserializeOwned,
     {
-        transaction::get_transaction_by_id(api_url, id).await
+        let api_url = format!("{}/{}/{}/{}", api_url, "v1", "transactions", id);
+        transaction::get_transaction_by_id(&api_url, id).await
     }
 
     /// Get transactions of a certain ID from the given API endpoint and map.
@@ -141,8 +145,10 @@ where {
         id: &str,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
-where {
-        transaction::get_transaction_by_id_map(api_url, id, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}/{}", api_url, "v1", "transactions", id);
+        transaction::get_transaction_by_id_map(&api_url, id, map).await
     }
 
     /// Get transactions of a specified type within a key range from the given API endpoint.
@@ -169,7 +175,8 @@ where {
     where
         T: serde::de::DeserializeOwned,
     {
-        transaction::get_transaction_by_key_range(api_url, key1, key2).await
+        let api_url = format!("{}/{}/{}/{}/{}", api_url, "v1", "transactions", key1, key2);
+        transaction::get_transaction_by_key_range(&api_url, key1, key2).await
     }
 
     /// Get transactions within a key range from the given API endpoint and map.
@@ -192,8 +199,10 @@ where {
         key2: &str,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
-where {
-        transaction::get_transaction_by_key_range_map(api_url, key1, key2, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}/{}/{}", api_url, "v1", "transactions", key1, key2);
+        transaction::get_transaction_by_key_range_map(&api_url, key1, key2, map).await
     }
 
     /// Post a transaction string to the specified API endpoint.
@@ -211,8 +220,10 @@ where {
         data: &str,
         endpoint: &str,
     ) -> Result<String, anyhow::Error>
-where {
-        transaction::post_transaction_string(data, endpoint).await
+    where 
+    {
+        let api_url = format!("{}/{}", endpoint, "graphql");
+        transaction::post_transaction_string(data, &endpoint).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint.
@@ -232,7 +243,8 @@ where {
     where
         T: serde::de::DeserializeOwned,
     {
-        blocks::get_all_blocks(api_url).await
+        let api_url = format!("{}/{}/{}", api_url, "v1", "blocks");
+        blocks::get_all_blocks(&api_url).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint with additional parameters.
@@ -251,8 +263,10 @@ where {
         api_url: &str,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
-where {
-        blocks::get_all_blocks_map(api_url, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}", api_url, "v1", "blocks");
+        blocks::get_all_blocks_map(&api_url, map).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint, grouped by batches.
@@ -260,7 +274,7 @@ where {
     /// # Parameters
     ///
     /// - `api_url`: The URL of the API endpoint.
-    /// - `_batch_size`: The size of each batch.
+    /// - `batch_size`: The size of each batch.
     ///
     /// # Generic Parameters
     ///
@@ -272,12 +286,13 @@ where {
     pub async fn get_blocks_grouped<T>(
         &self,
         api_url: &str,
-        _batch_size: &i64,
+        batch_size: &i64,
     ) -> Result<Vec<Vec<T>>, anyhow::Error>
     where
         T: serde::de::DeserializeOwned + std::default::Default,
     {
-        blocks::get_all_blocks_grouped(api_url, _batch_size).await
+        let api_url = format!("{}/{}/{}/{}", api_url, "v1","blocks", batch_size);
+        blocks::get_all_blocks_grouped(&api_url, batch_size).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint, grouped by batches and additional parameters.
@@ -285,7 +300,7 @@ where {
     /// # Parameters
     ///
     /// - `api_url`: The URL of the API endpoint.
-    /// - `_batch_size`: The size of each batch.
+    /// - `batch_size`: The size of each batch.
     /// - `map`: A HashMap containing key-value pairs for additional parameters.
     ///
     /// # Returns
@@ -295,11 +310,13 @@ where {
     pub async fn get_blocks_grouped_map(
         &self,
         api_url: &str,
-        _batch_size: &i64,
+        batch_size: &i64,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<Vec<HashMap<String, Value>>>, anyhow::Error>
-where {
-        blocks::get_blocks_grouped_map(api_url, _batch_size, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}/{}", api_url, "v1", "blocks", batch_size);
+        blocks::get_blocks_grouped_map(&api_url, batch_size, map).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint within a specified range.
@@ -326,7 +343,8 @@ where {
     where
         T: serde::de::DeserializeOwned,
     {
-        blocks::get_blocks_by_range(api_url, range_begin, range_end).await
+        let api_url = format!("{}/{}/{}/{}/{}", api_url, "v1" , "blocks", range_begin, range_end);
+        blocks::get_blocks_by_range(&api_url, range_begin, range_end).await
     }
 
     /// Get all blocks of a specified type from the given API endpoint within a specified range, with additional parameters.
@@ -349,8 +367,10 @@ where {
         range_end: &i64,
         map: HashMap<&str, &str>,
     ) -> Result<Vec<HashMap<String, Value>>, anyhow::Error>
-where {
-        blocks::get_blocks_by_range_map(api_url, range_begin, range_end, map).await
+    where 
+    {
+        let api_url = format!("{}/{}/{}/{}/{}", api_url, "v1", "blocks", range_begin, range_end);
+        blocks::get_blocks_by_range_map(&api_url, range_begin, range_end, map).await
     }
 
     /// Generate a key pair for cryptographic operations.
@@ -359,7 +379,8 @@ where {
     ///
     /// A tuple containing the public key and private key as strings.
     pub fn generate_keypair(&self) -> (String, String)
-where {
+    where 
+    {
         crypto::generate_keypair()
     }
 
@@ -377,7 +398,9 @@ where {
     ///
     /// A `Result` containing a vector of blocks of type `T` or an error of type `anyhow::Error`.
     pub fn hash_data(&self, data: &str) -> String
-where {
+    where 
+    {
         crypto::hash_data(data)
     }
+
 }

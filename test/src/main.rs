@@ -18,7 +18,7 @@ async fn test_transaction_api() {
     let my_struct = res_db.create_object::<Transaction>();
 
     // Call the asynchronous function to get all transactions
-    match res_db.get_all_transactions::<Transaction>("https://crow.resilientdb.com/v1/transactions").await {
+    match res_db.get_all_transactions::<Transaction>("https://crow.resilientdb.com").await {
         Ok(transactions) => {
             if let Some(first_transaction) = transactions.first() {
                 // Access fields of the first transaction (replace with the desired field)
@@ -35,7 +35,7 @@ async fn test_transaction_api() {
 
     // Call the asynchronous function to get a transaction by ID
     match res_db.get_transaction_by_id::<Transaction>(
-        "https://crow.resilientdb.com/v1/transactions",
+        "https://crow.resilientdb.com",
         "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
     )
     .await
@@ -52,7 +52,7 @@ async fn test_transaction_api() {
 
     // Call the asynchronous function to get transactions by key range
     match res_db
-        .get_transaction_by_key_range::<Transaction>("https://crow.resilientdb.com/v1/transactions", "10", "60")
+        .get_transaction_by_key_range::<Transaction>("https://crow.resilientdb.com", "10", "60")
         .await
     {
         Ok(transactions) => {
@@ -74,7 +74,7 @@ async fn test_transaction_api_map() {
     let res_db = ResDB::new();
     
     match res_db.get_all_transactions_map(
-        "https://crow.resilientdb.com/v1/transactions",
+        "https://crow.resilientdb.com",
         data_map,
     )
     .await
@@ -91,7 +91,7 @@ async fn test_transaction_api_map() {
 
     let data_map = HashMap::new();
     match res_db.get_transaction_by_id_map(
-        "https://crow.resilientdb.com/v1/transactions",
+        "https://crow.resilientdb.com",
         "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
         data_map,
     )
@@ -109,7 +109,7 @@ async fn test_transaction_api_map() {
 
     let data_map = HashMap::new();
     match res_db.get_transaction_by_key_range_map(
-        "https://crow.resilientdb.com/v1/transactions",
+        "https://crow.resilientdb.com",
         "3af5ac7a231b6c219bc61867fa25e654d956b61f3990cb5e747d9a1b4baf568e",
         "2e11fb1f6d235a49f4f2a85c6c57f2ddc9a650fb0f0a6e88ea469584294c03cb",
         data_map,
@@ -136,7 +136,7 @@ async fn test_blocks_api() {
     let my_struct = res_db.create_object::<Block>();
 
     // Call the asynchronous function to get all transactions
-    match res_db.get_all_blocks::<Block>("https://crow.resilientdb.com/v1/blocks").await {
+    match res_db.get_all_blocks::<Block>("https://crow.resilientdb.com").await {
         Ok(blocks) => {
             if let Some(first_block) = blocks.first() {
                 // Access fields of the first transaction (replace with the desired field)
@@ -152,7 +152,7 @@ async fn test_blocks_api() {
     }
 
     // Call the asynchronous function to get a transaction by ID
-    match res_db.get_blocks_grouped::<Block>("https://crow.resilientdb.com/v1/blocks", &5)
+    match res_db.get_blocks_grouped::<Block>("https://crow.resilientdb.com", &5)
     .await
     {
         Ok(blocks) => {
@@ -177,7 +177,7 @@ async fn test_blocks_api_map() {
 
     // Call the asynchronous function to get blocks
     match res_db
-        .get_all_blocks_map("https://crow.resilientdb.com/v1/blocks", data_map)
+        .get_all_blocks_map("https://crow.resilientdb.com", data_map)
         .await
     {
         Ok(blocks) => {
@@ -196,7 +196,7 @@ async fn test_blocks_api_map() {
 
     let data_map = HashMap::new();
     match res_db
-        .get_blocks_by_range_map("https://crow.resilientdb.com/v1/blocks", &1, &10, data_map)
+        .get_blocks_by_range_map("https://crow.resilientdb.com", &1, &10, data_map)
         .await
     {
         Ok(blocks) => {
@@ -215,7 +215,7 @@ async fn test_blocks_api_map() {
 
     let data_map = HashMap::new();
     match res_db
-        .get_blocks_grouped_map("https://crow.resilientdb.com/v1/blocks", &10, data_map)
+        .get_blocks_grouped_map("https://crow.resilientdb.com", &10, data_map)
         .await
     {
         Ok(blocks) => {
@@ -257,12 +257,12 @@ async fn test_post( keypair : (String, String) ) {
 }
 
 fn main(){
-    // test_transaction_api();
-    // test_transaction_api_map();
-    // test_blocks_api();
-    // test_blocks_api_map();
+    test_transaction_api();
+    test_transaction_api_map();
+    test_blocks_api();
+    test_blocks_api_map();
     let keypair = test_crypto();
     println!("Public Key: {:?}", keypair.0);
     println!("Private Key: {:?}", keypair.1);
-    //test_post(keypair)
+    test_post(keypair)
 }
