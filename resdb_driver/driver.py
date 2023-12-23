@@ -16,7 +16,6 @@
 # under the License.    
 
 
-
 from crypt import methods
 from curses import meta
 from .transport import Transport

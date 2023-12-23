@@ -1,20 +1,10 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "sdk_transaction",
-    srcs = ["sdk_transaction.cpp"],
-    hdrs = ["sdk_transaction.h"],
-    deps = [
-        "//third_party:rapidjson",
-    ],
-)
-
-cc_library(
     name = "crow_service",
     srcs = ["crow_service.cpp"],
     hdrs = ["crow_service.h"],
     deps = [
-        ":sdk_transaction",
         "//service/kv_service:resdb_kv_client",
         "//third_party:crow",
         "//third_party:rapidjson",

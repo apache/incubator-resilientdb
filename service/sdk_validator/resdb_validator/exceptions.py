@@ -16,7 +16,6 @@
 # under the License.    
 
 
-
 """
 Custom exceptions used in the `resdb_validator` package.
 """

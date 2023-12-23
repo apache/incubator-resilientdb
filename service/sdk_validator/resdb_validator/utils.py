@@ -16,7 +16,6 @@
 # under the License.    
 
 
-
 import time
 import re
 import rapidjson

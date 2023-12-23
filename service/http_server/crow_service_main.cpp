@@ -30,10 +30,10 @@ int main(int argc, char **argv) {
   }
   std::string client_config_file = argv[1];
   std::string server_config_file = argv[2];
-  ResDBConfig config = GenerateResDBConfig(client_config_file);
+  ResDBConfig client_config = GenerateResDBConfig(client_config_file);
   ResDBConfig server_config = GenerateResDBConfig(server_config_file);
-  config.SetClientTimeoutMs(100000);
+  client_config.SetClientTimeoutMs(100000);
 
-  CrowService service(config, server_config);
+  CrowService service(client_config, server_config);
   service.run();
 }

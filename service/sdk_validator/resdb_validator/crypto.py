@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.    
 
-
 # Separate all crypto code so that we can easily test several implementations
 from collections import namedtuple
 

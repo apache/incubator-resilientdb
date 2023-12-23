@@ -16,7 +16,6 @@
 # under the License.    
 
 
-
 #%%
 from service.sdk_validator.resdb_validator.models import Transaction
 from service.sdk_validator.resdb_validator.exceptions import InvalidSignature

@@ -21,11 +21,12 @@
 
 #include <crow.h>
 
+#include <atomic>
+
 #include "common/proto/signature_info.pb.h"
 #include "interface/common/resdb_state_accessor.h"
 #include "interface/common/resdb_txn_accessor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "service/http_server/sdk_transaction.h"
 #include "service/kv_service/proto/kv_server.pb.h"
 #include "service/kv_service/resdb_kv_client.h"
 
@@ -33,20 +34,23 @@ namespace sdk {
 
 class CrowService {
 public:
-  CrowService(resdb::ResDBConfig config, resdb::ResDBConfig server_config,
+  CrowService(resdb::ResDBConfig client_config, resdb::ResDBConfig server_config,
               uint16_t port_num = 18000);
   void run();
 
 private:
-  std::string GetAllBlocks(int batch_size, bool make_sublists=false);
+  std::string GetAllBlocks(int batch_size, bool increment_txn_count = false,
+                          bool make_sublists=false);
   std::string ParseKVRequest(const KVRequest &kv_request);
   std::string ParseCreateTime(uint64_t createtime);
-  resdb::ResDBConfig config_;
+  resdb::ResDBConfig client_config_;
   resdb::ResDBConfig server_config_;
   uint16_t port_num_;
   ResDBKVClient kv_client_;
   resdb::ResDBTxnAccessor txn_client_;
   std::unordered_set<crow::websocket::connection *> users;
+  std::atomic_uint16_t num_transactions_ = 0;
+  std::atomic_uint64_t first_commit_time_ = 0;
 };
 
 } // namespace sdk

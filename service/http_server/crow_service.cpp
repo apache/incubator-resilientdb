@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include <ctime>
+#include <chrono>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -44,10 +45,10 @@ using resdb::ResDBConfig;
 
 namespace sdk {
 
-CrowService::CrowService(ResDBConfig config, ResDBConfig server_config,
+CrowService::CrowService(ResDBConfig client_config, ResDBConfig server_config,
                          uint16_t port_num)
-    : config_(config), server_config_(server_config), port_num_(port_num),
-      kv_client_(config_), txn_client_(server_config_) {}
+    : client_config_(client_config), server_config_(server_config), port_num_(port_num),
+      kv_client_(client_config_), txn_client_(server_config_) {}
 
 void CrowService::run() {
   crow::SimpleApp app;
@@ -67,6 +68,8 @@ void CrowService::run() {
         for (auto u : users)
           u->send_text("Update blocks");
       }
+
+      num_transactions_++;
 
       res.set_header("Content-Type", "application/json");
       res.end(std::string(values->c_str()));
@@ -89,6 +92,8 @@ void CrowService::run() {
         for (auto u : users)
           u->send_text("Update blocks");
       }
+
+      num_transactions_++;
 
       res.set_header("Content-Type", "application/json");
       res.end(std::string(value->c_str()));
@@ -113,6 +118,8 @@ void CrowService::run() {
           u->send_text("Update blocks");
       }
 
+      num_transactions_++;
+
       res.set_header("Content-Type", "application/json");
       res.end(std::string(value->c_str()));
     } else {
@@ -125,33 +132,44 @@ void CrowService::run() {
   // Commit a key-value pair, extracting the id parameter from the JSON
   // object and setting the value as the entire JSON object
   CROW_ROUTE(app, "/v1/transactions/commit")
-      .methods("POST"_method)([this](const request &req) {
-        std::string body = req.body;
-        LOG(INFO) << "body: " << body;
-        resdb::SDKTransaction transaction = resdb::ParseSDKTransaction(body);
-        const std::string id = transaction.id;
-        const std::string value = transaction.value;
+  .methods("POST"_method)([this](const request& req) {
+    std::string body = req.body;
+    LOG(INFO) << "body: " << body;
 
-        // Set key-value pair in kv server
-        int retval = kv_client_.Set(id, value);
+    // Parse transaction JSON
+    rapidjson::Document doc;
+    doc.Parse(body.c_str());
+    if (!doc.IsObject() || !doc.HasMember("id")) {
+      response res(400, "Invalid transaction format"); // Bad Request
+      res.set_header("Content-Type", "text/plain");
+      return res;
+    }
+    const std::string id = doc["id"].GetString();
+    const std::string value = body;
 
-        if (retval != 0) {
-          LOG(ERROR) << "Error when trying to commit id " << id;
-          response res(500, "id: " + id);
-          res.set_header("Content-Type", "text/plain");
-          return res;
-        }
-        LOG(INFO) << "Set " << id << " to " << value;
+    // Set key-value pair in kv server
+    int retval = kv_client_.Set(id, value);
 
-        // Send updated blocks list to websocket
-        if (users.size() > 0) {
-          for (auto u : users)
-            u->send_text("Update blocks");
-        }
-        response res(201, "id: " + id); // Created status code
-        res.set_header("Content-Type", "text/plain");
-        return res;
-      });
+    if (retval != 0) {
+      LOG(ERROR) << "Error when trying to commit id " << id;
+      response res(500, "id: " + id);
+      res.set_header("Content-Type", "text/plain");
+      return res;
+    }
+    LOG(INFO) << "Set " << id << " to " << value;
+
+    // Send updated blocks list to websocket
+    if (users.size() > 0) {
+      for (auto u : users)
+        u->send_text("Update blocks");
+    }
+
+    num_transactions_++;
+
+    response res(201, "id: " + id);  // Created status code
+    res.set_header("Content-Type", "text/plain");
+    return res;
+  });
 
   CROW_ROUTE(app, "/v1/blocks")
   ([this](const crow::request &req, response &res) {
@@ -261,40 +279,75 @@ void CrowService::run() {
 
   // For metadata table on the Explorer
   CROW_ROUTE(app, "/populatetable")
-  ([this](const crow::request &req, response &res) {
-    std::vector<resdb::ReplicaInfo> replicas = config_.GetReplicaInfos();
-    size_t replica_num = replicas[0].id() - 1;
-    uint32_t client_num = config_.GetReplicaNum();
-    uint32_t worker_num = config_.GetWorkerNum();
-    uint32_t client_batch_num = config_.ClientBatchNum();
-    uint32_t max_process_txn = config_.GetMaxProcessTxn();
-    uint32_t client_batch_wait_time = config_.ClientBatchWaitTimeMS();
-    uint32_t input_worker_num = config_.GetInputWorkerNum();
-    uint32_t output_worker_num = config_.GetOutputWorkerNum();
-    int client_timeout_ms = config_.GetClientTimeoutMs();
-    int min_data_receive_num = config_.GetMinDataReceiveNum();
-    size_t max_malicious_replica_num = config_.GetMaxMaliciousReplicaNum();
-    int checkpoint_water_mark = config_.GetCheckPointWaterMark();
+  ([this](const crow::request& req, response& res) {
+    uint32_t replica_num = server_config_.GetReplicaNum();
+    uint32_t worker_num = server_config_.GetWorkerNum();
+    uint32_t client_batch_num = server_config_.ClientBatchNum();
+    uint32_t max_process_txn = server_config_.GetMaxProcessTxn();
+    uint32_t client_batch_wait_time = server_config_.ClientBatchWaitTimeMS();
+    uint32_t input_worker_num = server_config_.GetInputWorkerNum();
+    uint32_t output_worker_num = server_config_.GetOutputWorkerNum();
+    int client_timeout_ms = server_config_.GetClientTimeoutMs();
+    int min_data_receive_num = server_config_.GetMinDataReceiveNum();
+    size_t max_malicious_replica_num = server_config_.GetMaxMaliciousReplicaNum();
+    int checkpoint_water_mark = server_config_.GetCheckPointWaterMark();
+
+    // Don't read the ledger if first commit time is known
+    if (first_commit_time_ == 0) {
+      // Get first block in the chain
+      auto resp = txn_client_.GetTxn(1, 1);
+      // absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> GetTxn(
+      //     uint64_t min_seq, uint64_t max_seq);
+      if (!resp.ok()) {
+        LOG(ERROR) << "get replica state fail";
+        res.end("get replica state fail");
+      };
+
+      for (auto& txn : *resp) {
+        BatchUserRequest request;
+        KVRequest kv_request;
+        if (request.ParseFromString(txn.second)) {
+          // transactions
+          for (auto& sub_req : request.user_requests()) {
+            kv_request.ParseFromString(sub_req.request().data());
+            std::string kv_request_json = ParseKVRequest(kv_request);
+          }
+
+          // see resilientdb/common/utils/utils.cpp
+          first_commit_time_ = request.createtime() / 1000000;
+        }
+      }
+    }
+
+    uint64_t epoch_time = std::chrono::duration_cast<std::chrono::seconds>(
+      std::chrono::system_clock::now().time_since_epoch()
+    ).count();
+    uint64_t chain_age = first_commit_time_ == 0 ? 
+                          0 : epoch_time - first_commit_time_;
+
+    auto block_num_resp = txn_client_.GetBlockNumbers();
+    if (!block_num_resp.ok()) {
+      LOG(ERROR) << "get number fail";
+      exit(1);
+    }
 
     std::string values = "";
-    values.append(
-        "[{   \"replicaNum\": " + std::to_string(replica_num) +
-        ", \"clientNum\": " + std::to_string(client_num) +
-        ", \"workerNum\" : " + std::to_string(worker_num) +
-        ", \"clientBatchNum\" : " + std::to_string(client_batch_num) +
-        ", \"maxProcessTxn\" : " + std::to_string(max_process_txn) +
-        ", \"clientBatchWaitTime\" : " +
-        std::to_string(client_batch_wait_time) +
-        ", \"inputWorkerNum\" : " + std::to_string(input_worker_num) +
-        ", \"outputWorkerNum\" : " + std::to_string(output_worker_num) +
-        ", \"clientTimeoutMs\" : " + std::to_string(client_timeout_ms) +
-        ", \"minDataReceiveNum\" : " + std::to_string(min_data_receive_num) +
-        ", \"maxMaliciousReplicaNum\" : " +
-        std::to_string(max_malicious_replica_num) +
-        ", \"checkpointWaterMark\" : " + std::to_string(checkpoint_water_mark) +
-        ""
-        "}]");
-    LOG(INFO) << std::string(values.c_str());
+    values.append("[{ \"replicaNum\": " + std::to_string(replica_num)
+                      + ", \"workerNum\" : " + std::to_string(worker_num) 
+                      + ", \"clientBatchNum\" : " + std::to_string(client_batch_num)
+                      + ", \"maxProcessTxn\" : " + std::to_string(max_process_txn) 
+                      + ", \"clientBatchWaitTime\" : " + std::to_string(client_batch_wait_time)
+                      + ", \"inputWorkerNum\" : " + std::to_string(input_worker_num)
+                      + ", \"outputWorkerNum\" : " + std::to_string(output_worker_num)
+                      + ", \"clientTimeoutMs\" : " + std::to_string(client_timeout_ms)
+                      + ", \"minDataReceiveNum\" : " + std::to_string(min_data_receive_num)
+                      + ", \"maxMaliciousReplicaNum\" : " + std::to_string(max_malicious_replica_num)
+                      + ", \"checkpointWaterMark\" : " + std::to_string(checkpoint_water_mark)
+		                  + ", \"transactionNum\" : " + std::to_string(num_transactions_)
+                      + ", \"blockNum\" : " + std::to_string(*block_num_resp)
+                      + ", \"chainAge\" : " + std::to_string(chain_age)
+                      + "}]");
+    LOG(INFO) <<   std::string(values.c_str());
     res.set_header("Content-Type", "application/json");
     res.end(std::string(values.c_str()));
   });
@@ -305,7 +358,8 @@ void CrowService::run() {
 
 // If batch_size is 1, the function will not add the extra outer [] braces
 // Otherwise, a list of lists of blocks will be returned
-std::string CrowService::GetAllBlocks(int batch_size, bool make_sublists) {
+std::string CrowService::GetAllBlocks(int batch_size, bool increment_txn_count,
+                                      bool make_sublists) {
   int min_seq = 1;
   bool full_batches = true;
 
@@ -335,10 +389,8 @@ std::string CrowService::GetAllBlocks(int batch_size, bool make_sublists) {
       KVRequest kv_request;
       cur_size++;
       if (request.ParseFromString(txn.second)) {
-        LOG(INFO) << request.DebugString();
-
-        if (!first_batch_element)
-          cur_batch_str.append(",");
+        if (!first_batch_element) cur_batch_str.append(",");
+        
         first_batch_element = false;
 
         // id
@@ -360,6 +412,8 @@ std::string CrowService::GetAllBlocks(int batch_size, bool make_sublists) {
           first_transaction = false;
           cur_batch_str.append(kv_request_json);
           cur_batch_str.append("\n");
+
+          if (increment_txn_count) num_transactions_++;
         }
         cur_batch_str.append("]"); // close transactions list
 
