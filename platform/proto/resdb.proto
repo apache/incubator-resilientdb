@@ -162,6 +162,7 @@ message QueryRequest {
 
 message QueryResponse {
   repeated Request transactions = 1;
+  uint64 max_seq = 2;
 }
 
 message CustomQueryResponse {
