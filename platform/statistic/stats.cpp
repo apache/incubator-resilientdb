@@ -93,10 +93,10 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
-  if(summary_thread_.joinable()){
+  if(enable_resview && summary_thread_.joinable()){
     summary_thread_.join();
   }
-  if(faulty_thread_.joinable()){
+  if(enable_faulty_switch && faulty_thread_.joinable()){
     faulty_thread_.join();
   }
 }
@@ -157,16 +157,22 @@ bool Stats::IsFaulty(){
 }
 
 void Stats::ChangePrimary(int primary_id){
-  transaction_summary_.primary_id;
+  transaction_summary_.primary_id=primary_id;
   make_faulty_.store(false);
 }
 
-void Stats::SetProps(int replica_id, std::string ip, int port){
+void Stats::SetProps(int replica_id, std::string ip, int port, bool resview_flag, bool faulty_flag){
   transaction_summary_.replica_id=replica_id;
   transaction_summary_.ip=ip;
   transaction_summary_.port=port;
-  summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
-  faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
+  enable_resview=resview_flag;
+  enable_faulty_switch=faulty_flag;
+  if(resview_flag){
+    summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
+  }
+  if(faulty_flag){
+    faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
+  }
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -174,6 +180,9 @@ void Stats::SetPrimaryId(int primary_id){
 }
 
 void Stats::RecordStateTime(std::string state){
+  if(!enable_resview){
+    return;
+  }
   if(state=="request" || state=="pre-prepare"){
     transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::now();
   }
@@ -186,6 +195,9 @@ void Stats::RecordStateTime(std::string state){
 }
 
 void Stats::GetTransactionDetails(BatchUserRequest batch_request){
+  if(!enable_resview){
+    return;
+  }
   transaction_summary_.txn_command.clear();
   transaction_summary_.txn_key.clear();
   transaction_summary_.txn_value.clear();
@@ -215,23 +227,12 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
 }
 
 void Stats::SendSummary(){
+  if(!enable_resview){
+    return;
+  }
   transaction_summary_.execution_time=std::chrono::system_clock::now();
   transaction_summary_.txn_number=transaction_summary_.txn_number+1;
-  /* Can print stat values
-  LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id;
-  LOG(ERROR)<<"Primary ID:"<< transaction_summary_.primary_id;
-  LOG(ERROR)<<"Propose/pre-prepare time:"<< transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Prepare time:"<< transaction_summary_.prepare_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Commit time:"<< transaction_summary_.commit_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Execution time:"<< transaction_summary_.execution_time.time_since_epoch().count();
-  for(size_t i=0; i<transaction_summary_.prepare_message_count_times_list.size(); i++){
-    LOG(ERROR)<<" Prepare Message Count Time: " << transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count();
-  } 
-  for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
-    LOG(ERROR)<<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count();
-  }
-  */
- 
+
   //Convert Transaction Summary to JSON
   summary_json_["replica_id"]=transaction_summary_.replica_id;
   summary_json_["ip"]=transaction_summary_.ip;

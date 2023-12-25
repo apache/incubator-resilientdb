@@ -47,7 +47,7 @@ Commitment::Commitment(const ResDBConfig& config,
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
 
-  global_stats_->SetProps(config_.GetSelfInfo().id(), config_.GetSelfInfo().ip(), config_.GetSelfInfo().port());
+  global_stats_->SetProps(config_.GetSelfInfo().id(), config_.GetSelfInfo().ip(), config_.GetSelfInfo().port(), config_.GetConfigData().enable_resview(), config_.GetConfigData().enable_faulty_switch());
   global_stats_->SetPrimaryId(message_manager_->GetCurrentPrimary());
 }
 
