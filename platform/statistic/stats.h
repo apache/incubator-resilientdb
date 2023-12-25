@@ -75,7 +75,7 @@ class Stats{
   void Stop();
 
     void RetrieveProgress();
-    void SetProps(int replica_id, std::string ip, int port);
+    void SetProps(int replica_id, std::string ip, int port, bool resview_flag, bool faulty_flag);
     void SetPrimaryId(int primary_id);
     void RecordStateTime(std::string state);
     void GetTransactionDetails(BatchUserRequest batch_request);
@@ -148,6 +148,8 @@ class Stats{
 
   std::thread summary_thread_;
   std::thread faulty_thread_;
+  bool enable_resview;
+  bool enable_faulty_switch;
   VisualData transaction_summary_;
   std::atomic<bool> send_summary_;
   std::atomic<bool> make_faulty_;
