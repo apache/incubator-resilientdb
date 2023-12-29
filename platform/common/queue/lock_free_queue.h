@@ -41,7 +41,7 @@ class LockFreeQueue {
       bool old_v = true;
       if (need_notify_.compare_exchange_strong(old_v, false,
                                                std::memory_order_acq_rel,
-                                               std::memory_order_acq_rel)) {
+                                               std::memory_order_acquire)) {
         std::lock_guard<std::mutex> lk(mutex_);
         cv_.notify_all();
         return;
