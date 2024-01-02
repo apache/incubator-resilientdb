@@ -1,6 +1,6 @@
 name: bazel-build CI
 
-on:
+#on:
         #push: 
         #branches:
         #- master
