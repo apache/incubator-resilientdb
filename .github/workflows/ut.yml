@@ -21,4 +21,4 @@ jobs:
         uses: actions/upload-artifact@v1.0.0
         with:
           name: coverage-output
-          path: "/home/runner/.cache/bazel/_bazel_runner"
+          path: "/home/runner/.cache/bazel/_bazel_runner/be4defad2350bee802e807363d03d888"
