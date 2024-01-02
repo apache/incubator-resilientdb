@@ -98,6 +98,7 @@ TEST_F(StateClientTest, GetAllReplicaState) {
       }));
   auto ret = client.GetReplicaStates();
   EXPECT_TRUE(ret.ok());
+  LOG(ERROR)<<"get ok";
   std::set<int> results;
   for (auto& state : *ret) {
     auto it = std::find_if(
@@ -107,6 +108,7 @@ TEST_F(StateClientTest, GetAllReplicaState) {
     EXPECT_TRUE(it != replicas_.end());
     results.insert(it - replicas_.begin());
   }
+  LOG(ERROR)<<"get result ok";
   EXPECT_EQ(results.size(), 4);
 }
 

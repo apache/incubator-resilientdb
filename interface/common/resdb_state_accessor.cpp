@@ -43,13 +43,15 @@ ResDBStateAccessor::GetReplicaStates() {
   std::unique_ptr<NetChannel> client =
       GetNetChannel(client_info.ip(), client_info.port());
   client->SetRecvTimeout(1000000);  // 1s for recv timeout.
-
+	
+  LOG(ERROR)<<"send request";
   int ret = client->SendRequest(request, Request::TYPE_REPLICA_STATE);
   if (ret) {
     return absl::InternalError("send data fail.");
   }
 
   std::unique_ptr<ReplicaState> state = std::make_unique<ReplicaState>();
+  LOG(ERROR)<<"recv request";
   ret = client->RecvRawMessage(state.get());
   if (ret < 0) {
     return absl::InternalError("recv data fail.");
