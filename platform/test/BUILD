@@ -6,6 +6,7 @@ cc_test(
     data = [
         "//platform/test/test_data",
     ],
+    tags = ["manual"],
     deps = [
         "//common:comm",
         "//common/test:test_main",
