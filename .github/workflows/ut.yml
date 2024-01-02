@@ -16,8 +16,8 @@ jobs:
       - name: build
         run: bazel test ...
 
-  ubuntu-output:
       - name: Collect Test Coverage File
+        if: always()
         uses: actions/upload-artifact@v1.0.0
         with:
           name: coverage-output
