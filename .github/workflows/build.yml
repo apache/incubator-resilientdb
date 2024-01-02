@@ -1,13 +1,13 @@
 name: bazel-build CI
 
 on:
-  push: 
-    branches:
-      - master
+        #push: 
+        #branches:
+        #- master
 
-  pull_request:
-    branches: 
-      - master
+        #pull_request:
+        #branches: 
+        #- master
 
 jobs:
   ubuntu-build:
