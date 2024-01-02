@@ -82,6 +82,7 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   for (auto replica : replicas_) {
     *region->add_replica_info() = replica;
   }
+   LOG(ERROR)<<"replicas size:"<<replicas_.size();
 
   std::atomic<int> idx = 0;
   EXPECT_CALL(client, GetNetChannel)
