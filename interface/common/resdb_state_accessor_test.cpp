@@ -36,10 +36,12 @@ using ::testing::Return;
 
 void AddReplicaToList(const std::string& ip, int port,
                       std::vector<ReplicaInfo>* replica) {
+	LOG(ERROR)<<"??????";
   ReplicaInfo info;
   info.set_ip(ip);
   info.set_port(port);
   replica->push_back(info);
+  LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
 
 class MockResDBStateAccessor : public ResDBStateAccessor {
