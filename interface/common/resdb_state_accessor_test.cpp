@@ -38,16 +38,17 @@ void AddReplicaToList(const std::string& ip, int port,
                       std::vector<ReplicaInfo>* replica) {
 	LOG(ERROR)<<"??????";
   ReplicaInfo info;
-  LOG(ERROR)<<"Add info:"<<info.DebugString();
+  //LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_ip(ip);
   //LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_port(port);
   //LOG(ERROR)<<"Add info:"<<info.DebugString();
-*info.mutable_certificate_info() = CertificateInfo(); 
   //LOG(ERROR)<<"Add info:"<<info.DebugString();
+LOG(ERROR)<<"??????";
   LOG(ERROR)<<"ip:"<<info.ip().size();
   replica->push_back(info);
-  LOG(ERROR)<<"Add info:"<<info.DebugString();
+LOG(ERROR)<<"??????";
+//  LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
 
 class MockResDBStateAccessor : public ResDBStateAccessor {
