@@ -66,6 +66,9 @@ class StateClientTest : public Test {
     private_key.set_key("private_key");
     config_ = std::make_unique<ResDBConfig>(replicas_, self_info_, private_key,
                                             CertificateInfo());
+    for(auto& info : replicas_){
+	    	LOG(ERROR)<<"get regin:"<<info.DebugString();
+    }
   }
 
  protected:
