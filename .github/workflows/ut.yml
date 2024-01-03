@@ -14,7 +14,7 @@ jobs:
           path: "/home/runner/.cache/bazel"
           key: bazel
       - name: build
-        run: bazel test ...
+        run: bazel clean; bazel test ...
 
       - name: Collect Test Coverage File
         if: always()

@@ -74,8 +74,15 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "com_google_protobuf",
     remote = "https://github.com/protocolbuffers/protobuf",
-    tag = "v3.10.0",
+    tag = "v3.25.1",
 )
+
+#http_archive(
+#    name = "com_google_protobuf",
+#    #sha256 = "21bc744fb7f2fa701ee8db339ded7dce4f975d0d55837a97be7d46e8382dea5a",
+#    strip_prefix = "glog-0.5.0",
+#    urls = ["https://github.com/google/glog/archive/v0.5.0.zip"],
+#)
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
