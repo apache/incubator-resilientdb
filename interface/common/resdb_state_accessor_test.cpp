@@ -80,9 +80,10 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   ReplicaState state;
   auto region = state.mutable_replica_config()->add_region();
 
+   LOG(ERROR)<<"replicas size:"<<replicas_.size();
   for (auto& replica : replicas_) {
-    *region->add_replica_info() = replica;
     LOG(ERROR)<<"add region:"<<replica.DebugString();
+    *region->add_replica_info() = replica;
   }
    LOG(ERROR)<<"replicas size:"<<replicas_.size();
 LOG(ERROR)<<"state:"<<state.DebugString();
