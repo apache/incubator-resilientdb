@@ -60,7 +60,6 @@ ResDBStateAccessor::GetReplicaStates() {
   if (state == nullptr) {
     return absl::InternalError("recv data fail.");
   }
-  LOG(ERROR)<<"recv state:"<<state->DebugString();
 
   std::vector<ReplicaState> resp;
   for (const auto& region : state->replica_config().region()) {
