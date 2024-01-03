@@ -50,6 +50,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
   std::condition_variable resp_cv;
   bool success = false;
   std::map<std::string, int> recv_count;
+  LOG(ERROR)<<"?????";
   for (const auto& replica : replicas_) {
     std::unique_ptr<NetChannel> client =
         GetNetChannel(replica.ip(), replica.port());
@@ -81,6 +82,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
         client_ptr));
   }
 
+  LOG(ERROR)<<"?????";
   {
     std::unique_lock<std::mutex> lck(mtx);
     resp_cv.wait_for(lck, std::chrono::seconds(recv_timeout_));
@@ -89,6 +91,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
       client->Close();
     }
   }
+  LOG(ERROR)<<"?????";
 
   // wait for all theads done.
   for (auto& th : ths) {
@@ -97,19 +100,23 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
     }
   }
 
+  LOG(ERROR)<<"?????";
   std::vector<std::pair<uint64_t, std::string>> txn_resp;
   QueryResponse resp;
   if (success && final_str.empty()) {
     return txn_resp;
   }
 
+  LOG(ERROR)<<"?????";
   if (final_str.empty() || !resp.ParseFromString(final_str)) {
     LOG(ERROR) << "parse fail len:" << final_str.size();
     return absl::InternalError("recv data fail.");
   }
+  LOG(ERROR)<<"?????";
   for (auto& transaction : resp.transactions()) {
     txn_resp.push_back(std::make_pair(transaction.seq(), transaction.data()));
   }
+  LOG(ERROR)<<"?????";
   return txn_resp;
 }
 
