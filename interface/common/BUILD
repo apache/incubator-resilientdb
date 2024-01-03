@@ -51,5 +51,6 @@ cc_test(
         "//common/test:test_main",
         "//interface/rdbc:mock_net_channel",
         "//platform/config:resdb_config_utils",
+        "//platform/proto:replica_info_cc_proto",
     ],
 )

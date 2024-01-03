@@ -26,7 +26,7 @@
 #include "interface/rdbc/mock_net_channel.h"
 
 namespace resdb {
-namespace {
+//namespace {
 
 using ::google::protobuf::util::MessageDifferencer;
 using ::testing::ElementsAre;
@@ -40,11 +40,12 @@ void AddReplicaToList(const std::string& ip, int port,
   ReplicaInfo info;
   LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_ip(ip);
-  LOG(ERROR)<<"Add info:"<<info.DebugString();
+  //LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_port(port);
-  LOG(ERROR)<<"Add info:"<<info.DebugString();
+  //LOG(ERROR)<<"Add info:"<<info.DebugString();
 *info.mutable_certificate_info() = CertificateInfo(); 
-  LOG(ERROR)<<"Add info:"<<info.DebugString();
+  //LOG(ERROR)<<"Add info:"<<info.DebugString();
+  LOG(ERROR)<<"ip:"<<info.ip().size();
   replica->push_back(info);
   LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
@@ -131,6 +132,6 @@ LOG(ERROR)<<"state:"<<state.DebugString();
   //EXPECT_EQ(results.size(), 4);
 }
 
-}  // namespace
+//}  // namespace
 
 }  // namespace resdb
