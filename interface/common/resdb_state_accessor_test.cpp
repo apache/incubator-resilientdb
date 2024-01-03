@@ -38,9 +38,13 @@ void AddReplicaToList(const std::string& ip, int port,
                       std::vector<ReplicaInfo>* replica) {
 	LOG(ERROR)<<"??????";
   ReplicaInfo info;
+  LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_ip(ip);
+  LOG(ERROR)<<"Add info:"<<info.DebugString();
   info.set_port(port);
-    *info.mutable_certificate_info() = CertificateInfo(); 
+  LOG(ERROR)<<"Add info:"<<info.DebugString();
+*info.mutable_certificate_info() = CertificateInfo(); 
+  LOG(ERROR)<<"Add info:"<<info.DebugString();
   replica->push_back(info);
   LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
