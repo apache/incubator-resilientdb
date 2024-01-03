@@ -93,7 +93,7 @@ TEST_F(StateClientTest, GetAllReplicaState) {
 	LOG(ERROR)<<"get net:";
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-				    	LOG(ERROR)<<" get raw message:";
+				    	LOG(ERROR)<<" get raw message:"<<state.DebugString();
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
