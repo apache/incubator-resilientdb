@@ -65,7 +65,6 @@ ResDBStateAccessor::GetReplicaStates() {
   for (const auto& region : state->replica_config().region()) {
     for (const auto& info : region.replica_info()) {
       ReplicaState new_state;
-      LOG(ERROR)<<"push new state:"<<new_state.DebugString();
       *new_state.mutable_replica_info() = info;
       resp.push_back(new_state);
     }
