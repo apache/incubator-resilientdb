@@ -44,10 +44,8 @@ void AddReplicaToList(const std::string& ip, int port,
   info.set_port(port);
   //LOG(ERROR)<<"Add info:"<<info.DebugString();
   //LOG(ERROR)<<"Add info:"<<info.DebugString();
-LOG(ERROR)<<"??????";
   LOG(ERROR)<<"ip:"<<info.ip().size();
   replica->push_back(info);
-LOG(ERROR)<<"??????";
 //  LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
 
@@ -75,9 +73,6 @@ class StateClientTest : public Test {
     private_key.set_key("private_key");
     config_ = std::make_unique<ResDBConfig>(replicas_, self_info_, private_key,
                                             CertificateInfo());
-    for(auto& info : replicas_){
-	    	LOG(ERROR)<<"get regin:"<<info.DebugString();
-    }
   }
 
  protected:
@@ -92,22 +87,17 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   ReplicaState state;
   auto region = state.mutable_replica_config()->add_region();
 
-   LOG(ERROR)<<"replicas size:"<<replicas_.size();
   for (auto& replica : replicas_) {
-    LOG(ERROR)<<"add region:"<<replica.DebugString();
     *region->add_replica_info() = replica;
   }
    LOG(ERROR)<<"replicas size:"<<replicas_.size();
-LOG(ERROR)<<"state:"<<state.DebugString();
   std::atomic<int> idx = 0;
   EXPECT_CALL(client, GetNetChannel)
       .Times(1)
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
-	LOG(ERROR)<<"get net:";
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
-				    	LOG(ERROR)<<" get raw message:"<<state.DebugString();
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
