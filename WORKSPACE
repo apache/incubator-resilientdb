@@ -74,7 +74,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "com_google_protobuf",
     remote = "https://github.com/protocolbuffers/protobuf",
-    tag = "v3.25.1",
+    tag = "v25.1",
 )
 
 #http_archive(
