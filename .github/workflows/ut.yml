@@ -21,4 +21,4 @@ jobs:
         uses: actions/upload-artifact@v1.0.0
         with:
           name: coverage-output
-          path: "/home/runner/.cache/bazel/_bazel_runner/be4defad2350bee802e807363d03d888/execroot/_main/bazel-out/k8-fastbuild/testlogs/interface/common/resdb_state_accessor_test/"
+          path: "/home/runner/.cache/bazel/_bazel_runner/be4defad2350bee802e807363d03d888/execroot/_main/bazel-out/k8-fastbuild/testlogs/interface/common/resdb_txn_accessor_test/"
