@@ -69,6 +69,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
+	    LOG(ERROR)<<"recv count:"<<recv_count[response_str];
             // receive f+1 count.
             if (recv_count[response_str] == config_.GetMinClientReceiveNum()) {
               final_str = response_str;
@@ -86,6 +87,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
   {
     std::unique_lock<std::mutex> lck(mtx);
     resp_cv.wait_for(lck, std::chrono::seconds(recv_timeout_));
+  LOG(ERROR)<<"?????";
     // Time out or done, close all the client.
     for (auto& client : clients) {
       client->Close();
