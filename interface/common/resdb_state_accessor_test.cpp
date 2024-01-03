@@ -109,7 +109,6 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   LOG(ERROR)<<"get ok";
   std::set<int> results;
   for (auto& state : *ret) {
-    LOG(ERROR)<<"get state:"<<state.DebugString();
     auto it = std::find_if(
         replicas_.begin(), replicas_.end(), [&](const ReplicaInfo& info) {
 	  return state.replica_info().ip() == info.ip() && state.replica_info().port() == info.port();
