@@ -40,6 +40,7 @@ void AddReplicaToList(const std::string& ip, int port,
   ReplicaInfo info;
   info.set_ip(ip);
   info.set_port(port);
+    *info.mutable_certificate_info() = CertificateInfo(); 
   replica->push_back(info);
   LOG(ERROR)<<"Add info:"<<info.DebugString();
 }
