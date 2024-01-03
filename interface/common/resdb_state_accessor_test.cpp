@@ -110,17 +110,16 @@ TEST_F(StateClientTest, GetAllReplicaState) {
   std::set<int> results;
   for (auto& state : *ret) {
     LOG(ERROR)<<"get state:"<<state.DebugString();
-    /*
     auto it = std::find_if(
         replicas_.begin(), replicas_.end(), [&](const ReplicaInfo& info) {
-          return MessageDifferencer::Equals(info, state.replica_info());
+	  return state.replica_info().ip() == info.ip() && state.replica_info().port() == info.port();
+          //return MessageDifferencer::Equals(info, state.replica_info());
         });
     EXPECT_TRUE(it != replicas_.end());
     results.insert(it - replicas_.begin());
-    */
   }
   LOG(ERROR)<<"get result ok";
-  //EXPECT_EQ(results.size(), 4);
+  EXPECT_EQ(results.size(), 4);
 }
 
 //}  // namespace
