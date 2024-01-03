@@ -96,7 +96,7 @@ TEST_F(StateClientTest, GetAllReplicaState) {
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
-        ON_CALL(*client, SendRequest).WillByDefault(Return(0));
+        EXPECT_CALL(*client, SendRequest).WillRepeatedly(Return(0));
         return client;
       }));
   auto ret = client.GetReplicaStates();

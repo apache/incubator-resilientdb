@@ -47,6 +47,7 @@ ResDBStateAccessor::GetReplicaStates() {
   LOG(ERROR)<<"send request";
   int ret = client->SendRequest(request, Request::TYPE_REPLICA_STATE);
   if (ret) {
+    LOG(ERROR)<<"recv request fail:"<<ret;
     return absl::InternalError("send data fail.");
   }
 
