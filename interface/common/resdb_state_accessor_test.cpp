@@ -32,6 +32,7 @@ using ::google::protobuf::util::MessageDifferencer;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Test;
+using ::testing::Return;
 
 void AddReplicaToList(const std::string& ip, int port,
                       std::vector<ReplicaInfo>* replica) {
@@ -89,11 +90,13 @@ TEST_F(StateClientTest, GetAllReplicaState) {
       .Times(1)
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
+	LOG(ERROR)<<"get net:";
         EXPECT_CALL(*client, RecvRawMessage)
             .WillRepeatedly(Invoke([&](google::protobuf::Message* message) {
               *reinterpret_cast<ReplicaState*>(message) = state;
               return 0;
             }));
+        ON_CALL(*client, SendRequest).WillByDefault(Return(0));
         return client;
       }));
   auto ret = client.GetReplicaStates();
