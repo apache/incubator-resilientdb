@@ -57,7 +57,7 @@ TEST(ResDBTxnAccessorTest, GetTransactionsFail) {
   MockResDBTxnAccessor client(config);
   EXPECT_CALL(client, GetNetChannel)
       .Times(4)
-      .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
+      .WillRepeatedly(Invoke([](const std::string& ip, int port) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
 	LOG(ERROR)<<"get ip:"<<ip<<" port:"<<port;
         EXPECT_CALL(*client,
