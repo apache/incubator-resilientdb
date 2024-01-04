@@ -100,7 +100,7 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
         //            SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
         //    .WillOnce(Return(0));
 	EXPECT_CALL(*client,
-                    SendRequest(_, Request::TYPE_QUERY, _))
+                    SendRequest(_, _, _))
             .WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
             .WillOnce(Invoke([&](std::string* resp) {
