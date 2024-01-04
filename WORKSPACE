@@ -52,10 +52,6 @@ rules_proto_grpc_toolchains()
 
 rules_proto_grpc_repos()
 
-#bind(
-#    name = "gtest",
-#    actual = "@com_google_googletest//:gtest",
-#)
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -64,6 +60,11 @@ http_archive(
   urls = ["https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip"],
   #urls = ["https://github.com/google/googletest/archive/5ab508a01f9eb089207ee87fd547d290da39d015.zip"],
   strip_prefix = "v1.14.0",
+)
+
+bind(
+    name = "gtest",
+    actual = "@com_google_googletest//:gtest",
 )
 
 bind(
