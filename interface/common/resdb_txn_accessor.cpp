@@ -61,6 +61,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
         [&](NetChannel* client) {
           std::string response_str;
           int ret = client->SendRequest(request, Request::TYPE_QUERY);
+	  LOG(ERROR)<<"send ret:"<<ret;
           if (ret) {
             return;
           }
