@@ -103,7 +103,7 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
                     SendRequest(_, _, _))
             .WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
-            .WillOnce(Invoke([&](std::string* resp) {
+            .WillRepeatedly(Invoke([&](std::string* resp) {
               query_resp.SerializeToString(resp);
               return 0;
             }));
