@@ -100,10 +100,16 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
         //            SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
         //    .WillOnce(Return(0));
 	EXPECT_CALL(*client,
-                    SendRequest(_, _, _))
+                    SendRequest)
             .WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
             .WillRepeatedly(Invoke([&](std::string* resp) {
+				    
+	    QueryResponse query_resp;
+	    auto txn = query_resp.add_transactions();
+	    txn->set_seq(1);
+	    txn->set_data("test_resp");
+
               query_resp.SerializeToString(resp);
               return 0;
             }));
