@@ -10,7 +10,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
         with:
-            version: "3.6.0"
+            version: "25.1"
             include-pre-releases: true
 
       - uses: actions/checkout@v1
