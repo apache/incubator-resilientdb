@@ -60,12 +60,12 @@ TEST(ResDBTxnAccessorTest, GetTransactionsFail) {
       .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
 	LOG(ERROR)<<"get ip:"<<ip<<" port:"<<port;
-        EXPECT_CALL(*client,
-                    SendRequest(_, _, _))
-            .WillRepeatedly(Return(0));
+//EXPECT_CALL(*client,
+ //                   SendRequest(_, _, _))
+  //          .WillRepeatedly(Return(0));
 	EXPECT_CALL(*client,
                     SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
-            .WillOnce(Return(0));
+            .Times(1).WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
             .WillRepeatedly(Invoke([&](std::string* resp) { return -1; }));
 	LOG(ERROR)<<"get ip:"<<ip<<" port:"<<port;

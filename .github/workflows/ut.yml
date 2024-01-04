@@ -7,6 +7,12 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v2
+        with:
+            version: "3.6.0"
+            include-pre-releases: true
+
       - uses: actions/checkout@v1
       - name: Mount bazel cache
         uses: actions/cache@v3
