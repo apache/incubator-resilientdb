@@ -94,16 +94,15 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
   MockResDBTxnAccessor client(config);
   EXPECT_CALL(client, GetNetChannel)
       .Times(4)
-      .WillRepeatedly(Invoke([&](const std::string& ip, int port) {
+      .WillRepeatedly(Invoke([](const std::string& ip, int port) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
         //EXPECT_CALL(*client,
         //            SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
         //    .WillOnce(Return(0));
-	EXPECT_CALL(*client,
-                    SendRequest)
+	EXPECT_CALL(*client, SendRequest)
             .WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
-            .WillRepeatedly(Invoke([&](std::string* resp) {
+            .WillRepeatedly(Invoke([](std::string* resp) {
 				    
 	    QueryResponse query_resp;
 	    auto txn = query_resp.add_transactions();

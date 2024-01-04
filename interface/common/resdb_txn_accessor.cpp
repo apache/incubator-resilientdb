@@ -66,6 +66,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
           }
           client->SetRecvTimeout(1000);
           ret = client->RecvRawMessageStr(&response_str);
+	  LOG(ERROR)<<"recv ret:"<<ret;
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
@@ -83,7 +84,7 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
         client_ptr));
   }
 
-  LOG(ERROR)<<"?????";
+  LOG(ERROR)<<"?????:"<<recv_timeout_;
   {
     std::unique_lock<std::mutex> lck(mtx);
     resp_cv.wait_for(lck, std::chrono::seconds(recv_timeout_));
