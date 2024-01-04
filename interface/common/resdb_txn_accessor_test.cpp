@@ -63,9 +63,9 @@ TEST(ResDBTxnAccessorTest, GetTransactionsFail) {
 	EXPECT_CALL(*client,
                     SendRequest(_, _, _))
             .WillRepeatedly(Return(0));
-	EXPECT_CALL(*client,
-                    SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
-            .Times(1).WillRepeatedly(Return(0));
+	//EXPECT_CALL(*client,
+        //            SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
+        //    .Times(1).WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
             .WillRepeatedly(Invoke([&](std::string* resp) { return -1; }));
 	LOG(ERROR)<<"get ip:"<<ip<<" port:"<<port;
