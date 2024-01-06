@@ -7,26 +7,6 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Cache protobuf library
-         id: cache-protobuf
-         uses: actions/cache@v1
-         with:
-           path: protobuf
-           key: ${{ runner.os }}-protobuf
-      - name: Init environment 
-         run: |
-           git clone https://github.com/protocolbuffers/protobuf.git
-           cd protobuf
-           git submodule update --init --recursive
-           ./autogen.sh
-           ./autogen.sh
-           ./configure
-           make
-           make check
-           sudo make install
-           sudo ldconfig      
-
       - name: Install Protoc
         uses: arduino/setup-protoc@v2
         with:
@@ -39,7 +19,7 @@ jobs:
           path: "/home/runner/.cache/bazel"
           key: bazel
       - name: build
-        run: bazel test ...
+        run: sh INSTALL.sh; bazel test ...
 
       - name: Collect Test Coverage File
         if: always()
