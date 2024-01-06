@@ -12,7 +12,7 @@ jobs:
       #  with:
       #      version: "3.12.4"
 
-      #- uses: actions/checkout@v1
+      - uses: actions/checkout@v1
       #- name: Mount bazel cache
       #  uses: actions/cache@v3
       #  with:
