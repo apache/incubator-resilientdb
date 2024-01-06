@@ -7,8 +7,21 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
+      - name: Init environment 
+         run: |
+           git clone https://github.com/protocolbuffers/protobuf.git
+           cd protobuf
+           git submodule update --init --recursive
+           ./autogen.sh
+           ./autogen.sh
+           ./configure
+           make
+           make check
+           sudo make install
+           sudo ldconfig      
+
       - name: Install Protoc
-        uses: arduino/setup-protoc@v1
+        uses: arduino/setup-protoc@v2
         with:
             version: "3.19.4"
 
