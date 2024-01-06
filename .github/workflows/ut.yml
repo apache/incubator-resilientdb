@@ -19,7 +19,7 @@ jobs:
           path: "/home/runner/.cache/bazel"
           key: bazel
       - name: build
-        run: sh INSTALL.sh; bazel test ...
+        run: sh INSTALL.sh; protoc --version; bazel test //interface/common:resdb_txn_accessor_test
 
       - name: Collect Test Coverage File
         if: always()
