@@ -7,13 +7,6 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - name: Setup bazel
-        uses: jwlawson/actions-setup-bazel@v1
-        with:
-          bazel-version: '5.0.0'
-      - name: Use bazel
-        run: bazel --version
-
       #- name: Install Protoc
       #  uses: arduino/setup-protoc@v1
       #  with:
@@ -26,6 +19,7 @@ jobs:
       #    path: "/home/runner/.cache/bazel"
       #    key: bazel
       - name: build
+        uses: ngalaiko/bazel-action/5.0.0@master
         run: sh INSTALL.sh; protoc --version; bazel --version; bazel test //interface/common:resdb_txn_accessor_test
 
       - name: Collect Test Coverage File
