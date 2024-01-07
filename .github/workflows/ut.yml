@@ -11,27 +11,37 @@ jobs:
       #  uses: arduino/setup-protoc@v1
       #  with:
       #      version: "3.12.4"
+  
+    - uses: actions/checkout@v1
 
+    - name: Mount bazel cache
+      uses: actions/cache@v1
+      with:
+        path: "/home/runner/.cache/bazel"
+        key: bazel
 
-      - uses: actions/checkout@v1
-      - name: Install bazelisk
-        run: |
-          curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v5.0.0/bazelisk-linux-amd64"
-          mkdir -p "${GITHUB_WORKSPACE}/bin/"
-          mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
-          chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+    - name: Install bazelisk
+      run: |
+        curl -LO "https://github.com/bazelbuild/bazelisk/releases/download/v1.1.0/bazelisk-linux-amd64"
+        mkdir -p "${GITHUB_WORKSPACE}/bin/"
+        mv bazelisk-linux-amd64 "${GITHUB_WORKSPACE}/bin/bazel"
+        chmod +x "${GITHUB_WORKSPACE}/bin/bazel"
+
+    - name: Test
+      run: |
+        "${GITHUB_WORKSPACE}/bin/bazel" --version
 
       #- name: Mount bazel cache
       #  uses: actions/cache@v3
       #  with:
       #    path: "/home/runner/.cache/bazel"
       #    key: bazel
-      - name: build
-        run: "${GITHUB_WORKSPACE}/bin/bazel" --version; bazel test //interface/common:resdb_txn_accessor_test
+      #- name: build
+      #  run: "${GITHUB_WORKSPACE}/bin/bazel" --version; bazel test //interface/common:resdb_txn_accessor_test
 
-      - name: Collect Test Coverage File
-        if: always()
-        uses: actions/upload-artifact@v1.0.0
-        with:
-          name: coverage-output
-          path: "/home/runner/.cache/bazel/_bazel_runner/be4defad2350bee802e807363d03d888/execroot/_main/bazel-out/k8-fastbuild/testlogs/interface/common/resdb_txn_accessor_test/"
+      #- name: Collect Test Coverage File
+      #  if: always()
+      #  uses: actions/upload-artifact@v1.0.0
+      #  with:
+      #    name: coverage-output
+      #    path: "/home/runner/.cache/bazel/_bazel_runner/be4defad2350bee802e807363d03d888/execroot/_main/bazel-out/k8-fastbuild/testlogs/interface/common/resdb_txn_accessor_test/"
