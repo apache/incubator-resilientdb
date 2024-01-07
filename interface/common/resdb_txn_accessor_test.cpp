@@ -109,6 +109,9 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
 	    txn->set_seq(1);
 	    txn->set_data("test_resp");
 
+            LOG(ERROR)<<"string x";
+              std::string a;
+              query_resp.SerializeToString(&a);
               LOG(ERROR)<<"here:"<<(resp == nullptr);
               query_resp.SerializeToString(resp);
               LOG(ERROR)<<"here done";
