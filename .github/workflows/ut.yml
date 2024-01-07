@@ -20,7 +20,8 @@ jobs:
       #    key: bazel
       - name: build
         uses: ngalaiko/bazel-action/5.0.0@master
-        run: sh INSTALL.sh; protoc --version; bazel --version; bazel test //interface/common:resdb_txn_accessor_test
+        with:
+          args: sh INSTALL.sh; protoc --version; bazel --version; bazel test //interface/common:resdb_txn_accessor_test
 
       - name: Collect Test Coverage File
         if: always()
