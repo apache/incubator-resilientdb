@@ -83,6 +83,18 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
                       GenerateReplicaInfo(4, "127.0.0.1", 1237)},
                      GenerateReplicaInfo(1, "127.0.0.1", 1234));
 
+  {
+    QueryResponse query_resp;
+    auto txn = query_resp.add_transactions();
+    txn->set_seq(1);
+    txn->set_data("test_resp");
+
+    LOG(ERROR)<<"string x";
+    std::string a;
+    query_resp.SerializeToString(&a);
+    LOG(ERROR)<<"string x done";
+  }
+
   QueryResponse query_resp;
   auto txn = query_resp.add_transactions();
   txn->set_seq(1);
@@ -112,6 +124,7 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
             LOG(ERROR)<<"string x";
               std::string a;
               query_resp.SerializeToString(&a);
+            LOG(ERROR)<<"string x done";
               LOG(ERROR)<<"here:"<<(resp == nullptr);
               query_resp.SerializeToString(resp);
               LOG(ERROR)<<"here done";
