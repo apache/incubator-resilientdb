@@ -13,10 +13,10 @@ jobs:
       #      version: "3.12.4"
 
     - uses: actions/checkout@v1
-    - uses: bazelbuild/setup-bazelisk@v2
+    - name: run
+      uses: ngalaiko/bazel-action/1.2.1@master
       with:
-          version: "5.0.0"
-    - run: bazel --version
+        args:  --version
   
 
       #- name: Mount bazel cache
