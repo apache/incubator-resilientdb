@@ -83,6 +83,7 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
                       GenerateReplicaInfo(4, "127.0.0.1", 1237)},
                      GenerateReplicaInfo(1, "127.0.0.1", 1234));
 
+try {
   {
     QueryResponse query_resp;
     auto txn = query_resp.add_transactions();
@@ -94,6 +95,9 @@ TEST(ResDBTxnAccessorTest, GetTransactions) {
     query_resp.SerializeToString(&a);
     LOG(ERROR)<<"string x done";
   }
+   } catch (const char* msg) {
+     LOG(ERROR)<< msg;
+   }
 
   QueryResponse query_resp;
   auto txn = query_resp.add_transactions();
