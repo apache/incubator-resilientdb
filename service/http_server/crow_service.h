@@ -51,6 +51,8 @@ private:
   std::unordered_set<crow::websocket::connection *> users;
   std::atomic_uint16_t num_transactions_ = 0;
   std::atomic_uint64_t first_commit_time_ = 0;
+  uint64_t last_db_scan_time = 0;
+  const uint64_t DB_SCAN_TIMEOUT_MS = 30000;
 };
 
 } // namespace sdk
