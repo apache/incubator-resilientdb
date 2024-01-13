@@ -37,8 +37,9 @@ message Request {
         TYPE_VIEWCHANGE = 16;
         TYPE_NEWVIEW= 17;
         TYPE_CUSTOM_QUERY = 18;
+        TYPE_CUSTOM_CONSENSUS = 19;
 
-        NUM_OF_TYPE = 19; // the total number of types.
+        NUM_OF_TYPE = 20; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -62,6 +63,7 @@ message Request {
     int32 primary_id = 17;
     repeated bytes hashs = 18;
     repeated uint64 seqs = 19;
+    int32 user_type = 20;
 }
 
 // The response message containing response

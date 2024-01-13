@@ -62,6 +62,8 @@ class TransactionExecutor {
 
   void SetDuplicateManager(DuplicateManager* manager);
 
+  void AddExecuteMessage(std::unique_ptr<Request> message);
+
   Storage* GetStorage();
 
  private:

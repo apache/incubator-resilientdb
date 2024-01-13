@@ -144,6 +144,9 @@ void TransactionExecutor::OrderMessage() {
   return;
 }
 
+void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
+    execute_queue_.Push(std::move(message));
+}
 void TransactionExecutor::ExecuteMessage() {
   while (!IsStop()) {
     auto message = execute_queue_.Pop();
