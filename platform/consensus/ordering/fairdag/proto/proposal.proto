@@ -1,14 +1,18 @@
 
 syntax = "proto3";
+import "common/proto/signature_info.proto";
 
 package resdb.fairdag;
 
 message Metadata {
-  int32 round = 1;
-  bytes hash = 2;
+  message Data {
+    bytes hash = 1;
+    int32 round = 2;
+    int32 proposer = 3;
+  };
+  Data data = 1;
+  SignatureInfo sign = 2;
   int32 sender = 3;
-  bytes sign = 4;
-  int32 proposer = 5;
 }
 
 message Reference {
@@ -38,6 +42,9 @@ message Transaction{
   bytes data = 2;
   bytes hash = 3;
   int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
 }
 
 enum ProposalType{

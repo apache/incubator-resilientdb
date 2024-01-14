@@ -64,6 +64,7 @@ message Request {
     repeated bytes hashs = 18;
     repeated uint64 seqs = 19;
     int32 user_type = 20;
+    int64 user_seq = 21;
 }
 
 // The response message containing response

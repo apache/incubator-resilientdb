@@ -23,34 +23,27 @@
  *
  */
 
-#pragma once
-
-#include "executor/common/transaction_manager.h"
-#include "platform/consensus/execution/transaction_executor.h"
-#include "platform/consensus/ordering/fairdag/algorithm/fairdag.h"
 #include "platform/consensus/ordering/fairdag/framework/performance_manager.h"
-#include "platform/consensus/ordering/common/framework/consensus.h"
-#include "platform/networkstrate/consensus_manager.h"
+
+#include <glog/logging.h>
+
+#include "common/utils/utils.h"
 
 namespace resdb {
 namespace fairdag {
 
-class FairDAGConsensus : public common::Consensus{
- public:
-  FairDAGConsensus(const ResDBConfig& config,
-            std::unique_ptr<TransactionManager> transaction_manager);
+using comm::CollectorResultCode;
 
-  protected:
-  int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
-  int ProcessNewTransaction(std::unique_ptr<Request> request) override;
-  int CommitMsg(const google::protobuf::Message& msg) override;
-  int CommitMsgInternal(const Transaction& txn);
+FairDAGPerformanceManager::FairDAGPerformanceManager(
+    const ResDBConfig& config, ReplicaCommunicator* replica_communicator,
+    SignatureVerifier* verifier)
+    : PerformanceManager(config, replica_communicator, verifier){
+}
 
-  std::unique_ptr<FairDAGPerformanceManager> GetPerformanceManager();
+void FairDAGPerformanceManager::SendMessage(const Request& request) {
+  replica_communicator_->BroadCast(request);
+}
 
-  private:
-    std::unique_ptr<FairDAG> fairdag_;
-};
 
-}  // namespace tusk
+}  // namespace common
 }  // namespace resdb

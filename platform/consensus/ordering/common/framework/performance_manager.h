@@ -42,13 +42,16 @@ class PerformanceManager {
                      ReplicaCommunicator* replica_communicator,
                      SignatureVerifier* verifier);
 
-  ~PerformanceManager();
+  virtual ~PerformanceManager();
 
   int StartEval();
 
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
   void SetDataFunc(std::function<std::string()> func);
+
+  protected:
+  virtual void SendMessage(const Request& request);
 
  private:
   // Add response messages which will be sent back to the caller
@@ -67,9 +70,11 @@ class PerformanceManager {
   int GetPrimary();
   std::unique_ptr<Request> GenerateUserRequest();
 
- private:
+ protected:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
+
+ private:
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread user_req_thread_[16];
   std::atomic<bool> stop_;

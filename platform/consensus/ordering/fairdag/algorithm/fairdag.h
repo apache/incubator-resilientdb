@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "platform/common/queue/lock_free_queue.h"
+#include "platform/consensus/ordering/fairdag/algorithm/tusk.h"
 #include "platform/consensus/ordering/fairdag/algorithm/proposal_manager.h"
 #include "platform/consensus/ordering/fairdag/proto/proposal.pb.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
@@ -19,39 +20,31 @@ class FairDAG : public protocol::ProtocolBase {
   FairDAG(int id, int f, int total_num, SignatureVerifier* verifier);
   ~FairDAG();
 
+  //  recv txn -> send block with links -> rec block ack -> send block with certs
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   bool ReceiveBlock(std::unique_ptr<Proposal> proposal);
   void ReceiveBlockACK(std::unique_ptr<Metadata> metadata);
   void ReceiveBlockCert(std::unique_ptr<Certificate> cert);
 
 private:
-  void CommitProposal(int round, int proposer);
-  void CommitRound(int round);
-  void AsyncCommit();
-  void AsyncSend();
-  void AsyncExecute();
+  void CommitTxns(std::vector<std::unique_ptr<Transaction> > txns);
+  void SortTxn(std::vector<std::unique_ptr<Transaction>>& txns, 
+      std::map<std::string, uint64_t>& assigned_time);
 
-private:
-  int GetLeader(int64_t r);
+  uint64_t TryAssign(const std::string& hash);
+  uint64_t GetLowerboundTimestamp(const std::string& hash) ;
+  uint64_t GetCommitTimestamp(const std::string& hash);
 
  private:
-  std::atomic<int> local_txn_id_;
-  LockFreeQueue<Proposal> execute_queue_;
-  LockFreeQueue<int> commit_queue_;
-  LockFreeQueue<Transaction> txns_;
-
-  std::unique_ptr<ProposalManager> proposal_manager_;
-  SignatureVerifier* verifier_;
-
-  std::thread send_thread_; 
-  std::thread commit_thread_, execute_thread_;
-  std::mutex txn_mutex_, mutex_;
-  int limit_count_;
-  std::map<std::string, std::map<int, std::unique_ptr<Metadata>> > received_num_;
-  std::condition_variable vote_cv_;
-  int start_ = 0;
-  int batch_size_ = 0;
-  int execute_id_ = 1;
+  std::mutex mutex_;
+  std::unique_ptr<Tusk> tusk_;
+  int64_t local_time_ = 0;
+  std::map<std::string, std::map<int, uint64_t> > committed_txns_;
+  std::set<std::string> ready_;
+  int execute_id_;
+  std::vector<uint64_t> min_timestamp_;
+  int replica_num_;
+  std::multimap<uint64_t, std::unique_ptr<Transaction>> not_ready_;
 };
 
 }  // namespace tusk

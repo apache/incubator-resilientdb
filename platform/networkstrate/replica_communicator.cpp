@@ -43,16 +43,6 @@ ReplicaCommunicator::ReplicaCommunicator(
     }
   }
 
-  /*
-  for (const ReplicaInfo& info : replicas) {
-    std::string ip = info.ip();
-    int port = info.port();
-    auto client = std::make_unique<AsyncReplicaClient>(
-        &io_service_, ip, port + (is_use_long_conn_ ? 10000 : 0), true);
-    client_pools_[std::make_pair(ip, port)] = std::move(client);
-  }
-  */
-
   StartBroadcastInBackGround();
 }
 

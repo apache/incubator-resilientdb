@@ -177,7 +177,7 @@ void ResDBConfig::SetSignatureVerifierEnabled(bool enable_sv) {
 }
 
 // Performance setting
-bool ResDBConfig::IsPerformanceRunning() {
+bool ResDBConfig::IsPerformanceRunning() const {
   return is_performance_running_ || GetConfigData().is_performance_running();
 }
 

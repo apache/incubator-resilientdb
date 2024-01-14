@@ -147,6 +147,7 @@ void TransactionExecutor::OrderMessage() {
 void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
     execute_queue_.Push(std::move(message));
 }
+
 void TransactionExecutor::ExecuteMessage() {
   while (!IsStop()) {
     auto message = execute_queue_.Pop();
@@ -213,12 +214,12 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     *batch_request.mutable_committed_certs() = request->committed_certs();
   }
 
-  // LOG(INFO) << " get request batch size:"
-  //         << batch_request.user_requests_size()<<" proxy
-  //         id:"<<request->proxy_id()<<" need execute:"<<need_execute;
+  //LOG(INFO) << " get request batch size:"
+  //         << batch_request.user_requests_size()
+  //         <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute;
   // std::unique_ptr<BatchUserResponse> batch_response =
   //     std::make_unique<BatchUserResponse>();
-
+  
   std::unique_ptr<BatchUserResponse> response;
   if (transaction_manager_ && need_execute) {
     response = transaction_manager_->ExecuteBatch(batch_request);
@@ -236,6 +237,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_createtime(batch_request.createtime());
   response->set_local_id(batch_request.local_id());
   response->set_hash(batch_request.hash());
+  response->set_proxy_id(request->proxy_id());
 
   post_exec_func_(std::move(request), std::move(response));
 

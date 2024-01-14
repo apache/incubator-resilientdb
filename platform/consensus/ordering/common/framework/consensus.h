@@ -37,9 +37,7 @@ namespace common {
 class Consensus : public ConsensusManager {
  public:
   Consensus(const ResDBConfig& config,
-            std::unique_ptr<TransactionManager> transaction_manager,
-           std::unique_ptr<PerformanceManager> performance_manager = nullptr,
-           std::unique_ptr<ResponseManager> response_manager = nullptr);
+            std::unique_ptr<TransactionManager> transaction_manager);
   virtual ~Consensus() = default;
 
   int ConsensusCommit(std::unique_ptr<Context> context,
@@ -59,6 +57,10 @@ class Consensus : public ConsensusManager {
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);
   int Broadcast(int type, const google::protobuf::Message& msg);
   int ResponseMsg(const BatchUserResponse& batch_resp);
+
+ protected:
+  void Init();
+  void SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manger);
 
  protected:
   ReplicaCommunicator* replica_communicator_;

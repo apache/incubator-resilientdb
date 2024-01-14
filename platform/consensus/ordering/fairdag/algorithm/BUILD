@@ -17,6 +17,20 @@ cc_library(
     srcs = ["fairdag.cpp"],
     hdrs = ["fairdag.h"],
     deps = [
+      ":tusk",
+        ":proposal_manager",
+        "//common/crypto:signature_verifier",
+        "//common:comm",
+        "//platform/common/queue:lock_free_queue",
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
+    ],
+)
+
+cc_library(
+    name = "tusk",
+    srcs = ["tusk.cpp"],
+    hdrs = ["tusk.h"],
+    deps = [
         ":proposal_manager",
         "//common/crypto:signature_verifier",
         "//common:comm",

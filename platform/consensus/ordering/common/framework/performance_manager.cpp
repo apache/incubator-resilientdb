@@ -37,7 +37,7 @@ using comm::CollectorResultCode;
 PerformanceManager::PerformanceManager(
     const ResDBConfig& config, ReplicaCommunicator* replica_communicator,
     SignatureVerifier* verifier)
-    : config_(config),
+     : config_(config),
       replica_communicator_(replica_communicator),
       batch_queue_("user request"),
       verifier_(verifier) {
@@ -270,8 +270,10 @@ int PerformanceManager::DoBatch(
 
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
+  new_request->set_user_seq(batch_request.local_id());
 
-  replica_communicator_->SendMessage(*new_request, GetPrimary());
+  SendMessage(*new_request);
+
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
@@ -285,6 +287,10 @@ int PerformanceManager::DoBatch(
   }
   global_stats_->IncClientCall();
   return 0;
+}
+
+void PerformanceManager::SendMessage(const Request& request){
+  replica_communicator_->SendMessage(request, GetPrimary());
 }
 
 }  // namespace common

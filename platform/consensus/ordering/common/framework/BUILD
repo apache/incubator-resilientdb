@@ -1,12 +1,9 @@
-package(default_visibility = ["//visibility:private"])
+package(default_visibility = ["//platform/consensus/ordering:__subpackages__"])
 
 cc_library(
     name = "consensus",
     srcs = ["consensus.cpp"],
     hdrs = ["consensus.h"],
-    visibility = [
-        "//visibility:public",
-    ],
     deps = [
         ":performance_manager",
         ":response_manager",

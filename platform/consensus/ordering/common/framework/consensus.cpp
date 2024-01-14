@@ -34,13 +34,9 @@ namespace resdb {
 namespace common {
 
 Consensus::Consensus(const ResDBConfig& config,
-                     std::unique_ptr<TransactionManager> executor,
-                     std::unique_ptr<PerformanceManager> performance_manager,
-                     std::unique_ptr<ResponseManager> response_manager)
+                     std::unique_ptr<TransactionManager> executor)
     : ConsensusManager(config),
       replica_communicator_(GetBroadCastClient()),
-      performance_manager_(std::move(performance_manager)),
-      response_manager_(std::move(response_manager)),
       transaction_executor_(std::make_unique<TransactionExecutor>(
           config,
           [&](std::unique_ptr<Request> request,
@@ -51,21 +47,30 @@ Consensus::Consensus(const ResDBConfig& config,
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
+}
 
-  if(performance_manager_ == nullptr) {
+void Consensus::Init(){
+  if(performance_manager_ == nullptr){
     performance_manager_ = 
-        config_.IsPerformanceRunning()
-        ? std::make_unique<PerformanceManager>(
+      config_.IsPerformanceRunning()
+      ? std::make_unique<PerformanceManager>(
           config_, GetBroadCastClient(), GetSignatureVerifier())
-        : nullptr;
+      : nullptr;
   }
-  if(response_manager_ == nullptr ) {
+
+  if(response_manager_ == nullptr){
     response_manager_ = 
-          !config_.IsPerformanceRunning()
-              ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
-                                                  GetSignatureVerifier())
-              : nullptr;
+      !config_.IsPerformanceRunning()
+      ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
+          GetSignatureVerifier())
+      : nullptr;
   }
+}
+
+void Consensus::SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manager){
+ LOG(ERROR)<<"????";
+  performance_manager_ = std::move(performance_manager);
+ LOG(ERROR)<<"???? done";
 }
 
 void Consensus::SetupPerformanceDataFunc(std::function<std::string()> func) {

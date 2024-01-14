@@ -33,9 +33,20 @@
 namespace resdb {
 namespace fairdag {
 
+std::unique_ptr<FairDAGPerformanceManager> FairDAGConsensus::GetPerformanceManager() {
+        return config_.IsPerformanceRunning()
+        ? std::make_unique<FairDAGPerformanceManager>(
+          config_, GetBroadCastClient(), GetSignatureVerifier())
+        : nullptr;
+}
+
 FairDAGConsensus::FairDAGConsensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : Consensus(config, std::move(executor)) {
+
+  SetPerformanceManager(GetPerformanceManager());
+
+  Init();
 
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
@@ -94,11 +105,6 @@ int FairDAGConsensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     fairdag_->ReceiveBlockCert(std::move(cert));
   }
   return 0;
-  //int64_t run_time = GetCurrentTime() - current_time;
-  //LOG(ERROR)<<"run :"<<run_time;
-  return 0;
-  LOG(ERROR)<<"unkown type:"<<request->user_type();
-  return -1;
 }
 
 int FairDAGConsensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
@@ -106,6 +112,7 @@ int FairDAGConsensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_data(request->data());
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
+  txn->set_user_seq(request->user_seq());
   return fairdag_->ReceiveTransaction(std::move(txn));
 }
 
