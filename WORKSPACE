@@ -189,8 +189,8 @@ http_archive(
 
 git_repository(
     name = "com_resdb_nexres",
-    branch = "resilient_v2",
-    remote = "https://github.com/resilientdb/resilientdb.git",
+    branch = "master",
+    remote = "https://github.com/apache/incubator-resilientdb.git",
 )
 
 http_archive(

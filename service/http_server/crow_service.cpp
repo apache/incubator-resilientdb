@@ -42,13 +42,18 @@ using crow::request;
 using crow::response;
 using resdb::BatchUserRequest;
 using resdb::ResDBConfig;
+using resdb::ReplicaState;
+using resdb::ResConfigData;
+using resdb::KeyInfo;
+using resdb::ReplicaInfo;
+using resdb::CertificateInfo;
 
 namespace sdk {
 
 CrowService::CrowService(ResDBConfig client_config, ResDBConfig server_config,
                          uint16_t port_num)
     : client_config_(client_config), server_config_(server_config), port_num_(port_num),
-      kv_client_(client_config_), txn_client_(server_config_) {
+      kv_client_(client_config_), state_client_(client_config_), txn_client_(server_config_) {
   GetAllBlocks(100, true, false);
 }
 
@@ -76,7 +81,7 @@ void CrowService::run() {
 
       auto values = kv_client_.GetAllValues();
       if (values != nullptr) {
-        LOG(INFO) << "client getallvalues value = " << values->c_str();
+        //LOG(INFO) << "client getallvalues value = " << values->c_str();
 
         // Send updated blocks list to websocket
         if (users.size() > 0) {
@@ -296,17 +301,29 @@ void CrowService::run() {
   // For metadata table on the Explorer
   CROW_ROUTE(app, "/populatetable")
   ([this](const crow::request& req, response& res) {
-    uint32_t replica_num = server_config_.GetReplicaNum();
-    uint32_t worker_num = server_config_.GetWorkerNum();
-    uint32_t client_batch_num = server_config_.ClientBatchNum();
-    uint32_t max_process_txn = server_config_.GetMaxProcessTxn();
-    uint32_t client_batch_wait_time = server_config_.ClientBatchWaitTimeMS();
-    uint32_t input_worker_num = server_config_.GetInputWorkerNum();
-    uint32_t output_worker_num = server_config_.GetOutputWorkerNum();
-    int client_timeout_ms = server_config_.GetClientTimeoutMs();
-    int min_data_receive_num = server_config_.GetMinDataReceiveNum();
-    size_t max_malicious_replica_num = server_config_.GetMaxMaliciousReplicaNum();
-    int checkpoint_water_mark = server_config_.GetCheckPointWaterMark();
+
+    absl::StatusOr<ReplicaState> state_or = state_client_.GetReplicaState();
+	if(!state_or.ok()){
+		  LOG(ERROR)<<"get state fail";
+		res.set_header("Content-Type", "application/json");
+		res.end("");
+		return;
+	}
+
+    ResConfigData config_data = (*state_or).replica_config();
+    ResDBConfig server_config(config_data, ReplicaInfo(), KeyInfo(), CertificateInfo());
+
+    uint32_t replica_num = server_config.GetReplicaNum();
+    uint32_t worker_num = server_config.GetWorkerNum();
+    uint32_t client_batch_num = server_config.ClientBatchNum();
+    uint32_t max_process_txn = server_config.GetMaxProcessTxn();
+    uint32_t client_batch_wait_time = server_config.ClientBatchWaitTimeMS();
+    uint32_t input_worker_num = server_config.GetInputWorkerNum();
+    uint32_t output_worker_num = server_config.GetOutputWorkerNum();
+    int client_timeout_ms = server_config.GetClientTimeoutMs();
+    int min_data_receive_num = server_config.GetMinDataReceiveNum();
+    size_t max_malicious_replica_num = server_config.GetMaxMaliciousReplicaNum();
+    int checkpoint_water_mark = server_config.GetCheckPointWaterMark();
 
     // Don't read the ledger if first commit time is known
     if (first_commit_time_ == 0) {
@@ -394,7 +411,7 @@ std::string CrowService::GetAllBlocks(int batch_size, bool increment_txn_count,
     absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> GetTxn(
         uint64_t min_seq, uint64_t max_seq);
     if (!resp.ok()) {
-      LOG(ERROR) << "get replica state fail";
+      LOG(ERROR) << "get replica txn fail";
       return "";
     };
 

@@ -47,6 +47,7 @@ private:
   resdb::ResDBConfig server_config_;
   uint16_t port_num_;
   ResDBKVClient kv_client_;
+  resdb::ResDBStateAccessor state_client_;
   resdb::ResDBTxnAccessor txn_client_;
   std::unordered_set<crow::websocket::connection *> users;
   std::atomic_uint16_t num_transactions_ = 0;
