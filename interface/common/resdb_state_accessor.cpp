@@ -35,8 +35,7 @@ std::unique_ptr<NetChannel> ResDBStateAccessor::GetNetChannel(
 }
 
 // Obtain ReplicaState of each replica.
-absl::StatusOr<ReplicaState>
-ResDBStateAccessor::GetReplicaState() {
+absl::StatusOr<ReplicaState> ResDBStateAccessor::GetReplicaState() {
   const auto& client_info = config_.GetReplicaInfos()[0];
 
   Request request;

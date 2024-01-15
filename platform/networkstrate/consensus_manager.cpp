@@ -210,9 +210,9 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
   }
 
   LOG(ERROR) << "receive public size:" << hb_info.public_keys().size()
-            << " primary:" << hb_info.primary()
-            << " version:" << hb_info.version()
-            << " from region:" << request->region_info().region_id();
+             << " primary:" << hb_info.primary()
+             << " version:" << hb_info.version()
+             << " from region:" << request->region_info().region_id();
 
   if (request->region_info().region_id() ==
       config_.GetConfigData().self_region_id()) {

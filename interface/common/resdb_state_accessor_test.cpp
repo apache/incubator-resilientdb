@@ -28,8 +28,8 @@
 namespace resdb {
 namespace {
 
-using ::resdb::testing::EqualsProto;
 using ::google::protobuf::util::MessageDifferencer;
+using ::resdb::testing::EqualsProto;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
 using ::testing::Test;
