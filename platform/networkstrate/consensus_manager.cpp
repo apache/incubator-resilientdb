@@ -209,7 +209,7 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
     return -1;
   }
 
-  LOG(INFO) << "receive public size:" << hb_info.public_keys().size()
+  LOG(ERROR) << "receive public size:" << hb_info.public_keys().size()
             << " primary:" << hb_info.primary()
             << " version:" << hb_info.version()
             << " from region:" << request->region_info().region_id();
