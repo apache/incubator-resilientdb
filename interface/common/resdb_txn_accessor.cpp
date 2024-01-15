@@ -59,12 +59,15 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
     ths.push_back(std::thread(
         [&](NetChannel* client) {
           std::string response_str;
-          int ret = client->SendRequest(request, Request::TYPE_QUERY);
-          if (ret) {
-            return;
+          int ret = -1;
+          for (int i = 0; i < 3 && ret < 0; ++i) {
+            ret = client->SendRequest(request, Request::TYPE_QUERY);
+            if (ret) {
+              return;
+            }
+            client->SetRecvTimeout(1000);
+            ret = client->RecvRawMessageStr(&response_str);
           }
-          client->SetRecvTimeout(1000);
-          ret = client->RecvRawMessageStr(&response_str);
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
@@ -109,40 +112,6 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
   }
   for (auto& transaction : resp.transactions()) {
     txn_resp.push_back(std::make_pair(transaction.seq(), transaction.data()));
-  }
-  return txn_resp;
-}
-
-absl::StatusOr<std::vector<Request>> ResDBTxnAccessor::GetRequestFromReplica(
-    uint64_t min_seq, uint64_t max_seq, const ReplicaInfo& replica) {
-  QueryRequest request;
-  request.set_min_seq(min_seq);
-  request.set_max_seq(max_seq);
-
-  std::unique_ptr<NetChannel> client =
-      GetNetChannel(replica.ip(), replica.port());
-
-  std::string response_str;
-  int ret = client->SendRequest(request, Request::TYPE_QUERY);
-  if (ret) {
-    return absl::InternalError("send data fail.");
-  }
-  client->SetRecvTimeout(1000);
-  ret = client->RecvRawMessageStr(&response_str);
-  if (ret) {
-    return absl::InternalError("recv data fail.");
-  }
-
-  QueryResponse resp;
-
-  if (!resp.ParseFromString(response_str)) {
-    LOG(ERROR) << "parse fail len:" << response_str.size();
-    return absl::InternalError("recv data fail.");
-  }
-
-  std::vector<Request> txn_resp;
-  for (auto& transaction : resp.transactions()) {
-    txn_resp.push_back(transaction);
   }
   return txn_resp;
 }
