@@ -28,6 +28,7 @@
 namespace resdb {
 namespace {
 
+using ::resdb::testing::EqualsProto;
 using ::google::protobuf::util::MessageDifferencer;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
@@ -95,18 +96,9 @@ TEST_F(StateClientTest, GetAllReplicaState) {
             }));
         return client;
       }));
-  auto ret = client.GetReplicaStates();
+  auto ret = client.GetReplicaState();
   EXPECT_TRUE(ret.ok());
-  std::set<int> results;
-  for (auto& state : *ret) {
-    auto it = std::find_if(
-        replicas_.begin(), replicas_.end(), [&](const ReplicaInfo& info) {
-          return MessageDifferencer::Equals(info, state.replica_info());
-        });
-    EXPECT_TRUE(it != replicas_.end());
-    results.insert(it - replicas_.begin());
-  }
-  EXPECT_EQ(results.size(), 4);
+  EXPECT_THAT(state, EqualsProto(*ret));
 }
 
 }  // namespace
