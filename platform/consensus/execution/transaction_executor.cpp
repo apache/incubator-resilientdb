@@ -214,9 +214,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     *batch_request.mutable_committed_certs() = request->committed_certs();
   }
 
-  //LOG(INFO) << " get request batch size:"
-  //         << batch_request.user_requests_size()
-  //         <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute;
+  LOG(INFO) << " get request batch size:"
+           << batch_request.user_requests_size()
+           <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute;
   // std::unique_ptr<BatchUserResponse> batch_response =
   //     std::make_unique<BatchUserResponse>();
   

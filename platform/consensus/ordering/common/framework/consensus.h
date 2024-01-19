@@ -27,6 +27,7 @@
 
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/execution/transaction_executor.h"
+#include "platform/consensus/ordering/common/algorithm/protocol_base.h"
 #include "platform/consensus/ordering/common/framework/performance_manager.h"
 #include "platform/consensus/ordering/common/framework/response_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
@@ -47,6 +48,8 @@ class Consensus : public ConsensusManager {
   void SetupPerformanceDataFunc(std::function<std::string()> func);
 
   void SetCommunicator(ReplicaCommunicator* replica_communicator);
+
+  void InitProtocol(ProtocolBase * protocol);
 
   protected:
     virtual int ProcessCustomConsensus(std::unique_ptr<Request> request);

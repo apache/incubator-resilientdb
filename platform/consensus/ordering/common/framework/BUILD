@@ -10,6 +10,7 @@ cc_library(
         "//common/utils",
         "//executor/common:transaction_manager",
         "//platform/consensus/execution:transaction_executor",
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
         "//platform/networkstrate:consensus_manager",
     ],
 )

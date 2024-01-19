@@ -2,9 +2,10 @@
 
 #include <functional>
 #include <google/protobuf/message.h>
+#include "common/crypto/signature_verifier.h"
 
 namespace resdb {
-namespace protocol {
+namespace common {
 
 class ProtocolBase {
  public:
@@ -37,6 +38,9 @@ class ProtocolBase {
   inline
   void SetCommitFunc(CommitFuncType commit_func) { commit_ = commit_func; }
 
+  inline 
+  void SetSignatureVerifier(SignatureVerifier* verifier) { verifier_ = verifier;}
+
   protected:
     int SendMessage(int msg_type, const google::protobuf::Message& msg, int node_id);
     int Broadcast(int msg_type, const google::protobuf::Message& msg);
@@ -52,6 +56,8 @@ class ProtocolBase {
   std::function<int(int, const google::protobuf::Message& msg)> broadcast_call_;
   std::function<int(const google::protobuf::Message& msg)> commit_;
   std::atomic<bool> stop_;
+
+  SignatureVerifier* verifier_;
 };
 
 }  // namespace protocol

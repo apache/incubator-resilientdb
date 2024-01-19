@@ -3,7 +3,7 @@
 #include <glog/logging.h>
 
 namespace resdb {
-namespace protocol {
+namespace common {
 
 ProtocolBase::ProtocolBase(
     int id, 

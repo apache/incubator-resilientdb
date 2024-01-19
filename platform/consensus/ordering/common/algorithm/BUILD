@@ -6,6 +6,7 @@ cc_library(
     hdrs = ["protocol_base.h"],
     deps = [
         "//common:comm",
+        "//common/crypto:signature_verifier",
     ],
 )
 

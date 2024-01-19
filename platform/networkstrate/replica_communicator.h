@@ -37,7 +37,7 @@ class ReplicaCommunicator {
   ReplicaCommunicator(const std::vector<ReplicaInfo>& replicas,
                       SignatureVerifier* verifier = nullptr,
                       bool is_use_long_conn = false, int epoll_num = 1,
-                      int tcp_batch = 100);
+                      int tcp_batch = 1);
   virtual ~ReplicaCommunicator();
 
   // HeartBeat message is used to broadcast public keys.

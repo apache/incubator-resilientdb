@@ -67,10 +67,27 @@ void Consensus::Init(){
   }
 }
 
+void Consensus::InitProtocol(ProtocolBase * protocol){
+  //protocol->SetSignatureVerifier(GetSignatureVerifier());
+
+  protocol->SetSingleCallFunc(
+      [&](int type, const google::protobuf::Message& msg, int node_id) {
+      return SendMsg(type, msg, node_id);
+      });
+
+  protocol->SetBroadcastCallFunc(
+      [&](int type, const google::protobuf::Message& msg) {
+      return Broadcast(type, msg);
+      });
+
+  protocol->SetCommitFunc(
+      [&](const google::protobuf::Message& msg) { 
+      return CommitMsg(msg); 
+      });
+}
+
 void Consensus::SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manager){
- LOG(ERROR)<<"????";
   performance_manager_ = std::move(performance_manager);
- LOG(ERROR)<<"???? done";
 }
 
 void Consensus::SetupPerformanceDataFunc(std::function<std::string()> func) {
@@ -114,7 +131,7 @@ int Consensus::CommitMsg(const google::protobuf::Message &txn) {
 // The implementation of PBFT.
 int Consensus::ConsensusCommit(std::unique_ptr<Context> context,
                                std::unique_ptr<Request> request) {
-   //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<Request_Type_Name(request->type());
+ LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<Request_Type_Name(request->type());
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
       if (config_.IsPerformanceRunning()) {

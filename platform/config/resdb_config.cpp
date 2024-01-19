@@ -74,7 +74,8 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
     config_data_.set_output_worker_num(output_worker_num_);
   }
   if (config_data_.tcp_batch_num() == 0) {
-    config_data_.set_tcp_batch_num(100);
+    config_data_.set_tcp_batch_num(1);
+    //config_data_.set_tcp_batch_num(100);
   }
 }
 

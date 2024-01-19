@@ -1,0 +1,55 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.hs;
+
+message Certificate {
+  SignatureInfo sign = 1;
+  int32 view = 2;
+  int32 signer = 3;
+  bytes hash = 4;
+}
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
+}
+
+enum ProposalType{
+    NewMsg  = 0;
+    Prepared = 1;
+    Commit = 2;
+    Ready_execute = 3;
+}
+
+message QC {
+  repeated SignatureInfo signatures = 1;
+  int32 view = 2;
+  bytes hash = 3;
+}
+
+message Header {
+  int32 proposer_id = 1;
+  int32 proposal_id = 2;
+  int32 view = 3;
+  QC qc = 4;
+  bytes prehash = 5;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 2;
+  int32 sender = 3;
+  bytes hash = 4;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  Vote = 1;
+};
+
