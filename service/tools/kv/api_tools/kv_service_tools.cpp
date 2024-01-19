@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include <fcntl.h>
@@ -73,11 +67,57 @@ static struct option long_options[] = {
     {"top", required_argument, NULL, 't'},
 };
 
-int main(int argc, char** argv) {
-  if (argc < 3) {
-    ShowUsage();
-    return 0;
+void OldAPI(char** argv) {
+  std::string client_config_file = argv[1];
+  std::string cmd = argv[2];
+  std::string key;
+  if (cmd != "getvalues") {
+    key = argv[3];
   }
+  std::string value;
+  if (cmd == "set") {
+    value = argv[4];
+  }
+
+  std::string key2;
+  if (cmd == "getrange") {
+    key2 = argv[4];
+  }
+
+  ResDBConfig config = GenerateResDBConfig(client_config_file);
+
+  config.SetClientTimeoutMs(100000);
+
+  KVClient client(config);
+
+  if (cmd == "set") {
+    int ret = client.Set(key, value);
+    printf("client set ret = %d\n", ret);
+  } else if (cmd == "get") {
+    auto res = client.Get(key);
+    if (res != nullptr) {
+      printf("client get value = %s\n", res->c_str());
+    } else {
+      printf("client get value fail\n");
+    }
+  } else if (cmd == "getvalues") {
+    auto res = client.GetAllValues();
+    if (res != nullptr) {
+      printf("client getvalues value = %s\n", res->c_str());
+    } else {
+      printf("client getvalues value fail\n");
+    }
+  } else if (cmd == "getrange") {
+    auto res = client.GetRange(key, key2);
+    if (res != nullptr) {
+      printf("client getrange value = %s\n", res->c_str());
+    } else {
+      printf("client getrange value fail\n");
+    }
+  }
+}
+
+int main(int argc, char** argv) {
   std::string key;
   int version = -1;
   int option_index = 0;
@@ -88,6 +128,15 @@ int main(int argc, char** argv) {
   int top = 0;
   char c;
   std::string cmd;
+
+  if (argc >= 3) {
+    cmd = argv[2];
+    if (cmd == "get" || cmd == "set" || cmd == "getvalues" ||
+        cmd == "getrange") {
+      OldAPI(argv);
+      return 0;
+    }
+  }
 
   while ((c = getopt_long(argc, argv, "h", long_options, &option_index)) !=
          -1) {
