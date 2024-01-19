@@ -48,7 +48,7 @@ PerformanceManager::PerformanceManager(
           .public_key()
           .public_key_info()
           .type() == CertificateKeyInfo::CLIENT) {
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 1; ++i) {
       user_req_thread_[i] =
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
@@ -181,7 +181,6 @@ void PerformanceManager::SendResponseToClient(
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
     global_stats_->AddLatency(run_time);
-    //LOG(ERROR)<<"run time:"<<run_time;
   } else {
   }
   //send_num_-=10;
@@ -277,7 +276,7 @@ int PerformanceManager::DoBatch(
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
-  LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary();
+  //LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary();
   if (total_num_++ == 1000000) {
     stop_ = true;
     LOG(WARNING) << "total num is done:" << total_num_;

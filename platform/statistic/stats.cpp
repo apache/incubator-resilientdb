@@ -183,7 +183,7 @@ void Stats::MonitorGlobal() {
       LOG(ERROR) << "  req client latency:"
                  << static_cast<double>(run_req_run_time -
                                         last_run_req_run_time) /
-                        (run_req_num - last_run_req_num) / 1000000000.0;
+                        (run_req_num - last_run_req_num) / 1000000.0;
     }
 
     last_seq_fail = seq_fail;

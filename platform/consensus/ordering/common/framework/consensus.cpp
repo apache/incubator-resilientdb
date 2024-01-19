@@ -131,7 +131,7 @@ int Consensus::CommitMsg(const google::protobuf::Message &txn) {
 // The implementation of PBFT.
 int Consensus::ConsensusCommit(std::unique_ptr<Context> context,
                                std::unique_ptr<Request> request) {
- LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<Request_Type_Name(request->type());
+ //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<Request_Type_Name(request->type());
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
       if (config_.IsPerformanceRunning()) {

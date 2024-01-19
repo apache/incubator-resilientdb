@@ -56,10 +56,10 @@ bool ProposalManager::VerifyQC(const QC& qc) {
 }
 
 bool ProposalManager::SafeNode(const Proposal& proposal){
-  //LOG(ERROR)<<"qc view:"<<proposal.header().qc().view()<<" lock view:"<<lock_qc_.view();
   if(proposal.header().qc().view() > lock_qc_.view()){
     return true;
   }
+  LOG(ERROR)<<"qc view:"<<proposal.header().qc().view()<<" lock view:"<<lock_qc_.view()<<" safe fail";
   return false; 
 }
 
@@ -97,7 +97,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     proposal->set_sender(id_);
   }
 
-  //proposal->set_hash(GetHash(*proposal));
+  proposal->set_hash(GetHash(*proposal));
   return proposal;
 }
 

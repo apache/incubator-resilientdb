@@ -37,13 +37,11 @@ AsyncReplicaClient::~AsyncReplicaClient() {}
 
 int AsyncReplicaClient::SendMessage(const std::string& data) {
   queue_.Push(std::make_unique<std::string>(data));
-  LOG(ERROR)<<"send mssage:"<<endpoint_.address();
   if (!in_process_.load()) {
     bool old_value = false;
     if (in_process_.compare_exchange_strong(old_value, true,
                                             std::memory_order_acq_rel,
                                             std::memory_order_acq_rel)) {
-      LOG(ERROR)<<"on send mssage:"<<endpoint_.address();
       OnSendNewMessage();
     }
   }
@@ -86,7 +84,6 @@ void AsyncReplicaClient::OnSend() {
       boost::asio::buffer(sending_data_ptr_ + sending_data_idx_,
                           sending_data_size_ - sending_data_idx_),
       [&](const boost::system::error_code& error, size_t send_size) {
-        LOG(ERROR)<<"send mssage size:"<<send_size<<" endpoint:"<<endpoint_.address();
         if (error) {
           ReConnect();
         } else {

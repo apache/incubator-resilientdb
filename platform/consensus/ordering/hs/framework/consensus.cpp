@@ -52,7 +52,7 @@ Consensus::Consensus(const ResDBConfig& config,
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  LOG(ERROR)<<"recv request:"<<MessageType_Name(request->user_type());
+  //LOG(ERROR)<<"recv request:"<<MessageType_Name(request->user_type());
   //int64_t current_time = GetCurrentTime();
 
   if(request->user_type() == MessageType::NewProposal) {
@@ -90,7 +90,7 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 }
 
 int Consensus::CommitMsgInternal(const Transaction& txn) {
-  LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id();
+  //LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id();
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_data(txn.data());
   request->set_seq(txn.id());

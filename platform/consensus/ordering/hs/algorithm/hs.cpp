@@ -40,7 +40,7 @@ void HotStuff::StartNewRound() {
   std::unique_lock<std::mutex> lk(n_mutex_);
   has_sent_ = false;
   vote_cv_.notify_one();
-  LOG(ERROR)<<" start new round";
+  //LOG(ERROR)<<" start new round";
 }
 
 void HotStuff::AsyncSend() {
@@ -78,7 +78,7 @@ void HotStuff::AsyncSend() {
     {
       std::unique_lock<std::mutex> lk(mutex_);
       proposal = proposal_manager_ -> GenerateProposal(txns);
-      LOG(ERROR)<<"propose txn view:"<<proposal->header().view();
+      //LOG(ERROR)<<"propose view:"<<proposal->header().view();
     }
     has_sent_ = true;
     broadcast_call_(MessageType::NewProposal, *proposal);
@@ -112,13 +112,10 @@ bool HotStuff::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
   {
     LOG(ERROR)<<"RECEIVE proposer view:"<<proposal->header().view();
     std::unique_lock<std::mutex> lk(mutex_);
-    LOG(ERROR)<<"RECEIVE proposer view:"<<proposal->header().view();
-    /*
-       if(!proposal_manager_->Verify(*proposal)){
-       LOG(ERROR)<<" proposal invalid";
-       return false;
-       }
-     */
+    if(!proposal_manager_->Verify(*proposal)){
+      LOG(ERROR)<<" proposal invalid";
+      return false;
+    }
 
     cert = GenerateCertificate(*proposal);
     assert(cert != nullptr);
@@ -140,24 +137,23 @@ bool HotStuff::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
 
 bool HotStuff::ReceiveCertificate(std::unique_ptr<Certificate> cert) {
 
-  LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
+  //LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
   std::unique_lock<std::mutex> lk(mutex_);
-  /*
   LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
   bool valid = proposal_manager_->VerifyCert(*cert);
   if(!valid){
     LOG(ERROR) << "Verify message fail";
+    assert(1==0);
     return false;
   }
-  */
 
-  LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
+  //LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
 
   int view = cert->view();
   std::string hash = cert->hash();
   receive_[view][hash].insert(std::make_pair(cert->signer(), std::move(cert)));
 
- // LOG(ERROR)<<"RECEIVE proposer cert :"<<view<<" size:"<<receive_[view][hash].size();
+  LOG(ERROR)<<"RECEIVE proposer cert :"<<view<<" size:"<<receive_[view][hash].size();
   if(receive_[view][hash].size() == 2*f_+1){
     std::unique_ptr<QC> qc = std::make_unique<QC>();
     qc->set_hash(hash);
@@ -167,12 +163,12 @@ bool HotStuff::ReceiveCertificate(std::unique_ptr<Certificate> cert) {
       *qc->add_signatures() = it.second->sign();
     }
 
-    //LOG(ERROR)<<"add qc view:"<<view;
+    LOG(ERROR)<<"add qc view:"<<view;
     proposal_manager_->AddQC(std::move(qc));
 
     StartNewRound();
   }
-  LOG(ERROR)<<"RECEIVE proposer cert done";
+  //LOG(ERROR)<<"RECEIVE proposer cert done";
 
   return true;
 }
@@ -188,14 +184,12 @@ std::unique_ptr<Certificate> HotStuff::GenerateCertificate(const Proposal& propo
   cert->set_signer(id_);
 
   std::string data_str = proposal.hash();
-  /*
   auto hash_signature_or = verifier_->SignMessage(data_str);
   if (!hash_signature_or.ok()) {
     LOG(ERROR) << "Sign message fail";
     return nullptr;
   }
   *cert->mutable_sign()=*hash_signature_or;
-  */
   return cert;
 }
 
