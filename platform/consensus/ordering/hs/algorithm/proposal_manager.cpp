@@ -35,7 +35,6 @@ bool ProposalManager::VerifyHash(const Proposal& proposal) {
 }
 
 bool ProposalManager::VerifyCert(const Certificate& cert) {
-  //LOG(ERROR)<<"???????"<<" hash:"<<cert.hash().size()<<" verifier:"<<(verifier_ == nullptr);
   return verifier_->VerifyMessage(cert.hash(), cert.sign());
 }
 
@@ -59,7 +58,7 @@ bool ProposalManager::SafeNode(const Proposal& proposal){
   if(proposal.header().qc().view() > lock_qc_.view()){
     return true;
   }
-  LOG(ERROR)<<"qc view:"<<proposal.header().qc().view()<<" lock view:"<<lock_qc_.view()<<" safe fail";
+  //LOG(ERROR)<<"qc view:"<<proposal.header().qc().view()<<" lock view:"<<lock_qc_.view()<<" safe fail";
   return false; 
 }
 

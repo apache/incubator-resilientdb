@@ -135,9 +135,9 @@ class ResDBConfig {
   bool signature_verifier_enabled_ = true;
   bool is_performance_running_ = false;
   bool is_test_mode_ = false;
-  uint32_t max_process_txn_ = 8;
+  uint32_t max_process_txn_ = 64;
   uint32_t client_batch_wait_time_ms_ = 100;  // milliseconds, 0.1s
-  uint32_t client_batch_num_ = 400;
+  uint32_t client_batch_num_ = 100;
   uint64_t viewchange_commit_timeout_ms_ =
       60000;  // default 60s to change viewchange
 

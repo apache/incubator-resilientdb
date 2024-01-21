@@ -1,14 +1,14 @@
 syntax = "proto3";
 import "common/proto/signature_info.proto";
 
-package resdb.hs;
+package resdb.ooohs;
 
 message Certificate {
   SignatureInfo sign = 1;
   int32 view = 2;
   int32 signer = 3;
   bytes hash = 4;
-  int32 slot = 6;
+  int32 slot = 5;
 }
 
 message Transaction{
@@ -39,9 +39,9 @@ message Header {
   int32 proposer_id = 1;
   int32 proposal_id = 2;
   int32 view = 3;
-  QC qc = 4;
-  bytes prehash = 5;
-  int32 slot = 6;
+  int32 slot = 4;
+  QC qc = 5;
+  bytes prehash = 6;
 }
 
 message Proposal {

@@ -40,6 +40,11 @@ class TransactionManager {
   virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
       const BatchUserRequest& request);
 
+  std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+  Prepare(const BatchUserRequest& request);
+
+  std::vector<std::unique_ptr<std::string>> ExecuteBatchData(
+      const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
   virtual std::unique_ptr<std::string> ExecuteData(const std::string& request);
 
   bool IsOutOfOrder();
@@ -48,6 +53,11 @@ class TransactionManager {
 
   virtual Storage* GetStorage() { return nullptr; };
 
+ protected:
+  virtual std::unique_ptr<google::protobuf::Message> ParseData(
+      const std::string& data);
+  virtual std::unique_ptr<std::string> ExecuteRequest(
+      const google::protobuf::Message& request);
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

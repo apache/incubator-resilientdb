@@ -26,6 +26,56 @@ namespace resdb {
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {}
 
+std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
+    const std::string& request) {
+  std::unique_ptr<KVRequest> kv_request = std::make_unique<KVRequest>();
+  if (!kv_request->ParseFromString(request)) {
+    LOG(ERROR) << "parse data fail";
+    return nullptr;
+  }
+  return kv_request;
+}
+
+std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
+    const google::protobuf::Message& request) {
+  KVResponse kv_response;
+  const KVRequest& kv_request = dynamic_cast<const KVRequest&>(request);
+  // LOG(ERROR)<<"execute request:";
+
+  if (kv_request.cmd() == KVRequest::SET) {
+    Set(kv_request.key(), kv_request.value());
+  } else if (kv_request.cmd() == KVRequest::GET) {
+    kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+    kv_response.set_value(GetAllValues());
+  } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
+  } else if (kv_request.cmd() == KVRequest::SET_WITH_VERSION) {
+    SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
+  } else if (kv_request.cmd() == KVRequest::GET_WITH_VERSION) {
+    GetWithVersion(kv_request.key(), kv_request.version(),
+                   kv_response.mutable_value_info());
+  } else if (kv_request.cmd() == KVRequest::GET_ALL_ITEMS) {
+    GetAllItems(kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_KEY_RANGE) {
+    GetKeyRange(kv_request.min_key(), kv_request.max_key(),
+                kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_HISTORY) {
+    GetHistory(kv_request.key(), kv_request.min_version(),
+               kv_request.max_version(), kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_TOP) {
+    GetTopHistory(kv_request.key(), kv_request.top_number(),
+                  kv_response.mutable_items());
+  }
+
+  std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
+  if (!kv_response.SerializeToString(resp_str.get())) {
+    return nullptr;
+  }
+
+  return resp_str;
+}
+
 std::unique_ptr<std::string> KVExecutor::ExecuteData(
     const std::string& request) {
   KVRequest kv_request;

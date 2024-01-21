@@ -66,6 +66,10 @@ class TransactionExecutor {
 
   Storage* GetStorage();
 
+  void RegisterExecute(int64_t seq);
+  void WaitForExecute(int64_t seq);
+  void FinishExecute(int64_t seq);
+
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
@@ -93,11 +97,17 @@ class TransactionExecutor {
   SystemInfo* system_info_ = nullptr;
   std::unique_ptr<TransactionManager> transaction_manager_ = nullptr;
   std::map<uint64_t, std::unique_ptr<Request>> candidates_;
-  std::thread ordering_thread_, execute_thread_, execute_OOO_thread_;
+  std::thread ordering_thread_, execute_OOO_thread_;
+  std::vector<std::thread> execute_thread_;
   LockFreeQueue<Request> commit_queue_, execute_queue_, execute_OOO_queue_;
   std::atomic<bool> stop_;
   Stats* global_stats_ = nullptr;
   DuplicateManager* duplicate_manager_;
+  int execute_thread_num_ = 3;
+  static const int blucket_num_ = 1024;
+  int blucket_[blucket_num_];
+  std::condition_variable cv_;
+  std::mutex mutex_;
 };
 
 }  // namespace resdb
