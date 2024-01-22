@@ -146,6 +146,17 @@ void QueccExecutor::PlannerThread(const int thread_number) {
       }
     }
 
+    if(multi_op_ready_.load()){
+      //Process multi_op distributions for wait positions
+
+      ready_planner_count_.fetch_sub(1);
+      if (ready_planner_count_.load() == 0) {
+        cv2_.notify_all();
+      }
+      batch_ready_[thread_number] = false;
+      continue;
+    }
+
     // Planner
     std::vector<KVOperation> batch =
         std::move(batch_array_[thread_number]);
@@ -301,6 +312,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
         return std::move(this->batch_response_);
       }
     }
+    multi_op_ready_.store(false);
   }
 
   ready_planner_count_.fetch_add(thread_count_);
