@@ -92,7 +92,7 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/ &
+  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
   ((count++))
 done
 
@@ -109,7 +109,7 @@ for ip in ${deploy_iplist[@]};
 do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
-  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &" &
+  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}.log 2>&1 &" &
   ((count++))
   ((idx++))
 done

@@ -33,6 +33,9 @@ class Stats {
   void Stop();
 
   void AddLatency(uint64_t run_time);
+  void AddQueuingLatency(uint64_t run_time);
+  void AddRoundLatency(uint64_t run_time);
+  void AddCommitLatency(uint64_t run_time);
 
   void Monitor();
   void MonitorGlobal();
@@ -63,6 +66,9 @@ class Stats {
   void ServerProcess();
   void SetPrometheus(const std::string& prometheus_address);
 
+  void AddNewTransactions(int num);
+  void ConsumeTransactions(int num);
+
  protected:
   Stats(int sleep_time = 5);
   ~Stats();
@@ -90,9 +96,12 @@ class Stats {
   std::atomic<uint64_t> run_req_run_time_;
   std::atomic<uint64_t> seq_gap_;
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
+  std::atomic<uint64_t> num_transactions_, num_transactions_time_, num_consumed_transactions_, num_consumed_transactions_time_;
+  std::atomic<uint64_t> queuing_num_, queuing_time_, round_num_, round_time_, commit_num_, commit_time_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::unique_ptr<PrometheusHandler> prometheus_;
+
 };
 
 }  // namespace resdb

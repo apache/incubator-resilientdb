@@ -259,11 +259,11 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     *batch_request.mutable_committed_certs() = request->committed_certs();
   }
 
-  //LOG(INFO) << " get request batch size:"
-  //         << batch_request.user_requests_size()
-  //         <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute<<" create time:"<<batch_request.createtime()<<" current time:"<<GetCurrentTime();
-  // std::unique_ptr<BatchUserResponse> batch_response =
-  //     std::make_unique<BatchUserResponse>();
+  LOG(INFO) << " get request batch size:"
+           << batch_request.user_requests_size()
+           <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute<<" create time:"<<batch_request.createtime()<<" current time:"<<GetCurrentTime() << " queuing time:" << request->queuing_time();
+   std::unique_ptr<BatchUserResponse> batch_response =
+       std::make_unique<BatchUserResponse>();
   
   std::unique_ptr<BatchUserResponse> response;
   if (transaction_manager_ && need_execute) {
@@ -296,7 +296,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     response = std::make_unique<BatchUserResponse>();
   }
 
-  response->set_createtime(batch_request.createtime());
+  response->set_createtime(batch_request.createtime() + request->queuing_time());
+  LOG(ERROR)<<"response run:"<< (GetCurrentTime() - response->createtime());
   response->set_local_id(batch_request.local_id());
   response->set_hash(batch_request.hash());
   response->set_proxy_id(request->proxy_id());

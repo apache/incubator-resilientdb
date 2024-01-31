@@ -62,7 +62,7 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
   if (config_data_.client_batch_num() == 0) {
-    config_data_.set_client_batch_num(client_batch_num_);
+    config_data_.set_client_batch_num(100);
   }
   if (config_data_.worker_num() == 0) {
     config_data_.set_worker_num(worker_num_);
@@ -74,8 +74,10 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
     config_data_.set_output_worker_num(output_worker_num_);
   }
   if (config_data_.tcp_batch_num() == 0) {
-    config_data_.set_tcp_batch_num(1);
-    //config_data_.set_tcp_batch_num(100);
+    config_data_.set_tcp_batch_num(100);
+  }
+  if (config_data_.max_process_txn() == 0) {
+    config_data_.set_max_process_txn(64);
   }
 }
 

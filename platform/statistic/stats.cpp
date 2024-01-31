@@ -103,6 +103,20 @@ void Stats::MonitorGlobal() {
   uint64_t last_total_request = 0, last_total_geo_request = 0,
            last_geo_request = 0;
   uint64_t time = 0;
+  
+
+  uint64_t num_transactions = 0, num_consumed_transactions = 0;
+  uint64_t num_transactions_time = 0, num_consumed_transactions_time = 0;
+  uint64_t last_num_transactions = 0, last_num_consumed_transactions = 0;
+  uint64_t last_num_transactions_time = 0, last_num_consumed_transactions_time = 0;
+
+  uint64_t queuing_num = 0, queuing_time = 0;
+  uint64_t  last_queuing_num = 0, last_queuing_time = 0;
+  uint64_t round_num = 0, round_time = 0;
+  uint64_t last_round_num = 0, last_round_time = 0;
+
+  uint64_t commit_num = 0, commit_time = 0;
+  uint64_t last_commit_num = 0, last_commit_time = 0;
 
   while (!stop_) {
     sleep(monitor_sleep_time_);
@@ -129,6 +143,21 @@ void Stats::MonitorGlobal() {
 
     run_req_num = run_req_num_;
     run_req_run_time = run_req_run_time_;
+
+    queuing_num = queuing_num_;
+    queuing_time = queuing_time_;
+
+    round_num = round_num_;
+    round_time = round_time_;
+
+    commit_num = commit_num_;
+    commit_time = commit_time_;
+
+    num_transactions = num_transactions_;
+    num_consumed_transactions = num_consumed_transactions_;
+
+    num_transactions_time = num_transactions_time_;
+    num_consumed_transactions_time = num_consumed_transactions_time_;
 
     LOG(ERROR) << "=========== monitor =========\n"
                << "server call:" << server_call - last_server_call
@@ -178,6 +207,24 @@ void Stats::MonitorGlobal() {
                   "seq fail:"
                << seq_fail - last_seq_fail << " time:" << time
                << " "
+                  "new transactions:"
+               << static_cast<double>(num_transactions_time - last_num_transactions_time) / (num_transactions - last_num_transactions )
+               << " "
+                  "consumed transactions:"
+               << static_cast<double>(num_consumed_transactions_time - last_num_consumed_transactions_time) / (num_consumed_transactions - last_num_consumed_transactions)
+               << " queuing latency :"
+                 << static_cast<double>(queuing_time -
+                                        last_queuing_time) /
+                        (queuing_num - last_queuing_num) / 1000000.0
+               << " round latency :"
+                 << static_cast<double>(round_time -
+                                        last_round_time) /
+                        (round_num - last_round_num) / 1000000.0
+               << " commit latency :"
+                 << static_cast<double>(commit_time -
+                                        last_commit_time) /
+                        (commit_num - last_commit_num) / 1000000.0
+               << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
       LOG(ERROR) << "  req client latency:"
@@ -209,6 +256,21 @@ void Stats::MonitorGlobal() {
     last_total_request = total_request;
     last_total_geo_request = total_geo_request;
     last_geo_request = geo_request;
+
+    last_num_transactions = num_transactions;
+    last_num_consumed_transactions = num_consumed_transactions;
+
+    last_num_transactions_time = num_transactions_time;
+    last_num_consumed_transactions_time = num_consumed_transactions_time;
+
+    last_queuing_num = queuing_num;
+    last_queuing_time = queuing_time;
+
+    last_round_num = round_num;
+    last_round_time = round_time;
+
+    last_commit_num = commit_num;
+    last_commit_time = commit_time;
   }
 }
 
@@ -296,12 +358,38 @@ void Stats::ServerProcess() {
   server_process_++;
 }
 
+void Stats::AddNewTransactions(int num) {
+  num_transactions_++;
+  num_transactions_time_ += num;
+}
+
+void Stats::ConsumeTransactions(int num) {
+  num_consumed_transactions_++;
+  num_consumed_transactions_time_+=num;
+}
+
 void Stats::SeqGap(uint64_t seq_gap) { seq_gap_ = seq_gap; }
 
 void Stats::AddLatency(uint64_t run_time) {
   run_req_num_++;
   run_req_run_time_ += run_time;
 }
+
+void Stats::AddQueuingLatency(uint64_t run_time) {
+  queuing_num_++;
+  queuing_time_ += run_time;
+}
+
+void Stats::AddRoundLatency(uint64_t run_time) {
+  round_num_++;
+  round_time_ += run_time;
+}
+
+void Stats::AddCommitLatency(uint64_t run_time) {
+  commit_num_++;
+  commit_time_ += run_time;
+}
+
 
 void Stats::SetPrometheus(const std::string& prometheus_address) {
   prometheus_ = std::make_unique<PrometheusHandler>(prometheus_address);
