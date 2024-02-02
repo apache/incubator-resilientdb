@@ -61,6 +61,10 @@ Cassandra::~Cassandra() {
   }
 }
 
+void Cassandra::SetPrepareFunction(std::function<int(const Transaction&)> prepare){
+  prepare_ = prepare;
+}
+
 bool Cassandra::IsStop() { return is_stop_; }
 
 void Cassandra::Reset() {
@@ -155,7 +159,6 @@ void Cassandra::CommitProposal(const Proposal& p) {
   execute_queue_.Push(std::make_unique<Proposal>(p));
 }
 
-/*
 void Cassandra::AsyncPrepare() {
   while (!is_stop_) {
     std::unique_ptr<Proposal> p = prepare_queue_.Pop();
@@ -212,7 +215,6 @@ void Cassandra::AsyncPrepare() {
     LOG(ERROR) << "prepare done";
   }
 }
-*/
 
 void Cassandra::PrepareProposal(const Proposal& p) {
   if (p.block_size() == 0) {
@@ -304,6 +306,13 @@ int Cassandra::SendTxn(int round) {
       if (start_ == false) {
         return -1;
       }
+    }
+
+    if(!proposal->header().prehash().empty()){
+      const Proposal* pre_p =
+        graph_->GetProposalInfo(proposal->header().prehash());
+        assert(pre_p != nullptr);
+      PrepareProposal(*pre_p);
     }
   }
 

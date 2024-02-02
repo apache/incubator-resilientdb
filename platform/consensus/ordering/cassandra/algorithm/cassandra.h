@@ -41,6 +41,9 @@ class Cassandra: public common::ProtocolBase {
   void ReceiveProposalQueryResp(const ProposalQueryResp& resp);
   void PrepareProposal(const Proposal& p);
 
+
+  void SetPrepareFunction(std::function<int(const Transaction&)> prepare);
+
  private:
   bool IsStop();
 
@@ -97,6 +100,8 @@ class Cassandra: public common::ProtocolBase {
   std::set<int> received_;
   std::map<int, std::set<int>> block_ack_;
   std::map<int, std::vector<std::unique_ptr<Proposal>>> future_proposal_;
+
+  std::function<int(const Transaction&)> prepare_;
 
   Stats* global_stats_;
 };

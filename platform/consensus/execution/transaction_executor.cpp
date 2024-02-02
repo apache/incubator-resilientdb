@@ -311,4 +311,27 @@ void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
   duplicate_manager_ = manager;
 }
 
+bool TransactionExecutor::AddFuture(uint64_t uid) {
+  std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
+  auto it = pre_[uid % mod].find(uid);
+  if (it == pre_[uid % mod].end()) {
+    // LOG(ERROR)<<"add future:"<<uid;
+    std::unique_ptr<std::promise<int>> p =
+        std::make_unique<std::promise<int>>();
+    std::unique_ptr<std::future<int>> f =
+        std::make_unique<std::future<int>>(p->get_future());
+    pre_[uid % mod][uid] = std::move(p);
+    pre_f_[uid % mod][uid] = std::move(f);
+    flag_[uid % mod][uid] = 0;
+    return true;
+  }
+  return false;
+}
+
+void TransactionExecutor::Prepare(std::unique_ptr<Request> request) {
+  if (AddFuture(request->uid())) {
+    prepare_queue_.Push(std::move(request));
+  }
+}
+
 }  // namespace resdb

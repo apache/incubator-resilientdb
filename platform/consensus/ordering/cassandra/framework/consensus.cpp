@@ -41,7 +41,6 @@ Consensus::Consensus(const ResDBConfig& config,
 
   Init();
 
-  int batch_size = 10;
   start_ = 0;
 
   if (config_.GetPublicKeyCertificateInfo()
@@ -53,6 +52,11 @@ Consensus::Consensus(const ResDBConfig& config,
                                    total_replicas, GetSignatureVerifier());
 
     InitProtocol(cassandra_.get());
+
+
+    cassandra_->SetPrepareFunction([&](const Transaction& msg) { 
+      return Prepare(msg); 
+    });
   }
 }
 
@@ -147,6 +151,17 @@ int Consensus::CommitMsgInternal(const Transaction& txn) {
   //}
 
   transaction_executor_->AddExecuteMessage(std::move(request));
+  return 0;
+}
+
+
+int Consensus::Prepare(const Transaction& txn) {
+  // LOG(ERROR)<<"prepare txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<"
+  // uid:"<<txn.uid();
+  std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_data(txn.data());
+  request->set_uid(txn.uid());
+  transaction_executor_->Prepare(std::move(request));
   return 0;
 }
 

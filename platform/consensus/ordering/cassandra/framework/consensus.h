@@ -45,6 +45,8 @@ class Consensus : public common::Consensus {
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const Transaction& txn);
 
+  int Prepare(const Transaction& txn);
+
  protected:
   std::unique_ptr<cassandra_recv::Cassandra> cassandra_;
   Stats* global_stats_;

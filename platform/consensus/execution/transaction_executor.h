@@ -70,6 +70,9 @@ class TransactionExecutor {
   void WaitForExecute(int64_t seq);
   void FinishExecute(int64_t seq);
 
+  void Prepare(std::unique_ptr<Request> request);
+  bool AddFuture(uint64_t uid);
+
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
@@ -108,6 +111,15 @@ class TransactionExecutor {
   int blucket_[blucket_num_];
   std::condition_variable cv_;
   std::mutex mutex_;
+
+
+  static const int mod = 2048;
+  std::mutex f_mutex_[mod];
+  LockFreeQueue<Request> prepare_queue_;
+  typedef std::unique_ptr<std::promise<int>> PromiseType;
+  std::map<uint64_t, PromiseType> pre_[mod];
+  std::map<uint64_t, std::unique_ptr<std::future<int>>> pre_f_[mod];
+  std::map<uint64_t, int> flag_[mod];
 };
 
 }  // namespace resdb
