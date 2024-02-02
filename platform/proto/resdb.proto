@@ -66,6 +66,7 @@ message Request {
     int32 user_type = 20;
     int64 user_seq = 21;
     int32 queuing_time = 22;
+    int32 uid = 23;
 }
 
 // The response message containing response
