@@ -10,7 +10,7 @@ namespace tusk {
 Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
-  batch_size_ = 1;
+  batch_size_ = 5;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
@@ -44,7 +44,7 @@ void Tusk::AsyncSend() {
     auto txn = txns_.Pop();
     if (txn == nullptr) {
       if(start_){
-        LOG(ERROR)<<"not enough txn";
+        //LOG(ERROR)<<"not enough txn";
       }
       continue;
     }
@@ -184,16 +184,16 @@ void Tusk::AsyncExecute() {
 
     for (auto& it : ps) {
       for (auto& p : it.second) {
-        LOG(ERROR) << "=============== commit proposal round :"
-                   << p->header().round()
-                   << " header round:"<<current_commit_round
-                   << " commit round:"<<commit_round
-                   << " proposer:" << p->header().proposer_id()
-                   << " transaction size:" << p->transactions_size()
-                   << " commit time:"
-                   << (GetCurrentTime() - p->header().create_time())
-                   << " create time:" << p->header().create_time()
-                   <<" execute id:"<<execute_id_;
+        //LOG(ERROR) << "=============== commit proposal round :"
+        //           << p->header().round()
+        //           << " header round:"<<current_commit_round
+        //           << " commit round:"<<commit_round
+        //           << " proposer:" << p->header().proposer_id()
+        //           << " transaction size:" << p->transactions_size()
+        //           << " commit time:"
+        //           << (GetCurrentTime() - p->header().create_time())
+        //           << " create time:" << p->header().create_time()
+        //           <<" execute id:"<<execute_id_;
 
         global_stats_->AddCommitLatency(GetCurrentTime() - p->header().create_time());
         //LOG(ERROR)<<" delay round:"<<current_commit_round - p->header().round();

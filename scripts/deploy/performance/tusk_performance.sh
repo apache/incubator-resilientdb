@@ -20,7 +20,7 @@ echo "get cofigfile:"$config_file
 /home/ubuntu/nexres/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
 done
 
-sleep 120
+sleep 60
 
 echo "benchmark done"
 count=1

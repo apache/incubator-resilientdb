@@ -55,7 +55,7 @@ deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#ipli
 deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${client_num} ${deploy_iplist[@]}
 
 # build kv server
-bazel build ${server}
+bazel build ${server} --copt="-pg" --cxxopt="-pg" --linkopt="-pg"
 
 if [ $? != 0 ]
 then
@@ -84,6 +84,7 @@ function run_one_cmd(){
 
 run_cmd "killall -9 ${server_bin}"
 run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert; rm -rf wal_log"
+#run_cmd "rm -rf ${server_bin}; rm -rf server.config;" 
 
 sleep 1
 
@@ -93,6 +94,7 @@ count=0
 for ip in ${deploy_iplist[@]};
 do
   scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
+  #scp -i ${key} -r ${bin_path} ${output_path}/server.config ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
   ((count++))
 done
 

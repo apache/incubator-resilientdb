@@ -9,11 +9,8 @@ cc_library(
     ],
     deps = [
         "//common/utils",
-        "//executor/common:transaction_manager",
-        "//platform/consensus/execution:transaction_executor",
         "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/ordering/tusk/algorithm:tusk",
-        "//platform/networkstrate:consensus_manager",
     ],
 )
 

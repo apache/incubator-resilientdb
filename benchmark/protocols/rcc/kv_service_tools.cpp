@@ -23,33 +23,35 @@
  *
  */
 
-#include "platform/consensus/ordering/rcc/protocol/transaction_collector.h"
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include <glog/logging.h>
+#include <fstream>
 
-namespace resdb {
+#include "common/proto/signature_info.pb.h"
+#include "interface/kv/kv_client.h"
+#include "platform/config/resdb_config_utils.h"
 
-TransactionStatue TransactionCollector::GetStatus() const { return status_; }
+using resdb::GenerateReplicaInfo;
+using resdb::GenerateResDBConfig;
+using resdb::KVClient;
+using resdb::ReplicaInfo;
+using resdb::ResDBConfig;
 
-int TransactionCollector::AddRequest(
-    std::unique_ptr<google::protobuf::Message> request, int sender_id, int type,
-    std::function<void(const google::protobuf::Message&, int received_count,
-                       std::atomic<TransactionStatue>* status)>
-        call_back) {
-  if (status_.load() == EXECUTED) {
-    return -2;
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    printf("<config path>\n");
+    return 0;
   }
+  std::string client_config_file = argv[1];
+  ResDBConfig config = GenerateResDBConfig(client_config_file);
 
-  if (request) {
-    request_ = std::move(request);
-    call_back(*request, 1, &status_);
-  } else {
-    senders_[type].insert(sender_id);
-    if (request_) {
-      call_back(*request_, senders_[type].size(), &status_);
-    }
-  }
-  return 0;
+  config.SetClientTimeoutMs(100000);
+
+  KVClient client(config);
+
+  client.Set("start", "value");
+  printf("start benchmark\n");
 }
-
-}  // namespace resdb

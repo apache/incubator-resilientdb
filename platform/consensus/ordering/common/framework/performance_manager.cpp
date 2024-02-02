@@ -90,13 +90,13 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 500000; ++i) {
+  for (int i = 0; i < 100000000; ++i) {
     // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 20000) {
+    if (i == 200000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -150,7 +150,7 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   }
 
   uint64_t seq = batch_response->local_id();
-
+  //LOG(ERROR)<<"receive seq:"<<seq;
 
   bool done = false;
   {
@@ -195,6 +195,7 @@ int PerformanceManager::BatchProposeMsg() {
                << " max txn:" << config_.GetMaxProcessTxn();
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   eval_ready_future_.get();
+  bool start = false;
   while (!stop_) {
     if (send_num_ > config_.GetMaxProcessTxn()) {
       // LOG(ERROR)<<"wait send num:"<<send_num_;
@@ -205,6 +206,9 @@ int PerformanceManager::BatchProposeMsg() {
       std::unique_ptr<QueueItem> item =
           batch_queue_.Pop(config_.ClientBatchWaitTimeMS());
       if (item == nullptr) {
+        if(start){
+          LOG(ERROR)<<"no data";
+        }
         continue;
       }
       batch_req.push_back(std::move(item));
@@ -212,21 +216,11 @@ int PerformanceManager::BatchProposeMsg() {
         continue;
       }
     }
-    int ret = DoBatch(batch_req);
-    batch_req.clear();
-    if (ret != 0) {
-      Response response;
-      response.set_result(Response::ERROR);
-      for (size_t i = 0; i < batch_req.size(); ++i) {
-        if (batch_req[i]->context && batch_req[i]->context->client) {
-          int ret = batch_req[i]->context->client->SendRawMessage(response);
-          if (ret) {
-            LOG(ERROR) << "send resp" << response.DebugString()
-                       << " fail ret:" << ret;
-          }
-        }
-      }
+    start = true;
+    for(int i = 0; i < 5;++i){
+      int ret = DoBatch(batch_req);
     }
+    batch_req.clear();
   }
   return 0;
 }
@@ -243,9 +237,6 @@ int PerformanceManager::DoBatch(
   for (size_t i = 0; i < batch_req.size(); ++i) {
     BatchUserRequest::UserRequest* req = batch_request.add_user_requests();
     *req->mutable_request() = *batch_req[i]->user_request.get();
-    if (batch_req[i]->context) {
-      *req->mutable_signature() = batch_req[i]->context->signature;
-    }
     req->set_id(i);
   }
 

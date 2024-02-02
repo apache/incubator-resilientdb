@@ -1,4 +1,4 @@
-#include "platform/consensus/ordering/rcc/protocol/proposal_manager.h"
+#include "platform/consensus/ordering/rcc/algorithm/proposal_manager.h"
 
 #include <glog/logging.h>
 
@@ -9,6 +9,10 @@ namespace resdb {
 namespace rcc {
 
 ProposalManager::ProposalManager(int32_t id) : id_(id) { seq_ = 1; }
+
+int64_t ProposalManager::CurrentSeq(){
+  return seq_;
+}
 
 std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     const std::vector<std::unique_ptr<Transaction>>& txns) {

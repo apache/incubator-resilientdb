@@ -12,12 +12,23 @@ echo "base path:"$base_path
 echo "key path:"$key_path
 echo "output cert path:"$output_cert_path
 echo "output path:"$output_path
-echo "admin_key_path:"$admin_key_path
+echo "admin_key_path?:"$admin_key_path
+echo "tempalte path:",${TEMPLATE_PATH}
+
+if [ "${TEMPLATE_PATH}" = "" ]
+then 
+  TEMPLATE_PATH="../config/template.config"
+fi
+
+echo "tempalte path:",${TEMPLATE_PATH}
 
 cd ${output_path}
 
 ADMIN_PRIVATE_KEY=${admin_key_path}/admin.key.pri
 ADMIN_PUBLIC_KEY=${admin_key_path}/admin.key.pub
+
+
+
 
 CERT_TOOLS_BIN=${base_path}/bazel-bin/tools/certificate_tools
 CONFIG_TOOLS_BIN=${base_path}/bazel-bin/tools/generate_region_config
@@ -62,5 +73,5 @@ do
   idx=$(($idx+1))
 done
 
-python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ../config/template.config
+python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ${TEMPLATE_PATH}
 mv server.config.json server.config

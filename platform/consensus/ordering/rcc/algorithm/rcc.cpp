@@ -1,21 +1,21 @@
-#include "platform/consensus/ordering/rcc/protocol/rcc.h"
+#include "platform/consensus/ordering/rcc/algorithm/rcc.h"
 
 #include <glog/logging.h>
+#include "common/utils/utils.h"
 
 namespace resdb {
 namespace rcc {
 
-RCC::RCC(int id, int f, int total_num,
-         protocol::ProtocolBase::SingleCallFuncType single_call,
-         protocol::ProtocolBase::BroadcastCallFuncType broadcast_call,
-         protocol::ProtocolBase::CommitFuncType commit)
-    : ProtocolBase(id, f, total_num, single_call, broadcast_call, commit) {
+RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
+    : ProtocolBase(id, f, total_num), verifier_(verifier) {
   proposal_manager_ = std::make_unique<ProposalManager>(id);
   next_seq_ = 1;
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  batch_size_ = 30;
+  batch_size_ = 1;
+  queue_size_ = 0;
+  global_stats_ = Stats::GetGlobalStats();
 
   send_thread_ = std::thread(&RCC::AsyncSend, this);
   commit_thread_ = std::thread(&RCC::AsyncCommit, this);
@@ -37,6 +37,7 @@ void RCC::AsyncCommit() {
       // LOG(ERROR) << "execu timeout";
       continue;
     }
+
     int seq = msg->header().seq();
     int proposer = msg->header().proposer_id();
     seq_set_[seq][proposer] = std::move(msg);
@@ -60,33 +61,72 @@ void RCC::AsyncCommit() {
 }
 
 void RCC::CommitProposal(std::unique_ptr<Proposal> p) {
+
+  {
+    std::unique_lock<std::mutex> lk(seq_mutex_);
+    commited_seq_ = std::max(static_cast<int64_t>(p->header().seq()), commited_seq_);
+    vote_cv_.notify_all();
+  }
+
   execute_queue_.Push(std::move(p));
 }
 
 bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
   {
+    txn->set_create_time(GetCurrentTime());
     std::unique_lock<std::mutex> lk(txn_mutex_);
     txn->set_id(local_txn_id_++);
     txns_.Push(std::move(txn));
+    queue_size_++;
   }
   return true;
 }
 
 void RCC::AsyncSend() {
+
+  int limit = 4;
+  bool start = false;
+
   while (!IsStop()) {
     auto txn = txns_.Pop();
     if (txn == nullptr) {
+      if(start){
+        //LOG(ERROR)<<" not enough txn";
+      }
       continue;
     }
+    queue_size_--;
+
+    while (!IsStop()) {
+      std::unique_lock<std::mutex> lk(seq_mutex_);
+      vote_cv_.wait_for(lk, std::chrono::microseconds(1000),
+                        [&] { return proposal_manager_->CurrentSeq() - commited_seq_ <= limit; });
+
+      if(proposal_manager_->CurrentSeq()  - commited_seq_ <= limit){
+        break;
+      }
+    }
+    //LOG(ERROR)<<" committed seq:"<<commited_seq_<<" current:"<<proposal_manager_->CurrentSeq()<<" quueing time:"<<GetCurrentTime() - txn->create_time()<<" queue size:"<<queue_size_;
+
+
+    txn->set_queuing_time(GetCurrentTime() - txn->create_time());
+    global_stats_->AddQueuingLatency(GetCurrentTime() - txn->create_time());
 
     std::vector<std::unique_ptr<Transaction> > txns;
-    for (int i = 0; i < batch_size_; i++) {
-      txns.push_back(std::move(txn));
+    txns.push_back(std::move(txn));
+    start = true;
+
+    for (int i = 1; i < batch_size_; i++) {
       txn = txns_.Pop(0);
       if (txn == nullptr) {
         break;
       }
+      queue_size_--;
+      txn->set_queuing_time(GetCurrentTime() - txn->create_time());
+      txns.push_back(std::move(txn));
     }
+
+    //LOG(ERROR)<<" propose txn size:"<<txns.size()<<" batch_size_:"<<batch_size_<<" queue size:"<<queue_size_;
 
     std::unique_ptr<Proposal> proposal =
         proposal_manager_->GenerateProposal(txns);

@@ -8,6 +8,8 @@ message Transaction{
   bytes data = 2;
   bytes hash = 3;
   int32 proxy_id = 4;
+  int64 create_time = 5;
+  int64 queuing_time = 6;
 }
 
 enum ProposalType{

@@ -259,9 +259,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     *batch_request.mutable_committed_certs() = request->committed_certs();
   }
 
-  LOG(INFO) << " get request batch size:"
-           << batch_request.user_requests_size()
-           <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute<<" create time:"<<batch_request.createtime()<<" current time:"<<GetCurrentTime() << " queuing time:" << request->queuing_time();
+  //LOG(INFO) << " get request batch size:"
+  //         << batch_request.user_requests_size()
+  //         <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute<<" create time:"<<batch_request.createtime()<<" current time:"<<GetCurrentTime() << " queuing time:" << request->queuing_time();
    std::unique_ptr<BatchUserResponse> batch_response =
        std::make_unique<BatchUserResponse>();
   
@@ -273,7 +273,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
       std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
         request_v = transaction_manager_->Prepare(batch_request);
     
-      assert(request_v!=nullptr);
+   //   assert(request_v!=nullptr);
       WaitForExecute(request->seq());
       std::vector<std::unique_ptr<std::string>> ret = 
         transaction_manager_->ExecuteBatchData(*request_v);
@@ -297,7 +297,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
 
   response->set_createtime(batch_request.createtime() + request->queuing_time());
-  LOG(ERROR)<<"response run:"<< (GetCurrentTime() - response->createtime());
+  //LOG(ERROR)<<"response run:"<< (GetCurrentTime() - response->createtime())<<" local id:"<<batch_request.local_id();
   response->set_local_id(batch_request.local_id());
   response->set_hash(batch_request.hash());
   response->set_proxy_id(request->proxy_id());

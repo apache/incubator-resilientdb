@@ -12,6 +12,7 @@ class ProposalManager {
   std::unique_ptr<Proposal> GenerateProposal(
       const std::vector<std::unique_ptr<Transaction>>& txns);
 
+  int64_t CurrentSeq();
  private:
   int32_t id_;
   int64_t seq_ = 1;

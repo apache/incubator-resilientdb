@@ -23,36 +23,33 @@
  *
  */
 
-#pragma once
+#include "platform/consensus/ordering/rcc/algorithm/transaction_collector.h"
 
-#include "executor/common/transaction_manager.h"
-#include "platform/consensus/execution/transaction_executor.h"
-#include "platform/consensus/ordering/common/framework/consensus.h"
-#include "platform/consensus/ordering/rcc/algorithm/rcc.h"
-#include "platform/networkstrate/consensus_manager.h"
+#include <glog/logging.h>
 
 namespace resdb {
-namespace rcc {
 
-class Consensus : public common::Consensus {
- public:
-  Consensus(const ResDBConfig& config,
-            std::unique_ptr<TransactionManager> transaction_manager);
-  virtual ~Consensus() = default;
+TransactionStatue TransactionCollector::GetStatus() const { return status_; }
 
- protected:
-  int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
-  int ProcessNewTransaction(std::unique_ptr<Request> request) override;
-  int CommitMsg(const google::protobuf::Message& msg) override;
-  int CommitMsgInternal(const Transaction& txn);
+int TransactionCollector::AddRequest(
+    std::unique_ptr<google::protobuf::Message> request, int sender_id, int type,
+    std::function<void(const google::protobuf::Message&, int received_count,
+                       std::atomic<TransactionStatue>* status)>
+        call_back) {
+  if (status_.load() == EXECUTED) {
+    return -2;
+  }
 
- protected:
-  std::unique_ptr<RCC> rcc_;
-  Stats* global_stats_;
-  int64_t start_;
-  std::mutex mutex_;
-  int send_num_[200];
-};
+  if (request) {
+    request_ = std::move(request);
+    call_back(*request, 1, &status_);
+  } else {
+    senders_[type].insert(sender_id);
+    if (request_) {
+      call_back(*request_, senders_[type].size(), &status_);
+    }
+  }
+  return 0;
+}
 
-}  // namespace rcc
 }  // namespace resdb

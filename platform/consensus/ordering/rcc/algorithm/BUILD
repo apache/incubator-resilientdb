@@ -21,7 +21,7 @@ cc_library(
         ":transaction_collector",
         "//common:comm",
         "//platform/common/queue:lock_free_queue",
-        "//platform/consensus/ordering/common/protocol:protocol_base",
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
     ],
 )
 
