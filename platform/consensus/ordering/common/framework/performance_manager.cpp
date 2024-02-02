@@ -217,7 +217,7 @@ int PerformanceManager::BatchProposeMsg() {
       }
     }
     start = true;
-    for(int i = 0; i < 5;++i){
+    for(int i = 0; i < 1;++i){
       int ret = DoBatch(batch_req);
     }
     batch_req.clear();

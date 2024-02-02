@@ -55,7 +55,7 @@ deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#ipli
 deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${client_num} ${deploy_iplist[@]}
 
 # build kv server
-bazel build ${server} --copt="-pg" --cxxopt="-pg" --linkopt="-pg"
+bazel build ${server} 
 
 if [ $? != 0 ]
 then

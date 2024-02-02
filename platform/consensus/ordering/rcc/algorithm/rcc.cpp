@@ -13,7 +13,7 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  batch_size_ = 1;
+  batch_size_ = 5;
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
