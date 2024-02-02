@@ -10,7 +10,8 @@ message Transaction{
   int32 proxy_id = 4;
   int32 proposer_id = 5;
   int64 uid = 6;
-  int64 queuing_time = 7;
+  int64 create_time = 7;
+  int64 queuing_time = 8;
 }
 
 message Header {

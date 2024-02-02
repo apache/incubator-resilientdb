@@ -52,20 +52,12 @@ Consensus::Consensus(const ResDBConfig& config,
         config_.GetSelfInfo().id(), f,
                                    total_replicas, GetSignatureVerifier());
 
-    cassandra_->SetBroadcastCallFunc(
-        [&](int type, const google::protobuf::Message& msg) {
-          return Broadcast(type, msg);
-        });
-
-    cassandra_->SetCommitFunc([&](const google::protobuf::Message& msg) {
-      return CommitMsg(dynamic_cast<const Transaction&>(msg));
-    });
+    InitProtocol(cassandra_.get());
   }
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  // LOG(ERROR)<<"receive commit:"<<request->type()<<"
-  // "<<Request_Type_Name(request->type());
+  //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<MessageType_Name(request->user_type());
   if (request->user_type() == MessageType::NewBlocks) {
     std::unique_ptr<Block> block = std::make_unique<Block>();
     if (!block->ParseFromString(request->data())) {
@@ -134,6 +126,7 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_data(request->data());
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
+  //LOG(ERROR)<<"receive txn";
   return cassandra_->ReceiveTransaction(std::move(txn));
 }
 
@@ -142,20 +135,18 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 }
 
 int Consensus::CommitMsgInternal(const Transaction& txn) {
-  // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<"
-  // uid:"<<txn.uid();
+  // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<" uid:"<<txn.uid();
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_queuing_time(txn.queuing_time());
   request->set_data(txn.data());
   request->set_seq(txn.id());
   request->set_uid(txn.uid());
-  if (txn.proposer_id() == config_.GetSelfInfo().id()) {
+  //if (txn.proposer_id() == config_.GetSelfInfo().id()) {
     request->set_proxy_id(txn.proxy_id());
     // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id();
-  }
+  //}
 
   transaction_executor_->AddExecuteMessage(std::move(request));
-  // transaction_executor_->AddExecuteMessage(std::move(request));
   return 0;
 }
 

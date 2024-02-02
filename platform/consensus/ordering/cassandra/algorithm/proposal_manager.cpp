@@ -37,23 +37,13 @@ std::unique_ptr<Block> ProposalManager::MakeBlock(
 
 void ProposalManager::AddLocalBlock(std::unique_ptr<Block> block) {
   std::unique_lock<std::mutex> lk(mutex_);
-  // LOG(ERROR)<<"add local block :"<<block->local_id();
+  //LOG(ERROR)<<"add local block :"<<block->local_id();
   blocks_candidates_[block->local_id()] = std::move(block);
 }
 
-/*
-void ProposalManager::CheckBlock(const std::string& hash, int local_id) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  LOG(ERROR)<<"ready block:"<<local_id;
-  auto it = blocks_candidates_.find(local_id);
-  assert(it != blocks_candidates_.end());
-  assert(it->second->hash() == hash);
-}
-*/
-
 void ProposalManager::BlockReady(const std::string& hash, int local_id) {
   std::unique_lock<std::mutex> lk(mutex_);
-  // LOG(ERROR)<<"ready block:"<<local_id;
+  //LOG(ERROR)<<"ready block:"<<local_id;
   auto it = blocks_candidates_.find(local_id);
   assert(it != blocks_candidates_.end());
   assert(it->second->hash() == hash);
@@ -68,7 +58,7 @@ void ProposalManager::AddBlock(std::unique_ptr<Block> block) {
   int sender = block->sender_id();
   int block_id = block->local_id();
   pending_blocks_[sender][block->hash()] = std::move(block);
-  //  LOG(ERROR)<<"add block: sender:"<<sender<<" id:"<<block_id;
+  //LOG(ERROR)<<"add block from sender:"<<sender<<" id:"<<block_id;
 }
 
 bool ProposalManager::ContainBlock(const std::string& hash, int sender) {
@@ -156,7 +146,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
   auto proposal = std::make_unique<Proposal>();
   std::string data;
   {
-    LOG(ERROR) << "generate proposal block size:" << blocks_.size();
+    LOG(ERROR) << "generate proposal pending block size:" << blocks_.size();
     std::unique_lock<std::mutex> lk(mutex_);
     if (blocks_.empty() && !need_empty) {
       // return nullptr;
@@ -169,7 +159,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       return nullptr;
       // LOG(ERROR) << "generate wait proposal block size:" << blocks_.size();
     }
-    int max_block = 3;
+    int max_block = 2;
     int num = 0;
     int64_t current_time = GetCurrentTime();
     proposal->set_create_time(current_time);
@@ -180,10 +170,10 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       ab->set_sender_id(block->sender_id());
       ab->set_local_id(block->local_id());
       ab->set_create_time(block->create_time());
-      LOG(ERROR) << " add block:" << block->local_id()
-                 << " block delay:" << (current_time - block->create_time())
-                 << " block size:" << blocks_.size()
-                 << " txn:" << block->data().transaction_size();
+      //LOG(ERROR) << " add block:" << block->local_id()
+      //           << " block delay:" << (current_time - block->create_time())
+      //           << " block size:" << blocks_.size()
+      //           << " txn:" << block->data().transaction_size();
       max_block--;
       num++;
       // break;
@@ -191,7 +181,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       // blocks_.pop_front();
       // break;
     }
-    LOG(ERROR) << "block num:" << num;
+    //LOG(ERROR) << "block num:" << num;
     while (num > 0) {
       blocks_.pop_front();
       num--;
@@ -206,8 +196,8 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
 
   Proposal* last = graph_->GetLatestStrongestProposal();
   proposal->mutable_header()->set_height(round);
-  LOG(ERROR) << "get last proposal, proposer:" << last->header().proposer_id()
-             << " id:" << last->header().proposal_id();
+  //LOG(ERROR) << "get last proposal, proposer:" << last->header().proposer_id()
+  //           << " id:" << last->header().proposal_id();
 
   graph_->IncreaseHeight();
   if (last != nullptr) {
@@ -394,7 +384,7 @@ void ProposalManager::AddLocalProposal(const Proposal& proposal) {
   std::unique_lock<std::mutex> lk(t_mutex_);
   local_proposal_[proposal.header().hash()] =
       std::make_unique<Proposal>(proposal);
-  LOG(ERROR) << "add local id:" << proposal.header().proposal_id();
+  //LOG(ERROR) << "add local id:" << proposal.header().proposal_id();
 }
 
 Proposal* ProposalManager::GetLocalProposal(const std::string& hash) {
@@ -408,13 +398,13 @@ void ProposalManager::RemoveLocalProposal(const std::string& hash) {
   std::unique_lock<std::mutex> lk(t_mutex_);
   auto it = local_proposal_.find(hash);
   if (it == local_proposal_.end()) return;
-  LOG(ERROR) << "remove local id:" << it->second->header().proposal_id();
+  //LOG(ERROR) << "remove local id:" << it->second->header().proposal_id();
   local_proposal_.erase(it);
 }
 
 int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   std::map<std::pair<int, int>, std::unique_ptr<Proposal>> list;
-  LOG(ERROR) << "verify resp proposal size:" << resp.proposal_size();
+  //LOG(ERROR) << "verify resp proposal size:" << resp.proposal_size();
   for (auto& it : tmp_proposal_) {
     std::unique_ptr<Proposal> p = std::move(it.second);
     list[std::make_pair(p->header().height(), p->header().proposer_id())] =

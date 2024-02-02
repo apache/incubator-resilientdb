@@ -20,7 +20,7 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
   timeout_ms_ = 5000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
-  batch_size_ = 1;
+  batch_size_ = 5;
 
   recv_num_ = 0;
   execute_num_ = 0;
@@ -42,6 +42,8 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
   block_thread_ = std::thread(&Cassandra::BroadcastTxn, this);
 
   commit_thread_ = std::thread(&Cassandra::AsyncCommit, this);
+
+  global_stats_ = Stats::GetGlobalStats();
 
   //prepare_thread_ = std::thread(&Cassandra::AsyncPrepare, this);
 }
@@ -68,14 +70,20 @@ void Cassandra::Reset() {
 
 void Cassandra::AsyncConsensus() {
   int height = 0;
+  int64_t start_time = GetCurrentTime();
   while (!is_stop_) {
     int next_height = SendTxn(height);
     if (next_height == -1) {
-      // LOG(ERROR)<<"!!!!!! send txn fail sleep";
+      if(height>0){
+        //LOG(ERROR)<<"!!!!!! send txn fail sleep";
+      }
       // usleep(10000);
       proposal_manager_->WaitBlock();
       continue;
     }
+    int64_t end_time = GetCurrentTime();
+    global_stats_->AddRoundLatency(end_time - start_time);
+    start_time = end_time;
     height = next_height;
     WaitVote(height);
   }
@@ -109,10 +117,9 @@ void Cassandra::AsyncCommit() {
       std::unique_lock<std::mutex> lk(mutex_);
       std::unique_ptr<Block> data_block =
           proposal_manager_->GetBlock(block.hash(), p->header().proposer_id());
-      // LOG(ERROR)<<"!!!!!!!!! commit proposal from:"
+       //LOG(ERROR)<<"!!!!!!!!! commit proposal from:"
       //<<p->header().proposer_id()<<" txn size:"
-      //<<data_block->data().transaction_size()<<"
-      //height:"<<p->header().height();
+      //<<data_block->data().transaction_size()<<" height:"<<p->header().height();
       if (p->header().proposer_id() == id_) {
         execute_num_ += data_block->data().transaction_size();
         // LOG(ERROR) << "recv num:" << recv_num_
@@ -132,15 +139,17 @@ void Cassandra::AsyncCommit() {
 }
 
 void Cassandra::CommitProposal(const Proposal& p) {
-  // LOG(ERROR) << "commit proposal from proposer:" << p.header().proposer_id()
-  //           << " id:" << p.header().proposal_id()
-  //           << " height:" << p.header().height()
-  //           << " block size:" << p.block_size();
+   //LOG(ERROR) << "commit proposal from proposer:" << p.header().proposer_id()
+   //          << " id:" << p.header().proposal_id()
+   //          << " height:" << p.header().height()
+   //          << " block size:" << p.block_size();
   if (p.block_size() == 0) {
     return;
   }
   // proposal_manager_->ClearProposal(p);
   committed_num_++;
+  int64_t commit_time = GetCurrentTime() - p.create_time();
+  global_stats_->AddCommitLatency(commit_time);
   // LOG(ERROR) << "commit num:" << committed_num_
   //           << " commit delay:" << GetCurrentTime() - p.create_time();
   execute_queue_.Push(std::make_unique<Proposal>(p));
@@ -214,6 +223,7 @@ void Cassandra::PrepareProposal(const Proposal& p) {
 
 bool Cassandra::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
   // LOG(ERROR)<<"recv txn:";
+  txn->set_create_time(GetCurrentTime());
   txns_.Push(std::move(txn));
   recv_num_++;
   return true;
@@ -227,6 +237,7 @@ void Cassandra::BroadcastTxn() {
     if (txn == nullptr) {
       continue;
     }
+    txn->set_queuing_time(GetCurrentTime()-txn->create_time());
 
     txns.push_back(std::move(txn));
     if (txns.size() < batch_size_) {
@@ -234,8 +245,8 @@ void Cassandra::BroadcastTxn() {
     }
     std::unique_ptr<Block> block = proposal_manager_->MakeBlock(txns);
     assert(block != nullptr);
-    // LOG(ERROR)<<" send block:"<<block->local_id();
-    broadcast_call_(MessageType::NewBlocks, *block);
+    //LOG(ERROR)<<" send block:"<<block->local_id();
+    Broadcast(MessageType::NewBlocks, *block);
     proposal_manager_->AddLocalBlock(std::move(block));
     txns.clear();
   }
@@ -243,8 +254,7 @@ void Cassandra::BroadcastTxn() {
 
 void Cassandra::ReceiveBlock(std::unique_ptr<Block> block) {
   // std::unique_lock<std::mutex> lk(g_mutex_);
-  // LOG(ERROR)<<"recv block:"<<block->sender_id()<<" block
-  // id:"<<block->local_id();
+  // LOG(ERROR)<<"recv block:"<<block->sender_id()<<" block id:"<<block->local_id();
   BlockACK block_ack;
   block_ack.set_hash(block->hash());
   block_ack.set_sender_id(block->sender_id());
@@ -253,12 +263,12 @@ void Cassandra::ReceiveBlock(std::unique_ptr<Block> block) {
 
   // std::unique_lock<std::mutex> lk(mutex_);
   proposal_manager_->AddBlock(std::move(block));
-  single_call_(MessageType::CMD_BlockACK, block_ack, block_ack.sender_id());
+  //LOG(ERROR)<<" send block to:"<<block_ack.sender_id();
+  SendMessage(MessageType::CMD_BlockACK, block_ack, block_ack.sender_id());
 }
 
 void Cassandra::ReceiveBlockACK(std::unique_ptr<BlockACK> block) {
-  // LOG(ERROR)<<"recv block :"<<block->local_id()<<"
-  // from:"<<block->responder();
+  //LOG(ERROR)<<"recv block ack:"<<block->local_id()<<" from:"<<block->responder();
   assert(block->sender_id() == id_);
   // std::unique_lock<std::mutex> lkx(g_mutex_);
   std::unique_lock<std::mutex> lk(block_mutex_);
@@ -266,8 +276,8 @@ void Cassandra::ReceiveBlockACK(std::unique_ptr<BlockACK> block) {
     return;
   }
   block_ack_[block->local_id()].insert(block->responder());
-  // LOG(ERROR)<<"recv block :"<<block->local_id()<<"
-  // from:"<<block->responder()<< " num:"<<block_ack_[block->local_id()].size();
+  //LOG(ERROR)<<"recv block ack:"<<block->local_id()
+  //<<" from:"<<block->responder()<< " num:"<<block_ack_[block->local_id()].size();
   if (block_ack_[block->local_id()].size() >= 2 * f_ + 1 &&
       block_ack_[block->local_id()].find(id_) !=
           block_ack_[block->local_id()].end()) {
@@ -285,7 +295,7 @@ int Cassandra::SendTxn(int round) {
     round++;
     std::unique_lock<std::mutex> lk(mutex_);
     int current_round = proposal_manager_->CurrentRound();
-    // LOG(ERROR)<<"current round:"<<current_round<<" send round:"<<round;
+    //LOG(ERROR)<<"current round:"<<current_round<<" send round:"<<round;
     assert(current_round < round);
 
     proposal = proposal_manager_->GenerateProposal(round, start_);
@@ -297,7 +307,7 @@ int Cassandra::SendTxn(int round) {
     }
   }
 
-  // LOG(ERROR)<<"his size:"<<proposal->history_size();
+  //LOG(ERROR)<<"his size:"<<proposal->history_size();
   for (const auto& his : proposal->history()) {
     int sender = his.sender();
     int id = his.id();
@@ -310,19 +320,19 @@ int Cassandra::SendTxn(int round) {
     assert(p);
     for (const auto& b : p->block()) {
       bool ret = proposal_manager_->ContainBlock(b.hash(), b.sender_id());
-      LOG(ERROR) << "sender:" << sender << " id:" << his.id()
-                 << " block id:" << b.local_id()
-                 << " block sender:" << b.sender_id() << " ret:" << ret
-                 << " state:" << state;
+      //LOG(ERROR) << "sender:" << sender << " id:" << his.id()
+      //           << " block id:" << b.local_id()
+      //           << " block sender:" << b.sender_id() << " ret:" << ret
+      //           << " state:" << state;
       assert(ret);
     }
   }
   proposal_manager_->AddLocalProposal(*proposal);
 
-  LOG(ERROR) << "bc proposal block size:" << proposal->block_size()
-             << " round:" << round
-             << " id:" << proposal->header().proposal_id();
-  broadcast_call_(MessageType::NewProposal, *proposal);
+  //LOG(ERROR) << "====== bc proposal block size:" << proposal->block_size()
+  //           << " round:" << round
+  //           << " id:" << proposal->header().proposal_id();
+  Broadcast(MessageType::NewProposal, *proposal);
 
   assert(proposal->header().height() == round);
   return proposal->header().height();
@@ -335,7 +345,7 @@ void Cassandra::SendBlock(const BlockQuery& block) {
   const Block* block_resp = proposal_manager_->QueryBlock(hash);
   assert(block_resp != nullptr);
   LOG(ERROR) << "send block :" << block.local_id() << " to :" << block.sender();
-  single_call_(MessageType::NewBlocks, *block_resp, block.sender());
+  SendMessage(MessageType::NewBlocks, *block_resp, block.sender());
 }
 
 void Cassandra::AskBlock(const Block& block) {
@@ -345,7 +355,7 @@ void Cassandra::AskBlock(const Block& block) {
   query.set_local_id(block.local_id());
   query.set_sender(id_);
   LOG(ERROR) << "ask block from:" << block.sender_id();
-  single_call_(MessageType::CMD_BlockQuery, query, block.sender_id());
+  SendMessage(MessageType::CMD_BlockQuery, query, block.sender_id());
 }
 
 void Cassandra::AskProposal(const Proposal& proposal) {
@@ -355,8 +365,7 @@ void Cassandra::AskProposal(const Proposal& proposal) {
   query.set_id(proposal.header().proposal_id());
   query.set_sender(id_);
   LOG(ERROR) << "ask proposal from:" << proposal.header().proposer_id();
-  single_call_(MessageType::CMD_ProposalQuery, query,
-               proposal.header().proposer_id());
+  SendMessage(MessageType::CMD_ProposalQuery, query, proposal.header().proposer_id());
 }
 
 void Cassandra::SendProposal(const ProposalQuery& query) {
@@ -371,7 +380,7 @@ void Cassandra::SendProposal(const ProposalQuery& query) {
   assert(resp != nullptr);
   LOG(ERROR) << "!!!!! send proposal:" << query.id()
              << " to :" << query.sender();
-  single_call_(MessageType::CMD_ProposalQueryResponse, *resp, query.sender());
+  SendMessage(MessageType::CMD_ProposalQueryResponse, *resp, query.sender());
 }
 
 void Cassandra::ReceiveProposalQueryResp(const ProposalQueryResp& resp) {
@@ -389,15 +398,16 @@ bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
     const Proposal* pre_p =
         graph_->GetProposalInfo(proposal->header().prehash());
     if (pre_p == nullptr) {
-      LOG(ERROR) << "receive proposal from :"
-                 << proposal->header().proposer_id()
-                 << " id:" << proposal->header().proposal_id() << "no pre:";
+      //LOG(ERROR) << "receive proposal from :"
+      //           << proposal->header().proposer_id()
+      //           << " id:" << proposal->header().proposal_id() << "no pre:";
+      //assert(proposal->header().prehash().empty());
     } else {
-      LOG(ERROR) << "receive proposal from :"
-                 << proposal->header().proposer_id()
-                 << " id:" << proposal->header().proposal_id()
-                 << "pre:" << pre_p->header().proposer_id()
-                 << " pre id:" << pre_p->header().proposal_id();
+      //LOG(ERROR) << "receive proposal from :"
+      //           << proposal->header().proposer_id()
+      //           << " id:" << proposal->header().proposal_id()
+      //           << "pre:" << pre_p->header().proposer_id()
+      //           << " pre id:" << pre_p->header().proposal_id();
     }
 
     /*
@@ -471,17 +481,17 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
 
   received_num_[proposal.header().height()].insert(
       proposal.header().proposer_id());
-  LOG(ERROR) << "received current height:" << graph_->GetCurrentHeight()
-             << " proposal height:" << proposal.header().height()
-             << " num:" << received_num_[graph_->GetCurrentHeight()].size()
-             << " from:" << proposal.header().proposer_id()
-             << " last vote:" << last_vote_;
+  //LOG(ERROR) << "received current height:" << graph_->GetCurrentHeight()
+  //           << " proposal height:" << proposal.header().height()
+  //           << " num:" << received_num_[graph_->GetCurrentHeight()].size()
+  //           << " from:" << proposal.header().proposer_id()
+  //           << " last vote:" << last_vote_;
   if (received_num_[graph_->GetCurrentHeight()].size() == total_num_) {
     if (last_vote_ < graph_->GetCurrentHeight()) {
       last_vote_ = graph_->GetCurrentHeight();
       can_vote_[graph_->GetCurrentHeight()] = true;
       vote_cv_.notify_all();
-      LOG(ERROR) << "can vote:";
+      //LOG(ERROR) << "can vote:";
     }
   }
   // LOG(ERROR)<<"recv done";

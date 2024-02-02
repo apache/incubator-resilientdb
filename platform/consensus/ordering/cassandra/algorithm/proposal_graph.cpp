@@ -22,7 +22,7 @@ ProposalGraph::ProposalGraph(int fault_num) : f_(fault_num) {
 }
 
 void ProposalGraph::IncreaseHeight() {
-  LOG(ERROR) << "increase height:" << current_height_;
+  //LOG(ERROR) << "increase height:" << current_height_;
   current_height_++;
 }
 
@@ -133,8 +133,7 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
     if (node_it->second->state == ProposalState::PreCommit) {
       Commit(hash);
     }
-    // LOG(ERROR)<<"history
-    // proposal:("<<node_it->second->proposal.header().proposer_id()
+    //LOG(ERROR)<<"history proposal:("<<node_it->second->proposal.header().proposer_id()
     //<<","<<node_it->second->proposal.header().proposal_id()
     //<<" state:"<<node_it->second->state;
   }
@@ -214,8 +213,7 @@ void ProposalGraph::Commit(const std::string& hash) {
   std::set<std::string> is_main_hash;
   is_main_hash.insert(hash);
 
-  // LOG(ERROR)<<"commit :"<<it->second->proposal.header().proposer_id()<<"
-  // id:"<<it->second->proposal.header().proposal_id();
+   //LOG(ERROR)<<"commit :"<<it->second->proposal.header().proposer_id()<<" id:"<<it->second->proposal.header().proposal_id();
 
   std::vector<std::vector<Proposal*>> commit_p;
   auto bfs = [&]() {

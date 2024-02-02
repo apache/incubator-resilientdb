@@ -10,6 +10,7 @@
 #include "platform/consensus/ordering/cassandra/algorithm/proposal_graph.h"
 #include "platform/consensus/ordering/cassandra/algorithm/proposal_manager.h"
 #include "platform/consensus/ordering/cassandra/proto/proposal.pb.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace cassandra {
@@ -96,6 +97,8 @@ class Cassandra: public common::ProtocolBase {
   std::set<int> received_;
   std::map<int, std::set<int>> block_ack_;
   std::map<int, std::vector<std::unique_ptr<Proposal>>> future_proposal_;
+
+  Stats* global_stats_;
 };
 
 }  // namespace cassandra_recv

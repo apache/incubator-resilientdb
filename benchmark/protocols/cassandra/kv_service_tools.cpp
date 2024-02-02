@@ -23,35 +23,35 @@
  *
  */
 
-#pragma once
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "executor/common/transaction_manager.h"
-#include "platform/consensus/ordering/common/framework/consensus.h"
-#include "platform/consensus/ordering/cassandra/algorithm/cassandra.h"
-#include "platform/networkstrate/consensus_manager.h"
+#include <fstream>
 
-namespace resdb {
-namespace cassandra {
+#include "common/proto/signature_info.pb.h"
+#include "interface/kv/kv_client.h"
+#include "platform/config/resdb_config_utils.h"
 
-class Consensus : public common::Consensus {
- public:
-  Consensus(const ResDBConfig& config,
-            std::unique_ptr<TransactionManager> transaction_manager);
-  virtual ~Consensus() = default;
+using resdb::GenerateReplicaInfo;
+using resdb::GenerateResDBConfig;
+using resdb::KVClient;
+using resdb::ReplicaInfo;
+using resdb::ResDBConfig;
 
- private:
-  int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
-  int ProcessNewTransaction(std::unique_ptr<Request> request) override;
-  int CommitMsg(const google::protobuf::Message& msg) override;
-  int CommitMsgInternal(const Transaction& txn);
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    printf("<config path>\n");
+    return 0;
+  }
+  std::string client_config_file = argv[1];
+  ResDBConfig config = GenerateResDBConfig(client_config_file);
 
- protected:
-  std::unique_ptr<cassandra_recv::Cassandra> cassandra_;
-  Stats* global_stats_;
-  int64_t start_;
-  std::mutex mutex_;
-  int send_num_[200];
-};
+  config.SetClientTimeoutMs(100000);
 
-}  // namespace cassandra
-}  // namespace resdb
+  KVClient client(config);
+
+  client.Set("start", "value");
+  printf("start benchmark\n");
+}

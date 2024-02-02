@@ -47,6 +47,7 @@ cc_library(
     deps = [
         ":proposal_graph",
         ":proposal_manager",
+        "//platform/statistic:stats",
         "//common:comm",
         "//common/crypto:signature_verifier",
         "//platform/consensus/ordering/common/algorithm:protocol_base",
