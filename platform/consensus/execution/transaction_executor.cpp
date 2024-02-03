@@ -24,7 +24,6 @@
 
 namespace resdb {
 
-int mod = 2048;
 TransactionExecutor::TransactionExecutor(
     const ResDBConfig& config, PostExecuteFunc post_exec_func,
     SystemInfo* system_info,
@@ -46,11 +45,18 @@ TransactionExecutor::TransactionExecutor(
         std::thread(&TransactionExecutor::ExecuteMessage, this));
   }
 
+  for (int i = 0; i < 0; ++i) {
+    // for(int i = 0; i < execute_thread_num_*3; ++i){
+    prepare_thread_.push_back(
+        std::thread(&TransactionExecutor::PrepareMessage, this));
+  }
+
   if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
     execute_OOO_thread_ =
         std::thread(&TransactionExecutor::ExecuteMessageOutOfOrder, this);
     LOG(ERROR) << " is out of order:" << transaction_manager_->IsOutOfOrder();
   }
+  //gc_thread_ = std::thread(&TransactionExecutor::GCProcess, this);
 }
 
 TransactionExecutor::~TransactionExecutor() { Stop(); }
@@ -100,9 +106,19 @@ void TransactionExecutor::Stop() {
       th.join();
     }
   }
+  for (auto& th : prepare_thread_) {
+    if (th.joinable()) {
+      th.join();
+    }
+  }
   if (execute_OOO_thread_.joinable()) {
     execute_OOO_thread_.join();
   }
+  /*
+  if (gc_thread_.joinable()) {
+    gc_thread_.join();
+  }
+  */
 }
 
 Storage* TransactionExecutor::GetStorage() {
@@ -246,69 +262,183 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
                                   bool need_execute) {
-  // Execute the request, then send the response back to the user.
+  uint64_t uid = request->uid();
+  int64_t seq = request->seq();
   RegisterExecute(request->seq());
-  BatchUserRequest batch_request;
-  if (!batch_request.ParseFromString(request->data())) {
-    LOG(ERROR) << "parse data fail";
-  }
-  batch_request.set_seq(request->seq());
-  batch_request.set_hash(request->hash());
-  batch_request.set_proxy_id(request->proxy_id());
-  if (request->has_committed_certs()) {
-    *batch_request.mutable_committed_certs() = request->committed_certs();
-  }
+  // LOG(ERROR)<<"EXECUTE seq:"<<seq;
+  std::unique_ptr<BatchUserRequest> batch_request = nullptr;
+  // std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+  // data_v = nullptr;
+  std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
 
-  //LOG(INFO) << " get request batch size:"
-  //         << batch_request.user_requests_size()
-  //         <<" proxy id:"<<request->proxy_id()<<" need execute:"<<need_execute<<" create time:"<<batch_request.createtime()<<" current time:"<<GetCurrentTime() << " queuing time:" << request->queuing_time();
-   std::unique_ptr<BatchUserResponse> batch_response =
-       std::make_unique<BatchUserResponse>();
-  
-  std::unique_ptr<BatchUserResponse> response;
-  if (transaction_manager_ && need_execute) {
-    if (execute_thread_num_ == 1) {
-      response = transaction_manager_->ExecuteBatch(batch_request);
-    } else {
-      std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
-        request_v = transaction_manager_->Prepare(batch_request);
-    
-   //   assert(request_v!=nullptr);
-      WaitForExecute(request->seq());
-      std::vector<std::unique_ptr<std::string>> ret = 
-        transaction_manager_->ExecuteBatchData(*request_v);
-      //LOG(ERROR)<<"execute seq:"<<request->seq();
-      FinishExecute(request->seq());
-
-      response = std::make_unique<BatchUserResponse>();
-      for (auto& s : ret) {
-        response->add_response()->swap(*s);
+  if (request->uid() > 0) {
+    int64_t start_time = GetCurrentTime();
+    // int current_f = 1;
+    int current_f = SetFlag(uid, Start_Execute);
+    int64_t end_time = GetCurrentTime();
+    if (end_time - start_time > 10) {
+      LOG(ERROR) << "set flag data done:" << uid
+                 << " wait time:" << (end_time - start_time);
+    }
+    if (current_f == 0) {
+      // prepare is done
+      // LOG(ERROR)<<"prepare is done:"<<uid;
+      {
+        int64_t start_time = GetCurrentTime();
+        std::unique_lock<std::mutex> lk(fd_mutex_[uid % 2048]);
+        // batch_request_pre = std::move(req_[uid%2048][uid]);
+        batch_request = std::move(req_[uid % 2048][uid]);
+        // data_v = std::move(data_[uid%2048][uid]);
+        auto it = data_[uid % 2048].find(uid);
+        if (it != data_[uid % 2048].end()) {
+          assert(it->second!=nullptr);
+          data = std::move(it->second);
+        }
+        int64_t end_time = GetCurrentTime();
+        if (end_time - start_time > 10) {
+          LOG(ERROR) << "get data done:" << uid
+                     << " wait time:" << (end_time - start_time);
+        }
       }
+      ClearPromise(uid);
+    } else {
+      // LOG(ERROR)<<"commit start:"<<uid;
+      // LOG(ERROR)<<" prepare not start:"<<uid;
     }
   }
 
-  if (duplicate_manager_) {
-    duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());
+  // Execute the request, then send the response back to the user.
+  if (batch_request == nullptr) {
+    batch_request = std::make_unique<BatchUserRequest>();
+    if (!batch_request->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse data fail";
+    }
+    batch_request->set_hash(request->hash());
+    if (request->has_committed_certs()) {
+      *batch_request->mutable_committed_certs() = request->committed_certs();
+    }
+    batch_request->set_seq(request->seq());
+    batch_request->set_proxy_id(request->proxy_id());
+    // LOG(ERROR)<<"get data from req:";
+  } else {
+    batch_request->set_seq(request->seq());
+    batch_request->set_proxy_id(request->proxy_id());
+    // LOG(ERROR)<<" get from cache:"<<uid;
   }
 
-  global_stats_->IncTotalRequest(batch_request.user_requests_size());
+  // LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy
+  // id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
+
+  // LOG(INFO) << " get request batch size:"
+  // << batch_request.user_requests_size()<<" proxy id:"
+  //  <<request->proxy_id()<<" need execute:"<<need_execute;
+
+  std::unique_ptr<BatchUserResponse> response;
+  // need_execute = false;
+  if (transaction_manager_ && need_execute) {
+    if (execute_thread_num_ == 1) {
+      response = transaction_manager_->ExecuteBatch(*batch_request);
+    } else {
+      std::vector<std::unique_ptr<std::string>> response_v;
+
+      if (data == nullptr) {
+        int64_t start_time = GetCurrentTime();
+        data = std::move(transaction_manager_->Prepare(*batch_request));
+        int64_t end_time = GetCurrentTime();
+        if (end_time - start_time > 10) {
+          // LOG(ERROR)<<"exec data done:"<<uid<<" wait
+          // time:"<<(end_time-start_time);
+        }
+      }
+
+      WaitForExecute(request->seq());
+      response_v = transaction_manager_->ExecuteBatchData(*data);
+      FinishExecute(request->seq());
+
+      std::unique_ptr<BatchUserResponse> batch_response =
+          std::make_unique<BatchUserResponse>();
+      for (auto& s : response_v) {
+        batch_response->add_response()->swap(*s);
+      }
+    }
+  }
+  // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
+
   if (response == nullptr) {
     response = std::make_unique<BatchUserResponse>();
   }
+  global_stats_->IncTotalRequest(batch_request->user_requests_size());
+  response->set_proxy_id(batch_request->proxy_id());
+  response->set_createtime(batch_request->createtime());
+  response->set_local_id(batch_request->local_id());
 
-  response->set_createtime(batch_request.createtime() + request->queuing_time());
-  //LOG(ERROR)<<"response run:"<< (GetCurrentTime() - response->createtime())<<" local id:"<<batch_request.local_id();
-  response->set_local_id(batch_request.local_id());
-  response->set_hash(batch_request.hash());
-  response->set_proxy_id(request->proxy_id());
+  response->set_seq(request->seq());
 
-  post_exec_func_(std::move(request), std::move(response));
+  if (post_exec_func_) {
+    post_exec_func_(std::move(request), std::move(response));
+  }
 
   global_stats_->IncExecuteDone();
 }
 
 void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
   duplicate_manager_ = manager;
+}
+
+
+bool TransactionExecutor::SetFlag(uint64_t uid, int f) {
+  std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
+  auto it = flag_[uid % mod].find(uid);
+  if (it == flag_[uid % mod].end()) {
+    // LOG(ERROR)<<"NO FUTURE uid:"<<uid;
+    return false;
+  }
+  assert(it != flag_[uid % mod].end());
+  if (f == Start_Prepare) {
+    if (flag_[uid % mod][uid] & End_Execute) {
+      return false;
+    }
+  } else {
+    if (flag_[uid % mod][uid] & Start_Execute) {
+      return false;
+    }
+  }
+  flag_[uid % mod][uid] |= f;
+  return true;
+}
+
+void TransactionExecutor::ClearPromise(uint64_t uid) {
+  std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
+  auto it = pre_[uid % mod].find(uid);
+  if (it == pre_[uid % mod].end()) {
+    return;
+  }
+  // LOG(ERROR)<<"CLEAR UID:"<<uid;
+  assert(it != pre_[uid % mod].end());
+  assert(flag_[uid % mod].find(uid) != flag_[uid % mod].end());
+  // assert(data_[uid%1024].find(uid) != data_[uid%1024].end());
+  // assert(req_[uid%1024].find(uid) != req_[uid%1024].end());
+  pre_[uid % mod].erase(it);
+  flag_[uid % mod].erase(flag_[uid % mod].find(uid));
+}
+
+std::promise<int>* TransactionExecutor::GetPromise(uint64_t uid) {
+  std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
+  auto it = pre_[uid % mod].find(uid);
+  if (it == pre_[uid % mod].end()) {
+    return nullptr;
+  }
+  return it->second.get();
+}
+
+std::unique_ptr<std::future<int>> TransactionExecutor::GetFuture(uint64_t uid) {
+  std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
+  auto it = pre_[uid % mod].find(uid);
+  if (it == pre_[uid % mod].end()) {
+    return nullptr;
+  }
+  // LOG(ERROR)<<"add future:"<<uid;
+  return std::make_unique<std::future<int>>(it->second->get_future());
 }
 
 bool TransactionExecutor::AddFuture(uint64_t uid) {
@@ -318,10 +448,7 @@ bool TransactionExecutor::AddFuture(uint64_t uid) {
     // LOG(ERROR)<<"add future:"<<uid;
     std::unique_ptr<std::promise<int>> p =
         std::make_unique<std::promise<int>>();
-    std::unique_ptr<std::future<int>> f =
-        std::make_unique<std::future<int>>(p->get_future());
     pre_[uid % mod][uid] = std::move(p);
-    pre_f_[uid % mod][uid] = std::move(f);
     flag_[uid % mod][uid] = 0;
     return true;
   }
@@ -333,5 +460,66 @@ void TransactionExecutor::Prepare(std::unique_ptr<Request> request) {
     prepare_queue_.Push(std::move(request));
   }
 }
+
+void TransactionExecutor::PrepareMessage() {
+  while (!IsStop()) {
+    std::unique_ptr<Request> request = prepare_queue_.Pop();
+    if (request == nullptr) {
+      continue;
+    }
+
+    uint64_t uid = request->uid();
+    int current_f = SetFlag(uid, Start_Prepare);
+    if (current_f == 0) {
+      // commit has done
+      // LOG(ERROR)<<" commit started:"<<uid;
+//      ClearPromise(uid);
+      continue;
+    }
+
+    std::promise<int>* p = GetPromise(uid) ;
+    assert(p);
+    // LOG(ERROR)<<" prepare started:"<<uid;
+
+    // LOG(ERROR)<<" prepare uid:"<<uid;
+
+    // Execute the request, then send the response back to the user.
+    std::unique_ptr<BatchUserRequest> batch_request =
+        std::make_unique<BatchUserRequest>();
+    if (!batch_request->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse data fail";
+    }
+    // batch_request = std::make_unique<BatchUserRequest>();
+    batch_request->set_seq(request->seq());
+    batch_request->set_hash(request->hash());
+    batch_request->set_proxy_id(request->proxy_id());
+    if (request->has_committed_certs()) {
+      *batch_request->mutable_committed_certs() = request->committed_certs();
+    }
+
+    // LOG(ERROR)<<"prepare seq:"<<batch_request->seq()<<" proxy
+    // id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
+
+    std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+     request_v = transaction_manager_->Prepare(*batch_request);
+    {
+      std::unique_lock<std::mutex> lk(fd_mutex_[uid % mod]);
+      // assert(data_[uid%mod].find(uid) == data_[uid%mod].end());
+      data_[uid%mod][uid] = std::move(request_v);
+      req_[uid % mod][uid] = std::move(batch_request);
+    }
+    p->set_value(1);
+    {
+      int set_ret = SetFlag(uid, End_Execute);
+      if (set_ret == 0) {
+        // LOG(ERROR)<<"commit interrupt:"<<uid;
+        //ClearPromise(uid);
+      } else {
+        // LOG(ERROR)<<"prepare done:"<<uid;
+      }
+    }
+  }
+}
+
 
 }  // namespace resdb

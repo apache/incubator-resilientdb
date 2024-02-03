@@ -71,7 +71,6 @@ class TransactionExecutor {
   void FinishExecute(int64_t seq);
 
   void Prepare(std::unique_ptr<Request> request);
-  bool AddFuture(uint64_t uid);
 
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
@@ -88,6 +87,14 @@ class TransactionExecutor {
   bool IsStop();
 
   void UpdateMaxExecutedSeq(uint64_t seq);
+
+  bool SetFlag(uint64_t uid, int f);
+  void ClearPromise(uint64_t uid);
+  void PrepareMessage();
+
+  bool AddFuture(uint64_t uid);
+  std::unique_ptr<std::future<int>> GetFuture(uint64_t uid);
+  std::promise<int>* GetPromise(uint64_t uid);
 
  protected:
   ResDBConfig config_;
@@ -112,14 +119,29 @@ class TransactionExecutor {
   std::condition_variable cv_;
   std::mutex mutex_;
 
+  enum PrepareType {
+    Start_Prepare = 1,
+    Start_Execute = 2,
+    End_Execute = 4,
+  };
 
+
+  std::vector<std::thread> prepare_thread_;
   static const int mod = 2048;
-  std::mutex f_mutex_[mod];
+  std::mutex f_mutex_[mod], fd_mutex_[mod];
   LockFreeQueue<Request> prepare_queue_;
   typedef std::unique_ptr<std::promise<int>> PromiseType;
   std::map<uint64_t, PromiseType> pre_[mod];
+
   std::map<uint64_t, std::unique_ptr<std::future<int>>> pre_f_[mod];
   std::map<uint64_t, int> flag_[mod];
+
+  std::map<uint64_t, std::unique_ptr<BatchUserRequest>> req_[mod];
+  std::unordered_map<
+      uint64_t,
+      std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>>
+      data_[mod];
+
 };
 
 }  // namespace resdb

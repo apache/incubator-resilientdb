@@ -45,7 +45,7 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
 
   global_stats_ = Stats::GetGlobalStats();
 
-  //prepare_thread_ = std::thread(&Cassandra::AsyncPrepare, this);
+  prepare_thread_ = std::thread(&Cassandra::AsyncPrepare, this);
 }
 
 Cassandra::~Cassandra() {
