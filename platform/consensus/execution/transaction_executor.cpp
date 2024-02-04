@@ -45,8 +45,7 @@ TransactionExecutor::TransactionExecutor(
         std::thread(&TransactionExecutor::ExecuteMessage, this));
   }
 
-  for (int i = 0; i < 0; ++i) {
-    // for(int i = 0; i < execute_thread_num_*3; ++i){
+  for (int i = 0; i < 1; ++i) {
     prepare_thread_.push_back(
         std::thread(&TransactionExecutor::PrepareMessage, this));
   }
@@ -56,7 +55,7 @@ TransactionExecutor::TransactionExecutor(
         std::thread(&TransactionExecutor::ExecuteMessageOutOfOrder, this);
     LOG(ERROR) << " is out of order:" << transaction_manager_->IsOutOfOrder();
   }
-  //gc_thread_ = std::thread(&TransactionExecutor::GCProcess, this);
+  gc_thread_ = std::thread(&TransactionExecutor::GCProcess, this);
 }
 
 TransactionExecutor::~TransactionExecutor() { Stop(); }
@@ -114,11 +113,9 @@ void TransactionExecutor::Stop() {
   if (execute_OOO_thread_.joinable()) {
     execute_OOO_thread_.join();
   }
-  /*
   if (gc_thread_.joinable()) {
     gc_thread_.join();
   }
-  */
 }
 
 Storage* TransactionExecutor::GetStorage() {
@@ -218,7 +215,10 @@ void TransactionExecutor::ExecuteMessage() {
     if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
       need_execute = false;
     }
+    //int64_t start_time = GetCurrentTime();
     Execute(std::move(message), need_execute);
+    //int64_t end_time = GetCurrentTime();
+    //global_stats_->AddQueuingLatency(end_time-start_time);
   }
 }
 
@@ -248,9 +248,6 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   // LOG(INFO) << " get request batch size:"
   //          << batch_request.user_requests_size()<<" proxy
   //          id:"<<request->proxy_id();
-  // std::unique_ptr<BatchUserResponse> batch_response =
-  //     std::make_unique<BatchUserResponse>();
-
   std::unique_ptr<BatchUserResponse> response;
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatch(batch_request);
@@ -265,50 +262,59 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   uint64_t uid = request->uid();
   int64_t seq = request->seq();
   RegisterExecute(request->seq());
-  // LOG(ERROR)<<"EXECUTE seq:"<<seq;
+  //LOG(ERROR)<<"EXECUTE seq:"<<seq;
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
-  // std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
-  // data_v = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
+  std::vector<std::unique_ptr<google::protobuf::Message>> * data_p = nullptr;
+  BatchUserRequest* batch_request_p = nullptr;
+
+  bool need_gc = false;
 
   if (request->uid() > 0) {
-    int64_t start_time = GetCurrentTime();
-    // int current_f = 1;
-    int current_f = SetFlag(uid, Start_Execute);
-    int64_t end_time = GetCurrentTime();
-    if (end_time - start_time > 10) {
-      LOG(ERROR) << "set flag data done:" << uid
-                 << " wait time:" << (end_time - start_time);
-    }
-    if (current_f == 0) {
+    bool current_f = SetFlag(uid, Start_Execute);
+    if (!current_f) {
+      global_stats_->ConsumeTransactions(1);
+      std::unique_ptr<std::future<int>> data_f = GetFuture(uid);
+      //LOG(ERROR)<<"wait prepare:"<<uid;
+      {
+        data_f->get();
+      }
+      //LOG(ERROR)<<"wait prepare done:"<<uid;
+
       // prepare is done
-      // LOG(ERROR)<<"prepare is done:"<<uid;
+      //LOG(ERROR)<<"prepare is done:"<<uid;
       {
         int64_t start_time = GetCurrentTime();
-        std::unique_lock<std::mutex> lk(fd_mutex_[uid % 2048]);
-        // batch_request_pre = std::move(req_[uid%2048][uid]);
-        batch_request = std::move(req_[uid % 2048][uid]);
-        // data_v = std::move(data_[uid%2048][uid]);
-        auto it = data_[uid % 2048].find(uid);
-        if (it != data_[uid % 2048].end()) {
+        std::unique_lock<std::mutex> lk(fd_mutex_[uid % mod]);
+        if(req_[uid % mod][uid] == nullptr){
+          LOG(ERROR)<<"data is empty:"<<uid;
+        }
+        assert(req_[uid % mod][uid] != nullptr);
+        //batch_request = std::move(req_[uid % mod][uid]);
+        batch_request_p = req_[uid % mod][uid].get();
+        auto it = data_[uid % mod].find(uid);
+        if (it != data_[uid % mod].end()) {
           assert(it->second!=nullptr);
-          data = std::move(it->second);
+          data_p = it->second.get();
+          //data = std::move(it->second);
         }
         int64_t end_time = GetCurrentTime();
-        if (end_time - start_time > 10) {
+        if (end_time - start_time > 1000) {
           LOG(ERROR) << "get data done:" << uid
                      << " wait time:" << (end_time - start_time);
         }
       }
       ClearPromise(uid);
+      need_gc = true;
     } else {
-      // LOG(ERROR)<<"commit start:"<<uid;
+      global_stats_->AddNewTransactions(1);
+      //LOG(ERROR)<<"commit start:"<<uid;
       // LOG(ERROR)<<" prepare not start:"<<uid;
     }
   }
 
   // Execute the request, then send the response back to the user.
-  if (batch_request == nullptr) {
+  if (batch_request_p == nullptr) {
     batch_request = std::make_unique<BatchUserRequest>();
     if (!batch_request->ParseFromString(request->data())) {
       LOG(ERROR) << "parse data fail";
@@ -319,12 +325,15 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     }
     batch_request->set_seq(request->seq());
     batch_request->set_proxy_id(request->proxy_id());
+    batch_request_p = batch_request.get();
     // LOG(ERROR)<<"get data from req:";
   } else {
-    batch_request->set_seq(request->seq());
-    batch_request->set_proxy_id(request->proxy_id());
+  assert(batch_request_p);
+    batch_request_p->set_seq(request->seq());
+    batch_request_p->set_proxy_id(request->proxy_id());
     // LOG(ERROR)<<" get from cache:"<<uid;
   }
+  assert(batch_request_p);
 
   // LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy
   // id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
@@ -337,10 +346,11 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   // need_execute = false;
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
-      response = transaction_manager_->ExecuteBatch(*batch_request);
+      response = transaction_manager_->ExecuteBatch(*batch_request_p);
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
+      /*
       if (data == nullptr) {
         int64_t start_time = GetCurrentTime();
         data = std::move(transaction_manager_->Prepare(*batch_request));
@@ -350,9 +360,21 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
           // time:"<<(end_time-start_time);
         }
       }
+      */
+      if(data_p == nullptr) {
+        int64_t start_time = GetCurrentTime();
+        data = std::move(transaction_manager_->Prepare(*batch_request_p));
+        int64_t end_time = GetCurrentTime();
+        if (end_time - start_time > 10) {
+          // LOG(ERROR)<<"exec data done:"<<uid<<" wait
+          // time:"<<(end_time-start_time);
+        }
+        data_p = data.get();
+      }
 
       WaitForExecute(request->seq());
-      response_v = transaction_manager_->ExecuteBatchData(*data);
+      response_v = transaction_manager_->ExecuteBatchData(*data_p);
+      //response_v = transaction_manager_->ExecuteBatchData(*data);
       FinishExecute(request->seq());
 
       std::unique_ptr<BatchUserResponse> batch_response =
@@ -367,10 +389,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   if (response == nullptr) {
     response = std::make_unique<BatchUserResponse>();
   }
-  global_stats_->IncTotalRequest(batch_request->user_requests_size());
-  response->set_proxy_id(batch_request->proxy_id());
-  response->set_createtime(batch_request->createtime());
-  response->set_local_id(batch_request->local_id());
+  global_stats_->IncTotalRequest(batch_request_p->user_requests_size());
+  response->set_proxy_id(batch_request_p->proxy_id());
+  response->set_createtime(batch_request_p->createtime());
+  response->set_local_id(batch_request_p->local_id());
 
   response->set_seq(request->seq());
 
@@ -379,6 +401,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
 
   global_stats_->IncExecuteDone();
+  if(need_gc){
+    gc_queue_.Push(std::make_unique<int64_t>(uid));
+  }
 }
 
 void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
@@ -390,16 +415,18 @@ bool TransactionExecutor::SetFlag(uint64_t uid, int f) {
   std::unique_lock<std::mutex> lk(f_mutex_[uid % mod]);
   auto it = flag_[uid % mod].find(uid);
   if (it == flag_[uid % mod].end()) {
+    flag_[uid % mod][uid] |= f;
     // LOG(ERROR)<<"NO FUTURE uid:"<<uid;
-    return false;
+    return true;
   }
   assert(it != flag_[uid % mod].end());
   if (f == Start_Prepare) {
-    if (flag_[uid % mod][uid] & End_Execute) {
+    if (flag_[uid % mod][uid] & Start_Execute) {
       return false;
     }
-  } else {
-    if (flag_[uid % mod][uid] & Start_Execute) {
+  } else if(f == Start_Execute){
+    if (flag_[uid % mod][uid] & End_Prepare) {
+    //if (flag_[uid % mod][uid] & Start_Prepare) {
       return false;
     }
   }
@@ -416,8 +443,10 @@ void TransactionExecutor::ClearPromise(uint64_t uid) {
   // LOG(ERROR)<<"CLEAR UID:"<<uid;
   assert(it != pre_[uid % mod].end());
   assert(flag_[uid % mod].find(uid) != flag_[uid % mod].end());
-  // assert(data_[uid%1024].find(uid) != data_[uid%1024].end());
-  // assert(req_[uid%1024].find(uid) != req_[uid%1024].end());
+  //assert(data_[uid%mod].find(uid) != data_[uid%mod].end());
+  //assert(req_[uid%mod].find(uid) != req_[uid%mod].end());
+  //data_[uid%mod].erase(data_[uid%mod].find(uid));
+  //req_[uid%mod].erase(req_[uid%mod].find(uid));
   pre_[uid % mod].erase(it);
   flag_[uid % mod].erase(flag_[uid % mod].find(uid));
 }
@@ -437,6 +466,7 @@ std::unique_ptr<std::future<int>> TransactionExecutor::GetFuture(uint64_t uid) {
   if (it == pre_[uid % mod].end()) {
     return nullptr;
   }
+  //return std::move(it->second);
   // LOG(ERROR)<<"add future:"<<uid;
   return std::make_unique<std::future<int>>(it->second->get_future());
 }
@@ -448,7 +478,9 @@ bool TransactionExecutor::AddFuture(uint64_t uid) {
     // LOG(ERROR)<<"add future:"<<uid;
     std::unique_ptr<std::promise<int>> p =
         std::make_unique<std::promise<int>>();
+    //auto f = std::make_unique<std::future<int>>(p->get_future());
     pre_[uid % mod][uid] = std::move(p);
+    //pre_f_[uid % mod][uid] = std::move(f);
     flag_[uid % mod][uid] = 0;
     return true;
   }
@@ -458,6 +490,35 @@ bool TransactionExecutor::AddFuture(uint64_t uid) {
 void TransactionExecutor::Prepare(std::unique_ptr<Request> request) {
   if (AddFuture(request->uid())) {
     prepare_queue_.Push(std::move(request));
+  }
+}
+
+void TransactionExecutor::GCProcess() {
+  while (!IsStop()) {
+    std::unique_ptr<int64_t> uid_or = gc_queue_.Pop();
+    if (uid_or== nullptr) {
+      continue;
+    }
+    int64_t uid = *uid_or;
+  
+    std::vector<std::unique_ptr<google::protobuf::Message>> * data_p = nullptr;
+    {
+      std::unique_lock<std::mutex> lk(fd_mutex_[uid % mod]);
+      assert(data_[uid%mod].find(uid) != data_[uid%mod].end());
+      data_p = data_[uid%mod][uid].get();
+    }
+
+    for(int i = 0; i < data_p->size(); ++i){
+      (*data_p)[i].release();
+    }
+    (*data_p).clear();
+    {
+      std::unique_lock<std::mutex> lk(fd_mutex_[uid % mod]);
+      assert(req_[uid%mod].find(uid) != req_[uid%mod].end());
+      assert(data_[uid%mod].find(uid) != data_[uid%mod].end());
+      data_[uid%mod].erase(data_[uid%mod].find(uid));
+      req_[uid%mod].erase(req_[uid%mod].find(uid));
+    }
   }
 }
 
@@ -472,14 +533,14 @@ void TransactionExecutor::PrepareMessage() {
     int current_f = SetFlag(uid, Start_Prepare);
     if (current_f == 0) {
       // commit has done
-      // LOG(ERROR)<<" commit started:"<<uid;
+      // LOG(ERROR)<<" want prepare, commit started:"<<uid;
 //      ClearPromise(uid);
       continue;
     }
 
     std::promise<int>* p = GetPromise(uid) ;
     assert(p);
-    // LOG(ERROR)<<" prepare started:"<<uid;
+    //LOG(ERROR)<<" prepare started:"<<uid;
 
     // LOG(ERROR)<<" prepare uid:"<<uid;
 
@@ -504,18 +565,20 @@ void TransactionExecutor::PrepareMessage() {
      request_v = transaction_manager_->Prepare(*batch_request);
     {
       std::unique_lock<std::mutex> lk(fd_mutex_[uid % mod]);
+   //   assert(request_v);
       // assert(data_[uid%mod].find(uid) == data_[uid%mod].end());
       data_[uid%mod][uid] = std::move(request_v);
       req_[uid % mod][uid] = std::move(batch_request);
     }
+    //LOG(ERROR)<<"set promise:"<<uid;
     p->set_value(1);
     {
-      int set_ret = SetFlag(uid, End_Execute);
+      int set_ret = SetFlag(uid, End_Prepare);
       if (set_ret == 0) {
         // LOG(ERROR)<<"commit interrupt:"<<uid;
         //ClearPromise(uid);
       } else {
-        // LOG(ERROR)<<"prepare done:"<<uid;
+        //LOG(ERROR)<<"prepare done:"<<uid;
       }
     }
   }

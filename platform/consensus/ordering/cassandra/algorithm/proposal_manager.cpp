@@ -12,6 +12,7 @@ namespace cassandra_recv {
 ProposalManager::ProposalManager(int32_t id, ProposalGraph* graph)
     : id_(id), graph_(graph) {
   local_proposal_id_ = 1;
+  global_stats_ = Stats::GetGlobalStats();
 }
 
 int ProposalManager::CurrentRound() { return graph_->GetCurrentHeight(); }
@@ -136,7 +137,7 @@ bool ProposalManager::WaitBlock() {
   if (blocks_.empty()) {
     notify_.wait_for(lk, std::chrono::microseconds(1000000),
                      [&] { return !blocks_.empty(); });
-    LOG(ERROR) << "wait proposal block size:" << blocks_.size();
+    //LOG(ERROR) << "wait proposal block size:" << blocks_.size();
   }
   return !blocks_.empty();
 }
@@ -146,7 +147,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
   auto proposal = std::make_unique<Proposal>();
   std::string data;
   {
-    LOG(ERROR) << "generate proposal pending block size:" << blocks_.size();
+    //LOG(ERROR) << "generate proposal pending block size:" << blocks_.size();
     std::unique_lock<std::mutex> lk(mutex_);
     if (blocks_.empty() && !need_empty) {
       // return nullptr;

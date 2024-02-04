@@ -139,7 +139,7 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 }
 
 int Consensus::CommitMsgInternal(const Transaction& txn) {
-  // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<" uid:"<<txn.uid();
+  //LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<" uid:"<<txn.uid();
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_queuing_time(txn.queuing_time());
   request->set_data(txn.data());
@@ -147,7 +147,8 @@ int Consensus::CommitMsgInternal(const Transaction& txn) {
   request->set_uid(txn.uid());
   //if (txn.proposer_id() == config_.GetSelfInfo().id()) {
     request->set_proxy_id(txn.proxy_id());
-    // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id();
+   // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<request->uid();
+    assert(request->uid()>0);
   //}
 
   transaction_executor_->AddExecuteMessage(std::move(request));

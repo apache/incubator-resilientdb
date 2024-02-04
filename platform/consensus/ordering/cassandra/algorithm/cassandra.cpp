@@ -111,11 +111,11 @@ void Cassandra::AsyncCommit() {
       LOG(ERROR) << "execu timeout";
       continue;
     }
-    // LOG(ERROR) << "execute proposal from proposer:" <<
-    // p->header().proposer_id()
-    //           << " id:" << p->header().proposal_id()
-    //           << " height:" << p->header().height()
-    //           << " block size:" << p->block_size();
+     //LOG(ERROR) << "execute proposal from proposer:" <<
+     //        p->header().proposer_id()
+     //          << " id:" << p->header().proposal_id()
+     //          << " height:" << p->header().height()
+     //          << " block size:" << p->block_size();
 
     for (const Block& block : p->block()) {
       std::unique_lock<std::mutex> lk(mutex_);
@@ -163,11 +163,10 @@ void Cassandra::AsyncPrepare() {
   while (!is_stop_) {
     std::unique_ptr<Proposal> p = prepare_queue_.Pop();
     if (p == nullptr) {
-      LOG(ERROR) << "execu timeout";
+      //LOG(ERROR) << "execu timeout";
       continue;
     }
-    // LOG(ERROR)<<"prepare block from:"<<p->header().proposer_id()<<"
-    // id:"<<p->header().proposal_id();
+    //LOG(ERROR)<<"prepare block from:"<<p->header().proposer_id() <<" id:"<<p->header().proposal_id();
     int id = 0;
     for (const Block& block : p->block()) {
       std::unique_lock<std::mutex> lkx(mutex_);
@@ -180,7 +179,7 @@ void Cassandra::AsyncPrepare() {
       for (Transaction& txn :
            *data_block->mutable_data()->mutable_transaction()) {
         long long uid = (((long long)p->header().proposer_id() << 50) |
-                         (p->header().proposal_id()) << 20 | id++);
+                         (long long)(p->header().proposal_id()) << 20 | id++);
         txn.set_uid(uid);
         prepare_(txn);
       }
@@ -192,9 +191,8 @@ void Cassandra::AsyncPrepare() {
       if (pre_p == nullptr) {
         continue;
       }
-      //   LOG(ERROR)<<"prepare weak block
-      //   from:"<<pre_p->header().proposer_id()<<"
-      //   id:"<<pre_p->header().proposal_id();
+       //LOG(ERROR)<<"prepare weak block from:"<<pre_p->header().proposer_id()
+       //<<" id:"<<pre_p->header().proposal_id();
       for (const Block& block : pre_p->block()) {
         std::unique_lock<std::mutex> lkx(mutex_);
         Block* data_block = proposal_manager_->GetBlockSnap(
@@ -206,13 +204,13 @@ void Cassandra::AsyncPrepare() {
         for (Transaction& txn :
              *data_block->mutable_data()->mutable_transaction()) {
           long long uid = (((long long)pre_p->header().proposer_id() << 50) |
-                           (pre_p->header().proposal_id()) << 20 | id++);
+                           (long long)(pre_p->header().proposal_id()) << 20 | id++);
           txn.set_uid(uid);
           prepare_(txn);
         }
       }
     }
-    LOG(ERROR) << "prepare done";
+    //LOG(ERROR) << "prepare done";
   }
 }
 
@@ -240,11 +238,19 @@ void Cassandra::BroadcastTxn() {
       continue;
     }
     txn->set_queuing_time(GetCurrentTime()-txn->create_time());
-
+    global_stats_->AddQueuingLatency(GetCurrentTime()-txn->create_time());
     txns.push_back(std::move(txn));
-    if (txns.size() < batch_size_) {
-      continue;
+  
+    for(int i = 1; i < batch_size_; ++i){
+      std::unique_ptr<Transaction> txn = txns_.Pop(10);
+      if(txn == nullptr){
+        break;
+      }
+      txn->set_queuing_time(GetCurrentTime()-txn->create_time());
+      global_stats_->AddQueuingLatency(GetCurrentTime()-txn->create_time());
+      txns.push_back(std::move(txn));
     }
+
     std::unique_ptr<Block> block = proposal_manager_->MakeBlock(txns);
     assert(block != nullptr);
     //LOG(ERROR)<<" send block:"<<block->local_id();

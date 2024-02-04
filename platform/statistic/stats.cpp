@@ -208,10 +208,10 @@ void Stats::MonitorGlobal() {
                << seq_fail - last_seq_fail << " time:" << time
                << " "
                   "new transactions:"
-               << static_cast<double>(num_transactions_time - last_num_transactions_time) / (num_transactions - last_num_transactions )
+               << (num_transactions - last_num_transactions )
                << " "
                   "consumed transactions:"
-               << static_cast<double>(num_consumed_transactions_time - last_num_consumed_transactions_time) / (num_consumed_transactions - last_num_consumed_transactions)
+               << (num_consumed_transactions - last_num_consumed_transactions)
                << " queuing latency :"
                  << static_cast<double>(queuing_time -
                                         last_queuing_time) /
@@ -360,12 +360,10 @@ void Stats::ServerProcess() {
 
 void Stats::AddNewTransactions(int num) {
   num_transactions_++;
-  num_transactions_time_ += num;
 }
 
 void Stats::ConsumeTransactions(int num) {
   num_consumed_transactions_++;
-  num_consumed_transactions_time_+=num;
 }
 
 void Stats::SeqGap(uint64_t seq_gap) { seq_gap_ = seq_gap; }

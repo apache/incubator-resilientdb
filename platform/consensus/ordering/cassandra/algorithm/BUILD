@@ -12,6 +12,7 @@ cc_library(
     deps = [
         ":proposal_graph",
         "//common:comm",
+        "//platform/statistic:stats",
         "//common/crypto:signature_verifier",
         "//common/utils",
         "//platform/consensus/ordering/cassandra/proto:proposal_cc_proto",

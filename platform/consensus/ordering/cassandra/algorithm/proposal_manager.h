@@ -5,6 +5,7 @@
 
 #include "platform/consensus/ordering/cassandra/algorithm/proposal_graph.h"
 #include "platform/consensus/ordering/cassandra/proto/proposal.pb.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace cassandra {
@@ -64,6 +65,7 @@ class ProposalManager {
 
   std::mutex t_mutex_;
   std::map<std::string, std::unique_ptr<Proposal>> local_proposal_;
+  Stats* global_stats_;
 };
 
 }  // namespace cassandra_recv
