@@ -64,6 +64,7 @@ QueccExecutor::QueccExecutor(std::unique_ptr<Storage> storage)
     batch_ready_.push_back(false);
     multi_op_batches_.push_back(std::vector<KVRequest>());
     multi_op_number_batches_.push_back(std::vector<int>());
+    wait_point_list_.push_back(std::vector<int>());
     multi_op_ready_.store(false);
 
     std::thread planner(&QueccExecutor::PlannerThread, this, thread_number);
@@ -148,6 +149,24 @@ void QueccExecutor::PlannerThread(const int thread_number) {
 
     if(multi_op_ready_.load()){
       //Process multi_op distributions for wait positions
+      vector<KVRequest> multi_op_batch = multi_op_batches_[thread_number];
+      vector<int> multi_op_id = multi_op_number_batches_[thread_number];
+
+      //Look through each KV_Request, if a KV_Request is ever across 2 ranges
+      //it could cause a cascading abort and is therefore recorded as a wait point
+      int txn_id=0;
+      set<int> range_used_list = set<int>();
+      for(int i=0; i<multi_op_batch.size(); i++){
+        txn_id=multi_op_id[i];
+        range_used_list.clear();
+        for(const auto& request_operation: multi_op_batch[i].ops()){
+          range_used_list.insert(rid_to_range_.at(request_operation.key()));
+          if(range_used_list.size()>1){
+            wait_point_list_[thread_number].push_back(txn_id);
+            break;
+          }
+        }
+      }
 
       ready_planner_count_.fetch_sub(1);
       if (ready_planner_count_.load() == 0) {

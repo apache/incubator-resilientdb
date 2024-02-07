@@ -102,6 +102,7 @@ class QueccExecutor : public TransactionManager {
   vector<vector<KVRequest>> multi_op_batches_;
   vector<vector<int>> multi_op_number_batches_;
   atomic<bool> multi_op_ready_;
+  vector<vector<int>> wait_point_list_;
 };
 
 }  // namespace resdb
