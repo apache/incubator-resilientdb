@@ -27,9 +27,9 @@
 
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/execution/transaction_executor.h"
+#include "platform/consensus/ordering/common/framework/consensus.h"
 #include "platform/consensus/ordering/fairdag/algorithm/fairdag.h"
 #include "platform/consensus/ordering/fairdag/framework/performance_manager.h"
-#include "platform/consensus/ordering/common/framework/consensus.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {

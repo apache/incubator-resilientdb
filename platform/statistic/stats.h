@@ -36,6 +36,14 @@ class Stats {
   void AddQueuingLatency(uint64_t run_time);
   void AddRoundLatency(uint64_t run_time);
   void AddCommitLatency(uint64_t run_time);
+  void AddCommitQueuingLatency(uint64_t run_time);
+  void AddVerifyLatency(uint64_t run_time);
+  void AddExecuteQueuingLatency(uint64_t run_time);
+  void AddExecuteLatency(uint64_t run_time);
+  void AddCommitRuntime(uint64_t run_time);
+  void AddCommitRoundLatency(uint64_t run_time);
+  void AddCommitDelay(uint64_t run_time);
+  void AddExecutePrepareDelay(uint64_t run_time);
 
   void Monitor();
   void MonitorGlobal();
@@ -98,6 +106,13 @@ class Stats {
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
   std::atomic<uint64_t> num_transactions_, num_transactions_time_, num_consumed_transactions_, num_consumed_transactions_time_;
   std::atomic<uint64_t> queuing_num_, queuing_time_, round_num_, round_time_, commit_num_, commit_time_;
+  std::atomic<uint64_t> execute_queuing_num_, execute_queuing_time_, verify_num_, verify_time_;
+  std::atomic<uint64_t> execute_num_, execute_time_;
+  std::atomic<uint64_t> commit_running_num_, commit_running_time_;
+  std::atomic<uint64_t> commit_queuing_num_, commit_queuing_time_;
+  std::atomic<uint64_t> commit_round_num_, commit_round_time_;
+  std::atomic<uint64_t> commit_delay_num_, commit_delay_time_;
+  std::atomic<uint64_t> execute_prepare_num_, execute_prepare_time_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::unique_ptr<PrometheusHandler> prometheus_;

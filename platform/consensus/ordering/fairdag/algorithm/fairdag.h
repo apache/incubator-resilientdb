@@ -5,6 +5,7 @@
 #include <queue>
 #include <thread>
 
+#include "platform/statistic/stats.h"
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/fairdag/algorithm/tusk.h"
 #include "platform/consensus/ordering/fairdag/algorithm/proposal_manager.h"
@@ -15,7 +16,7 @@
 namespace resdb {
 namespace fairdag {
 
-class FairDAG : public protocol::ProtocolBase {
+class FairDAG : public common::ProtocolBase {
  public:
   FairDAG(int id, int f, int total_num, SignatureVerifier* verifier);
   ~FairDAG();
@@ -40,11 +41,13 @@ private:
   std::unique_ptr<Tusk> tusk_;
   int64_t local_time_ = 0;
   std::map<std::string, std::map<int, uint64_t> > committed_txns_;
+  std::map<std::string, uint64_t > committed_time_;
   std::set<std::string> ready_;
   int execute_id_;
   std::vector<uint64_t> min_timestamp_;
   int replica_num_;
   std::multimap<uint64_t, std::unique_ptr<Transaction>> not_ready_;
+  Stats* global_stats_;
 };
 
 }  // namespace tusk

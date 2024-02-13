@@ -46,7 +46,13 @@ Consensus::Consensus(const ResDBConfig& config,
           nullptr, std::move(executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
+            is_stop_ = false;
   global_stats_ = Stats::GetGlobalStats();
+  /*
+  for(int i = 0; i< 4; ++i){
+    send_thread_.push_back(std::thread(&Consensus::AsyncSend, this));
+  }
+  */
 }
 
 void Consensus::Init(){
@@ -86,8 +92,16 @@ void Consensus::InitProtocol(ProtocolBase * protocol){
       });
 }
 
+Consensus::~Consensus(){
+  is_stop_ = true;
+}
+
 void Consensus::SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manager){
   performance_manager_ = std::move(performance_manager);
+}
+
+bool Consensus::IsStop(){
+  return is_stop_;
 }
 
 void Consensus::SetupPerformanceDataFunc(std::function<std::string()> func) {
@@ -161,20 +175,46 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
 }
 
 int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
-  //LOG(ERROR)<<"send response:"<<batch_resp.proxy_id();
+    Request request;
+    request.set_seq(batch_resp.seq());
+    request.set_type(Request::TYPE_RESPONSE);
+    request.set_sender_id(config_.GetSelfInfo().id());
+    request.set_proxy_id(batch_resp.proxy_id());
+    batch_resp.SerializeToString(request.mutable_data());
+    //global_stats_->AddResponseDelay(GetCurrentTime()- batch_resp.createtime());
+    replica_communicator_->SendMessage(request, request.proxy_id());
+  return 0;
+}
+/*
+int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
   if (batch_resp.proxy_id() == 0) {
     return 0;
   }
-  //LOG(ERROR)<<"send response:"<<batch_resp.proxy_id();
-  Request request;
-  request.set_seq(batch_resp.seq());
-  request.set_type(Request::TYPE_RESPONSE);
-  request.set_sender_id(config_.GetSelfInfo().id());
-  request.set_proxy_id(batch_resp.proxy_id());
-  batch_resp.SerializeToString(request.mutable_data());
-  replica_communicator_->SendMessage(request, request.proxy_id());
+  resp_queue_.Push(std::make_unique<BatchUserResponse>(batch_resp));
   return 0;
 }
+
+void Consensus::AsyncSend() {
+  while(!IsStop()){
+    auto batch_resp = resp_queue_.Pop();
+    if(batch_resp == nullptr) {
+      continue;
+    }
+
+    //LOG(ERROR)<<"send response:"<<batch_resp.proxy_id();
+    //LOG(ERROR)<<"send response:"<<batch_resp.proxy_id();
+    Request request;
+    request.set_seq(batch_resp->seq());
+    request.set_type(Request::TYPE_RESPONSE);
+    request.set_sender_id(config_.GetSelfInfo().id());
+    request.set_proxy_id(batch_resp->proxy_id());
+    batch_resp->SerializeToString(request.mutable_data());
+    global_stats_->AddCommitDelay(GetCurrentTime()- batch_resp->createtime());
+    replica_communicator_->SendMessage(request, request.proxy_id());
+  }
+  return ;
+}
+*/
 
 }  // namespace common
 }  // namespace resdb

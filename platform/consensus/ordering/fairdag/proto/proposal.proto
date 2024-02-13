@@ -45,6 +45,9 @@ message Transaction{
   int32 proposer = 5;
   uint64 timestamp = 6;
   int64 user_seq = 7;
+  int64 create_time = 8;
+  int64 queuing_time = 9;
+  int64 commit_time = 10;
 }
 
 enum ProposalType{
@@ -69,6 +72,7 @@ message Proposal {
   repeated Transaction transactions = 3;
   int32 sender = 5;
   bytes hash = 6;
+  int64 queuing_time = 7;
 };
 
 enum MessageType {

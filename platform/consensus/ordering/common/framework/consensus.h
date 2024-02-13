@@ -39,7 +39,7 @@ class Consensus : public ConsensusManager {
  public:
   Consensus(const ResDBConfig& config,
             std::unique_ptr<TransactionManager> transaction_manager);
-  virtual ~Consensus() = default;
+  virtual ~Consensus();
 
   int ConsensusCommit(std::unique_ptr<Context> context,
                       std::unique_ptr<Request> request) override;
@@ -60,6 +60,8 @@ class Consensus : public ConsensusManager {
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);
   int Broadcast(int type, const google::protobuf::Message& msg);
   int ResponseMsg(const BatchUserResponse& batch_resp);
+  void AsyncSend();
+  bool IsStop();
 
  protected:
   void Init();
@@ -71,6 +73,10 @@ class Consensus : public ConsensusManager {
   std::unique_ptr<ResponseManager> response_manager_;
   std::unique_ptr<TransactionExecutor> transaction_executor_;
   Stats* global_stats_;
+
+  LockFreeQueue<BatchUserResponse> resp_queue_;
+  std::vector<std::thread> send_thread_;
+  bool is_stop_;
 };
 
 }  // namespace common

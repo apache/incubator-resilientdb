@@ -17,7 +17,7 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
   total_num_ = total_num;
   f_ = f;
   is_stop_ = false;
-  timeout_ms_ = 5000;
+  timeout_ms_ = 60000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
   batch_size_ = 5;
@@ -78,9 +78,6 @@ void Cassandra::AsyncConsensus() {
   while (!is_stop_) {
     int next_height = SendTxn(height);
     if (next_height == -1) {
-      if(height>0){
-        //LOG(ERROR)<<"!!!!!! send txn fail sleep";
-      }
       // usleep(10000);
       proposal_manager_->WaitBlock();
       continue;
@@ -240,7 +237,10 @@ void Cassandra::BroadcastTxn() {
     txn->set_queuing_time(GetCurrentTime()-txn->create_time());
     global_stats_->AddQueuingLatency(GetCurrentTime()-txn->create_time());
     txns.push_back(std::move(txn));
-  
+    if (txns.size() < batch_size_) {
+      continue;
+    }
+  /* 
     for(int i = 1; i < batch_size_; ++i){
       std::unique_ptr<Transaction> txn = txns_.Pop(10);
       if(txn == nullptr){
@@ -250,6 +250,7 @@ void Cassandra::BroadcastTxn() {
       global_stats_->AddQueuingLatency(GetCurrentTime()-txn->create_time());
       txns.push_back(std::move(txn));
     }
+    */
 
     std::unique_ptr<Block> block = proposal_manager_->MakeBlock(txns);
     assert(block != nullptr);

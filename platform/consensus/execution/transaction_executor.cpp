@@ -215,10 +215,10 @@ void TransactionExecutor::ExecuteMessage() {
     if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
       need_execute = false;
     }
-    //int64_t start_time = GetCurrentTime();
+    int64_t start_time = GetCurrentTime();
     Execute(std::move(message), need_execute);
-    //int64_t end_time = GetCurrentTime();
-    //global_stats_->AddQueuingLatency(end_time-start_time);
+    int64_t end_time = GetCurrentTime();
+    global_stats_->AddExecuteLatency(end_time-start_time);
   }
 }
 
@@ -391,8 +391,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   global_stats_->IncTotalRequest(batch_request_p->user_requests_size());
   response->set_proxy_id(batch_request_p->proxy_id());
-  response->set_createtime(batch_request_p->createtime());
+  response->set_createtime(batch_request_p->createtime() + request->queuing_time());
   response->set_local_id(batch_request_p->local_id());
+  global_stats_->AddCommitDelay(GetCurrentTime()- response->createtime());
+  //global_stats_->AddCommitDelay(GetCurrentTime()- batch_request_p->createtime());
 
   response->set_seq(request->seq());
 

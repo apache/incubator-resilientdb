@@ -118,6 +118,30 @@ void Stats::MonitorGlobal() {
   uint64_t commit_num = 0, commit_time = 0;
   uint64_t last_commit_num = 0, last_commit_time = 0;
 
+  uint64_t verify_num = 0, verify_time = 0;
+  uint64_t last_verify_num = 0, last_verify_time = 0;
+
+  uint64_t execute_queuing_num = 0, execute_queuing_time = 0;
+  uint64_t last_execute_queuing_num = 0, last_execute_queuing_time = 0;
+
+  uint64_t execute_num = 0, execute_time = 0;
+  uint64_t last_execute_num = 0, last_execute_time = 0;
+
+  uint64_t commit_running_num = 0, commit_running_time = 0;
+  uint64_t last_commit_running_num = 0, last_commit_running_time = 0;
+
+  uint64_t commit_delay_num = 0, commit_delay_time = 0;
+  uint64_t last_commit_delay_num = 0, last_commit_delay_time = 0;
+
+  uint64_t execute_prepare_num = 0, execute_prepare_time = 0;
+  uint64_t last_execute_prepare_num = 0, last_execute_prepare_time = 0;
+
+  uint64_t commit_queuing_num = 0, commit_queuing_time = 0;
+  uint64_t last_commit_queuing_num = 0, last_commit_queuing_time = 0;
+
+  uint64_t commit_round_num = 0, commit_round_time = 0;
+  uint64_t last_commit_round_num = 0, last_commit_round_time = 0;
+
   while (!stop_) {
     sleep(monitor_sleep_time_);
     time += monitor_sleep_time_;
@@ -152,6 +176,30 @@ void Stats::MonitorGlobal() {
 
     commit_num = commit_num_;
     commit_time = commit_time_;
+
+    execute_queuing_num = execute_queuing_num_;
+    execute_queuing_time = execute_queuing_time_;
+
+    execute_num = execute_num_;
+    execute_time = execute_time_;
+
+    commit_running_num = commit_running_num_;
+    commit_running_time = commit_running_time_;
+
+    commit_delay_num = commit_delay_num_;
+    commit_delay_time = commit_delay_time_;
+
+    execute_prepare_num = execute_prepare_num_;
+    execute_prepare_time = execute_prepare_time_;
+
+    commit_queuing_num = commit_queuing_num_;
+    commit_queuing_time = commit_queuing_time_;
+
+    commit_round_num = commit_round_num_;
+    commit_round_time = commit_round_time_;
+
+    verify_num = verify_num_;
+    verify_time = verify_time_;
 
     num_transactions = num_transactions_;
     num_consumed_transactions = num_consumed_transactions_;
@@ -224,6 +272,47 @@ void Stats::MonitorGlobal() {
                  << static_cast<double>(commit_time -
                                         last_commit_time) /
                         (commit_num - last_commit_num) / 1000000.0
+
+              << " verify latency :"
+                 << static_cast<double>(verify_time -
+                                        last_verify_time) /
+                        (verify_num - last_verify_num) / 1000000.0
+
+              << " execute_queuing latency :"
+                 << static_cast<double>(execute_queuing_time -
+                                        last_execute_queuing_time) /
+                        (execute_queuing_num - last_execute_queuing_num) / 1000000.0
+
+              << " execute latency :"
+                 << static_cast<double>(execute_time -
+                                        last_execute_time) /
+                        (execute_num - last_execute_num) / 1000000.0
+
+              << " commit_queuing latency :"
+                 << static_cast<double>(commit_queuing_time -
+                                        last_commit_queuing_time) /
+                        (commit_queuing_num - last_commit_queuing_num) / 1000000.0
+
+              << " commit_running latency :"
+                 << static_cast<double>(commit_running_time -
+                                        last_commit_running_time) /
+                        (commit_running_num - last_commit_running_num) / 1000000.0
+
+            << " commit_delay latency :"
+                 << static_cast<double>(commit_delay_time -
+                                        last_commit_delay_time) /
+                        (commit_delay_num - last_commit_delay_num) / 1000000.0
+
+            << " execute_prepare latency :"
+                 << static_cast<double>(execute_prepare_time -
+                                        last_execute_prepare_time) /
+                        (execute_prepare_num - last_execute_prepare_num) / 1000000.0
+
+              << " commit_round latency :"
+                 << static_cast<double>(commit_round_time -
+                                        last_commit_round_time) /
+                        (commit_round_num - last_commit_round_num) 
+
                << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
@@ -271,6 +360,30 @@ void Stats::MonitorGlobal() {
 
     last_commit_num = commit_num;
     last_commit_time = commit_time;
+
+    last_execute_queuing_num = execute_queuing_num;
+    last_execute_queuing_time = execute_queuing_time;
+
+    last_execute_num = execute_num;
+    last_execute_time = execute_time;
+
+    last_commit_running_num = commit_running_num;
+    last_commit_running_time = commit_running_time;
+
+    last_commit_delay_num = commit_delay_num;
+    last_commit_delay_time = commit_delay_time;
+
+    last_execute_prepare_num = execute_prepare_num;
+    last_execute_prepare_time = execute_prepare_time;
+
+    last_commit_queuing_num = commit_queuing_num;
+    last_commit_queuing_time = commit_queuing_time;
+
+    last_commit_round_num = commit_round_num;
+    last_commit_round_time = commit_round_time;
+
+    last_verify_num = verify_num;
+    last_verify_time = verify_time;
   }
 }
 
@@ -388,6 +501,46 @@ void Stats::AddCommitLatency(uint64_t run_time) {
   commit_time_ += run_time;
 }
 
+void Stats::AddVerifyLatency(uint64_t run_time) {
+  verify_num_++;
+  verify_time_ += run_time;
+}
+
+void Stats::AddExecuteQueuingLatency(uint64_t run_time) {
+  execute_queuing_num_++;
+  execute_queuing_time_ += run_time;
+}
+
+void Stats::AddExecuteLatency(uint64_t run_time) {
+  execute_num_++;
+  execute_time_ += run_time;
+}
+
+void Stats::AddCommitQueuingLatency(uint64_t run_time) {
+  commit_queuing_num_++;
+  commit_queuing_time_ += run_time;
+}
+
+void Stats::AddCommitRuntime(uint64_t run_time) {
+  commit_running_num_++;
+  commit_running_time_ += run_time;
+}
+
+void Stats::AddCommitDelay(uint64_t run_time) {
+  commit_delay_num_++;
+  commit_delay_time_ += run_time;
+}
+
+void Stats::AddExecutePrepareDelay(uint64_t run_time) {
+  execute_prepare_num_++;
+  execute_prepare_time_ += run_time;
+}
+
+void Stats::AddCommitRoundLatency(uint64_t run_time) {
+  //LOG(ERROR)<<"commit round:"<<run_time;
+  commit_round_num_++;
+  commit_round_time_ += run_time;
+}
 
 void Stats::SetPrometheus(const std::string& prometheus_address) {
   prometheus_ = std::make_unique<PrometheusHandler>(prometheus_address);

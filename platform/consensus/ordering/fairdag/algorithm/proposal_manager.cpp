@@ -66,7 +66,7 @@ std::unique_ptr<Proposal> ProposalManager::FetchLocalBlock(const std::string& ha
     std::unique_lock<std::mutex> lk(local_mutex_);
   auto bit = local_block_.find(hash);
   if(bit == local_block_.end()){
-    LOG(ERROR)<<" block not exist:"<<hash.size();
+    //LOG(ERROR)<<" block not exist:"<<hash.size();
     return nullptr;
   }
   auto tmp = std::move(bit->second);
@@ -76,8 +76,14 @@ std::unique_ptr<Proposal> ProposalManager::FetchLocalBlock(const std::string& ha
 
 void ProposalManager::AddBlock(std::unique_ptr<Proposal> proposal){
     std::unique_lock<std::mutex> lk(txn_mutex_);
-    LOG(ERROR)<<"add block hash :"<<proposal->hash().size()<<" round:"<<proposal->header().round()<<" proposer:"<<proposal->header().proposer_id();
+    //LOG(ERROR)<<"add block hash :"<<proposal->hash().size()<<" round:"<<proposal->header().round()<<" proposer:"<<proposal->header().proposer_id();
     block_[proposal->hash()] = std::move(proposal);
+}
+
+bool ProposalManager::CheckBlock(const std::string& hash){
+    std::unique_lock<std::mutex> lk(txn_mutex_);
+    //LOG(ERROR)<<"add block hash :"<<proposal->hash().size()<<" round:"<<proposal->header().round()<<" proposer:"<<proposal->header().proposer_id();
+    return block_.find(hash) != block_.end();
 }
 
 int ProposalManager::GetReferenceNum(const Proposal&req) {
@@ -91,7 +97,7 @@ std::unique_ptr<Proposal> ProposalManager::FetchRequest(int round, int sender) {
   std::unique_lock<std::mutex> lk(txn_mutex_);
   auto it = cert_list_[round].find(sender);
   if(it == cert_list_[round].end()){
-    //LOG(ERROR)<<" cert from sender:"<<sender<<" round:"<<round<<" not exist";
+    LOG(ERROR)<<" cert from sender:"<<sender<<" round:"<<round<<" not exist";
     return nullptr;
   }
   std::string hash = it->second->hash();
@@ -102,7 +108,7 @@ std::unique_ptr<Proposal> ProposalManager::FetchRequest(int round, int sender) {
     return nullptr;
   }
   auto tmp = std::move(bit->second);
-  cert_list_[round].erase(sender);
+  //cert_list_[round].erase(sender);
   //LOG(ERROR)<<" featch sender done, round:"<<round<<" sender:"<<sender;
   if(sender == id_){
     FetchLocalBlock(hash);
@@ -124,6 +130,11 @@ const Proposal * ProposalManager::GetRequest(int round, int sender) {
     return nullptr;
   }
   return bit->second.get();
+}
+
+bool ProposalManager::CheckCert(int round, int sender) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  return cert_list_[round].find(sender) != cert_list_[round].end();
 }
 
 void ProposalManager::AddCert(std::unique_ptr<Certificate> cert) {

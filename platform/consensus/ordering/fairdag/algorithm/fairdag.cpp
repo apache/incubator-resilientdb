@@ -26,6 +26,7 @@ FairDAG::FairDAG(
     });
   local_time_ = 0;
   execute_id_ = 1;
+  global_stats_ = Stats::GetGlobalStats();
 }
 
 FairDAG::~FairDAG() {
@@ -126,6 +127,7 @@ uint64_t FairDAG::GetCommitTimestamp(const std::string& hash) {
 }
 
 void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> > txns) {
+    int64_t start_time = GetCurrentTime();
   std::vector<std::unique_ptr<Transaction>> execute_txns;
   for(auto& txn : txns){
     committed_txns_[txn->hash()].insert(std::make_pair(txn->proposer(), txn->timestamp()));
@@ -201,6 +203,8 @@ void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> > txns) {
     //LOG(ERROR)<<"commit from proposer:"<<txn->proxy_id()<<" time:"<<txn->timestamp()<<" seq:"<<txn->user_seq();
     Commit(*txn);
   }
+  int64_t end_time = GetCurrentTime();
+  global_stats_->AddExecutePrepareDelay(end_time-start_time);
 }
 
 

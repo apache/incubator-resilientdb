@@ -36,6 +36,7 @@ cc_library(
         "//common:comm",
         "//platform/common/queue:lock_free_queue",
         "//platform/consensus/ordering/common/algorithm:protocol_base",
+        "//platform/statistic:stats",
     ],
 )
 

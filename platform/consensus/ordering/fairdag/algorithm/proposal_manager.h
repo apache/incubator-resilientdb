@@ -25,6 +25,9 @@ class ProposalManager {
     std::unique_ptr<Proposal> FetchRequest(int round, int sender);
     int GetReferenceNum(const Proposal&req);
 
+    bool CheckCert(int round, int sender);
+    bool CheckBlock(const std::string& hash);
+
   protected:
     void GetMetaData(Proposal * proposal);
 
