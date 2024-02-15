@@ -18,7 +18,7 @@ jobs:
     
         - name: Install Python with Chocolatey
           run: |
-            choco install python --version 3.11.0b4 -y --force --install-arguments="/l*v c:\python3_msi_install.log"
+            choco install python --version 3.11.0 -y --force -pre        
     
         - name: Install dependencies and Build Windows CLI
           shell: pwsh
@@ -45,6 +45,10 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
+
       - name: Create CLI
         run: |
           poetry init -n
@@ -69,6 +73,10 @@ jobs:
 
       - name: Install Poetry
         uses: snok/install-poetry@v1
+    
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' 
 
       - name: Build Mac CLI
         run: |
