@@ -18,7 +18,7 @@ jobs:
     
         - name: Install Python with Chocolatey
           run: |
-            choco install python --version 3.11 -y --force
+            choco install python --version 3.11.0b4 -y --force --install-arguments="/l*v c:\python3_msi_install.log"
     
         - name: Install dependencies and Build Windows CLI
           shell: pwsh
@@ -48,6 +48,7 @@ jobs:
       - name: Create CLI
         run: |
           poetry init -n
+          poetry add pyinstaller --dev
           poetry config virtualenvs.create true --local
           poetry config virtualenvs.in-project true --local
           poetry run pyinstaller res_cli.py --onefile --name res-cli-linux
@@ -73,6 +74,7 @@ jobs:
         run: |
           brew install python@3.11
           /Users/runner/.local/bin/poetry init -n
+          /Users/runner/.local/bin/poetry add pyinstaller --dev
           /Users/runner/.local/bin/poetry config virtualenvs.create true --local
           /Users/runner/.local/bin/poetry config virtualenvs.in-project true --local
           /Users/runner/.local/bin/poetry install
