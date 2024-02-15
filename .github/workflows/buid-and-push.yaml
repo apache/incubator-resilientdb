@@ -10,31 +10,27 @@ jobs:
     runs-on: windows-latest
     
     steps:
-        - name: Checkout
-          uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
     
-        - name: Install Poetry
-          uses: snok/install-poetry@v1
+      - name: Install Python with Chocolatey
+        run: |
+          choco install python --version 3.11.0 -y --force -pre        
     
-        - name: Install Python with Chocolatey
-          run: |
-            choco install python --version 3.11.0 -y --force -pre        
+      - name: Install dependencies and Build Windows CLI
+        shell: pwsh
+        run: |
+          $env:PATH += ";C:\ProgramData\chocolatey\lib\python\tools"
+          pip install pyinstaller
+          pyinstaller res_cli.py --onefile --name res-cli-windows
+          7z a ./cli-windows.zip ./dist/
     
-        - name: Install dependencies and Build Windows CLI
-          shell: pwsh
-          run: |
-            $env:PATH += ";C:\ProgramData\chocolatey\lib\python\tools"
-            poetry init -n
-            poetry install
-            poetry run pyinstaller res_cli.py --onefile --name res-cli-windows
-            7z a ./cli-windows.zip ./dist/
-    
-        - name: Upload CLI Windows Artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: cli-windows
-            path: ./cli-windows.zip
-      
+      - name: Upload CLI Windows Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: cli-windows
+          path: ./cli-windows.zip
+
   create-cli-linux:
     runs-on: ubuntu-latest
 
@@ -42,20 +38,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v2
         with:
           python-version: '3.11' 
 
       - name: Create CLI
         run: |
-          poetry init -n
-          poetry add pyinstaller --dev
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-          poetry run pyinstaller res_cli.py --onefile --name res-cli-linux
+          pip install pyinstaller
+          pyinstaller res_cli.py --onefile --name res-cli-linux
           zip -r cli-linux.zip dist/res-cli-linux
 
       - name: Upload CLI Linux Artifact
@@ -70,23 +60,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
     
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v2
         with:
           python-version: '3.11' 
 
       - name: Build Mac CLI
         run: |
           brew install python@3.11
-          /Users/runner/.local/bin/poetry init -n
-          /Users/runner/.local/bin/poetry add pyinstaller --dev
-          /Users/runner/.local/bin/poetry config virtualenvs.create true --local
-          /Users/runner/.local/bin/poetry config virtualenvs.in-project true --local
-          /Users/runner/.local/bin/poetry install
-          /Users/runner/.local/bin/poetry run pyinstaller res_cli.py --onefile --name res-cli-mac
+          pip install pyinstaller
+          pyinstaller res_cli.py --onefile --name res-cli-mac
           zip -r cli-mac.zip dist/res-cli-mac
 
       - name: Upload CLI Mac Artifact
