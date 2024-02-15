@@ -31,6 +31,17 @@ jobs:
           name: cli-windows
           path: ./cli-windows.zip
 
+    #   - name: Create or Update GitHub Release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       files: |
+    #         ./cli-windows.zip
+    #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #       tag_name: v1.0.0  
+    #       title: Release v1.0.0  
+    #       draft: false
+    #       prerelease: false
+
   create-cli-linux:
     runs-on: ubuntu-latest
 
@@ -53,6 +64,17 @@ jobs:
         with:
           name: cli-linux
           path: ./cli-linux.zip
+
+    #   - name: Create or Update GitHub Release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       files: |
+    #         ./cli-linux.zip
+    #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #       tag_name: v1.0.0  
+    #       title: Release v1.0.0  
+    #       draft: false
+    #       prerelease: false
 
   create-cli-mac:
     runs-on: macos-latest
@@ -77,3 +99,14 @@ jobs:
         with:
           name: cli-mac
           path: ./cli-mac.zip
+
+    #   - name: Create or Update GitHub Release
+    #     uses: softprops/action-gh-release@v1
+    #     with:
+    #       files: |
+    #         ./cli-mac.zip
+    #       repo_token: ${{ secrets.GITHUB_TOKEN }}
+    #       tag_name: v1.0.0 
+    #       title: Release v1.0.0 
+    #       draft: false
+    #       prerelease: false
