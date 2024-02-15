@@ -11,9 +11,9 @@ jobs:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
     
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11' 
     
@@ -26,7 +26,7 @@ jobs:
           7z a ./cli-windows.zip ./dist/
     
       - name: Upload CLI Windows Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cli-windows
           path: ./cli-windows.zip
@@ -47,9 +47,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11' 
 
@@ -60,7 +60,7 @@ jobs:
           zip -r cli-linux.zip dist/res-cli-linux
 
       - name: Upload CLI Linux Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cli-linux
           path: ./cli-linux.zip
@@ -81,9 +81,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
     
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11' 
 
@@ -95,7 +95,7 @@ jobs:
           zip -r cli-mac.zip dist/res-cli-mac
 
       - name: Upload CLI Mac Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: cli-mac
           path: ./cli-mac.zip
