@@ -64,8 +64,8 @@ jobs:
           pyenv global 3.11.0b4
           pyenv shell 3.11.0b4
           curl -sSL https://install.python-poetry.org | python3 -
-          $HOME/.local/bin/poetry install
-          $HOME/.local/bin/poetry run pyinstaller res_cli.py --onefile --name res-cli-windows
+          "$HOME/.local/bin/poetry" install
+          "$HOME/.local/bin/poetry" run pyinstaller res_cli.py --onefile --name res-cli-windows
           7z a ./cli-windows.zip ./dist/
 
       - name: Upload CLI Windows Artifact
@@ -91,11 +91,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry install
+        working-directory: ${{ github.workspace }}
 
       - name: Create CLI
         run: |
           poetry run pyinstaller res_cli.py --onefile --name res-cli-linux
           zip -r cli-linux.zip dist/res-cli-linux
+        working-directory: ${{ github.workspace }}
 
       - name: Upload CLI Linux Artifact
         uses: actions/upload-artifact@v2
@@ -114,8 +116,8 @@ jobs:
         run: |
           brew install python@3.11
           curl -sSL https://install.python-poetry.org | python3.11 -
-          $HOME/.local/bin/poetry install
-          $HOME/.local/bin/poetry run pyinstaller res_cli.py --onefile --name res-cli-mac
+          /Users/runner/.local/bin/poetry install
+          /Users/runner/.local/bin/poetry run pyinstaller res_cli.py --onefile --name res-cli-mac
           zip -r cli-mac.zip dist/res-cli-mac
 
       - name: Upload CLI Mac Artifact
