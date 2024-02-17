@@ -38,7 +38,7 @@ def verify_password(plaintext_password, hashed_password):
 
 @click.group()
 def cli():
-    """ResDB CLI"""
+    """ResCLI"""
 
 
 @cli.command()
