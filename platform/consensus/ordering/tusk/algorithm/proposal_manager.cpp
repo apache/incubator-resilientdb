@@ -133,8 +133,8 @@ const Proposal* ProposalManager::GetRequest(int round, int sender) {
   std::unique_lock<std::mutex> lk(txn_mutex_);
   auto it = cert_list_[round].find(sender);
   if (it == cert_list_[round].end()) {
-    LOG(ERROR) << " cert from sender:" << sender << " round:" << round
-               << " not exist";
+    //LOG(ERROR) << " cert from sender:" << sender << " round:" << round
+    //           << " not exist";
     return nullptr;
   }
   std::string hash = it->second->hash();
@@ -178,14 +178,14 @@ void ProposalManager::GetMetaData(Proposal* proposal) {
   assert(cert_list_[round_ - 1].size() >= limit_count_);
   assert(cert_list_[round_ - 1].find(id_) != cert_list_[round_ - 1].end());
 
+  //LOG(ERROR)<<"get metadata:"<<" proposal round:"<<proposal->header().round();
   std::set<int> meta_ids;
   for (const auto& preview_cert : cert_list_[round_ - 1]) {
     *proposal->mutable_header()->mutable_strong_cert()->add_cert() =
         *preview_cert.second;
     meta_ids.insert(preview_cert.first);
-    // LOG(ERROR)<<"add strong round:"<<preview_cert.second->round()
-    //<<" id:"<<preview_cert.second->proposer()<<"
-    //first:"<<preview_cert.first<<" limit:"<<limit_count_;
+     //LOG(ERROR)<<"add strong round:"<<preview_cert.second->round()
+    //<<" id:"<<preview_cert.second->proposer()<<" first:"<<preview_cert.first<<" limit:"<<limit_count_<<" proposal round:"<<proposal->header().round();
     if (meta_ids.size() == limit_count_) {
       break;
     }
@@ -202,7 +202,7 @@ void ProposalManager::GetMetaData(Proposal* proposal) {
       for (int j = round_; j >= 0; --j) {
         if (cert_list_[j].find(meta.first) != cert_list_[j].end()) {
           //LOG(ERROR) << " add weak cert from his:" << j
-          //           << " proposer:" << meta.first;
+          //           << " proposer:" << meta.first<< " cert round:"<<cert_list_[j][meta.first]->round()<< " proposal round:"<<proposal->header().round();
           *proposal->mutable_header()->mutable_weak_cert()->add_cert() =
               *cert_list_[j][meta.first];
           break;
@@ -210,8 +210,7 @@ void ProposalManager::GetMetaData(Proposal* proposal) {
       }
     } else {
       assert(meta.second->round() <= round_);
-      // LOG(ERROR)<<"add weak cert:"<<meta.second->round()<<"
-      // proposer:"<<meta.second->proposer();
+      //LOG(ERROR)<<"add weak cert:"<<meta.second->round()<<" proposer:"<<meta.second->proposer()<<" proposal round:"<<proposal->header().round();
       *proposal->mutable_header()->mutable_weak_cert()->add_cert() =
           *meta.second;
     }

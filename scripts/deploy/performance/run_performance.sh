@@ -34,7 +34,6 @@ while [ $count -gt 0 ]; do
         count=`expr $count - 1`
 done
 
-
 echo "getting results"
 for ip in ${iplist[@]};
 do

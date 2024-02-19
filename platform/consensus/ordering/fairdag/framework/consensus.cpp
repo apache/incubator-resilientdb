@@ -123,6 +123,7 @@ int FairDAGConsensus::CommitMsg(const google::protobuf::Message& msg) {
 int FairDAGConsensus::CommitMsgInternal(const Transaction& txn) {
   //LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<" queuing delay:"<<txn.queuing_time();
   std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_create_time(txn.create_time());
   request->set_queuing_time(txn.queuing_time());
   request->set_data(txn.data());
   request->set_seq(txn.id());

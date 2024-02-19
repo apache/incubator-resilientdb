@@ -129,8 +129,12 @@ uint64_t FairDAG::GetCommitTimestamp(const std::string& hash) {
 void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> > txns) {
     int64_t start_time = GetCurrentTime();
   std::vector<std::unique_ptr<Transaction>> execute_txns;
+  int64_t commit_time = GetCurrentTime();
   for(auto& txn : txns){
     committed_txns_[txn->hash()].insert(std::make_pair(txn->proposer(), txn->timestamp()));
+    if(committed_time_.find(txn->hash()) == committed_time_.end()){
+      committed_time_[txn->hash()] = commit_time;
+    }
     min_timestamp_[txn->proposer()] = std::max(min_timestamp_[txn->proposer()], txn->timestamp()+1);
     //LOG(ERROR)<<"proposer:"<<txn->proposer()<<" next commit time:"<<min_timestamp_[txn->proposer()]<<" timestamp:"<<txn->timestamp();
   }
@@ -173,23 +177,27 @@ void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> > txns) {
   }
 
   for(auto& txn : txns){
-    if(assign_time.find(txn->hash()) != assign_time.end()){
-      //LOG(ERROR)<<"commit from:"<<txn->proxy_id()<<" user seq:"<<txn->user_seq()<<" time num:"<<committed_txns_[txn->hash()].size()<<" assign time:"<<assign_time[txn->hash()]<<" lower bound:"<<lower_bound_uncommtted_time;
-      assert(assign_time.find(txn->hash()) != assign_time.end());
+    auto it = assign_time.find(txn->hash());
+    if(it != assign_time.end()){
+      //LOG(ERROR)<<"commit from:"<<txn->proxy_id()<<" user seq:"<<txn->user_seq()<<" time num:"<<committed_txns_[txn->hash()].size()<<" assign time:"<<assign_time[txn->hash()]<<" lower bound:"<<lower_bound_uncommtted_time<<" commit time:"<<txn->queuing_time();
+      //assert(assign_time.find(txn->hash()) != assign_time.end());
       /*
       if(static_cast<int>(committed_txns_[txn->hash()].size()) == replica_num_){
         assert(assign_time[txn->hash()] < lower_bound_uncommtted_time);
       }
       */
-      if(assign_time[txn->hash()] < lower_bound_uncommtted_time){
+      if(it->second < lower_bound_uncommtted_time){
         if(ready_.find(txn->hash()) == ready_.end()){
+          assert(committed_time_.find(txn->hash()) != committed_time_.end());
+          int64_t commit_delay = commit_time - committed_time_[txn->hash()];
+          global_stats_->AddExecuteQueuingLatency(commit_delay);
           ready_.insert(txn->hash());
           execute_txns.push_back(std::move(txn));
         }
       }
       else {
         //LOG(ERROR)<<"set to pending from:"<<txn->proxy_id()<<" user seq:"<<txn->user_seq()<<" proposer:"<<txn->proposer();
-        not_ready_.insert(std::make_pair(assign_time[txn->hash()], std::move(txn)));
+        not_ready_.insert(std::make_pair(it->second, std::move(txn)));
       }
     }
   }
@@ -200,6 +208,7 @@ void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> > txns) {
   //LOG(ERROR)<<"exe time:"<<execute_txns.size();
   for(auto& txn: execute_txns){
     txn->set_id(execute_id_++);
+    //global_stats_->AddCommitDelay(GetCurrentTime()- txn->create_time());
     //LOG(ERROR)<<"commit from proposer:"<<txn->proxy_id()<<" time:"<<txn->timestamp()<<" seq:"<<txn->user_seq();
     Commit(*txn);
   }

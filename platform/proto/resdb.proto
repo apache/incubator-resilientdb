@@ -65,8 +65,10 @@ message Request {
     repeated uint64 seqs = 19;
     int32 user_type = 20;
     int64 user_seq = 21;
-    int32 queuing_time = 22;
+    int64 queuing_time = 22;
     int64 uid = 23;
+    int64 create_time = 24;
+    int64 commit_time = 25;
 }
 
 // The response message containing response

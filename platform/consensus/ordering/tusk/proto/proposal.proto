@@ -66,6 +66,7 @@ message Proposal {
   repeated Transaction transactions = 3;
   int32 sender = 5;
   bytes hash = 6;
+  int64 queuing_time = 7;
 };
 
 enum MessageType {

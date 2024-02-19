@@ -10,7 +10,7 @@ namespace tusk {
 Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
-  batch_size_ = 10;
+  batch_size_ = 2;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
@@ -74,6 +74,7 @@ void Tusk::AsyncSend() {
       if (txn == nullptr) {
         break;
       }
+      txn->set_queuing_time(GetCurrentTime() - txn->create_time());
       queue_size_--;
       global_stats_->AddQueuingLatency(GetCurrentTime() - txn->create_time());
       txns.push_back(std::move(txn));
@@ -132,25 +133,30 @@ void Tusk::AsyncCommit() {
       new_round = r;
     }
     int64_t end_time = GetCurrentTime();
-    //global_stats_->AddLatency(end_time - start_time);
+    //global_stats_->AddCommitRuntime(end_time-commit_time);
     previous_round = new_round;
   }
 }
 
 void Tusk::AsyncExecute() {
-  int commit_round = 0;
+int64_t last_commit_time = 0;
   while (!IsStop()) {
     std::unique_ptr<Proposal> proposal = execute_queue_.Pop();
     if (proposal == nullptr) {
       continue;
     }
-    commit_round++;
-    int current_commit_round = proposal->header().round();
 
+    int commit_round = proposal->header().round();
+    int64_t commit_time = GetCurrentTime();
+    int64_t waiting_time = commit_time - proposal->queuing_time();
+    global_stats_->AddCommitQueuingLatency(waiting_time);
+    global_stats_->AddCommitInterval(commit_time - last_commit_time);
+    last_commit_time = commit_time;
     std::map<int, std::vector<std::unique_ptr<Proposal>>> ps;
     std::queue<std::unique_ptr<Proposal>> q;
     q.push(std::move(proposal));
 
+    int64_t start_time = GetCurrentTime();
     while (!q.empty()) {
       std::unique_ptr<Proposal> p = std::move(q.front());
       q.pop();
@@ -182,30 +188,34 @@ void Tusk::AsyncExecute() {
       ps[p->header().round()].push_back(std::move(p));
     }
 
+    int num = 0;
     for (auto& it : ps) {
       for (auto& p : it.second) {
         //LOG(ERROR) << "=============== commit proposal round :"
         //           << p->header().round()
-        //           << " header round:"<<current_commit_round
+        //           << " header round:"<<p->header().round()
         //           << " commit round:"<<commit_round
         //           << " proposer:" << p->header().proposer_id()
         //           << " transaction size:" << p->transactions_size()
         //           << " commit time:"
         //           << (GetCurrentTime() - p->header().create_time())
         //           << " create time:" << p->header().create_time()
-        //           <<" execute id:"<<execute_id_;
+        //           <<" execute id:"<<execute_id_ 
+        //           <<" round delay:"<<(commit_round - p->header().round());
 
-        global_stats_->AddCommitLatency(GetCurrentTime() - p->header().create_time());
-        //LOG(ERROR)<<" delay round:"<<current_commit_round - p->header().round();
-        global_stats_->AddNewTransactions(current_commit_round - p->header().round());
-        
+        global_stats_->AddCommitLatency(commit_time - p->header().create_time() - waiting_time);
+        global_stats_->AddCommitRoundLatency(commit_round - p->header().round());
         for (auto& tx : *p->mutable_transactions()) {
           tx.set_id(execute_id_++);
+          num++;
           //LOG(ERROR)<<" commit txn create time:"<<tx.create_time();
           Commit(tx);
         }
       }
     }
+    int64_t end_time = GetCurrentTime();
+    global_stats_->AddCommitRuntime(end_time-commit_time);
+    global_stats_->AddCommitTxn(num);
   }
 }
 
@@ -213,6 +223,12 @@ void Tusk::CommitProposal(int round, int proposer) {
   //LOG(ERROR) << "commit round:" << round << " proposer:" << proposer;
   std::unique_ptr<Proposal> p =
       proposal_manager_->FetchRequest(round, proposer);
+  if(p==nullptr){
+    LOG(ERROR)<<"commit round:"<<round<<" proposer:"<<proposer;
+    return;
+  }
+  assert(p !=nullptr);
+  p->set_queuing_time(GetCurrentTime());
   execute_queue_.Push(std::move(p));
 }
 
@@ -279,6 +295,7 @@ void Tusk::ReceiveBlockACK(std::unique_ptr<Metadata> metadata) {
     assert(p != nullptr);
     assert(p->header().proposer_id() == id_);
     assert(p->header().round() == round);
+    //global_stats_->AddCommitLatency(GetCurrentTime() - p->header().create_time());
     *cert.mutable_strong_cert() = p->header().strong_cert();
     //LOG(ERROR)<<"send cert, round:"<<p->header().round();
     Broadcast(MessageType::Cert, cert);
@@ -309,8 +326,10 @@ void Tusk::ReceiveBlockCert(std::unique_ptr<Certificate> cert) {
     return;
   }
   int64_t end_time = GetCurrentTime();
-  //global_stats_->AddLatency(end_time-start_time); 
-  //LOG(ERROR)<<"recv cert:"<<cert->proposer();
+  global_stats_->AddVerifyLatency(end_time-start_time); 
+
+
+  //LOG(ERROR)<<"recv cert:"<<cert->proposer() <<" round:"<< cert->round();
   proposal_manager_->AddCert(std::move(cert));
   std::unique_lock<std::mutex> lk(mutex_);
   vote_cv_.notify_all();

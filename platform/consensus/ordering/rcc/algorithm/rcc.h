@@ -55,6 +55,8 @@ class RCC : public common::ProtocolBase {
   int64_t commited_seq_ = 0;
   std::atomic<int> queue_size_;
   Stats* global_stats_;
+  int64_t last_commit_time_ = 0;
+  std::map<int,int64_t> commit_time_;
 };
 
 }  // namespace rcc

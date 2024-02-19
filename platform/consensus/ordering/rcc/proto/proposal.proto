@@ -25,7 +25,7 @@ message Header {
   int32 proposer_id = 3;
   int32 proposal_id = 4;
   int32 sender = 5;
-  int32 create_time = 6;
+  int64 create_time = 6;
   ProposalType status = 7;
 }
 
@@ -33,6 +33,7 @@ message Proposal {
   
     Header header = 1;
   repeated Transaction transactions = 3;
+  int64 queuing_time = 4;
 };
 
 enum MessageType {
