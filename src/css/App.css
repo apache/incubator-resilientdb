@@ -2581,6 +2581,31 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
 .switch input:checked + .switch__label:active::before {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28), 0 0 0 20px rgba(0, 150, 136, 0.2); }
 
+.drag_box {
+  margin: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .drag_box_outline {
+    border: 2px rgb(71 231 206 / 80%);
+    padding: 10px;
+    width: 100%;
+    border-style: dashed;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .erred {
+    border-color: red;
+    span {
+      color: red;
+    }
+  }
+}
+
 .fieldset {
   width: calc(100% - 40px);
   padding: 20px;
