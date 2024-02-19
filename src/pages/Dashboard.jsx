@@ -22,8 +22,8 @@
 import '../css/App.css';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useLocation } from "react-router-dom";
-import icon from "../images/logos/bitcoin.png";
 import React, { useRef, useState } from 'react';
+import { OPS, OP_DATA } from '../constants';
 
 
 function Dashboard(props) {
@@ -115,6 +115,59 @@ function Dashboard(props) {
         }
     };
 
+    const [isJSONInvalid, setIsJSONInvalid] = useState(false);
+
+    const showError = () => {
+        setIsJSONInvalid(true);
+    }
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // reset error state on drag
+        setIsJSONInvalid(false);
+    };
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // only text drops allowed
+        if (e.dataTransfer.types.includes("text/plain")) {
+            const droppedText = e.dataTransfer.getData("text/plain");
+            // checking for a valid json format
+            if (/^[\],:{}\s]*$/.test(droppedText.replace(/\\["\\\/bfnrtu]/g, '@').
+                replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+                replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+                const parsedJSON = JSON.parse(droppedText.replace(/,\s*([\]}])/g, '$1'));
+                if ('operation' in parsedJSON && parsedJSON.operation in OPS) {
+                    const OP = parsedJSON.operation;
+                    const {from, requiredFields} = OP_DATA[OPS[OP]];
+                    // check if all operation specific fields are present in json
+                    if (requiredFields.every((field) => field in parsedJSON)) {
+                        const store = location.state;
+                        store.operation = OPS[OP];
+                        store.from = from;
+                        requiredFields.forEach((field) => {
+                            store[field] = parsedJSON[field];
+                        });
+                        props.navigate("/transaction", {state: store});
+                    } else {
+                        showError();  
+                    }
+                } else {
+                    showError();
+                }
+            } else {
+                showError();
+            }
+        } else {
+            showError();
+        }
+    };
+
     return (
         <div className="page page--main" data-page="buy"> 
             <header className="header header--fixed">	
@@ -123,28 +176,19 @@ function Dashboard(props) {
                     <div className="header__icon open-panel" data-panel="left"><button style={{background: 'none', color: 'white', fontWeight: 'bolder', outline: 'none', borderStyle: 'none', cursor: 'pointer'}} onClick={back}><ExitToAppIcon /></button></div>
                 </div>
             </header>
-            
+
             <div className="page__content page__content--with-header page__content--with-bottom-nav">
                 <h2 className="page__title">Dashboard</h2>
-                <div className="fieldset">
-                    <div className="form">
-                        <form id="Form">
-                            <div className="form__row">
-                                <div className="form__select">
-                                    <p name="selectoptions" className="required">
-                                    Operation:
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="form__row d-flex align-items-center justify-space">
-                                <p className="form__input form__input--23">
-                                    0
-                                </p>
-                                <div className="form__coin-icon"><img src={icon} alt="currency" /><span>RoK</span></div>
-                            </div>
-
-                            <div className="form__coin-total">RoK 0.00</div>
-                        </form>
+                <div
+                  className="fieldset"
+                  onDrop={(e) => handleDrop(e)}
+                  onDragEnter={(e) => handleDragEnter(e)}
+                  onDragOver={(e) => handleDragOver(e)}
+                >
+                    <div className="drag_box">
+                        <div className={`drag_box_outline${isJSONInvalid ? " erred" : ""}`}>
+                            <span>{!isJSONInvalid ? <>Drag and Drop <b>JSON</b> here</> : "Invalid JSON"}</span>
+                        </div>
                     </div>
                 </div>
                 <h2 className="page__title">Select Account</h2>
