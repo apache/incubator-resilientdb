@@ -151,6 +151,9 @@ void Stats::MonitorGlobal() {
   uint64_t commit_txn_num = 0, commit_txn_time = 0;
   uint64_t last_commit_txn_num = 0, last_commit_txn_time = 0;
 
+  uint64_t commit_block_num = 0, commit_block_time = 0;
+  uint64_t last_commit_block_num = 0, last_commit_block_time = 0;
+
   while (!stop_) {
     sleep(monitor_sleep_time_);
     time += monitor_sleep_time_;
@@ -215,6 +218,9 @@ void Stats::MonitorGlobal() {
 
     commit_txn_num = commit_txn_num_;
     commit_txn_time = commit_txn_time_;
+
+    commit_block_num = commit_block_num_;
+    commit_block_time = commit_block_time_;
 
     verify_num = verify_num_;
     verify_time = verify_time_;
@@ -346,6 +352,11 @@ void Stats::MonitorGlobal() {
                                         last_commit_txn_time) /
                         (commit_txn_num - last_commit_txn_num) 
 
+              << " commit_block latency :"
+                 << static_cast<double>(commit_block_time -
+                                        last_commit_block_time) /
+                        (commit_block_num - last_commit_block_num) 
+
                << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
@@ -420,6 +431,12 @@ void Stats::MonitorGlobal() {
 
     last_commit_round_num = commit_round_num;
     last_commit_round_time = commit_round_time;
+
+    last_commit_txn_num = commit_txn_num;
+    last_commit_txn_time = commit_txn_time;
+
+    last_commit_block_num = commit_block_num;
+    last_commit_block_time = commit_block_time;
 
     last_verify_num = verify_num;
     last_verify_time = verify_time;
@@ -594,6 +611,11 @@ void Stats::AddCommitInterval(uint64_t run_time) {
 void Stats::AddCommitTxn(int num) {
   commit_txn_num_++;
   commit_txn_time_ += num;
+}
+
+void Stats::AddCommitBlock(int num) {
+  commit_block_num_++;
+  commit_block_time_ += num;
 }
 
 void Stats::SetPrometheus(const std::string& prometheus_address) {

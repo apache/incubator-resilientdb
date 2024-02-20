@@ -82,7 +82,7 @@ std::unique_ptr<Proposal> ProposalManager::FetchLocalBlock(
   std::unique_lock<std::mutex> lk(local_mutex_);
   auto bit = local_block_.find(hash);
   if (bit == local_block_.end()) {
-    LOG(ERROR) << " block not exist:" << hash.size();
+    //LOG(ERROR) << " block not exist:" << hash.size();
     return nullptr;
   }
   auto tmp = std::move(bit->second);
@@ -93,9 +93,15 @@ std::unique_ptr<Proposal> ProposalManager::FetchLocalBlock(
 void ProposalManager::AddBlock(std::unique_ptr<Proposal> proposal) {
   std::unique_lock<std::mutex> lk(txn_mutex_);
   //LOG(ERROR) << "add block hash :" << proposal->hash().size()
-  //           << " round:" << proposal->header().round()
-  //           << " proposer:" << proposal->header().proposer_id();
+ //            << " round:" << proposal->header().round()
+ //            << " proposer:" << proposal->header().proposer_id();
   block_[proposal->hash()] = std::move(proposal);
+}
+
+bool ProposalManager::CheckBlock(const std::string& hash){
+    std::unique_lock<std::mutex> lk(txn_mutex_);
+    //LOG(ERROR)<<"add block hash :"<<proposal->hash().size()<<" round:"<<proposal->header().round()<<" proposer:"<<proposal->header().proposer_id();
+    return block_.find(hash) != block_.end();
 }
 
 int ProposalManager::GetReferenceNum(const Proposal& req) {
@@ -121,8 +127,8 @@ std::unique_ptr<Proposal> ProposalManager::FetchRequest(int round, int sender) {
     return nullptr;
   }
   auto tmp = std::move(bit->second);
-  cert_list_[round].erase(sender);
-  // LOG(ERROR)<<" featch sender done, round:"<<round<<" sender:"<<sender;
+  //cert_list_[round].erase(sender);
+  //LOG(ERROR)<<" featch sender done, round:"<<round<<" sender:"<<sender;
   if (sender == id_) {
     FetchLocalBlock(hash);
   }
@@ -147,6 +153,8 @@ const Proposal* ProposalManager::GetRequest(int round, int sender) {
   return bit->second.get();
 }
 
+
+
 void ProposalManager::AddCert(std::unique_ptr<Certificate> cert) {
   int proposer = cert->proposer();
   int round = cert->round();
@@ -169,6 +177,11 @@ void ProposalManager::AddCert(std::unique_ptr<Certificate> cert) {
   auto tmp = std::make_unique<Certificate>(*cert);
   cert_list_[round][proposer] = std::move(cert);
   latest_cert_from_sender_[proposer] = std::move(tmp);
+}
+
+bool ProposalManager::CheckCert(int round, int sender) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  return cert_list_[round].find(sender) != cert_list_[round].end();
 }
 
 void ProposalManager::GetMetaData(Proposal* proposal) {
@@ -198,8 +211,8 @@ void ProposalManager::GetMetaData(Proposal* proposal) {
     if (meta_ids.find(meta.first) != meta_ids.end()) {
       continue;
     }
-    if (meta.second->round() > round_) {
-      for (int j = round_; j >= 0; --j) {
+    if (meta.second->round() >= round_) {
+      for (int j = round_-1; j >= 0; --j) {
         if (cert_list_[j].find(meta.first) != cert_list_[j].end()) {
           //LOG(ERROR) << " add weak cert from his:" << j
           //           << " proposer:" << meta.first<< " cert round:"<<cert_list_[j][meta.first]->round()<< " proposal round:"<<proposal->header().round();

@@ -47,6 +47,7 @@ class Stats {
   void AddExecutePrepareDelay(uint64_t run_time);
   void AddCommitInterval(uint64_t run_time);
   void AddCommitTxn(int num);
+  void AddCommitBlock(int num);
 
   void Monitor();
   void MonitorGlobal();
@@ -115,6 +116,7 @@ class Stats {
   std::atomic<uint64_t> commit_queuing_num_, commit_queuing_time_;
   std::atomic<uint64_t> commit_round_num_, commit_round_time_;
   std::atomic<uint64_t> commit_txn_num_, commit_txn_time_;
+  std::atomic<uint64_t> commit_block_num_, commit_block_time_;
   std::atomic<uint64_t> commit_delay_num_, commit_delay_time_;
   std::atomic<uint64_t> commit_waiting_num_, commit_waiting_time_;
   std::atomic<uint64_t> execute_prepare_num_, execute_prepare_time_;

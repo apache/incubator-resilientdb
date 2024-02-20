@@ -114,7 +114,7 @@ class TransactionExecutor {
   std::atomic<bool> stop_;
   Stats* global_stats_ = nullptr;
   DuplicateManager* duplicate_manager_;
-  int execute_thread_num_ = 8;
+  int execute_thread_num_ = 16;
   static const int blucket_num_ = 1024;
   int blucket_[blucket_num_];
   std::condition_variable cv_;

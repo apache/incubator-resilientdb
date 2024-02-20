@@ -37,7 +37,15 @@ class Tusk : public common::ProtocolBase {
 
   bool VerifyCert(const Certificate& cert);
 
- private:
+  bool CheckBlock(const Proposal& p);
+  void CheckFutureBlock(int round);
+  void CheckFutureCert(const Proposal& proposal);
+  void CheckFutureCert(int round, const std::string& hash, int proposer);
+  bool CheckCert(const Certificate& cert);
+  bool SendBlockAck(std::unique_ptr<Proposal> proposal);
+
+  void AsyncProcessCert();
+
   int GetLeader(int64_t r);
 
  private:
@@ -60,6 +68,13 @@ class Tusk : public common::ProtocolBase {
   std::atomic<int> queue_size_;
 
   Stats* global_stats_;
+
+  std::thread cert_thread_;
+  LockFreeQueue<Certificate> cert_queue_;
+  std::mutex future_block_mutex_, future_cert_mutex_, check_block_mutex_;
+  std::map<int, std::map<std::string, std::unique_ptr<Proposal>>> future_block_;
+  std::map<int, std::map<std::string, std::unique_ptr<Certificate>>> future_cert_;
+  int64_t  last_commit_time_ = 0;
 };
 
 }  // namespace tusk

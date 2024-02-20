@@ -27,6 +27,11 @@ class ProposalManager {
 
   bool VerifyHash(const Proposal &proposal);
 
+  bool CheckCert(int round, int sender);
+  bool CheckBlock(const std::string& hash);
+
+  void SetCommittedRound(int r);
+
  protected:
   void GetMetaData(Proposal* proposal);
 
@@ -41,6 +46,8 @@ class ProposalManager {
 
   std::mutex txn_mutex_, local_mutex_;
   std::map<std::pair<int, int>, int> reference_;
+
+  std::atomic<int> committed_round_ = 0;
 };
 
 }  // namespace tusk

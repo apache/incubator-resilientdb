@@ -13,7 +13,7 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  batch_size_ = 5;
+  batch_size_ = 2;
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
@@ -63,7 +63,9 @@ void RCC::AsyncCommit() {
         global_stats_->AddCommitInterval(commit_time - last_commit_time);
         last_commit_time = commit_time;
         int num = 0;
+        int pro = 0;
         for (auto& it : seq_set_[next_seq_]) {
+          pro++;
           //LOG(ERROR)<<"next seq:"<<next_seq_<<" transaction size:"<<it.second->transactions_size()<<" proposer:"<<it.second->header().proposer_id()<<" commit wait:"<<commit_time - it.second->queuing_time();
           for (auto& txn : *it.second->mutable_transactions()) {
             txn.set_id(execute_id_++);
@@ -73,8 +75,10 @@ void RCC::AsyncCommit() {
           global_stats_->AddCommitRuntime(GetCurrentTime() - commit_time);
           //global_stats_->AddCommitWaitingLatency(commit_time - it.second->queuing_time());
         }
+        //LOG(ERROR)<<" commit seq:"<<next_seq_<<" transac num:"<<num<<" block num:"<<pro;
         seq_set_.erase(seq_set_.find(next_seq_));
         global_stats_->AddCommitTxn(num);
+        global_stats_->AddCommitBlock(pro);
         {
           std::unique_lock<std::mutex> lk(seq_mutex_);
           commited_seq_ = std::max(static_cast<int64_t>(next_seq_), commited_seq_);
