@@ -1,3 +1,8 @@
+![](https://img.shields.io/github/v/release/ResilientApp/ResCLI)
+![](https://img.shields.io/badge/language-python-orange.svg)
+![](https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg)
+![GitHub](https://img.shields.io/github/license/ResilientApp/ResCLI)
+
 # ResCLI
 
 `ResCLI` is a command-line interface for managing ResDB instances and Python SDK instances. It provides functionalities to create, delete, view, and manage instances in a simple and efficient way.
