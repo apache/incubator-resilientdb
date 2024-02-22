@@ -13,7 +13,7 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  batch_size_ = 2;
+  batch_size_ = 5;
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
@@ -25,11 +25,9 @@ RCC::~RCC() {
   if (send_thread_.joinable()) {
     send_thread_.join();
   }
-  /*
   if (commit_thread_.joinable()) {
     commit_thread_.join();
   }
-  */
 }
 
 void RCC::AsyncCommit() {
@@ -54,7 +52,7 @@ void RCC::AsyncCommit() {
     //LOG(ERROR)<<" seq:"<<" proposer:"<<proposer<<" wait:"<<waiting_time;
     seq_set_[seq][proposer] = std::move(msg);
     if(seq_set_[seq].size() == totoal_proposer_num_){
-        global_stats_->AddCommitWaitingLatency(commit_time - commit_time_[seq]);
+        //global_stats_->AddCommitWaitingLatency(commit_time - commit_time_[seq]);
     }
 
     while (!IsStop()) {
@@ -73,7 +71,7 @@ void RCC::AsyncCommit() {
             commit_(txn);
           }
           global_stats_->AddCommitRuntime(GetCurrentTime() - commit_time);
-          //global_stats_->AddCommitWaitingLatency(commit_time - it.second->queuing_time());
+          global_stats_->AddCommitWaitingLatency(commit_time - it.second->queuing_time());
         }
         //LOG(ERROR)<<" commit seq:"<<next_seq_<<" transac num:"<<num<<" block num:"<<pro;
         seq_set_.erase(seq_set_.find(next_seq_));
@@ -191,16 +189,15 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
 
   if (status == ProposalType::NewMsg) {
     data = std::make_unique<Proposal>(proposal);
-    //global_stats_->AddCommitLatency(GetCurrentTime() - proposal.header().create_time());
   }
 
   bool changed = false;
   {
-   // LOG(ERROR) << "received :" << seq
-   //             << " from:" << sender
-   //             << " proposer:"<< proposer
-   //             << " status:" << proposal.header().status()
-   //             << " delay:" << GetCurrentTime() - proposal.header().create_time();
+    //LOG(ERROR) << "received :" << seq
+    //            << " from:" << sender
+    //            << " proposer:"<< proposer
+    //            << " status:" << proposal.header().status()
+    //            << " delay:" << GetCurrentTime() - proposal.header().create_time();
 
     std::unique_lock<std::mutex> lk(mutex_[0]);
     //std::unique_lock<std::mutex> lk(mutex_[proposer]);
