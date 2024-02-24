@@ -25,19 +25,19 @@ scrape_configs:
       - targets: ["localhost:9090"]
   - job_name: "node_exporter1"
     static_configs:
-      - targets: ["172.31.52.247:9100"]
+      - targets: ["localhost:9100"]
   - job_name: "node_exporter2"
     static_configs:
-      - targets: ["172.31.54.193:9100"]
+      - targets: ["localhost:9100"]
   - job_name: "node_exporter3"
     static_configs:
-      - targets: ["172.31.55.48:9100"]
+      - targets: ["localhost:9100"]
   - job_name: "node_exporter4"
     static_configs:
-      - targets: ["172.31.53.140:9100"]
+      - targets: ["localhost:9100"]
   - job_name: "node_exporter5"
     static_configs:
-      - targets: ["172.31.57.186:9100"]
+      - targets: ["localhost:9100"]
   - job_name: "cpp_client1"
     static_configs:
       - targets: ["172.31.52.247:8090"]

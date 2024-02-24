@@ -95,6 +95,7 @@ Stats::~Stats() {
   }
   if(enable_resview && summary_thread_.joinable()){
     summary_thread_.join();
+    crow_thread_.join();
   }
   if(enable_faulty_switch && faulty_thread_.joinable()){
     faulty_thread_.join();
@@ -152,6 +153,22 @@ void Stats::SocketManagementRead(){
   }
 }
 
+void Stats::CrowRoute(){
+  crow::SimpleApp app;
+  while(!stop_){
+    try{
+      CROW_ROUTE(app, "/consensus_data")([this](){
+        LOG(ERROR)<<"API";
+        return consensus_history_.dump();
+      });
+      app.port(8500+transaction_summary_.port).multithreaded().run();
+      sleep(1);
+    }
+    catch( const std::exception& e){
+    }
+  }
+}
+
 bool Stats::IsFaulty(){
   return make_faulty_.load();
 }
@@ -169,6 +186,7 @@ void Stats::SetProps(int replica_id, std::string ip, int port, bool resview_flag
   enable_faulty_switch=faulty_flag;
   if(resview_flag){
     summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
+    crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
   if(faulty_flag){
     faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
@@ -198,6 +216,7 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
   if(!enable_resview){
     return;
   }
+  transaction_summary_.txn_number=batch_request.seq();
   transaction_summary_.txn_command.clear();
   transaction_summary_.txn_key.clear();
   transaction_summary_.txn_value.clear();
@@ -231,7 +250,7 @@ void Stats::SendSummary(){
     return;
   }
   transaction_summary_.execution_time=std::chrono::system_clock::now();
-  transaction_summary_.txn_number=transaction_summary_.txn_number+1;
+  //transaction_summary_.txn_number=transaction_summary_.txn_number+1;
 
   //Convert Transaction Summary to JSON
   summary_json_["replica_id"]=transaction_summary_.replica_id;
@@ -258,6 +277,8 @@ void Stats::SendSummary(){
   for(size_t i=0; i<transaction_summary_.txn_value.size(); i++){
     summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
+
+  consensus_history_[std::to_string(transaction_summary_.txn_number)]=summary_json_;
 
   LOG(ERROR)<<summary_json_.dump();
 

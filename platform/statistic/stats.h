@@ -35,6 +35,7 @@
 #include <nlohmann/json.hpp>
 #include "boost/asio.hpp"
 #include "boost/beast.hpp"
+#include <crow.h>
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -82,6 +83,7 @@ class Stats{
     void SendSummary();
     void SocketManagementWrite();
     void SocketManagementRead();
+    void CrowRoute();
     bool IsFaulty();
     void ChangePrimary(int primary_id);
 
@@ -148,6 +150,7 @@ class Stats{
 
   std::thread summary_thread_;
   std::thread faulty_thread_;
+  std::thread crow_thread_;
   bool enable_resview;
   bool enable_faulty_switch;
   VisualData transaction_summary_;
@@ -156,6 +159,7 @@ class Stats{
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
   nlohmann::json summary_json_;
+  nlohmann::json consensus_history_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
 };

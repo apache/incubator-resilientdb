@@ -45,3 +45,10 @@ cc_library(
         "@eEVM",
     ],
 )
+
+cc_library(
+    name = "crow",
+    deps = [
+        "@com_crowcpp_crow//:crow",
+    ],
+)
