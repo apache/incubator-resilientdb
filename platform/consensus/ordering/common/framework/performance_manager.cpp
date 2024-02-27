@@ -248,6 +248,7 @@ int PerformanceManager::DoBatch(
     response_[idx][batch_request.local_id()]++;
   }
 
+  batch_request.set_proxy_id(config_.GetSelfInfo().id());
   batch_request.set_createtime(GetCurrentTime());
   batch_request.SerializeToString(new_request->mutable_data());
   if (verifier_) {

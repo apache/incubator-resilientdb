@@ -5,14 +5,11 @@ import "common/proto/signature_info.proto";
 package resdb.fairdag;
 
 message Metadata {
-  message Data {
-    bytes hash = 1;
-    int32 round = 2;
-    int32 proposer = 3;
-  };
-  Data data = 1;
-  SignatureInfo sign = 2;
+  int32 round = 1;
+  bytes hash = 2;
   int32 sender = 3;
+  SignatureInfo sign = 4;
+  int32 proposer = 5;
 }
 
 message Reference {
@@ -42,12 +39,12 @@ message Transaction{
   bytes data = 2;
   bytes hash = 3;
   int32 proxy_id = 4;
-  int32 proposer = 5;
-  uint64 timestamp = 6;
-  int64 user_seq = 7;
-  int64 create_time = 8;
-  int64 queuing_time = 9;
-  int64 commit_time = 10;
+  int64 create_time = 5;
+  int32 group_id = 6;
+  int64 queuing_time = 7;
+  int32 proposer = 8;
+  uint64 timestamp = 9;
+  int64 user_seq = 10;
 }
 
 enum ProposalType{
@@ -67,9 +64,19 @@ message Header {
   CertLink weak_cert = 10;
 }
 
+message TxnDigest {
+  bytes hash = 1;
+  int64 ts = 2;
+  int64 proposer = 3;
+  int64 seq = 4;
+  int64 create_time = 5;
+  int64 queuing_time = 6;
+}
+
 message Proposal {
   Header header = 1;
   repeated Transaction transactions = 3;
+  repeated TxnDigest digest = 4;
   int32 sender = 5;
   bytes hash = 6;
   int64 queuing_time = 7;

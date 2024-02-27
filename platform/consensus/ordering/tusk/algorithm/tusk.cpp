@@ -10,7 +10,7 @@ namespace tusk {
 Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
-  batch_size_ = 2;
+  batch_size_ = 5;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
@@ -78,8 +78,9 @@ void Tusk::AsyncSend() {
     std::vector<std::unique_ptr<Transaction>> txns;
     txns.push_back(std::move(txn));
     for (int i = 1; i < batch_size_; ++i) {
-      auto txn = txns_.Pop(0);
+      auto txn = txns_.Pop(10);
       if (txn == nullptr) {
+        continue;
         break;
       }
       txn->set_queuing_time(GetCurrentTime() - txn->create_time());
@@ -92,6 +93,11 @@ void Tusk::AsyncSend() {
 
     auto proposal = proposal_manager_->GenerateProposal(txns);
     Broadcast(MessageType::NewBlock, *proposal);
+
+    std::string block_data;
+    proposal->SerializeToString(&block_data);
+    global_stats_->AddBlockSize(block_data.size());
+
     proposal_manager_->AddLocalBlock(std::move(proposal));
 
     int round = proposal_manager_->CurrentRound() - 1;

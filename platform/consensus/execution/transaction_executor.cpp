@@ -202,7 +202,6 @@ void TransactionExecutor::OrderMessage() {
 }
 
 void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
-    //global_stats_->AddCommitDelay(GetCurrentTime()- message->create_time());
     global_stats_->IncCommit();
     message->set_commit_time(GetCurrentTime());
     execute_queue_.Push(std::move(message));
@@ -378,7 +377,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
       WaitForExecute(request->seq());
       response_v = transaction_manager_->ExecuteBatchData(*data_p);
-      //response_v = transaction_manager_->ExecuteBatchData(*data);
       FinishExecute(request->seq());
 
       std::unique_ptr<BatchUserResponse> batch_response =
@@ -399,7 +397,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_local_id(batch_request_p->local_id());
   global_stats_->AddCommitDelay(GetCurrentTime()- response->createtime());
   //LOG(ERROR)<<" proxy id:"<<batch_request_p->proxy_id()<<" local id:"<<batch_request_p->local_id()<<" latency:"<<GetCurrentTime()- response->createtime();
-  //global_stats_->AddCommitDelay(GetCurrentTime()- batch_request_p->createtime());
 
   response->set_seq(request->seq());
 

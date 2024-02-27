@@ -48,6 +48,9 @@ class Stats {
   void AddCommitInterval(uint64_t run_time);
   void AddCommitTxn(int num);
   void AddCommitBlock(int num);
+  void AddBlockSize(int size);
+  void AddCommitRatio(uint64_t num);
+  void AddExecuteDelay(uint64_t run_time);
 
   void Monitor();
   void MonitorGlobal();
@@ -121,6 +124,9 @@ class Stats {
   std::atomic<uint64_t> commit_waiting_num_, commit_waiting_time_;
   std::atomic<uint64_t> execute_prepare_num_, execute_prepare_time_;
   std::atomic<uint64_t> commit_interval_num_, commit_interval_time_;
+  std::atomic<uint64_t> block_size_num_, block_size_;
+  std::atomic<uint64_t> commit_ratio_num_, commit_ratio_time_;
+  std::atomic<uint64_t> execute_delay_num_, execute_delay_time_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::unique_ptr<PrometheusHandler> prometheus_;

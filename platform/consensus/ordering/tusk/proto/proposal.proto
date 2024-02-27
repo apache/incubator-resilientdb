@@ -41,7 +41,7 @@ message Transaction{
   int32 proxy_id = 4;
   int64 create_time = 5;
   int32 group_id = 6;
-  int32 queuing_time = 7;
+  int64 queuing_time = 7;
 }
 
 enum ProposalType{

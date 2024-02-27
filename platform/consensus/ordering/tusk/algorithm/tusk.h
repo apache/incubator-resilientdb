@@ -26,8 +26,6 @@ class Tusk : public common::ProtocolBase {
   void ReceiveBlockCert(std::unique_ptr<Certificate> cert);
 
 
-  void SetVerifyFunc(std::function<bool(const Transaction&txn)> func);
-
  private:
   void CommitProposal(int round, int proposer);
   void CommitRound(int round);
@@ -57,7 +55,7 @@ class Tusk : public common::ProtocolBase {
   SignatureVerifier* verifier_;
 
   std::thread send_thread_;
-  std::thread commit_thread_, execute_thread_, block_thread_;
+  std::thread commit_thread_, execute_thread_;
   std::mutex txn_mutex_, mutex_;
   int limit_count_;
   std::map<std::string, std::map<int, std::unique_ptr<Metadata>>> received_num_;

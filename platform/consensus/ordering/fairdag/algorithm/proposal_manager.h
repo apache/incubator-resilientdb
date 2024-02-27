@@ -9,13 +9,17 @@ class ProposalManager {
  public:
   ProposalManager(int32_t id, int limit_count);
 
-  std::unique_ptr<Proposal> GenerateProposal(const std::vector<std::unique_ptr<Transaction>>& txns);
+  std::unique_ptr<Proposal> GenerateProposal(std::vector<std::unique_ptr<std::string>>& txns);
 
     int CurrentRound();
     void AddLocalBlock(std::unique_ptr<Proposal> proposal);
     const Proposal * GetLocalBlock(const std::string& hash);
     std::unique_ptr<Proposal> FetchLocalBlock(const std::string& hash);
+    std::unique_ptr<Transaction> FetchTxn(const std::string& hash);
+  std::unique_ptr<Transaction> FetchTxnCopy(const std::string& hash);
+  void AddTxn(const std::string& hash, std::unique_ptr<Transaction> txn);
 
+    int64_t SetQueuingTime(const std::string& hash);
 
     void AddBlock(std::unique_ptr<Proposal> proposal);
     void AddCert(std::unique_ptr<Certificate> cert);
@@ -31,6 +35,8 @@ class ProposalManager {
   protected:
     void GetMetaData(Proposal * proposal);
 
+  Transaction* GetTxn(const std::string& hash);
+
  private:
   int32_t id_;
   int round_;
@@ -44,6 +50,10 @@ class ProposalManager {
 
   std::mutex txn_mutex_, local_mutex_;
   std::map<std::pair<int,int>, int> reference_;
+
+  std::mutex data_mutex_;
+  std::map<std::string, std::unique_ptr<Transaction> > data_;
+  int64_t local_ts_ = 0;
 };
 
 }  // namespace tusk

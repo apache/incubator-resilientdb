@@ -28,26 +28,28 @@ class FairDAG : public common::ProtocolBase {
   void ReceiveBlockCert(std::unique_ptr<Certificate> cert);
 
 private:
-  void CommitTxns(std::vector<std::unique_ptr<Transaction> > txns);
+  void CommitTxns(std::vector<std::unique_ptr<Transaction> >& txns);
   void SortTxn(std::vector<std::unique_ptr<Transaction>>& txns, 
       std::map<std::string, uint64_t>& assigned_time);
 
-  uint64_t TryAssign(const std::string& hash);
-  uint64_t GetLowerboundTimestamp(const std::string& hash) ;
-  uint64_t GetCommitTimestamp(const std::string& hash);
+  uint64_t TryAssign(const std::pair<int,int64_t>& key);
+  uint64_t GetLowerboundTimestamp(const std::pair<int,int64_t>& key);
+  uint64_t GetCommitTimestamp(const std::pair<int,int64_t>& key);
 
  private:
   std::mutex mutex_;
   std::unique_ptr<Tusk> tusk_;
   int64_t local_time_ = 0;
-  std::map<std::string, std::map<int, uint64_t> > committed_txns_;
-  std::map<std::string, uint64_t > committed_time_;
-  std::set<std::string> ready_;
+  std::map<std::pair<int,int64_t>, std::map<int, uint64_t> > committed_txns_;
+  //std::map<std::string, std::map<int, uint64_t> > committed_txns_;
+  std::map<std::pair<int,int64_t>, uint64_t > committed_time_;
+  std::set<std::pair<int,int> > ready_;
   int execute_id_;
   std::vector<uint64_t> min_timestamp_;
   int replica_num_;
   std::multimap<uint64_t, std::unique_ptr<Transaction>> not_ready_;
   Stats* global_stats_;
+  std::map<std::pair<int,int64_t>, int64_t> assigned_time_;
 };
 
 }  // namespace tusk
