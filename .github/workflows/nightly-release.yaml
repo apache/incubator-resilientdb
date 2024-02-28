@@ -23,12 +23,6 @@ jobs:
           git config --global user.email "$(git log -1 --pretty=format:'%ae')"
           git config --global user.name "$(git log -1 --pretty=format:'%an')"
 
-      - name: Tag the release
-        run: git tag -a nightly -m "Nightly Release"
-
-      - name: Push the tag
-        run: git push origin nightly
-
       - name: Create or Get Nightly Release ID
         id: get_nightly_release
         run: |
