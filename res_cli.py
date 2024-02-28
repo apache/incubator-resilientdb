@@ -8,20 +8,6 @@ import requests
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-FLASK_BASE_URL = config.get('Server', 'flask_base_url')
-
-
-def make_flask_request(endpoint, method, data=None):
-    url = f"{FLASK_BASE_URL}/{endpoint}"
-    headers = {"Content-Type": "application/json"}
-    response = requests.request(method, url, json=data, headers=headers)
-
-    if not response.ok:
-        response.raise_for_status()
-
-    return response.json()
-
-
 def get_logged_in_user():
     return config.get('User', 'Current_User')
 
@@ -55,13 +41,6 @@ def create_instance(type):
                    container_name, "-d", f"expolab/{type}:arm64"]
 
         subprocess.run(command, check=True) 
-
-        if response.get("success"):
-            click.echo(
-                f"Instance created successfully. Container Name: {container_name}"
-            )
-        else:
-            click.echo("Creation failed")
 
     except subprocess.CalledProcessError as error:
         click.echo(f"Error creating instance: {error}", err=True)

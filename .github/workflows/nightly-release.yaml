@@ -1,0 +1,46 @@
+name: Nightly Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Ruby
+        uses: actions/setup-ruby@v2
+        with:
+          ruby-version: 2.6
+
+      - name: Set up Git
+        run: |
+          git config --global user.email "$(git log -1 --pretty=format:'%ae')"
+          git config --global user.name "$(git log -1 --pretty=format:'%an')"
+
+      - name: Tag the release
+        run: git tag -a nightly -m "Nightly Release"
+
+      - name: Push the tag
+        run: git push origin nightly
+
+      - name: Create or Get Nightly Release ID
+        id: get_nightly_release
+        run: |
+          NIGHTLY_RELEASE_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/releases/tag/nightly" | jq -r .id)
+          echo "NIGHTLY_RELEASE_ID=${NIGHTLY_RELEASE_ID}" >> $GITHUB_ENV
+
+      - name: Upload artifacts to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.get_nightly_release.outputs.upload_url }}
+          asset_path: path/to/artifact.zip
+          asset_name: artifact.zip
+          asset_content_type: application/zip
