@@ -1,5 +1,5 @@
 ![](https://img.shields.io/github/v/release/ResilientApp/ResCLI)
-![](https://img.shields.io/badge/language-python-orange.svg)
+![](https://img.shields.io/badge/language-ruby-orange.svg)
 ![](https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg)
 ![GitHub](https://img.shields.io/github/license/ResilientApp/ResCLI)
 
@@ -25,7 +25,7 @@ To use `ResCLI`, you can download the binary from the [Releases](https://github.
     ```bash
     chmod +x res-cli
     ```
-
+<!-- 
 ## Configuration
 
 `res-cli` uses a configuration file (`config.ini`) to store settings such as the flaskBaseUrl. Follow the steps below to configure the CLI:
@@ -38,7 +38,7 @@ Create a configuration file named `config.ini`, Replace the flaskBaseUrl value w
     
     [User]
     current_user = bob@gmail.com
-   ```
+   ``` -->
 
 ## Usage
 
@@ -50,7 +50,7 @@ Once installed and configured, you can use res-cli to perform various actions re
 
 ## Commands
 
-- Login: Logs in to the specified user account.
+<!-- - Login: Logs in to the specified user account.
 
 ```bash
     ./res-cli login # Enter email and password when prompted
@@ -60,7 +60,7 @@ Once installed and configured, you can use res-cli to perform various actions re
 
 ```bash
     ./res-cli logout
-```
+``` -->
 
 - Create Instance: Creates a new ResDB or Python SDK instance.
 
