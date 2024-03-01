@@ -1,8 +1,8 @@
 name: Create Linux release
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+    push:
+      branches:
+        - main
 env:
   RELEASE_VERSION: ${{ github.ref_name }}
   LINUX_BIN_PATH: res_cli-linux
