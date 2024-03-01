@@ -34,7 +34,7 @@ jobs:
       run: |
         wget https://github.com/pmq20/ruby-packer/releases/download/linux-x64/rubyc
         chmod +x ./rubyc
-        ./rubyc ./lib/res_cli/cli.rb --output=${{ inputs.linux-bin-path }}
+        ./rubyc --openssl-dir=/etc/ssl ./lib/res_cli/cli.rb --output=${{ inputs.linux-bin-path }}
     - name: 'Create Darwin Bin'
       if: matrix.os == 'macos-12'
       run: |
@@ -46,7 +46,7 @@ jobs:
 
         wget https://github.com/pmq20/ruby-packer/releases/download/darwin-x64/rubyc
         chmod +x ./rubyc
-        ./rubyc ./lib/res_cli/cli.rb --output=${{ inputs.darwin-bin-path }}
+        ./rubyc --openssl-dir=/etc/ssl ./lib/res_cli/cli.rb --output=${{ inputs.darwin-bin-path }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       if: matrix.os == 'ubuntu-20.04'
