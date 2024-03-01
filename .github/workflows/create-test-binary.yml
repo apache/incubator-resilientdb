@@ -1,0 +1,15 @@
+name: Create Linux release
+on:
+  push:
+    tags:
+      - 'test*.*.*'
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-binary:
+    uses: ./.github/workflows/make-binary.yml
+    with:
+      linux-bin-path: res_cli-linux
+      darwin-bin-path: res_cli-darwin
