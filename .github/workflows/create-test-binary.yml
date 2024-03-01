@@ -1,8 +1,8 @@
 name: Create Linux release
 on:
   push:
-    tags:
-      - 'test*.*.*'
+    branches:
+      - main
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
