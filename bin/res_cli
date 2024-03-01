@@ -1,5 +1,0 @@
-#!/usr/bin/env ruby
-
-require_relative '../lib/res_cli'
-
-ResCLI::CLI.new.call
