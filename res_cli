@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+begin
+  $LOAD_PATH.unshift(File.expand_path('lib', __dir__))
+
+  require 'res_cli'
+  ResCli::CLI.start
+rescue Interrupt
+  exit(1)
+end

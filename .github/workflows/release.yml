@@ -1,0 +1,42 @@
+name: Create Linux release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+env:
+  RELEASE_VERSION: ${{ github.ref_name }}
+  LINUX_BIN_PATH: uffizzi-linux
+  DARWIN_BIN_PATH: uffizzi-darwin
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-binary:
+    uses: ./.github/workflows/make-binary.yml
+    with:
+      linux-bin-path: uffizzi-linux
+      darwin-bin-path: uffizzi-darwin
+  create_release:
+    runs-on: ubuntu-latest
+    needs:
+      - build-binary
+    steps:
+      - name: Download Linux Bin
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.LINUX_BIN_PATH }}
+      - name: Download Macos Bin
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.DARWIN_BIN_PATH }}
+      - name: Generate release notes
+        uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.TOKEN }}
+          tag_name: 'nightly'
+          name: 'ResCLI_CI'
+          files: |
+            ${{ github.workspace }}/${{ env.LINUX_BIN_PATH }}
+            ${{ github.workspace }}/${{ env.DARWIN_BIN_PATH }}
+          generate_release_notes: true
