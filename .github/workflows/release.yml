@@ -5,8 +5,8 @@ on:
       - 'v*.*.*'
 env:
   RELEASE_VERSION: ${{ github.ref_name }}
-  LINUX_BIN_PATH: uffizzi-linux
-  DARWIN_BIN_PATH: uffizzi-darwin
+  LINUX_BIN_PATH: res_cli-linux
+  DARWIN_BIN_PATH: res_cli-darwin
 concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
@@ -15,8 +15,8 @@ jobs:
   build-binary:
     uses: ./.github/workflows/make-binary.yml
     with:
-      linux-bin-path: uffizzi-linux
-      darwin-bin-path: uffizzi-darwin
+      linux-bin-path: res_cli-linux
+      darwin-bin-path: res_cli-darwin
   create_release:
     runs-on: ubuntu-latest
     needs:
