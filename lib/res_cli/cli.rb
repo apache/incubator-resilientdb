@@ -2,44 +2,110 @@
 require 'optparse'
 require 'open3'
 require 'inifile'
+require 'io/console'
 
 module ResCli
+  class AuthService
+    def self.login
+      print "Enter your username: "
+      username = gets.chomp
+
+      print "Enter your password: "
+      password = STDIN.noecho(&:gets).chomp
+      puts 
+
+      if backend_login(username, password)
+        ResCli::CLI.set_logged_in_user(username)
+        puts "Login successful. Welcome, #{username}!"
+      else
+        puts "Login failed. Invalid username or password."
+      end
+    end
+
+    def self.logout
+      ResCli::CLI.set_logged_in_user(nil)
+      puts "Logout successful. Goodbye!"
+    end
+
+    # def self.github_login
+    #   print "Enter your GitHub username: "
+    #   github_username = gets.chomp
+
+    #   print "Enter your GitHub token (you can use a personal access token): "
+    #   github_token = STDIN.noecho(&:gets).chomp
+    #   puts 
+
+    #   if github_authentication(github_username, github_token)
+    #     ResCli::CLI.set_logged_in_user(github_username)
+    #     puts "GitHub login successful. Welcome, #{github_username}!"
+    #   else
+    #     puts "GitHub login failed. Invalid username or token."
+    #   end
+    # end
+
+    private
+
+    def self.backend_login(username, password)
+      return username == 'gnambiar' && password == '123'
+    end
+
+    # def self.github_authentication(username, token)
+    #   return !username.empty? && !token.empty?
+    # end
+  end
+  
   class CLI
+
+    CONFIG_FILE_PATH = 'config.ini'
+    @@config = IniFile.load(CONFIG_FILE_PATH)
+
     def self.start
       options = {}
       OptionParser.new do |opts|
         opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
-
+    
         opts.on('-c', '--create TYPE', [:resdb, :sdk], 'Create a new ResDB or PythonSDK instance') do |type|
           create_instance(type)
         end
-
+    
         opts.on('-e', '--exec-into INSTANCE_ID', 'Bash into a running ResDB or PythonSDK instance') do |instance_id|
           exec_into(instance_id)
         end
-
+    
         opts.on('-v', '--view-instances', 'View details about running instances') do
           view_instances
         end
-
+    
         opts.on('-d', '--delete INSTANCE_ID', 'Delete a running ResDB or PythonSDK instance') do |instance_id|
           delete_instance(instance_id)
         end
-
+    
         opts.on('-h', '--help', 'Display this help message') do
           help
           exit
         end
+    
+        opts.on('--login', 'Login with username and password') do
+          AuthService.login
+        end
+    
+        # opts.on('-gl', '--github-login', 'Login with GitHub') do
+        #   AuthService.github_login
+        # end
+    
+        opts.on('--logout', 'Logout') do
+          AuthService.logout
+        end
       end.parse!
-    end
+    end    
 
     def self.get_logged_in_user
-        config['User']['Current_User']
+        @@config['User']['Current_User']
     end
 
     def self.set_logged_in_user(username)
-        config['User']['Current_User'] = username
-        config.write    
+        @@config['User']['Current_User'] = username
+        @@config.write    
     end
 
     def self.create_instance(type)
@@ -119,11 +185,14 @@ module ResCli
     def self.help
         puts "Usage: #{$PROGRAM_NAME} [options]"
         puts "\nOptions:"
-        puts "  -c, --create TYPE     Create a new ResDB or PythonSDK instance"
-        puts "  -e, --exec-into INSTANCE_ID  Bash into a running ResDB or PythonSDK instance"
-        puts "  -v, --view-instances  View details about running instances"
-        puts "  -d, --delete INSTANCE_ID  Delete a running ResDB or PythonSDK instance"
-        puts "  -h, --help            Display this help message"
+        puts "  -li, --login                    Login with username and password"
+        # puts "  -gl, --github-login             Login with GitHub"
+        puts "  -lo, --logout                   Logout"
+        puts "  -c,  --create TYPE              Create a new ResDB or PythonSDK instance"
+        puts "  -e,  --exec-into INSTANCE_ID    Bash into a running ResDB or PythonSDK instance"
+        puts "  -v,  --view-instances           View details about running instances"
+        puts "  -d,  --delete INSTANCE_ID       Delete a running ResDB or PythonSDK instance"
+        puts "  -h,  --help                     Display this help message"
     end
   end
 end
