@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include <glog/logging.h>
@@ -46,9 +40,10 @@ void ShowUsage() {
 }
 
 void Transfer(UTXOClient* client, int64_t transaction_id,
-              const std::string& address, 
+              const std::string& address,
               const std::vector<std::string>& to_address,
-              const std::vector<int64_t>& values, const std::string& private_key,
+              const std::vector<int64_t>& values,
+              const std::string& private_key,
               const std::vector<std::string>& to_pub_key) {
   if (private_key.empty() || to_pub_key.empty()) {
     printf("no private key or public key\n");
@@ -61,15 +56,16 @@ void Transfer(UTXOClient* client, int64_t transaction_id,
   in->set_out_idx(0);
   nonce += transaction_id;
 
-  for(int i = 0; i < to_address.size();++i){
+  for (size_t i = 0; i < to_address.size(); ++i) {
     UTXOOut* out = utxo.add_out();
     out->set_address(to_address[i]);
     out->set_value(values[i]);
     out->set_pub_key(to_pub_key[i]);
     utxo.set_address(address);
-    utxo.set_sig(resdb::utils::ECDSASignString(private_key,
-                                               address + std::to_string(nonce)));
-    LOG(ERROR)<<"transfer from:"<<address<<" to:"<<to_address[i]<<" value:"<<values[i];
+    utxo.set_sig(resdb::utils::ECDSASignString(
+        private_key, address + std::to_string(nonce)));
+    LOG(ERROR) << "transfer from:" << address << " to:" << to_address[i]
+               << " value:" << values[i];
   }
 
   auto output = client->Transfer(utxo);
@@ -91,34 +87,33 @@ void GetWallet(UTXOClient* client, const std::string& address) {
   LOG(ERROR) << "address:" << address << " get wallet value:" << ret;
 }
 
-std::vector<std::string> ParseString(std::string str){
+std::vector<std::string> ParseString(std::string str) {
   std::vector<std::string> ret;
-  while(true){
+  while (true) {
     size_t pos = str.find(",");
-    if(pos == std::string::npos){
+    if (pos == std::string::npos) {
       ret.push_back(str);
       break;
     }
-    ret.push_back(str.substr(0,pos));
-    str = str.substr(pos+1);
+    ret.push_back(str.substr(0, pos));
+    str = str.substr(pos + 1);
   }
   return ret;
 }
 
-std::vector<int64_t> ParseValue(std::string str){
+std::vector<int64_t> ParseValue(std::string str) {
   std::vector<int64_t> ret;
-  while(true){
+  while (true) {
     size_t pos = str.find(",");
-    if(pos == std::string::npos){
+    if (pos == std::string::npos) {
       ret.push_back(strtoull(str.c_str(), NULL, 10));
       break;
     }
-    ret.push_back(strtoull(str.substr(0,pos).c_str(), NULL, 10));
-    str = str.substr(pos+1);
+    ret.push_back(strtoull(str.substr(0, pos).c_str(), NULL, 10));
+    str = str.substr(pos + 1);
   }
   return ret;
 }
-
 
 int main(int argc, char** argv) {
   if (argc < 3) {
@@ -177,8 +172,8 @@ int main(int argc, char** argv) {
   config.SetClientTimeoutMs(100000);
   UTXOClient client(config);
   if (cmd == "transfer") {
-    Transfer(&client, transaction_id, address, ParseString(to_address), ParseValue(value), private_key,
-             ParseString(to_pub_key));
+    Transfer(&client, transaction_id, address, ParseString(to_address),
+             ParseValue(value), private_key, ParseString(to_pub_key));
   } else if (cmd == "list") {
     GetList(&client, end_id, num);
   } else if (cmd == "wallet") {

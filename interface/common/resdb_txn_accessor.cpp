@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "interface/common/resdb_txn_accessor.h"
@@ -65,12 +59,15 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
     ths.push_back(std::thread(
         [&](NetChannel* client) {
           std::string response_str;
-          int ret = client->SendRequest(request, Request::TYPE_QUERY);
-          if (ret) {
-            return;
+          int ret = -1;
+          for (int i = 0; i < 3 && ret < 0; ++i) {
+            ret = client->SendRequest(request, Request::TYPE_QUERY);
+            if (ret) {
+              return;
+            }
+            client->SetRecvTimeout(1000);
+            ret = client->RecvRawMessageStr(&response_str);
           }
-          client->SetRecvTimeout(1000);
-          ret = client->RecvRawMessageStr(&response_str);
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
@@ -151,6 +148,46 @@ absl::StatusOr<std::vector<Request>> ResDBTxnAccessor::GetRequestFromReplica(
     txn_resp.push_back(transaction);
   }
   return txn_resp;
+}
+
+absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
+  QueryRequest request;
+  request.set_min_seq(0);
+  request.set_max_seq(0);
+
+  std::vector<std::unique_ptr<NetChannel>> clients;
+  std::vector<std::thread> ths;
+  std::string final_str;
+  std::mutex mtx;
+  std::condition_variable resp_cv;
+
+  std::unique_ptr<NetChannel> client =
+      GetNetChannel(replicas_[0].ip(), replicas_[0].port());
+
+  LOG(ERROR) << "ip:" << replicas_[0].ip() << " port:" << replicas_[0].port();
+
+  std::string response_str;
+  int ret = 0;
+  for (int i = 0; i < 5; ++i) {
+    ret = client->SendRequest(request, Request::TYPE_QUERY);
+    if (ret) {
+      continue;
+    }
+    client->SetRecvTimeout(100000);
+    ret = client->RecvRawMessageStr(&response_str);
+    LOG(ERROR) << "receive str:" << ret << " len:" << response_str.size();
+    if (ret != 0) {
+      continue;
+    }
+    break;
+  }
+
+  QueryResponse resp;
+  if (response_str.empty() || !resp.ParseFromString(response_str)) {
+    LOG(ERROR) << "parse fail len:" << final_str.size();
+    return absl::InternalError("recv data fail.");
+  }
+  return resp.max_seq();
 }
 
 }  // namespace resdb
