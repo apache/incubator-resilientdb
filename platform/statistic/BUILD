@@ -17,7 +17,8 @@ cc_library(
         "//third_party:prometheus",
         "//platform/common/network:tcp_socket",
         "//common:asio",
-        "//common:beast"
+        "//common:beast",
+        "//third_party:crow",
     ],
 )
 

@@ -76,7 +76,7 @@ Stats::Stats(int sleep_time) {
   transaction_summary_.port=-1;
 
   //Setup websocket here
-  send_summary_.store(false);
+  //send_summary_.store(false);
   make_faulty_.store(false);
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
@@ -93,10 +93,11 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
-  if(summary_thread_.joinable()){
+  if(enable_resview && summary_thread_.joinable()){
     summary_thread_.join();
+    crow_thread_.join();
   }
-  if(faulty_thread_.joinable()){
+  if(enable_faulty_switch && faulty_thread_.joinable()){
     faulty_thread_.join();
   }
 }
@@ -104,6 +105,7 @@ Stats::~Stats() {
 void Stats::SocketManagementWrite(){
   while(!stop_){
     try{
+      int count=0;
       LOG(ERROR)<<"Port:" <<transaction_summary_.port;
       asio::io_context io_context;
       tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
@@ -122,7 +124,6 @@ void Stats::SocketManagementWrite(){
           send_summary_.store(false);
         }
       }
-      sleep(1);
     }
     catch( const std::exception& e){
       LOG(ERROR)<<"Exception: " <<e.what();
@@ -142,7 +143,7 @@ void Stats::SocketManagementRead(){
       ws.accept();
       beast::flat_buffer data;
       ws.read(data);
-      make_faulty_.store(true);
+      make_faulty_.store(!make_faulty_.load());
       LOG(ERROR)<<"Received Message on port "<<transaction_summary_.port;
       ws.close("Message Received");
     }
@@ -152,21 +153,51 @@ void Stats::SocketManagementRead(){
   }
 }
 
+void Stats::CrowRoute(){
+  crow::SimpleApp app;
+  while(!stop_){
+    try{
+      CROW_ROUTE(app, "/consensus_data").methods("GET"_method)([this](const crow::request& req, crow::response& res){
+        LOG(ERROR)<<"API";
+        res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
+
+        // Send your response
+        res.body=consensus_history_.dump();
+        res.end();
+        //return consensus_history_.dump();
+      });
+      app.port(8500+transaction_summary_.port).multithreaded().run();
+      sleep(1);
+    }
+    catch( const std::exception& e){
+    }
+  }
+}
+
 bool Stats::IsFaulty(){
   return make_faulty_.load();
 }
 
 void Stats::ChangePrimary(int primary_id){
-  transaction_summary_.primary_id;
+  transaction_summary_.primary_id=primary_id;
   make_faulty_.store(false);
 }
 
-void Stats::SetProps(int replica_id, std::string ip, int port){
+void Stats::SetProps(int replica_id, std::string ip, int port, bool resview_flag, bool faulty_flag){
   transaction_summary_.replica_id=replica_id;
   transaction_summary_.ip=ip;
   transaction_summary_.port=port;
-  summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
-  faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
+  enable_resview=resview_flag;
+  enable_faulty_switch=faulty_flag;
+  if(resview_flag){
+    //summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
+    crow_thread_ = std::thread(&Stats::CrowRoute, this);
+  }
+  if(faulty_flag){
+    faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
+  }
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -174,6 +205,9 @@ void Stats::SetPrimaryId(int primary_id){
 }
 
 void Stats::RecordStateTime(std::string state){
+  if(!enable_resview){
+    return;
+  }
   if(state=="request" || state=="pre-prepare"){
     transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::now();
   }
@@ -186,6 +220,10 @@ void Stats::RecordStateTime(std::string state){
 }
 
 void Stats::GetTransactionDetails(BatchUserRequest batch_request){
+  if(!enable_resview){
+    return;
+  }
+  transaction_summary_.txn_number=batch_request.seq();
   transaction_summary_.txn_command.clear();
   transaction_summary_.txn_key.clear();
   transaction_summary_.txn_value.clear();
@@ -215,23 +253,12 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
 }
 
 void Stats::SendSummary(){
-  transaction_summary_.execution_time=std::chrono::system_clock::now();
-  transaction_summary_.txn_number=transaction_summary_.txn_number+1;
-  /* Can print stat values
-  LOG(ERROR)<<"Replica ID:"<< transaction_summary_.replica_id;
-  LOG(ERROR)<<"Primary ID:"<< transaction_summary_.primary_id;
-  LOG(ERROR)<<"Propose/pre-prepare time:"<< transaction_summary_.request_pre_prepare_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Prepare time:"<< transaction_summary_.prepare_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Commit time:"<< transaction_summary_.commit_state_time.time_since_epoch().count();
-  LOG(ERROR)<<"Execution time:"<< transaction_summary_.execution_time.time_since_epoch().count();
-  for(size_t i=0; i<transaction_summary_.prepare_message_count_times_list.size(); i++){
-    LOG(ERROR)<<" Prepare Message Count Time: " << transaction_summary_.prepare_message_count_times_list[i].time_since_epoch().count();
-  } 
-  for(size_t i=0; i<transaction_summary_.commit_message_count_times_list.size(); i++){
-    LOG(ERROR)<<" Commit Message Count Time: " << transaction_summary_.commit_message_count_times_list[i].time_since_epoch().count();
+  if(!enable_resview){
+    return;
   }
-  */
- 
+  transaction_summary_.execution_time=std::chrono::system_clock::now();
+  //transaction_summary_.txn_number=transaction_summary_.txn_number+1;
+
   //Convert Transaction Summary to JSON
   summary_json_["replica_id"]=transaction_summary_.replica_id;
   summary_json_["ip"]=transaction_summary_.ip;
@@ -258,11 +285,13 @@ void Stats::SendSummary(){
     summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
+  consensus_history_[std::to_string(transaction_summary_.txn_number)]=summary_json_;
+
   LOG(ERROR)<<summary_json_.dump();
 
   //Send Summary via Websocket
 
-  send_summary_.store(true);
+  /*send_summary_.store(true);
   int count =0;
   while(send_summary_.load() && count<5){
     sleep(1);
@@ -270,7 +299,7 @@ void Stats::SendSummary(){
   }
   if(send_summary_.load()){
     send_summary_.store(false);
-  }
+  }*/
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
