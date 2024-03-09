@@ -2,7 +2,8 @@ import os
 import sys
 current_file_path = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file_path)
-new_path_dir = os.path.join(current_dir, "bazel-out", "k8-fastbuild", "bin")
+parent_dir = os.path.dirname(current_dir)
+new_path_dir = os.path.join(parent_dir, "bazel-out", "k8-fastbuild", "bin", "api")
 sys.path.insert(0, new_path_dir)
 import pybind_kv
 

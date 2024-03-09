@@ -1,23 +1,23 @@
 # ResilientDB kv-Service Python API(Get and Set Command)
 
 ## Description
-This API allows users to directly use kv-service of the ResilientDB in Python
+This API allows users to use kv-service of the ResilientDB in Python directly.
 
 ## How to Run
-1. Make sure you have installed bazel5.0 and pybind11
-2. cd to `incubator-resilientdb/api` folder
-3. Run command `bazel build :pybind_kv_so`
-4. From `kv_operation.py` import `get_value` and `set_value` function into your Python file to use it (Make sure to use same python version when run `bazel build` command and call the functions)
+1. Make sure to run `./INSTALL.sh` in advance.
+1. cd to `incubator-resilientdb/api` folder.
+2. Run command `bazel build :pybind_kv_so`.
+3. From `kv_operation.py`, import `get_value` and `set_value` functions into your Python file to use it (Make sure to use the same Python version when running `bazel build` command and calling the functions).
 
 ## Parameters
 ### `set_value`:
-1. `key`: The key user want to store in key-value pair. Acceptable types are `str`, `int`, `float`
-2. `value`: The `key`'s corresponding value in key-value pair. Acceptable types are `str`, `int`, `float`
-3. `config_path`(optional): The absolute path to user's blockchain config file(ip addresses). If user does not specify this parameter, system will use main chain as default. Acceptable type is `str`
-4. `return`: `True` if `value` has been set successfully, otherwise `value` has not been set successfully.
+1. `key`: The key user wants to store in a key-value pair. Acceptable types are `str`, `int`, `float`.
+2. `value`: The corresponding value to `key` in the key-value pair. Acceptable types are `str`, `int`, `float`.
+3. config_path (optional): The path to the user's blockchain config file (IP addresses). If the user does not specify this parameter, the system will default to the address located in "ip.address.config." The acceptable type is `str`.
+4. `return`: `True` if `value` has been set successfully; otherwise, `value` has not been set successfully.
 ### `get_value`:
-1. `key`: The key user want to get in key-value pair. Acceptable types are `str`, `int`, `float`
-2. `return`: `\n` if the corresponding value of `key` is empty, otherwise is corresponding value of `key`
+1. `key`: The key user wants to get in a key-value pair. Acceptable types are `str`, `int`, `float`.
+2. `return`: `\n` if the corresponding value of `key` is empty, otherwise is the corresponding value of `key`.
 
 
 ## Example
@@ -30,3 +30,18 @@ from kv_operation import set_value, get_value
 set_value("test", "111222")
 get_value("test")
 ```
+
+If having set up the environment parameter, "sys.path" can be ignorred.
+```
+export PYTHON_PATH="/home/ubuntu/Desktop/incubator-resilientdb/api":PYTHON_PATH
+```
+```angular2html
+from kv_operation import set_value, get_value
+
+set_value("test", "111222")
+get_value("test")
+```
+
+
+
+
