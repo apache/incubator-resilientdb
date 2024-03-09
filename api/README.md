@@ -30,3 +30,18 @@ from kv_operation import set_value, get_value
 set_value("test", "111222")
 get_value("test")
 ```
+
+If having set up the environment parameter, "sys.path" can be ignorred.
+```
+export PYTHON_PATH="/home/ubuntu/Desktop/incubator-resilientdb/api":PYTHON_PATH
+```
+```angular2html
+from kv_operation import set_value, get_value
+
+set_value("test", "111222")
+get_value("test")
+```
+
+
+
+
