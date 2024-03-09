@@ -4,6 +4,7 @@
 This API allows users to directly use kv-service of the ResilientDB in Python
 
 ## How to Run
+1. Make sure run `./INSTALL.sh` in advance
 1. cd to `incubator-resilientdb/api` folder
 2. Run command `bazel build :pybind_kv_so`
 3. From `kv_operation.py` import `get_value` and `set_value` function into your Python file to use it (Make sure to use same python version when run `bazel build` command and call the functions)
