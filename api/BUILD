@@ -5,9 +5,9 @@ cc_binary(
     linkshared =1,
     linkstatic = 1,
     deps = [
-        "@com_resdb_nexres//common/proto:signature_info_cc_proto",
-        "@com_resdb_nexres//interface/kv:kv_client",
-        "@com_resdb_nexres//platform/config:resdb_config_utils",
+        "@//common/proto:signature_info_cc_proto",
+        "@//interface/kv:kv_client",
+        "@//platform/config:resdb_config_utils",
         "@pybind11//:pybind11",
     ],
 )
