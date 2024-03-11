@@ -1,0 +1,28 @@
+
+syntax = "proto3";
+
+package resdb.poe;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  int64 uid = 6;
+  int64 create_time = 7;
+  int64 seq = 9;
+}
+
+message Proposal {
+  bytes hash = 1;
+  int32 proposer = 2;
+  int64 seq =3 ;
+}
+
+enum MessageType {
+  None = 0;
+  Propose = 1;
+  Prepare = 2;
+}
+
