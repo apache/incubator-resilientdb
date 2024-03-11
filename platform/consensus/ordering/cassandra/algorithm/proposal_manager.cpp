@@ -9,6 +9,18 @@ namespace resdb {
 namespace cassandra {
 namespace cassandra_recv {
 
+namespace {
+std::string Encode(const std::string& hash) {
+  std::string ret;
+  for (int i = 0; i < hash.size(); ++i) {
+    int x = hash[i];
+    ret += std::to_string(x);
+  }
+  return ret;
+}
+
+}
+
 ProposalManager::ProposalManager(int32_t id, ProposalGraph* graph)
     : id_(id), graph_(graph) {
   local_proposal_id_ = 1;
@@ -58,8 +70,8 @@ void ProposalManager::AddBlock(std::unique_ptr<Block> block) {
   std::unique_lock<std::mutex> lk(p_mutex_);
   int sender = block->sender_id();
   int block_id = block->local_id();
+  //LOG(ERROR)<<"add block from sender:"<<sender<<" id:"<<block_id<<" blocksize:"<<pending_blocks_[sender].size()<<" hash:"<<Encode(block->hash());
   pending_blocks_[sender][block->hash()] = std::move(block);
-  //LOG(ERROR)<<"add block from sender:"<<sender<<" id:"<<block_id;
 }
 
 bool ProposalManager::ContainBlock(const std::string& hash, int sender) {
@@ -85,9 +97,11 @@ const Block* ProposalManager::QueryBlock(const std::string& hash) {
 
 Block* ProposalManager::GetBlockSnap(const std::string& hash, int sender) {
   std::unique_lock<std::mutex> lk(p_mutex_);
+
+  //LOG(ERROR)<<" sender:"<<sender<<" block size:"<<pending_blocks_[sender].size();
   auto it = pending_blocks_[sender].find(hash);
   if (it == pending_blocks_[sender].end()) {
-    LOG(ERROR) << "block from sender:" << sender << " not found";
+    LOG(ERROR) << "block from sender:" << sender << " not found"<<" pending size:"<<pending_blocks_[sender].size();
     return nullptr;
   }
   assert(it != pending_blocks_[sender].end());
@@ -110,8 +124,8 @@ std::unique_ptr<Block> ProposalManager::GetBlock(const std::string& hash,
       continue;
     }
     assert(it != pending_blocks_[sender].end());
-    // LOG(ERROR)<<"get block: sender:"<<sender<<" id:"<<block->local_id();
     auto block = std::move(it->second);
+    //LOG(ERROR)<<"get block: sender:"<<sender<<" id:"<<block->local_id()<<" removed";
     pending_blocks_[sender].erase(it);
     return block;
   }
@@ -160,7 +174,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       return nullptr;
       // LOG(ERROR) << "generate wait proposal block size:" << blocks_.size();
     }
-    int max_block = 2;
+    int max_block = 5;
     int num = 0;
     int64_t current_time = GetCurrentTime();
     proposal->set_create_time(current_time);
@@ -374,8 +388,8 @@ void ProposalManager::ReleaseTmpProposal(const Proposal& proposal) {
   std::unique_lock<std::mutex> lk(q_mutex_);
   auto it = tmp_proposal_.find(proposal.header().hash());
   if (it != tmp_proposal_.end()) {
-    LOG(ERROR) << "release proposal:" << proposal.header().proposer_id()
-               << " id:" << proposal.header().proposal_id();
+    //LOG(ERROR) << "release proposal:" << proposal.header().proposer_id()
+    //           << " id:" << proposal.header().proposal_id();
     tmp_proposal_.erase(it);
   }
   graph_->AddProposalOnly(proposal);

@@ -19,6 +19,7 @@ std::vector<ProposalState> GetStates() {
 ProposalGraph::ProposalGraph(int fault_num) : f_(fault_num) {
   ranking_ = std::make_unique<Ranking>();
   current_height_ = 0;
+  global_stats_ = Stats::GetGlobalStats();
 }
 
 void ProposalGraph::IncreaseHeight() {
@@ -50,15 +51,15 @@ void ProposalGraph::AddProposalOnly(const Proposal& proposal) {
   if (it == node_info_.end()) {
     auto np = std::make_unique<NodeInfo>(proposal);
     node_info_[proposal.header().hash()] = std::move(np);
-    LOG(ERROR) << "add proposal proposer:" << proposal.header().proposer_id()
-               << " id:" << proposal.header().proposal_id()
-               << " hash:" << Encode(proposal.header().hash());
+    //LOG(ERROR) << "add proposal proposer:" << proposal.header().proposer_id()
+    //           << " id:" << proposal.header().proposal_id()
+    //           << " hash:" << Encode(proposal.header().hash());
   }
 }
 
 int ProposalGraph::AddProposal(const Proposal& proposal) {
-  // LOG(ERROR) << "add proposal height:" << proposal.header().height()
-  //           << " current height:" << current_height_;
+   //LOG(ERROR) << "add proposal height:" << proposal.header().height()
+   //          << " current height:" << current_height_<<" from:"<<proposal.header().proposer_id()<<" proposal id:"<<proposal.header().proposal_id();
   assert(current_height_ >= latest_commit_.header().height());
   /*
   if (proposal.header().height() < current_height_) {
@@ -212,7 +213,9 @@ void ProposalGraph::Commit(const std::string& hash) {
 
   std::set<std::string> is_main_hash;
   is_main_hash.insert(hash);
-
+  
+  int from_proposer = it->second->proposal.header().proposer_id();
+  int from_proposal_id = it->second->proposal.header().proposal_id();
    //LOG(ERROR)<<"commit :"<<it->second->proposal.header().proposer_id()<<" id:"<<it->second->proposal.header().proposal_id();
 
   std::vector<std::vector<Proposal*>> commit_p;
@@ -246,10 +249,9 @@ void ProposalGraph::Commit(const std::string& hash) {
       }
 
       commit_p.back().push_back(p);
-      // LOG(ERROR)<<"commit node:"<<p->header().proposer_id()<<"
-      // id:"<<p->header().proposal_id()
+       //LOG(ERROR)<<"commit node:"<<p->header().proposer_id()<<" id:"<<p->header().proposal_id()
       //<<" weak proposal size:"<<p->weak_proposals().hash_size();
-      // LOG(ERROR)<<"push p:"<<p->header().proposer_id();
+       //LOG(ERROR)<<"push p:"<<p->header().proposer_id();
       for (const std::string& w_hash : p->weak_proposals().hash()) {
         auto it = node_info_.find(w_hash);
         if (it == node_info_.end()) {
@@ -272,6 +274,7 @@ void ProposalGraph::Commit(const std::string& hash) {
   if (commit_p.size() > 1) {
     LOG(ERROR) << "commit more hash";
   }
+  int block_num = 0;
   for (int i = commit_p.size() - 1; i >= 0; i--) {
     for (int j = 0; j < commit_p[i].size(); ++j) {
       /*
@@ -281,17 +284,20 @@ void ProposalGraph::Commit(const std::string& hash) {
                    << " height:" << commit_p[i][j]->header().height()
                    << " size:" << commit_p[i].size();
       }
-      LOG(ERROR) << "commmit proposal:"
-                 << commit_p[i][j]->header().proposer_id()
-                 << " height:" << commit_p[i][j]->header().height()
-                 << " idx:" << j << " delay:"
-                 << (GetCurrentTime() - commit_p[i][j]->create_time());
-       */
+      */
+      //LOG(ERROR) << "commmit proposal:"
+      //           << commit_p[i][j]->header().proposer_id()
+      //           << " height:" << commit_p[i][j]->header().height()
+      //           << " idx:" << j 
+      //           << " delay:" << (GetCurrentTime() - commit_p[i][j]->create_time()) 
+      //           << " commit from:"<< from_proposer<<" id:"<<from_proposal_id;
+      block_num += commit_p[i][j]->block_size();
       if (commit_callback_) {
         commit_callback_(*commit_p[i][j]);
       }
     }
   }
+  global_stats_->AddCommitBlock(block_num);
 
   // TODO clean
   last_node_[it->second->proposal.header().height()].clear();
@@ -377,10 +383,9 @@ Proposal* ProposalGraph::GetStrongestProposal() {
   }
 
   UpdateHistory(&sp->proposal);
-  // LOG(ERROR) << "get strong proposal from height:" << current_height_ << "
-  // ->("
-  //           << sp->proposal.header().proposer_id() << ","
-  //           << sp->proposal.header().proposal_id() << ")";
+   //LOG(ERROR) << "get strong proposal from height:" << current_height_ << " ->("
+   //          << sp->proposal.header().proposer_id() << ","
+   //          << sp->proposal.header().proposal_id() << ")";
   return &sp->proposal;
 }
 

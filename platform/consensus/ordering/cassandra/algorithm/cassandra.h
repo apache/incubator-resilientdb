@@ -67,6 +67,8 @@ class Cassandra: public common::ProtocolBase {
   void BroadcastTxn();
   bool AddProposal(const Proposal& proposal);
 
+  bool ProcessProposal(std::unique_ptr<Proposal> proposal);
+
  private:
   std::unique_ptr<ProposalGraph> graph_;
   LockFreeQueue<Transaction> txns_;
@@ -102,6 +104,7 @@ class Cassandra: public common::ProtocolBase {
   std::map<int, std::vector<std::unique_ptr<Proposal>>> future_proposal_;
 
   std::function<int(const Transaction&)> prepare_;
+  int current_round_;
 
   Stats* global_stats_;
 };

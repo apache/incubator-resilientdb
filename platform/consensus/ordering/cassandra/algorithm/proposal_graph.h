@@ -5,6 +5,7 @@
 #include "platform/consensus/ordering/cassandra/algorithm/proposal_state.h"
 #include "platform/consensus/ordering/cassandra/algorithm/ranking.h"
 #include "platform/consensus/ordering/cassandra/proto/proposal.pb.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace cassandra {
@@ -78,6 +79,7 @@ class ProposalGraph {
   std::map<int, std::map<std::string, std::vector<std::unique_ptr<Proposal>>>>
       not_found_proposal_;
   std::map<std::string, Proposal*> new_proposals_;
+  Stats* global_stats_;
 };
 
 }  // namespace cassandra_recv

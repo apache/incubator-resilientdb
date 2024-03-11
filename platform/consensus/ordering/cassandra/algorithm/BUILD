@@ -35,6 +35,7 @@ cc_library(
     deps = [
         ":ranking",
         ":proposal_state",
+        "//platform/statistic:stats",
         "//common:comm",
         "//common/utils",
         "//platform/consensus/ordering/cassandra/proto:proposal_cc_proto",
