@@ -42,16 +42,7 @@ ReplicaCommunicator::ReplicaCommunicator(
       worker_threads_.push_back(std::thread([&]() { io_service_.run(); }));
     }
   }
-
-  /*
-  for (const ReplicaInfo& info : replicas) {
-    std::string ip = info.ip();
-    int port = info.port();
-    auto client = std::make_unique<AsyncReplicaClient>(
-        &io_service_, ip, port + (is_use_long_conn_ ? 10000 : 0), true);
-    client_pools_[std::make_pair(ip, port)] = std::move(client);
-  }
-  */
+  LOG(ERROR)<<" tcp batch:"<<tcp_batch;
 
   StartBroadcastInBackGround();
 }
@@ -188,11 +179,13 @@ int ReplicaCommunicator::SendMessageFromPool(
     if (client == nullptr) {
       continue;
     }
+    //LOG(ERROR) << "send to:" << replica.ip();
     if (client->SendMessage(data) == 0) {
       ret++;
     } else {
       LOG(ERROR) << "send to:" << replica.ip() << " fail";
     }
+    //LOG(ERROR) << "send to:" << replica.ip()<<" done";
   }
   return ret;
 }

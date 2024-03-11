@@ -94,7 +94,7 @@ class ResDBConfig {
   void SetSignatureVerifierEnabled(bool enable_sv);
 
   // Performance setting
-  bool IsPerformanceRunning();
+  bool IsPerformanceRunning() const;
   void RunningPerformance(bool);
 
   bool IsTestMode() const;
@@ -135,15 +135,17 @@ class ResDBConfig {
   bool signature_verifier_enabled_ = true;
   bool is_performance_running_ = false;
   bool is_test_mode_ = false;
-  uint32_t max_process_txn_ = 2048;
   uint32_t client_batch_wait_time_ms_ = 100;  // milliseconds, 0.1s
-  uint32_t client_batch_num_ = 100;
   uint64_t viewchange_commit_timeout_ms_ =
       60000;  // default 60s to change viewchange
 
-  uint32_t worker_num_ = 64;
-  uint32_t input_worker_num_ = 1;
-  uint32_t output_worker_num_ = 1;
+
+  // This is the default settings.
+  // change these parameters in the configuration.
+  uint32_t max_process_txn_ = 64;
+  uint32_t worker_num_ = 16;
+  uint32_t input_worker_num_ = 5;
+  uint32_t output_worker_num_ = 5;
 };
 
 }  // namespace resdb
