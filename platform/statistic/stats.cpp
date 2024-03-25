@@ -88,12 +88,12 @@ Stats::~Stats() {
     global_thread_.join();
   }
   if(enable_resview && summary_thread_.joinable()){
-    summary_thread_.join();
+    //summary_thread_.join();
     crow_thread_.join();
   }
-  if(enable_faulty_switch && faulty_thread_.joinable()){
+  /*if(enable_faulty_switch && faulty_thread_.joinable()){
     faulty_thread_.join();
-  }
+  }*/
 }
 
 void Stats::SocketManagementWrite(){
@@ -162,6 +162,29 @@ void Stats::CrowRoute(){
         res.end();
         //return consensus_history_.dump();
       });
+      CROW_ROUTE(app, "/get_status").methods("GET"_method)([this](const crow::request& req, crow::response& res){
+        LOG(ERROR)<<"API";
+        res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
+
+        // Send your response
+        res.body= IsFaulty() ? "Faulty" : "Not Faulty";
+        res.end();
+      });
+      CROW_ROUTE(app, "/make_faulty").methods("POST"_method)([this](const crow::request& req, crow::response& res){
+        LOG(ERROR)<<"API";
+        res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
+
+        // Send your response
+        if(enable_faulty_switch_){
+          make_faulty_.store(!make_faulty_.load());
+        }
+        res.body= "Success";
+        res.end();
+      });
       app.port(8500+transaction_summary_.port).multithreaded().run();
       sleep(1);
     }
@@ -184,14 +207,14 @@ void Stats::SetProps(int replica_id, std::string ip, int port, bool resview_flag
   transaction_summary_.ip=ip;
   transaction_summary_.port=port;
   enable_resview=resview_flag;
-  enable_faulty_switch=faulty_flag;
+  enable_faulty_switch_=faulty_flag;
   if(resview_flag){
     //summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
     crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
-  if(faulty_flag){
+  /*if(faulty_flag){
     faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
-  }
+  }*/
 }
 
 void Stats::SetPrimaryId(int primary_id){

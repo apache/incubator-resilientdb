@@ -146,7 +146,7 @@ class Stats{
   std::thread faulty_thread_;
   std::thread crow_thread_;
   bool enable_resview;
-  bool enable_faulty_switch;
+  bool enable_faulty_switch_;
   VisualData transaction_summary_;
   std::atomic<bool> send_summary_;
   std::atomic<bool> make_faulty_;
