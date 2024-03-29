@@ -88,62 +88,7 @@ Stats::~Stats() {
     global_thread_.join();
   }
   if(enable_resview && summary_thread_.joinable()){
-    //summary_thread_.join();
     crow_thread_.join();
-  }
-  /*if(enable_faulty_switch && faulty_thread_.joinable()){
-    faulty_thread_.join();
-  }*/
-}
-
-void Stats::SocketManagementWrite(){
-  while(!stop_){
-    try{
-      int count=0;
-      LOG(ERROR)<<"Port:" <<transaction_summary_.port;
-      asio::io_context io_context;
-      tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(11000+transaction_summary_.port)});
-      tcp::socket socket(io_context);
-      acceptor.accept(socket);
-      beast::websocket::stream<tcp::socket> ws(std::move(socket));
-      ws.accept();
-      while(!stop_){
-        if(!ws.is_open()){
-          break;
-        }
-        if(send_summary_.load()){
-          ws.write(asio::buffer(summary_json_.dump()));
-          summary_json_={};
-          LOG(ERROR)<<"SENT MESSAGE";
-          send_summary_.store(false);
-        }
-      }
-    }
-    catch( const std::exception& e){
-      LOG(ERROR)<<"Exception: " <<e.what();
-    }
-  }
-}
-
-void Stats::SocketManagementRead(){
-  while(!stop_){
-    try{
-      LOG(ERROR)<<"Read Port:" <<transaction_summary_.port;
-      asio::io_context io_context;
-      tcp::acceptor acceptor(io_context, {{}, (boost::asio::ip::port_type)(12000+transaction_summary_.port)});
-      tcp::socket socket(io_context);
-      acceptor.accept(socket);
-      beast::websocket::stream<tcp::socket> ws(std::move(socket));
-      ws.accept();
-      beast::flat_buffer data;
-      ws.read(data);
-      make_faulty_.store(!make_faulty_.load());
-      LOG(ERROR)<<"Received Message on port "<<transaction_summary_.port;
-      ws.close("Message Received");
-    }
-    catch( const std::exception& e){
-      LOG(ERROR)<<"Exception: " <<e.what();
-    }
   }
 }
 
@@ -152,7 +97,7 @@ void Stats::CrowRoute(){
   while(!stop_){
     try{
       CROW_ROUTE(app, "/consensus_data").methods("GET"_method)([this](const crow::request& req, crow::response& res){
-        LOG(ERROR)<<"API";
+        LOG(ERROR)<<"API 1";
         res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
         res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
         res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
@@ -160,10 +105,9 @@ void Stats::CrowRoute(){
         // Send your response
         res.body=consensus_history_.dump();
         res.end();
-        //return consensus_history_.dump();
       });
       CROW_ROUTE(app, "/get_status").methods("GET"_method)([this](const crow::request& req, crow::response& res){
-        LOG(ERROR)<<"API";
+        LOG(ERROR)<<"API 2";
         res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
         res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
         res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
@@ -172,8 +116,8 @@ void Stats::CrowRoute(){
         res.body= IsFaulty() ? "Faulty" : "Not Faulty";
         res.end();
       });
-      CROW_ROUTE(app, "/make_faulty").methods("POST"_method)([this](const crow::request& req, crow::response& res){
-        LOG(ERROR)<<"API";
+      CROW_ROUTE(app, "/make_faulty").methods("GET"_method)([this](const crow::request& req, crow::response& res){
+        LOG(ERROR)<<"API 3";
         res.set_header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
         res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS"); // Specify allowed methods
         res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Specify allowed headers
@@ -209,12 +153,8 @@ void Stats::SetProps(int replica_id, std::string ip, int port, bool resview_flag
   enable_resview=resview_flag;
   enable_faulty_switch_=faulty_flag;
   if(resview_flag){
-    //summary_thread_ = std::thread(&Stats::SocketManagementWrite, this);
     crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
-  /*if(faulty_flag){
-    faulty_thread_ = std::thread(&Stats::SocketManagementRead, this);
-  }*/
 }
 
 void Stats::SetPrimaryId(int primary_id){
@@ -306,17 +246,6 @@ void Stats::SendSummary(){
 
   LOG(ERROR)<<summary_json_.dump();
 
-  //Send Summary via Websocket
-
-  /*send_summary_.store(true);
-  int count =0;
-  while(send_summary_.load() && count<5){
-    sleep(1);
-    count=count+1;
-  }
-  if(send_summary_.load()){
-    send_summary_.store(false);
-  }*/
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();

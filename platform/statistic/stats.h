@@ -75,8 +75,6 @@ class Stats{
     void RecordStateTime(std::string state);
     void GetTransactionDetails(BatchUserRequest batch_request);
     void SendSummary();
-    void SocketManagementWrite();
-    void SocketManagementRead();
     void CrowRoute();
     bool IsFaulty();
     void ChangePrimary(int primary_id);
