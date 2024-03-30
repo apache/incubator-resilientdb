@@ -70,7 +70,6 @@ Stats::Stats(int sleep_time) {
   transaction_summary_.port=-1;
 
   //Setup websocket here
-  //send_summary_.store(false);
   make_faulty_.store(false);
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
@@ -87,7 +86,7 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
-  if(enable_resview && summary_thread_.joinable()){
+  if(enable_resview && crow_thread_.joinable()){
     crow_thread_.join();
   }
 }
@@ -214,7 +213,6 @@ void Stats::SendSummary(){
     return;
   }
   transaction_summary_.execution_time=std::chrono::system_clock::now();
-  //transaction_summary_.txn_number=transaction_summary_.txn_number+1;
 
   //Convert Transaction Summary to JSON
   summary_json_["replica_id"]=transaction_summary_.replica_id;
