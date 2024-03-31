@@ -134,6 +134,7 @@ void Stats::CrowRoute(){
     catch( const std::exception& e){
     }
   }
+  app.stop();
 }
 
 bool Stats::IsFaulty(){

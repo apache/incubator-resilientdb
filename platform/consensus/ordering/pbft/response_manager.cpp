@@ -65,8 +65,10 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
       config_.IsTestMode()) {
     user_req_thread_ = std::thread(&ResponseManager::BatchProposeMsg, this);
   }
-  checking_timeout_thread_ =
+  if(config_.GetConfigData().enable_viewchange()){
+    checking_timeout_thread_ =
       std::thread(&ResponseManager::MonitoringClientTimeOut, this);
+  }
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
 }
@@ -75,6 +77,9 @@ ResponseManager::~ResponseManager() {
   stop_ = true;
   if (user_req_thread_.joinable()) {
     user_req_thread_.join();
+  }
+  if(checking_timeout_thread_.joinable()){
+    checking_timeout_thread_.join();
   }
 }
 
