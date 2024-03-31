@@ -8,10 +8,17 @@ cc_library(
     srcs = ["stats.cpp"],
     hdrs = ["stats.h"],
     deps = [
+        "//proto/kv:kv_cc_proto",
+        "//platform/proto:resdb_cc_proto",
+        "//common:json",
         ":prometheus_handler",
         "//common:comm",
         "//common/utils",
         "//third_party:prometheus",
+        "//platform/common/network:tcp_socket",
+        "//common:asio",
+        "//common:beast",
+        "//third_party:crow",
     ],
 )
 

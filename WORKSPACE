@@ -224,3 +224,24 @@ http_archive(
     strip_prefix = "json-3.9.1",
     urls = ["https://github.com/nlohmann/json/archive/v3.9.1.tar.gz"],
 )
+
+http_archive(
+    name = "com_crowcpp_crow",
+    build_file = "//third_party:crow.BUILD",
+    sha256 = "f95128a8976fae6f2922823e07da59edae277a460776572a556a4b663ff5ee4b",
+    strip_prefix = "Crow-1.0-5",
+    url = "https://github.com/CrowCpp/Crow/archive/refs/tags/v1.0+5.zip",
+)
+
+bind(
+    name = "asio",
+    actual = "@com_chriskohlhoff_asio//:asio",
+)
+
+http_archive(
+    name = "com_chriskohlhoff_asio",
+    build_file = "//third_party:asio.BUILD",
+    sha256 = "babcdfd2c744905a73d20de211b51367bda0d5200f11d654c4314b909d8c963c",
+    strip_prefix = "asio-asio-1-26-0",
+    url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
+)

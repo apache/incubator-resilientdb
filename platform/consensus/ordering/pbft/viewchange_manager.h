@@ -28,6 +28,7 @@
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/viewchange_message.pb.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 
@@ -128,6 +129,7 @@ class ViewChangeManager {
   ResDBConfig config_;
   CheckPointManager* checkpoint_manager_;
   MessageManager* message_manager_;
+  Stats* global_stats_;
   SystemInfo* system_info_;
   ReplicaCommunicator* replica_communicator_;
   SignatureVerifier* verifier_;
