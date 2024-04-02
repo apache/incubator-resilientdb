@@ -243,8 +243,9 @@ void Stats::SendSummary(){
 
   consensus_history_[std::to_string(transaction_summary_.txn_number)]=summary_json_;
 
-  LOG(ERROR)<<summary_json_.dump();
 
+  LOG(ERROR)<<summary_json_.dump();
+  
   //Reset Transaction Summary Parameters
   transaction_summary_.request_pre_prepare_state_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_state_time=std::chrono::system_clock::time_point::min();
@@ -252,6 +253,9 @@ void Stats::SendSummary(){
   transaction_summary_.execution_time=std::chrono::system_clock::time_point::min();
   transaction_summary_.prepare_message_count_times_list.clear();
   transaction_summary_.commit_message_count_times_list.clear();
+
+  summary_json_.clear();
+
 }
 
 void Stats::MonitorGlobal() {
