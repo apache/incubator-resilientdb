@@ -379,10 +379,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
       response_v = transaction_manager_->ExecuteBatchData(*data_p);
       FinishExecute(request->seq());
 
-      std::unique_ptr<BatchUserResponse> batch_response =
-          std::make_unique<BatchUserResponse>();
+      response = std::make_unique<BatchUserResponse>();
       for (auto& s : response_v) {
-        batch_response->add_response()->swap(*s);
+        response->add_response()->swap(*s);
       }
     }
   }

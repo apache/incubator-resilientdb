@@ -4,11 +4,31 @@ package(default_visibility = [
 ])
 
 cc_library(
+    name = "cpu_info",
+    srcs = ["cpu_info.cpp"],
+    hdrs = ["cpu_info.h"],
+    deps = [
+        "//common:comm",
+        "//common/utils",
+    ],
+)
+
+cc_test(
+    name = "cpu_info_test",
+    srcs = ["cpu_info_test.cpp"],
+    deps = [
+      ":cpu_info",
+        "//common/test:test_main",
+    ],
+)
+
+cc_library(
     name = "stats",
     srcs = ["stats.cpp"],
     hdrs = ["stats.h"],
     deps = [
         ":prometheus_handler",
+        ":cpu_info",
         "//common:comm",
         "//common/utils",
         "//third_party:prometheus",

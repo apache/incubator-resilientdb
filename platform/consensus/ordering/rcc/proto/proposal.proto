@@ -34,10 +34,12 @@ message Proposal {
     Header header = 1;
   repeated Transaction transactions = 3;
   int64 queuing_time = 4;
+  repeated Proposal proposals = 5;
 };
 
 enum MessageType {
   NewProposal = 0;
   ConsensusMsg = 1;
+  ConsensusMsgExt = 2;
 };
 

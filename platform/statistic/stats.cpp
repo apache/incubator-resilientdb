@@ -59,6 +59,7 @@ Stats::Stats(int sleep_time) {
   send_broad_cast_msg_ = 0;
 
   prometheus_ = nullptr;
+  cpu_info_ = std::make_unique<CPUInfo>(); 
 
   global_thread_ =
       std::thread(&Stats::MonitorGlobal, this);  // pass by reference
@@ -389,6 +390,8 @@ void Stats::MonitorGlobal() {
                  << static_cast<double>(commit_ratio_time -
                                         last_commit_ratio_time) /
                         (commit_ratio_num - last_commit_ratio_num) / 1000000.0
+              << " cpu usage:" 
+                 << cpu_info_->GetCPUUsage()
                << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {

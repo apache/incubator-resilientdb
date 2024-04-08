@@ -23,6 +23,7 @@
 #include <future>
 
 #include "platform/statistic/prometheus_handler.h"
+#include "platform/statistic/cpu_info.h"
 
 namespace resdb {
 
@@ -98,6 +99,8 @@ class Stats {
   std::atomic<bool> stop_;
   std::condition_variable cv_;
   std::mutex mutex_;
+
+  std::unique_ptr<CPUInfo> cpu_info_; 
 
   std::thread global_thread_;
   std::atomic<uint64_t> num_client_req_, num_propose_, num_prepare_,

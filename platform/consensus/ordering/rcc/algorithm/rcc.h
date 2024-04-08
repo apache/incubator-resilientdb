@@ -26,6 +26,7 @@ class RCC : public common::ProtocolBase {
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   void SendTxn();
   bool ReceiveProposal(const Proposal& proposal);
+  bool ReceiveProposalList(const Proposal& proposal);
 
  private:
   void UpgradeState(Proposal* proposal);
@@ -57,6 +58,8 @@ class RCC : public common::ProtocolBase {
   Stats* global_stats_;
   int64_t last_commit_time_ = 0;
   std::map<int,int64_t> commit_time_;
+  std::map<int64_t, int> send_num_[10];
+  std::map<int64_t, std::vector<std::unique_ptr<Proposal>> > pending_msg_[10];
 };
 
 }  // namespace rcc

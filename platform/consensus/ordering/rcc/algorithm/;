@@ -5,7 +5,6 @@
 
 #define OP0
 #define OP2
-//#define OP4
 
 namespace resdb {
 namespace rcc {
@@ -17,11 +16,7 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  #ifdef OP4
   batch_size_ = 5;
-  #else
-  batch_size_ = 1;
-  #endif
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
@@ -176,13 +171,8 @@ void RCC::AsyncSend() {
     txns.push_back(std::move(txn));
     start = true;
 
-
     for (int i = 1; i < batch_size_; i++) {
-    #ifdef OP4
-      txn = txns_.Pop(10);
-    #else
       txn = txns_.Pop(0);
-      #endif
       if (txn == nullptr) {
         break;
       }
@@ -198,7 +188,6 @@ void RCC::AsyncSend() {
 
     std::unique_ptr<Proposal> proposal =
         proposal_manager_->GenerateProposal(txns);
-    global_stats_->AddBlockSize(txns.size());
 
     //LOG(ERROR) << "send proposal id:" << id_ << " seq:" << proposal->header().seq();
     broadcast_call_(MessageType::ConsensusMsg, *proposal);
@@ -346,8 +335,7 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
       assert(new_proposal != nullptr);
       Proposal proposal_list;
       
-      //Broadcast(MessageType::ConsensusMsg, *new_proposal);
-      *proposal_list.add_proposals() = *new_proposal;
+      Broadcast(MessageType::ConsensusMsg, *new_proposal);
 
       send_num_[status][seq]++;
       if(seq > 2){
@@ -366,8 +354,7 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
           for(auto& p: it->second){
             //LOG(ERROR)<<" bc next:"<<next_seq<<" status:"<<status;
             assert(p != nullptr);
-            //Broadcast(MessageType::ConsensusMsg, *p);
-            *proposal_list.add_proposals() = *p;
+            Broadcast(MessageType::ConsensusMsg, *p);
             send_num_[status][next_seq]++;
           }
           pending_msg_[status].erase(it);
@@ -378,7 +365,6 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
           break;
         }
       }
-          Broadcast(MessageType::ConsensusMsgExt, proposal_list);
       if(status == 0){
       #ifdef OP3
         {
@@ -389,14 +375,15 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
         }
         #endif
 
-      }
+    }
+
     }
       else {
         pending_msg_[status][seq].push_back(std::move(new_proposal));
         //LOG(ERROR)<<" push pending, seq:"<<seq<<" size:"<< pending_msg_[status][seq].size();
       }
       #else
-        Broadcast(MessageType::ConsensusMsg, *new_proposal);
+        Broadcast(MessageType::ConsensusMsg, new_proposal);
       #endif
     }
   }

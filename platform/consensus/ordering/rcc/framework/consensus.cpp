@@ -79,6 +79,19 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     return 0;
   }
+  else if (request->user_type() == MessageType::ConsensusMsgExt) {
+    Proposal proposal;
+    if (!proposal.ParseFromString(request->data())) {
+      assert(1 == 0);
+      LOG(ERROR) << "parse proposal fail";
+      return -1;
+    }
+    if (!rcc_->ReceiveProposalList(proposal)) {
+      return -1;
+    }
+    return 0;
+  }
+
   return 0;
 }
 
