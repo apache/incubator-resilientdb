@@ -3,6 +3,8 @@ require 'optparse'
 require 'open3'
 require 'inifile'
 require 'io/console'
+require 'pty'
+require 'httpx'
 
 module ResCli
   class AuthService
@@ -53,7 +55,7 @@ module ResCli
     #   return !username.empty? && !token.empty?
     # end
   end
-  
+
   class CLI
 
     CONFIG_FILE_PATH = 'config.ini'
@@ -67,28 +69,28 @@ module ResCli
         opts.on('-c', '--create TYPE', [:resdb, :sdk], 'Create a new ResDB or PythonSDK instance') do |type|
           create_instance(type)
         end
-    
+
         opts.on('-e', '--exec-into INSTANCE_ID', 'Bash into a running ResDB or PythonSDK instance') do |instance_id|
           exec_into(instance_id)
         end
-    
+
         opts.on('-v', '--view-instances', 'View details about running instances') do
           view_instances
         end
-    
+
         opts.on('-d', '--delete INSTANCE_ID', 'Delete a running ResDB or PythonSDK instance') do |instance_id|
           delete_instance(instance_id)
         end
-    
+
         opts.on('-h', '--help', 'Display this help message') do
           help
           exit
         end
-    
+
         opts.on('--login', 'Login with username and password') do
           AuthService.login
         end
-    
+
         # opts.on('-gl', '--github-login', 'Login with GitHub') do
         #   AuthService.github_login
         # end
@@ -131,14 +133,14 @@ module ResCli
     end
 
     def self.exec_into(instance_id)
-        begin
-            command = ["docker", "exec", "-it", instance_id, "bash"]
-            Open3.check2(*command)
-        
-          rescue => error
-            $stderr.puts "Error executing command: #{error}"
-          end
-    end
+      begin
+        command = ["docker", "exec", "-it", instance_id, "bash"]
+        pid = Process.spawn(*command, in: STDIN, out: STDOUT, err: STDERR, unsetenv_others: true)
+        Process.wait(pid)
+      rescue => error
+        $stderr.puts "Error executing command: #{error}"
+      end
+    end    
 
     def self.view_instances
         begin
@@ -180,6 +182,26 @@ module ResCli
           rescue => error
             $stderr.puts "Error deleting instance: #{error}"
           end
+    end
+
+    def self.testAPI()
+      begin
+        # Implement create instance logic
+        puts "Testing API..."
+    
+        response = HTTPX.get("https://server.resilientdb.com/test")
+        
+        if response.status == 200
+          puts response.body
+        else
+          puts "Error: #{response.status}"
+        end
+        
+      rescue HTTPX::Error => e
+        puts "HTTPX Error: #{e.message}"
+      rescue StandardError => e
+        puts "Error: #{e.message}"
+      end
     end
 
     def self.help
