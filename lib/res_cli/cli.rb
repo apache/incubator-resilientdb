@@ -82,6 +82,10 @@ module ResCli
           delete_instance(instance_id)
         end
 
+        opts.on('-t', '--test-api', 'Test API') do
+          testAPI
+        end
+
         opts.on('-h', '--help', 'Display this help message') do
           help
           exit
