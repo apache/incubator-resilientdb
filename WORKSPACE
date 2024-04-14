@@ -152,8 +152,8 @@ http_archive(
 
 http_archive(
     name = "pybind11_bazel",
-    strip_prefix = "pybind11_bazel-master",
-    urls = ["https://github.com/pybind/pybind11_bazel/archive/master.zip"],
+    strip_prefix = "pybind11_bazel-2.11.1.bzl.1",
+    urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/tags/v2.11.1.bzl.1.zip"]
 )
 
 http_archive(
