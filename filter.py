@@ -18,43 +18,56 @@
 
 import requests
 import json
-import re
 
-def fix_json_with_commas(json_str):
-    fixed_json = json_str.replace('}{', '},{')
-    # Remove single characters and extra commas using regular expressions
-    filtered_data = re.sub(r',\s*\b\w\b', '', fixed_json)
-    return f"[{filtered_data}]"
+def fix_json_with_commas(mixed_content):
+    # Manually parsing the JSON objects by counting braces
+    json_objects = []
+    brace_count = 0
+    current_json = ''
+    in_json = False
+    
+    for char in mixed_content:
+        if char == '{':
+            if brace_count == 0:
+                in_json = True
+                current_json = char
+            else:
+                current_json += char
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0 and in_json:
+                current_json += char
+                json_objects.append(current_json)
+                in_json = False
+            else:
+                current_json += char
+        elif in_json:
+            current_json += char
+
+    # Combine all JSON blocks into a valid JSON array string
+    combined_json = '[' + ','.join(json_objects) + ']'
+    return combined_json
 
 def get_json_objects_by_public_key(json_data, owner_public_key=None, recipient_public_key=None):
     matching_objects = []
-    if owner_public_key != None and recipient_public_key != None:
-        for obj in json_data[0]:
-            try:
-                if owner_public_key in obj['inputs'][0]['owners_before'] and recipient_public_key in obj['outputs'][0]['public_keys']:
-                    matching_objects.append(obj)
-            except Exception as e:
-                print(e)
-    elif owner_public_key == None and recipient_public_key != None:
-        for obj in json_data[0]:
-            try:
-                if recipient_public_key in obj['outputs'][0]['public_keys']:
-                    matching_objects.append(obj)
-            except Exception as e:
-                print(e)
-    elif owner_public_key != None and recipient_public_key == None:
-        for obj in json_data[0]:
-            try:
-                if owner_public_key in obj['inputs'][0]['owners_before']:
-                    matching_objects.append(obj)
-            except Exception as e:
-                print(e)
-    else:
-        for obj in json_data[0]:
-            try:
-                matching_objects.append(obj)
-            except Exception as e:
-                print(e)
+    for obj in json_data:
+        try:
+            # Check if the necessary fields are present
+            if 'inputs' in obj and 'outputs' in obj:
+                if owner_public_key is not None and recipient_public_key is not None:
+                    if owner_public_key in obj['inputs'][0]['owners_before'] and recipient_public_key in obj['outputs'][0]['public_keys']:
+                        matching_objects.append(obj)
+                elif owner_public_key is None and recipient_public_key is not None:
+                    if recipient_public_key in obj['outputs'][0]['public_keys']:
+                        matching_objects.append(obj)
+                elif owner_public_key is not None and recipient_public_key is None:
+                    if owner_public_key in obj['inputs'][0]['owners_before']:
+                        matching_objects.append(obj)
+                else:
+                    matching_objects.append(obj)  # Append all if no keys specified
+        except Exception as e:
+            print(f"Error processing JSON object: {e}")
     return matching_objects
 
 def get_json_data(url, ownerPublicKey=None, recipientPublicKey=None):
