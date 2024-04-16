@@ -1,5 +1,13 @@
 # Change Log
 
+### Resielientdb v1.10.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.0-rc01))
+
+Add the prototype of PoE. ([Junchao Chen](https://github.com/cjcchen))
+
+* Implement the base version of Proof-of-Execution (PoE) Consensus Protocol [EDBT 2011].
+
+Add [ResView](https://github.com/apache/incubator-resilientdb/commit/69ef58307738cc2922ae4b80b686171fcee49d54) ([Saipranav-Kotamreddy](https://github.com/Saipranav-Kotamreddy))
+
 ### NexRes v1.9.0 ([2023-11-29](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.9.0))
 
 Support Multi-version Key-Value Interface. ([Junchao Chen](https://github.com/cjcchen))
