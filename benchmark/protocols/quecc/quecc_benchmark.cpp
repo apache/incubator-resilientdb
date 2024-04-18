@@ -28,8 +28,8 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
+
 #include "chain/storage/memory_db.h"
-#include <benchmark/benchmark.h>
 #include "executor/kv/kv_executor.h"
 #include "executor/kv/quecc_executor.h"
 #include "platform/config/resdb_config_utils.h"
@@ -40,44 +40,43 @@ using resdb::BatchUserRequest;
 using resdb::BatchUserResponse;
 using resdb::GenerateResDBConfig;
 using resdb::KVExecutor;
-using resdb::Operation;
+using resdb::KVOperation;
 using resdb::KVRequest;
+using resdb::storage::MemoryDB;
 using resdb::QueccExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
 using resdb::Storage;
-
-using namespace resdb::storage;
-
 void ShowUsage() {
   printf(
       "<config> <private_key> <cert_file> <durability_option> [logging_dir]\n");
 }
 
 BatchUserRequest EqualDistribution() {
-	BatchUserRequest batch_request;
+  BatchUserRequest batch_request;
 
-	vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
-		for (int i = 0; i < 10000; i++) {
-			// add transaction
-			KVRequest request;
+  vector<string> keys = {"test1", "test2", "test3", "test4", "test5"};
 
-			for (int j = 0; j < 100; j++) {
-				// add operation
-				resdb::Operation* op = request.add_ops();
-				op->set_cmd(resdb::Operation::SET);
-				op->set_key(keys[i % 5]);
-				op->set_value(to_string(j));
-			}
+  for (int i = 0; i < 10000; i++) {
+    // add transaction
+    KVRequest request;
 
-			std::string req_str;
-			if (!request.SerializeToString(&req_str)) {
-				exit(0);
-			}
-			batch_request.add_user_requests()->mutable_request()->set_data(req_str);
-		}
+    for (int j = 0; j < 100; j++) {
+      // add operation
+      resdb::Operation* op = request.add_ops();
+      op->set_cmd(resdb::Operation::SET);
+      op->set_key(keys[i % 5]);
+      op->set_value(to_string(j));
+    }
 
-	return batch_request;
+    std::string req_str;
+    if (!request.SerializeToString(&req_str)) {
+      exit(0);
+    }
+    batch_request.add_user_requests()->mutable_request()->set_data(req_str);
+  }
+
+  return batch_request;
 }
 
 BatchUserRequest NoDistribution() {
@@ -86,7 +85,7 @@ BatchUserRequest NoDistribution() {
   for (int i = 0; i < 10000; i++) {
     KVRequest request;
 
-    for (int j = 0; j < 10; j++) {
+    for (int j = 0; j < 100; j++) {
       // add operation
       resdb::Operation* op = request.add_ops();
       op->set_cmd(resdb::Operation::SET);
@@ -128,79 +127,39 @@ BatchUserRequest RandomDistribution() {
   return batch_request;
 }
 
-static void BM_EqualDistribution(benchmark::State& state) {
-	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewMemoryDB();
-	std::unique_ptr<BatchUserResponse> response;
-	vector<BatchUserRequest> equal_split_array;
-	QueccExecutor quecc_executor(std::move(storage1));
-	
-	for (int i = 0; i < 10; i++) {
-		equal_split_array.push_back(EqualDistribution());
-	}
-
-	for (auto _ : state) {
-		for (BatchUserRequest equal_split : equal_split_array) {
-    	// response = quecc_executor.ExecuteBatch(equal_split);
-			// ::benchmark::DoNotOptimize(response);
-  	}
-	}
-
-	if (state.thread_index() == 0) {
-		double mean = state.counters["mean"];
-		benchmark::DoNotOptimize(mean);
-	}
-}
-
-static void BM_NoDistribution(benchmark::State& state) {
-	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewMemoryDB();
-	std::unique_ptr<BatchUserResponse> response;
-	vector<BatchUserRequest> no_split_array;
-	QueccExecutor quecc_executor(std::move(storage1));
-	
-	for (int i = 0; i < 10; i++) {
-		no_split_array.push_back(NoDistribution());
-	}
-
-	for (auto _ : state) {
-		for (BatchUserRequest no_split : no_split_array) {
-    	response = quecc_executor.ExecuteBatch(no_split);
-			::benchmark::DoNotOptimize(response);
-  	}
-	}
-}
-
-static void BM_RandomDistribution(benchmark::State& state) {
-	std::unique_ptr<Storage> storage1 = nullptr;
-	storage1 = NewMemoryDB();
-	std::unique_ptr<BatchUserResponse> response;
-	vector<BatchUserRequest> random_split_array;
-	QueccExecutor quecc_executor(std::move(storage1));
-	
-	for (int i = 0; i < 10; i++) {
-		random_split_array.push_back(RandomDistribution());
-	}
-
-	for (auto _ : state) {
-		for (BatchUserRequest rand_split : random_split_array) {
-    	response = quecc_executor.ExecuteBatch(rand_split);
-			::benchmark::DoNotOptimize(response);
-  	}
-	}
-}
-
-BENCHMARK(BM_EqualDistribution)->Name("Equal Split - Quecc")
-	->Unit(benchmark::kSecond)->Iterations(10);
-
-// BENCHMARK(BM_NoDistribution)->Name("No Split - Quecc")
-// 	->Unit(benchmark::kSecond);
-
-// BENCHMARK(BM_RandomDistribution)->Name("Random Split - Quecc")
-// 	->Unit(benchmark::kSecond);
-
 int main(int argc, char** argv) {
-	::benchmark::Initialize(&argc, argv);
-	::benchmark::RunSpecifiedBenchmarks();
-	::benchmark::Shutdown();
+  vector<BatchUserRequest> equal_split_array;
+  vector<BatchUserRequest> no_split_array;
+  vector<BatchUserRequest> random_split_array;
+  for (int i = 0; i < 1; i++) {
+    equal_split_array.push_back(EqualDistribution());
+    // no_split_array.push_back(NoDistribution());
+    // random_split_array.push_back(RandomDistribution());
+  }
+  KVExecutor kv_executor=KVExecutor(std::make_unique<MemoryDB>());
+
+  QueccExecutor quecc_executor=QueccExecutor(std::make_unique<MemoryDB>());
+
+  std::unique_ptr<BatchUserResponse> response;
+  // Equal Split Comparison
+  printf("Equal Split Times\n");
+
+  auto start_time = std::chrono::high_resolution_clock::now();
+  for (BatchUserRequest equal_split : equal_split_array) {
+    response = quecc_executor.ExecuteBatch(equal_split);
+  }
+
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
+  printf("Quecc Time Taken: %d\n", (int)duration.count());
+  start_time = std::chrono::high_resolution_clock::now();
+
+  for (BatchUserRequest equal_split : equal_split_array) {
+    response = kv_executor.ExecuteBatch(equal_split);
+  }
+  end_time = std::chrono::high_resolution_clock::now();
+  duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
+                                                                   start_time);
+  printf("KV Time Taken: %d\n", (int)duration.count());
 }
