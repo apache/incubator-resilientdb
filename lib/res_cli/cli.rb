@@ -5,9 +5,38 @@ require 'inifile'
 require 'io/console'
 require 'pty'
 require 'httpx'
+require 'json'
+require 'bcrypt'
 
 module ResCli
   class AuthService
+
+    def self.backend_login(username, password)
+      url = 'https://server.resilientdb.com/getUser'
+      encrypted_password = BCrypt::Password.create(password)
+      
+      payload = { email: username, password: password }
+      
+      response = HTTPX.post(url, json: payload)
+      
+      case response.status
+      when 200
+        body = response.to_s
+        json_response = JSON.parse(body)
+        if json_response['success'] == true
+          return true
+        else
+          return false
+        end
+      when 500
+        return false # Server error
+      else
+        return false # Other HTTP errors
+      end
+    rescue HTTPX::Error => e
+      false
+    end
+
     def self.login
       print "Enter your username: "
       username = gets.chomp
@@ -29,6 +58,44 @@ module ResCli
       puts "Logout successful. Goodbye!"
     end
 
+    def self.backend_sign_up(email, password)
+      url = 'https://server.resilientdb.com/setUser'
+
+      encrypted_password = BCrypt::Password.create(password)
+
+      payload = { email: email, password: encrypted_password }
+  
+      response = HTTPX.post(url, json: payload)
+  
+      if response.status == 200
+        return { success: true, message: "Sign up successful. Welcome, #{email}!" }
+      elsif response.status == 409
+        return { success: false, message: "Sign up failed. User with email #{email} already exists." }
+      else
+        return { success: false, message: "Sign up failed. Error registering user with email #{email}." }
+      end
+    rescue HTTPX::Error => e
+      { success: false, message: "Sign up failed. #{e.message}" }
+    end
+  
+    def self.sign_up
+      print "Enter your email: "
+      email = gets.chomp
+  
+      print "Enter your password: "
+      password = STDIN.noecho(&:gets).chomp
+      puts
+  
+      result = backend_sign_up(email, password)
+  
+      if result[:success]
+        ResCli::CLI.set_logged_in_user(email)
+        puts result[:message]
+      else
+        puts result[:message]
+      end
+    end
+
     # def self.github_login
     #   print "Enter your GitHub username: "
     #   github_username = gets.chomp
@@ -46,10 +113,6 @@ module ResCli
     # end
 
     private
-
-    def self.backend_login(username, password)
-      return username == 'gnambiar' && password == '123'
-    end
 
     # def self.github_authentication(username, token)
     #   return !username.empty? && !token.empty?
@@ -95,9 +158,17 @@ module ResCli
           AuthService.login
         end
 
+        opts.on('--sign-up', 'Sign up with email and password') do
+          AuthService.sign_up
+        end
+
         # opts.on('-gl', '--github-login', 'Login with GitHub') do
         #   AuthService.github_login
         # end
+
+        opts.on('--whoami', 'Display the current logged-in user') do
+          CLI.whoami
+        end
     
         opts.on('--logout', 'Logout') do
           AuthService.logout
@@ -106,8 +177,13 @@ module ResCli
     end    
 
     def self.get_logged_in_user
-        @@config['User']['Current_User']
+      @@config['User']['Current_User'].split('@').first
     end
+
+    def self.whoami
+      logged_in_user = get_logged_in_user
+      puts "Current logged-in user: #{logged_in_user}"
+    end    
 
     def self.set_logged_in_user(username)
         @@config['User']['Current_User'] = username
@@ -120,7 +196,10 @@ module ResCli
             puts "Creating #{type} instance..."
         
             # Run Docker command to create a new instance
-            container_name = "#{type}_instance"
+
+            loggedin_user = get_logged_in_user
+            container_name = "#{loggedin_user}-#{type}_instance"
+
             command = ["docker", "run", "--name", container_name, "-d", "expolab/#{type}:arm64"]
         
             output, status = Open3.capture2(*command)
@@ -190,7 +269,6 @@ module ResCli
 
     def self.testAPI()
       begin
-        # Implement create instance logic
         puts "Testing API..."
     
         response = HTTPX.get("https://server.resilientdb.com/test")
@@ -212,12 +290,14 @@ module ResCli
         puts "Usage: #{$PROGRAM_NAME} [options]"
         puts "\nOptions:"
         puts "  -li, --login                    Login with username and password"
+        puts "  -su, --sign-up                  Sign up with email and password"
         # puts "  -gl, --github-login             Login with GitHub"
         puts "  -lo, --logout                   Logout"
         puts "  -c,  --create TYPE              Create a new ResDB or PythonSDK instance"
         puts "  -e,  --exec-into INSTANCE_ID    Bash into a running ResDB or PythonSDK instance"
         puts "  -v,  --view-instances           View details about running instances"
         puts "  -d,  --delete INSTANCE_ID       Delete a running ResDB or PythonSDK instance"
+        puts "  -w,  --whoami                   Display the current logged-in user"        
         puts "  -h,  --help                     Display this help message"
     end
   end
