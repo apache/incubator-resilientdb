@@ -40,6 +40,9 @@ Commitment::Commitment(const ResDBConfig& config,
   global_stats_ = Stats::GetGlobalStats();
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
+
+  global_stats_->SetProps(config_.GetSelfInfo().id(), config_.GetSelfInfo().ip(), config_.GetSelfInfo().port(), config_.GetConfigData().enable_resview(), config_.GetConfigData().enable_faulty_switch());
+  global_stats_->SetPrimaryId(message_manager_->GetCurrentPrimary());
 }
 
 Commitment::~Commitment() {
@@ -78,6 +81,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << message_manager_->GetCurrentPrimary()
     //            << " seq:" << user_request->seq()
     //            << " hash:" << user_request->hash();
+    LOG(ERROR)<<"NOT PRIMARY, Primary is "<<message_manager_->GetCurrentPrimary();
     replica_communicator_->SendMessage(*user_request,
                                        message_manager_->GetCurrentPrimary());
     {
@@ -134,6 +138,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
+  global_stats_->RecordStateTime("request");
+
   user_request->set_type(Request::TYPE_PRE_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
   user_request->set_seq(*seq);
@@ -149,7 +155,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 // TODO check whether the sender is the primary.
 int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
-  if (context == nullptr || context->signature.signature().empty()) {
+  if (global_stats_->IsFaulty() || context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
@@ -181,6 +187,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
       LOG(ERROR) << " check by the user func fail";
       return -2;
     }
+    //global_stats_->GetTransactionDetails(std::move(request));
     BatchUserRequest batch_request;
     batch_request.ParseFromString(request->data());
     batch_request.clear_createtime();
@@ -202,6 +209,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   }
 
   global_stats_->IncPropose();
+  global_stats_->RecordStateTime("pre-prepare");
   std::unique_ptr<Request> prepare_request = resdb::NewRequest(
       Request::TYPE_PREPARE, *request, config_.GetSelfInfo().id());
   prepare_request->clear_data();
@@ -253,6 +261,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       // LOG(ERROR) << "sign hash"
       //           << commit_request->data_signature().DebugString();
     }
+    global_stats_->RecordStateTime("prepare");
     replica_communicator_->BroadCast(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
@@ -276,6 +285,11 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
   // commit the request.
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
+  if (ret == CollectorResultCode::STATE_CHANGED) {
+    //LOG(ERROR)<<request->data().size();
+    //global_stats_->GetTransactionDetails(request->data());
+    global_stats_->RecordStateTime("commit");
+  }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
@@ -287,7 +301,7 @@ int Commitment::PostProcessExecutedMsg() {
     if (batch_resp == nullptr) {
       continue;
     }
-    LOG(ERROR)<<"TEST4";
+    global_stats_->SendSummary();
     Request request;
     request.set_hash(batch_resp->hash());
     request.set_seq(batch_resp->seq());

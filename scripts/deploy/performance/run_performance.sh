@@ -1,5 +1,3 @@
-export server=//benchmark/protocols/pbft:kv_server_performance
-
 ./script/deploy.sh $1
 
 . ./script/load_config.sh $1

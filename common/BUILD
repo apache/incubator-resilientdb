@@ -16,6 +16,13 @@ cc_library(
 )
 
 cc_library(
+    name= "beast",
+    deps = [
+        "@boost//:beast"
+    ]
+)
+
+cc_library(
     name = "boost_lockfree",
     deps = [
         "@boost//:lockfree",
