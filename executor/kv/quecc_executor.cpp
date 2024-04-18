@@ -156,7 +156,7 @@ void QueccExecutor::PlannerThread(const int thread_number) {
       //it could cause a cascading abort and is therefore recorded as a wait point
       int txn_id=0;
       set<int> range_used_list = set<int>();
-      for(int i=0; i<multi_op_batch.size(); i++){
+      for(size_t i=0; i<multi_op_batch.size(); i++){
         txn_id=multi_op_id[i];
         range_used_list.clear();
         for(const auto& request_operation: multi_op_batch[i].ops()){
@@ -201,12 +201,12 @@ void QueccExecutor::PlannerThread(const int thread_number) {
     for (int priority = 0; priority < thread_count_; priority++) {
       std::vector<KVOperation>& range_ops =
           this->sorted_transactions_[priority][range_being_executed];
-      for (int op_count; op_count<range_ops.size(); op_count++) {
+      for (size_t op_count=0; op_count<range_ops.size(); op_count++) {
         KVOperation op = range_ops[op_count];
         //If past wait point, check for next wait point
         while(op.transaction_number>wait_point_list_[wait_point_vector][wait_point_position]){
           wait_point_position++;
-          if(wait_point_position==wait_point_list_[wait_point_vector].size()){
+          if(wait_point_position==(int)wait_point_list_[wait_point_vector].size()){
             wait_point_position=0;
             wait_point_vector++;
           }
@@ -215,7 +215,7 @@ void QueccExecutor::PlannerThread(const int thread_number) {
         //If it succeeds, all subsequent operations in txn can skip this step
         //If it fails, then it goes into if, sses operations_checked is negative, and skips the operation, as txn was aborted
         if(op.transaction_number==wait_point_list_[wait_point_vector][wait_point_position] && operations_checked_[op.transaction_number].load()!=transaction_tracker_[op.transaction_number]){
-          if(operations_checked_.find(op.transaction_number)==operations_checked.end()){
+          if(operations_checked_.find(op.transaction_number)==operations_checked_.end()){
           }
           if(operations_checked_[op.transaction_number].load()<0){
             continue;
@@ -362,7 +362,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   int count_per_split=0;
   int op_batch_number=0;
   //Send multi operation transactions to thread to gauge if they require waits
-  for(int i=0; i<multi_op_transactions_numbers_.size(); i++){
+  for(size_t i=0; i<multi_op_transactions_numbers_.size(); i++){
     multi_op_ready_.store(true);
     multi_op_batches_[op_batch_number].push_back(multi_op_transactions_[i]);
     multi_op_number_batches_[op_batch_number].push_back(multi_op_transactions_numbers_[i]);

@@ -189,19 +189,19 @@ void Stats::GetTransactionDetails(BatchUserRequest batch_request){
     if(!kv_request.ParseFromString(sub_request.request().data())){
       break;
     }
-    if (kv_request.cmd() == KVRequest::SET) {
+    if (kv_request.cmd() == Operation::SET) {
       transaction_summary_.txn_command.push_back("SET");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back(kv_request.value());
-    } else if (kv_request.cmd() == KVRequest::GET) {
+    } else if (kv_request.cmd() == Operation::GET) {
       transaction_summary_.txn_command.push_back("GET");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back("");
-    } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+    } else if (kv_request.cmd() == Operation::GETALLVALUES) {
       transaction_summary_.txn_command.push_back("GETALLVALUES");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back("");
-    } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    } else if (kv_request.cmd() == Operation::GETRANGE) {
       transaction_summary_.txn_command.push_back("GETRANGE");
       transaction_summary_.txn_key.push_back(kv_request.key());
       transaction_summary_.txn_value.push_back(kv_request.value());
