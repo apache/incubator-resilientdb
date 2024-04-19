@@ -22,9 +22,9 @@ To use `ResCLI`, you can download the binary from the [Releases](https://github.
 2. Download the latest release for your operating system (e.g., `res-cli-linux` for Linux).
 3. Make the downloaded binary executable:
 
-    ```bash
-    chmod +x res-cli
-    ```
+```bash
+chmod +x res-cli
+```
 <!-- 
 ## Configuration
 
@@ -50,40 +50,40 @@ Once installed and configured, you can use res-cli to perform various actions re
 
 ## Commands
 
-<!-- - Login: Logs in to the specified user account.
+- **Login**: Logs in to the specified user account.
 
 ```bash
-    ./res-cli login # Enter email and password when prompted
+    ./res-cli --login # Enter email and password when prompted
 ```
 
-- Logout: Logs out from the current user account.
+- **Logout**: Logs out from the current user account.
 
 ```bash
-    ./res-cli logout
-``` -->
-
-- Create Instance: Creates a new ResDB or Python SDK instance.
-
-```bash
-    ./res-cli create_instance <type>
+    ./res-cli --logout
 ```
 
-- View Instances: Displays details about running instances.
+- **Create Instance**: Creates a new ResDB or Python SDK instance.
 
 ```bash
-    ./res-cli view_instances
+    ./res-cli --create <type>
 ```
 
-- Delete Instance: Deletes a running ResDB or Python SDK instance.
+- **View Instances**: Displays details about running instances.
 
 ```bash
-    ./res-cli delete_instance <instance_id>
+    ./res-cli --view-instances
 ```
 
-- Current User: Displays the currently logged-in user.
+- **Delete Instance**: Deletes a running ResDB or Python SDK instance.
 
 ```bash
-    ./res-cli whoami
+    ./res-cli --delete <instance_id>
 ```
 
-For more detailed information about each command, run ./res-cli --help or ./res-cli <command> --help.
+- **Current User**: Displays the currently logged-in user.
+
+```bash
+    ./res-cli --whoami
+```
+
+For more detailed information about each command, run `./res-cli --help` or `./res-cli <command> --help`.
