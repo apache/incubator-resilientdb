@@ -97,6 +97,13 @@ class QueccExecutor : public TransactionManager {
   atomic<int> ready_planner_count_;
   std::unique_ptr<BatchUserResponse> batch_response_;
   std::unique_ptr<Storage> storage_;
+  vector<KVRequest> multi_op_transactions_;
+  vector<int> multi_op_transactions_numbers_;
+  vector<vector<KVRequest>> multi_op_batches_;
+  vector<vector<int>> multi_op_number_batches_;
+  atomic<bool> multi_op_ready_;
+  vector<vector<int>> wait_point_list_;
+  unordered_map<int, atomic<int>> operations_checked_;
 };
 
 }  // namespace resdb
