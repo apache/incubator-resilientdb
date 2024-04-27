@@ -46,14 +46,14 @@
 using namespace std;
 using resdb::KVRequest;
 // 4 is hardcoded for thread count for now, eventually will use config value
-barrier execute_barrier(5);
+barrier execute_barrier(4);
 mutex results_mutex;
 
 namespace resdb {
 
 QueccExecutor::QueccExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {
-  thread_count_ = 5;
+  thread_count_ = 4;
   atomic<int> ready_planner_count_(0);
   std::unique_ptr<BatchUserResponse> batch_output =
       std::make_unique<BatchUserResponse>();
@@ -156,6 +156,7 @@ void QueccExecutor::PlannerThread(const int thread_number) {
     const int& range_being_executed = thread_number;
 
     execute_barrier.arrive_and_wait();
+    auto start_time = std::chrono::high_resolution_clock::now();
 
     // Executor
     for (int priority = 0; priority < thread_count_; priority++) {
@@ -170,6 +171,10 @@ void QueccExecutor::PlannerThread(const int thread_number) {
       }
       this->sorted_transactions_[priority][range_being_executed].clear();
     }
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+        end_time - start_time);
+    //printf("Time Taken 5: %d\n", (int)duration.count());
 
     // Lock used to minimize conflicts of adding to batchresponse
     results_mutex.lock();
@@ -187,6 +192,8 @@ void QueccExecutor::PlannerThread(const int thread_number) {
 
 std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
     const BatchUserRequest& request) {
+  auto start_time = std::chrono::high_resolution_clock::now();
+
   this->batch_response_ = std::make_unique<BatchUserResponse>();
   rid_to_range_.clear();
   transaction_tracker_.clear();
@@ -206,7 +213,6 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       LOG(ERROR) << "parse data fail";
       return std::move(this->batch_response_);
     }
-
     // printf("txn id: %lu\n", kv_request.txn_id());
     // printf("kv_request size: %d\n", kv_request.ops_size());    
     if (kv_request.ops_size()) {
@@ -215,7 +221,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
         KVOperation newOp;
         newOp.transaction_number=txn_id;
         newOp.op= op;
-        operation_list_.push_back(newOp);
+        operation_list_.push_back(std::move(newOp));
         if(!key_weight_.count(op.key())){
           key_weight_[op.key()]=0;
         }
@@ -235,7 +241,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       newOp.op.set_cmd(kv_request.cmd());
       newOp.op.set_key(kv_request.key());
       newOp.op.set_value(kv_request.value());
-      operation_list_.push_back(newOp);
+      operation_list_.push_back(std::move(newOp));
 
       if(kv_request.cmd() == Operation::SET){
         key_weight_[kv_request.key()]=key_weight_[kv_request.key()]+5;
@@ -248,7 +254,15 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       transaction_tracker_[txn_id]=1;
     }
     txn_id++;
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+        end_time - start_time);
+    //printf("Time Taken 5: %d\n", (int)duration.count());
   }
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
+  printf("Time Taken 1: %d\n", (int)duration.count());
 
   int planner_vector_size =
       (operation_list_.size() + thread_count_ - 1) / thread_count_;
@@ -269,6 +283,10 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   }
 */
   CreateRanges();
+  end_time = std::chrono::high_resolution_clock::now();
+  duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
+  printf("Time Taken 2: %d\n", (int)duration.count());
   
   ready_planner_count_.fetch_add(thread_count_);
   // Allows planner threads to start consuming
@@ -276,6 +294,9 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
     batch_ready_[i] = true;
   }
   cv_.notify_all();
+  end_time = std::chrono::high_resolution_clock::now();
+  duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
 
   // Wait for threads to finish to get batch response
   while (ready_planner_count_.load() != 0) {

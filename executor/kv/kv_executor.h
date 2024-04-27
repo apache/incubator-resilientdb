@@ -35,6 +35,8 @@ class KVExecutor : public TransactionManager {
   virtual ~KVExecutor() = default;
 
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
+  std::unique_ptr<BatchUserResponse> ExecuteBatch(
+      const BatchUserRequest& request) override;
 
  protected:
   virtual void Set(const std::string& key, const std::string& value);

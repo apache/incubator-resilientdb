@@ -28,6 +28,7 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
+#include "chain/storage/leveldb.h"
 
 #include "chain/storage/memory_db.h"
 #include "executor/kv/kv_executor.h"
@@ -43,6 +44,7 @@ using resdb::KVExecutor;
 using resdb::KVOperation;
 using resdb::KVRequest;
 using resdb::storage::MemoryDB;
+using resdb::storage::NewResLevelDB;
 using resdb::QueccExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
@@ -128,6 +130,8 @@ BatchUserRequest RandomDistribution() {
 }
 
 int main(int argc, char** argv) {
+  //std::unique_ptr<Storage> storage = NewResLevelDB("/tmp/leveldb_test");
+
   vector<BatchUserRequest> equal_split_array;
   vector<BatchUserRequest> no_split_array;
   vector<BatchUserRequest> random_split_array;
@@ -136,9 +140,10 @@ int main(int argc, char** argv) {
     // no_split_array.push_back(NoDistribution());
     // random_split_array.push_back(RandomDistribution());
   }
-  KVExecutor kv_executor=KVExecutor(std::make_unique<MemoryDB>());
-
-  QueccExecutor quecc_executor=QueccExecutor(std::make_unique<MemoryDB>());
+  //KVExecutor kv_executor=KVExecutor(std::make_unique<MemoryDB>());
+  KVExecutor kv_executor=KVExecutor(NewResLevelDB("/tmp/leveldb_test"));
+  //QueccExecutor quecc_executor=QueccExecutor(std::make_unique<MemoryDB>());
+  QueccExecutor quecc_executor=QueccExecutor(NewResLevelDB("/tmp/leveldb_test"));
 
   std::unique_ptr<BatchUserResponse> response;
   // Equal Split Comparison

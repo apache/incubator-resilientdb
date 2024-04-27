@@ -35,31 +35,61 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     LOG(ERROR) << "parse data fail";
     return nullptr;
   }
-
-  if (kv_request.cmd() == Operation::SET) {
-    Set(kv_request.key(), kv_request.value());
-  } else if (kv_request.cmd() == Operation::GET) {
-    kv_response.set_value(Get(kv_request.key()));
-  } else if (kv_request.cmd() == Operation::GETALLVALUES) {
-    kv_response.set_value(GetAllValues());
-  } else if (kv_request.cmd() == Operation::GETRANGE) {
-    kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
-  } else if (kv_request.cmd() == Operation::SET_WITH_VERSION) {
-    SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
-  } else if (kv_request.cmd() == Operation::GET_WITH_VERSION) {
-    GetWithVersion(kv_request.key(), kv_request.version(),
-                   kv_response.mutable_value_info());
-  } else if (kv_request.cmd() == Operation::GET_ALL_ITEMS) {
-    GetAllItems(kv_response.mutable_items());
-  } else if (kv_request.cmd() == Operation::GET_KEY_RANGE) {
-    GetKeyRange(kv_request.min_key(), kv_request.max_key(),
-                kv_response.mutable_items());
-  } else if (kv_request.cmd() == Operation::GET_HISTORY) {
-    GetHistory(kv_request.key(), kv_request.min_version(),
-               kv_request.max_version(), kv_response.mutable_items());
-  } else if (kv_request.cmd() == Operation::GET_TOP) {
-    GetTopHistory(kv_request.key(), kv_request.top_number(),
+  if (kv_request.ops_size()) {
+    for(const auto& op : kv_request.ops()){
+      if (op.cmd() == Operation::SET) {
+        Set(op.key(), op.value());
+      } else if (op.cmd() == Operation::GET) {
+        kv_response.set_value(Get(op.key()));
+      } else if (op.cmd() == Operation::GETALLVALUES) {
+        kv_response.set_value(GetAllValues());
+      } else if (op.cmd() == Operation::GETRANGE) {
+        kv_response.set_value(GetRange(op.key(), op.value()));
+      } else if (op.cmd() == Operation::SET_WITH_VERSION) {
+        SetWithVersion(op.key(), op.value(), kv_request.version());
+      } else if (op.cmd() == Operation::GET_WITH_VERSION) {
+        GetWithVersion(op.key(), kv_request.version(),
+                      kv_response.mutable_value_info());
+      } else if (op.cmd() == Operation::GET_ALL_ITEMS) {
+        GetAllItems(kv_response.mutable_items());
+      } else if (op.cmd() == Operation::GET_KEY_RANGE) {
+        GetKeyRange(kv_request.min_key(), kv_request.max_key(),
+                    kv_response.mutable_items());
+      } else if (op.cmd() == Operation::GET_HISTORY) {
+        GetHistory(op.key(), kv_request.min_version(),
+                  kv_request.max_version(), kv_response.mutable_items());
+      } else if (op.cmd() == Operation::GET_TOP) {
+        GetTopHistory(op.key(), kv_request.top_number(),
+                      kv_response.mutable_items());
+      }
+    }
+  }
+  else{
+    if (kv_request.cmd() == Operation::SET) {
+      Set(kv_request.key(), kv_request.value());
+    } else if (kv_request.cmd() == Operation::GET) {
+      kv_response.set_value(Get(kv_request.key()));
+    } else if (kv_request.cmd() == Operation::GETALLVALUES) {
+      kv_response.set_value(GetAllValues());
+    } else if (kv_request.cmd() == Operation::GETRANGE) {
+      kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
+    } else if (kv_request.cmd() == Operation::SET_WITH_VERSION) {
+      SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
+    } else if (kv_request.cmd() == Operation::GET_WITH_VERSION) {
+      GetWithVersion(kv_request.key(), kv_request.version(),
+                    kv_response.mutable_value_info());
+    } else if (kv_request.cmd() == Operation::GET_ALL_ITEMS) {
+      GetAllItems(kv_response.mutable_items());
+    } else if (kv_request.cmd() == Operation::GET_KEY_RANGE) {
+      GetKeyRange(kv_request.min_key(), kv_request.max_key(),
                   kv_response.mutable_items());
+    } else if (kv_request.cmd() == Operation::GET_HISTORY) {
+      GetHistory(kv_request.key(), kv_request.min_version(),
+                kv_request.max_version(), kv_response.mutable_items());
+    } else if (kv_request.cmd() == Operation::GET_TOP) {
+      GetTopHistory(kv_request.key(), kv_request.top_number(),
+                    kv_response.mutable_items());
+    }
   }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
@@ -142,6 +172,21 @@ void KVExecutor::GetTopHistory(const std::string& key, int top_number,
     item->mutable_value_info()->set_value(it.first);
     item->mutable_value_info()->set_version(it.second);
   }
+}
+std::unique_ptr<BatchUserResponse> KVExecutor::ExecuteBatch(
+    const BatchUserRequest& request) {
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
+  for (auto& sub_request : request.user_requests()) {
+    std::unique_ptr<std::string> response =
+        ExecuteData(sub_request.request().data());
+    if (response == nullptr) {
+      response = std::make_unique<std::string>();
+    }
+    batch_response->add_response()->swap(*response);
+  }
+
+  return batch_response;
 }
 
 }  // namespace resdb

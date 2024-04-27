@@ -12,5 +12,6 @@ cc_binary(
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
+        "//chain/storage:leveldb"
     ],
 )
