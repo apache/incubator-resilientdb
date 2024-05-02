@@ -93,7 +93,7 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
+  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
   #scp -i ${key} -r ${bin_path} ${output_path}/server.config ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
   ((count++))
 done
