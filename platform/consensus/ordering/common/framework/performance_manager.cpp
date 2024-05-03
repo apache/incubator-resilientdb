@@ -181,7 +181,7 @@ void PerformanceManager::SendResponseToClient(
                << " create time:" << create_time << " run time:" << run_time
                << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
-  } 
+  }
   send_num_--;
 }
 
