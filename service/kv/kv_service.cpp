@@ -60,6 +60,7 @@ int main(int argc, char** argv) {
     exit(0);
   }
   google::InitGoogleLogging(argv[0]);
+  FLAGS_minloglevel = 1;
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];

@@ -81,7 +81,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << message_manager_->GetCurrentPrimary()
     //            << " seq:" << user_request->seq()
     //            << " hash:" << user_request->hash();
-    LOG(ERROR)<<"NOT PRIMARY, Primary is "<<message_manager_->GetCurrentPrimary();
+    LOG(INFO)<<"NOT PRIMARY, Primary is "<<message_manager_->GetCurrentPrimary();
     replica_communicator_->SendMessage(*user_request,
                                        message_manager_->GetCurrentPrimary());
     {
@@ -117,7 +117,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 
   global_stats_->IncClientRequest();
   if (duplicate_manager_->CheckAndAddProposed(user_request->hash())) {
-    LOG(ERROR) << "duplicate check fail:";
     return -2;
   }
   auto seq = message_manager_->AssignNextSeq();
@@ -160,9 +159,12 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
   if (request->is_recovery()) {
-    if (static_cast<int64_t>(request->seq()) >=
-        message_manager_->GetNextSeq()) {
+    if (message_manager_->GetNextSeq() == 0 || request->seq() == message_manager_->GetNextSeq()) {
       message_manager_->SetNextSeq(request->seq() + 1);
+    }
+    else {
+      LOG(ERROR)<<" recovery request not valid:"<<" current seq:"<<message_manager_->GetNextSeq()<<" data seq:"<<request->seq();
+      return 0;
     }
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
@@ -310,7 +312,7 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_current_view(batch_resp->current_view());
     request.set_proxy_id(batch_resp->proxy_id());
     request.set_primary_id(batch_resp->primary_id());
-    // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
+    //LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
   }

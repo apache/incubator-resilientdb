@@ -511,15 +511,17 @@ void Recovery::ReadLogsFromFiles(
   if (request_list.size() == 0) {
     ftruncate(fd, 0);
   }
+  uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
     if (ckpt < recovery_data->request->seq()) {
       recovery_data->request->set_is_recovery(true);
+      max_seq = recovery_data->request->seq();
       call_back(std::move(recovery_data->context),
                 std::move(recovery_data->request));
     }
   }
 
-  LOG(INFO) << "read log from files:" << path << " done";
+  LOG(ERROR) << "read log from files:" << path << " done"<<" recovery max seq:"<<max_seq;
 
   close(fd);
 }

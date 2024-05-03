@@ -49,8 +49,6 @@ int main(int argc, char** argv) {
 
   ResDBTxnAccessor client(config);
   auto resp = client.GetTxn(min_seq, max_seq);
-  absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> GetTxn(
-      uint64_t min_seq, uint64_t max_seq);
   if (!resp.ok()) {
     LOG(ERROR) << "get replica state fail";
     exit(1);

@@ -77,7 +77,7 @@ class ResponseManager {
   int GetPrimary();
 
   void AddWaitingResponseRequest(std::unique_ptr<Request> request);
-  void RemoveWaitingResponseRequest(std::string hash);
+  void RemoveWaitingResponseRequest(const std::string& hash);
   bool CheckTimeOut(std::string hash);
   void ResponseTimer(std::string hash);
   void MonitoringClientTimeOut();

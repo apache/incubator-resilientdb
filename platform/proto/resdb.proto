@@ -115,8 +115,13 @@ message BatchUserResponse {
 
 message HeartBeatInfo{
   repeated CertificateKey public_keys = 1;
+  repeated int64 node_version = 8;
   uint32 primary = 2;
   uint64 version= 3;
+  int32 sender = 4;
+  string ip = 5;
+  int32 port = 6;
+  int64 hb_version = 7;
 }
 
 message ClientCertInfo {
