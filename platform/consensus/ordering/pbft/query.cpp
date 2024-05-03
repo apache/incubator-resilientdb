@@ -50,17 +50,15 @@ int Query::ProcessGetReplicaState(std::unique_ptr<Context> context,
 
 int Query::ProcessQuery(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> request) {
-
   if (config_.GetPublicKeyCertificateInfo()
-      .public_key()
-      .public_key_info()
-      .type() == CertificateKeyInfo::CLIENT) {
-
-    auto find_primary = [&](){
+          .public_key()
+          .public_key_info()
+          .type() == CertificateKeyInfo::CLIENT) {
+    auto find_primary = [&]() {
       auto config_data = config_.GetConfigData();
       for (const auto& r : config_data.region()) {
         for (const auto& replica : r.replica_info()) {
-          if(replica.id() == 1){
+          if (replica.id() == 1) {
             return replica;
           }
         }
@@ -70,20 +68,21 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
     std::string ip = primary.ip();
     int port = primary.port();
 
-    LOG(ERROR)<<"redirect to primary:"<<ip<<" port:"<<port;
+    LOG(ERROR) << "redirect to primary:" << ip << " port:" << port;
     auto client = std::make_unique<NetChannel>(ip, port);
     if (client->SendRawMessage(*request) == 0) {
       QueryResponse resp;
       if (client->RecvRawMessage(&resp) == 0) {
         if (context != nullptr && context->client != nullptr) {
-          LOG(ERROR) << "send response from primary:"<<resp.transactions_size();
+          LOG(ERROR) << "send response from primary:"
+                     << resp.transactions_size();
           int ret = context->client->SendRawMessage(resp);
           if (ret) {
             LOG(ERROR) << "send resp fail ret:" << ret;
           }
         }
-      } 
-    } 
+      }
+    }
     return 0;
   }
 
@@ -94,12 +93,11 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
   }
 
   QueryResponse response;
-  if (query.max_seq() == 0 && query.min_seq() == 0){
+  if (query.max_seq() == 0 && query.min_seq() == 0) {
     uint64_t mseq = message_manager_->GetNextSeq();
-    response.set_max_seq(mseq-1);
-    LOG(ERROR)<<"get max seq:"<<mseq;
-  }
-  else {
+    response.set_max_seq(mseq - 1);
+    LOG(ERROR) << "get max seq:" << mseq;
+  } else {
     for (uint64_t i = query.min_seq(); i <= query.max_seq(); ++i) {
       Request* ret_request = message_manager_->GetRequest(i);
       if (ret_request == nullptr) {
@@ -114,7 +112,7 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
   }
 
   if (context != nullptr && context->client != nullptr) {
-    //LOG(ERROR) << "send response:" << response.DebugString();
+    // LOG(ERROR) << "send response:" << response.DebugString();
     int ret = context->client->SendRawMessage(response);
     if (ret) {
       LOG(ERROR) << "send resp fail ret:" << ret;

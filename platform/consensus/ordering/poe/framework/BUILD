@@ -13,4 +13,3 @@ cc_library(
         "//platform/consensus/ordering/poe/algorithm:poe",
     ],
 )
-

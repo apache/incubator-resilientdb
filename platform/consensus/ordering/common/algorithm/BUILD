@@ -9,4 +9,3 @@ cc_library(
         "//common/crypto:signature_verifier",
     ],
 )
-

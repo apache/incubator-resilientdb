@@ -159,9 +159,10 @@ absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
   std::condition_variable resp_cv;
   bool success = false;
 
-  std::unique_ptr<NetChannel> client = GetNetChannel(replicas_[0].ip(), replicas_[0].port());
+  std::unique_ptr<NetChannel> client =
+      GetNetChannel(replicas_[0].ip(), replicas_[0].port());
 
-  LOG(INFO)<<"ip:"<<replicas_[0].ip()<<" port:"<<replicas_[0].port();
+  LOG(INFO) << "ip:" << replicas_[0].ip() << " port:" << replicas_[0].port();
 
   std::string response_str;
   int ret = 0;
@@ -172,7 +173,7 @@ absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
     }
     client->SetRecvTimeout(100000);
     ret = client->RecvRawMessageStr(&response_str);
-	  LOG(INFO)<<"receive str:"<<ret<<" len:"<<response_str.size();
+    LOG(INFO) << "receive str:" << ret << " len:" << response_str.size();
     if (ret != 0) {
       continue;
     }

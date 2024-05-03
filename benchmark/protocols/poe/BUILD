@@ -13,4 +13,3 @@ cc_binary(
         "//service/utils:server_factory",
     ],
 )
-

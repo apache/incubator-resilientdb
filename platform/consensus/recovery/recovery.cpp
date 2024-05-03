@@ -521,7 +521,8 @@ void Recovery::ReadLogsFromFiles(
     }
   }
 
-  LOG(ERROR) << "read log from files:" << path << " done"<<" recovery max seq:"<<max_seq;
+  LOG(ERROR) << "read log from files:" << path << " done"
+             << " recovery max seq:" << max_seq;
 
   close(fd);
 }

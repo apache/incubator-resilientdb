@@ -16,10 +16,10 @@ cc_library(
 )
 
 cc_library(
-    name= "beast",
+    name = "beast",
     deps = [
-        "@boost//:beast"
-    ]
+        "@boost//:beast",
+    ],
 )
 
 cc_library(

@@ -35,7 +35,7 @@ namespace poe {
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
-    : common::Consensus(config, std::move(executor)){
+    : common::Consensus(config, std::move(executor)) {
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
@@ -47,9 +47,8 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    poe_ = std::make_unique<PoE>(
-        config_.GetSelfInfo().id(), f,
-                                   total_replicas, GetSignatureVerifier());
+    poe_ = std::make_unique<PoE>(config_.GetSelfInfo().id(), f, total_replicas,
+                                 GetSignatureVerifier());
     InitProtocol(poe_.get());
   }
 }
@@ -73,7 +72,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     poe_->ReceivePrepare(std::move(proposal));
     return 0;
-  } 
+  }
   return 0;
 }
 

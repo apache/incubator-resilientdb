@@ -107,7 +107,7 @@ class ConsensusManager : public ServiceInterface {
   std::vector<ReplicaInfo> clients_;
   Stats* global_stats_;
   uint64_t version_;
-  std::map<int,uint64_t> hb_;
+  std::map<int, uint64_t> hb_;
   std::mutex hb_mutex_;
 };
 

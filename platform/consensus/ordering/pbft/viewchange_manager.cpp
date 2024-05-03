@@ -109,7 +109,7 @@ void ViewChangeManager::MayStart() {
     return;
   }
   started_ = true;
-  LOG(ERROR)<<"MAYSTART";
+  LOG(ERROR) << "MAYSTART";
 
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
@@ -149,7 +149,7 @@ void ViewChangeManager::MayStart() {
 bool ViewChangeManager::ChangeStatue(ViewChangeStatus status) {
   if (status == ViewChangeStatus::READY_VIEW_CHANGE) {
     if (status_ != ViewChangeStatus::READY_VIEW_CHANGE) {
-      LOG(ERROR)<<"CHANGE STATUS";
+      LOG(ERROR) << "CHANGE STATUS";
       status_ = status;
     }
   } else {
@@ -228,7 +228,7 @@ void ViewChangeManager::SetCurrentViewAndNewPrimary(uint64_t view_number) {
       config_.GetReplicaInfos()[(view_number - 1) % replicas.size()].id();
   system_info_->SetPrimary(id);
   global_stats_->ChangePrimary(id);
-  LOG(ERROR)<<"View Change Happened";
+  LOG(ERROR) << "View Change Happened";
 }
 
 std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
@@ -509,7 +509,7 @@ void ViewChangeManager::SendViewChangeMsg() {
 }
 
 void ViewChangeManager::AddComplaintTimer(uint64_t proxy_id, std::string hash) {
-  LOG(ERROR)<<"ADDING COMPLAINT";
+  LOG(ERROR) << "ADDING COMPLAINT";
   std::lock_guard<std::mutex> lk(vc_mutex_);
   if (complaining_clients_.count(proxy_id) == 0) {
     complaining_clients_[proxy_id].set_proxy_id(proxy_id);

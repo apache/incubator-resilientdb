@@ -26,7 +26,6 @@ cc_library(
     ],
 )
 
-
 cc_library(
     name = "response_manager",
     srcs = ["response_manager.cpp"],

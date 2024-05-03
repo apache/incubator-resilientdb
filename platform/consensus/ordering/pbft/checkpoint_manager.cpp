@@ -317,8 +317,9 @@ void CheckPointManager::UpdateCheckPointStatus() {
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
-      if(!is_recovery){
-        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs, stable_seqs);
+      if (!is_recovery) {
+        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
+                            stable_seqs);
       }
     }
   }

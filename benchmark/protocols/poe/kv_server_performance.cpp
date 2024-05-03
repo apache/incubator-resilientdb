@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
     request.SerializeToString(&request_data);
     return request_data;
   });
-    
+
   auto server =
       std::make_unique<ServiceNetwork>(*config, std::move(performance_consens));
   server->Run();
