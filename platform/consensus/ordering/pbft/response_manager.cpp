@@ -26,7 +26,7 @@
 namespace resdb {
 
 ResponseClientTimeout::ResponseClientTimeout(std::string hash_,
-                                                   uint64_t time_) {
+                                             uint64_t time_) {
   this->hash = hash_;
   this->timeout_time = time_;
 }
@@ -57,6 +57,7 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
       verifier_(verifier) {
   stop_ = false;
   local_id_ = 1;
+  timeout_length_ = 5000000;
 
   if (config_.GetPublicKeyCertificateInfo()
               .public_key()
@@ -65,9 +66,9 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
       config_.IsTestMode()) {
     user_req_thread_ = std::thread(&ResponseManager::BatchProposeMsg, this);
   }
-  if(config_.GetConfigData().enable_viewchange()){
+  if (config_.GetConfigData().enable_viewchange()) {
     checking_timeout_thread_ =
-      std::thread(&ResponseManager::MonitoringClientTimeOut, this);
+        std::thread(&ResponseManager::MonitoringClientTimeOut, this);
   }
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
@@ -78,7 +79,7 @@ ResponseManager::~ResponseManager() {
   if (user_req_thread_.joinable()) {
     user_req_thread_.join();
   }
-  if(checking_timeout_thread_.joinable()){
+  if (checking_timeout_thread_.joinable()) {
     checking_timeout_thread_.join();
   }
 }
@@ -172,8 +173,21 @@ CollectorResultCode ResponseManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
+  std::string hash = request->hash();
+
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
+  if (!batch_response->ParseFromString(request->data())) {
+    LOG(ERROR) << "parse response fail:" << request->data().size()
+               << " seq:" << request->seq();
+    RemoveWaitingResponseRequest(hash);
+    return CollectorResultCode::INVALID;
+  }
+
+  uint64_t seq = batch_response->local_id();
+  request->set_seq(seq);
+
   int type = request->type();
-  uint64_t seq = request->seq();
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,
@@ -190,6 +204,7 @@ CollectorResultCode ResponseManager::AddResponseMsg(
   }
   if (resp_received_count > 0) {
     collector_pool_->Update(seq);
+    RemoveWaitingResponseRequest(hash);
     return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
@@ -295,7 +310,8 @@ int ResponseManager::DoBatch(
 
   if (!config_.IsPerformanceRunning()) {
     LOG(ERROR) << "add context list:" << new_request->seq()
-               << " list size:" << context_list.size();
+               << " list size:" << context_list.size()
+               << " local_id:" << local_id_;
     batch_request.set_local_id(local_id_);
     int ret = AddContextList(std::move(context_list), local_id_++);
     if (ret != 0) {
@@ -318,13 +334,10 @@ int ResponseManager::DoBatch(
   batch_request.SerializeToString(new_request->mutable_data());
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
-  /*for(int i=1; i<=4; i++){
-      replica_communicator_->SendMessage(*new_request, i);
-  }*/
   replica_communicator_->SendMessage(*new_request, GetPrimary());
   send_num_++;
-  LOG(INFO) << "send msg to primary:" << GetPrimary()
-            << " batch size:" << batch_req.size();
+  // LOG(INFO) << "send msg to primary:" << GetPrimary()
+  //          << " batch size:" << batch_req.size();
   AddWaitingResponseRequest(std::move(new_request));
   return 0;
 }
@@ -335,16 +348,16 @@ void ResponseManager::AddWaitingResponseRequest(
     return;
   }
   pm_lock_.lock();
-  uint64_t time = GetCurrentTime() + this->timeout_length_;
-  client_timeout_min_heap_.push(
-      ResponseClientTimeout(request->hash(), time));
+  assert(timeout_length_ > 0);
+  uint64_t time = GetCurrentTime() + timeout_length_;
+  client_timeout_min_heap_.push(ResponseClientTimeout(request->hash(), time));
   waiting_response_batches_.insert(
       make_pair(request->hash(), std::move(request)));
   pm_lock_.unlock();
   sem_post(&request_sent_signal_);
 }
 
-void ResponseManager::RemoveWaitingResponseRequest(std::string hash) {
+void ResponseManager::RemoveWaitingResponseRequest(const std::string& hash) {
   if (!config_.GetConfigData().enable_viewchange()) {
     return;
   }
@@ -363,8 +376,7 @@ bool ResponseManager::CheckTimeOut(std::string hash) {
   return value;
 }
 
-std::unique_ptr<Request> ResponseManager::GetTimeOutRequest(
-    std::string hash) {
+std::unique_ptr<Request> ResponseManager::GetTimeOutRequest(std::string hash) {
   pm_lock_.lock();
   auto value = std::move(waiting_response_batches_.find(hash)->second);
   pm_lock_.unlock();
@@ -390,7 +402,6 @@ void ResponseManager::MonitoringClientTimeOut() {
     if (CheckTimeOut(client_timeout.hash)) {
       auto request = GetTimeOutRequest(client_timeout.hash);
       if (request) {
-        LOG(ERROR) << "Client Request Timeout " << client_timeout.hash;
         replica_communicator_->BroadCast(*request);
       }
     }

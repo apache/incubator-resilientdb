@@ -13,7 +13,7 @@
 namespace resdb {
 namespace poe {
 
-class PoE: public common::ProtocolBase {
+class PoE : public common::ProtocolBase {
  public:
   PoE(int id, int f, int total_num, SignatureVerifier* verifier);
   ~PoE();
@@ -31,10 +31,10 @@ class PoE: public common::ProtocolBase {
   std::map<std::string, std::unique_ptr<Transaction> > data_;
 
   int64_t seq_;
- bool is_stop_;
+  bool is_stop_;
   SignatureVerifier* verifier_;
   Stats* global_stats_;
 };
 
-}  // namespace cassandra
+}  // namespace poe
 }  // namespace resdb

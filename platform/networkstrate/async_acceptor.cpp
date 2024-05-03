@@ -77,7 +77,7 @@ void AsyncAcceptor::Session::ReadDone() {
     delete recv_buffer_;
   } else {
     data_size_ = *reinterpret_cast<size_t*>(recv_buffer_);
-    if (data_size_ > 1e6) {
+    if (data_size_ > 1e10) {
       LOG(ERROR) << "read data size:" << data_size_
                  << " data size:" << sizeof(data_size_) << " close socket";
       Close();

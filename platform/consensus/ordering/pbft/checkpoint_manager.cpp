@@ -312,11 +312,15 @@ void CheckPointManager::UpdateCheckPointStatus() {
       last_hash_ = GetHash(last_hash_, request->hash());
       last_seq_++;
     }
+    bool is_recovery = request->is_recovery();
     txn_db_->Put(std::move(request));
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
-      BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs, stable_seqs);
+      if (!is_recovery) {
+        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
+                            stable_seqs);
+      }
     }
   }
   return;

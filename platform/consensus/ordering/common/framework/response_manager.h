@@ -32,7 +32,7 @@
 #include "platform/statistic/stats.h"
 
 namespace resdb {
-namespace common  {
+namespace common {
 
 class ResponseManager {
  public:
@@ -81,5 +81,5 @@ class ResponseManager {
   std::mutex response_lock_[response_set_size_];
 };
 
-} // common
+}  // namespace common
 }  // namespace resdb

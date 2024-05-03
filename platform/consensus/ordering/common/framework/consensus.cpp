@@ -46,56 +46,51 @@ Consensus::Consensus(const ResDBConfig& config,
           nullptr, std::move(executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
-            is_stop_ = false;
+  is_stop_ = false;
   global_stats_ = Stats::GetGlobalStats();
 }
 
-void Consensus::Init(){
-  if(performance_manager_ == nullptr){
-    performance_manager_ = 
-      config_.IsPerformanceRunning()
-      ? std::make_unique<PerformanceManager>(
-          config_, GetBroadCastClient(), GetSignatureVerifier())
-      : nullptr;
+void Consensus::Init() {
+  if (performance_manager_ == nullptr) {
+    performance_manager_ =
+        config_.IsPerformanceRunning()
+            ? std::make_unique<PerformanceManager>(
+                  config_, GetBroadCastClient(), GetSignatureVerifier())
+            : nullptr;
   }
 
-  if(response_manager_ == nullptr){
-    response_manager_ = 
-      !config_.IsPerformanceRunning()
-      ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
-          GetSignatureVerifier())
-      : nullptr;
+  if (response_manager_ == nullptr) {
+    response_manager_ =
+        !config_.IsPerformanceRunning()
+            ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
+                                                GetSignatureVerifier())
+            : nullptr;
   }
 }
 
-void Consensus::InitProtocol(ProtocolBase * protocol){
+void Consensus::InitProtocol(ProtocolBase* protocol) {
   protocol->SetSingleCallFunc(
       [&](int type, const google::protobuf::Message& msg, int node_id) {
-      return SendMsg(type, msg, node_id);
+        return SendMsg(type, msg, node_id);
       });
 
   protocol->SetBroadcastCallFunc(
       [&](int type, const google::protobuf::Message& msg) {
-      return Broadcast(type, msg);
+        return Broadcast(type, msg);
       });
 
   protocol->SetCommitFunc(
-      [&](const google::protobuf::Message& msg) { 
-      return CommitMsg(msg); 
-      });
+      [&](const google::protobuf::Message& msg) { return CommitMsg(msg); });
 }
 
-Consensus::~Consensus(){
-  is_stop_ = true;
-}
+Consensus::~Consensus() { is_stop_ = true; }
 
-void Consensus::SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manager){
+void Consensus::SetPerformanceManager(
+    std::unique_ptr<PerformanceManager> performance_manager) {
   performance_manager_ = std::move(performance_manager);
 }
 
-bool Consensus::IsStop(){
-  return is_stop_;
-}
+bool Consensus::IsStop() { return is_stop_; }
 
 void Consensus::SetupPerformanceDataFunc(std::function<std::string()> func) {
   performance_manager_->SetDataFunc(func);
@@ -131,9 +126,7 @@ std::vector<ReplicaInfo> Consensus::GetReplicas() {
   return config_.GetReplicaInfos();
 }
 
-int Consensus::CommitMsg(const google::protobuf::Message &txn) {
-  return 0;
-}
+int Consensus::CommitMsg(const google::protobuf::Message& txn) { return 0; }
 
 // The implementation of PBFT.
 int Consensus::ConsensusCommit(std::unique_ptr<Context> context,

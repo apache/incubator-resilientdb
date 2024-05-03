@@ -50,7 +50,7 @@ class PerformanceManager {
                          std::unique_ptr<Request> request);
   void SetDataFunc(std::function<std::string()> func);
 
-  protected:
+ protected:
   virtual void SendMessage(const Request& request);
 
  private:

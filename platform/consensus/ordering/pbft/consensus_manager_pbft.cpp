@@ -208,7 +208,7 @@ int ConsensusManagerPBFT::InternalConsensusCommit(
       int ret = commitment_->ProcessNewRequest(std::move(context),
                                                std::move(request));
       if (ret == -3) {
-        LOG(ERROR)<<"BAD RETURN";
+        LOG(ERROR) << "BAD RETURN";
         std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>
             request_complained;
         {

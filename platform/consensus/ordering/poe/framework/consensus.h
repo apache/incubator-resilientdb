@@ -55,5 +55,5 @@ class Consensus : public common::Consensus {
   int send_num_[200];
 };
 
-}  // namespace cassandra
+}  // namespace poe
 }  // namespace resdb

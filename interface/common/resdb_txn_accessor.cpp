@@ -59,15 +59,12 @@ ResDBTxnAccessor::GetTxn(uint64_t min_seq, uint64_t max_seq) {
     ths.push_back(std::thread(
         [&](NetChannel* client) {
           std::string response_str;
-          int ret = -1;
-          for (int i = 0; i < 3 && ret < 0; ++i) {
-            ret = client->SendRequest(request, Request::TYPE_QUERY);
-            if (ret) {
-              return;
-            }
-            client->SetRecvTimeout(1000);
-            ret = client->RecvRawMessageStr(&response_str);
+          int ret = client->SendRequest(request, Request::TYPE_QUERY);
+          if (ret) {
+            return;
           }
+          client->SetRecvTimeout(1000);
+          ret = client->RecvRawMessageStr(&response_str);
           if (ret == 0) {
             std::unique_lock<std::mutex> lck(mtx);
             recv_count[response_str]++;
@@ -160,11 +157,12 @@ absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
   std::string final_str;
   std::mutex mtx;
   std::condition_variable resp_cv;
+  bool success = false;
 
   std::unique_ptr<NetChannel> client =
       GetNetChannel(replicas_[0].ip(), replicas_[0].port());
 
-  LOG(ERROR) << "ip:" << replicas_[0].ip() << " port:" << replicas_[0].port();
+  LOG(INFO) << "ip:" << replicas_[0].ip() << " port:" << replicas_[0].port();
 
   std::string response_str;
   int ret = 0;
@@ -175,7 +173,7 @@ absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
     }
     client->SetRecvTimeout(100000);
     ret = client->RecvRawMessageStr(&response_str);
-    LOG(ERROR) << "receive str:" << ret << " len:" << response_str.size();
+    LOG(INFO) << "receive str:" << ret << " len:" << response_str.size();
     if (ret != 0) {
       continue;
     }

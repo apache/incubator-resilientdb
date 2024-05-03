@@ -39,6 +39,9 @@ MessageManager::MessageManager(
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchUserResponse> resp_msg) {
             if (request->is_recovery()) {
+              if (checkpoint_manager_) {
+                checkpoint_manager_->AddCommitData(std::move(request));
+              }
               return;
             }
             resp_msg->set_proxy_id(request->proxy_id());
@@ -231,8 +234,6 @@ TransactionStatue MessageManager::GetTransactionState(uint64_t seq) {
 }
 
 int MessageManager::GetReplicaState(ReplicaState* state) {
-  state->set_view(GetCurrentView());
-  *state->mutable_replica_info() = config_.GetSelfInfo();
   *state->mutable_replica_config() = config_.GetConfigData();
   return 0;
 }

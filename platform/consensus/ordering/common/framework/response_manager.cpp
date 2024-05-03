@@ -238,5 +238,5 @@ int ResponseManager::DoBatch(
   return 0;
 }
 
-} // namespace common
+}  // namespace common
 }  // namespace resdb

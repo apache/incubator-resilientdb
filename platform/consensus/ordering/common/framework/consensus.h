@@ -49,12 +49,12 @@ class Consensus : public ConsensusManager {
 
   void SetCommunicator(ReplicaCommunicator* replica_communicator);
 
-  void InitProtocol(ProtocolBase * protocol);
+  void InitProtocol(ProtocolBase* protocol);
 
-  protected:
-    virtual int ProcessCustomConsensus(std::unique_ptr<Request> request);
-    virtual int ProcessNewTransaction(std::unique_ptr<Request> request);
-    virtual int CommitMsg(const google::protobuf::Message& msg);
+ protected:
+  virtual int ProcessCustomConsensus(std::unique_ptr<Request> request);
+  virtual int ProcessNewTransaction(std::unique_ptr<Request> request);
+  virtual int CommitMsg(const google::protobuf::Message& msg);
 
  protected:
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);
@@ -65,7 +65,8 @@ class Consensus : public ConsensusManager {
 
  protected:
   void Init();
-  void SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manger);
+  void SetPerformanceManager(
+      std::unique_ptr<PerformanceManager> performance_manger);
 
  protected:
   ReplicaCommunicator* replica_communicator_;

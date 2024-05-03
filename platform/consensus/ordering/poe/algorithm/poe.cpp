@@ -10,7 +10,6 @@ namespace poe {
 
 PoE::PoE(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
-
   LOG(ERROR) << "get proposal graph";
   id_ = id;
   total_num_ = total_num;
@@ -19,9 +18,7 @@ PoE::PoE(int id, int f, int total_num, SignatureVerifier* verifier)
   seq_ = 0;
 }
 
-PoE::~PoE() {
-  is_stop_ = true;
-}
+PoE::~PoE() { is_stop_ = true; }
 
 bool PoE::IsStop() { return is_stop_; }
 
@@ -41,7 +38,7 @@ bool PoE::ReceivePropose(std::unique_ptr<Transaction> txn) {
   int proposer = txn->proposer();
   {
     std::unique_lock<std::mutex> lk(mutex_);
-    data_[txn->hash()]=std::move(txn);
+    data_[txn->hash()] = std::move(txn);
   }
 
   Proposal proposal;
@@ -58,14 +55,14 @@ bool PoE::ReceivePrepare(std::unique_ptr<Proposal> proposal) {
     std::unique_lock<std::mutex> lk(mutex_);
     received_[proposal->hash()].insert(proposal->proposer());
     auto it = data_.find(proposal->hash());
-    if(it != data_.end()){
-      if(received_[proposal->hash()].size()>=2*f_+1){
+    if (it != data_.end()) {
+      if (received_[proposal->hash()].size() >= 2 * f_ + 1) {
         txn = std::move(it->second);
         data_.erase(it);
       }
     }
   }
-  if(txn != nullptr){
+  if (txn != nullptr) {
     commit_(*txn);
   }
   return true;
