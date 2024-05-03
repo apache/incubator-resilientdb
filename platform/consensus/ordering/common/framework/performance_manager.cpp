@@ -91,7 +91,6 @@ int PerformanceManager::StartEval() {
   }
   eval_started_ = true;
   for (int i = 0; i < 100000000; ++i) {
-    // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
@@ -143,8 +142,6 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
-  // uint64_t seq = request->seq();
-
   std::unique_ptr<BatchUserResponse> batch_response =
       std::make_unique<BatchUserResponse>();
   if (!batch_response->ParseFromString(request->data())) {
@@ -154,22 +151,16 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   }
 
   uint64_t seq = batch_response->local_id();
-  // LOG(ERROR)<<"receive seq:"<<seq;
 
   bool done = false;
   {
     int idx = seq % response_set_size_;
     std::unique_lock<std::mutex> lk(response_lock_[idx]);
     if (response_[idx].find(seq) == response_[idx].end()) {
-      // LOG(ERROR)<<"has done local seq:"<<seq<<" global seq:"<<request->seq();
       return CollectorResultCode::OK;
     }
     response_[idx][seq]++;
-    // LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<"
-    // num:"<<response_[idx][seq]<<" send:"<<send_num_;
     if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
-      // LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<"
-      // num:"<<response_[idx][seq]<<" done:"<<send_num_;
       response_[idx].erase(response_[idx].find(seq));
       done = true;
     }
@@ -190,9 +181,7 @@ void PerformanceManager::SendResponseToClient(
                << " create time:" << create_time << " run time:" << run_time
                << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
-  } else {
-  }
-  // send_num_-=10;
+  } 
   send_num_--;
 }
 
@@ -206,7 +195,6 @@ int PerformanceManager::BatchProposeMsg() {
   bool start = false;
   while (!stop_) {
     if (send_num_ > config_.GetMaxProcessTxn()) {
-      // LOG(ERROR)<<"wait send num:"<<send_num_;
       usleep(100000);
       continue;
     }
@@ -225,9 +213,7 @@ int PerformanceManager::BatchProposeMsg() {
       }
     }
     start = true;
-    for (int i = 0; i < 1; ++i) {
-      int ret = DoBatch(batch_req);
-    }
+    DoBatch(batch_req);
     batch_req.clear();
   }
   return 0;
@@ -277,8 +263,6 @@ int PerformanceManager::DoBatch(
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
-  // LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<"
-  // sum:"<<sum_<<" to:"<<GetPrimary();
   if (total_num_++ == 1000000) {
     stop_ = true;
     LOG(WARNING) << "total num is done:" << total_num_;
