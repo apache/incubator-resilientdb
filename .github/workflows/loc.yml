@@ -15,7 +15,7 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: Install
-       run: npm install
+       run: npm init; npm install
 
      - name: Launch the local action
        id: badge
