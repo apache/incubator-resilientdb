@@ -14,9 +14,8 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-     #uses: ./third_party/loc_script # Uses an action in the root directory
      - name: Launch the local action
-       uses: ./
+       uses: ./third_party/loc_script/ # Uses an action in the root directory
        id: badge
        with:
          debug: true
