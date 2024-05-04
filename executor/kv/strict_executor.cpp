@@ -40,24 +40,140 @@ StrictExecutor::StrictExecutor(std::unique_ptr<Storage> storage)
 
     }
 
+StrictExecutor::~StrictExecutor() {
+  is_stop_ = true;
+  empty_queue_.notify_all();
+  not_empty_queue_.notify_all();
+  lock_taken_.notify_all();
+  for (auto& th : thread_list_) {
+    if (th.joinable()) {
+      th.join();
+    }
+  }
+}
 void StrictExecutor::WorkerThread(){
-  
+  KVRequest kv_request;
+  std::set<std::string> held_locks;
+  bool lock_conflict;
+  std::string key;
+  while(true){
+    //Wait until request for thread to process is added and grab it
+    queue_lock_.lock();
+    while(request_queue.size()==0){
+      if (not_empty_queue_.wait_for(queue_lock_, std::chrono::microseconds(100),
+        [this] { return is_stop_; })) {
+        queue_lock_.unlock();
+        return;
+      }
+    }
+    kv_request=request_queue_.front();
+    request_queue.pop();
+    queue_lock_.unlock();
+
+    //Grab locks needed for request
+    map_lock_.lock();
+    //If multiple operations in kv_request
+    if(kv_request.ops_size()){
+      lock_conflict=true;
+      while(lock_conflict){
+        lock_conflict=false;
+        for(const auto& op : kv_request.ops()){
+          if(held_locks.contains(op.key())){
+            continue;
+          }
+          if(lock_map_.find(op.key()) == lock_map_.end() || lock_map_[op.key()]==0){
+            lock_map_[op.key()]=1;
+            held_locks.insert(op.key());
+          }
+          else{
+            lock_conflict=true;
+            break;
+          }
+        }
+        if(lock_conflict){
+          for(auto& key : held_locks_){
+            lock_map_[key]=0;
+          }
+          lock_taken_.notify_all();
+          //Put thread to sleep until another thread releases locks or time expires
+          if (lock_taken_.wait_for(map_lock_, std::chrono::microseconds(100),[this] { return is_stop_; })) {
+            map_lock_.unlock();
+            return;
+          }
+        }
+      }
+    }
+    //If only one operation in kv_request
+    else{
+      if(lock_map_.find(kv_request.key()) == lock_map_.end()){
+        lock_map_[kv_request.key()]=1;
+        held_locks.insert(kv_request.key());
+      }
+      else{
+        while(lock_map[kv_request.key()]==1){
+          if (lock_taken_.wait_for(map_lock_, std::chrono::microseconds(100),[this] { return is_stop_; })) {
+            map_lock_.unlock();
+            return;
+          }
+        }
+      }
+    }
+    map_lock_.unlock();
+
+    //Once all locks are grabbed, execute transaction
+    std::unique_ptr<std::string> response =
+        ExecuteData(kv_request);
+    if (response == nullptr) {
+      response = std::make_unique<std::string>();
+    }
+
+    //Release locks that were grabbed
+    map_lock_.lock();
+    for(auto& key : held_locks_){
+      lock_map_[key]=0;
+    }
+    map_lock_.unlock();
+    lock_taken_.notify_all();
+
+    //Add response
+    response_lock_.lock();
+    this->batch_response->add_response()->swap(*response);
+    //Need to check all threads are done processing, and if all threads are done + queue is empty, wake main thread
+    //Maybe check number of responses in batch response, if equals number of requests, all requests are processed    
+    if(this->batch_response_.get()->response_size()==request_count_){
+      empty_queue_.notify_all();
+    }
+    response_lock_.unlock();
+  }
 }
 
 std::unique_ptr<BatchUserResponse> StrictExecutor::ExecuteBatch(
     const BatchUserRequest& request) {
-  std::unique_ptr<BatchUserResponse> batch_response =
-      std::make_unique<BatchUserResponse>();
-  for (auto& sub_request : request.user_requests()) {
-    std::unique_ptr<std::string> response =
-        ExecuteData(sub_request.request().data());
-    if (response == nullptr) {
-      response = std::make_unique<std::string>();
+  this->batch_response_ = std::make_unique<BatchUserResponse>();
+  request_count_=0;
+  for (const auto& sub_request : request.user_requests()) {
+    KVRequest kv_request;
+    if (!kv_request.ParseFromString(sub_request.request().data())) {
+      LOG(ERROR) << "parse data fail";
+      return std::move(this->batch_response_);
     }
-    batch_response->add_response()->swap(*response);
+    queue_lock_.lock();
+    request_queue_.push(std::move(kv_request));
+    request_count_++;
+    queue_lock_.unlock();
+    //Might want to move this/add new condition to avoid unecessary broadcasts
+    not_empty_queue_.notify_all():
   }
-
-  return batch_response;
+  response_lock_.lock();
+  while(this->batch_response_.get()->response_size()!=request_count_){
+    if (empty_queue_.wait_for(queue_lock_, std::chrono::microseconds(100),
+        [this] { return is_stop_; })) {
+        response_lock_.unlock();
+      return std::move(this->batch_response_);
+    }
+  }
+  response_lock_.unlock();
+  return std::move(this->batch_response_);
 }
 
 std::unique_ptr<std::string> StrictExecutor::ExecuteData(

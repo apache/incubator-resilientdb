@@ -207,8 +207,8 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   int batch_number = 0;
   int txn_id=0;
   // process through transactions
+  KVRequest kv_request;
   for (const auto& sub_request : request.user_requests()) {
-    KVRequest kv_request;
     if (!kv_request.ParseFromString(sub_request.request().data())) {
       LOG(ERROR) << "parse data fail";
       return std::move(this->batch_response_);

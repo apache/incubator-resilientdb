@@ -58,11 +58,18 @@ class StrictExecutor : public TransactionManager {
  private:
   std::unique_ptr<Storage> storage_;
   std::unordered_map<std::string, int> lock_map_;
-  std::mutex lockMutex_;
-  std::priority_queue request_queue_;
+  std::mutex queue_lock_;
+  std::mutex map_lock_;
+  std::mutex response_lock_;
+  std::queue request_queue_;
+  std::condition_variable empty_queue_;
+  std::condition_variable not_empty_queue_;
+  std::condition_variable lock_taken_;
   bool is_stop_ = false;
   int thread_count_;
+  int request_count_;
   vector<thread> thread_list_;
+  std::unique_ptr<BatchUserResponse> batch_response_;
 };
 
 }  // namespace resdb
