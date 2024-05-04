@@ -26,7 +26,7 @@ curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
 sudo mv bazel.gpg /etc/apt/trusted.gpg.d/ 
 echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt update && sudo apt install bazel=5.0.0 -y
+sudo apt update && sudo apt install bazel=6.0.0 -y
 sudo apt install clang-format -y
 rm $PWD/.git/hooks/pre-push
 ln -s $PWD/hooks/pre-push $PWD/.git/hooks/pre-push
