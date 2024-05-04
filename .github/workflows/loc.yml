@@ -17,8 +17,6 @@ jobs:
      - name: Launch the local action
        uses: ./ # Uses an action in the root directory
        id: badge
-       run:
-          npm install
        with:
          debug: true
          directory: ./
