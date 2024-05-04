@@ -8,5 +8,11 @@ jobs:
     name: check license
     runs-on: ubuntu-latest
     steps:
-      - name: Check License Header
-        uses: apache/skywalking-eyes/header@main
+     - name: Checkout
+       uses: actions/checkout@v2
+       with:
+         repository: ${{github.repository}}
+         ref: ${{ env.BRANCH_NAME }}
+
+     - name: Check License Header
+       uses: apache/skywalking-eyes/header@main
