@@ -15,9 +15,11 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: NPM Init
+       uses: ./third_party/loc_script/ # Uses an action in the root directory
        run: npm init -y 
 
      - name: NPM Install
+       uses: ./third_party/loc_script/ # Uses an action in the root directory
        run: npm install 
 
      - name: Launch the local action
