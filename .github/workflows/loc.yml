@@ -19,7 +19,7 @@ jobs:
        working-directory: ./third_party/loc_script/
 
      - name: NPM Install
-       run: npm install 
+       run: npm install badgen
        working-directory: ./third_party/loc_script/
 
      - name: Launch the local action
