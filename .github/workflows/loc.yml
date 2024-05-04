@@ -1,9 +1,7 @@
 name: LOC
 
 on:
-  push:
-    branches:    
-      - master
+  push
  
 jobs:
   build:

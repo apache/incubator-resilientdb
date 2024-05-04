@@ -13,7 +13,6 @@ header:
     - '.**/**'
     - '**/*.conf'
     - '**/*.config'
-    - 'src/index.js'
     - '**/*.json'
     - '**/*.sol'
     - '**/*.yaml'
