@@ -199,3 +199,68 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+================================================================
+
+This product includes a number of Dependencies with separate copyright notices
+and license terms. Your use of these submodules is subject to the terms and
+conditions of the following licenses.
+
+================================================================
+
+================================================================
+Apache-2.0 licenses
+================================================================
+The following components are provided under the Apache-2.0 License. See project link for details.
+The text of each license is the standard Apache 2.0 license.
+
+* bazelbuild (https://github.com/bazelbuild/)
+* rules_boost (https://github.com/nelhage/rules_boost)
+* absl (https://github.com/abseil/abseil-cpp)
+
+================================================================
+MIT licenses
+================================================================
+The following components are provided under the MIT License. See project link for details.
+The text of each license is also included in licenses/LICENSE-[project].txt
+
+* eEVM (https://github.com/microsoft/eEVM)
+
+================================================================
+BSD-3-Clause licenses
+================================================================
+The following components are provided under the BSD-3-Clause License. See project link for details.
+The text of each license is also included in licenses/LICENSE-[project].txt.
+
+
+* glog (https://github.com/google/glog)
+* leveldb (https://github.com/google/leveldb)
+* gtest (https://github.com/google/googletest)
+* gflag (https://github.com/gflags/gflags)
+
+================================================================
+GPL-2.0 licenses 
+================================================================
+The following components are provided under the BSD-3-Clause License. See project link for details.
+The text of each license is also included in the source code.
+
+* zstd (https://github.com/facebook/zstd)
+* rocksdb (https://github.com/facebook/rocksdb)
+
+================================================================
+Public Domain
+================================================================
+The following components are placed in the public domain.
+The author hereby disclaims copyright to this source code.
+See project link for details.
+
+* protobuf (https://github.com/protocolbuffers/protobuf)
+* snappy (https://github.com/google/snappy)
+* zlib (https://github.com/madler/zlib)
+* pybind (https://github.com/pybind/pybind11_bazel)
+* nlohmann_json (https://github.com/nlohmann/json)
+* CrowCpp (https://github.com/CrowCpp/Crow)
+* Asio (https://github.com/chriskohlhoff/asio)
+* Prometheus-cpp (https://github.com/jupp0r/prometheus-cpp)
+* Cryptopp (https://github.com/weidai11/cryptopp)
+
