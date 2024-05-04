@@ -26,6 +26,7 @@ header:
     - 'WORKSPACE'
     - 'skywalking-eyes/**'
     - 'third_party/**.BUILD'
+    - 'third_party/loc_script/src/index.js'
 
 
   comment: on-failure
