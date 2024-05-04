@@ -27,6 +27,7 @@ header:
     - 'WORKSPACE'
     - 'skywalking-eyes/**'
     - 'third-party/*.BUILD'
+    - 'third_party/z.BUILD'
 
 
   comment: on-failure
