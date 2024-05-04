@@ -1,10 +1,10 @@
 name: LOC
 
 on:
-  push:
-    branches:    
+  push: 
+    branches:
       - master
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,9 +16,15 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
+     - name: NPM Init
+       run: npm init -y 
+
+     - name: NPM Install
+       run: npm install badgen @actions/core glob-gitignore
+
      - name: Launch the local action
-       uses: ./ # Uses an action in the root directory
        id: badge
+       uses: ./third_party/loc_script/ # Uses an action in the root directory
        with:
          debug: true
          directory: ./
