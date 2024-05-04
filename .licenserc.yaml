@@ -26,8 +26,7 @@ header:
     - 'Docker/**'
     - 'WORKSPACE'
     - 'skywalking-eyes/**'
-    - 'third-party/*.BUILD'
-    - 'third_party/z.BUILD'
+    - 'third_party/**.BUILD'
 
 
   comment: on-failure
