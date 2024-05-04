@@ -15,7 +15,7 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: Launch the local action
-       uses: ./ # Uses an action in the root directory
+       uses: ./third-party # Uses an action in the root directory
        id: badge
        with:
          debug: true
