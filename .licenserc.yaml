@@ -9,6 +9,7 @@ header:
     - '**/*.md'
     - 'LICENSE'
     - 'NOTICE'
+    - '.*'
 
   comment: on-failure
 
