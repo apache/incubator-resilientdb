@@ -8,13 +8,13 @@ jobs:
     name: check license
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+     - name: Checkout
        uses: actions/checkout@v2
        with:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-      - name: Check License Header
+     - name: Check License Header
         uses: apache/skywalking-eyes/header@main
         with:
           config: /home/runner/licenserc.yaml
