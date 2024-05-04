@@ -14,14 +14,11 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-     - name: cd
-       run: cd ./third_party/loc_script/ # Uses an action in the root directory
-
      - name: NPM Init
        run: npm init -y 
 
      - name: NPM Install
-       run: npm install 
+       run: npm install --prefix ./third_party/loc_script/
 
      - name: Launch the local action
        id: badge
