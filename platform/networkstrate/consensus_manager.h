@@ -89,6 +89,7 @@ class ConsensusManager : public ServiceInterface {
 
  private:
   void HeartBeat();
+  void SendHeartBeat();
   void BroadCastThread();
 
  protected:
@@ -105,6 +106,9 @@ class ConsensusManager : public ServiceInterface {
   std::unique_ptr<ReplicaCommunicator> bc_client_;
   std::vector<ReplicaInfo> clients_;
   Stats* global_stats_;
+  uint64_t version_;
+  std::map<int, uint64_t> hb_;
+  std::mutex hb_mutex_;
 };
 
 }  // namespace resdb

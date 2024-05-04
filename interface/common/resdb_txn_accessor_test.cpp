@@ -62,9 +62,11 @@ TEST(ResDBTxnAccessorTest, GetTransactionsFail) {
         auto client = std::make_unique<MockNetChannel>(ip, port);
         EXPECT_CALL(*client,
                     SendRequest(EqualsProto(request), Request::TYPE_QUERY, _))
-            .Times(AtLeast(1)).WillRepeatedly(Return(0));
+            .Times(AtLeast(1))
+            .WillRepeatedly(Return(0));
         EXPECT_CALL(*client, RecvRawMessageStr)
-            .Times(AtLeast(1)).WillRepeatedly(Invoke([&](std::string* resp) { return -1; }));
+            .Times(AtLeast(1))
+            .WillRepeatedly(Invoke([&](std::string* resp) { return -1; }));
         return client;
       }));
   absl::StatusOr<std::vector<std::pair<uint64_t, std::string>>> resp =

@@ -19,17 +19,18 @@
 
 #pragma once
 
+#include <crow.h>
+
 #include <chrono>
 #include <future>
-
-#include "platform/statistic/prometheus_handler.h"
-#include "platform/proto/resdb.pb.h"
-#include "proto/kv/kv.pb.h"
-#include "platform/common/network/tcp_socket.h"
 #include <nlohmann/json.hpp>
+
 #include "boost/asio.hpp"
 #include "boost/beast.hpp"
-#include <crow.h>
+#include "platform/common/network/tcp_socket.h"
+#include "platform/proto/resdb.pb.h"
+#include "platform/statistic/prometheus_handler.h"
+#include "proto/kv/kv.pb.h"
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -37,44 +38,46 @@ using tcp = asio::ip::tcp;
 
 namespace resdb {
 
-struct VisualData{
-    //Set when initializing
-    int replica_id;
-    int primary_id;
-    std::string ip;
-    int port;
+struct VisualData {
+  // Set when initializing
+  int replica_id;
+  int primary_id;
+  std::string ip;
+  int port;
 
-    //Set when new txn is received
-    int txn_number;
-    std::vector<std::string> txn_command;
-    std::vector<std::string> txn_key;
-    std::vector<std::string> txn_value;
+  // Set when new txn is received
+  int txn_number;
+  std::vector<std::string> txn_command;
+  std::vector<std::string> txn_key;
+  std::vector<std::string> txn_value;
 
-    //Request state if primary_id==replica_id, pre_prepare state otherwise
-    std::chrono::system_clock::time_point request_pre_prepare_state_time;
-    std::chrono::system_clock::time_point prepare_state_time;
-    std::vector<std::chrono::system_clock::time_point> prepare_message_count_times_list;
-    std::chrono::system_clock::time_point commit_state_time;
-    std::vector<std::chrono::system_clock::time_point> commit_message_count_times_list;
-    std::chrono::system_clock::time_point execution_time;
+  // Request state if primary_id==replica_id, pre_prepare state otherwise
+  std::chrono::system_clock::time_point request_pre_prepare_state_time;
+  std::chrono::system_clock::time_point prepare_state_time;
+  std::vector<std::chrono::system_clock::time_point>
+      prepare_message_count_times_list;
+  std::chrono::system_clock::time_point commit_state_time;
+  std::vector<std::chrono::system_clock::time_point>
+      commit_message_count_times_list;
+  std::chrono::system_clock::time_point execution_time;
 };
 
-class Stats{
+class Stats {
  public:
   static Stats* GetGlobalStats(int sleep_seconds = 5);
 
   void Stop();
 
-    void RetrieveProgress();
-    void SetProps(int replica_id, std::string ip, int port, bool resview_flag, bool faulty_flag);
-    void SetPrimaryId(int primary_id);
-    void RecordStateTime(std::string state);
-    void GetTransactionDetails(BatchUserRequest batch_request);
-    void SendSummary();
-    void CrowRoute();
-    bool IsFaulty();
-    void ChangePrimary(int primary_id);
-
+  void RetrieveProgress();
+  void SetProps(int replica_id, std::string ip, int port, bool resview_flag,
+                bool faulty_flag);
+  void SetPrimaryId(int primary_id);
+  void RecordStateTime(std::string state);
+  void GetTransactionDetails(BatchUserRequest batch_request);
+  void SendSummary();
+  void CrowRoute();
+  bool IsFaulty();
+  void ChangePrimary(int primary_id);
 
   void AddLatency(uint64_t run_time);
 

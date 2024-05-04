@@ -1,0 +1,33 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Apache Software Foundation
+
+  paths-ignore:
+    - 'dist'
+    - 'licenses'
+    - '**/*.md'
+    - 'LICENSE'
+    - 'NOTICE'
+    - '.*'
+    - '.**/**'
+    - '**/*.conf'
+    - '**/*.config'
+    - '**/*.json'
+    - '**/*.sol'
+    - '**/*.yaml'
+    - '**/*.css'
+    - '**/*.yml'
+    - 'repositories.bzl'
+    - 'documents/**'
+    - 'CNAME'
+    - 'DISCLAIMER'
+    - 'Docker/**'
+    - 'WORKSPACE'
+    - 'skywalking-eyes/**'
+    - 'third_party/**.BUILD'
+    - 'third_party/loc_script/src/index.js'
+
+
+  comment: on-failure
+

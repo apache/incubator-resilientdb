@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/common/framework/consensus.h"
@@ -46,56 +40,51 @@ Consensus::Consensus(const ResDBConfig& config,
           nullptr, std::move(executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
-            is_stop_ = false;
+  is_stop_ = false;
   global_stats_ = Stats::GetGlobalStats();
 }
 
-void Consensus::Init(){
-  if(performance_manager_ == nullptr){
-    performance_manager_ = 
-      config_.IsPerformanceRunning()
-      ? std::make_unique<PerformanceManager>(
-          config_, GetBroadCastClient(), GetSignatureVerifier())
-      : nullptr;
+void Consensus::Init() {
+  if (performance_manager_ == nullptr) {
+    performance_manager_ =
+        config_.IsPerformanceRunning()
+            ? std::make_unique<PerformanceManager>(
+                  config_, GetBroadCastClient(), GetSignatureVerifier())
+            : nullptr;
   }
 
-  if(response_manager_ == nullptr){
-    response_manager_ = 
-      !config_.IsPerformanceRunning()
-      ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
-          GetSignatureVerifier())
-      : nullptr;
+  if (response_manager_ == nullptr) {
+    response_manager_ =
+        !config_.IsPerformanceRunning()
+            ? std::make_unique<ResponseManager>(config_, GetBroadCastClient(),
+                                                GetSignatureVerifier())
+            : nullptr;
   }
 }
 
-void Consensus::InitProtocol(ProtocolBase * protocol){
+void Consensus::InitProtocol(ProtocolBase* protocol) {
   protocol->SetSingleCallFunc(
       [&](int type, const google::protobuf::Message& msg, int node_id) {
-      return SendMsg(type, msg, node_id);
+        return SendMsg(type, msg, node_id);
       });
 
   protocol->SetBroadcastCallFunc(
       [&](int type, const google::protobuf::Message& msg) {
-      return Broadcast(type, msg);
+        return Broadcast(type, msg);
       });
 
   protocol->SetCommitFunc(
-      [&](const google::protobuf::Message& msg) { 
-      return CommitMsg(msg); 
-      });
+      [&](const google::protobuf::Message& msg) { return CommitMsg(msg); });
 }
 
-Consensus::~Consensus(){
-  is_stop_ = true;
-}
+Consensus::~Consensus() { is_stop_ = true; }
 
-void Consensus::SetPerformanceManager(std::unique_ptr<PerformanceManager> performance_manager){
+void Consensus::SetPerformanceManager(
+    std::unique_ptr<PerformanceManager> performance_manager) {
   performance_manager_ = std::move(performance_manager);
 }
 
-bool Consensus::IsStop(){
-  return is_stop_;
-}
+bool Consensus::IsStop() { return is_stop_; }
 
 void Consensus::SetupPerformanceDataFunc(std::function<std::string()> func) {
   performance_manager_->SetDataFunc(func);
@@ -131,9 +120,7 @@ std::vector<ReplicaInfo> Consensus::GetReplicas() {
   return config_.GetReplicaInfos();
 }
 
-int Consensus::CommitMsg(const google::protobuf::Message &txn) {
-  return 0;
-}
+int Consensus::CommitMsg(const google::protobuf::Message& txn) { return 0; }
 
 // The implementation of PBFT.
 int Consensus::ConsensusCommit(std::unique_ptr<Context> context,
