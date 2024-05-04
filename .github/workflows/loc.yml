@@ -14,6 +14,9 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
+     - name: Install
+       run: npm install
+
      - name: Launch the local action
        id: badge
        uses: ./third_party/loc_script/ # Uses an action in the root directory
