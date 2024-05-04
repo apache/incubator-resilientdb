@@ -14,11 +14,8 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-     - name: NPM Init 
-       run: npm init
-
      - name: NPM Install
-       run: npm install
+       run: npm install badgen
 
      - name: Launch the local action
        id: badge
