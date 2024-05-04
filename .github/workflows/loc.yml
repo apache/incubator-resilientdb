@@ -16,9 +16,11 @@ jobs:
 
      - name: NPM Init
        run: npm init -y 
+       working-directory: ./third_party/loc_script/
 
      - name: NPM Install
-       run: npm install --prefix ./third_party/loc_script/
+       run: npm install 
+       working-directory: ./third_party/loc_script/
 
      - name: Launch the local action
        id: badge
