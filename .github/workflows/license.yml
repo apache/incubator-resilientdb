@@ -10,3 +10,5 @@ jobs:
     steps:
       - name: Check License Header
         uses: apache/skywalking-eyes/header@main
+        with:
+          config: licenserc.yaml
