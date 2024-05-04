@@ -16,6 +16,7 @@ jobs:
 
      - name: Launch the local action
        #uses: ./third_party/loc_script # Uses an action in the root directory
+       uses: ./
        id: badge
        with:
          debug: true
