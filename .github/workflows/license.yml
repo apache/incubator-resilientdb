@@ -15,6 +15,4 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: Check License Header
-        uses: apache/skywalking-eyes/header@main
-        with:
-          config: /home/runner/licenserc.yaml
+       uses: apache/skywalking-eyes/header@main
