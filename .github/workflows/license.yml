@@ -11,4 +11,4 @@ jobs:
       - name: Check License Header
         uses: apache/skywalking-eyes/header@main
         with:
-          config: ./licenserc.yaml
+          config: /home/runner/licenserc.yaml
