@@ -10,6 +10,24 @@ header:
     - 'LICENSE'
     - 'NOTICE'
     - '.*'
+    - '.**/**'
+    - '**/*.conf'
+    - '**/*.config'
+    - 'src/index.js'
+    - '**/*.json'
+    - '**/*.sol'
+    - '**/*.yaml'
+    - '**/*.css'
+    - '**/*.yml'
+    - 'repositories.bzl'
+    - 'documents/**'
+    - 'CNAME'
+    - 'DISCLAIMER'
+    - 'Docker/**'
+    - 'WORKSPACE'
+    - 'skywalking-eyes/**'
+    - 'third-party/*.BUILD'
+
 
   comment: on-failure
 
