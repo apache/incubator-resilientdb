@@ -15,8 +15,8 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: Launch the local action
-       uses: ./third_party/loc_script/ # Uses an action in the root directory
        id: badge
+       uses: ./third_party/loc_script/ # Uses an action in the root directory
        with:
          debug: true
          directory: ./
