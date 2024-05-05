@@ -26,7 +26,6 @@ cc_binary(
     srcs = ["kv_service.cpp"],
     copts = select({
         "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
-        "//chain/storage/setting:enable_rocksdb_setting": ["-DENABLE_ROCKSDB"],
         "//conditions:default": [],
     }),
     deps = [
@@ -38,7 +37,6 @@ cc_binary(
         "//chain/storage:memory_db",
     ] + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
-        "//chain/storage/setting:enable_rocksdb_setting": ["//chain/storage:rocksdb"],
         "//conditions:default": [],
     }),
 )

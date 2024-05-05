@@ -176,26 +176,6 @@ http_archive(
     url = "https://github.com/madler/zlib/archive/v1.2.11.tar.gz",
 )
 
-bind(
-    name = "zstd",
-    actual = "//third_party:zstd",
-)
-
-http_archive(
-    name = "com_facebook_zstd",
-    build_file_content = all_content,
-    strip_prefix = "zstd-1.5.2",
-    url = "https://github.com/facebook/zstd/archive/refs/tags/v1.5.2.zip",
-)
-
-http_archive(
-    name = "com_github_facebook_rocksdb",
-    build_file = "@com_resdb_nexres//third_party:rocksdb.BUILD",
-    sha256 = "928cbd416c0531e9b2e7fa74864ce0d7097dca3f5a8c31f31459772a28dbfcba",
-    strip_prefix = "rocksdb-7.2.2",
-    url = "https://github.com/facebook/rocksdb/archive/refs/tags/v7.2.2.zip",
-)
-
 http_archive(
     name = "pybind11_bazel",
     strip_prefix = "pybind11_bazel-2.11.1.bzl.1",

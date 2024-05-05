@@ -239,15 +239,6 @@ The text of each license is also included in licenses/LICENSE-[project].txt.
 * gflag (https://github.com/gflags/gflags)
 
 ================================================================
-GPL-2.0 licenses 
-================================================================
-The following components are provided under the BSD-3-Clause License. See project link for details.
-The text of each license is also included in the source code.
-
-* zstd (https://github.com/facebook/zstd)
-* rocksdb (https://github.com/facebook/rocksdb)
-
-================================================================
 Public Domain
 ================================================================
 The following components are placed in the public domain.
