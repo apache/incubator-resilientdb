@@ -224,7 +224,7 @@ MIT licenses
 The following components are provided under the MIT License. See project link for details.
 The text of each license is also included in licenses/LICENSE-[project].txt
 
-* eEVM (https://github.com/microsoft/eEVM)
+* eEVM-118a9355d023748318a318bc07fc79063f015a94 (https://github.com/microsoft/eEVM)
 
 ================================================================
 BSD-3-Clause licenses
@@ -233,10 +233,10 @@ The following components are provided under the BSD-3-Clause License. See projec
 The text of each license is also included in licenses/LICENSE-[project].txt.
 
 
-* glog (https://github.com/google/glog)
-* leveldb (https://github.com/google/leveldb)
-* gtest (https://github.com/google/googletest)
-* gflag (https://github.com/gflags/gflags)
+* glog-0.5.0 (https://github.com/google/glog)
+* leveldb-1.23 (https://github.com/google/leveldb)
+* gtest-1.13.0 (https://github.com/google/googletest)
+* gflag-2.2.2 (https://github.com/gflags/gflags)
 
 ================================================================
 Public Domain
@@ -245,13 +245,13 @@ The following components are placed in the public domain.
 The author hereby disclaims copyright to this source code.
 See project link for details.
 
-* protobuf (https://github.com/protocolbuffers/protobuf)
-* snappy (https://github.com/google/snappy)
-* zlib (https://github.com/madler/zlib)
-* pybind (https://github.com/pybind/pybind11_bazel)
-* nlohmann_json (https://github.com/nlohmann/json)
-* CrowCpp (https://github.com/CrowCpp/Crow)
-* Asio (https://github.com/chriskohlhoff/asio)
+* protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf)
+* snappy-1.1.9 (https://github.com/google/snappy)
+* zlib-1.2.11 (https://github.com/madler/zlib)
+* pybind-2.11.1 (https://github.com/pybind/pybind11_bazel)
+* nlohmann_json-3.9.1 (https://github.com/nlohmann/json)
+* CrowCpp-1.0-5 (https://github.com/CrowCpp/Crow)
+* Asio-1-26-0 (https://github.com/chriskohlhoff/asio)
 * Prometheus-cpp (https://github.com/jupp0r/prometheus-cpp)
-* Cryptopp (https://github.com/weidai11/cryptopp)
+* Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp)
 
