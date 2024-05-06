@@ -14,8 +14,8 @@ For example, releases may have incomplete or un-reviewed licensing conditions.
 What follows is a list of known issues the project is currently aware of
 (note that this list, by definition, is likely to be incomplete):
 
-1. The source code is distributed under the Apache License, Version 2.0. However
-building ResilientDB requires using a transitive required library 
+1. The source code is distributed under the Apache License, Version 2.0. 
+However, building ResilientDB requires using a transitive library 
 glog-0.5.0, leveldb-1.23, gtest-1.13.0, gflag-2.2.2, which is under BSD-3-Clause License,
 eEVM (https://github.com/microsoft/eEVM) which is under MIT licenses,
 and protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf),
