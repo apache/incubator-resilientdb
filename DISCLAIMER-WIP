@@ -15,10 +15,15 @@ What follows is a list of known issues the project is currently aware of
 (note that this list, by definition, is likely to be incomplete):
 
 1. The source code is distributed under the Apache License, Version 2.0. 
-However, building ResilientDB requires using a transitive library 
-glog-0.5.0, leveldb-1.23, gtest-1.13.0, gflag-2.2.2, which is under BSD-3-Clause License,
-eEVM (https://github.com/microsoft/eEVM) which is under MIT licenses,
-and protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf),
+However, building ResilientDB requires using some transitive libraries:
+* Under BSD-3-Clause License:
+glog-0.5.0, leveldb-1.23, gtest-1.13.0, and gflag-2.2.2
+
+* Under MIT licenses:
+eEVM (https://github.com/microsoft/eEVM)
+
+* hereby disclaims copyright to the source code:
+protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf),
 snappy-1.1.9 (https://github.com/google/snappy),
 zlib-1.2.11 (https://github.com/madler/zlib),
 pybind-2.11.1 (https://github.com/pybind/pybind11_bazel),
@@ -26,8 +31,7 @@ nlohmann_json-3.9.1 (https://github.com/nlohmann/json),
 CrowCpp-1.0-5 (https://github.com/CrowCpp/Crow),
 Asio-1-26-0 (https://github.com/chriskohlhoff/asio),
 Prometheus-cpp-1.0.1 (https://github.com/jupp0r/prometheus-cpp),
-Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp),
-which hereby disclaims copyright to their source code
+Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp)
 
 If you are planning to incorporate this work into your product/project,
 please be aware that you will need to conduct a thorough licensing review
