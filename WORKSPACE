@@ -140,8 +140,6 @@ http_archive(
     ],
 )
 
-#prometheus cpp client library
-
 http_archive(
     name = "com_google_leveldb",
     build_file = "@com_resdb_nexres//third_party:leveldb.BUILD",
