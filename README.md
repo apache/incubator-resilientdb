@@ -12,6 +12,9 @@
 
 **[ResilientDB](https://resilientdb.com/)** is a **High Throughput Yielding Permissioned Blockchain Fabric** founded by **[ExpoLab](https://expolab.org/)** at **[UC Davis](https://www.ucdavis.edu/)** in 2018. ResilientDB advocates a **system-centric** design by adopting a **multi-threaded architecture** that encompasses **deep pipelines**. Further, ResilientDB **separates** the ordering of client transactions from their execution, which allows it to **process messages out-of-order**.
 
+# Downloads:
+Download address for run-directly software package: https://downloads.apache.org/incubator/resilientdb/
+
 ### Quick Facts on ResilientDB
 1. ResilientDB orders client transactions through a highly optimized implementation of the  **[PBFT](https://pmg.csail.mit.edu/papers/osdi99.pdf)** [Castro and Liskov, 1998] protocol, which helps to achieve consensus among its replicas. ResilientDB also supports deploying other state-of-the-art consensus protocols *[release are planned]* such as **[GeoBFT](http://www.vldb.org/pvldb/vol13/p868-gupta.pdf)** [**[blog](https://blog.resilientdb.com/2023/03/07/GeoBFT.html), [released](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.1.0)**], **[PoE](https://openproceedings.org/2021/conf/edbt/p111.pdf)**, **[RCC](https://arxiv.org/abs/1911.00837)**, **[RingBFT](https://openproceedings.org/2022/conf/edbt/paper-73.pdf)**, **[PoC](https://arxiv.org/abs/2302.02325)**, **[SpotLess](https://arxiv.org/abs/2302.02118)**, **[HotStuff](https://arxiv.org/abs/1803.05069)**, and **[DAG](https://arxiv.org/pdf/2105.11827.pdf)**.
 2. ResilientDB requires deploying at least **3f+1** replicas, where **f (f > 0)** is the maximum number of arbitrary (or malicious) replicas.
