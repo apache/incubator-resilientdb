@@ -1,5 +1,7 @@
 #export COPTS="--define enable_leveldb=True"
 
+. ./script/env.sh
+
 ./script/deploy.sh $1
 
 . ./script/load_config.sh $1
@@ -16,7 +18,7 @@ if [ ! -f "$config_file" ]; then
   break;
 fi
 echo "get cofigfile:"$config_file
-/home/ubuntu/nexres/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
+${BAZEL_WORKSPACE_PATH}/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
 done
 
 sleep 60
