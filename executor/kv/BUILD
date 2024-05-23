@@ -46,6 +46,19 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "strict_executor",
+    srcs = ["strict_executor.cpp"],
+    hdrs = ["strict_executor.h"],
+    deps = [
+        "//chain/storage",
+        "//common:comm",
+        "//executor/common:transaction_manager",
+        "//platform/config:resdb_config_utils",
+        "//proto/kv:kv_cc_proto",
+    ],
+)
+
 cc_test(
     name = "kv_executor_test",
     srcs = ["kv_executor_test.cpp"],

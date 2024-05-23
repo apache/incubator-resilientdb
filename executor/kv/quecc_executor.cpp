@@ -156,7 +156,6 @@ void QueccExecutor::PlannerThread(const int thread_number) {
     const int& range_being_executed = thread_number;
 
     execute_barrier.arrive_and_wait();
-    auto start_time = std::chrono::high_resolution_clock::now();
 
     // Executor
     for (int priority = 0; priority < thread_count_; priority++) {
@@ -171,10 +170,6 @@ void QueccExecutor::PlannerThread(const int thread_number) {
       }
       this->sorted_transactions_[priority][range_being_executed].clear();
     }
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-        end_time - start_time);
-    //printf("Time Taken 5: %d\n", (int)duration.count());
 
     // Lock used to minimize conflicts of adding to batchresponse
     results_mutex.lock();
@@ -192,7 +187,6 @@ void QueccExecutor::PlannerThread(const int thread_number) {
 
 std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
     const BatchUserRequest& request) {
-  auto start_time = std::chrono::high_resolution_clock::now();
 
   this->batch_response_ = std::make_unique<BatchUserResponse>();
   rid_to_range_.clear();
@@ -254,15 +248,7 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
       transaction_tracker_[txn_id]=1;
     }
     txn_id++;
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-        end_time - start_time);
-    //printf("Time Taken 5: %d\n", (int)duration.count());
   }
-  auto end_time = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-      end_time - start_time);
-  printf("Time Taken 1: %d\n", (int)duration.count());
 
   int planner_vector_size =
       (operation_list_.size() + thread_count_ - 1) / thread_count_;
@@ -283,20 +269,12 @@ std::unique_ptr<BatchUserResponse> QueccExecutor::ExecuteBatch(
   }
 */
   CreateRanges();
-  end_time = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(
-      end_time - start_time);
-  printf("Time Taken 2: %d\n", (int)duration.count());
-  
   ready_planner_count_.fetch_add(thread_count_);
   // Allows planner threads to start consuming
   for (int i = 0; i < thread_count_; i++) {
     batch_ready_[i] = true;
   }
   cv_.notify_all();
-  end_time = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(
-      end_time - start_time);
 
   // Wait for threads to finish to get batch response
   while (ready_planner_count_.load() != 0) {
@@ -325,11 +303,6 @@ std::unique_ptr<std::string> QueccExecutor::ExecuteData(const KVOperation& oper)
   if (!kv_response.SerializeToString(resp_str.get())) {
     return nullptr;
   }
-  // Add some way to decrement number of KVOperations for the txn in
-  // transaction_tracker here, could have map of int->atomic_int
-  // If a txn has 0 KVOperations remaining, remove it
-  // Any txns left in map by end had some issue/aborted and we know which
-  // txns must be undone
   return resp_str;
 }
 

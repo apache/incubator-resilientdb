@@ -9,9 +9,11 @@ cc_binary(
         "//chain/state:chain_state",
         "//executor/kv:kv_executor",
         "//executor/kv:quecc_executor",
+        "//executor/kv:strict_executor",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-        "//chain/storage:leveldb"
+        "//chain/storage:leveldb",
+        "//chain/storage:rocksdb"
     ],
 )

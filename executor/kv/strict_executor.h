@@ -21,20 +21,29 @@
 
 #include <map>
 #include <optional>
+#include <atomic>
+#include <barrier>
+#include <list>
+#include <map>
+#include <memory>
+#include <optional>
+#include <thread>
 #include <unordered_map>
-
+#include <vector>
+#include <queue>
+#include <condition_variable>
 #include "chain/storage/storage.h"
 #include "executor/common/transaction_manager.h"
 #include "proto/kv/kv.pb.h"
-
+using namespace std;
 namespace resdb {
 
 class StrictExecutor : public TransactionManager {
  public:
   StrictExecutor(std::unique_ptr<Storage> storage);
-  virtual ~StrictExecutor() = default;
+  virtual ~StrictExecutor();
 
-  std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
+  std::unique_ptr<std::string> ExecuteData(const KVRequest& kv_request);
   std::unique_ptr<BatchUserResponse> ExecuteBatch(
       const BatchUserRequest& request) override;
 
@@ -61,7 +70,7 @@ class StrictExecutor : public TransactionManager {
   std::mutex queue_lock_;
   std::mutex map_lock_;
   std::mutex response_lock_;
-  std::queue request_queue_;
+  std::queue<KVRequest> request_queue_;
   std::condition_variable empty_queue_;
   std::condition_variable not_empty_queue_;
   std::condition_variable lock_taken_;

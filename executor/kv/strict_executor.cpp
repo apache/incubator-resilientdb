@@ -17,25 +17,25 @@
  * under the License.
  */
 
-#include "executor/kv/kv_executor.h"
+#include "executor/kv/strict_executor.h"
 
 #include <glog/logging.h>
-
+using namespace std;
+using resdb::KVRequest;
 namespace resdb {
 
 StrictExecutor::StrictExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {
       int thread_count_=4;
       for(int i=0; i<thread_count_;i++){
-        std::thread planner(&StrictExecutor::WorkerThread, this, NULL);
+        std::thread worker(&StrictExecutor::WorkerThread, this);
 
         // thread pinning
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        CPU_SET(thread_number, &cpuset);
-        int status = pthread_setaffinity_np(planner.native_handle(),
-                                            sizeof(cpu_set_t), &cpuset);
-        thread_list_.push_back(move(planner));
+        CPU_SET(i, &cpuset);
+        //int status = pthread_setaffinity_np(planner.native_handle(),sizeof(cpu_set_t), &cpuset);
+        thread_list_.push_back(move(worker));
       }
 
     }
@@ -56,22 +56,25 @@ void StrictExecutor::WorkerThread(){
   std::set<std::string> held_locks;
   bool lock_conflict;
   std::string key;
+  std::unique_lock<std::mutex> queue_lock(queue_lock_);
+  std::unique_lock<std::mutex> map_lock(map_lock_);
+  std::unique_lock<std::mutex> response_lock(response_lock_);
   while(true){
     //Wait until request for thread to process is added and grab it
-    queue_lock_.lock();
-    while(request_queue.size()==0){
-      if (not_empty_queue_.wait_for(queue_lock_, std::chrono::microseconds(100),
-        [this] { return is_stop_; })) {
+    queue_lock.lock();
+    while(request_queue_.size()==0){
+      if (not_empty_queue_.wait_for(queue_lock, std::chrono::microseconds(100),
+        [&] { return is_stop_; })) {
         queue_lock_.unlock();
         return;
       }
     }
     kv_request=request_queue_.front();
-    request_queue.pop();
-    queue_lock_.unlock();
+    request_queue_.pop();
+    queue_lock.unlock();
 
     //Grab locks needed for request
-    map_lock_.lock();
+    map_lock.lock();
     //If multiple operations in kv_request
     if(kv_request.ops_size()){
       lock_conflict=true;
@@ -91,13 +94,13 @@ void StrictExecutor::WorkerThread(){
           }
         }
         if(lock_conflict){
-          for(auto& key : held_locks_){
+          for(auto& key : held_locks){
             lock_map_[key]=0;
           }
           lock_taken_.notify_all();
           //Put thread to sleep until another thread releases locks or time expires
-          if (lock_taken_.wait_for(map_lock_, std::chrono::microseconds(100),[this] { return is_stop_; })) {
-            map_lock_.unlock();
+          if (lock_taken_.wait_for(map_lock, std::chrono::microseconds(100),[this] { return is_stop_; })) {
+            map_lock.unlock();
             return;
           }
         }
@@ -110,34 +113,34 @@ void StrictExecutor::WorkerThread(){
         held_locks.insert(kv_request.key());
       }
       else{
-        while(lock_map[kv_request.key()]==1){
-          if (lock_taken_.wait_for(map_lock_, std::chrono::microseconds(100),[this] { return is_stop_; })) {
-            map_lock_.unlock();
+        while(lock_map_[kv_request.key()]==1){
+          if (lock_taken_.wait_for(map_lock, std::chrono::microseconds(100),[this] { return is_stop_; })) {
+            map_lock.unlock();
             return;
           }
         }
       }
     }
-    map_lock_.unlock();
+    map_lock.unlock();
 
     //Once all locks are grabbed, execute transaction
     std::unique_ptr<std::string> response =
-        ExecuteData(kv_request);
+      ExecuteData(kv_request);
     if (response == nullptr) {
       response = std::make_unique<std::string>();
     }
 
     //Release locks that were grabbed
-    map_lock_.lock();
-    for(auto& key : held_locks_){
+    map_lock.lock();
+    for(auto& key : held_locks){
       lock_map_[key]=0;
     }
-    map_lock_.unlock();
+    map_lock.unlock();
     lock_taken_.notify_all();
 
     //Add response
     response_lock_.lock();
-    this->batch_response->add_response()->swap(*response);
+    this->batch_response_->add_response()->swap(*response);
     //Need to check all threads are done processing, and if all threads are done + queue is empty, wake main thread
     //Maybe check number of responses in batch response, if equals number of requests, all requests are processed    
     if(this->batch_response_.get()->response_size()==request_count_){
@@ -151,28 +154,30 @@ std::unique_ptr<BatchUserResponse> StrictExecutor::ExecuteBatch(
     const BatchUserRequest& request) {
   this->batch_response_ = std::make_unique<BatchUserResponse>();
   request_count_=0;
+  std::unique_lock<std::mutex> queue_lock(queue_lock_);
   for (const auto& sub_request : request.user_requests()) {
     KVRequest kv_request;
     if (!kv_request.ParseFromString(sub_request.request().data())) {
       LOG(ERROR) << "parse data fail";
       return std::move(this->batch_response_);
     }
-    queue_lock_.lock();
+    queue_lock.lock();
     request_queue_.push(std::move(kv_request));
     request_count_++;
-    queue_lock_.unlock();
+    queue_lock.unlock();
     //Might want to move this/add new condition to avoid unecessary broadcasts
-    not_empty_queue_.notify_all():
+    not_empty_queue_.notify_all();
   }
-  response_lock_.lock();
+  std::unique_lock<std::mutex> response_lock(response_lock_);
+  response_lock.lock();
   while(this->batch_response_.get()->response_size()!=request_count_){
-    if (empty_queue_.wait_for(queue_lock_, std::chrono::microseconds(100),
+    if (empty_queue_.wait_for(queue_lock, std::chrono::microseconds(100),
         [this] { return is_stop_; })) {
-        response_lock_.unlock();
+        response_lock.unlock();
       return std::move(this->batch_response_);
     }
   }
-  response_lock_.unlock();
+  response_lock.unlock();
   return std::move(this->batch_response_);
 }
 

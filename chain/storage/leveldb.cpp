@@ -23,6 +23,8 @@
 
 #include "chain/storage/proto/kv.pb.h"
 
+std::mutex batch_mutex;
+
 namespace resdb {
 namespace storage {
 
@@ -77,18 +79,29 @@ ResLevelDB::~ResLevelDB() {
 }
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
+  leveldb::WriteBatch localBatch;
+  batch_mutex.lock();
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
-    leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+    localBatch.Append(batch_);
+    //batch_.Clear();
+    //batch_mutex.unlock();
+    leveldb::Status status = db_->Write(leveldb::WriteOptions(), &localBatch);
     if (status.ok()) {
+      //batch_mutex.lock();
       batch_.Clear();
+      batch_mutex.unlock();
       return 0;
     } else {
       LOG(ERROR) << "flush buffer fail:" << status.ToString();
+      //batch_mutex.lock();
+      batch_.Append(localBatch);
+      batch_mutex.unlock();
       return -1;
     }
   }
+  batch_mutex.unlock();
   return 0;
 }
 

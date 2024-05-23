@@ -29,10 +29,12 @@
 #include <cstdint>
 #include <ctime>
 #include "chain/storage/leveldb.h"
+#include "chain/storage/rocksdb.h"
 
 #include "chain/storage/memory_db.h"
 #include "executor/kv/kv_executor.h"
 #include "executor/kv/quecc_executor.h"
+#include "executor/kv/strict_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/proto/resdb.pb.h"
 #include "proto/kv/kv.pb.h"
@@ -45,7 +47,9 @@ using resdb::KVOperation;
 using resdb::KVRequest;
 using resdb::storage::MemoryDB;
 using resdb::storage::NewResLevelDB;
+using resdb::storage::NewResRocksDB;
 using resdb::QueccExecutor;
+using resdb::StrictExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
 using resdb::Storage;
@@ -63,7 +67,7 @@ BatchUserRequest EqualDistribution() {
     // add transaction
     KVRequest request;
 
-    for (int j = 0; j < 100; j++) {
+    for (int j = 0; j < 1000; j++) {
       // add operation
       resdb::Operation* op = request.add_ops();
       op->set_cmd(resdb::Operation::SET);
@@ -141,15 +145,20 @@ int main(int argc, char** argv) {
     // random_split_array.push_back(RandomDistribution());
   }
   //KVExecutor kv_executor=KVExecutor(std::make_unique<MemoryDB>());
-  KVExecutor kv_executor=KVExecutor(NewResLevelDB("/tmp/leveldb_test"));
+  //KVExecutor kv_executor=KVExecutor(NewResLevelDB("/tmp/leveldb_test1"));
+  
   //QueccExecutor quecc_executor=QueccExecutor(std::make_unique<MemoryDB>());
-  QueccExecutor quecc_executor=QueccExecutor(NewResLevelDB("/tmp/leveldb_test"));
+  //QueccExecutor quecc_executor=QueccExecutor(NewResLevelDB("/tmp/leveldb_test7", std::nullopt));
+
+   //StrictExecutor strict_executor=StrictExecutor(std::make_unique<MemoryDB>());
+  StrictExecutor strict_executor=StrictExecutor(NewResLevelDB("/tmp/leveldb_test8", std::nullopt));
+  std::cout<<"Hello 2"<<std::endl;
 
   std::unique_ptr<BatchUserResponse> response;
   // Equal Split Comparison
   printf("Equal Split Times\n");
 
-  auto start_time = std::chrono::high_resolution_clock::now();
+  /*auto start_time = std::chrono::high_resolution_clock::now();
   for (BatchUserRequest equal_split : equal_split_array) {
     response = quecc_executor.ExecuteBatch(equal_split);
   }
@@ -157,14 +166,25 @@ int main(int argc, char** argv) {
   auto end_time = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
       end_time - start_time);
-  printf("Quecc Time Taken: %d\n", (int)duration.count());
-  start_time = std::chrono::high_resolution_clock::now();
+  printf("Quecc Time Taken: %d\n", (int)duration.count());*/
+
+  /*auto start_time = std::chrono::high_resolution_clock::now();
 
   for (BatchUserRequest equal_split : equal_split_array) {
     response = kv_executor.ExecuteBatch(equal_split);
   }
-  end_time = std::chrono::high_resolution_clock::now();
-  duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time -
                                                                    start_time);
-  printf("KV Time Taken: %d\n", (int)duration.count());
+  printf("KV Time Taken: %d\n", (int)duration.count());*/
+
+  auto start_time = std::chrono::high_resolution_clock::now();
+  for (BatchUserRequest equal_split : equal_split_array) {
+    response = strict_executor.ExecuteBatch(equal_split);
+  }
+
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+      end_time - start_time);
+  printf("2PL Time Taken: %d\n", (int)duration.count());
 }
