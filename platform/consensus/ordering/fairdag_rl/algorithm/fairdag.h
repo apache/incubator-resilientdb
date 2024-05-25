@@ -28,8 +28,9 @@ class FairDAG : public common::ProtocolBase {
   void ReceiveBlockCert(std::unique_ptr<Certificate> cert);
 
 private:
-  void CommitTxns(std::vector<std::unique_ptr<Transaction> >& txns);
+  void CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns);
   bool IsCommitted(const Transaction& txn);
+  void SetCommitted(const Transaction& txn);
   void AddTxnData(std::unique_ptr<Transaction> txn);
 
  private:
@@ -42,6 +43,7 @@ private:
   Stats* global_stats_;
   std::set<std::pair<int, int> > committed_;
   std::map<std::pair<int, int>, std::unique_ptr<Transaction> > data_;
+  std::map<std::pair<int,int>, std::set<int> > commit_proposers_;
 };
 
 }  // namespace tusk

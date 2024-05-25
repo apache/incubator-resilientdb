@@ -56,6 +56,11 @@ bool FairDAG::IsCommitted(const Transaction& txn){
   return committed_.find(key) != committed_.end();
 }
 
+void FairDAG::SetCommitted(const Transaction& txn){
+  std::pair<int,int64_t> key = std::make_pair(txn.proxy_id(), txn.user_seq());
+  committed_.insert(key);
+}
+
 void FairDAG::AddTxnData(std::unique_ptr<Transaction> txn) {
   std::pair<int,int64_t> key = std::make_pair(txn->proxy_id(), txn->user_seq());
   if(data_.find(key) == data_.end()){
@@ -63,24 +68,61 @@ void FairDAG::AddTxnData(std::unique_ptr<Transaction> txn) {
   }
 }
 
-void FairDAG::CommitTxns(std::vector<std::unique_ptr<Transaction> >& txns) {
-  int64_t start_time = GetCurrentTime();
-  std::vector<std::unique_ptr<Transaction>> execute_txns;
-  int64_t commit_time = GetCurrentTime();
-  for(auto& txna : txns){
-    if(IsCommitted(*txna)){
+void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns) {
+  //int64_t start_time = GetCurrentTime();
+  //int64_t commit_time = GetCurrentTime();
+
+  std::vector<std::string> commit_txns;
+  std::map<std::string, Transaction*> hash2txn;
+  for(int i = 0; i < txns.size(); ++i){
+    if(IsCommitted(*txns[i])){
       continue;
     }
-    for(auto& txnb : txns) {
-      if(IsCommitted(*txnb)){
+    std::pair<int,int64_t> key = std::make_pair(txns[i]->proxy_id(), txns[i]->user_seq());
+    commit_proposers_[key].insert(txns[i]->proposer());
+    if(commit_proposers_[key].size() >= f_+1){
+      commit_txns.push_back(txns[i]->hash()); 
+      hash2txn[txns[i]->hash()] = txns[i].get();
+    }
+
+    for(int j = i; j < txns.size(); ++j){
+      if(IsCommitted(*txns[j])){
         continue;
       }
-      graph_->AddTxn(*txna, *txnb);
+      graph_->AddTxn(*txns[i], *txns[j]);
     }
   }
-  for(auto& txn : txns){
-    AddTxnData(std::move(txn));
+
+  std::vector<std::string> orders = graph_->GetOrder(commit_txns);
+  std::vector<Transaction*> res;
+  for(const std::string& hash : orders){
+    res.push_back(hash2txn[hash]);
   }
+
+  int last = orders.size()-1;
+  for(; last>=0;--last){
+    std::pair<int,int64_t> key = std::make_pair(res[last]->proxy_id(), res[last]->user_seq());
+    if(commit_proposers_[key].size()>=2*f_+1){
+      break;
+    }
+  }
+
+  if(last<0){
+    return;
+  }
+
+  for(int i = 0; i < last; ++i){
+    graph_->RemoveTxn(res[i]->hash());
+    std::unique_ptr<Transaction> data = tusk_->FetchTxn(res[i]->hash());
+    if(data == nullptr){
+      LOG(ERROR)<<"no txn from:"<<res[i]->proxy_id()<<" user seq:"<<res[i]->user_seq();
+    }
+    assert(data != nullptr);
+    data->set_id(execute_id_++);
+    SetCommitted(*data);
+    Commit(*data);
+  }
+  return;
 }
 
 

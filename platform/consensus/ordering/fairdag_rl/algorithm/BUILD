@@ -23,6 +23,15 @@ cc_library(
     ],
 )
 
+cc_test (
+    name = "graph_test",
+    srcs = ["graph_test.cpp"],
+    deps = [
+        ":graph",
+        "//common/test:test_main",
+    ],
+)
+
 cc_library(
     name = "fairdag",
     srcs = ["fairdag.cpp"],
