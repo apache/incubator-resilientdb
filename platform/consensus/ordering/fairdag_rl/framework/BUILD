@@ -13,7 +13,7 @@ cc_library(
         "//executor/common:transaction_manager",
         "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/execution:transaction_executor",
-        "//platform/consensus/ordering/fairdag/algorithm:fairdag",
+        "//platform/consensus/ordering/fairdag_rl/algorithm:fairdag",
         "//platform/networkstrate:consensus_manager",
     ],
 )

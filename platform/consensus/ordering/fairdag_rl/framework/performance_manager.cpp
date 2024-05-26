@@ -23,14 +23,14 @@
  *
  */
 
-#include "platform/consensus/ordering/fairdag/framework/performance_manager.h"
+#include "platform/consensus/ordering/fairdag_rl/framework/performance_manager.h"
 
 #include <glog/logging.h>
 
 #include "common/utils/utils.h"
 
 namespace resdb {
-namespace fairdag {
+namespace fairdag_rl {
 
 using comm::CollectorResultCode;
 

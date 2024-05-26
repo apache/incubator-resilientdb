@@ -1,4 +1,4 @@
-package(default_visibility = ["//platform/consensus/ordering/fairdag:__subpackages__"])
+package(default_visibility = ["//platform/consensus/ordering/fairdag_rl:__subpackages__"])
 
 cc_library(
     name = "graph",

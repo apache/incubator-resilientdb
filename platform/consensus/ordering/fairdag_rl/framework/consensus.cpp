@@ -23,7 +23,7 @@
  *
  */
 
-#include "platform/consensus/ordering/fairdag/framework/consensus.h"
+#include "platform/consensus/ordering/fairdag_rl/framework/consensus.h"
 
 #include <glog/logging.h>
 #include <unistd.h>
@@ -31,7 +31,7 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
-namespace fairdag {
+namespace fairdag_rl {
 
 std::unique_ptr<FairDAGPerformanceManager> FairDAGConsensus::GetPerformanceManager() {
         return config_.IsPerformanceRunning()

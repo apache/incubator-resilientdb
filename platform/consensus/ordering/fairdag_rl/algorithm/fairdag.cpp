@@ -80,6 +80,7 @@ void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns)
     }
     std::pair<int,int64_t> key = std::make_pair(txns[i]->proxy_id(), txns[i]->user_seq());
     commit_proposers_[key].insert(txns[i]->proposer());
+    LOG(ERROR)<<" proposal from:"<<txns[i]->proxy_id()<<" seq:"<<txns[i]->user_seq()<<" commit num:"<<commit_proposers_[key].size();
     if(commit_proposers_[key].size() >= f_+1){
       commit_txns.push_back(txns[i]->hash()); 
       hash2txn[txns[i]->hash()] = txns[i].get();
@@ -93,6 +94,7 @@ void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns)
     }
   }
 
+  LOG(ERROR)<<" commit txn size:"<<commit_txns.size();
   std::vector<std::string> orders = graph_->GetOrder(commit_txns);
   std::vector<Transaction*> res;
   for(const std::string& hash : orders){
@@ -106,6 +108,7 @@ void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns)
       break;
     }
   }
+  LOG(ERROR)<<" obtain order size:"<<last;
 
   if(last<0){
     return;

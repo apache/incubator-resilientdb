@@ -30,7 +30,7 @@
 #include "platform/consensus/ordering/common/framework/performance_manager.h"
 
 namespace resdb {
-namespace fairdag {
+namespace fairdag_rl {
 
 class FairDAGPerformanceManager : public common::PerformanceManager {
  public:
