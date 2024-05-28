@@ -121,20 +121,28 @@ while [ $count -gt 0 ]; do
   count=`expr $count - 1`
 done
 
-# Check ready logs
-idx=1
-for ip in ${deploy_iplist[@]};
-do
+function check(){
+   server_ip=$1
+   server_num=$2
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
+    else
+      echo "${server_ip} done"
     fi
   done
-  ((idx++))
+}
+
+# Check ready logs
+for ip in ${deploy_iplist[@]};
+do
+  check ${ip} ${#iplist[@]} &
 done
+
+wait
 
 echo "Servers are running....."
 

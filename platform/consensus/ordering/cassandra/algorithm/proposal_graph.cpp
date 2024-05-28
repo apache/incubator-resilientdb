@@ -297,7 +297,7 @@ void ProposalGraph::Commit(const std::string& hash) {
       }
     }
   }
-  global_stats_->AddCommitBlock(block_num);
+  //global_stats_->AddCommitBlock(block_num);
 
   // TODO clean
   last_node_[it->second->proposal.header().height()].clear();

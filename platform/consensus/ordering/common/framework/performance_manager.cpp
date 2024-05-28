@@ -90,13 +90,13 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 100000000; ++i) {
+  for (int i = 0; i < 20000000; ++i) {
     // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 2000000) {
+    if (i == 200000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -180,7 +180,7 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
+    //LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
     global_stats_->AddLatency(run_time);
   } else {
   }

@@ -5,7 +5,7 @@
 
 #define OP0
 #define OP2
-//#define OP4
+#define OP4
 
 namespace resdb {
 namespace rcc {
@@ -18,9 +18,9 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
   #ifdef OP4
-  batch_size_ = 5;
+  batch_size_ = 10;
   #else
-  batch_size_ = 1;
+  batch_size_ = 10;
   #endif
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
@@ -142,7 +142,7 @@ bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 
 void RCC::AsyncSend() {
 
-  int limit = 128;
+  int limit = 2;
   bool start = false;
   int64_t last_time = 0;
 

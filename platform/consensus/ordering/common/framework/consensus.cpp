@@ -181,6 +181,7 @@ int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
     request.set_sender_id(config_.GetSelfInfo().id());
     request.set_proxy_id(batch_resp.proxy_id());
     batch_resp.SerializeToString(request.mutable_data());
+    //LOG(ERROR)<<" send proxy id:"<<request.proxy_id();
     //global_stats_->AddResponseDelay(GetCurrentTime()- batch_resp.createtime());
     replica_communicator_->SendMessage(request, request.proxy_id());
   return 0;

@@ -10,7 +10,7 @@ namespace tusk {
 Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
-  batch_size_ = 5;
+  batch_size_ = 10;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
@@ -96,7 +96,7 @@ void Tusk::AsyncSend() {
 
     std::string block_data;
     proposal->SerializeToString(&block_data);
-    global_stats_->AddBlockSize(block_data.size());
+    global_stats_->AddBlockSize(txns.size());
 
     proposal_manager_->AddLocalBlock(std::move(proposal));
 

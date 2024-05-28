@@ -248,7 +248,7 @@ void Cassandra::BroadcastTxn() {
     */
 
     for(int i = 1; i < batch_size_; ++i){
-      std::unique_ptr<Transaction> txn = txns_.Pop(0);
+      std::unique_ptr<Transaction> txn = txns_.Pop(10);
       if(txn == nullptr){
         break;
       }
@@ -258,6 +258,7 @@ void Cassandra::BroadcastTxn() {
       txns.push_back(std::move(txn));
     }
 
+    global_stats_->AddCommitBlock(txns.size());
     std::unique_ptr<Block> block = proposal_manager_->MakeBlock(txns);
     assert(block != nullptr);
     //LOG(ERROR)<<" send block:"<<block->local_id();
@@ -321,12 +322,14 @@ int Cassandra::SendTxn(int round) {
       }
     }
 
+    /*
     if(!proposal->header().prehash().empty()){
       const Proposal* pre_p =
         graph_->GetProposalInfo(proposal->header().prehash());
         assert(pre_p != nullptr);
       PrepareProposal(*pre_p);
     }
+    */
   }
 
   //LOG(ERROR)<<"his size:"<<proposal->history_size();

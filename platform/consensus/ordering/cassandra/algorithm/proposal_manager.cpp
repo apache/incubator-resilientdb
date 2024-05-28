@@ -174,7 +174,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       return nullptr;
       // LOG(ERROR) << "generate wait proposal block size:" << blocks_.size();
     }
-    int max_block = 5;
+    int max_block = 10;
     int num = 0;
     int64_t current_time = GetCurrentTime();
     proposal->set_create_time(current_time);
@@ -196,6 +196,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       // blocks_.pop_front();
       // break;
     }
+  global_stats_->AddBlockSize(num);
     //LOG(ERROR) << "block num:" << num;
     while (num > 0) {
       blocks_.pop_front();
