@@ -67,6 +67,10 @@ TEST(GraphTest, NormalCase) {
   EXPECT_EQ(orders[1], "hash2");
   EXPECT_EQ(orders[2], "hash3");
   EXPECT_EQ(orders[3], "hash5");
+
+  for(int i = 0; i < txns.size(); ++i){
+    graph.RemoveTxn(txns[i].hash());
+  }
 }
 
 TEST(GraphTest, SingleRing) {

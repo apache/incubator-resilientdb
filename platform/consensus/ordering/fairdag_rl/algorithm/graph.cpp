@@ -8,258 +8,246 @@
 namespace resdb {
 namespace fairdag_rl {
 
-namespace {
+void Graph::Clear() {
+  int num = idx_+1;
+  //LOG(ERROR)<<" clear num:"<<num;
+  low_ = std::vector<int>(num,0);
+  dfn_ = std::vector<int>(num,0);
+  visit_ = std::vector<int>(num,0);
+  while(!stk_.empty())stk_.pop();
+  belong_ = std::vector<int>(num,0);
+  tot_ = 0;
+  scc_ = 0;
+  d_ = std::vector<int>(num,0);
+  ogs_ = std::vector<std::set<int> > (num);
+}
 
-class OrderHelper{
-private:
-  std::vector<int> fa_;
-  int id_;
-  int n_;
-  std::map<std::string, int> hash2id_;
-  std::map<int, std::string> id2hash_;
-
-  public:
-    void Init(int num){
-      id_ = 1;
-      n_ = num+1;
-      fa_.resize(n_);
-      for(int i = 1; i <=num; ++i){
-        fa_[i] = i;
-      }
-    }
-
-
-    std::vector<std::string> Order(
-      const std::map<std::string, std::set<std::string> >& reach_sets){
-
-      auto find = [&](const std::string&h1, const std::string& h2) {
-        auto it = reach_sets.find(h1);
-        assert(it != reach_sets.end());
-        return it->second.find(h2) != it->second.end();
-      };
-      LOG(ERROR)<<" ?????:"<<reach_sets.size();
-
-      for(auto it1 : reach_sets){
-        for(auto it2 : reach_sets){
-          if(it1.first >= it2.first){
-            continue;
-          }
-          std::string hash1 = it1.first;
-          std::string hash2 = it2.first;
-
-          bool lr = find(hash1, hash2);
-          bool rr = find(hash2, hash1);
-          //LOG(ERROR)<<" hash1:"<<hash1<<" lr:"<<lr<<" hash2:"<<hash2<<" rr:"<<rr;
-
-          if(lr && rr){
-      LOG(ERROR)<<" merge:"<<reach_sets.size();
-            Merge(hash1, hash2);
-      LOG(ERROR)<<" merge done:"<<reach_sets.size();
-          }
-        }
-      }
-      LOG(ERROR)<<"????";
-
-      std::map<int, std::vector<int> > e;
-      std::vector<int> deg(n_);
-      LOG(ERROR)<<" deg size:"<<deg.size()<<" reach set:"<<reach_sets.size();
-
-      for(auto it1 : reach_sets){
-        for(auto it2 : reach_sets){
-          if(it1.first >= it2.first){
-            continue;
-          }
-          std::string hash1 = it1.first;
-          std::string hash2 = it2.first;
-
-          bool lr = find(hash1, hash2);
-          bool rr = find(hash2, hash1);
-
-          if(lr && rr){
-            continue;
-          }
-          else {
-            int id1 = GetId(hash1);
-            int id2 = GetId(hash2);
-
-            assert(id1<n_);
-            assert(id2<n_);
-    
-            if(f(id1) == f(id2)){
-              continue;
-            }
-            LOG(ERROR)<<" id1:"<<id1<<" "<<"id2:"<<id2<<" lr:"<<lr<<" rr:"<<rr;
-            if(lr){
-              e[f(id1)].push_back(f(id2));
-              deg[f(id2)]++;
-            }
-            else if(rr){
-              e[f(id2)].push_back(f(id1));
-              deg[f(id1)]++;
-            }
-          }
-        }
-      }
-
-    LOG(ERROR)<<" get queue";
-      std::map<int, std::vector<int> > groups;
-      std::queue<int> q;
-      std::set<std::string> hidx;
-      for(int i = 1; i <n_; ++i){
-        if(f(i) != i){
-          groups[f(i)].push_back(i);
+void Graph::Dfs(int u) {
+    //LOG(ERROR)<<" dfs u = :"<<u<<" size:"<<g_[u].size()<<" low:"<<low_.size();
+    low_[u] = dfn_[u] = ++tot_;
+    stk_.push(u);
+    visit_[u] = true;
+    for (int v :  g_[u]){
+        if(g_.find(v) == g_.end()){
           continue;
         }
-        if(deg[i] == 0){
-          q.push(i);
+        if (!dfn_[v]) {
+            Dfs(v);
+            low_[u] = std::min(low_[u], low_[v]);
         }
-      }
-      LOG(ERROR)<<" q size:"<<q.size()<<" n:"<<n_;
-      std::vector<std::string> orders;
-      while(!q.empty()){
-        int u = q.front();
-        q.pop();
-        LOG(ERROR)<<" push u:"<<u;
-        orders.push_back(GetHash(u));
-        assert(hidx.find(GetHash(u)) == hidx.end());
-        hidx.insert(GetHash(u));
-        if(groups.find(u) != groups.end()){
-          for(int w : groups[u]){
-          LOG(ERROR)<<" push group w:"<<w;
-            orders.push_back(GetHash(w));
-            assert(hidx.find(GetHash(w)) == hidx.end());
-            hidx.insert(GetHash(w));
-          }
+        else if (visit_[v]) {
+            low_[u] = std::min(low_[u], dfn_[v]);
         }
-        else {
-        }
-
-        for(int v : e[u]){
-          deg[v]--;
-          if(deg[v]==0){
-            q.push(v);
-          }
-        }
-      }
-      return orders;
     }
-
-    private:
-    int f(int t){
-      if(fa_[t] != t){
-        fa_[t] = f(fa_[t]);
-      }
-      return fa_[t];
+    if (dfn_[u] == low_[u]) {
+        ++scc_;
+        int v;
+        do {
+          v = stk_.top();
+          stk_.pop();
+          belong_[v] = scc_;
+          ogs_[scc_].insert(v);
+          //LOG(ERROR)<<" scc:"<<scc_<<" node:"<<v<<" u:"<<u;
+        } while (v != u);
     }
-
-    std::string GetHash(int id){
-      return id2hash_[id];
-    }
-
-    int GetId(const std::string& h, bool assign = true){
-      if(assign){
-        if(hash2id_.find(h) == hash2id_.end()){
-          id2hash_[id_] = h;
-          hash2id_[h] = id_++;
-        }
-      }
-      else {
-        assert(hash2id_.find(h) != hash2id_.end());
-      }
-      return hash2id_[h];
-    }
-
-    void Merge(const std::string&h1, const std::string&h2) {
-      int id1 = GetId(h1);
-      int id2 = GetId(h2);
-      if(f(id1) != f(id2)){
-        fa_[f(id2)] = f(id1);
-      }
-    }
-};
-
-} // namespace
-
-void Graph::AddTxn(const Transaction& a, const Transaction& b){
-  if(hash2idx_.find(a.hash()) == hash2idx_.end()){
-    hash2idx_[a.hash()] = idx_++;
-  }
-  if(hash2idx_.find(b.hash()) == hash2idx_.end()){
-    hash2idx_[b.hash()] = idx_++;
-  }
-  g_[a.hash()].insert(b.hash());
-  preg_[b.hash()].insert(a.hash());
 }
 
-void Graph::RemoveTxn(const std::string& hash){
+void Graph::Order(){
+  for (auto it :  g_){
+    int u = it.first;
+    for (int v :  g_[u]){
+      if(belong_[v] != belong_[u]){
+        og_[belong_[u]].push_back(belong_[v]);
+        //LOG(ERROR)<<" add:"<<belong_[u]<<" "<<belong_[v]<<" u:"<<u<<" v:"<<v;
+        d_[belong_[v]]++;
+      }
+    }
+  }
+
+  std::queue<int> q;
+  result_.clear();
+  //LOG(ERROR)<<" scc:"<<scc_;
+  for(int i = 1; i <= scc_; ++i){
+    if(d_[i] == 0){
+      q.push(i);
+      //LOG(ERROR)<<" get i:"<<i;
+    }
+  }
+  while(!q.empty()){
+    int u = q.front();
+    q.pop();
+    for(int x : ogs_[u]){
+      result_.push_back(x);
+    }
+    //LOG(ERROR)<<" check u:"<<u;
+    for(int v : og_[u]){
+      d_[v]--;
+      //LOG(ERROR)<<" check v:"<<v<<" d:"<<d_[v];
+      if(d_[v]==0){
+        q.push(v);
+      }
+    }
+  }
+}
+
+int Graph::GetID(const std::string & hash){
   assert(hash2idx_.find(hash) != hash2idx_.end());
-  LOG(ERROR)<<" remove:"<<hash2idx_[hash];
-  for(const std::string& u : preg_[hash]){
-    assert(g_[u].find(hash) != g_[u].end());
-    g_[u].erase(g_[u].find(hash));
-  }
-  for(const std::string& u : g_[hash]){
-    preg_[u].erase(preg_[u].find(hash));
-  }
-  assert(g_.find(hash) != g_.end());
-  g_.erase(g_.find(hash));
-  assert(preg_.find(hash) != preg_.end());
-  preg_.erase(preg_.find(hash));
+    return hash2idx_[hash];
 }
 
-void Graph::Dfs(const std::string& hash, std::set<std::string>& res){
-  //LOG(ERROR)<<" find dfs:"<<hash2idx_[hash];
-  res.insert(hash);
-  if(g_.find(hash) == g_.end()){
+int Graph::GetTxnID(const Transaction& txn){
+  std::string hash = txn.hash();
+  auto it = hash2idx_.find(hash);
+  if(it == hash2idx_.end()){
+    hash2idx_[hash]=idx_;
+    return idx_++;
+  }
+  return it->second;
+
+  /*
+  std::pair<int,int64_t> key = std::make_pair(txn.proxy_id(), txn.user_seq());
+  auto it = key2idx_.find(key); 
+  if(it == key2idx_.end()){
+    key2idx_[key]=idx_;
+    return idx_++;
+  }
+  else {
+    return it->second;
+  }
+  */
+}
+
+void Graph::AddTxn(int  a, int b){
+  int id1 = a;
+  int id2 = b;
+  if(g_[id1].find(id2) != g_[id1].end()){
     return;
   }
-  for(const std::string& h : g_[hash]){
-    if(res.find(h) != res.end()){
-      continue;
-    }
-    Dfs(h, res);
+
+  g_[id1].insert(id2);
+  //preg_[id2].insert(id1);
+  idx_ = std::max(idx_, id1);
+  idx_ = std::max(idx_, id2);
+  return;
+}
+
+void Graph::AddTxn(const Transaction& a, const Transaction& b){
+  int id1, id2;
+  id1 = GetTxnID(a);
+  id2 = GetTxnID(b);
+  
+  assert(id1 != id2);
+  LOG(ERROR)<<" add:"<<id1<<" "<<id2;
+  if(g_[id1].find(id2) != g_[id1].end()){
+    return;
   }
+
+  g_[id1].insert(id2);
+  idx_ = std::max(idx_, id1);
+  idx_ = std::max(idx_, id2);
+  //LOG(ERROR)<<" g size:"<<g_.size();
+  return;
+  preg_[id2].insert(id1);
+}
+
+void Graph::RemoveTxn(const Transaction& txn){
+  RemoveTxn(txn.hash());
+}
+
+
+void Graph::RemoveTxn(const std::string& hash){
+  if(hash2idx_.find(hash) == hash2idx_.end()){
+    return;
+  }
+  hash2idx_.erase(hash2idx_.find(hash));
+  //assert(hash2idx_.find(hash) != hash2idx_.end());
+
+  int id = hash2idx_[hash];
+  if(g_.find(id) == g_.end()) return;
+  g_.erase(g_.find(id));
+  //LOG(ERROR)<<" remove id:"<<id<<" size:"<<g_.size();
+  return;
+
+  //LOG(ERROR)<<" remove:"<<hash2idx_[hash];
+
+  for(int u : preg_[id]){
+    assert(g_[u].find(id) != g_[u].end());
+    g_[u].erase(g_[u].find(id));
+  }
+  for(int u : g_[id]){
+    preg_[u].erase(preg_[u].find(id));
+  }
+  assert(g_.find(id) != g_.end());
+  g_.erase(g_.find(id));
+  assert(preg_.find(id) != preg_.end());
+  preg_.erase(preg_.find(id));
+}
+
+void Graph::RemoveTxn(int id){
+  if(g_.find(id) == g_.end()) return;
+  g_.erase(g_.find(id));
 }
 
 void Graph::CheckGraph(){
   for(auto it: g_){
-    const std::string& u = it.first;
-    for(const std::string& w : g_[u]){
+    int u = it.first;
+    for(int w : g_[u]){
       assert(preg_[w].find(u) != preg_[w].end());
     }
   }
   for(auto it: preg_){
-    const std::string& u = it.first;
-    for(const std::string& w : preg_[u]){
+    int u = it.first;
+    for(int w : preg_[u]){
       assert(g_[w].find(u) != g_[w].end());
     }
   }
 }
 
-std::vector<std::string> Graph::GetOrder(const std::vector<std::string>& commit_txns) {
-    LOG(ERROR)<<" commit size"<<commit_txns.size();
-  std::map<std::string, std::set<std::string> > reach_sets;
-  for (int i = 0; i < commit_txns.size(); ++i){
-    if(g_.find(commit_txns[i]) == g_.end()){
-      LOG(ERROR)<<"g not found";
+std::vector<int> Graph::GetOrder(const std::vector<int>& commit_txns) {
+
+  //LOG(ERROR)<<" commit_txns:"<<commit_txns.size();
+  /*
+  for(int x : commit_txns){
+    LOG(ERROR)<<" commit:"<<x;
+  }
+  */
+  std::vector<int> res;
+  Clear();
+  //LOG(ERROR)<<" commit_txns:"<<commit_txns.size();
+  for(auto it : g_){
+    int x = it.first;
+    if(x<10){
+      LOG(ERROR)<<" dfs x:"<<x;
+    }
+    if(visit_[x]){
       continue;
     }
-    assert(reach_sets.find(commit_txns[i]) == reach_sets.end());
-
-    LOG(ERROR)<<" check dfs"<<hash2idx_[commit_txns[i]];
-    Dfs(commit_txns[i], reach_sets[commit_txns[i]]);
-    LOG(ERROR)<<" check dfs done"<<hash2idx_[commit_txns[i]];
+    Dfs(x);
   }
-    return commit_txns;
 
-  LOG(ERROR)<<" commit size"<<commit_txns.size();
-  CheckGraph();
-  LOG(ERROR)<<" commit size"<<commit_txns.size();
+  Order();
 
-    LOG(ERROR)<<" dfs:"<<reach_sets.size();
-  OrderHelper handler;
-  handler.Init(reach_sets.size());
-  return handler.Order(reach_sets);
+  //LOG(ERROR)<<" order:"<<commit_txns.size()<<" result size:"<<result_.size();
+  std::set<int > id_m;
+  for(int id : commit_txns){
+    id_m.insert(id); 
+  }
+
+  for(int x :result_){
+    if(id_m.find(x) != id_m.end()){
+      res.push_back(x); 
+    }
+  }
+  assert(res.size() != 0);
+  
+  /*
+  for(int i = 0; i < 5; ++i){
+    if(g_.find(i) != g_.end()){
+      LOG(ERROR)<<" ================ ";
+    }
+  }
+  */
+  return res;
 }
 
 }  // namespace fairdag_rl

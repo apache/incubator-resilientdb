@@ -44,6 +44,8 @@ private:
   std::set<std::pair<int, int> > committed_;
   std::map<std::pair<int, int>, std::unique_ptr<Transaction> > data_;
   std::map<std::pair<int,int>, std::set<int> > commit_proposers_;
+  std::map<std::pair<int,int64_t>,int> commit_proposers_idx_;
+  int idx_ = 0;
 };
 
 }  // namespace tusk
