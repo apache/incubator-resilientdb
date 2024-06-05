@@ -9,10 +9,7 @@ namespace fairdag_rl {
 
 class Graph {
 public:
-  void AddTxn(const Transaction& a, const Transaction& b);
   void AddTxn(int a, const int b);
-  void RemoveTxn(const std::string& hash);
-  void RemoveTxn(const Transaction& txn);
   void RemoveTxn(int a);
 
   std::vector<int> GetOrder(const std::vector<int>& commit_txns);
@@ -29,7 +26,6 @@ public:
   private:
   std::map<int, std::set<int> > g_, preg_;
   std::map<int, std::vector<int> > og_;
-  //std::map<std::string, std::set<std::string> > g_, preg_;
   std::map<std::string, int> hash2idx_;
   int idx_ = 1;
 
@@ -38,7 +34,6 @@ public:
   int tot_ = 0;
   int scc_ = 0;
   std::vector<std::set<int> > ogs_;
-  std::map<std::pair<int,int64_t>, int> key2idx_;
 };
 
 }  // namespace fairdag
