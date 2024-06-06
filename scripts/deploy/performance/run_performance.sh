@@ -48,3 +48,5 @@ python3 performance/calculate_result.py `ls result_*_log` > results.log
 rm -rf result_*_log
 echo "save result to results.log"
 cat results.log
+echo $TEMPLATE_PATH
+cat $TEMPLATE_PATH
