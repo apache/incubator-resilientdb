@@ -29,11 +29,12 @@ public:
   std::map<std::string, int> hash2idx_;
   int idx_ = 1;
 
-  std::vector<int>low_, dfn_,visit_, belong_, d_, result_;
+  std::vector<int>low_, dfn_,visit_, belong_, d_, result_, v_;
   std::stack<int>stk_;
   int tot_ = 0;
   int scc_ = 0;
   std::vector<std::set<int> > ogs_;
+  int ver_ = 1;
 };
 
 }  // namespace fairdag

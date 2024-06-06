@@ -73,75 +73,127 @@ void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns)
   std::vector<int> commit_txns;
   std::map<int, Transaction*> hash2txn;
   std::vector<std::pair<int,int>> pendings;
+
+  std::map<int, std::vector<int> > proposals;
+
   for(int i = 0; i < txns.size(); ++i){
     if(IsCommitted(*txns[i])){
       continue;
     }
-
+    int proposer = txns[i]->proposer();
     std::pair<int,int64_t> key = std::make_pair(txns[i]->proxy_id(), txns[i]->user_seq());
     if(commit_proposers_idx_.find(key) == commit_proposers_idx_.end()){
+      proposals_key_[idx_] = key;
       commit_proposers_idx_[key]=idx_++;
+      proposals_data_[key] = txns[i]->hash();
     }
-    int id = commit_proposers_idx_[key];
+    commit_proposers_[key].insert(proposer);
 
-    pendings.push_back(std::make_pair(i,id));
+    int id = commit_proposers_idx_[key];
+    proposals[proposer].push_back(id);
   }
 
-  for(int k = 0; k <  pendings.size(); ++k){
-    int i = pendings[k].first;
-      int id1 = pendings[k].second;
+  std::set< std::pair<int,int> > nedges;
+  for(auto it :proposals) {
+    int proposer = it.first;
+    for(int i = 0; i < it.second.size(); ++i){
+      for(int j = i+1; j < it.second.size(); ++j){
+        int id1 = it.second[i];
+        int id2 = it.second[j];
+        if(id1 == id2) {
+          continue;
+        }
 
-    std::pair<int,int64_t> key = std::make_pair(txns[i]->proxy_id(), txns[i]->user_seq());
-    commit_proposers_[key].insert(txns[i]->proposer());
-    if(commit_proposers_[key].size() >= f_+1){
-      if(hash2txn.find(id1)== hash2txn.end()){
-        commit_txns.push_back(id1); 
-        hash2txn[id1] = txns[i].get();
+        auto e = std::make_pair(id1, id2);
+        //LOG(ERROR)<<" new edges:("<<id1<<","<<id2<<")"<<" proposer:"<<proposer<<" size:"<<it.second.size();
+        edge_counts_[e].insert(proposer);
+        nedges.insert(e);
       }
     }
+  }
 
-    for(int kk = k+1; kk < pendings.size(); ++kk){
-      int j = pendings[kk].first;
-      assert(i<txns.size());
-      assert(j<txns.size());
-
-      int id2 = pendings[kk].second;
-      if(id1==id2)continue;
-      graph_->AddTxn(id1, id2);
+  for(auto it :proposals) {
+    int proposer = it.first;
+    if(pending_proposals_[proposer].empty()){
+      continue;
+    }
+    for(int i = 0; i < it.second.size(); ++i){
+      //LOG(ERROR)<<" old txn proposer:"<<proposer<<" size:"<<pending_proposals_[proposer].size();
+      for(auto pit: pending_proposals_[proposer]){
+        int id1 = pit;
+        int id2 = it.second[i];
+        auto e = std::make_pair(id1, id2);
+        //LOG(ERROR)<<" old edges:("<<id1<<","<<id2<<")"<<" proposer:"<<proposer;
+        edge_counts_[e].insert(proposer);
+        nedges.insert(e);
+      }
     }
   }
+
+  for(auto it :proposals) {
+    int proposer = it.first;
+    for(int i = 0; i < it.second.size(); ++i){
+      int id = it.second[i];
+      pending_proposals_[proposer].insert(id);
+    }
+    //LOG(ERROR)<<" add to pending proposer:"<<proposer<<" size:"<<pending_proposals_[proposer].size();
+  }
+
+  std::set<int> ids;
+  for(auto e: nedges){
+    if(edge_counts_[e].size() < f_ +1){
+      continue;
+    }
+    int id1 = e.first;
+    int id2 = e.second;
+    ids.insert(id1);
+    ids.insert(id2);
+    auto pe = std::make_pair(id2,id1);
+    //LOG(ERROR)<<" edges:("<<id1<<","<<id2<<")"<<" cound:"<<edge_counts_[e].size()<<" "<<edge_counts_[pe].size();
+    if(edge_counts_[e].size() > edge_counts_[pe].size()){
+      graph_->AddTxn(id1, id2);
+    }
+    else {
+      graph_->AddTxn(id2, id1);
+    }
+  }
+  for(int id : ids){
+    commit_txns.push_back(id);
+  }
+
   //LOG(ERROR)<<" add:"<<graph_->Size();
   if(commit_txns.empty()){
     return;
   }
   std::vector<int> orders = graph_->GetOrder(commit_txns);
 
-  //LOG(ERROR)<<" orders size:"<<orders.size();
-  std::vector<Transaction*> res;
-  for(int id: orders){
-    assert(hash2txn.find(id) != hash2txn.end());
-    res.push_back(hash2txn[id]);
-  }
-
   int last = orders.size()-1;
   for(; last>=0;--last){
-    std::pair<int,int64_t> key = std::make_pair(res[last]->proxy_id(), res[last]->user_seq());
+    int id = orders[last];
+    auto key = proposals_key_[id];
     if(commit_proposers_[key].size()>=2*f_+1){
       break;
     }
   }
+  //LOG(ERROR)<<" orders size:"<<orders.size()<<" last:"<<last;
 
   if(last<0){
     return;
   }
 
   for(int i = 0; i < last; ++i){
-    std::pair<int,int64_t> key = std::make_pair(res[i]->proxy_id(), res[i]->user_seq());
-    int id = commit_proposers_idx_[key];
-    assert(res[i] != nullptr);
-    std::unique_ptr<Transaction> data = tusk_->FetchTxn(res[i]->hash());
+    int id = orders[i];
+    assert(proposals_key_.find(id) != proposals_key_.end());
+    auto key = proposals_key_[id];
+    assert(proposals_data_.find(key) != proposals_data_.end());
+    std::string hash = proposals_data_[key];
+
+    //std::pair<int,int64_t> key = std::make_pair(res[i]->proxy_id(), res[i]->user_seq());
+    //int id = commit_proposers_idx_[key];
+    //assert(res[i] != nullptr);
+    std::unique_ptr<Transaction> data = tusk_->FetchTxn(hash);
     if(data == nullptr){
-      LOG(ERROR)<<"no txn from:"<<res[i]->proxy_id()<<" user seq:"<<res[i]->user_seq();
+      LOG(ERROR)<<"no txn"; 
     }
     assert(data != nullptr);
     data->set_id(execute_id_++);
@@ -149,6 +201,13 @@ void FairDAG::CommitTxns(const std::vector<std::unique_ptr<Transaction> >& txns)
     Commit(*data);
 
     graph_->RemoveTxn(id);
+
+    for(auto proposer : commit_proposers_[key]){
+      if(pending_proposals_[proposer].find(id) != pending_proposals_[proposer].end()){
+        //LOG(ERROR)<<" remove id:"<<id<<" from proposer:"<<proposer;
+        pending_proposals_[proposer].erase(pending_proposals_[proposer].find(id));
+      }
+    }
   }
   return;
 }

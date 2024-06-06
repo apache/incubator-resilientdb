@@ -16,7 +16,7 @@ Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier,
   
   LOG(ERROR)<<"id:"<<id<<" f:"<<f<<" total:"<<total_num;
   limit_count_ = 2*f+1;
-  batch_size_ = 128;
+  batch_size_ = 15;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
   execute_id_ = 1;
   start_ = 0;

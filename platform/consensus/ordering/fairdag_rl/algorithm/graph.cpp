@@ -10,6 +10,7 @@ namespace fairdag_rl {
 
 void Graph::Clear() {
   int num = idx_+1;
+  //LOG(ERROR)<<" clear num:"<<num;
   low_ = std::vector<int>(num,0);
   dfn_ = std::vector<int>(num,0);
   visit_ = std::vector<int>(num,0);
@@ -19,12 +20,17 @@ void Graph::Clear() {
   scc_ = 0;
   d_ = std::vector<int>(num,0);
   ogs_ = std::vector<std::set<int> > (num);
+  og_.clear();
+  v_ = std::vector<int>(num,0);
+  ver_ = 1;
 }
 
 void Graph::Dfs(int u) {
     low_[u] = dfn_[u] = ++tot_;
+    v_[u] = ver_;
     stk_.push(u);
     visit_[u] = true;
+    //LOG(ERROR)<<" dfs u:"<<u;
     for (int v :  g_[u]){
         if(g_.find(v) == g_.end()){
           continue;
@@ -34,9 +40,12 @@ void Graph::Dfs(int u) {
             low_[u] = std::min(low_[u], low_[v]);
         }
         else if (visit_[v]) {
+          if(v_[v] == v_[u]){
             low_[u] = std::min(low_[u], dfn_[v]);
+          }
         }
     }
+    //LOG(ERROR)<<" dfn:"<<dfn_[u]<<" low:"<<low_[u];
     if (dfn_[u] == low_[u]) {
         ++scc_;
         int v;
@@ -45,6 +54,9 @@ void Graph::Dfs(int u) {
           stk_.pop();
           belong_[v] = scc_;
           ogs_[scc_].insert(v);
+          if(ogs_[scc_].size()>=1){
+            //LOG(ERROR)<<" find group"<<" v:"<< v<< " scc:"<<scc_;
+          }
         } while (v != u);
     }
 }
@@ -52,14 +64,18 @@ void Graph::Dfs(int u) {
 void Graph::Order(){
   for (auto it :  g_){
     int u = it.first;
+    //LOG(ERROR)<<" u:"<<u<<" belong:"<<belong_[u];
+    assert(belong_[u]>0);
     for (int v :  g_[u]){
       if(belong_[v] != belong_[u]){
         og_[belong_[u]].push_back(belong_[v]);
         d_[belong_[v]]++;
+        //LOG(ERROR)<<" add desp:"<<belong_[u]<<" to:"<<belong_[v];
       }
     }
   }
 
+//  LOG(ERROR)<<" scc:"<<scc_;
   std::queue<int> q;
   result_.clear();
   for(int i = 1; i <= scc_; ++i){
@@ -70,6 +86,7 @@ void Graph::Order(){
   while(!q.empty()){
     int u = q.front();
     q.pop();
+  //  LOG(ERROR)<<" get group:"<<u;
     for(int x : ogs_[u]){
       result_.push_back(x);
     }
@@ -104,6 +121,7 @@ void Graph::AddTxn(int  a, int b){
     return;
   }
 
+  //LOG(ERROR)<<" add edge:"<<a<<" "<<b;
   g_[id1].insert(id2);
   idx_ = std::max(idx_, id1);
   idx_ = std::max(idx_, id2);
@@ -112,6 +130,7 @@ void Graph::AddTxn(int  a, int b){
 
 void Graph::RemoveTxn(int id){
   if(g_.find(id) == g_.end()) return;
+  //LOG(ERROR)<<" remove node:"<<id;
   g_.erase(g_.find(id));
 }
 
@@ -121,20 +140,20 @@ std::vector<int> Graph::GetOrder(const std::vector<int>& commit_txns) {
   //LOG(ERROR)<<" commit_txns:"<<commit_txns.size();
   for(auto it : g_){
     int x = it.first;
-    if(x<10){
-      LOG(ERROR)<<" dfs x:"<<x;
-    }
+    //LOG(ERROR)<<" dfs x:"<<x;
     if(visit_[x]){
       continue;
     }
+    ver_++;
     Dfs(x);
   }
 
   Order();
 
-  std::set<int > id_m;
+  std::set<int> id_m;
   for(int id : commit_txns){
     id_m.insert(id); 
+    //LOG(ERROR)<<" want id:"<<id;
   }
 
   for(int x :result_){

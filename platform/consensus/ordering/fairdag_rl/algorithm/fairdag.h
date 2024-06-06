@@ -46,6 +46,10 @@ private:
   std::map<std::pair<int,int>, std::set<int> > commit_proposers_;
   std::map<std::pair<int,int64_t>,int> commit_proposers_idx_;
   int idx_ = 0;
+  std::map<std::pair<int,int>, std::set<int>> edge_counts_;
+  std::map<int, std::set<int> > pending_proposals_;
+  std::map<std::pair<int,int>, std::string> proposals_data_;
+  std::map<int, std::pair<int,int> > proposals_key_;
 };
 
 }  // namespace tusk
