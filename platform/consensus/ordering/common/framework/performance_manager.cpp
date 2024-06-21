@@ -90,13 +90,13 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 100000000; ++i) {
+  for (int i = 0; i < 10000000; ++i) {
     // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 2000000) {
+    if (i == 200000) {
       eval_ready_promise_.set_value(true);
     }
   }
