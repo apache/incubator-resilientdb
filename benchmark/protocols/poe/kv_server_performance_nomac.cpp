@@ -25,17 +25,15 @@
 
 #include <glog/logging.h>
 
-#include "chain/storage/memory_db.h"
+#include "chain/state/chain_state.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
-#include "platform/consensus/ordering/poe/framework/consensus.h"
+#include "platform/consensus/ordering/poe/nomac/consensus.h"
 #include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
 #include "proto/kv/kv.pb.h"
 
 using namespace resdb;
-using namespace resdb::poe;
-using namespace resdb::storage;
 
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
@@ -69,19 +67,19 @@ int main(int argc, char** argv) {
       GenerateResDBConfig(config_file, private_key_file, cert_file);
 
   config->RunningPerformance(true);
-  ResConfigData config_data = config->GetConfigData();
 
-  auto performance_consens = std::make_unique<Consensus>(
-      *config, std::make_unique<KVExecutor>(std::make_unique<MemoryDB>()));
+  auto performance_consens = std::make_unique<poe::Consensus>(
+      *config, std::make_unique<KVExecutor>(std::make_unique<ChainState>()));
   performance_consens->SetupPerformanceDataFunc([]() {
     KVRequest request;
     request.set_cmd(KVRequest::SET);
     request.set_key(GetRandomKey());
-    request.set_value("helloword");
+    request.set_value("helloworld");
     std::string request_data;
     request.SerializeToString(&request_data);
     return request_data;
   });
+
   auto server =
       std::make_unique<ServiceNetwork>(*config, std::move(performance_consens));
   server->Run();
