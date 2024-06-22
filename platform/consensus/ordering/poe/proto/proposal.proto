@@ -24,5 +24,6 @@ enum MessageType {
   None = 0;
   Propose = 1;
   Prepare = 2;
+  Commit = 3;
 }
 

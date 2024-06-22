@@ -58,8 +58,9 @@ PerformanceManager::PerformanceManager(
   total_num_ = 0;
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
-  primary_ = id_ % replica_num_;
-  if (primary_ == 0) primary_ = replica_num_;
+  primary_ = 1;
+  //primary_ = id_ % replica_num_;
+  //if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
 }
@@ -90,8 +91,7 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 10000000; ++i) {
-    // for (int i = 0; i < 60000000000; ++i) {
+  for (int i = 0; i < 20000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
