@@ -70,6 +70,9 @@ Install dependencies:
 
     ./INSTALL.sh
 
+for non-root user
+	See INSTALL/README.md
+
 
 Run ResilientDB (Providing a Key-Value Service):
 
