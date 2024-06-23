@@ -225,6 +225,9 @@ The following components are provided under the MIT License. See project link fo
 The text of each license is also included in licenses/LICENSE-[project].txt
 
 * eEVM-118a9355d023748318a318bc07fc79063f015a94 (https://github.com/microsoft/eEVM)
+* nlohmann_json-3.9.1 (https://github.com/nlohmann/json)
+* Prometheus-cpp (https://github.com/jupp0r/prometheus-cpp)
+
 
 ================================================================
 BSD-3-Clause licenses
@@ -237,6 +240,20 @@ The text of each license is also included in licenses/LICENSE-[project].txt.
 * leveldb-1.23 (https://github.com/google/leveldb)
 * gtest-1.13.0 (https://github.com/google/googletest)
 * gflag-2.2.2 (https://github.com/gflags/gflags)
+* protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf)
+* snappy-1.1.9 (https://github.com/google/snappy)
+* pybind-2.11.1 (https://github.com/pybind/pybind11_bazel)
+* CrowCpp-1.0-5 (https://github.com/CrowCpp/Crow)
+
+
+================================================================
+Boost Software License 1.0
+================================================================
+The following components are placed in the Boost Software License.
+See project link for details: http://www.boost.org/users/license.html
+
+* Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp)
+
 
 ================================================================
 Public Domain
@@ -245,13 +262,6 @@ The following components are placed in the public domain.
 The author hereby disclaims copyright to this source code.
 See project link for details.
 
-* protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf)
-* snappy-1.1.9 (https://github.com/google/snappy)
 * zlib-1.2.11 (https://github.com/madler/zlib)
-* pybind-2.11.1 (https://github.com/pybind/pybind11_bazel)
-* nlohmann_json-3.9.1 (https://github.com/nlohmann/json)
-* CrowCpp-1.0-5 (https://github.com/CrowCpp/Crow)
 * Asio-1-26-0 (https://github.com/chriskohlhoff/asio)
-* Prometheus-cpp (https://github.com/jupp0r/prometheus-cpp)
-* Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp)
 @ civetweb-1.15 (https://github.com/civetweb/civetweb)
