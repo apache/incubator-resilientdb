@@ -5,6 +5,7 @@ python3.10
 pip
 
 ```
+sudo apt-get update
 sudo apt-get install python3.10-dev -y
 sudo apt-get install python3-dev -y
 sudo apt-get install python3-pip -y
@@ -32,6 +33,8 @@ or
 ```
 cd bazel
 ./install_bazel.sh
+echo "export PATH="$PATH:$PWD/bin"" >> ~/.bashrc
+. ~/.bashrc
 ```
 
 
