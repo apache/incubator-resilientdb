@@ -1,6 +1,6 @@
 
 # Prerequire 
-python3
+python3.10
 
 pip
 
@@ -20,14 +20,12 @@ mv bazelisk-darwin-amd64 bin/bazel
 
 bin/bazel --version
 echo "export PATH="$PATH:$PWD/bin"" >> ~/.bashrc
-~/.bashrc
+. ~/.bashrc
 ```
 or
 ```
 cd bazel
 ./install_bazel.sh
-echo "export PATH="$PATH:$PWD/bin"" >> ~/.bashrc
-~/.bashrc
 ```
 
 
