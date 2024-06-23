@@ -33,6 +33,8 @@ or
 ```
 cd bazel
 ./install_bazel.sh
+echo "export PATH="$PATH:$PWD/bin"" >> ~/.bashrc
+. ~/.bashrc
 ```
 
 
