@@ -4,3 +4,5 @@ mkdir -p bin
 mv bazelisk-linux-amd64 bin/bazel
 
 bin/bazel --version
+echo "export PATH="$PATH:$PWD/bin"" >> ~/.bashrc
+. ~/.bashrc
