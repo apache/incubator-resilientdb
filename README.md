@@ -71,7 +71,8 @@ Install dependencies:
     ./INSTALL.sh
 
 for non-root user
-	See INSTALL/README.md
+
+   See [INSTALL/README.md](https://github.com/apache/incubator-resilientdb/blob/install/INSTALL/README.md)
 
 
 Run ResilientDB (Providing a Key-Value Service):
