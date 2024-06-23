@@ -5,9 +5,9 @@ python3.10
 pip
 
 ```
-apt-get install python3.10-dev -y
-apt-get install python3-dev -y
-apt-get install python3-pip
+sudo apt-get install python3.10-dev -y
+sudo apt-get install python3-dev -y
+sudo apt-get install python3-pip -y
 ```
 
 # Install Protobuf
