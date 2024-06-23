@@ -214,8 +214,6 @@ Apache-2.0 licenses
 The following components are provided under the Apache-2.0 License. See project link for details.
 The text of each license is the standard Apache 2.0 license.
 
-* bazelbuild (https://github.com/bazelbuild/)
-* rules_boost (https://github.com/nelhage/rules_boost)
 * absl (https://github.com/abseil/abseil-cpp)
 
 ================================================================
@@ -264,4 +262,4 @@ See project link for details.
 
 * zlib-1.2.11 (https://github.com/madler/zlib)
 * Asio-1-26-0 (https://github.com/chriskohlhoff/asio)
-@ civetweb-1.15 (https://github.com/civetweb/civetweb)
+* civetweb-1.15 (https://github.com/civetweb/civetweb)
