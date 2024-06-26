@@ -214,7 +214,40 @@ Apache-2.0 licenses
 The following components are provided under the Apache-2.0 License. See project link for details.
 The text of each license is the standard Apache 2.0 license.
 
-* absl (https://github.com/abseil/abseil-cpp)
+common/crypto/signature_verifier_test.cpp
+common/crypto/mock_signature_verifier.h
+common/crypto/signature_verifier.h
+common/crypto/signature_verifier_interface.h
+common/crypto/signature_verifier.cpp
+common/crypto/signature_verifier_interface.cpp
+executor/contract/executor/contract_executor_test.cpp
+executor/contract/executor/contract_executor.cpp
+executor/contract/executor/contract_executor.h
+executor/contract/manager/contract_manager.cpp
+executor/contract/manager/contract_manager.h
+executor/utxo/manager/tx_mempool.cpp
+executor/utxo/manager/transaction.cpp
+executor/utxo/manager/tx_mempool.h
+executor/utxo/manager/transaction.h
+interface/rdbc/transaction_constructor.cpp
+interface/rdbc/mock_resdb_txn_accessor.h
+interface/rdbc/transaction_constructor.h
+interface/common/resdb_txn_accessor_test.cpp
+interface/common/resdb_txn_accessor.cpp
+interface/common/resdb_state_accessor.cpp
+interface/common/resdb_txn_accessor.h
+interface/common/mock_resdb_txn_accessor.h
+interface/common/resdb_state_accessor.h
+interface/contract/contract_client.cpp
+interface/contract/contract_client.h
+platform/common/queue/lock_free_queue.h
+platform/common/queue/blocking_queue.h
+platform/consensus/ordering/pbft/consensus_manager_pbft.h
+platform/consensus/ordering/pbft/message_manager.h
+platform/consensus/ordering/pbft/message_manager.cpp
+platform/consensus/ordering/pbft/consensus_manager_pbft.cpp
+repositories.bzl
+tools/resdb_txn_accessor_tools.cpp
 
 ================================================================
 MIT licenses
@@ -222,9 +255,30 @@ MIT licenses
 The following components are provided under the MIT License. See project link for details.
 The text of each license is also included in licenses/LICENSE-[project].txt
 
+
 * eEVM-118a9355d023748318a318bc07fc79063f015a94 (https://github.com/microsoft/eEVM)
+executor/contract/executor/contract_executor_test.cpp
+executor/contract/manager/contract_manager_test.cpp
+executor/contract/manager/address_manager_test.cpp
+executor/contract/manager/address_manager.cpp
+executor/contract/manager/contract_manager.cpp
+executor/contract/manager/utils.h
+executor/contract/manager/contract_manager.h
+
 * nlohmann_json-3.9.1 (https://github.com/nlohmann/json)
+platform/statistic/stats.h
+interface/contract/contract_client.cpp
+
 * Prometheus-cpp (https://github.com/jupp0r/prometheus-cpp)
+service/contract/contract_service.cpp
+service/kv/kv_service.cpp
+service/utxo/utxo_service.cpp
+platform/statistic/stats.cpp
+platform/statistic/stats.h
+platform/statistic/prometheus_handler.h
+platform/statistic/prometheus_handler.cpp
+benchmark/protocols/pbft/kv_server_performance.cpp
+benchmark/protocols/poe/kv_server_performance.cpp
 
 
 ================================================================
@@ -233,15 +287,25 @@ BSD-3-Clause licenses
 The following components are provided under the BSD-3-Clause License. See project link for details.
 The text of each license is also included in licenses/LICENSE-[project].txt.
 
-
 * glog-0.5.0 (https://github.com/google/glog)
-* leveldb-1.23 (https://github.com/google/leveldb)
 * gtest-1.13.0 (https://github.com/google/googletest)
-* gflag-2.2.2 (https://github.com/gflags/gflags)
 * protobuf-3.10.0 (https://github.com/protocolbuffers/protobuf)
-* snappy-1.1.9 (https://github.com/google/snappy)
+
+* leveldb-1.23 (https://github.com/google/leveldb)
+chain/storage/leveldb.h
+chain/storage/proto/leveldb_config.proto
+chain/storage/leveldb.cpp
+chain/storage/kv_storage_test.cpp
+service/tools/config/server/server.config
+service/kv/kv_service.cpp
+platform/proto/replica_info.proto
+
 * pybind-2.11.1 (https://github.com/pybind/pybind11_bazel)
-* CrowCpp-1.0-5 (https://github.com/CrowCpp/Crow)
+api/pybind_kv_service.cpp
+api/kv_operation.py
+service/tools/utxo/wallet_tool/pybind/wallet_tools_py.cpp
+service/tools/utxo/wallet_tool/test/key_tester_utils.cpp
+
 
 
 ================================================================
@@ -251,6 +315,11 @@ The following components are placed in the Boost Software License.
 See project link for details: http://www.boost.org/users/license.html
 
 * Cryptopp-8-7-0 (https://github.com/weidai11/cryptopp)
+common/crypto/key_generator.cpp
+common/crypto/hash.cpp
+common/crypto/signature_utils.cpp
+common/crypto/signature_verifier.h
+common/crypto/signature_verifier.cpp
 
 
 ================================================================
@@ -260,6 +329,16 @@ The following components are placed in the public domain.
 The author hereby disclaims copyright to this source code.
 See project link for details.
 
-* zlib-1.2.11 (https://github.com/madler/zlib)
 * Asio-1-26-0 (https://github.com/chriskohlhoff/asio)
-* civetweb-1.15 (https://github.com/civetweb/civetweb)
+platform/networkstrate/replica_communicator_test.cpp
+platform/networkstrate/async_replica_client.h
+platform/networkstrate/mock_async_replica_client.h
+platform/networkstrate/replica_communicator.cpp
+platform/networkstrate/async_replica_client.cpp
+platform/networkstrate/async_acceptor.h
+platform/networkstrate/replica_communicator.h
+platform/networkstrate/async_acceptor.cpp
+platform/networkstrate/async_replica_client_test.cpp
+platform/statistic/stats.cpp
+platform/statistic/stats.h
+
