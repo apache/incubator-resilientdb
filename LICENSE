@@ -214,6 +214,7 @@ Apache-2.0 licenses
 The following components are provided under the Apache-2.0 License. See project link for details.
 The text of each license is the standard Apache 2.0 license.
 
+* absl (https://github.com/abseil/abseil-cpp)
 common/crypto/signature_verifier_test.cpp
 common/crypto/mock_signature_verifier.h
 common/crypto/signature_verifier.h
