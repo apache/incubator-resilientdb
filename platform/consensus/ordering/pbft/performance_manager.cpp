@@ -75,6 +75,7 @@ PerformanceManager::PerformanceManager(
   }
   total_num_ = 0;
   timeout_length_ = 10000000;  // 10s
+  local_id_ = 1;
 }
 
 PerformanceManager::~PerformanceManager() {
@@ -90,7 +91,7 @@ PerformanceManager::~PerformanceManager() {
 }
 
 // use system info
-int PerformanceManager::GetPrimary() { return system_info_->GetPrimaryId(); }
+int PerformanceManager::GetPrimary() { return 1; }
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -191,8 +192,17 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
+  std::unique_ptr<BatchUserResponse> batch_response = std::make_unique<BatchUserResponse>();
+  if (!batch_response->ParseFromString(request->data())) {
+    LOG(ERROR) << "parse response fail:"<<request->data().size()
+      <<" seq:"<<request->seq(); return CollectorResultCode::INVALID;
+  }
+
+  uint64_t seq = batch_response->local_id();
+  request->set_seq(seq);
+  //LOG(ERROR)<<" get seq:"<<seq;
+
   int type = request->type();
-  uint64_t seq = request->seq();
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,
@@ -298,6 +308,8 @@ int PerformanceManager::DoBatch(
     req->set_id(i);
   }
 
+  batch_request.set_local_id(local_id_++);
+  batch_request.set_proxy_id(config_.GetSelfInfo().id());
   batch_request.set_createtime(GetCurrentTime());
   batch_request.SerializeToString(new_request->mutable_data());
   if (verifier_) {
@@ -311,6 +323,7 @@ int PerformanceManager::DoBatch(
 
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
+  new_request->set_user_seq(batch_request.local_id());
 
   replica_communicator_->SendMessage(*new_request, GetPrimary());
   global_stats_->BroadCastMsg();

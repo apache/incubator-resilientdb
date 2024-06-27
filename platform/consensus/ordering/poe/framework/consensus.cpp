@@ -83,7 +83,26 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     poe_->ReceiveCommit(std::move(proposal));
     return 0;
+  } else if (request->user_type() == MessageType::Support) {
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    poe_->ReceiveSupport(std::move(proposal));
+    return 0;
+  } else if (request->user_type() == MessageType::Cert) {
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    poe_->ReceiveCert(std::move(proposal));
+    return 0;
   }
+
   return 0;
 }
 

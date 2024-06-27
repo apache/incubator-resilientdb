@@ -7,6 +7,9 @@ load("@rules_proto_grpc//python:defs.bzl", "python_proto_library")
 proto_library(
     name = "proposal_proto",
     srcs = ["proposal.proto"],
+    deps = [
+        "//common/proto:signature_info_proto",
+    ],
     #visibility = ["//visibility:public"],
 )
 

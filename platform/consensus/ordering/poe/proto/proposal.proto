@@ -1,6 +1,8 @@
 
 syntax = "proto3";
 
+import "common/proto/signature_info.proto";
+
 package resdb.poe;
 
 message Transaction{
@@ -18,6 +20,8 @@ message Proposal {
   bytes hash = 1;
   int32 proposer = 2;
   int64 seq =3 ;
+    optional SignatureInfo data_signature = 4;
+    repeated SignatureInfo sign = 5;
 }
 
 enum MessageType {
@@ -25,5 +29,7 @@ enum MessageType {
   Propose = 1;
   Prepare = 2;
   Commit = 3;
+  Support = 4;
+  Cert = 5;
 }
 

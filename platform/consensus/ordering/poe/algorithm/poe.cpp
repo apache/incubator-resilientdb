@@ -51,8 +51,90 @@ bool PoE::ReceivePropose(std::unique_ptr<Transaction> txn) {
   proposal.set_seq(seq);
   proposal.set_proposer(id_);
 
-  Broadcast(MessageType::Prepare, proposal);
+  if(linear_){
+    if (verifier_) {
+      auto signature_or = verifier_->SignMessage(hash);
+      if (!signature_or.ok()) {
+        LOG(ERROR) << "Sign message fail";
+        return -2;
+      }
+      *proposal.mutable_data_signature() = *signature_or;
+    }
+    //LOG(ERROR)<<" send support";
+    SendMessage(MessageType::Support, proposal, proposer);
+  }
+  else {
+    Broadcast(MessageType::Prepare, proposal);
+  }
   //LOG(ERROR)<<"receive proposal done";
+  return true;
+}
+
+bool PoE::ReceiveSupport(std::unique_ptr<Proposal> proposal) {
+  std::string hash = proposal->hash();
+  int64_t seq = proposal->seq();
+  int proposer = proposal->proposer();
+  bool done = false;
+    Proposal new_proposal;
+    new_proposal.set_hash(hash);
+    new_proposal.set_seq(seq);
+    new_proposal.set_proposer(id_);
+
+    {
+    //LOG(ERROR)<<"recv proposal support from:"<<proposal->proposer()<<" id:"<<proposal->seq();
+    std::unique_lock<std::mutex> lk(smutex_[seq%1000]);
+    support_received_[seq%1000][seq].push_back(std::move(proposal));
+    //received_[proposal->hash()].insert(proposal->proposer());
+    if(support_received_[seq%1000][seq].size()==2*f_+1){
+      done = true;
+      for( const auto& p : support_received_[seq%1000][seq]){
+        *new_proposal.add_sign() = p->data_signature();
+      }
+    }
+  }
+  if(done){
+    Broadcast(MessageType::Cert, new_proposal);
+  //LOG(ERROR)<<"receive proposal done:"<<seq;
+  }
+  return true;
+}
+
+bool PoE::ReceiveCert(std::unique_ptr<Proposal> proposal) {
+  std::string hash = proposal->hash();
+  int64_t seq = proposal->seq();
+  int proposer = proposal->proposer();
+  //LOG(ERROR)<<"recv proposal cert from:"<<proposal->proposer()<<" id:"<<proposal->seq();
+  Verify(*proposal);
+  std::unique_ptr<Transaction> txn = nullptr;
+  {
+    std::unique_lock<std::mutex> lk(mutex_[seq%1000]);
+      auto it = data_[seq%1000].find(proposal->hash());
+      if(it != data_[seq%1000].end()){
+        txn = std::move(it->second);
+        data_[seq%1000].erase(it);
+      }
+  }
+  if(txn != nullptr){
+    commit_(*txn);
+  std::unique_lock<std::mutex> lk(commit_mutex_);
+    committed_[hash] = std::move(txn);
+
+    Proposal proposal;
+    proposal.set_hash(hash);
+    proposal.set_seq(seq);
+    proposal.set_proposer(id_);
+    Broadcast(MessageType::Commit, proposal);
+  //LOG(ERROR)<<"receive proposal done:"<<seq;
+  }
+  return true;
+}
+
+bool PoE::Verify(const Proposal& proposal) {
+  for( const auto& s : proposal.sign()){
+    bool valid =
+      verifier_->VerifyMessage(proposal.hash(), s);
+      assert(valid);
+  }
   return true;
 }
 

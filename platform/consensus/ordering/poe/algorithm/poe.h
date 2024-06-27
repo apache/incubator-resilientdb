@@ -21,20 +21,25 @@ class PoE: public common::ProtocolBase {
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   bool ReceivePropose(std::unique_ptr<Transaction> txn);
   bool ReceivePrepare(std::unique_ptr<Proposal> proposal);
+  bool ReceiveSupport(std::unique_ptr<Proposal> proposal);
+  bool ReceiveCert(std::unique_ptr<Proposal> proposal);
   bool ReceiveCommit(std::unique_ptr<Proposal> proposal) ;
 
  private:
   bool IsStop();
+bool Verify(const Proposal& proposal);
 
  private:
-  std::mutex mutex_[1000], commit_mutex_;
+  bool linear_ = false;
+  std::mutex mutex_[1000], commit_mutex_, smutex_[1000];
   std::map<int64_t, std::set<int32_t> > commit_received_;
   std::map<int64_t, std::set<int32_t> > received_[1000];
+  std::map<int64_t, std::vector<std::unique_ptr<Proposal>> > support_received_[1000];
   //std::map<std::string, std::set<int32_t> > received_, commit_received_;
   std::map<std::string, std::unique_ptr<Transaction> > data_[1000];
   std::map<std::string, std::unique_ptr<Transaction> > committed_;
 
-  int64_t seq_;
+  std::atomic<int64_t> seq_;
  bool is_stop_;
   SignatureVerifier* verifier_;
   Stats* global_stats_;
