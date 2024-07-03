@@ -132,6 +132,8 @@ smart-contracts-cli create --config <path_to_config>
 
 The compile command compiles a Solidity smart contract into a JSON file using solc.
 
+#### Usage
+
 ```bash
 smart-contracts-cli compile <inputFile.sol> <outputFile.json>
 ```
@@ -140,4 +142,21 @@ smart-contracts-cli compile <inputFile.sol> <outputFile.json>
 - `outputFile.json`: Name of the resulting JSON file.
 
 Make sure solc (Solidity compiler) is installed on your system. Refer to the [Prerequisites](#prerequisites) section in the README for installation instructions.
+
+### Deploy Command
+
+The `deploy` command deploys the smart contract. 
+
+#### Usage
+
+```bash
+smart-contracts-cli deploy --config <service.config> --contract <contract.json> \
+--name <tokenName> --arguments <parameters> --owner <address> 
+```
+
+- `service.config`: Client configuration path
+- `contract.json`: Path to the contract json file
+- `tokenName`: Name of the contract created
+- `parameters`: Parameters to create the contract object
+- `address`: Contract owner's address
 
