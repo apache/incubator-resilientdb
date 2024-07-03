@@ -58,4 +58,36 @@ program
     });
   });
 
+program
+  .command('compile')
+  .description('Compile a .sol file to a .json file')
+  .option('-s, --sol <path>', 'Path to the .sol file')
+  .option('-o, --output <name>', 'Name of the output .json file')
+  .action(async (options) => {
+    const solPath = options.sol;
+    const outputName = options.output;
+    if (!solPath || !outputName) {
+      console.error('Error: .sol file path and output name are required');
+      process.exit(1);
+    }
+    let resDBHome = await getResDBHome();
+    if (!resDBHome) {
+      resDBHome = await promptForResDBHome();
+    }
+
+    const command = `solc --evm-version homestead --combined-json bin,hashes --pretty-json --optimize ${solPath} > ${outputName}`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    });
+  });
+
 program.parse(process.argv);
