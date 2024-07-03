@@ -90,4 +90,39 @@ program
     });
   });
 
+program
+  .command('deploy')
+  .description('Deploy a smart contract')
+  .option('-c, --config <configPath>', 'Client configuration path')
+  .option('-p, --contract <contractPath>', 'Contract path')
+  .option('-n, --name <contractName>', 'Contract name')
+  .option('-a, --arguments <parameters>', 'Parameters to construct the contract object')
+  .option('-m, --owner <ownerAddress>', 'Contract owner’s address')
+  .action(async (options) => {
+    const { config: configPath, contract, name, arguments: args, owner } = options;
+    if (!configPath || !contract || !name || !args || !owner) {
+      console.error('Error: All options (-c, -p, -n, -a, -m) are required.');
+      process.exit(1);
+    }
+
+    let resDBHome = await getResDBHome();
+    if (!resDBHome) {
+      resDBHome = await promptForResDBHome();
+    }
+
+    const command = `${path.join(resDBHome, 'bazel-bin/service/tools/contract/api_tools/contract_tools')} deploy -c ${configPath} -p ${contract} -n ${name} -a ${args} -m ${owner}`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    });
+  });
+
 program.parse(process.argv);
