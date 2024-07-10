@@ -15,7 +15,8 @@
   "license": "ISC",
   "dependencies": {
     "commander": "^9.4.0",
+    "fs-extra": "^10.0.0",
     "inquirer": "^8.2.4",
-    "fs-extra": "^10.0.0"
+    "winston": "^3.13.0"
   }
 }
