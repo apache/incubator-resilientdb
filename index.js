@@ -125,4 +125,39 @@ program
     });
   });
 
+program
+  .command('execute')
+  .description('Execute a smart contract function')
+  .option('-c, --config <configPath>', 'Client configuration path')
+  .option('-m, --sender <senderAddress>', 'Sender’s address')
+  .option('-s, --contract <contractAddress>', 'Contract address')
+  .option('-f, --function <functionName>', 'Function to call')
+  .option('-a, --arguments <parameters>', 'Function arguments')
+  .action(async (options) => {
+    const { config: configPath, sender, contract, function: func, arguments: args } = options;
+    if (!configPath || !sender || !contract || !func || !args) {
+      console.error('Error: All options (-c, -m, -s, -f, -a) are required.');
+      process.exit(1);
+    }
+
+    let resDBHome = await getResDBHome();
+    if (!resDBHome) {
+      resDBHome = await promptForResDBHome();
+    }
+
+    const command = `${path.join(resDBHome, 'bazel-bin/service/tools/contract/api_tools/contract_tools')} execute -c ${configPath} -m ${sender} -s ${contract} -f "${func}" -a ${args}`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        console.error(`stderr: ${stderr}`);
+        return;
+      }
+      console.log(`stdout: ${stdout}`);
+    });
+  });
+
 program.parse(process.argv);

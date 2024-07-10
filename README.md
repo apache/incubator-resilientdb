@@ -53,7 +53,8 @@ The `config.js` file contains logic to prompt the user for the `ResDB_Home` path
 3. **User Prompt**: Prompts the user to enter the `ResDB_Home` path if neither the environment variable nor the configuration file provides it.
 4. **Saving the Path**: Stores the provided path in both the environment variable and the configuration file.
 
-### `config.js` Code
+<details>
+<summary>config.js code</summary>
 
 ```javascript
 const path = require('path');
@@ -105,6 +106,8 @@ module.exports = {
   promptForResDBHome,
 };
 ```
+
+</details>
 
 ## Usage
 To get started with the ResDB Smart Contracts CLI:
@@ -160,3 +163,29 @@ smart-contracts-cli deploy --config <service.config> --contract <contract.json> 
 - `parameters`: Parameters to create the contract object
 - `address`: Contract owner's address
 
+### Execute Command
+
+The `execute` command executes a smart contract function using ResilientDB's smart contract tools.
+
+#### Usage
+
+```bash
+smart-contracts-cli execute --config <service.config> --sender <senderAddress> \
+--contract <contractAddress> --function <functionName> --arguments <parameters>
+```
+
+- `service.config`: Path to the client configuration file.
+- `senderAddress`: Address of the sender executing the function.
+- `contractAddress`: Address of the deployed contract.
+- `functionName`: Name of the function to execute.
+- `parameters`: Arguments to pass to the function.
+
+Example:
+```bash 
+smart-contracts-cli execute --config service/tools/config/interface/service.config \
+--sender 0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8 \
+--contract 0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1 \
+--function "transfer(address,uint256)" \
+--arguments "0x1be8e78d765a2e63339fc99a66320db73158a35a,100"
+
+```
