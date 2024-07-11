@@ -4,30 +4,12 @@ header:
     copyright-owner: Apache Software Foundation
 
   paths-ignore:
-    - 'dist'
-    - 'licenses'
-    - '**/*.md'
-    - 'LICENSE'
-    - 'DISCLAIMER-WIP'
-    - 'NOTICE'
     - '.*'
     - '.**/**'
-    - '**/*.conf'
-    - '**/*.config'
-    - '**/*.json'
-    - '**/*.sol'
-    - '**/*.yaml'
-    - '**/*.css'
-    - '**/*.yml'
     - 'repositories.bzl'
-    - 'documents/**'
     - 'CNAME'
-    - 'DISCLAIMER'
-    - 'Docker/**'
     - 'WORKSPACE'
-    - 'skywalking-eyes/**'
-    - 'third_party/**.BUILD'
-    - 'third_party/loc_script/src/index.js'
+
 
 
   comment: on-failure
