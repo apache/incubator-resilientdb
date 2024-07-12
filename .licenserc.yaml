@@ -21,6 +21,8 @@ header:
     - '**/*.md'
     - 'DISCLAIMER-WIP'
     - 'NOTICE'
+    - 'LICENSE'
+    - 'documents/doxygen/.gitignore'
 
 
 
