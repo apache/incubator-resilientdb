@@ -9,6 +9,8 @@ header:
     - 'repositories.bzl'
     - 'CNAME'
     - 'WORKSPACE'
+    - '**/*.conf'
+    - '**/*.config'
 
 
 
