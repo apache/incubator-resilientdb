@@ -18,6 +18,7 @@ header:
     - 'Doxyfile'
     - 'header'
     - 'dev/.rat-excludes'
+    - '**/*.md'
 
 
 
