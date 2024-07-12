@@ -19,6 +19,8 @@ header:
     - 'header'
     - 'dev/.rat-excludes'
     - '**/*.md'
+    - 'DISCLAIMER-WIP'
+    - 'NOTICE'
 
 
 

@@ -14,7 +14,6 @@ build
 .*\.config
 .*\.pub
 .*\.pri
-.*\.BUILD
 Doxyfile
 header
 .*\.sol
