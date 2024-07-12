@@ -34,7 +34,7 @@ using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
-                             "/service/contract/executor/manager/";
+                             "/executor/contract/manager/";
 
 Address get_random_address() { return AddressManager().CreateRandomAddress(); }
 
