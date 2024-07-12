@@ -11,6 +11,10 @@ header:
     - 'WORKSPACE'
     - '**/*.conf'
     - '**/*.config'
+    - '**/*.json'
+    - '**/*.sol'
+    - '**/*.pri'
+    - '**/*.pub'
 
 
 
