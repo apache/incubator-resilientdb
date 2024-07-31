@@ -19,11 +19,11 @@
 
 # Change Log
 
-### Resielientdb v1.10.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.0-rc01))
+### Apache ResilientDB v1.10.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.0-rc01))
 
 Add the prototype of PoE. ([Junchao Chen](https://github.com/cjcchen))
 
-* Implement the base version of Proof-of-Execution (PoE) Consensus Protocol [EDBT 2011].
+* Implement the base version of the Proof-of-Execution (PoE) Consensus Protocol [EDBT 2011].
 
 Add ResView Data Collection and APIs ([Saipranav-Kotamreddy](https://github.com/Saipranav-Kotamreddy))
 
