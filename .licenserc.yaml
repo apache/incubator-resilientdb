@@ -23,6 +23,7 @@ header:
     - 'NOTICE'
     - 'LICENSE'
     - 'documents/doxygen/.gitignore'
+    - 'third_party/loc_script/src/index.js'
 
 
 
