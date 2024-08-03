@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package resdb.storage;
+
+message LevelDBInfo {
+  uint32 write_buffer_size_mb = 2;
+  uint32 write_batch_size = 3;
+  string path = 4;
+}
