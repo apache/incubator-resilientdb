@@ -1,0 +1,6 @@
+setup.py
+resdb_orm.egg-info/PKG-INFO
+resdb_orm.egg-info/SOURCES.txt
+resdb_orm.egg-info/dependency_links.txt
+resdb_orm.egg-info/requires.txt
+resdb_orm.egg-info/top_level.txt
