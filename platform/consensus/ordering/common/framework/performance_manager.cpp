@@ -59,8 +59,8 @@ PerformanceManager::PerformanceManager(
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
   primary_ = 1;
-  //primary_ = id_ % replica_num_;
-  //if (primary_ == 0) primary_ = replica_num_;
+  primary_ = id_ % replica_num_;
+  if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
 }
@@ -180,7 +180,7 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
+    //LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
     global_stats_->AddLatency(run_time);
   } else {
   }

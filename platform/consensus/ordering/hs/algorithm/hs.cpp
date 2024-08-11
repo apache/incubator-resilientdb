@@ -16,7 +16,7 @@ HotStuff::HotStuff(int id, int f, int total_num, SignatureVerifier * verifier)
   has_sent_ = false;
     send_thread_ = std::thread(&HotStuff::AsyncSend, this);
     commit_thread_ = std::thread(&HotStuff::AsyncCommit, this);
-    batch_size_ = 10;
+    batch_size_ = 1;
 }
 
 HotStuff::~HotStuff() {

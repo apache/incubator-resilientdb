@@ -30,7 +30,7 @@ class PoE: public common::ProtocolBase {
 bool Verify(const Proposal& proposal);
 
  private:
-  bool linear_ = true;
+  bool linear_ = false;
   std::mutex mutex_[1000], commit_mutex_, smutex_[1000];
   std::map<int64_t, std::set<int32_t> > commit_received_;
   std::map<int64_t, std::set<int32_t> > received_[1000];
