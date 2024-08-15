@@ -59,8 +59,11 @@ PerformanceManager::PerformanceManager(
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
   primary_ = 1;
-  primary_ = id_ % replica_num_;
-  if (primary_ == 0) primary_ = replica_num_;
+  if (config_.GetConfigData().multiply_primary()){
+    LOG(ERROR)<<" set multi primary";
+    primary_ = id_ % replica_num_;
+    if (primary_ == 0) primary_ = replica_num_;
+  }
   local_id_ = 1;
   sum_ = 0;
 }
@@ -96,7 +99,7 @@ int PerformanceManager::StartEval() {
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 200000) {
+    if (i == 500000) {
       eval_ready_promise_.set_value(true);
     }
   }

@@ -45,6 +45,7 @@ message ResConfigData{
   optional int32 max_client_complaint_num = 21;
 
   optional int32 duplicate_check_frequency_useconds = 22;
+  optional bool multiply_primary = 23;
 }
 
 message ReplicaStates {

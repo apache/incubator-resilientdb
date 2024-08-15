@@ -228,6 +228,9 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
+  if(config_.GetSelfInfo().id() ==2) {
+    //return 0;
+  }
   global_stats_->IncPrepare();
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());

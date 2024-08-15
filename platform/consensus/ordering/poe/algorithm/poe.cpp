@@ -139,6 +139,9 @@ bool PoE::Verify(const Proposal& proposal) {
 }
 
 bool PoE::ReceivePrepare(std::unique_ptr<Proposal> proposal) {
+  if(id_==2){
+    //return true;
+  }
   std::string hash = proposal->hash();
   int64_t seq = proposal->seq();
   int proposer = proposal->proposer();
