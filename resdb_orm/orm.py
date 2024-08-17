@@ -1,19 +1,21 @@
 # resdb_orm/orm.py
 import requests
 import json
-from resdb_driver import Resdb
-from resdb_driver.crypto import generate_keypair
 import secrets
+import yaml
 
 class ResDBORM:
-    def __init__(self, conn_string):
-        self.db_root_url = conn_string
-        self.db = Resdb(conn_string)
+    def __init__(self, config_path='config.yaml'):
+        with open(config_path, 'r') as config_file:
+            self.config = yaml.safe_load(config_file)
+        self.db_root_url = self.config['database']['db_root_url']
 
     def generate_token(self, length=64):
+        """Generate a secure random hexadecimal token."""
         return secrets.token_hex(length // 2)
 
     def create(self, data):
+        """Create a new record in the DB."""
         token = self.generate_token()
         payload = {"id":token, "data":data}
         headers = {'Content-Type': 'application/json'}
@@ -31,14 +33,17 @@ class ResDBORM:
                 return {"status": "create unsuccessful, no content in response"}
     
     def read_all(self):
+        """Read all records from the DB."""
         response = requests.get(f'{self.db_root_url}/v1/transactions')
         return response.json()
 
     def read(self, key):
+        """Read a specific record by key from the DB."""
         response = requests.get(f'{self.db_root_url}/v1/transactions/{key}')
         return response.json()
 
     def delete(self, key):
+        """Delete a specific record by key in the DB."""
         payload = {"id": key}
         headers = {'Content-Type': 'application/json'}
         response = requests.post(f'{self.db_root_url}/v1/transactions/commit', 
@@ -52,6 +57,7 @@ class ResDBORM:
                 return {"status": "delete unsuccessful, no content in response"}
     
     def update(self, key, new_data):
+        """Update a specific record by key in the DB."""
         # Delete the existing record first
         delete_response = self.delete(key)
     
@@ -72,5 +78,3 @@ class ResDBORM:
             else:
                 return {"status": "update unsuccessful, no content in response"}
 
-def connect(conn_string):
-    return ResDBORM(conn_string)

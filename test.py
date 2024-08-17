@@ -1,8 +1,8 @@
 # test.py
-from resdb_orm import connect
 import requests
+from resdb_orm.orm import ResDBORM
 
-db = connect("http://0.0.0.0:18000")
+db = ResDBORM()
 
 # Create records
 data = {"name": "abc", "age": 123}
@@ -25,3 +25,4 @@ print("New Data:", read_response["data"])
 delete_response = db.delete(create_response)
 print("Delete Response:", delete_response)
 read_response = db.read(create_response)
+
