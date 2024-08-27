@@ -7,6 +7,7 @@
 
 `ResCLI` is a command-line interface for managing ResDB instances and Python SDK instances. It provides functionalities to create, delete, view, and manage instances in a simple and efficient way.
 
+
 ## Table of Contents
 
 - [Installation](#installation)
