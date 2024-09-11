@@ -22,6 +22,16 @@ The ResDB Smart Contracts CLI is a tool for creating, deploying, and managing sm
 
 Before installing and using the Smart Contracts CLI, ensure you have the following prerequisites installed on your system:
 
+#### solc
+
+solc is required to compile the smart contracts. Install solc on Linux using the following commands:
+
+```bash
+sudo add-apt-repository ppa:ethereum/ethereum
+sudo apt-get update
+sudo apt-get install -y solc
+```
+
 #### Node.js and npm
 
 Node.js and npm are required to run the Smart Contracts CLI. Follow the instructions below to install them based on your operating system.
@@ -113,7 +123,7 @@ module.exports = {
 To get started with the ResDB Smart Contracts CLI:
 
 1. Clone the repository.
-2. Install the dependencies with `npm install`.
+2. Install the dependencies with `sudo npm install -g`.
 3. Run the CLI with `smart-contracts-cli <command> <options>`.
 4. Follow the prompts to set up your `ResDB_Home` path.
 
@@ -138,7 +148,7 @@ The compile command compiles a Solidity smart contract into a JSON file using so
 #### Usage
 
 ```bash
-smart-contracts-cli compile <inputFile.sol> <outputFile.json>
+smart-contracts-cli compile -s <inputFile.sol> -o <outputFile.json>
 ```
 
 - `inputFile.sol`: Path to the Solidity smart contract file.
