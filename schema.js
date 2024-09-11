@@ -13,23 +13,38 @@ const RootQuery = new GraphQLObjectType({
     },
     compileContract: {
       type: GraphQLString,
-      args: { path: { type: GraphQLString } },
+      args: {
+        sourcePath: { type: GraphQLString },
+        outputPath: { type: GraphQLString }
+      },
       resolve(parent, args) {
-        return compileContract(args.path);
+        return compileContract(args.sourcePath, args.outputPath);
       }
     },
     deployContract: {
       type: GraphQLString,
-      args: { path: { type: GraphQLString } },
+      args: {
+        config: { type: GraphQLString },
+        contract: { type: GraphQLString },
+        name: { type: GraphQLString },
+        arguments: { type: GraphQLString },
+        owner: { type: GraphQLString }
+      },
       resolve(parent, args) {
-        return deployContract(args.path);
+        return deployContract(args.config, args.contract, args.name, args.arguments, args.owner);
       }
     },
     executeContract: {
       type: GraphQLString,
-      args: { command: { type: GraphQLString } },
+      args: {
+        config: { type: GraphQLString },
+        sender: { type: GraphQLString },
+        contract: { type: GraphQLString },
+        function: { type: GraphQLString },
+        arguments: { type: GraphQLString }
+      },
       resolve(parent, args) {
-        return executeContract(args.command);
+        return executeContract(args.config, args.sender, args.contract, args.function, args.arguments);
       }
     }
   }
@@ -38,4 +53,3 @@ const RootQuery = new GraphQLObjectType({
 module.exports = new GraphQLSchema({
   query: RootQuery
 });
-
