@@ -45,9 +45,8 @@ function handleExec(command) {
 }
 
 module.exports = {
-  createAccount: (configPath) => handleExec(`create --config ${configPath}`),
-  compileContract: (path) => handleExec(`compile --path ${path}`),
-  deployContract: (path) => handleExec(`deploy --path ${path}`),
-  executeContract: (command) => handleExec(`execute ${command}`)
+  createAccount: (configPath) => handleExec(`smart-contracts-cli create --config ${configPath}`),
+  compileContract: (sourcePath, outputPath) => handleExec(`smart-contracts-cli compile -s ${sourcePath} -o ${outputPath}`),
+  deployContract: (config, contract, name, args, owner) => handleExec(`smart-contracts-cli deploy --config ${config} --contract ${contract} --name ${name} --arguments ${args} --owner ${owner}`),
+  executeContract: (config, sender, contract, func, args) => handleExec(`smart-contracts-cli execute --config ${config} --sender ${sender} --contract ${contract} --function ${func} --arguments ${args}`)
 };
-
