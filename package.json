@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node scripts/postinstall.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
     "smart-contracts-cli": "index.js"
