@@ -1,8 +1,0 @@
-2024-09-05T21:53:47.439Z error: Command: create --config path/to/config/file
-Command failed: create --config path/to/config/file
-/bin/sh: 1: create: not found
-
-2024-09-05T21:54:01.446Z error: Command: create --config ../Rescontract/config.yaml
-Command failed: create --config ../Rescontract/config.yaml
-/bin/sh: 1: create: not found
-
