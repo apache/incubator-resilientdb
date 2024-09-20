@@ -1,8 +1,25 @@
 {
+  "name": "smart-contracts-graphql",
+  "version": "1.1.0",
+  "description": "GraphQL API for interacting with smart contracts using ResContract CLI.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["graphql", "smart contracts", "resilientdb", "cli"],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.19.2",
     "express-graphql": "^0.12.0",
     "graphql": "^15.9.0",
-    "inquirer": "^10.2.2"
+    "js-yaml": "^4.1.0",
+    "winston": "^3.13.0",
+    "fs-extra": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=14"
   }
 }
+
