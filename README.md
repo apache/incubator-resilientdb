@@ -1,30 +1,44 @@
-# ResDB Smart Contracts CLI 🚀
 
-The ResDB Smart Contracts CLI is a tool for creating, deploying, and managing smart contracts within the ResilientDB ecosystem. It is designed to work seamlessly with other ResilientDB projects, providing a streamlined interface for developers.
+# ResContract CLI 🚀
+
+The **ResContract CLI** is a command-line tool for creating, deploying, and managing smart contracts within the ResilientDB ecosystem. It provides a streamlined interface for developers and students to interact with smart contracts efficiently.
+
+## Table of Contents
+
+- [Features ✨](#features-)
+- [Prerequisites](#prerequisites)
+- [Installation 🛠️](#installation-️)
+- [Usage](#usage)
+  - [Commands](#commands)
+    - [create Command](#create-command)
+    - [compile Command](#compile-command)
+    - [deploy Command](#deploy-command)
+    - [execute Command](#execute-command)
+- [Configuration ⚙️](#configuration-️)
+  - [Setting the ResDB_Home Variable](#setting-the-resdb_home-variable)
+    - [Option 1: Set `ResDB_Home` Environment Variable](#option-1-set-resdb_home-environment-variable)
+    - [Option 2: Use a `config.yaml` File](#option-2-use-a-configyaml-file)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features ✨
 
 - **Create Smart Contracts**: Generate new smart contract templates.
+- **Compile Contracts**: Compile Solidity contracts to JSON.
 - **Deploy Smart Contracts**: Deploy contracts to the blockchain.
-- **Manage Contracts**: Interact with and manage deployed contracts.
+- **Execute Functions**: Interact with and manage deployed contracts.
 
-## Exploring Leading Technologies 🔍
+## Prerequisites
 
-### Key Technologies
+Before installing and using the ResContract CLI, ensure you have the following prerequisites installed on your system:
 
-- **Truffle Framework**: A development framework for Ethereum, offering tools for crafting, testing, and deploying smart contracts with Solidity.
-- **Ganache**: A personal Ethereum development blockchain, enabling contract deployment, application creation, and testing locally.
-- **Metamask**: A browser extension and Ethereum wallet for interacting with Ethereum Dapps directly from the browser.
+- **Node.js (version >= 14)**: [Download and install Node.js](https://nodejs.org/en/download/)
+- **npm**: Comes with Node.js. Ensure it's up-to-date.
+- **Solidity Compiler (`solc`)**: Required to compile smart contracts.
 
-## Getting Started with ResDB Smart Contracts CLI 🚀
+### Installing `solc`
 
-### Prerequisites
-
-Before installing and using the Smart Contracts CLI, ensure you have the following prerequisites installed on your system:
-
-#### solc
-
-solc is required to compile the smart contracts. Install solc on Linux using the following commands:
+#### Linux (Ubuntu/Debian)
 
 ```bash
 sudo add-apt-repository ppa:ethereum/ethereum
@@ -32,170 +46,146 @@ sudo apt-get update
 sudo apt-get install -y solc
 ```
 
-#### Node.js and npm
-
-Node.js and npm are required to run the Smart Contracts CLI. Follow the instructions below to install them based on your operating system.
-
-#### Linux (Ubuntu/Debian)
-
-```bash
-sudo apt update
-sudo apt install -y nodejs npm
-```
-#### MacOS
-
+#### macOS
 ```bash
 brew update
-brew install node
-```
-## Configuration Management with `config.js` ⚙️
-
-### The Role of `ResDB_Home`
-
-The `ResDB_Home` path points to the directory where the ResilientDB installation resides. This path allows the CLI to locate and execute ResilientDB-related binaries and scripts.
-
-### `config.js` Implementation
-
-The `config.js` file contains logic to prompt the user for the `ResDB_Home` path the first time they use the CLI and then stores this path for future use. Here’s how it works:
-
-1. **Environment Variable Check**: Checks if the `ResDB_Home` environment variable is already set.
-2. **Configuration File Check**: Checks a configuration file (`~/.smart-contracts-cli-config.json`) to see if the `ResDB_Home` path has been saved previously.
-3. **User Prompt**: Prompts the user to enter the `ResDB_Home` path if neither the environment variable nor the configuration file provides it.
-4. **Saving the Path**: Stores the provided path in both the environment variable and the configuration file.
-
-<details>
-<summary>config.js code</summary>
-
-```javascript
-const path = require('path');
-const inquirer = require('inquirer');
-const fs = require('fs-extra');
-const os = require('os');
-
-const CONFIG_FILE_PATH = path.join(os.homedir(), '.smart-contracts-cli-config.json');
-
-async function getResDBHome() {
-  if (process.env.ResDB_Home) {
-    return process.env.ResDB_Home;
-  }
-
-  if (await fs.pathExists(CONFIG_FILE_PATH)) {
-    const config = await fs.readJson(CONFIG_FILE_PATH);
-    if (config.resDBHome) {
-      process.env.ResDB_Home = config.resDBHome;
-      return config.resDBHome;
-    }
-  }
-
-  return null;
-}
-
-async function setResDBHome(resDBHome) {
-  process.env.ResDB_Home = resDBHome;
-  await fs.writeJson(CONFIG_FILE_PATH, { resDBHome });
-}
-
-async function promptForResDBHome() {
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'resDBHome',
-      message: 'Please enter the ResDB_Home path:',
-    },
-  ]);
-
-  const resDBHome = answers.resDBHome;
-  await setResDBHome(resDBHome);
-
-  return resDBHome;
-}
-
-module.exports = {
-  getResDBHome,
-  setResDBHome,
-  promptForResDBHome,
-};
+brew upgrade
+brew tap ethereum/ethereum
+brew install solidity
 ```
 
-</details>
+## Installation 🛠️
+
+Install the ResContract CLI globally using npm:
+
+```bash
+npm install -g rescontract-cli
+```` 
+
+## Configuration ⚙️
+
+### Setting the ResDB_Home Variable
+
+Before using the ResContract CLI, you  **must**  set the  `ResDB_Home`  environment variable or provide the path to your ResilientDB installation in a  `config.yaml`  file. The CLI will  **not**  prompt you for this path and will exit with an error if it's not set.
+
+#### Option 1: Set  `ResDB_Home`  Environment Variable
+
+Set the  `ResDB_Home`  environment variable to point to the directory where ResilientDB is installed.
+
+**Linux/macOS:**
+```bash
+export ResDB_Home=/path/to/resilientdb
+```
+
+Add the above line to your  `.bashrc`  or  `.zshrc`  file to make it persistent.
+
+#### Option 2: Use a  `config.yaml`  File
+
+Update the `config.yaml`  file in the same directory where you run the  `rescontract`  command or in your home directory.
+
+**Example  `config.yaml`:**
+```yaml
+ResDB_Home: /path/to/resilientdb
+```
+
+Ensure the  `ResDB_Home`  path is correct.
+
+> **Note:**  The CLI checks for  `config.yaml`  in the current directory first, then in your home directory.
 
 ## Usage
-To get started with the ResDB Smart Contracts CLI:
 
-1. Clone the repository.
-2. Install the dependencies with `sudo npm install -g`.
-3. Run the CLI with `smart-contracts-cli <command> <options>`.
-4. Follow the prompts to set up your `ResDB_Home` path.
-
-## Commands
-
-### Create Command
-
-The `create` command initializes a new account using ResilientDB's smart contract tools.
-
-#### Usage
+After installation, you can use the  `rescontract`  command in your terminal.
 
 ```bash
-smart-contracts-cli create --config <path_to_config>
+rescontract <command> [options]
 ```
 
-- `path_to_config`: Path to the configuration file.
+### Commands
 
-### Compile Command
+#### create Command
 
-The compile command compiles a Solidity smart contract into a JSON file using solc.
+Initializes a new account using ResilientDB's smart contract tools.
 
-#### Usage
+**Usage:**
+```bash
+rescontract create --config <path_to_config>
+```
+-   `--config, -c`: Path to the configuration file.
+
+**Example:**
 
 ```bash
-smart-contracts-cli compile -s <inputFile.sol> -o <outputFile.json>
+rescontract create --config ~/resilientdb/config/service.config
 ```
 
-- `inputFile.sol`: Path to the Solidity smart contract file.
-- `outputFile.json`: Name of the resulting JSON file.
+#### compile Command
 
-Make sure solc (Solidity compiler) is installed on your system. Refer to the [Prerequisites](#prerequisites) section in the README for installation instructions.
+Compiles a Solidity smart contract into a JSON file using  `solc`.
 
-### Deploy Command
+**Usage:**
+```bash
+rescontract compile --sol <inputFile.sol> --output <outputFile.json>
+```
 
-The `deploy` command deploys the smart contract. 
+-   `--sol, -s`: Path to the Solidity smart contract file.
+-   `--output, -o`: Name of the resulting JSON file.
 
-#### Usage
+**Example:**
 
 ```bash
-smart-contracts-cli deploy --config <service.config> --contract <contract.json> \
---name <tokenName> --arguments <parameters> --owner <address> 
+rescontract compile --sol contracts/MyToken.sol --output build/MyToken.json
 ```
 
-- `service.config`: Client configuration path
-- `contract.json`: Path to the contract json file
-- `tokenName`: Name of the contract created
-- `parameters`: Parameters to create the contract object
-- `address`: Contract owner's address
+#### deploy Command
 
-### Execute Command
+Deploys the smart contract to the blockchain.
 
-The `execute` command executes a smart contract function using ResilientDB's smart contract tools.
-
-#### Usage
+**Usage:**
 
 ```bash
-smart-contracts-cli execute --config <service.config> --sender <senderAddress> \
---contract <contractAddress> --function <functionName> --arguments <parameters>
+rescontract deploy --config <service.config> --contract <contract.json> \
+--name <tokenName> --arguments "<parameters>" --owner <address>
 ```
 
-- `service.config`: Path to the client configuration file.
-- `senderAddress`: Address of the sender executing the function.
-- `contractAddress`: Address of the deployed contract.
-- `functionName`: Name of the function to execute.
-- `parameters`: Arguments to pass to the function.
+-   `--config, -c`: Client configuration path.
+-   `--contract, -p`: Path to the contract JSON file.
+-   `--name, -n`: Name of the contract.
+-   `--arguments, -a`: Parameters to create the contract object (enclosed in quotes).
+-   `--owner, -m`: Contract owner's address.
 
-Example:
-```bash 
-smart-contracts-cli execute --config service/tools/config/interface/service.config \
---sender 0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8 \
---contract 0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1 \
---function "transfer(address,uint256)" \
---arguments "0x1be8e78d765a2e63339fc99a66320db73158a35a,100"
+**Example:**
 
+```bash
+rescontract deploy --config ~/resilientdb/config/service.config \
+--contract build/MyToken.json --name MyToken \
+--arguments "1000000" --owner 0xYourAddress
 ```
+
+#### execute Command
+
+Executes a smart contract function.
+
+**Usage:**
+
+```bash
+rescontract execute --config <service.config> --sender <senderAddress> \
+--contract <contractAddress> --function-name <functionName> --arguments "<parameters>"
+```
+
+-   `--config, -c`: Path to the client configuration file.
+-   `--sender, -m`: Address of the sender executing the function.
+-   `--contract, -s`: Address of the deployed contract.
+-   `--function-name, -f`: Name of the function to execute (include parameter types).
+-   `--arguments, -a`: Arguments to pass to the function (enclosed in quotes).
+
+**Example:**
+```bash
+rescontract execute --config ~/resilientdb/config/service.config \
+--sender 0xYourAddress --contract 0xContractAddress \
+--function-name "transfer(address,uint256)" \
+--arguments "0xRecipientAddress,100"
+```
+
+## License
+
+This project is licensed under the MIT License - see the  [LICENSE](LICENSE)  file for details.

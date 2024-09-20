@@ -1,8 +1,8 @@
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-
-const CONFIG_FILE_PATH = path.join(os.homedir(), '.smart-contracts-cli-config.json');
+const yaml = require('js-yaml');  
+const logger = require('./logger');
 
 async function getResDBHome() {
   try {
@@ -10,31 +10,31 @@ async function getResDBHome() {
       return process.env.ResDB_Home;
     }
 
-    if (await fs.pathExists(CONFIG_FILE_PATH)) {
-      const config = await fs.readJson(CONFIG_FILE_PATH);
-      if (config.resDBHome) {
-        process.env.ResDB_Home = config.resDBHome;
-        return config.resDBHome;
+    let configFilePath = path.join(process.cwd(), 'config.yaml');
+    if (!(await fs.pathExists(configFilePath))) {
+      configFilePath = path.join(os.homedir(), 'config.yaml');
+      if (!(await fs.pathExists(configFilePath))) {
+        logger.error('ResDB_Home is not set and config.yaml file not found.');
+        throw new Error('ResDB_Home is not set and config.yaml file not found. Please set ResDB_Home environment variable or provide a config.yaml file.');
       }
     }
 
-    return null;
-  } catch (error) {
-    console.error(`Error accessing config file: ${error.message}`);
-    return null;
-  }
-}
+    const fileContents = await fs.readFile(configFilePath, 'utf8');
+    const config = yaml.load(fileContents);
 
-async function setResDBHome(resDBHome) {
-  try {
-    process.env.ResDB_Home = resDBHome;
-    await fs.writeJson(CONFIG_FILE_PATH, { resDBHome });
+    if (config && config.ResDB_Home) {
+      process.env.ResDB_Home = config.ResDB_Home;
+      return config.ResDB_Home;
+    } else {
+      logger.error('ResDB_Home is not defined in config.yaml.');
+      throw new Error('ResDB_Home is not defined in config.yaml. Please define ResDB_Home in your config.yaml file.');
+    }
   } catch (error) {
-    console.error(`Error writing to config file: ${error.message}`);
+    logger.error(`Error accessing ResDB_Home: ${error.message}`);
+    throw error;
   }
 }
 
 module.exports = {
-  getResDBHome,
-  setResDBHome
+  getResDBHome
 };
