@@ -6,13 +6,6 @@
   "bin": {
     "rescontract": "index.js"
   },
-  "scripts": {
-    "start": "node index.js",
-    "test": "mocha",
-    "lint": "eslint .",
-    "build": "echo 'No build step necessary'",
-    "prepublishOnly": "npm test && npm run lint"
-  },
   "keywords": ["resilientdb", "smart contracts", "cli", "blockchain"],
   "author": "Gopal Nambiar <gnambiar@ucdavis.edu>",
   "license": "Apache",
