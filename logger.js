@@ -1,20 +1,27 @@
+const fs = require('fs-extra');
 const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, printf } = format;
+const path = require('path');
+const os = require('os');
 
-const logFormat = printf(({ level, message, timestamp }) => {
-  return `${timestamp} ${level}: ${message}`;
-});
+const logDir = path.join(os.homedir(), '.rescontract-logs');
+fs.ensureDirSync(logDir);
 
 const logger = createLogger({
   level: 'info',
-  format: combine(
-    timestamp(),
-    logFormat
+  format: format.combine(
+    format.timestamp(),
+    format.printf(({ level, message, timestamp }) => {
+      return `${timestamp} ${level}: ${message}`;
+    })
   ),
   transports: [
-    new transports.File({ filename: 'cli-logs.log' }),
-    new transports.Console()
+    new transports.File({ filename: path.join(logDir, 'cli.log') }),
+    new transports.Console({ format: format.simple() })
   ],
+  exceptionHandlers: [
+    new transports.File({ filename: path.join(logDir, 'exceptions.log') })
+  ]
 });
 
 module.exports = logger;
+
