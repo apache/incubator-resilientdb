@@ -17,8 +17,7 @@
     "storage",
     "activeTab",
     "tabs",
-    "scripting",
-    "<all_urls>"
+    "scripting"
   ],
   "background": {
     "service_worker": "background.js"
