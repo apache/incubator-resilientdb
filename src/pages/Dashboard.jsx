@@ -17,86 +17,322 @@
 * under the License.    
 */
 
-
 /*global chrome*/
 import '../css/App.css';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import { useLocation } from "react-router-dom";
-import React, { useRef, useState } from 'react';
-import { OPS, OP_DATA } from '../constants';
+import React, { useRef, useState, useEffect, useContext } from 'react';
+import Lottie from 'react-lottie';
+import versionData from '../data/version.json';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock, faUnlock } from '@fortawesome/free-solid-svg-icons';
+import graphql from "../images/logos/graphql.png";
+import { GlobalContext } from '../context/GlobalContext';
+import { useNavigate } from 'react-router-dom';
 
-
-function Dashboard(props) {
-    const location = useLocation();
+function Dashboard() {
+    const { publicKey, privateKey } = useContext(GlobalContext);
+    const [tabId, setTabId] = useState(null);
+    const [domain, setDomain] = useState('');
+    const [selectedNet, setSelectedNet] = useState('');
+    const [completeUrl, setCompleteUrl] = useState('');
+    const [customUrl, setCustomUrl] = useState('');
     const [isCopied, setIsCopied] = useState(false);
-
-    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-        if ((msg.from === 'commit')) {
-          const store = location.state;
-          store.address = msg.address;
-          store.amount = msg.amount;
-          store.data = msg.data;
-          store.from = msg.from;
-          store.operation = "CREATE";
-          props.navigate("/transaction", {state: store} );
-        }
-    
-        else if ((msg.from === 'get')){
-          const store = location.state;
-          store.id = msg.id;
-          store.from = msg.from;
-          store.operation = "FETCH";
-          props.navigate("/transaction", {state: store} );
-        }
-    
-        else if ((msg.from === 'update')){
-          const store = location.state;
-          store.id = msg.id;
-          store.address = msg.address;
-          store.amount = msg.amount;
-          store.data = msg.data;
-          store.from = msg.from;
-          store.operation = "UPDATE";
-          props.navigate("/transaction", {state: store} );
-        }
-    
-        else if ((msg.from === 'update-multi')){
-          const store = location.state;
-          const receivedValuesList = msg.values;
-          store.values = receivedValuesList;
-          store.from = msg.from;
-          store.operation = "UPDATE MULTIPLE";
-          props.navigate("/transaction", {state: store} );
-        }
-    
-        else if ((msg.from === 'filter')){
-          const store = location.state;
-          store.ownerPublicKey = msg.ownerPublicKey;
-          store.recipientPublicKey = msg.recipientPublicKey;
-          store.from = msg.from;
-          store.operation = "FILTER";
-          props.navigate("/transaction", {state: store} );
-        }
-    
-        else if ((msg.from === 'account')){
-          const store = location.state;
-          store.from = msg.from;
-          store.operation = "ACCOUNT";
-          props.navigate("/transaction", {state: store} );
-        };
-      });
-    
-      const back = async () => {
-        const store = location.state;
-        chrome.storage.local.clear(function(){
-          props.navigate("/login", {state: store});
-        });
-      }
-
-    const originalAccountId = location.state.publicKey;
-    const shortenedId = `${originalAccountId.slice(0, 5)}...${originalAccountId.slice(-5)}`;
-
+    const [isConnected, setIsConnected] = useState(false);
+    const [faviconUrl, setFaviconUrl] = useState('');
+    const [nets, setNets] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [newNetName, setNewNetName] = useState('');
+    const [protocol, setProtocol] = useState('http');
+    const [error, setError] = useState('');
+    const [jsonFileName, setJsonFileName] = useState('');
+    const fileInputRef = useRef(null);
     const inputRef = useRef(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        console.log('publicKey in Dashboard:', publicKey);
+        console.log('privateKey in Dashboard:', privateKey);
+    }, [publicKey, privateKey]);
+
+    const defaultOptions = {
+        loop: true,
+        autoplay: true,
+        animationData: require('../images/bg.json'),
+        rendererSettings: {
+            preserveAspectRatio: 'xMidYMid slice',
+            renderer: 'svg'
+        }
+    };
+
+    const modalOptions = {
+        loop: true,
+        autoplay: true,
+        animationData: require('../images/modal.json'),
+        rendererSettings: {
+            preserveAspectRatio: 'xMidYMid slice',
+            renderer: 'svg'
+        }
+    };
+
+    // Function to get full hostname from URL
+    function getBaseDomain(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch (error) {
+            console.error('Invalid URL:', url);
+            return '';
+        }
+    }
+
+    // Function to set connection status per domain and net
+    const setDomainConnectionStatus = (domain, net, isConnected) => {
+        chrome.storage.local.get(['connections'], (result) => {
+            let connections = result.connections || {};
+            if (!connections[domain]) {
+                connections[domain] = {};
+            }
+            connections[domain][net] = isConnected;
+            chrome.storage.local.set({ connections });
+        });
+    };
+
+    // Function to get connection status per domain and net
+    const getDomainConnectionStatus = (domain, net, callback) => {
+        chrome.storage.local.get(['connections'], (result) => {
+            const connections = result.connections || {};
+            const domainConnections = connections[domain] || {};
+            const isConnected = domainConnections[net] || false;
+            callback(isConnected);
+        });
+    };
+
+    useEffect(() => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (tabs.length > 0) {
+                const currentTab = tabs[0];
+                setTabId(currentTab.id);
+
+                const currentDomain = getBaseDomain(currentTab.url);
+                setDomain(currentDomain);
+
+                // Ensure selectedNet is set before checking connection status
+                if (selectedNet) {
+                    getDomainConnectionStatus(currentDomain, selectedNet, (connected) => {
+                        setIsConnected(connected);
+                    });
+                }
+            } else {
+                setIsConnected(false);
+            }
+        });
+    }, [selectedNet]);
+
+    useEffect(() => {
+        if (domain && selectedNet) {
+            chrome.runtime.sendMessage({ action: "requestData", domain: domain, net: selectedNet }, function(response) {
+                if (response && response.faviconUrl) {
+                    setFaviconUrl(response.faviconUrl);
+                } else {
+                    setFaviconUrl('');
+                }
+                // Handle other response data if needed
+            });
+        }
+    }, [domain, selectedNet]);
+
+    useEffect(() => {
+        const storedNets = JSON.parse(localStorage.getItem('nets')) || [];
+        setNets(storedNets);
+    }, []);
+
+    useEffect(() => {
+        // Fetch active net URL from storage
+        chrome.storage.local.get(['activeNetUrl'], (result) => {
+            if (result.activeNetUrl) {
+                setCompleteUrl(result.activeNetUrl); // Use the full URL with protocol
+
+                // Check if it's one of the known networks
+                if (result.activeNetUrl === 'https://cloud.resilientdb.com/graphql') {
+                    setSelectedNet('ResilientDB Mainnet');
+                } else if (result.activeNetUrl === 'http://localhost:8000/graphql') {
+                    setSelectedNet('ResilientDB Localnet');
+                } else {
+                    // Custom URL case
+                    const customNet = nets.find(net => net.url === result.activeNetUrl);
+                    if (customNet) {
+                        setSelectedNet(customNet.name); // Set the name of the custom network
+                    } else {
+                        setSelectedNet('Custom URL');
+                    }
+                    // Set customUrl by stripping the protocol and /graphql part
+                    setCustomUrl(result.activeNetUrl.replace(/^https?:\/\/|\/graphql$/g, ''));
+                }
+            } else {
+                // No active net URL, default to ResilientDB Mainnet
+                setCompleteUrl('https://cloud.resilientdb.com/graphql');
+                setSelectedNet('ResilientDB Mainnet'); // Ensure default network is selected
+            }
+        });
+    }, [nets]);
+
+    useEffect(() => {
+        if (domain && selectedNet) {
+            getDomainConnectionStatus(domain, selectedNet, (connected) => {
+                setIsConnected(connected);
+            });
+        }
+    }, [domain, selectedNet]);
+
+    const toggleProtocol = () => {
+        const newProtocol = protocol === 'http' ? 'https' : 'http';
+        setProtocol(newProtocol);
+        if (selectedNet === 'Custom URL' && customUrl) {
+            setCompleteUrl(`${newProtocol}://${customUrl}/graphql`);
+        }
+    };
+
+    const addNet = () => {
+        if (!newNetName.trim() || !customUrl.trim()) {
+            setError('Both fields are required.');
+            return;
+        }
+        setError('');
+        const fullUrl = `${protocol}://${customUrl}/graphql`;
+        const newNets = [...nets, { name: newNetName, url: fullUrl }];
+        setNewNetName('');
+        setCustomUrl('');
+        setNets(newNets);
+        localStorage.setItem('nets', JSON.stringify(newNets));
+        setSelectedNet(newNetName);
+    };
+
+    const removeNet = (name) => {
+        const filteredNets = nets.filter(net => net.name !== name);
+        setNets(filteredNets);
+        localStorage.setItem('nets', JSON.stringify(filteredNets));
+    };
+
+    const toggleConnection = () => {
+        if (!publicKey || !privateKey) {
+          console.error('Public or Private key is missing');
+          return;
+        }
+    
+        // Log keys for debugging (Remove in production)
+        console.log('Connecting with publicKey:', publicKey);
+        console.log('Connecting with privateKey:', privateKey);
+    
+        const newConnectionStatus = !isConnected;
+        setIsConnected(newConnectionStatus);
+    
+        if (newConnectionStatus) {
+          console.log('Connecting to net:', selectedNet, 'on domain:', domain);
+          chrome.runtime.sendMessage(
+            {
+              action: 'storeKeys',
+              publicKey,
+              privateKey,
+              url: completeUrl,
+              domain: domain,
+              net: selectedNet,
+            },
+            () => {
+              setDomainConnectionStatus(domain, selectedNet, newConnectionStatus);
+            }
+          );
+        } else {
+          console.log('Disconnecting from net:', selectedNet, 'on domain:', domain);
+          chrome.runtime.sendMessage(
+            {
+              action: 'disconnectKeys',
+              domain: domain,
+              net: selectedNet,
+            },
+            () => {
+              setDomainConnectionStatus(domain, selectedNet, false);
+            }
+          );
+        }
+    };
+
+    const switchNetwork = (value) => {
+        if (value === 'Manage Nets') {
+            setShowModal(true);
+        } else {
+            let newCompleteUrl = '';
+            switch (value) {
+                case 'ResilientDB Mainnet':
+                    newCompleteUrl = 'https://cloud.resilientdb.com/graphql';
+                    break;
+                case 'ResilientDB Localnet':
+                    newCompleteUrl = 'http://localhost:8000/graphql';
+                    break;
+                case 'Custom URL':
+                    if (customUrl) {
+                        newCompleteUrl = `${protocol}://${customUrl}/graphql`;
+                    } else {
+                        newCompleteUrl = `${protocol}://`;
+                    }
+                    break;
+                default:
+                    const selectedNetwork = nets.find(net => net.name === value);
+                    if (selectedNetwork) {
+                        newCompleteUrl = selectedNetwork.url;
+                        setCustomUrl(selectedNetwork.url.split('://')[1].replace('/graphql', ''));
+                    }
+                    break;
+            }
+            setCompleteUrl(newCompleteUrl);
+            setSelectedNet(value); // Set this at the end to avoid premature updates
+
+            // Update activeNetUrl in storage using the new URL
+            chrome.storage.local.set({ activeNetUrl: newCompleteUrl }, () => {
+                console.log('Active net URL updated to', newCompleteUrl);
+            });
+        }
+    };
+
+    const handleNetworkChange = (event) => {
+        const value = event.target.value;
+        if (value === selectedNet) return; // Ignore if the value hasn't changed
+
+        if (isConnected) {
+            // Disconnect from the current network and clear domain connection status
+            chrome.runtime.sendMessage({
+                action: 'disconnectKeys',
+                domain: domain,
+                net: selectedNet
+            }, () => {
+                console.log('Disconnected from previous network');
+                setIsConnected(false);
+                setDomainConnectionStatus(domain, selectedNet, false);
+                // Proceed with switching networks
+                switchNetwork(value);
+            });
+        } else {
+            // If not connected, just switch networks
+            switchNetwork(value);
+        }
+    };
+
+    const handleCustomUrlChange = (event) => {
+        const value = event.target.value;
+        setCustomUrl(value);
+        const newUrl = `${protocol}://${value}/graphql`;
+        setCompleteUrl(newUrl);
+    };
+
+    const back = () => {
+        chrome.storage.local.clear(function() {
+            navigate("/login");
+        });
+    };
+
+    const originalAccountId = publicKey || '';
+    const shortenedId = originalAccountId
+        ? `${originalAccountId.slice(0, 5)}...${originalAccountId.slice(-5)}`
+        : '';
 
     const handleInputClick = () => {
         try {
@@ -107,9 +343,9 @@ function Dashboard(props) {
             document.execCommand('copy');
             document.body.removeChild(tempInput);
             setIsCopied(true);
-                setTimeout(() => {
-            setIsCopied(false);
-        }, 1500); // Hide the notification after 1.5 seconds
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 1500);
         } catch (err) {
             console.error('Unable to copy text: ', err);
         }
@@ -119,102 +355,216 @@ function Dashboard(props) {
 
     const showError = () => {
         setIsJSONInvalid(true);
-    }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+            setJsonFileName(file.name); // Show file name once uploaded
+        } else {
+            setJsonFileName(''); // Clear if the file is not JSON
+        }
+    };
+
     const handleDragEnter = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        // reset error state on drag
-        setIsJSONInvalid(false);
     };
+
     const handleDragOver = (e) => {
         e.preventDefault();
         e.stopPropagation();
     };
+
     const handleDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        // only text drops allowed
-        if (e.dataTransfer.types.includes("text/plain")) {
-            const droppedText = e.dataTransfer.getData("text/plain");
-            // checking for a valid json format
-            if (/^[\],:{}\s]*$/.test(droppedText.replace(/\\["\\\/bfnrtu]/g, '@').
-                replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
-                replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-                const parsedJSON = JSON.parse(droppedText.replace(/,\s*([\]}])/g, '$1'));
-                if ('operation' in parsedJSON && parsedJSON.operation in OPS) {
-                    const OP = parsedJSON.operation;
-                    const {from, requiredFields} = OP_DATA[OPS[OP]];
-                    // check if all operation specific fields are present in json
-                    if (requiredFields.every((field) => field in parsedJSON)) {
-                        const store = location.state;
-                        store.operation = OPS[OP];
-                        store.from = from;
-                        requiredFields.forEach((field) => {
-                            store[field] = parsedJSON[field];
-                        });
-                        props.navigate("/transaction", {state: store});
-                    } else {
-                        showError();  
-                    }
-                } else {
-                    showError();
-                }
-            } else {
-                showError();
-            }
+        const file = e.dataTransfer.files[0];
+        if (file && file.type === 'application/json') {
+            setJsonFileName(file.name);
         } else {
-            showError();
+            setJsonFileName('');
         }
     };
 
-    return (
-        <div className="page page--main" data-page="buy"> 
-            <header className="header header--fixed">	
-                <div className="header__inner">	
-                    <div className="header__logo header__logo--text" style={{cursor: "pointer"}}>Res<strong>Vault</strong></div>	
-                    <div className="header__icon open-panel" data-panel="left"><button style={{background: 'none', color: 'white', fontWeight: 'bolder', outline: 'none', borderStyle: 'none', cursor: 'pointer'}} onClick={back}><ExitToAppIcon /></button></div>
-                </div>
-            </header>
+    const handleFileClick = () => {
+        fileInputRef.current.click(); // Open file explorer when clicking on the field
+    };
 
-            <div className="page__content page__content--with-header page__content--with-bottom-nav">
-                <h2 className="page__title">Dashboard</h2>
-                <div
-                  className="fieldset"
-                  onDrop={(e) => handleDrop(e)}
-                  onDragEnter={(e) => handleDragEnter(e)}
-                  onDragOver={(e) => handleDragOver(e)}
-                >
-                    <div className="drag_box">
-                        <div className={`drag_box_outline${isJSONInvalid ? " erred" : ""}`}>
-                            <span>{!isJSONInvalid ? <>Drag and Drop <b>JSON</b> here</> : "Invalid JSON"}</span>
+    const handleSubmit = () => {
+        setJsonFileName(''); // Clear the file name on submit
+    };
+
+    return (
+        <>
+            <div className="lottie-background">
+                <Lottie options={defaultOptions} height="100%" width="100%" />
+            </div>
+            <div className="page page--main" data-page="buy">
+            <header className="header header--fixed">
+                    <div className="header__inner header-container">
+                        <div className="header__logo header__logo--text">
+                            Res<strong>Vault</strong>
+                        </div>
+                        <div className="badge-container">
+                            <span className="badge">KV Service</span>
+                        </div>
+                        <div className="header__icon open-panel">
+                            <button
+                                style={{ background: 'none', color: 'white', fontWeight: 'bolder', outline: 'none', borderStyle: 'none', cursor: 'pointer' }}
+                                onClick={back}
+                            >
+                                <ExitToAppIcon />
+                            </button>
                         </div>
                     </div>
-                </div>
-                <h2 className="page__title">Select Account</h2>
-                <div className="fieldset">
-                    <div className="radio-option radio-option--full">
-                    <input
-                        type="radio"
-                        name="wallet"
-                        id="w3"
-                        value={originalAccountId}
-                        checked
-                        readOnly
-                        onClick={handleInputClick}
-                        ref={inputRef}
-                    />
-                    <label htmlFor="w3">
-                        <span>{isCopied ? 'Copied' : shortenedId}</span>
-                    </label>
-                    </div>
-                </div>
+                </header>
 
-                <button className="button button--full button--main open-popup">Submit</button>
-                <p className="bottom-navigation" style={{backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px'}}>ResVault v0.0.1 Alpha Release</p>
-            </div> 
-        </div>
-  )
+                {showModal && (
+                    <div className="overlay">
+                        <div className="modal">
+                            <div className="lottie-modal-background">
+                                <Lottie options={modalOptions} height="100%" width="100%" />
+                            </div>
+                            <div className="modal-content">
+                                <h2>Manage Nets</h2>
+                                {nets.length > 0 && (
+                                    <div className="table-container">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Net Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {nets.map(net => (
+                                                    <tr key={net.name}>
+                                                        <td>{net.name}</td>
+                                                        <td>
+                                                            <button className="icon-button" onClick={() => removeNet(net.name)}>
+                                                                <i className="fas fa-trash"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                                <input className="modal-net-input" type="text" placeholder="Net Name" value={newNetName} onChange={e => setNewNetName(e.target.value)} />
+                                <div className="modal-url-input-container">
+                                    <div className="modal-url-toggle" onClick={toggleProtocol}>
+                                        <FontAwesomeIcon icon={protocol === 'https' ? faLock : faUnlock} className={`icon ${protocol === 'https' ? 'icon-green' : 'icon-red'}`} />
+                                    </div>
+                                    <input type="text" placeholder="GraphQL URL" value={customUrl} onChange={handleCustomUrlChange} className="modal-url-input" />
+                                    <div className="modal-url-fixed">
+                                        <img src={graphql} className="graphql-icon" alt="GraphQL"></img>
+                                    </div>
+                                </div>
+                                <div className="save-container">
+                                    <button onClick={addNet} className="button-save">
+                                        Save
+                                    </button>
+                                    <button onClick={() => setShowModal(false)} className="button-close">
+                                        Close
+                                    </button>
+                                </div>
+                                {error && <p className="error-message">{error}</p>}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="page__content page__content--with-header page__content--with-bottom-nav">
+                    <h2 className="page__title">Dashboard</h2>
+
+                    <div className="net">
+                        <div className="net-header">
+                            <div className="select-wrapper">
+                                <select value={selectedNet} onChange={handleNetworkChange} className="select">
+                                    <option value="ResilientDB Mainnet">ResilientDB Mainnet</option>
+                                    <option value="ResilientDB Localnet">ResilientDB Localnet</option>
+                                    {nets.map(net => (
+                                        <option key={net.name} value={net.name}>{net.name}</option>
+                                    ))}
+                                    <option value="Manage Nets">Manage Nets</option>
+                                </select>
+                                <i className="fas fa-chevron-down"></i>
+                            </div>
+
+                            <div className="icon-container" onClick={toggleConnection}>
+                                {faviconUrl ? (
+                                    <img src={faviconUrl} alt="Favicon" className={`icon ${isConnected ? 'connected' : ''}`} />
+                                ) : (
+                                    <i className={`fa fa-globe icon ${isConnected ? 'connected' : ''}`} aria-hidden="true"></i>
+                                )}
+                                <span className="status-dot"></span>
+                                <span className="tooltip">{isConnected ? 'Connected' : 'Disconnected'}</span>
+                            </div>
+                            {selectedNet === 'Custom Net' && (
+                                <input
+                                    type="text"
+                                    value={customUrl}
+                                    onChange={handleCustomUrlChange}
+                                    placeholder="Enter custom URL"
+                                    className="input"
+                                />
+                            )}
+                        </div>
+                        <div className="file-upload">
+                            <div
+                                className={`drag_box_outline ${jsonFileName ? 'file-uploaded' : ''}`}
+                                onDragEnter={handleDragEnter}
+                                onDragOver={handleDragOver}
+                                onDrop={handleDrop}
+                                onClick={handleFileClick}
+                            >
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    style={{ display: 'none' }}
+                                    accept="application/json"
+                                    onChange={handleFileUpload}
+                                />
+                                {jsonFileName ? (
+                                    <span className="filename">{jsonFileName} uploaded</span>
+                                ) : (
+                                    <span className="filename">Click to Upload JSON File</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 className="page__title">Select Account</h2>
+                    <div className="fieldset">
+                        <div className="radio-option radio-option--full">
+                            <input
+                                type="radio"
+                                name="wallet"
+                                id="w3"
+                                value={originalAccountId}
+                                checked
+                                readOnly
+                                onClick={handleInputClick}
+                                ref={inputRef}
+                            />
+                            <label htmlFor="w3">
+                                <span>{isCopied ? 'Copied' : shortenedId}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button className="button button--full button--main open-popup" onClick={handleSubmit}>
+                        Submit
+                    </button>
+                    <p className="bottom-navigation" style={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px' }}>
+                        ResVault v{versionData.version}
+                    </p>
+                </div>
+            </div>
+        </>
+    );
 }
 
 export default Dashboard;

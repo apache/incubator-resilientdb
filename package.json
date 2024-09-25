@@ -4,9 +4,14 @@
   "private": true,
   "dependencies": {
     "@babel/runtime": "^7.21.0",
+    "@coreui/icons": "^3.0.1",
+    "@coreui/icons-react": "^2.2.1",
     "@digitalcredentials/ed25519-verification-key-2020": "^4.0.0",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@mui/icons-material": "^5.11.0",
@@ -32,6 +37,7 @@
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
     "react-hooks-global-state": "^2.1.0",
+    "react-lottie": "^1.2.4",
     "react-router-dom": "^6.8.1",
     "react-script-tag": "^1.1.2",
     "react-scripts": "^2.1.3",
@@ -67,6 +73,7 @@
     "proxy": "http://localhost:8000"
   },
   "devDependencies": {
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "browserslist": "^4.21.10",
     "react-password-strength-bar": "^0.4.1"
   }

@@ -276,7 +276,7 @@ html, body {
 
 body {
   font-family: "Poppins", sans-serif;
-  background-color: #0f0638;
+  background-image: #10083A;
   color: #ffffff;
   margin: 0;
   padding: 0;
@@ -286,7 +286,8 @@ body {
   overflow: hidden;
   font-weight: 400; 
   height: 600px;
-  width: 300px;}
+  width: 300px;
+}
 
 a {
   text-decoration: none;
@@ -2138,7 +2139,7 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
 .page--splash {
   height: 600px;
   width: 300px;
-  background-color: #0f0638; }
+  background: transparent }
 
 .splash {
   display: flex;
@@ -2197,7 +2198,7 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
 /*========================*/
 .page--login {
   height: 100%;
-  background-color: #0f0638; 
+  background-color: rgba(16, 8, 58, 0.8); 
   height: 600px;
   width: 300px;
 }
@@ -2581,30 +2582,6 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
 .switch input:checked + .switch__label:active::before {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28), 0 0 0 20px rgba(0, 150, 136, 0.2); }
 
-.drag_box {
-  margin: -5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  .drag_box_outline {
-    border: 2px rgb(71 231 206 / 80%);
-    padding: 10px;
-    width: 100%;
-    border-style: dashed;
-    border-radius: 7px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .erred {
-    border-color: red;
-    span {
-      color: red;
-    }
-  }
-}
 
 .fieldset {
   width: calc(100% - 40px);
@@ -3181,3 +3158,528 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
     padding-bottom: 20px; }
     .timer__count.off {
       display: none; }
+
+/* Custom CSS */
+.net {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: calc(100% - 40px);  /* Control the width via padding */
+  padding: 20px;
+  background-color: #291f57;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  box-shadow: 5px 5px 35px -14px rgba(0, 0, 0, 0.17);
+}
+
+.net-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.file-upload {
+  user-select: none;
+  cursor: pointer;
+}
+
+.drag_box {
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.drag_box_outline {
+  border: 2px dashed rgb(71 231 206 / 80%);
+  height: 50px;
+  width: 100%;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.filename {
+  padding: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.erred {
+  border-color: red;
+  color: red;
+}
+
+.select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #383A68; /* Slightly lighter than the .net background */
+  border-radius: 4px;
+  overflow: hidden; /* Ensures the arrow or overflow content is clipped */
+  width: 100%; /* Takes full width */
+}
+
+.select {
+  flex-grow: 1;
+  padding: 10px 34px 10px 10px; /* Increased padding for larger select box */
+  color: white;
+  background-color: transparent; /* Make the select transparent to reveal the wrapper background */
+  border: none; /* Remove default border */
+  outline: none; /* Remove focus outline */
+  -webkit-appearance: none; /* Remove default styling */
+  -moz-appearance: none;
+  appearance: none;
+  font-size: 16px; /* Adjust font size for better readability */
+}
+
+.select-wrapper i {
+  position: absolute;
+  right: 15px; /* Adjusted for visual alignment */
+  font-size: 12px; /* Smaller and less bold icon */
+  color: white; /* Set the color of the icon */
+  pointer-events: none; /* Makes the icon non-interactive */
+}
+
+.select::-ms-expand {
+  display: none; /* Hide the default arrow in IE/Edge */
+}
+
+.select option {
+  background-color: #383A68; /* Ensure options match the background of the select */
+  color: white;
+}
+
+.icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 6px;
+  flex-shrink: 0; /* Prevents resizing */
+}
+
+.fa-globe {
+  font-size: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  object-fit: cover;
+  position: relative;
+}
+
+.icon {
+  height: 18px;
+  width: 18px;
+}
+
+.status-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #291f57;
+  right: 0px;
+  bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: grey;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.icon.connected + .status-dot::after,
+.fa-globe.connected + .status-dot::after {
+  background-color: green;
+}
+
+.tooltip {
+  visibility: hidden;
+  width: 100px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position the tooltip above the icon */
+  left: 50%;
+  margin-left: -50px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; /* Arrow at the bottom of tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.icon-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000; /* Ensure it's above other page content */
+}
+
+.modal {
+  position: relative;
+  max-width: 90%;
+  width: 280px;
+  height: auto; /* or specify a height */
+  background: transparent;
+  border-radius: 8px; /* Rounded corners */
+  z-index: 1002;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #291f57;
+}
+
+.lottie-modal-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Full width of the modal */
+  height: 100%; /* Full height of the modal */
+  border-radius: inherit; /* Inherits the border-radius from the modal */
+  z-index: 1001; /* Behind the content but above the base modal */
+}
+
+.modal-content {
+  position: relative;
+  z-index: 1003; /* Above the Lottie background */
+  color: white;
+  padding: 20px;
+  width: 90%; /* Adjust width as necessary */
+  border-radius: inherit; /* Ensures content also has rounded corners if needed */
+}
+
+
+.modal-close-button {
+  position: absolute;
+  top: 10px; /* Adjust these values as needed */
+  right: 10px;
+  border: none;
+  background: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.modal h2 {
+  margin-bottom: 20px;
+}
+
+.modal-net-input {
+  position: relative;
+  width: 90%;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background: #383A68;
+  color: white;
+}
+
+.modal button {
+  padding: 10px 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 0px solid rgba(255, 255, 255, 0.297);
+  border-radius: 5px;
+  transition: background-color 0.3s;
+  box-shadow: #000;
+}
+
+.button-save, .button-close {
+  width: 48%;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  margin: 1rem;
+}
+
+.button-save {
+  background: linear-gradient(60deg, #47e7ce 0%, #4fa8c4 100%);
+  color: black;
+}
+
+.button-save:hover {
+  background: linear-gradient(60deg, #47e7ce 100%, #4fa8c4 0%);
+}
+
+.button-close {
+  background-color: #ba3c3c;
+  color: white;
+}
+
+.modal .flex {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px; /* Space between buttons */
+  padding: 5px;
+}
+
+.modal-url-input-container {
+  display: flex;
+  align-items: center;
+  width: 99%; /* Ensure the container takes the full width */
+  background: #383A68;
+  border-radius: 4px;
+  color: white;
+  overflow: hidden; /* Prevents content from spilling out */
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal-url-toggle {
+  padding: 10px 15px; /* Adjust padding as needed */
+  border: none;
+  cursor: pointer;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  text-align: center; /* Ensure text is centered */
+  flex-shrink: 0; /* Prevents the button from shrinking */
+  text-transform: uppercase;
+  user-select: none;
+  background: #252545;
+}
+
+.modal-url-input {
+  flex-grow: 1; /* Allows the input to grow and fill space */
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: white;
+  outline: none;
+  width: 0; /* Ensures it takes remaining space */
+}
+
+.modal-url-fixed {
+  padding: 5px 10px; /* Adjust padding to match toggle button */
+  background: #252545;
+  color: white;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  flex-shrink: 0; /* Prevents the label from shrinking */
+  white-space: nowrap; /* Keeps text in a single line */
+  user-select: none;
+  height: 28px;
+}
+
+.save-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.table-container {
+  margin-top: 20px;
+  width: 100%;
+  overflow: hidden; /* Ensures the border-radius is visible and content does not overflow */
+  border-radius: 5px; /* Sets the border radius for the table container */
+  user-select: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 5px; /* This applies the border radius to the table */
+  margin-bottom: 10px;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+th {
+  border-bottom: 1px solid white;
+}
+
+th:first-child {
+  border-top-left-radius: 5px; /* Rounds the top-left corner of the first header */
+}
+
+th:last-child {
+  border-top-right-radius: 5score; /* Rounds the top-right corner of the last header */
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius: 5px; /* Rounds the bottom-left corner of the last row */
+}
+
+tr:last-child td:last-child {
+  border-bottom-right-radius: 5px; /* Rounds the bottom-right corner of the last row */
+}
+
+tr:nth-child(odd) {
+  background-color: #383A68; /* Darker row for odd rows */
+}
+
+tr:nth-child(even) {
+  background-color: #292952; /* Lighter row for even rows */
+}
+
+tr:hover {
+  background-color: #2a2a72; /* Color change on hover */
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #f2f2f2;
+  cursor: pointer;
+}
+
+.icon-diagnostic-agnostic-float:before {
+  content: "\f057"; /* FontAwesome trash icon */
+}
+
+.icon-button:hover {
+  color: rgb(179, 179, 179);
+}
+
+.input-error {
+  border: 1px solid rgb(125, 124, 124); /* Highlight the input border in red */
+}
+
+.error-message {
+  color: rgb(97, 95, 95);
+  font-size: 0.8rem; /* Smaller font size for error message */
+  margin-top: 10px; /* Space between the input and the error message */
+}
+
+.lottie-background {
+  position: fixed; /* or absolute, depending on other content */
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: -1; /* Keep it in the background */
+  overflow: hidden; /* Hide overflow */
+}
+
+.icon-green {
+  color: green; 
+}
+
+.icon-red {
+  color: #ba3c3c; 
+}
+
+.graphql-icon {
+  height: 100%;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  padding: 2rem;
+  border-radius: 10px;
+  width: 300px; /* Set width according to your design */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.modal h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  flex: 0 1 auto; /* Heading at the top */
+}
+
+.modal p {
+  margin: 1rem 0;
+  flex: 1 1 auto; /* Content in the middle */
+}
+
+.modal button {
+  flex: 0 1 auto; /* Button at the bottom */
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  margin: 0px 15px 0px;
+}
+
+.badge-container {
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  background-color: #4d92d7;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-right: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header__logo--text {
+  text-align: center;
+  font-size: 24px;
+}
+
+.header__icon {
+  display: flex;
+  justify-content: flex-end;
+}
+
