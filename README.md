@@ -357,6 +357,7 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    ```
 
 5. **NOTE: If you encounter a Connection Refused error**
+
    Run the following command within the container:
    ```shell
    ./service/tools/kv/server_tools/start_kv_service.sh
