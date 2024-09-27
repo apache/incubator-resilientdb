@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "chain/state/chain_state.h"
@@ -28,25 +22,42 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "common/test/test_macros.h"
+
 namespace resdb {
 namespace {
 
-TEST(KVServerExecutorTest, SetValue) {
-  ChainState state;
+using ::resdb::testing::EqualsProto;
+using ::testing::Pointee;
 
-  EXPECT_EQ(state.GetAllValues(), "[]");
-  EXPECT_EQ(state.SetValue("test_key", "test_value"), 0);
-  EXPECT_EQ(state.GetValue("test_key"), "test_value");
-
-  // GetValues and GetRange may be out of order for in-memory, so we test up to
-  // 1 key-value pair
-  EXPECT_EQ(state.GetAllValues(), "[test_value]");
-  EXPECT_EQ(state.GetRange("a", "z"), "[test_value]");
+TEST(ChainStateTest, GetEmptyValue) {
+  ChainState db;
+  EXPECT_EQ(db.Get(1), nullptr);
 }
 
-TEST(KVServerExecutorTest, GetValue) {
-  ChainState state;
-  EXPECT_EQ(state.GetValue("test_key"), "");
+TEST(ChainStateTest, GetValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
+}
+
+TEST(ChainStateTest, GetSecondValue) {
+  Request request;
+  request.set_seq(1);
+  request.set_data("test");
+
+  ChainState db;
+  db.Put(std::make_unique<Request>(request));
+
+  request.set_seq(1);
+  request.set_data("test_1");
+  db.Put(std::make_unique<Request>(request));
+
+  EXPECT_THAT(db.Get(1), Pointee(EqualsProto(request)));
 }
 
 }  // namespace

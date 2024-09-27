@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/pbft/checkpoint_manager.h"
@@ -37,7 +31,7 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
                                      SignatureVerifier* verifier)
     : config_(config),
       replica_communicator_(replica_communicator),
-      txn_db_(std::make_unique<TxnMemoryDB>()),
+      txn_db_(std::make_unique<ChainState>()),
       verifier_(verifier),
       stop_(false),
       txn_accessor_(config),
@@ -71,7 +65,7 @@ std::string GetHash(const std::string& h1, const std::string& h2) {
   return SignatureVerifier::CalculateHash(h1 + h2);
 }
 
-TxnMemoryDB* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
+ChainState* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
 
 uint64_t CheckPointManager::GetMaxTxnSeq() { return txn_db_->GetMaxSeq(); }
 
@@ -105,7 +99,7 @@ bool CheckPointManager::IsValidCheckpointProof(
     senders.insert(signature.node_id());
   }
 
-  return (senders.size() >= config_.GetMinDataReceiveNum()) ||
+  return (static_cast<int>(senders.size()) >= config_.GetMinDataReceiveNum()) ||
          (stable_ckpt.seq() == 0 && senders.size() == 0);
 }
 
@@ -171,7 +165,6 @@ bool CheckPointManager::Wait() {
 
 void CheckPointManager::UpdateStableCheckPointStatus() {
   uint64_t last_committable_seq = 0;
-  int water_mark = config_.GetCheckPointWaterMark();
   while (!stop_) {
     if (!Wait()) {
       continue;
@@ -319,11 +312,15 @@ void CheckPointManager::UpdateCheckPointStatus() {
       last_hash_ = GetHash(last_hash_, request->hash());
       last_seq_++;
     }
+    bool is_recovery = request->is_recovery();
     txn_db_->Put(std::move(request));
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
-      BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs, stable_seqs);
+      if (!is_recovery) {
+        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
+                            stable_seqs);
+      }
     }
   }
   return;

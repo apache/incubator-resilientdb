@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/pbft/commitment.h"
@@ -46,6 +40,12 @@ Commitment::Commitment(const ResDBConfig& config,
   global_stats_ = Stats::GetGlobalStats();
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
+
+  global_stats_->SetProps(
+      config_.GetSelfInfo().id(), config_.GetSelfInfo().ip(),
+      config_.GetSelfInfo().port(), config_.GetConfigData().enable_resview(),
+      config_.GetConfigData().enable_faulty_switch());
+  global_stats_->SetPrimaryId(message_manager_->GetCurrentPrimary());
 }
 
 Commitment::~Commitment() {
@@ -84,6 +84,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << message_manager_->GetCurrentPrimary()
     //            << " seq:" << user_request->seq()
     //            << " hash:" << user_request->hash();
+    LOG(INFO) << "NOT PRIMARY, Primary is "
+              << message_manager_->GetCurrentPrimary();
     replica_communicator_->SendMessage(*user_request,
                                        message_manager_->GetCurrentPrimary());
     {
@@ -119,7 +121,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 
   global_stats_->IncClientRequest();
   if (duplicate_manager_->CheckAndAddProposed(user_request->hash())) {
-    LOG(ERROR) << "duplicate check fail:";
     return -2;
   }
   auto seq = message_manager_->AssignNextSeq();
@@ -140,6 +141,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
+  global_stats_->RecordStateTime("request");
+
   user_request->set_type(Request::TYPE_PRE_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
   user_request->set_seq(*seq);
@@ -155,13 +158,20 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
 // TODO check whether the sender is the primary.
 int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
-  if (context == nullptr || context->signature.signature().empty()) {
+  if (global_stats_->IsFaulty() || context == nullptr ||
+      context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
   if (request->is_recovery()) {
-    if (request->seq() >= message_manager_->GetNextSeq()) {
+    if (message_manager_->GetNextSeq() == 0 ||
+        request->seq() == message_manager_->GetNextSeq()) {
       message_manager_->SetNextSeq(request->seq() + 1);
+    } else {
+      LOG(ERROR) << " recovery request not valid:"
+                 << " current seq:" << message_manager_->GetNextSeq()
+                 << " data seq:" << request->seq();
+      return 0;
     }
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
@@ -186,6 +196,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
       LOG(ERROR) << " check by the user func fail";
       return -2;
     }
+    // global_stats_->GetTransactionDetails(std::move(request));
     BatchUserRequest batch_request;
     batch_request.ParseFromString(request->data());
     batch_request.clear_createtime();
@@ -207,6 +218,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   }
 
   global_stats_->IncPropose();
+  global_stats_->RecordStateTime("pre-prepare");
   std::unique_ptr<Request> prepare_request = resdb::NewRequest(
       Request::TYPE_PREPARE, *request, config_.GetSelfInfo().id());
   prepare_request->clear_data();
@@ -258,6 +270,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       // LOG(ERROR) << "sign hash"
       //           << commit_request->data_signature().DebugString();
     }
+    global_stats_->RecordStateTime("prepare");
     replica_communicator_->BroadCast(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
@@ -281,6 +294,11 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
   // commit the request.
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
+  if (ret == CollectorResultCode::STATE_CHANGED) {
+    // LOG(ERROR)<<request->data().size();
+    // global_stats_->GetTransactionDetails(request->data());
+    global_stats_->RecordStateTime("commit");
+  }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
@@ -292,6 +310,7 @@ int Commitment::PostProcessExecutedMsg() {
     if (batch_resp == nullptr) {
       continue;
     }
+    global_stats_->SendSummary();
     Request request;
     request.set_hash(batch_resp->hash());
     request.set_seq(batch_resp->seq());

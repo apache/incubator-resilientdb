@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/pbft/viewchange_manager.h"
@@ -89,6 +83,7 @@ ViewChangeManager::ViewChangeManager(const ResDBConfig& config,
       started_(false),
       stop_(false) {
   view_change_counter_ = 1;
+  global_stats_ = Stats::GetGlobalStats();
   if (config_.GetConfigData().enable_viewchange()) {
     collector_pool_ = message_manager->GetCollectorPool();
     sem_init(&viewchange_timer_signal_, 0, 0);
@@ -114,6 +109,7 @@ void ViewChangeManager::MayStart() {
     return;
   }
   started_ = true;
+  LOG(ERROR) << "MAYSTART";
 
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
@@ -153,6 +149,7 @@ void ViewChangeManager::MayStart() {
 bool ViewChangeManager::ChangeStatue(ViewChangeStatus status) {
   if (status == ViewChangeStatus::READY_VIEW_CHANGE) {
     if (status_ != ViewChangeStatus::READY_VIEW_CHANGE) {
+      LOG(ERROR) << "CHANGE STATUS";
       status_ = status;
     }
   } else {
@@ -230,6 +227,8 @@ void ViewChangeManager::SetCurrentViewAndNewPrimary(uint64_t view_number) {
   uint32_t id =
       config_.GetReplicaInfos()[(view_number - 1) % replicas.size()].id();
   system_info_->SetPrimary(id);
+  global_stats_->ChangePrimary(id);
+  LOG(ERROR) << "View Change Happened";
 }
 
 std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
@@ -510,6 +509,7 @@ void ViewChangeManager::SendViewChangeMsg() {
 }
 
 void ViewChangeManager::AddComplaintTimer(uint64_t proxy_id, std::string hash) {
+  LOG(ERROR) << "ADDING COMPLAINT";
   std::lock_guard<std::mutex> lk(vc_mutex_);
   if (complaining_clients_.count(proxy_id) == 0) {
     complaining_clients_[proxy_id].set_proxy_id(proxy_id);

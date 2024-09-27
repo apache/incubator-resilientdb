@@ -1,4 +1,43 @@
+<!--
+  - Licensed to the Apache Software Foundation (ASF) under one
+  - or more contributor license agreements.  See the NOTICE file
+  - distributed with this work for additional information
+  - regarding copyright ownership.  The ASF licenses this file
+  - to you under the Apache License, Version 2.0 (the
+  - "License"); you may not use this file except in compliance
+  - with the License.  You may obtain a copy of the License at
+  -
+  -   http://www.apache.org/licenses/LICENSE-2.0
+  -
+  - Unless required by applicable law or agreed to in writing,
+  - software distributed under the License is distributed on an
+  - "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  - KIND, either express or implied.  See the License for the
+  - specific language governing permissions and limitations
+  - under the License.
+  -->
+
 # Change Log
+
+### Apache ResilientDB v1.10.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.0-rc01))
+
+Add the prototype of PoE. ([Junchao Chen](https://github.com/cjcchen))
+
+* Implement the base version of the Proof-of-Execution (PoE) Consensus Protocol [EDBT 2011].
+
+Add ResView Data Collection and APIs ([Saipranav-Kotamreddy](https://github.com/Saipranav-Kotamreddy))
+
+* Consensus data such as PBFT messages and states is now collected and stored
+* Added APIs to query consensus data and progress of replicas
+* Added APIs to trigger faultiness and test view change
+
+### NexRes v1.9.0 ([2023-11-29](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.9.0))
+
+Support Multi-version Key-Value Interface. ([Junchao Chen](https://github.com/cjcchen))
+
+* Get and Set need to provide a version number to fetch the correct version of the data (if exists) or write to the correct version of data (if not overwritten already), respectively.
+* Provide interfaces to obtain historical data with a specific version or a range of versions.
+
 
 ### NexRes v1.8.0 ([2023-08-21](https://github.com/resilientdb/resilientdb/releases/tag/nexres-v1.8.0))
 

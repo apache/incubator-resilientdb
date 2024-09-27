@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 syntax = "proto3";
 
 import "platform/proto/replica_info.proto";
@@ -37,8 +56,9 @@ message Request {
         TYPE_VIEWCHANGE = 16;
         TYPE_NEWVIEW= 17;
         TYPE_CUSTOM_QUERY = 18;
+        TYPE_CUSTOM_CONSENSUS = 19;
 
-        NUM_OF_TYPE = 19; // the total number of types.
+        NUM_OF_TYPE = 20; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -62,6 +82,12 @@ message Request {
     int32 primary_id = 17;
     repeated bytes hashs = 18;
     repeated uint64 seqs = 19;
+    int32 user_type = 20;
+    int64 user_seq = 21;
+    int64 queuing_time = 22;
+    int64 uid = 23;
+    int64 create_time = 24;
+    int64 commit_time = 25;
 }
 
 // The response message containing response
@@ -108,8 +134,13 @@ message BatchUserResponse {
 
 message HeartBeatInfo{
   repeated CertificateKey public_keys = 1;
+  repeated int64 node_version = 8;
   uint32 primary = 2;
   uint64 version= 3;
+  int32 sender = 4;
+  string ip = 5;
+  int32 port = 6;
+  int64 hb_version = 7;
 }
 
 message ClientCertInfo {
@@ -168,6 +199,7 @@ message QueryRequest {
 
 message QueryResponse {
   repeated Request transactions = 1;
+  uint64 max_seq = 2;
 }
 
 message CustomQueryResponse {

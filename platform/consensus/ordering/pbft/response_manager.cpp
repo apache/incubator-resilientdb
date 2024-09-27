@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/pbft/response_manager.h"
@@ -30,6 +24,24 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
+
+ResponseClientTimeout::ResponseClientTimeout(std::string hash_,
+                                             uint64_t time_) {
+  this->hash = hash_;
+  this->timeout_time = time_;
+}
+
+ResponseClientTimeout::ResponseClientTimeout(
+    const ResponseClientTimeout& other) {
+  this->hash = other.hash;
+  this->timeout_time = other.timeout_time;
+}
+
+bool ResponseClientTimeout::operator<(
+    const ResponseClientTimeout& other) const {
+  return timeout_time > other.timeout_time;
+}
+
 ResponseManager::ResponseManager(const ResDBConfig& config,
                                  ReplicaCommunicator* replica_communicator,
                                  SystemInfo* system_info,
@@ -45,6 +57,7 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
       verifier_(verifier) {
   stop_ = false;
   local_id_ = 1;
+  timeout_length_ = 5000000;
 
   if (config_.GetPublicKeyCertificateInfo()
               .public_key()
@@ -52,6 +65,10 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
               .type() == CertificateKeyInfo::CLIENT ||
       config_.IsTestMode()) {
     user_req_thread_ = std::thread(&ResponseManager::BatchProposeMsg, this);
+  }
+  if (config_.GetConfigData().enable_viewchange()) {
+    checking_timeout_thread_ =
+        std::thread(&ResponseManager::MonitoringClientTimeOut, this);
   }
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
@@ -61,6 +78,9 @@ ResponseManager::~ResponseManager() {
   stop_ = true;
   if (user_req_thread_.joinable()) {
     user_req_thread_.join();
+  }
+  if (checking_timeout_thread_.joinable()) {
+    checking_timeout_thread_.join();
   }
 }
 
@@ -153,8 +173,21 @@ CollectorResultCode ResponseManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
+  std::string hash = request->hash();
+
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
+  if (!batch_response->ParseFromString(request->data())) {
+    LOG(ERROR) << "parse response fail:" << request->data().size()
+               << " seq:" << request->seq();
+    RemoveWaitingResponseRequest(hash);
+    return CollectorResultCode::INVALID;
+  }
+
+  uint64_t seq = batch_response->local_id();
+  request->set_seq(seq);
+
   int type = request->type();
-  uint64_t seq = request->seq();
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,
@@ -171,6 +204,7 @@ CollectorResultCode ResponseManager::AddResponseMsg(
   }
   if (resp_received_count > 0) {
     collector_pool_->Update(seq);
+    RemoveWaitingResponseRequest(hash);
     return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
@@ -276,7 +310,8 @@ int ResponseManager::DoBatch(
 
   if (!config_.IsPerformanceRunning()) {
     LOG(ERROR) << "add context list:" << new_request->seq()
-               << " list size:" << context_list.size();
+               << " list size:" << context_list.size()
+               << " local_id:" << local_id_;
     batch_request.set_local_id(local_id_);
     int ret = AddContextList(std::move(context_list), local_id_++);
     if (ret != 0) {
@@ -301,9 +336,75 @@ int ResponseManager::DoBatch(
   new_request->set_proxy_id(config_.GetSelfInfo().id());
   replica_communicator_->SendMessage(*new_request, GetPrimary());
   send_num_++;
-  LOG(INFO) << "send msg to primary:" << GetPrimary()
-            << " batch size:" << batch_req.size();
+  // LOG(INFO) << "send msg to primary:" << GetPrimary()
+  //          << " batch size:" << batch_req.size();
+  AddWaitingResponseRequest(std::move(new_request));
   return 0;
 }
 
+void ResponseManager::AddWaitingResponseRequest(
+    std::unique_ptr<Request> request) {
+  if (!config_.GetConfigData().enable_viewchange()) {
+    return;
+  }
+  pm_lock_.lock();
+  assert(timeout_length_ > 0);
+  uint64_t time = GetCurrentTime() + timeout_length_;
+  client_timeout_min_heap_.push(ResponseClientTimeout(request->hash(), time));
+  waiting_response_batches_.insert(
+      make_pair(request->hash(), std::move(request)));
+  pm_lock_.unlock();
+  sem_post(&request_sent_signal_);
+}
+
+void ResponseManager::RemoveWaitingResponseRequest(const std::string& hash) {
+  if (!config_.GetConfigData().enable_viewchange()) {
+    return;
+  }
+  pm_lock_.lock();
+  if (waiting_response_batches_.find(hash) != waiting_response_batches_.end()) {
+    waiting_response_batches_.erase(waiting_response_batches_.find(hash));
+  }
+  pm_lock_.unlock();
+}
+
+bool ResponseManager::CheckTimeOut(std::string hash) {
+  pm_lock_.lock();
+  bool value =
+      (waiting_response_batches_.find(hash) != waiting_response_batches_.end());
+  pm_lock_.unlock();
+  return value;
+}
+
+std::unique_ptr<Request> ResponseManager::GetTimeOutRequest(std::string hash) {
+  pm_lock_.lock();
+  auto value = std::move(waiting_response_batches_.find(hash)->second);
+  pm_lock_.unlock();
+  return value;
+}
+
+void ResponseManager::MonitoringClientTimeOut() {
+  while (!stop_) {
+    sem_wait(&request_sent_signal_);
+    pm_lock_.lock();
+    if (client_timeout_min_heap_.empty()) {
+      pm_lock_.unlock();
+      continue;
+    }
+    auto client_timeout = client_timeout_min_heap_.top();
+    client_timeout_min_heap_.pop();
+    pm_lock_.unlock();
+
+    if (client_timeout.timeout_time > GetCurrentTime()) {
+      usleep(client_timeout.timeout_time - GetCurrentTime());
+    }
+
+    if (CheckTimeOut(client_timeout.hash)) {
+      auto request = GetTimeOutRequest(client_timeout.hash);
+      if (request) {
+        replica_communicator_->BroadCast(*request);
+      }
+    }
+  }
+}
 }  // namespace resdb
