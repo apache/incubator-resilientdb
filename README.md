@@ -356,4 +356,10 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    docker exec -it myserver bash
    ```
 
+5. **NOTE: If you encounter a Connection Refused error**
+   Run the following command within the container:
+   ```shell
+   ./service/tools/kv/server_tools/start_kv_service.sh
+   ```
+
    Verify the functionality of the service by performing set and get operations provided above [functions](README.md#functions).
