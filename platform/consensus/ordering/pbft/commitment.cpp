@@ -96,6 +96,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   }
   */
 
+/*
   // check signatures
   bool valid = verifier_->VerifyMessage(user_request->data(),
                                         user_request->data_signature());
@@ -105,6 +106,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     LOG(ERROR) << " msg:" << user_request->data().size();
     return -2;
   }
+  */
 
   if (pre_verify_func_ && !pre_verify_func_(*user_request)) {
     LOG(ERROR) << " check by the user func fail";
@@ -168,6 +170,8 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
 
+
+  //LOG(ERROR) << "the request from sender:" << request->sender_id() << " seq:" << request->seq();
   /*
     if(request->hash() != "null" + std::to_string(request->seq())
         && SignatureVerifier::CalculateHash(request->data()) != request->hash())
@@ -239,6 +243,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   // If it has received enough same requests(2f+1), broadcast the commit
   // message.
   uint64_t seq_ = request->seq();
+  //LOG(ERROR) << "prepare from sender:" << request->sender_id() << " seq:" << request->seq();
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {

@@ -46,6 +46,10 @@ message ResConfigData{
 
   optional int32 duplicate_check_frequency_useconds = 22;
   optional bool multiply_primary = 23;
+
+  // for poe
+  optional int32 water_mark = 24;
+  optional bool is_linear = 25;
 }
 
 message ReplicaStates {

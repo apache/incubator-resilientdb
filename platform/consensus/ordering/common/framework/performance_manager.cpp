@@ -118,7 +118,7 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   // The callback will be triggered if it received f+1 messages.
   if (request->ret() == -2) {
     // LOG(INFO) << "get response fail:" << request->ret();
-    send_num_--;
+    RequestDone();
     return 0;
   }
 
@@ -178,17 +178,41 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   return CollectorResultCode::OK;
 }
 
-void PerformanceManager::SendResponseToClient(
+void PerformanceManager::LogLatency(
     const BatchUserResponse& batch_response) {
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    //LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
+    //LOG(ERROR)<<" log lat:"<<run_time;
     global_stats_->AddLatency(run_time);
-  } else {
   }
-  //send_num_-=10;
+}
+
+void PerformanceManager::SendResponseToClient(
+    const BatchUserResponse& batch_response) {
+  LogLatency(batch_response);
+  RequestDone();
+}
+
+void PerformanceManager::Wait() {
+
+  auto check = [&]() {
+    return static_cast<int>(send_num_) <= static_cast<int>(config_.GetMaxProcessTxn());
+  };
+
+  while (!check()) {
+    std::unique_lock<std::mutex> lk(n_mutex_);
+    vote_cv_.wait_for(lk, std::chrono::microseconds(1000000),
+        [&] { return check(); });
+   //     LOG(ERROR)<<" wait done";
+  }
+}
+
+void PerformanceManager::RequestDone() {
+  std::unique_lock<std::mutex> lk(n_mutex_);
   send_num_--;
+  //LOG(ERROR)<<" request done:"<<send_num_;
+  vote_cv_.notify_one();
 }
 
 // =================== request ========================
@@ -200,11 +224,14 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   bool start = false;
   while (!stop_) {
-    if (send_num_ > config_.GetMaxProcessTxn()) {
+    Wait();
+    /*
+    if (static_cast<int>(send_num_) > static_cast<int>(config_.GetMaxProcessTxn())) {
       // LOG(ERROR)<<"wait send num:"<<send_num_;
       usleep(100000);
       continue;
     }
+    */
     if (batch_req.size() < config_.ClientBatchNum()) {
       std::unique_ptr<QueueItem> item =
           batch_queue_.Pop(config_.ClientBatchWaitTimeMS());
@@ -221,7 +248,7 @@ int PerformanceManager::BatchProposeMsg() {
     }
     start = true;
     for(int i = 0; i < 1;++i){
-      int ret = DoBatch(batch_req);
+      DoBatch(batch_req);
     }
     batch_req.clear();
   }
@@ -272,7 +299,7 @@ int PerformanceManager::DoBatch(
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
-  //LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary();
+  //LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary()<<" local id:"<<batch_request.local_id();
   if (total_num_++ == 1000000) {
     stop_ = true;
     LOG(WARNING) << "total num is done:" << total_num_;

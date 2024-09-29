@@ -54,8 +54,11 @@ MessageManager::MessageManager(
             }
           },
           system_info_, std::move(transaction_manager))),
+      //collector_pool_(std::make_unique<LockFreeCollectorPool>(
+       //   "txn", config_.GetMaxProcessTxn(), transaction_executor_.get(),
+        //  config_.GetConfigData().enable_viewchange())) {
       collector_pool_(std::make_unique<LockFreeCollectorPool>(
-          "txn", config_.GetMaxProcessTxn(), transaction_executor_.get(),
+          "txn", 819200, transaction_executor_.get(),
           config_.GetConfigData().enable_viewchange())) {
   global_stats_ = Stats::GetGlobalStats();
   transaction_executor_->SetSeqUpdateNotifyFunc(
@@ -93,10 +96,11 @@ absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   uint32_t max_executed_seq = transaction_executor_->GetMaxPendingExecutedSeq();
   global_stats_->SeqGap(next_seq_ - max_executed_seq);
   if (next_seq_ - max_executed_seq >
-      static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
+      static_cast<uint64_t>(4096)) {
+      //static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
     // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " <<
     // max_executed_seq;
-    return absl::InvalidArgumentError("Seq has been used up.");
+    //return absl::InvalidArgumentError("Seq has been used up.");
   }
   return next_seq_++;
 }

@@ -73,6 +73,11 @@ class ReplicaCommunicator {
   bool IsRunning() const;
   bool IsInPool(const ReplicaInfo& replica_info);
 
+  void StartSingleInBackGround(const std::string& ip, int port);
+
+  int SendSingleMessage(const google::protobuf::Message& message, 
+      const ReplicaInfo& replica_info);
+
  private:
   std::vector<ReplicaInfo> replicas_;
   SignatureVerifier* verifier_;
@@ -93,6 +98,14 @@ class ReplicaCommunicator {
   std::vector<std::thread> worker_threads_;
   std::vector<ReplicaInfo> clients_;
   std::mutex mutex_;
+  
+
+
+  std::map<std::pair<std::string, int>, 
+    std::unique_ptr<BatchQueue<std::unique_ptr<QueueItem>>>> single_bq_;
+  std::vector<std::thread> single_thread_;
+  int tcp_batch_;
+  std::mutex smutex_;
 };
 
 }  // namespace resdb

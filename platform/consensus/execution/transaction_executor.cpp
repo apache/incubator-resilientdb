@@ -338,8 +338,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   assert(batch_request_p);
 
-  // LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy
-  // id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
+   //LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
 
   // LOG(INFO) << " get request batch size:"
   // << batch_request.user_requests_size()<<" proxy id:"
