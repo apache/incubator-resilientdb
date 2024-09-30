@@ -21,8 +21,6 @@ function sendMessageToPage(request) {
   window.postMessage({ type: 'FROM_CONTENT_SCRIPT', data: request }, '*');
 }
 
-// Removed detectFavicon() and its invocation since favicon handling is now in background.js
-
 // Add event listener to listen for messages from the web page
 window.addEventListener("message", (event) => {
   if (event.source === window) {

@@ -330,5 +330,116 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
+    } else if (request.action === 'submitTransaction') {
+        // Added the missing submitTransaction handler
+
+        (async function() {
+            console.log('Handling submitTransaction action');
+            console.log('Sender:', sender);
+            let senderUrl = null;
+            if (sender.tab && sender.tab.url) {
+                senderUrl = sender.tab.url;
+            } else if (sender.url) {
+                senderUrl = sender.url;
+            } else if (sender.origin) {
+                senderUrl = sender.origin;
+            } else {
+                console.error('Sender URL is undefined');
+                sendResponse({ success: false, error: 'Cannot determine sender URL' });
+                return;
+            }
+            console.log('Sender URL:', senderUrl);
+
+            const domain = getBaseDomain(senderUrl);
+            console.log('Domain:', domain);
+
+            chrome.storage.local.get(['keys', 'connectedNets'], async function (result) {
+                const keys = result.keys || {};
+                const connectedNets = result.connectedNets || {};
+                console.log('ConnectedNets:', connectedNets);
+                const net = connectedNets[domain];
+                console.log('Net for domain:', domain, 'is', net);
+
+                if (keys[domain] && keys[domain][net]) {
+                    const { publicKey, privateKey, url, exportedKey } = keys[domain][net];
+
+                    try {
+                        // Import the key material from JWK format
+                        const keyMaterial = await crypto.subtle.importKey(
+                            'jwk',
+                            exportedKey,
+                            { name: 'AES-GCM' },
+                            true,
+                            ['encrypt', 'decrypt']
+                        );
+
+                        const decryptedPublicKey = await decryptData(publicKey.ciphertext, publicKey.iv, keyMaterial);
+                        const decryptedPrivateKey = await decryptData(privateKey.ciphertext, privateKey.iv, keyMaterial);
+                        const decryptedUrl = await decryptData(url.ciphertext, url.iv, keyMaterial);
+
+                        // Check if required fields are defined
+                        if (!decryptedPublicKey || !decryptedPrivateKey || !request.recipient) {
+                            console.error('Missing required fields for transaction submission');
+                            sendResponse({ success: false, error: 'Missing required fields for transaction' });
+                            return;
+                        }
+
+                        // Prepare asset data as a JSON string
+                        const assetData = JSON.stringify({
+                            data: request.data || {}
+                        });
+
+                        // Construct the GraphQL mutation
+                        const mutation = `
+                            mutation {
+                                postTransaction(data: {
+                                    operation: "CREATE",
+                                    amount: ${parseInt(request.amount)},
+                                    signerPublicKey: "${escapeGraphQLString(decryptedPublicKey)}",
+                                    signerPrivateKey: "${escapeGraphQLString(decryptedPrivateKey)}",
+                                    recipientPublicKey: "${escapeGraphQLString(request.recipient)}",
+                                    asset: """${assetData}"""
+                                }) {
+                                    id
+                                }
+                            }
+                        `;
+
+                        // Log the mutation for debugging
+                        console.log('Mutation:', mutation);
+
+                        const response = await fetch(decryptedUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ query: mutation }),
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok: ${response.statusText}`);
+                        }
+
+                        const resultData = await response.json();
+                        if (resultData.errors) {
+                            console.error('GraphQL errors:', resultData.errors);
+                            sendResponse({ success: false, errors: resultData.errors });
+                        } else {
+                            console.log('Transaction submitted successfully:', resultData.data);
+                            sendResponse({ success: true, data: resultData.data });
+                        }
+                    } catch (error) {
+                        console.error('Error submitting transaction:', error);
+                        sendResponse({ success: false, error: error.message });
+                    }
+                } else {
+                    console.error('No keys found for domain:', domain, 'and net:', net);
+                    console.log('Available keys:', keys);
+                    sendResponse({ error: "No keys found for domain and net" });
+                }
+            });
+        })();
+
+        return true; // Keep the message channel open for async sendResponse
     }
 });
