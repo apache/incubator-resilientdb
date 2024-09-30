@@ -11,8 +11,8 @@
 * 
 * Unless required by applicable law or agreed to in writing,
 * software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
+* OF ANY KIND, either express or implied.  See the License for the
 * specific language governing permissions and limitations
 * under the License.    
 */
@@ -48,6 +48,15 @@ function Dashboard() {
     const fileInputRef = useRef(null);
     const inputRef = useRef(null);
     const navigate = useNavigate();
+
+    // New state variables for transaction data and handling
+    const [transactionData, setTransactionData] = useState(null);
+    const [transactionError, setTransactionError] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successResponse, setSuccessResponse] = useState(null);
+
+    // New state for copying transaction ID
+    const [isIdCopied, setIsIdCopied] = useState(false);
 
     useEffect(() => {
         console.log('publicKey in Dashboard:', publicKey);
@@ -109,7 +118,7 @@ function Dashboard() {
 
     useEffect(() => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs.length > 0) {
+            if (tabs.length > 0 && tabs[0].url) {
                 const currentTab = tabs[0];
                 setTabId(currentTab.id);
 
@@ -123,7 +132,15 @@ function Dashboard() {
                     });
                 }
             } else {
-                setIsConnected(false);
+                // If no active tab or no URL, set domain to 'extension'
+                setDomain('extension');
+
+                // Ensure selectedNet is set before checking connection status
+                if (selectedNet) {
+                    getDomainConnectionStatus('extension', selectedNet, (connected) => {
+                        setIsConnected(connected);
+                    });
+                }
             }
         });
     }, [selectedNet]);
@@ -218,10 +235,6 @@ function Dashboard() {
           console.error('Public or Private key is missing');
           return;
         }
-    
-        // Log keys for debugging (Remove in production)
-        console.log('Connecting with publicKey:', publicKey);
-        console.log('Connecting with privateKey:', privateKey);
     
         const newConnectionStatus = !isConnected;
         setIsConnected(newConnectionStatus);
@@ -351,18 +364,34 @@ function Dashboard() {
         }
     };
 
-    const [isJSONInvalid, setIsJSONInvalid] = useState(false);
-
-    const showError = () => {
-        setIsJSONInvalid(true);
-    };
-
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (file && file.type === 'application/json') {
             setJsonFileName(file.name); // Show file name once uploaded
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    // Validate JSON data
+                    if (json.asset && json.recipientAddress && json.amount) {
+                        setTransactionData(json);
+                        setTransactionError(''); // Clear any previous error
+                    } else {
+                        setTransactionData(null);
+                        setTransactionError('Invalid JSON format: Missing required fields.');
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    setTransactionData(null);
+                    setTransactionError('Invalid JSON format.');
+                }
+            };
+            reader.readAsText(file);
         } else {
             setJsonFileName(''); // Clear if the file is not JSON
+            setTransactionData(null);
+            setTransactionError('Please upload a JSON file.');
         }
     };
 
@@ -382,8 +411,30 @@ function Dashboard() {
         const file = e.dataTransfer.files[0];
         if (file && file.type === 'application/json') {
             setJsonFileName(file.name);
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    // Validate JSON data
+                    if (json.asset && json.recipientAddress && json.amount) {
+                        setTransactionData(json);
+                        setTransactionError(''); // Clear any previous error
+                    } else {
+                        setTransactionData(null);
+                        setTransactionError('Invalid JSON format: Missing required fields.');
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    setTransactionData(null);
+                    setTransactionError('Invalid JSON format.');
+                }
+            };
+            reader.readAsText(file);
         } else {
             setJsonFileName('');
+            setTransactionData(null);
+            setTransactionError('Please upload a JSON file.');
         }
     };
 
@@ -392,7 +443,51 @@ function Dashboard() {
     };
 
     const handleSubmit = () => {
-        setJsonFileName(''); // Clear the file name on submit
+        if (!transactionData) {
+            setTransactionError('No valid transaction data found.');
+            return;
+        }
+        if (!isConnected) {
+            setTransactionError('Please connect to a net before submitting a transaction.');
+            return;
+        }
+
+        // Send transaction data to background script
+        chrome.runtime.sendMessage({
+            action: 'submitTransactionFromDashboard',
+            transactionData: transactionData,
+            domain: domain,
+            net: selectedNet,
+        }, (response) => {
+            if (response.success) {
+                setSuccessResponse(response.data);
+                setShowSuccessModal(true);
+                setTransactionError('');
+                setJsonFileName(''); // Clear the file name after successful submission
+                setTransactionData(null);
+            } else {
+                setTransactionError(response.error || 'Transaction submission failed.');
+            }
+        });
+    };
+
+    // New function to handle transaction ID click
+    const handleIdClick = () => {
+        try {
+            const transactionId = (successResponse && successResponse.postTransaction && successResponse.postTransaction.id) || '';
+            const tempInput = document.createElement('input');
+            tempInput.value = transactionId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            setIsIdCopied(true);
+            setTimeout(() => {
+                setIsIdCopied(false);
+            }, 1500);
+        } catch (err) {
+            console.error('Unable to copy text: ', err);
+        }
     };
 
     return (
@@ -401,7 +496,7 @@ function Dashboard() {
                 <Lottie options={defaultOptions} height="100%" width="100%" />
             </div>
             <div className="page page--main" data-page="buy">
-            <header className="header header--fixed">
+                <header className="header header--fixed">
                     <div className="header__inner header-container">
                         <div className="header__logo header__logo--text">
                             Res<strong>Vault</strong>
@@ -476,6 +571,40 @@ function Dashboard() {
                     </div>
                 )}
 
+                {showSuccessModal && (
+                    <div className="overlay">
+                        <div className="modal">
+                            <div className="modal-content">
+                                <h2>Transaction Submitted Successfully!</h2>
+                                {/* Extract transaction ID */}
+                                {successResponse && successResponse.postTransaction && successResponse.postTransaction.id ? (
+                                <div className="fieldset">
+                                    <div className="radio-option radio-option--full">
+                                        <input
+                                            type="radio"
+                                            name="transactionId"
+                                            id="txId"
+                                            value={successResponse.postTransaction.id}
+                                            checked
+                                            readOnly
+                                            onClick={handleIdClick}
+                                        />
+                                        <label htmlFor="txId">
+                                            <span>{isIdCopied ? 'Copied' : `${successResponse.postTransaction.id.slice(0, 5)}...${successResponse.postTransaction.id.slice(-5)}`}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                ) : (
+                                    <p>No transaction ID found.</p>
+                                )}
+                                <button onClick={() => setShowSuccessModal(false)} className="button-close">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="page__content page__content--with-header page__content--with-bottom-nav">
                     <h2 className="page__title">Dashboard</h2>
 
@@ -533,6 +662,7 @@ function Dashboard() {
                                     <span className="filename">Click to Upload JSON File</span>
                                 )}
                             </div>
+                            {transactionError && <p className="error-message">{transactionError}</p>}
                         </div>
                     </div>
 
