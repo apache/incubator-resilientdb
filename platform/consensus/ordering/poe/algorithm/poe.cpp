@@ -172,11 +172,9 @@ bool PoE::ReceivePropose(std::unique_ptr<Transaction> txn) {
 }
 
 bool PoE::ReceiveSupport(std::unique_ptr<Proposal> proposal) {
-/*
-  if(id_ != 2) {
+  if(id_ != 1) {
     return true;
   }
-  */
   std::string hash = proposal->hash();
   int64_t seq = proposal->seq();
   int proposer = proposal->proposer();

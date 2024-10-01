@@ -196,7 +196,7 @@ int ZZYPerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
 }
 
 bool ZZYPerformanceManager::SendTimeout(int local_id) {
-  assert(1==0);
+  //assert(1==0);
   Proposal timeout_proposal;
   std::unique_lock<std::mutex> lk(mutex_[local_id%1000]);
   std::string hash; 
