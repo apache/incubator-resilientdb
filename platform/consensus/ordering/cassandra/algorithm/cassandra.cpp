@@ -17,10 +17,11 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
   total_num_ = total_num;
   f_ = f;
   is_stop_ = false;
+  //timeout_ms_ = 10000;
   timeout_ms_ = 60000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
-  batch_size_ = 10;
+  batch_size_ = 15;
 
   recv_num_ = 0;
   execute_num_ = 0;
@@ -248,7 +249,7 @@ void Cassandra::BroadcastTxn() {
     */
 
     for(int i = 1; i < batch_size_; ++i){
-      std::unique_ptr<Transaction> txn = txns_.Pop(10);
+      std::unique_ptr<Transaction> txn = txns_.Pop(100);
       if(txn == nullptr){
         break;
       }

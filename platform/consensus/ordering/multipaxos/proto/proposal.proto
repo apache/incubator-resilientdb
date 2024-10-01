@@ -1,0 +1,35 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.multipaxos;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
+}
+
+message Header {
+  int32 proposer = 1;
+  int32 proposal_id = 2;
+  int32 view = 3;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 2;
+  int32 sender = 3;
+  bytes hash = 4;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  Propose = 1;
+  Learn = 2;
+  Query = 3;
+};
+

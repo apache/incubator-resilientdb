@@ -300,9 +300,21 @@ bool Tusk::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 }
 
 bool Tusk::ReceiveBlock(std::unique_ptr<Proposal> proposal) {
-  //LOG(ERROR) << "recv block from " << proposal->header().proposer_id()
-  //           << " round:" << proposal->header().round();
 
+             /*
+  LOG(ERROR) << "recv block from " << proposal->header().proposer_id()
+             << " round:" << proposal->header().round();
+  */
+  if(proposal->header().round() == 200 && id_ >= 23 && proposal->header().proposer_id() < 23){
+    sleep(10);
+  }
+
+  if(proposal->header().round() == 200 && id_ <= 23 && proposal->header().proposer_id() > 23){
+  //LOG(ERROR) << "recv block from " << proposal->header().proposer_id()
+   //          << " round:" << proposal->header().round();
+    sleep(10);
+  }
+  
       std::unique_lock<std::mutex> lk(check_block_mutex_);
   {
    proposal->set_queuing_time(GetCurrentTime());
