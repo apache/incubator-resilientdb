@@ -1,5 +1,3 @@
-// background.js
-
 let faviconUrls = {};
 
 // Helper functions
@@ -102,6 +100,14 @@ function updateFaviconUrl(tabId, changeInfo, tab) {
 
 // Add the listener for tab updates
 chrome.tabs.onUpdated.addListener(updateFaviconUrl);
+
+// Function to generate UUID v4
+function generateUUID() {
+    // Public Domain/MIT
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+}
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === "storeKeys") {
@@ -405,9 +411,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                             }
                         `;
 
-                        // Log the mutation for debugging
-                        console.log('Mutation:', mutation);
-
                         const response = await fetch(decryptedUrl, {
                             method: 'POST',
                             headers: {
@@ -430,6 +433,117 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         }
                     } catch (error) {
                         console.error('Error submitting transaction:', error);
+                        sendResponse({ success: false, error: error.message });
+                    }
+                } else {
+                    console.error('No keys found for domain:', domain, 'and net:', net);
+                    console.log('Available keys:', keys);
+                    sendResponse({ error: "No keys found for domain and net" });
+                }
+            });
+        })();
+
+        return true; // Keep the message channel open for async sendResponse
+    } else if (request.action === 'submitLoginTransaction') {
+        (async function() {
+            console.log('Handling submitLoginTransaction action');
+            console.log('Sender:', sender);
+            let senderUrl = null;
+            if (sender.tab && sender.tab.url) {
+                senderUrl = sender.tab.url;
+            } else if (sender.url) {
+                senderUrl = sender.url;
+            } else if (sender.origin) {
+                senderUrl = sender.origin;
+            } else {
+                console.error('Sender URL is undefined');
+                sendResponse({ success: false, error: 'Cannot determine sender URL' });
+                return;
+            }
+            console.log('Sender URL:', senderUrl);
+
+            const domain = getBaseDomain(senderUrl);
+            console.log('Domain:', domain);
+
+            chrome.storage.local.get(['keys', 'connectedNets'], async function (result) {
+                const keys = result.keys || {};
+                const connectedNets = result.connectedNets || {};
+                console.log('ConnectedNets:', connectedNets);
+                const net = connectedNets[domain];
+                console.log('Net for domain:', domain, 'is', net);
+
+                if (keys[domain] && keys[domain][net]) {
+                    const { publicKey, privateKey, url, exportedKey } = keys[domain][net];
+
+                    try {
+                        // Import the key material from JWK format
+                        const keyMaterial = await crypto.subtle.importKey(
+                            'jwk',
+                            exportedKey,
+                            { name: 'AES-GCM' },
+                            true,
+                            ['encrypt', 'decrypt']
+                        );
+
+                        const decryptedPublicKey = await decryptData(publicKey.ciphertext, publicKey.iv, keyMaterial);
+                        const decryptedPrivateKey = await decryptData(privateKey.ciphertext, privateKey.iv, keyMaterial);
+                        const decryptedUrl = await decryptData(url.ciphertext, url.iv, keyMaterial);
+
+                        // Prepare asset data with current timestamp and unique login_transaction_id
+                        const currentTimestamp = Math.floor(Date.now() / 1000);
+
+                        let loginTransactionId = '';
+                        if (crypto.randomUUID) {
+                            loginTransactionId = crypto.randomUUID().replace(/[^a-zA-Z0-9]/g, '');
+                        } else {
+                            loginTransactionId = generateUUID().replace(/[^a-zA-Z0-9]/g, '');
+                        }
+
+                        const assetData = JSON.stringify({
+                            data: {
+                                login_timestamp: currentTimestamp,
+                                login_transaction_id: loginTransactionId
+                            }
+                        });
+
+                        // Construct the GraphQL mutation
+                        const mutation = `
+                            mutation {
+                                postTransaction(data: {
+                                    operation: "CREATE"
+                                    amount: 1
+                                    signerPublicKey: "${escapeGraphQLString(decryptedPublicKey)}"
+                                    signerPrivateKey: "${escapeGraphQLString(decryptedPrivateKey)}"
+                                    recipientPublicKey: "${escapeGraphQLString(decryptedPublicKey)}"
+                                    asset: """${assetData}"""
+                                }) {
+                                    id
+                                }
+                            }
+                        `;
+
+                        const response = await fetch(decryptedUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ query: mutation }),
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Network response was not ok: ${response.statusText}`);
+                        }
+
+                        const resultData = await response.json();
+                        if (resultData.errors) {
+                            console.error('GraphQL errors:', resultData.errors);
+                            sendResponse({ success: false, errors: resultData.errors });
+                        } else {
+                            console.log('Login transaction submitted successfully:', resultData.data);
+                            sendResponse({ success: true, data: resultData.data });
+                        }
+                    } catch (error) {
+                        console.error('Error submitting login transaction:', error);
                         sendResponse({ success: false, error: error.message });
                     }
                 } else {

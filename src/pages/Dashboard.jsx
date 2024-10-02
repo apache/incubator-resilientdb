@@ -490,6 +490,11 @@ function Dashboard() {
         }
     };
 
+    // **New function to handle favicon load error**
+    const handleFaviconError = () => {
+        setFaviconUrl(''); // This will trigger the globe icon to display
+    };
+
     return (
         <>
             <div className="lottie-background">
@@ -624,7 +629,12 @@ function Dashboard() {
 
                             <div className="icon-container" onClick={toggleConnection}>
                                 {faviconUrl ? (
-                                    <img src={faviconUrl} alt="Favicon" className={`icon ${isConnected ? 'connected' : ''}`} />
+                                    <img
+                                        src={faviconUrl}
+                                        alt="Favicon"
+                                        className={`icon ${isConnected ? 'connected' : ''}`}
+                                        onError={handleFaviconError} // Add onError handler
+                                    />
                                 ) : (
                                     <i className={`fa fa-globe icon ${isConnected ? 'connected' : ''}`} aria-hidden="true"></i>
                                 )}
