@@ -28,6 +28,13 @@ Before you begin, ensure you have the following prerequisites:
 
 3.  **Node.js (version >= 14)**:  Download and install Node.js
 
+**The prerequisites listed above can be installed using the `INSTALL.sh` script:**
+
+   ```bash
+   chmod +x INSTALL.sh
+   ./INSTALL.sh
+   ```
+
 ## Installation
 
 To set up the project, follow these steps:
