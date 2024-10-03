@@ -1,0 +1,48 @@
+{
+    "compilerOptions": {
+      // JavaScript language version to which TypeScript will compile
+      "target": "ES6",
+      
+      // Module system to use in the generated JavaScript code
+      "module": "CommonJS",
+      
+      // Output directory for compiled files
+      "outDir": "./dist",
+      
+      // Generates corresponding '.d.ts' files along with '.js'
+      "declaration": true,
+      
+      // Root directory of your source files
+      "rootDir": "./src",
+      
+      // Enables strict type-checking options
+      "strict": true,
+      
+      // Ensures compatibility with CommonJS and ES Modules
+      "esModuleInterop": true,
+      
+      // Includes definition files like DOM, ES6, etc.
+      "lib": ["ES6", "DOM"],
+      
+      // Enables support for newer ECMAScript features
+      "moduleResolution": "node",
+      
+      // Preserves source maps for easier debugging
+      "sourceMap": true,
+  
+      // Avoid emitting unnecessary comments in the output
+      "removeComments": true,
+  
+      // Ensure TypeScript knows you're using modern JS syntax and libraries
+      "allowSyntheticDefaultImports": true
+    },
+    "include": [
+      "src/**/*" // Include all TypeScript files in the src directory
+    ],
+    "exclude": [
+      "node_modules",  // Exclude node_modules
+      "**/*.test.ts",  // Exclude test files, if any
+      "dist"          // Exclude output directory
+    ]
+}
+  
