@@ -1,6 +1,6 @@
 {
   "name": "resvault-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A lightweight SDK for ResVault.",
   "main": "dist/resvault-sdk.js",
   "types": "dist/resvault-sdk.d.ts",

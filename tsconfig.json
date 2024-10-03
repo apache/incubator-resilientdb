@@ -27,8 +27,8 @@
       // Enables support for newer ECMAScript features
       "moduleResolution": "node",
       
-      // Preserves source maps for easier debugging
-      "sourceMap": true,
+      // Exclude source maps for easier debugging
+      "sourceMap": false,
   
       // Avoid emitting unnecessary comments in the output
       "removeComments": true,
