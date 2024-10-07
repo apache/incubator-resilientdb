@@ -65,6 +65,7 @@ echo "deploy to :"${deploy_iplist[@]}
 cd ${script_path}
 echo "where am i:"$PWD
 
+deploy/script/generate_admin_key.sh ${BAZEL_WORKSPACE_PATH} ${admin_key_path} 
 deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#iplist[@]}
 deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
 
@@ -79,6 +80,7 @@ fi
 
 # commands functions
 function run_cmd(){
+  echo "run cmd:"$1
   count=1
   idx=1
   for ip in ${deploy_iplist[@]};
@@ -95,26 +97,35 @@ function run_cmd(){
 }
 
 function run_one_cmd(){
+  echo "run one:"$1
   ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
-#run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
+if [ $performance ];
+then
 run_cmd "rm -rf /home/ubuntu/${main_folder}"
+fi
 
 idx=1
 for ip in ${deploy_iplist[@]};
 do
-  run_one_cmd "mkdir -p ${main_folder}/$idx" &
+  run_one_cmd "mkdir -p /home/ubuntu/${main_folder}/$idx" &
+  folder="/home/ubuntu/${main_folder}/$idx"
+  run_one_cmd "rm -rf ${folder}/${server_bin}; rm ${folder}/${server_bin}*.log; rm -rf ${folder}/server.config; rm -rf ${folder}/cert;"
   ((count++))
   ((idx++))
 done
 
+while [ $count -gt 0 ]; do
+  wait $pids
+  count=`expr $count - 1`
+done
+
+
 #run_cmd "killall -9 ${server_bin}"
 #run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
 #run_cmd "rm -rf ${main_folder};"
-
-sleep 1
 
 # upload config files and binary
 echo "upload configs"

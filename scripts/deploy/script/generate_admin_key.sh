@@ -16,9 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+bazel_path=$1; shift
+output_path=$1; shift
+key_num=$1
 
-export server=//benchmark/protocols/pbft:kv_server_performance
-#export TEMPLATE_PATH=$PWD/config/pbft.config
-export performance=true
+echo "generate key in:"${output_path}
+echo "key num:"$key_num
 
-./performance/run_performance.sh $*
+bazel build //tools:key_generator_tools
+rm -rf ${output_path}
+mkdir -p ${output_path}
+
+echo `${bazel_path}/bazel-bin/tools/key_generator_tools "${output_path}/admin" "AES"`

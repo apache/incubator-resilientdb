@@ -60,6 +60,6 @@ Before running, place the private IP addresses of your machines in the file ``co
 
 Run the script:
 
-	./performance/run_performance.sh config/kv_performance_server.conf
+	./performance/pbft_performance.sh config/kv_performance_server.conf
 
 Results will be saved locally and be shown on the screen as well.
