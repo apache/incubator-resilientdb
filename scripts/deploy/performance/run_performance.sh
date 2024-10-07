@@ -17,8 +17,8 @@
 # under the License.
 #
 
-./script/deploy.sh $1
 
+./script/deploy.sh $1
 . ./script/load_config.sh $1
 
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
@@ -32,6 +32,7 @@ echo "benchmark done"
 count=1
 for ip in ${iplist[@]};
 do
+ echo "server bin:"${server_bin}
 `ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "killall -9 ${server_bin}"` 
 ((count++))
 done
@@ -41,12 +42,13 @@ while [ $count -gt 0 ]; do
         count=`expr $count - 1`
 done
 
-
+idx=1
 echo "getting results"
 for ip in ${iplist[@]};
 do
   echo "scp -i ${key} ubuntu@${ip}:/home/ubuntu/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} ubuntu@${ip}:/home/ubuntu/${server_bin}.log result_${ip}_log` 
+  `scp -i ${key} ubuntu@${ip}:/home/ubuntu/resilientdb_app/${idx}/${server_bin}.log result_${ip}_log` 
+  ((idx++))
 done
 
 python3 performance/calculate_result.py `ls result_*_log` > results.log

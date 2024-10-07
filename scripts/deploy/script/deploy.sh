@@ -98,6 +98,10 @@ function run_one_cmd(){
   ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
 }
 
+run_cmd "killall -9 ${server_bin}"
+#run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
+run_cmd "rm -rf /home/ubuntu/${main_folder}"
+
 idx=1
 for ip in ${deploy_iplist[@]};
 do
@@ -106,9 +110,9 @@ do
   ((idx++))
 done
 
-
-run_cmd "killall -9 ${server_bin}"
-run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
+#run_cmd "killall -9 ${server_bin}"
+#run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
+#run_cmd "rm -rf ${main_folder};"
 
 sleep 1
 
@@ -118,6 +122,7 @@ idx=1
 count=0
 for ip in ${deploy_iplist[@]};
 do
+  echo "scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/${main_folder}/$idx" 
   scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/${main_folder}/$idx &
   ((count++))
   ((idx++))
