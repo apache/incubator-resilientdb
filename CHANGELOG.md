@@ -21,6 +21,7 @@
 
 ### Apache ResilientDB v1.10.1 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.1))
 * Remove the binary keys from the source code. ([Junchao Chen](https://github.com/cjcchen))
+* Fix few bugs on Docker and performance tools. ([Gopal Nambiar](gopalnambiar2@gmail.com), [Junchao Chen](https://github.com/cjcchen))
 
 ### Apache ResilientDB v1.10.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.0-rc01))
 
