@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+exclude config.yaml
+exclude config.yaml.bak
+global-exclude __pycache__
+global-exclude *.py[cod]
