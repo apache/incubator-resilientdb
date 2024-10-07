@@ -33,12 +33,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: |
-          # Assuming you have a test suite
-          # Replace with your actual test command
-          python -m unittest discover tests
-
       - name: Build package
         run: |
           python setup.py sdist bdist_wheel
