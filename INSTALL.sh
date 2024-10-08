@@ -196,7 +196,7 @@ fi
 
 # Verify installation
 echo "Running test script to verify installation..."
-python test.py
+python tests/test.py
 
 echo "Installation and verification completed successfully."
 
