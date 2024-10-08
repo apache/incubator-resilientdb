@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="resdb-orm",  
-    version="1.1.1",   
+    version="1.1.2",   
     author="Gopal Nambiar",  
     author_email="gnambiar@ucdavis.com", 
     description="A simple ORM for ResilientDB's key-value store.",
