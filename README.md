@@ -1,3 +1,4 @@
+
 # ResDB-ORM
 
 ResDB-ORM is a Python module designed to simplify interactions with ResilientDB's key-value store database by providing an Object-Relational Mapping (ORM) interface. This library allows developers to use basic CRUD functionalities with ease.
@@ -10,7 +11,25 @@ Before using this repository, ensure that the following services are running:
 
 2. **ResilientDB-GraphQL**: This provides a GraphQL interface to interact with ResilientDB. Follow the instructions in the [ResilientDB-GraphQL repository](https://github.com/apache/incubator-resilientdb-graphql) to set it up and start it.
 
+## Setting up Prerequisites
+
+You can use the provided INSTALL.sh script to automatically install and set up both the kv_server and ResilientDB-GraphQL services. The script will clone the necessary repositories, build the services, and start them.
+
+To use the INSTALL.sh script:
+
+```bash
+git clone https://github.com/ResilientEcosystem/ResDB-ORM.git
+cd ResDB-ORM
+./INSTALL.sh
+```
+
 ## Installation
+
+ResDB-ORM is also available on PyPI and can be installed using pip:
+
+```bash
+pip install resdb-orm
+```
 
 Once the above services are running, follow the steps below to set up and use ResDB-ORM.
 
@@ -20,6 +39,8 @@ Once the above services are running, follow the steps below to set up and use Re
 git clone https://github.com/ResilientEcosystem/ResDB-ORM.git
 cd ResDB-ORM
 ```
+
+**Note:** The script may require sudo privileges to install dependencies and set up services.
 
 ### 2. Create and Activate a Virtual Environment
 
