@@ -460,8 +460,10 @@ void Stats::IncPrepare() {
     prometheus_->Inc(PREPARE, 1);
   }
   num_prepare_++;
-  transaction_summary_.prepare_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if(enable_resview){
+    transaction_summary_.prepare_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncCommit() {
@@ -469,8 +471,10 @@ void Stats::IncCommit() {
     prometheus_->Inc(COMMIT, 1);
   }
   num_commit_++;
-  transaction_summary_.commit_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if(enable_resview){
+    transaction_summary_.commit_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncPendingExecute() { pending_execute_++; }
