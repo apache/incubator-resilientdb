@@ -104,9 +104,44 @@ export const GlobalProvider = ({ children }) => {
     });
   };
 
+  // Function to delete a key pair
+  const deleteKeyPair = (index, callback) => {
+    const password = storedPassword;
+    if (!password) {
+        console.error('Password is not available');
+        return;
+    }
+
+    loadKeyPairsFromStorage(password, (existingKeyPairs) => {
+        if (existingKeyPairs.length <= 1) {
+            console.error('Cannot delete the last remaining key pair.');
+            return;
+        }
+
+        // Remove the key pair at the specified index
+        const updatedKeyPairs = [...existingKeyPairs];
+        updatedKeyPairs.splice(index, 1);
+
+        // Immediately update the key pairs state
+        setKeyPairs(updatedKeyPairs);
+
+        // Save the updated keyPairs back to storage
+        saveKeyPairsToStorage(updatedKeyPairs, password);
+
+        // Reset to the first key pair after deletion
+        setSelectedKeyPairIndex(0);
+        setPublicKey(updatedKeyPairs.length > 0 ? updatedKeyPairs[0].publicKey : '');
+        setPrivateKey(updatedKeyPairs.length > 0 ? updatedKeyPairs[0].privateKey : '');
+
+        // Optionally call the callback
+        if (callback) {
+            callback();
+        }
+    });
+  };
+
   // Load key pairs from storage when context is initialized
   useEffect(() => {
-    // Retrieve password from storage
     chrome.storage.local.get(['password'], (result) => {
       const password = result.password;
       if (password) {
@@ -114,7 +149,6 @@ export const GlobalProvider = ({ children }) => {
         loadKeyPairsFromStorage(password, (loadedKeyPairs) => {
           if (loadedKeyPairs.length > 0) {
             setKeyPairs(loadedKeyPairs);
-            // Load selected key pair index
             loadSelectedKeyPairIndex((index) => {
               if (loadedKeyPairs[index]) {
                 setPublicKey(loadedKeyPairs[index].publicKey);
@@ -150,7 +184,6 @@ export const GlobalProvider = ({ children }) => {
         console.error('Password is not available');
         return;
       }
-      // Encrypt the private key and save in 'store'
       const encryptedPrivateKey = CryptoJS.AES.encrypt(keyPairs[index].privateKey, password).toString();
       const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
       const store = {
@@ -188,6 +221,7 @@ export const GlobalProvider = ({ children }) => {
         setIsAuthenticated,
         storedPassword,
         setStoredPassword,
+        deleteKeyPair,
       }}
     >
       {children}

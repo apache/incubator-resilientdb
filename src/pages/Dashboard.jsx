@@ -23,6 +23,8 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import Lottie from 'react-lottie';
 import versionData from '../data/version.json';
@@ -44,6 +46,7 @@ function Dashboard() {
         setSelectedKeyPairIndex,
         setSelectedKeyPair,
         setIsAuthenticated,
+        deleteKeyPair,
     } = useContext(GlobalContext);
 
     const [tabId, setTabId] = useState(null);
@@ -68,6 +71,7 @@ function Dashboard() {
     const [transactionError, setTransactionError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successResponse, setSuccessResponse] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // New state for copying transaction ID
     const [isIdCopied, setIsIdCopied] = useState(false);
@@ -352,6 +356,19 @@ function Dashboard() {
         });
     };
 
+    const handleDeleteKeyPair = () => {
+        if (keyPairs.length > 1) {
+            deleteKeyPair(selectedKeyPairIndex, () => {
+                // Reset to the first key pair after deletion
+                setSelectedKeyPairIndex(0);
+                setSelectedKeyPair(0);
+            });
+    
+            // Close the delete confirmation modal
+            setShowDeleteModal(false);
+        }
+    };       
+
     // Function to copy public key
     const handleCopyPublicKey = () => {
         try {
@@ -380,6 +397,21 @@ function Dashboard() {
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "keypair.json");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    // Function to download all key pairs as JSON
+    const handleDownloadAllKeyPairs = () => {
+        const allKeyPairs = keyPairs.map(({ publicKey, privateKey }) => ({
+        publicKey,
+        privateKey,
+        }));
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allKeyPairs));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "all-keypairs.json");
         document.body.appendChild(downloadAnchorNode); // required for firefox
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
@@ -612,12 +644,12 @@ function Dashboard() {
                     </div>
                     </div>
                     <div className="save-container">
-                    <button onClick={addNet} className="button-save">
-                        Save
-                    </button>
-                    <button onClick={() => setShowModal(false)} className="button-close">
-                        Close
-                    </button>
+                        <button onClick={addNet} className="button-save">
+                            Save
+                        </button>
+                        <button onClick={() => setShowModal(false)} className="button-close">
+                            Close
+                        </button>
                     </div>
                     {error && <p className="error-message">{error}</p>}
                 </div>
@@ -732,34 +764,63 @@ function Dashboard() {
             <div className="net">
                 <div className="keypair">
                     <div className="keypair-header">
-                    <div className="select-wrapper">
-                        <select
-                        value={selectedKeyPairIndex}
-                        onChange={(e) => switchKeyPair(e.target.value)}
-                        className="select"
-                        >
-                        {keyPairs.map((keyPair, index) => (
-                            <option key={index} value={index}>
-                            {`${keyPair.publicKey.slice(0, 4)}...${keyPair.publicKey.slice(-4)}`}
-                            </option>
-                        ))}
-                        </select>
-                        <i className="fas fa-chevron-down"></i>
+                        <div className="select-wrapper">
+                            <select
+                            value={selectedKeyPairIndex}
+                            onChange={(e) => switchKeyPair(e.target.value)}
+                            className="select"
+                            >
+                            {keyPairs.map((keyPair, index) => (
+                                <option key={index} value={index}>
+                                {`${keyPair.publicKey.slice(0, 4)}...${keyPair.publicKey.slice(-4)}`}
+                                </option>
+                            ))}
+                            </select>
+                            <i className="fas fa-chevron-down"></i>
+                        </div>
+                        <div className="keypair-icons">
+                            {keyPairs.length > 1 && (
+                            <button onClick={() => setShowDeleteModal(true)} className="icon-button">
+                                <DeleteIcon style={{ color: 'white' }} />
+                            </button>
+                            )}
+                            <button onClick={handleCopyPublicKey} className="icon-button">
+                                <ContentCopyIcon style={{ color: isCopied ? 'grey' : 'white' }} />
+                            </button>
+                            <button onClick={handleDownloadKeyPair} className="icon-button">
+                                <DownloadIcon style={{ color: 'white' }} />
+                            </button>
+                        </div>
                     </div>
-                    <div className="keypair-icons">
-                        <button onClick={handleGenerateKeyPair} className="icon-button">
-                            <AddCircleOutlineIcon style={{ color: 'white' }} />
+                    <div className="keypair-actions">
+                        <button onClick={handleGenerateKeyPair} className="badge-button">
+                            Generate <AddCircleOutlineIcon style={{ color: 'white' }} />
                         </button>
-                        <button onClick={handleCopyPublicKey} className="icon-button">
-                            <ContentCopyIcon style={{ color: isCopied ? 'green' : 'white' }} />
+                        <button onClick={handleDownloadAllKeyPairs} className="badge-button">
+                            Export <SaveAltIcon style={{ color: 'white' }} />
                         </button>
-                        <button onClick={handleDownloadKeyPair} className="icon-button">
-                            <DownloadIcon style={{ color: 'white' }} />
-                        </button>
-                    </div>
                     </div>
                 </div>
             </div>
+
+            {showDeleteModal && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <div className="modal-content">
+                            <h2>Are you sure?</h2>
+                            <p>This action is irreversible and will delete the selected key pair forever.</p>
+                            <div className="save-container">
+                                <button onClick={handleDeleteKeyPair} className="button-save">
+                                    Delete
+                                </button>
+                                <button onClick={() => setShowDeleteModal(false)} className="button-close">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <button className="button button--full button--main open-popup" onClick={handleSubmit}>
                 Submit
