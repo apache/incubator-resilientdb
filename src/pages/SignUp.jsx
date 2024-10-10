@@ -1,23 +1,3 @@
-/**
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-* 
-*   http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.    
-*/
-
-
 /*global chrome*/
 import '../css/App.css';
 import CryptoJS from "crypto-js";
@@ -26,20 +6,28 @@ import Visibility from "@material-ui/icons/Visibility";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import Input from "@material-ui/core/Input";
-import Base58 from 'bs58';
-import nacl from 'tweetnacl';
 import PasswordStrengthBar from 'react-password-strength-bar';
 import backicon from "../images/icons/arrow-back.svg";
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react'; // Note the import of useEffect
 import Lottie from 'react-lottie';
 import versionData from '../data/version.json';
 import { useNavigate } from 'react-router-dom';
 import { GlobalContext } from '../context/GlobalContext';
 
 function SignUp() {
-    const { values, setValues, confirmValues, setConfirmValues, setPublicKey, setPrivateKey } = useContext(GlobalContext);
+    const {
+        values,
+        setValues,
+        confirmValues,
+        setConfirmValues,
+        generateKeyPair,
+        setIsAuthenticated,
+        setStoredPassword,
+        storedPassword,
+    } = useContext(GlobalContext);
     const navigate = useNavigate();
     const [showPasswordMismatchModal, setShowPasswordMismatchModal] = useState(false);
+    const [shouldGenerateKeyPair, setShouldGenerateKeyPair] = useState(false);
 
     const defaultOptions = {
         loop: true,
@@ -47,7 +35,7 @@ function SignUp() {
         animationData: require('../images/signup.json'),
         rendererSettings: {
             preserveAspectRatio: 'xMidYMid slice',
-            renderer: 'svg'  
+            renderer: 'svg'
         }
     };
 
@@ -63,42 +51,29 @@ function SignUp() {
         outline: 'none',
     };
 
-    function generateKeyPair() {
-        const keyPair = nacl.sign.keyPair();
-        const pk = Base58.encode(keyPair.publicKey);
-        const sk = Base58.encode(keyPair.secretKey.slice(0, 32));
-        return { publicKey: pk, privateKey: sk };
-    };
-
     const createAccount = async (e) => {
         e.preventDefault();
         if (values.password === confirmValues.password) {
-            chrome.storage.sync.clear(async function () {
-                const keys = generateKeyPair();
-                const publicKey = keys.publicKey;
-                const privateKey = keys.privateKey;
-                const encryptedPrivateKey = CryptoJS.AES.encrypt(
-                    JSON.stringify(privateKey),
-                    values.password
-                ).toString();
-
-                const hash = CryptoJS.SHA256(values.password).toString(CryptoJS.enc.Hex);
-                const store = { publicKey, encryptedPrivateKey, hash };
-                const password = { password: values.password };
-
-                chrome.storage.local.set({ password }, () => {});
-
-                store.history = [];
-                chrome.storage.sync.set({ store }, () => {
-                    setPublicKey(publicKey);
-                    setPrivateKey(privateKey);
-                    navigate("/dashboard");
-                });
+            const password = values.password;
+            // Store password
+            chrome.storage.local.set({ password }, () => {
+                setStoredPassword(password);
+                setShouldGenerateKeyPair(true);
             });
         } else {
             setShowPasswordMismatchModal(true);
         }
     };
+
+    useEffect(() => {
+        if (shouldGenerateKeyPair && storedPassword) {
+            generateKeyPair(() => {
+                setIsAuthenticated(true);
+                navigate("/dashboard");
+            });
+            setShouldGenerateKeyPair(false);
+        }
+    }, [shouldGenerateKeyPair, storedPassword, generateKeyPair, setIsAuthenticated, navigate]);
 
     const handleClickShowPassword = () => {
         setValues({ ...values, showPassword: !values.showPassword });

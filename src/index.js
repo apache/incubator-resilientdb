@@ -25,6 +25,7 @@ import reportWebVitals from './reportWebVitals';
 import { transitions, positions, Provider as AlertProvider } from 'react-alert';
 import AlertTemplate from 'react-alert-template-basic';
 import { MemoryRouter } from "react-router-dom";
+import { GlobalProvider } from './context/GlobalContext';
 
 // optional configuration
 const options = {
@@ -41,7 +42,9 @@ root.render(
   <React.StrictMode>
     <MemoryRouter>
       <AlertProvider template={AlertTemplate} {...options}>
-        <App />
+        <GlobalProvider>
+          <App />
+        </GlobalProvider>
       </AlertProvider>
     </MemoryRouter>
   </React.StrictMode>

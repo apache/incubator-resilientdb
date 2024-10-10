@@ -1,26 +1,33 @@
 /*global chrome*/
 import './css/App.css';
-import React from 'react';
+import React, { useContext } from 'react';
 import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Logs from "./pages/Logs";
-import { Navigate, Route, Routes } from "react-router-dom";
-import { GlobalProvider } from './context/GlobalContext';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { GlobalContext } from './context/GlobalContext';
 
 function App() {
+  const { isAuthenticated } = useContext(GlobalContext);
+
   return (
-    <GlobalProvider>
-      <Routes>
-        <Route path='/' element={<Home />} />
-        <Route path='/signup' element={<SignUp />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/dashboard' element={<Dashboard />} />
-        <Route path='/logs' element={<Logs />} />
-        <Route path='*' element={<Navigate to='/' />} />
-      </Routes>
-    </GlobalProvider>
+    <Routes>
+      {!isAuthenticated ? (
+        <>
+          <Route path="/" element={<Home />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>
+      ) : (
+        <>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </>
+      )}
+    </Routes>
   );
 }
 
