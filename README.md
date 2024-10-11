@@ -101,6 +101,10 @@ Build Interactive Tools:
 
     bazel build service/tools/kv/api_tools/kv_service_tools
 
+### Issues ###
+If you cannot build the project successfully, try to reduce the bazel jobs [here](
+https://github.com/apache/incubator-resilientdb/blob/master/.bazelrc#L1).
+
 ## Functions ##
 ResilientDB supports two types of functions: version-based and non-version-based.
 Version-based functions will leverage versions to protect each update, versions must be obtained before updating a key.
