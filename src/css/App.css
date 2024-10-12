@@ -3706,33 +3706,95 @@ tr:hover {
   opacity: 0.7;
 }
 
+/* Container for keypair actions */
 .keypair-actions {
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
+  justify-content: center;
   margin-top: 10px;
 }
 
+/* Badge Button Styles */
 .badge-button {
   background-color: #3c4e63; /* Matches your theme's primary color */
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 10px 20px;
+  border-radius: 50%; /* Makes the button circular */
+  padding: 10px; /* Uniform padding */
   font-size: 14px;
   cursor: pointer;
-  width: 48%; /* Ensures equal width for both buttons */
-  text-align: center;
+  width: 40px; /* Fixed width suitable for icons */
+  height: 40px; /* Fixed height suitable for icons */
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s;
 }
 
 .badge-button:hover {
   background-color: #50647e; /* A slightly lighter shade for hover effect */
 }
 
+/* Remove margin-left from SVGs since there's no text */
 .badge-button svg {
-  margin-left: 8px; /* Adds space between the text and icon */
+  margin: 0; /* Eliminates any unintended spacing */
+  width: 24px; /* Adjust icon size as needed */
+  height: 24px; /* Adjust icon size as needed */
 }
 
+/* Tooltip container */
+.button-with-tooltip {
+  position: relative;
+  display: inline-block;
+}
 
+/* Tooltip text */
+.tooltip-text {
+  visibility: hidden;
+  width: max-content;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+/* Show the tooltip text when hovering over the container */
+.button-with-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Additional styling for .keypair-actions to align buttons */
+.keypair-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+/* Centered icon class (optional if not needed) */
+.centered-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

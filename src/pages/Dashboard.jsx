@@ -25,6 +25,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import UploadIcon from '@mui/icons-material/Upload';
 import React, { useRef, useState, useEffect, useContext } from 'react';
 import Lottie from 'react-lottie';
 import versionData from '../data/version.json';
@@ -47,6 +48,9 @@ function Dashboard() {
         setSelectedKeyPair,
         setIsAuthenticated,
         deleteKeyPair,
+        appendKeyPairs, 
+        alert, // For alert modal
+        setAlert, // For alert modal
     } = useContext(GlobalContext);
 
     const [tabId, setTabId] = useState(null);
@@ -64,16 +68,17 @@ function Dashboard() {
     const [error, setError] = useState('');
     const [jsonFileName, setJsonFileName] = useState('');
     const fileInputRef = useRef(null);
+    const keyPairFileInputRef = useRef(null);
     const navigate = useNavigate();
 
-    // New state variables for transaction data and handling
+    // State variables for transaction data and handling
     const [transactionData, setTransactionData] = useState(null);
     const [transactionError, setTransactionError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successResponse, setSuccessResponse] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // New state for copying transaction ID
+    // State for copying transaction ID
     const [isIdCopied, setIsIdCopied] = useState(false);
 
     const defaultOptions = {
@@ -225,6 +230,7 @@ function Dashboard() {
     const addNet = () => {
         if (!newNetName.trim() || !customUrl.trim()) {
         setError('Both fields are required.');
+        setAlert({ isOpen: true, message: 'Both Net Name and GraphQL URL are required.' });
         return;
         }
         setError('');
@@ -245,6 +251,7 @@ function Dashboard() {
 
     const toggleConnection = () => {
         if (!publicKey || !privateKey) {
+        setAlert({ isOpen: true, message: 'Public or Private key is missing.' });
         console.error('Public or Private key is missing');
         return;
         }
@@ -363,7 +370,7 @@ function Dashboard() {
                 setSelectedKeyPairIndex(0);
                 setSelectedKeyPair(0);
             });
-    
+
             // Close the delete confirmation modal
             setShowDeleteModal(false);
         }
@@ -383,6 +390,7 @@ function Dashboard() {
             setIsCopied(false);
         }, 1500);
         } catch (err) {
+        setAlert({ isOpen: true, message: 'Unable to copy text.' });
         console.error('Unable to copy text: ', err);
         }
     };
@@ -433,11 +441,13 @@ function Dashboard() {
             } else {
                 setTransactionData(null);
                 setTransactionError('Invalid JSON format: Missing required fields.');
+                setAlert({ isOpen: true, message: 'Invalid JSON format: Missing required fields.' });
             }
             } catch (err) {
             console.error('Error parsing JSON:', err);
             setTransactionData(null);
             setTransactionError('Invalid JSON format.');
+            setAlert({ isOpen: true, message: 'Invalid JSON format.' });
             }
         };
         reader.readAsText(file);
@@ -445,6 +455,39 @@ function Dashboard() {
         setJsonFileName(''); // Clear if the file is not JSON
         setTransactionData(null);
         setTransactionError('Please upload a JSON file.');
+        setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
+        }
+    };
+
+    // Function to handle file upload for key pairs
+    const handleKeyPairFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const uploadedKeyPairs = JSON.parse(event.target.result);
+
+                    // Ensure the uploaded data is either an array or an object
+                    if (Array.isArray(uploadedKeyPairs)) {
+                        appendKeyPairs(uploadedKeyPairs);
+                        // After appending, the context sets the selectedKeyPairIndex to the last one
+                    } else if (uploadedKeyPairs.publicKey && uploadedKeyPairs.privateKey) {
+                        appendKeyPairs([uploadedKeyPairs]); // Wrap single key pair into an array
+                        // After appending, the context sets the selectedKeyPairIndex to the last one
+                    } else {
+                        console.error('Invalid JSON format for key pairs.');
+                        setAlert({ isOpen: true, message: 'Invalid JSON format for key pairs.' });
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    setAlert({ isOpen: true, message: 'Error parsing JSON file.' });
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            console.error('Please upload a valid JSON file.');
+            setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
         }
     };
 
@@ -476,11 +519,13 @@ function Dashboard() {
             } else {
                 setTransactionData(null);
                 setTransactionError('Invalid JSON format: Missing required fields.');
+                setAlert({ isOpen: true, message: 'Invalid JSON format: Missing required fields.' });
             }
             } catch (err) {
             console.error('Error parsing JSON:', err);
             setTransactionData(null);
             setTransactionError('Invalid JSON format.');
+            setAlert({ isOpen: true, message: 'Invalid JSON format.' });
             }
         };
         reader.readAsText(file);
@@ -488,20 +533,27 @@ function Dashboard() {
         setJsonFileName('');
         setTransactionData(null);
         setTransactionError('Please upload a JSON file.');
+        setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
         }
     };
 
     const handleFileClick = () => {
-        fileInputRef.current.click(); // Open file explorer when clicking on the field
+        fileInputRef.current.click();
+    };
+
+    const handleKeyPairFileClick = () => {
+        keyPairFileInputRef.current.click();
     };
 
     const handleSubmit = () => {
         if (!transactionData) {
         setTransactionError('No valid transaction data found.');
+        setAlert({ isOpen: true, message: 'No valid transaction data found.' });
         return;
         }
         if (!isConnected) {
         setTransactionError('Please connect to a net before submitting a transaction.');
+        setAlert({ isOpen: true, message: 'Please connect to a net before submitting a transaction.' });
         return;
         }
 
@@ -520,11 +572,12 @@ function Dashboard() {
             setTransactionData(null);
         } else {
             setTransactionError(response.error || 'Transaction submission failed.');
+            setAlert({ isOpen: true, message: response.error || 'Transaction submission failed.' });
         }
         });
     };
 
-    // New function to handle transaction ID click
+    // Function to handle transaction ID click
     const handleIdClick = () => {
         try {
         const transactionId = (successResponse && successResponse.postTransaction && successResponse.postTransaction.id) || '';
@@ -539,11 +592,12 @@ function Dashboard() {
             setIsIdCopied(false);
         }, 1500);
         } catch (err) {
+        setAlert({ isOpen: true, message: 'Unable to copy transaction ID.' });
         console.error('Unable to copy text: ', err);
         }
     };
 
-    // **New function to handle favicon load error**
+    // Function to handle favicon load error
     const handleFaviconError = () => {
         setFaviconUrl(''); // This will trigger the globe icon to display
     };
@@ -570,11 +624,15 @@ function Dashboard() {
 
     const handleGenerateKeyPair = () => {
         generateKeyPair(() => {
-          setSelectedKeyPairIndex(keyPairs.length); // Select the newly generated key pair
+          setSelectedKeyPairIndex(keyPairs.length - 1); // Select the newly generated key pair
           disconnectDueToKeysChange();
         });
     };
-      
+
+    // Function to close the alert modal
+    const closeAlertModal = () => {
+        setAlert({ isOpen: false, message: '' });
+    };
 
     return (
         <>
@@ -594,6 +652,7 @@ function Dashboard() {
                 <button
                     style={{ background: 'none', color: 'white', fontWeight: 'bolder', outline: 'none', borderStyle: 'none', cursor: 'pointer' }}
                     onClick={back}
+                    title="Logout"
                 >
                     <ExitToAppIcon />
                 </button>
@@ -623,7 +682,7 @@ function Dashboard() {
                             <tr key={net.name}>
                                 <td>{net.name}</td>
                                 <td>
-                                <button className="icon-button" onClick={() => removeNet(net.name)}>
+                                <button className="icon-button" onClick={() => removeNet(net.name)} title="Delete Net">
                                     <i className="fas fa-trash"></i>
                                 </button>
                                 </td>
@@ -644,10 +703,10 @@ function Dashboard() {
                     </div>
                     </div>
                     <div className="save-container">
-                        <button onClick={addNet} className="button-save">
+                        <button onClick={addNet} className="button-save" title="Save Net">
                             Save
                         </button>
-                        <button onClick={() => setShowModal(false)} className="button-close">
+                        <button onClick={() => setShowModal(false)} className="button-close" title="Close Modal">
                             Close
                         </button>
                     </div>
@@ -665,30 +724,47 @@ function Dashboard() {
                     {/* Extract transaction ID */}
                     {successResponse && successResponse.postTransaction && successResponse.postTransaction.id ? (
                     <div className="fieldset">
-                    <div className="radio-option radio-option--full">
-                        <input
-                        type="radio"
-                        name="transactionId"
-                        id="txId"
-                        value={successResponse.postTransaction.id}
-                        checked
-                        readOnly
-                        onClick={handleIdClick}
-                        />
-                        <label htmlFor="txId">
-                        <span>{isIdCopied ? 'Copied' : `${successResponse.postTransaction.id.slice(0, 5)}...${successResponse.postTransaction.id.slice(-5)}`}</span>
-                        </label>
-                    </div>
+                        <div className="radio-option radio-option--full">
+                            <input
+                            type="radio"
+                            name="transactionId"
+                            id="txId"
+                            value={successResponse.postTransaction.id}
+                            checked
+                            readOnly
+                            onClick={handleIdClick}
+                            />
+                            <label htmlFor="txId">
+                            <span>{isIdCopied ? 'Copied' : `${successResponse.postTransaction.id.slice(0, 5)}...${successResponse.postTransaction.id.slice(-5)}`}</span>
+                            </label>
+                        </div>
                     </div>
                     ) : (
                     <p>No transaction ID found.</p>
                     )}
-                    <button onClick={() => setShowSuccessModal(false)} className="button-close">
+                    <button onClick={() => setShowSuccessModal(false)} className="button-close" title="Close Modal">
                     Close
                     </button>
                 </div>
                 </div>
             </div>
+            )}
+
+            {/* Alert Modal */}
+            {alert.isOpen && (
+                <div className="overlay">
+                    <div className="modal">
+                        <div className="modal-content">
+                            <h2>Alert</h2>
+                            <p>{alert.message}</p>
+                            <div className="save-container">
+                                <button onClick={closeAlertModal} className="button-save" title="Okay">
+                                    Okay
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <div className="page__content page__content--with-header page__content--with-bottom-nav">
@@ -722,7 +798,7 @@ function Dashboard() {
                     <span className="status-dot"></span>
                     <span className="tooltip">{isConnected ? 'Connected' : 'Disconnected'}</span>
                 </div>
-                {selectedNet === 'Custom Net' && (
+                {selectedNet === 'Custom URL' && (
                     <input
                     type="text"
                     value={customUrl}
@@ -758,7 +834,6 @@ function Dashboard() {
                 </div>
             </div>
 
-            
 
             <h2 className="page__title">Select Account</h2>
             <div className="net">
@@ -767,7 +842,7 @@ function Dashboard() {
                         <div className="select-wrapper">
                             <select
                             value={selectedKeyPairIndex}
-                            onChange={(e) => switchKeyPair(e.target.value)}
+                            onChange={(e) => switchKeyPair(Number(e.target.value))}
                             className="select"
                             >
                             {keyPairs.map((keyPair, index) => (
@@ -780,25 +855,44 @@ function Dashboard() {
                         </div>
                         <div className="keypair-icons">
                             {keyPairs.length > 1 && (
-                            <button onClick={() => setShowDeleteModal(true)} className="icon-button">
+                            <button onClick={() => setShowDeleteModal(true)} className="icon-button" title="Delete Key Pair">
                                 <DeleteIcon style={{ color: 'white' }} />
                             </button>
                             )}
-                            <button onClick={handleCopyPublicKey} className="icon-button">
+                            <button onClick={handleCopyPublicKey} className="icon-button" title="Copy Public Key">
                                 <ContentCopyIcon style={{ color: isCopied ? 'grey' : 'white' }} />
                             </button>
-                            <button onClick={handleDownloadKeyPair} className="icon-button">
+                            <button onClick={handleDownloadKeyPair} className="icon-button" title="Download Key Pair">
                                 <DownloadIcon style={{ color: 'white' }} />
                             </button>
                         </div>
                     </div>
                     <div className="keypair-actions">
-                        <button onClick={handleGenerateKeyPair} className="badge-button">
-                            Generate <AddCircleOutlineIcon style={{ color: 'white' }} />
-                        </button>
-                        <button onClick={handleDownloadAllKeyPairs} className="badge-button">
-                            Export <SaveAltIcon style={{ color: 'white' }} />
-                        </button>
+                        <div className="button-with-tooltip">
+                            <button onClick={handleGenerateKeyPair} className="badge-button centered-icon" title="Generate Keys">
+                                <AddCircleOutlineIcon style={{ color: 'white' }} />
+                            </button>
+                            <span className="tooltip-text">Generate Keys</span>
+                        </div>
+                        <div className="button-with-tooltip">
+                            <button onClick={handleDownloadAllKeyPairs} className="badge-button centered-icon" title="Export All Keys">
+                                <SaveAltIcon style={{ color: 'white' }} />
+                            </button>
+                            <span className="tooltip-text">Export All Keys</span>
+                        </div>
+                        <div className="button-with-tooltip">
+                            <button onClick={handleKeyPairFileClick} className="badge-button centered-icon" title="Upload Keys">
+                                <UploadIcon style={{ color: 'white' }} />
+                            </button>
+                            <span className="tooltip-text">Upload Keys</span>
+                        </div>
+                        <input
+                            type="file"
+                            ref={keyPairFileInputRef}
+                            style={{ display: 'none' }}
+                            accept="application/json"
+                            onChange={handleKeyPairFileUpload}
+                        />
                     </div>
                 </div>
             </div>
@@ -810,10 +904,10 @@ function Dashboard() {
                             <h2>Are you sure?</h2>
                             <p>This action is irreversible and will delete the selected key pair forever.</p>
                             <div className="save-container">
-                                <button onClick={handleDeleteKeyPair} className="button-save">
+                                <button onClick={handleDeleteKeyPair} className="button-save" title="Delete Key Pair">
                                     Delete
                                 </button>
-                                <button onClick={() => setShowDeleteModal(false)} className="button-close">
+                                <button onClick={() => setShowDeleteModal(false)} className="button-close" title="Cancel">
                                     Cancel
                                 </button>
                             </div>
@@ -822,7 +916,7 @@ function Dashboard() {
                 </div>
             )}
 
-            <button className="button button--full button--main open-popup" onClick={handleSubmit}>
+            <button className="button button--full button--main open-popup" onClick={handleSubmit} title="Submit Transaction">
                 Submit
             </button>
             <p className="bottom-navigation" style={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px' }}>
@@ -832,6 +926,7 @@ function Dashboard() {
         </div>
         </>
     );
+
 }
 
 export default Dashboard;
