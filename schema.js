@@ -3,6 +3,7 @@ const {
   GraphQLSchema,
   GraphQLString,
   GraphQLNonNull,
+  GraphQLBoolean,
 } = require('graphql');
 const {
   createAccount,
@@ -30,10 +31,11 @@ const RootMutation = new GraphQLObjectType({
       type: GraphQLString,
       args: {
         config: { type: new GraphQLNonNull(GraphQLString) },
+	type: { type: GraphQLString },
       },
       async resolve(parent, args) {
         try {
-          const result = await createAccount(args.config);
+          const result = await createAccount(args.config, args.type);
           return result;
         } catch (error) {
           throw new Error(error);
@@ -43,12 +45,12 @@ const RootMutation = new GraphQLObjectType({
     compileContract: {
       type: GraphQLString,
       args: {
-        sourcePath: { type: new GraphQLNonNull(GraphQLString) },
-        outputPath: { type: new GraphQLNonNull(GraphQLString) },
+        source: { type: new GraphQLNonNull(GraphQLString) },
+        type: { type: GraphQLString }, 
       },
       async resolve(parent, args) {
         try {
-          const result = await compileContract(args.sourcePath, args.outputPath);
+          const result = await compileContract(args.source, args.type);
           return result;
         } catch (error) {
           throw new Error(error);
@@ -63,6 +65,7 @@ const RootMutation = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
         arguments: { type: new GraphQLNonNull(GraphQLString) },
         owner: { type: new GraphQLNonNull(GraphQLString) },
+	type: { type: GraphQLString },
       },
       async resolve(parent, args) {
         try {
@@ -71,7 +74,8 @@ const RootMutation = new GraphQLObjectType({
             args.contract,
             args.name,
             args.arguments,
-            args.owner
+            args.owner,
+	    args.type
           );
           return result;
         } catch (error) {
@@ -87,6 +91,7 @@ const RootMutation = new GraphQLObjectType({
         contract: { type: new GraphQLNonNull(GraphQLString) },
         functionName: { type: new GraphQLNonNull(GraphQLString) },
         arguments: { type: new GraphQLNonNull(GraphQLString) },
+	type: { type: GraphQLString },
       },
       async resolve(parent, args) {
         try {
@@ -95,7 +100,8 @@ const RootMutation = new GraphQLObjectType({
             args.sender,
             args.contract,
             args.functionName,
-            args.arguments
+            args.arguments,
+            args.type
           );
           return result;
         } catch (error) {
