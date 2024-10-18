@@ -4,6 +4,8 @@ import '../App.css';
 import resvaultLogo from '../assets/images/resilientdb.svg';
 import NotificationModal from './NotificationModal';
 import { v4 as uuidv4 } from 'uuid';
+import lottie from 'lottie-web';
+import animation from '../assets/images/animation.json';
 
 interface LoginProps {
   onLogin: (token: string) => void;
@@ -18,6 +20,39 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   if (!sdkRef.current) {
     sdkRef.current = new ResVaultSDK();
   }
+
+  const animationContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (animationContainer.current) {
+      const instance = lottie.loadAnimation({
+        container: animationContainer.current,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: animation,
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            instance.play();
+          } else {
+            instance.pause();
+          }
+        });
+      });
+
+      observer.observe(animationContainer.current);
+
+      return () => {
+        instance.destroy();
+        observer.disconnect();
+      };
+    } else {
+      console.error('Animation container is not defined');
+    }
+  }, []);
 
   useEffect(() => {
     const sdk = sdkRef.current;
@@ -68,7 +103,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="page-container">
         <div className="form-container">
           {/* Center-aligned heading */}
-          <h2 className="heading">ResilientDB Demo App</h2>
+          <h2 className="heading">Resilient App</h2>
+          
+          {/* Lottie Animation Container */}
+          <div ref={animationContainer} className="animation-container"></div>
 
           {/* Authenticate Button */}
           <div className="form-group text-center mb-4">
