@@ -80,7 +80,7 @@ function createOrUpdateLoginModal() {
         if (isConnected) {
           handleLoginTransactionSubmit();
         } else {
-          alert('Please connect to the website and net in ResVault extension.');
+          sendMessageToPage('error');
         }
         modal.style.display = 'none';
       }
