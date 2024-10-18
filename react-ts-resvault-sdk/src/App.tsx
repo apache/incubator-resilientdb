@@ -1,10 +1,9 @@
-// src/App.tsx
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import Login from './components/Login';
 import TransactionForm from './components/TransactionForm';
-import Loader from './components/Loader'; // Ensure Loader is imported
+import Loader from './components/Loader';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -12,7 +11,6 @@ function App() {
   const [isLoadingAfterLogin, setIsLoadingAfterLogin] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check session storage for token on mount
     const storedToken = sessionStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
@@ -21,11 +19,10 @@ function App() {
   }, []);
 
   const handleLogin = (authToken: string) => {
-    setIsLoadingAfterLogin(true); // Show loader
+    setIsLoadingAfterLogin(true);
     setToken(authToken);
     sessionStorage.setItem('token', authToken);
 
-    // After 2 seconds, show TransactionForm
     setTimeout(() => {
       setIsAuthenticated(true);
       setIsLoadingAfterLogin(false);

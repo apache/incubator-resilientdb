@@ -1,4 +1,3 @@
-// src/components/Login.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import ResVaultSDK from 'resvault-sdk';
 import '../App.css';
@@ -26,27 +25,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     const messageHandler = (event: MessageEvent) => {
       const message = event.data;
-      console.log('Received message:', message);
 
-      if (message && message.type === 'FROM_CONTENT_SCRIPT') {
-        if (message.data && message.data.success !== undefined) {
+      if (message && message.type === 'FROM_CONTENT_SCRIPT' && message.data && message.data.success !== undefined) {
           if (message.data.success) {
-            console.log('Authentication successful:', message.data);
-            // Generate a unique token using uuid
             const token = uuidv4();
             sessionStorage.setItem('token', token);
-            // Directly call onLogin without showing the success modal
             onLogin(token);
-          } else {
-            console.error('Authentication failed:', message.data.error || message.data.errors);
-            setModalTitle('Authentication Failed');
-            setModalMessage(
-              'Authentication failed: ' +
-                (message.data.error || JSON.stringify(message.data.errors))
-            );
-            setShowModal(true);
           }
-        }
+      } else if (message && message.type === 'FROM_CONTENT_SCRIPT' && message.data && message.data === "error") {
+        setModalTitle('Authentication Failed');
+        setModalMessage(
+          "Please connect ResVault to this ResilientApp and try again."
+        );
+        setShowModal(true);
       }
     };
 
@@ -64,7 +55,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         direction: 'login',
       });
     } else {
-      console.error('SDK is not initialized');
       setModalTitle('Error');
       setModalMessage('SDK is not initialized.');
       setShowModal(true);

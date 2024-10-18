@@ -1,4 +1,3 @@
-// src/components/TransactionForm.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import ResVaultSDK from 'resvault-sdk';
 import '../App.css';
@@ -29,15 +28,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
 
     const messageHandler = (event: MessageEvent) => {
       const message = event.data;
-      console.log('Received message:', message);
 
       if (message && message.type === 'FROM_CONTENT_SCRIPT' && message.data && message.data.success !== undefined) {
         if (message.data.success) {
-          console.log('Transaction submitted successfully:', message.data);
           setModalTitle('Success');
           setModalMessage('Transaction successful! ID: ' + message.data.data.postTransaction.id);
         } else {
-          console.error('Transaction submission failed:', message.data.error || message.data.errors);
           setModalTitle('Transaction Failed');
           setModalMessage('Transaction failed: ' + (message.data.error || JSON.stringify(message.data.errors)));
         }
@@ -83,7 +79,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
         recipient: recipient,
       });
     } else {
-      console.error('SDK is not initialized');
       setModalTitle('Error');
       setModalMessage('SDK is not initialized.');
       setShowModal(true);

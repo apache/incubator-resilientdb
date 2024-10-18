@@ -1,41 +1,35 @@
-/* src/App.css */
-
-/* Full-page background */
 .page-container {
-  background-image: url('assets/images/bg.svg'); /* Reference the SVG from the public folder */
-  background-size: cover; /* Ensure the background image covers the entire area */
-  background-position: center; /* Center the background image */
-  background-repeat: no-repeat; /* Prevent background image from repeating */
-  min-height: 100vh; /* Ensures full viewport height */
+  background-image: url('assets/images/bg.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
 }
 
-/* Center-aligned heading */
 .heading {
-  color: #f8f9fa; /* Light gray/white color for heading */
+  color: #f8f9fa;
   text-align: center;
   margin-bottom: 20px;
 }
 
-/* Modal-like form container */
 .form-container {
-  background-color: rgba(26, 26, 46, 0.9); /* Semi-transparent dark background */
+  background-color: rgba(26, 26, 46, 0.9);
   padding: 30px;
   border-radius: 8px;
-  border: 1px solid #4e4e68; /* Border for modal-like form */
+  border: 1px solid #4e4e68;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Input fields */
 .form-control {
-  background-color: #1a1a2e; /* Darker input background */
-  color: #ffffff; /* White text color */
-  border-color: #4e4e68; /* Light border color */
+  background-color: #1a1a2e;
+  color: #ffffff;
+  border-color: #4e4e68;
   padding: 10px;
   border-radius: 5px;
   width: 100%;
@@ -43,12 +37,10 @@
   margin-bottom: 15px;
 }
 
-/* Placeholder styling */
 .form-control::placeholder {
-  color: #b0b0b0; /* Light gray for placeholder */
+  color: #b0b0b0;
 }
 
-/* Buttons */
 .button {
   background-color: #4e4e68;
   border-color: #4e4e68;
@@ -56,82 +48,75 @@
   padding: 10px;
   border-radius: 5px;
   cursor: pointer;
-  width: 100%; /* Same width as the input fields */
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Button with an icon */
 .button img {
   margin-right: 10px;
   height: 20px;
   width: 20px;
 }
 
-/* Spacing between buttons */
 .button-group {
   margin-top: 20px;
 }
 
-/* Label for Sign In */
 .signin-label {
-  color: #f8f9fa; /* Matching the theme's light text color */
+  color: #f8f9fa;
   font-size: 18px;
   margin-bottom: 10px;
   display: block;
-  text-align: center; /* Center the label */
+  text-align: center;
 }
 
-/* OAuth button styling */
 .oauth-button {
-  background-color: #4e4e68; /* Match theme background color */
-  color: #ffffff; /* White text color to match the theme */
-  border: 1px solid #4e4e68; /* Matching the theme border */
+  background-color: #4e4e68;
+  color: #ffffff;
+  border: 1px solid #4e4e68;
   border-radius: 4px;
   padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative; /* Set relative positioning to contain the absolute vertical bar */
-  height: 40px; /* Fixed height for the button */
+  position: relative;
+  height: 40px;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Light shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
 }
 
 .oauth-button:hover {
-  background-color: #5e5e7f; /* Slightly lighter on hover */
+  background-color: #5e5e7f;
 }
 
 .oauth-logo {
-  height: 24px; /* Smaller logo height */
-  width: 24px; /* Smaller logo width */
+  height: 24px;
+  width: 24px;
   margin-right: 8px;
 }
 
-/* Full-height vertical divider line */
 .logoBox {
-  position: relative; /* Relative to button for absolute positioning */
+  position: relative;
 }
 
 .oauth-text {
-  font-size: 14px; /* Smaller text size */
-  font-weight: normal; /* Make the text not bold */
+  font-size: 14px;
+  font-weight: normal;
   display: flex;
-  align-items: center; /* Center the text vertically */
+  align-items: center;
 }
 
-/* Center the button within the form group */
 .form-group {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center align both the label and button */
+  align-items: center;
 }
 
-/* Logout Button */
 .logout-button {
-  background-color: #dc3545; /* Bootstrap's danger color */
+  background-color: #dc3545;
   border-color: #dc3545;
   color: #ffffff;
   padding: 8px 12px;
@@ -141,10 +126,9 @@
 }
 
 .logout-button:hover {
-  background-color: #c82333; /* Darker red on hover */
+  background-color: #c82333;
 }
 
-/* Loader Overlay */
 .loader-overlay {
   position: fixed;
   top: 0;
@@ -155,14 +139,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050; /* Higher than Bootstrap modals */
+  z-index: 1050;
 }
 
-/* Custom Modal Styles for Dark Theme */
 .custom-modal .modal-content {
-  background-color: rgba(26, 26, 46, 0.95); /* Dark background */
-  color: #f8f9fa; /* Light text color */
-  border: 1px solid #4e4e68; /* Matching border color */
+  background-color: rgba(26, 26, 46, 0.95);
+  color: #f8f9fa;
+  border: 1px solid #4e4e68;
 }
 
 .custom-modal-header {
@@ -173,14 +156,12 @@
   border-top: 1px solid #4e4e68;
 }
 
-/* Ensure the modal body text wraps and long words break */
 .custom-modal-body p {
   word-wrap: break-word;
   word-break: break-all;
   white-space: pre-wrap;
 }
 
-/* Optional: Adjust modal size if needed */
 .custom-modal .modal-dialog {
-  max-width: 600px; /* Increase if necessary */
+  max-width: 600px;
 }
