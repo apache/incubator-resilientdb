@@ -42,6 +42,12 @@ nvm install node
 sudo npm install -g
 npm install commander
 
+# Install latest node
+sudo npm install -g n
+sudo n latest
+hash -r
+node --version
+
 # Add Ethereum repository and install solc
 sudo add-apt-repository -y ppa:ethereum/ethereum
 sudo apt-get update
