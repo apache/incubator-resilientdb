@@ -11,6 +11,8 @@ This repository provides a GraphQL API that allows users to interact with smart 
 - [GraphQL API](#graphql-api)
   - [Mutations](#mutations)
 - [Sample Mutations](#sample-mutations)
+	- [Using Type “path”](#using-type-path)
+	- [Using Type “data”](#using-type-data)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -26,7 +28,13 @@ Before you begin, ensure you have the following prerequisites:
    npm install -g rescontract-cli
    ```
 
-3.  **Node.js (version >= 14)**:  Download and install Node.js
+3.  **Node.js (version >= 15.6.0)**:  Download and install Node.js version 15.6.0 or higher, as the application uses crypto.randomUUID() which was introduced in Node.js v15.6.0.
+
+	```bash
+	# You can check your Node.js version with:
+	node -v
+	```
+
 
 **The prerequisites listed above can be installed using the `INSTALL.sh` script:**
 
@@ -51,7 +59,7 @@ To set up the project, follow these steps:
     ```bash
 	 npm install
 	```
-    
+
 ## Configuration
 
 Ensure that the  `ResContract CLI`  is properly configured. You need to set the  `ResDB_Home`  environment variable or provide a  `config.yaml`  file as required by the CLI.
@@ -82,22 +90,23 @@ Creates a new account using the specified configuration file.
 
 **Arguments**:
 
--   `config`  (String!): Path to the configuration file.
+-   `config`  (String!): Configuration data or path to the configuration file.
+-   `type`  (String): Optional. Specifies whether config is data or a file path. Accepts "data" or "path". Defaults to "path".
 
 **Returns**: String - Address of the newly created account or an error message.
 
 #### `compileContract`
 
-Compiles a smart contract from the specified source path and outputs the compiled contract to the specified output path.
+Compiles a smart contract from the specified source.
 
 **Type**: Mutation
 
 **Arguments**:
 
--   `sourcePath`  (String!): Path to the source file of the smart contract.
--   `outputPath`  (String!): Path to the output file for the compiled contract.
+-   `source`  (String!): Solidity code or path to the source file of the smart contract.
+-   `type`  (String): Optional. Specifies whether config is data or a file path. Accepts "data" or "path". Defaults to "path".
 
-**Returns**: String - Success message or an error message.
+**Returns**: String - Name of the compiled contract JSON file or an error message.
 
 #### `deployContract`
 
@@ -107,11 +116,12 @@ Deploys a smart contract using the specified configuration, contract file, contr
 
 **Arguments**:
 
--   `config`  (String!): Path to the configuration file.
+-   `config`  (String!): Configuration data or path to the configuration file.
 -   `contract`  (String!): Path to the contract JSON file.
 -   `name`  (String!): Name of the contract (include the full path and contract name).
 -   `arguments`  (String!): Constructor arguments for the contract (comma-separated).
 -   `owner`  (String!): Owner address.
+-   `type`  (String): Optional. Specifies whether config is data or a file path. Accepts "data" or "path". Defaults to "path".
 
 **Returns**: String - Details of the deployed contract or an error message.
 
@@ -123,111 +133,208 @@ Executes a function of a deployed smart contract.
 
 **Arguments**:
 
--   `config`  (String!): Path to the configuration file.
+-   `config`  (String!): Configuration data or path to the configuration file.
 -   `sender`  (String!): Address of the sender.
 -   `contract`  (String!): Address of the deployed contract.
 -   `functionName`  (String!): Name of the function to execute (include parameter types).
 -   `arguments`  (String!): Arguments for the function (comma-separated).
+-   `type`  (String): Optional. Specifies whether config is data or a file path. Accepts "data" or "path". Defaults to "path".
 
 **Returns**: String - Result of the function execution or an error message.
 
 ## Sample Mutations
 
-Here are some sample mutations you can run:
+Below are sample mutations demonstrating how to use the API with both "path" and "data" types.
 
-### Create Account
+### Using type `path` 
+
+The `type` option defaults to "path" and doesn't have to be explicitly set. 
+
+1. **Create Account**
 
 ```graphql
 mutation {
-  createAccount(config: "../path/to/service.config")
+  createAccount(config: "../incubator-resilientdb/service/tools/config/interface/service.config")
 }
-``` 
+```
 
-**Sample Response**:
-
+**Sample Response:**
 ```json
 {
   "data": {
-    "createAccount": "0x3b706424119e09dcaad4acf21b10af3b33cde350"
+    "createAccount": "0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8"
   }
 }
 ```
-**Explanation**: This mutation creates a new account using the specified configuration file. The response contains the address of the newly created account.
 
-### Compile Contract
+**Explanation**: Creates a new account using the configuration file located at the specified path.
 
+2.  **Compile Contract**
 ```graphql
 mutation {
   compileContract(
-    sourcePath: "/path/to/token.sol",
-    outputPath: "output.json"
+    source: "token.sol"
   )
 }
 ```
-**Sample Response**:
 
+**Sample Response:**
 ```json
 {
   "data": {
-    "compileContract": "Compiled successfully to output.json"
+    "compileContract": "Compiled successfully to /users/yourusername/smart-contracts-graphql/compiled_contracts/MyContract.json"
   }
 }
-``` 
+```
+**Explanation**: Compiles the smart contract located at token.sol and saves the compiled JSON to the compiled_contracts directory.
 
-**Explanation**: This mutation compiles the smart contract located at  `/path/to/token.sol`and outputs the compiled contract to  `output.json`.
-
-### Deploy Contract
-
+3.  **Deploy Contract**
 ```graphql
 mutation {
   deployContract(
-    config: "../path/to/service.config",
-    contract: "output.json",
+    config: "../incubator-resilientdb/service/tools/config/interface/service.config",
+    contract: "compiled_contracts/MyContract.json",
     name: "token.sol:Token",
     arguments: "1000",
-    owner: "0x3b706424119e09dcaad4acf21b10af3b33cde350"
+    owner: "0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8"
   )
 }
-``` 
+```
 
-**Sample Response**:
-
+**Sample Response:**
 ```json
 {
   "data": {
-    "deployContract": "owner_address: \"0x3b706424119e09dcaad4acf21b10af3b33cde350\"\ncontract_address: \"0xc975ab41e0c2042a0229925a2f4f544747fd66cd\"\ncontract_name: \"token.sol:Token\""
+    "deployContract": "owner_address: 0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8\ncontract_address: 0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1\ncontract_name: token.sol:Token"
   }
 }
-``` 
+```
+**Explanation**: Deploys the compiled contract using the specified parameters.
 
-**Explanation**: This mutation deploys the compiled contract using the specified parameters. The response includes the owner address, contract address, and contract name.
-
-### Execute Contract
-
+4.  **Execute Contract**
 ```graphql
 mutation {
   executeContract(
-    config: "../path/to/service.config",
-    sender: "0x3b706424119e09dcaad4acf21b10af3b33cde350",
-    contract: "0xc975ab41e0c2042a0229925a2f4f544747fd66cd",
+    config: "../incubator-resilientdb/service/tools/config/interface/service.config",
+    sender: "0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8",
+    contract: "0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1",
     functionName: "transfer(address,uint256)",
-    arguments: "0x4847155cbb6f2219ba9b7df50be11a1c7f23f829,100"
+    arguments: "0x1be8e78d765a2e63339fc99a66320db73158a35a,100"
   )
-} 
+}
 ```
 
-**Sample Response**:
-
+**Sample Response:**
 ```json
 {
   "data": {
-    "executeContract": "Function executed successfully."
+    "executeContract": "result: 0x0000000000000000000000000000000000000000000000000000000000000001"
   }
 }
-``` 
+```
+**Explanation**: Executes the transfer function of the deployed contract, transferring 100 tokens to the specified address.
 
-**Explanation**: This mutation executes the  `transfer`  function of the deployed contract, transferring  `100`  tokens to  `0x4847155cbb6f2219ba9b7df50be11a1c7f23f829`.
+
+### Using type `data` 
+
+In this mode, the API accepts configuration data and Solidity code directly, without needing file paths.
+
+1. **Create Account**
+
+```graphql
+mutation {
+  createAccount(
+    config: "5 127.0.0.1 10005",
+    type: "data"
+  )
+}
+```
+
+**Sample Response:**
+```json
+{
+  "data": {
+    "createAccount": "0x255d051758e95ed4abb2cdc69bb454110e827441"
+  }
+}
+```
+
+**Explanation**: Creates a new account using the provided configuration data.
+
+2.  **Compile Contract**
+```graphql
+mutation {
+  compileContract(
+    source: """
+    pragma solidity ^0.8.0;
+		...
+		...
+    }
+    """,
+    type: "data"
+  )
+}
+```
+
+**Sample Response:**
+```json
+{
+  "data": {
+    "compileContract": "contract-20f42b42-f56f-45e8-8264-33cf8d93f8be.json"
+  }
+}
+```
+**Explanation**: Compiles the provided Solidity code and returns the name of the compiled contract JSON file stored in the compiled_contracts directory.
+
+3.  **Deploy Contract**
+```graphql
+mutation {
+  deployContract(
+    config: "5 127.0.0.1 10005",
+    contract: "contract-20f42b42-f56f-45e8-8264-33cf8d93f8be.json",
+    name: "Token",
+    arguments: "1000",
+    owner: "0x255d051758e95ed4abb2cdc69bb454110e827441",
+    type: "data"
+  )
+}
+```
+
+**Sample Response:**
+```json
+{
+  "data": {
+    "deployContract": "owner_address: 0x255d051758e95ed4abb2cdc69bb454110e827441\ncontract_address: 0xb616e4c564b03fe336333758739a7d7ee0227d5d\ncontract_name: Token"
+  }
+}
+```
+**Explanation**: Deploys the compiled contract using the configuration data and the compiled contract JSON file name returned from the compileContract mutation.
+
+4.  **Execute Contract**
+```graphql
+mutation {
+  executeContract(
+    config: "5 127.0.0.1 10005",
+    sender: "0x255d051758e95ed4abb2cdc69bb454110e827441",
+    contract: "0xb616e4c564b03fe336333758739a7d7ee0227d5d",
+    functionName: "transfer(address,uint256)",
+    arguments: "0x213ddc8770e93ea141e1fc673e017e97eadc6b96,100",
+    type: "data"
+  )
+}
+```
+
+**Sample Response:**
+```json
+{
+  "data": {
+    "executeContract": "result: 0x0000000000000000000000000000000000000000000000000000000000000001"
+  }
+}
+```
+**Explanation**: Executes the transfer function of the deployed contract, transferring 100 tokens to the specified address, using configuration data.
 
 ## License
 
 This project is licensed under the Apache License - see the  [LICENSE](LICENSE)  file for details.
+
