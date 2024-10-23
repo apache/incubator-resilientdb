@@ -1,35 +1,38 @@
-name: Publish to npm
+name: Node.js Package Publish
 
 on:
   push:
     branches:
-      - master
+      - main
+  release:
+    types: [published]
 
 jobs:
-  publish:
-    name: Publish to npm
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Checkout the code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      # Set up Node.js environment
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '16.20.2'
           registry-url: 'https://registry.npmjs.org/'
 
+      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      - name: Build the package
+      # Build the project
+      - name: Run build
         run: npm run build
 
+      # Publish to npm
       - name: Publish to npm
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Clean up npm cache
-        run: npm cache clean --force
