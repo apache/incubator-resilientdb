@@ -95,7 +95,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
     <>
       <div className="page-container">
         <div className="form-container">
-          {/* Header with Logout Button */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="heading">Submit Transaction</h2>
             <button type="button" className="btn btn-danger logout-button" onClick={handleLogout}>
@@ -103,9 +102,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
             </button>
           </div>
 
-          {/* Transaction Form */}
           <form onSubmit={handleSubmit}>
-            {/* Input for Amount */}
             <div className="form-group mb-3">
               <input
                 type="text"
@@ -116,7 +113,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
               />
             </div>
 
-            {/* Input for Data */}
             <div className="form-group mb-3">
               <input
                 type="text"
@@ -127,7 +123,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
               />
             </div>
 
-            {/* Input for Recipient Address */}
             <div className="form-group mb-4">
               <input
                 type="text"
@@ -138,7 +133,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
               />
             </div>
 
-            {/* Submit Button */}
             <div className="form-group text-center">
               <button type="submit" className="btn btn-primary button">
                 Submit Transaction
@@ -148,7 +142,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onLogout, token }) =>
         </div>
       </div>
 
-      {/* Notification Modal */}
       <NotificationModal
         show={showModal}
         title={modalTitle}

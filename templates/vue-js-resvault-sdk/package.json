@@ -1,0 +1,26 @@
+{
+  "name": "vue-js-resvault-sdk",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.3",
+    "bootstrap-vue-3": "^0.5.1",
+    "lottie-web": "^5.12.2",
+    "resvault-sdk": "^1.0.1",
+    "uuid": "^10.0.0",
+    "vue": "^3.5.10",
+    "vue-router": "^4.0.13",
+    "vuex": "^4.0.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "vite": "^5.4.8"
+  }
+}

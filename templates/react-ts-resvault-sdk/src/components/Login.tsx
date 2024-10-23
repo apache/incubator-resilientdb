@@ -102,13 +102,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     <>
       <div className="page-container">
         <div className="form-container">
-          {/* Center-aligned heading */}
           <h2 className="heading">Resilient App</h2>
           
-          {/* Lottie Animation Container */}
           <div ref={animationContainer} className="animation-container"></div>
 
-          {/* Authenticate Button */}
           <div className="form-group text-center mb-4">
             <label className="signin-label">Sign In Via</label>
             <button
@@ -125,7 +122,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
       </div>
 
-      {/* Notification Modal for Errors */}
       <NotificationModal
         show={showModal}
         title={modalTitle}
