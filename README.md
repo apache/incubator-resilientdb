@@ -74,7 +74,7 @@ Start the server using the following command:
 npm start
 ```
 
-The server will start running on port  `4000`. You can access the GraphQL API at  `http://localhost:4000/graphql`.
+The server will start running on port  `8400`. You can access the GraphQL API at  `http://localhost:8400/graphql`.
 
 ## GraphQL API
 
