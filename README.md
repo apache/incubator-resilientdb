@@ -50,7 +50,7 @@ To set up the project, follow these steps:
 1.  **Clone the repository**:
     
 	```bash
-    git clone https://github.com/yourusername/smart-contracts-graphql.git
+    git clone https://github.com/ResilientEcosystem/smart-contracts-graphql.git
     cd smart-contracts-graphql
     ```
     
