@@ -27,5 +27,13 @@ jobs:
     - name: Install npm dependencies
       run: npm install
 
+    - name: Start GraphQL server
+      run: npm start &
+      env:
+        NODE_ENV: test
+
+    - name: Wait for GraphQL server to be ready
+      run: sleep 10
+
     - name: Run tests
       run: npm test
