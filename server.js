@@ -1,7 +1,7 @@
-const express = require('express');
-const { graphqlHTTP } = require('express-graphql');
-const schema = require('./schema');
-const logger = require('./logger');
+import express from 'express';
+import { graphqlHTTP } from 'express-graphql';
+import schema from './schema.js';
+import logger from './logger.js';
 
 const app = express();
 
@@ -24,4 +24,3 @@ const PORT = process.env.PORT || 8400;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}...`);
 });
-

@@ -1,5 +1,5 @@
-const axios = require('axios');
-const { expect } = require('chai');
+import axios from 'axios';
+import { expect } from 'chai';
 
 describe('GraphQL Server Reachability Test', function () {
   this.timeout(5000); // Set timeout to 5 seconds for the test

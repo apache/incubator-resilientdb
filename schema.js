@@ -1,16 +1,11 @@
-const {
+import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
   GraphQLNonNull,
   GraphQLBoolean,
-} = require('graphql');
-const {
-  createAccount,
-  compileContract,
-  deployContract,
-  executeContract,
-} = require('./cli-functions');
+} from 'graphql';
+import { createAccount, compileContract, deployContract, executeContract } from './cli-functions.js';
 
 const RootQuery = new GraphQLObjectType({
   name: 'Query',
@@ -112,8 +107,7 @@ const RootMutation = new GraphQLObjectType({
   },
 });
 
-module.exports = new GraphQLSchema({
+export default new GraphQLSchema({
   query: RootQuery,
   mutation: RootMutation,
 });
-
