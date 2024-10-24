@@ -1,11 +1,11 @@
-const fs = require('fs'); 
-const os = require('os'); 
-const crypto = require('crypto');
-const { execFile } = require('child_process');
-const path = require('path');
-const logger = require('./logger');
+import fs from 'fs';
+import os from 'os';
+import crypto from 'crypto';
+import { execFile } from 'child_process';
+import path from 'path';
+import logger from './logger.js';
 
-const compiledContractsDir = path.join(__dirname, 'compiled_contracts');
+const compiledContractsDir = path.join(new URL('.', import.meta.url).pathname, 'compiled_contracts');
 
 if (!fs.existsSync(compiledContractsDir)) {
   fs.mkdirSync(compiledContractsDir, { recursive: true });
@@ -44,14 +44,12 @@ function handleExecFile(command, args, options = {}) {
   });
 }
 
-async function createAccount(config, type = 'path') {
+export async function createAccount(config, type = 'path') {
   let configPath = config;
 
   if (type === 'data') {
     const filename = path.join(os.tmpdir(), `config-${crypto.randomUUID()}.tmp`);
-
     fs.writeFileSync(filename, config);
-
     configPath = filename;
   }
 
@@ -60,11 +58,9 @@ async function createAccount(config, type = 'path') {
 
   try {
     const result = await handleExecFile(command, args);
-
     if (type === 'data') {
       fs.unlinkSync(configPath);
     }
-
     return result;
   } catch (error) {
     if (type === 'data' && fs.existsSync(configPath)) {
@@ -74,7 +70,7 @@ async function createAccount(config, type = 'path') {
   }
 }
 
-async function compileContract(source, type = 'path') {
+export async function compileContract(source, type = 'path') {
   let sourcePath = source;
   let outputPath = '';
 
@@ -82,9 +78,7 @@ async function compileContract(source, type = 'path') {
     const uniqueId = crypto.randomUUID();
     const sourceFilename = path.join(os.tmpdir(), `contract-${uniqueId}.sol`);
     outputPath = path.join(compiledContractsDir, `contract-${uniqueId}.json`);
-
     fs.writeFileSync(sourceFilename, source);
-
     sourcePath = sourceFilename;
   } else {
     outputPath = path.join(compiledContractsDir, 'MyContract.json'); 
@@ -95,11 +89,9 @@ async function compileContract(source, type = 'path') {
 
   try {
     const result = await handleExecFile(command, args);
-
     if (type === 'data') {
       return path.basename(outputPath);
     }
-
     return result;
   } catch (error) {
     throw error;
@@ -110,7 +102,7 @@ async function compileContract(source, type = 'path') {
   }
 }
 
-async function deployContract(config, contract, name, args, owner, type = 'path') {
+export async function deployContract(config, contract, name, args, owner, type = 'path') {
   let configPath = config;
   let contractPath = contract;
 
@@ -118,7 +110,6 @@ async function deployContract(config, contract, name, args, owner, type = 'path'
     const configFilename = path.join(os.tmpdir(), `config-${crypto.randomUUID()}.tmp`);
     fs.writeFileSync(configFilename, config);
     configPath = configFilename;
-
     contractPath = path.join(compiledContractsDir, contract);
   }
 
@@ -151,7 +142,7 @@ async function deployContract(config, contract, name, args, owner, type = 'path'
   }
 }
 
-async function executeContract(config, sender, contract, functionName, args, type = 'path') {
+export async function executeContract(config, sender, contract, functionName, args, type = 'path') {
   let configPath = config;
 
   if (type === 'data') {
@@ -188,11 +179,3 @@ async function executeContract(config, sender, contract, functionName, args, typ
     }
   }
 }
-
-module.exports = {
-  createAccount,
-  compileContract,
-  deployContract,
-  executeContract,
-};
-

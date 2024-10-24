@@ -1,11 +1,13 @@
-const fs = require('fs-extra');
-const { createLogger, format, transports } = require('winston');
-const path = require('path');
-const os = require('os');
+import fs from 'fs-extra';
+import { createLogger, format, transports } from 'winston';
+import path from 'path';
+import os from 'os';
 
+// Define the log directory
 const logDir = path.join(os.homedir(), '.smart-contracts-graphql-logs');
 fs.ensureDirSync(logDir);
 
+// Create the logger with Winston
 const logger = createLogger({
   level: 'info',
   format: format.combine(
@@ -23,5 +25,4 @@ const logger = createLogger({
   ]
 });
 
-module.exports = logger;
-
+export default logger;

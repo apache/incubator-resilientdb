@@ -26,6 +26,7 @@
   "engines": {
     "node": ">=14"
   },
+  "type": "module",
   "devDependencies": {
     "axios": "^1.7.7",
     "chai": "^5.1.2",
