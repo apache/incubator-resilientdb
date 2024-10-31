@@ -1,6 +1,6 @@
 {
   "name": "resilient-node-cache",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "TypeScript library for syncing ResilientDB data via WebSocket and HTTP with seamless reconnection.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
