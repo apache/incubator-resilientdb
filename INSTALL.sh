@@ -17,6 +17,9 @@
 # under the License.
 #
 
+#!/bin/bash
+
+
 sudo apt update
 sudo apt install apt-transport-https curl gnupg -y
 sudo apt-get install protobuf-compiler -y
