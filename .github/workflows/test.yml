@@ -1,0 +1,40 @@
+name: Test ResContract CLI
+
+on:
+  push:
+    branches:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+
+      - name: Install ResilientDB
+        run: |
+          # Clone and install ResilientDB
+          git clone https://github.com/apache/incubator-resilientdb.git ~/incubator-resilientdb
+          cd ~/incubator-resilientdb
+          ./INSTALL.sh
+          ./service/tools/contract/service_tools/start_contract_service.sh
+          bazel build service/tools/contract/api_tools/contract_tools
+
+      - name: Set ResDB_Home Environment Variable
+        run: echo "ResDB_Home=~/incubator-resilientdb" >> $GITHUB_ENV
+
+      - name: Install ResContract CLI
+        run: npm install -g rescontract-cli
+
+      - name: Run CLI Tests
+        env:
+          ResDB_Home: ${{ env.ResDB_Home }}
+        run: |
+          echo "Testing create command"
+          rescontract create --config ~/incubator-resilientdb/service/tools/config/interface/service.config
