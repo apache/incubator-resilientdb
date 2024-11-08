@@ -140,6 +140,8 @@ else
     exit 1
 fi
 
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config & 
+
 echo "ResilientDB-GraphQL server has been built."
 
 # Deactivate virtual environment
@@ -174,7 +176,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Configure config.yaml with the Crow endpoint
-CROW_ENDPOINT="http://localhost:18000"
+CROW_ENDPOINT="http://0.0.0.0:18000"
 echo "Using Crow endpoint: $CROW_ENDPOINT"
 
 # Replace <CROW_ENDPOINT> in config.yaml with the actual endpoint
