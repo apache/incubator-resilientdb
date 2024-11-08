@@ -43,8 +43,18 @@ jobs:
         env:
           ResDB_Home: ${{ github.workspace }}/incubator-resilientdb
 
-      - name: Set ResDB_Home Environment Variable
-        run: echo "ResDB_Home=${{ github.workspace }}/incubator-resilientdb" >> $GITHUB_ENV
+      - name: Set ResDB_Home and Locate Config Path
+        run: |
+          export ResDB_Home="$HOME/incubator-resilientdb"
+          echo "ResDB_Home=$ResDB_Home" >> $GITHUB_ENV
+
+          # Locate the actual path of service.config
+          CONFIG_PATH=$(find "$ResDB_Home" -name "service.config" | head -n 1)
+          if [ -z "$CONFIG_PATH" ]; then
+            echo "Error: service.config not found"
+            exit 1
+          fi
+          echo "CONFIG_PATH=$CONFIG_PATH" >> $GITHUB_ENV
 
       - name: Install ResContract CLI
         run: |
@@ -63,6 +73,7 @@ jobs:
       - name: Run CLI Tests
         env:
           ResDB_Home: ${{ env.ResDB_Home }}
+          CONFIG_PATH: ${{ env.CONFIG_PATH }}
         run: |
           echo "Testing create command"
-          rescontract create --config $ResDB_Home/service/tools/config/interface/service.config
+          rescontract create --config "$CONFIG_PATH"
