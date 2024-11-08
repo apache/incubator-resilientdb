@@ -13,6 +13,8 @@ packages = [
     { include = "resilient_python_cache" }
 ]
 
+include = ["README.md"]
+
 [tool.poetry.dependencies]
 python = "^3.8"
 motor = "^2.5.1"
