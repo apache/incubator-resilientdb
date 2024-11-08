@@ -176,14 +176,9 @@ pip install -r requirements.txt
 # Configure config.yaml
 echo "Configuring config.yaml..."
 
-# Prompt user to enter the Crow endpoint
-echo "Enter the Crow endpoint URL (e.g., http://localhost:18000):"
-read -p "Crow Endpoint URL: " CROW_ENDPOINT
-
-if [ -z "$CROW_ENDPOINT" ]; then
-    CROW_ENDPOINT="http://localhost:18000"
-    echo "Using default Crow endpoint: $CROW_ENDPOINT"
-fi
+# Set the Crow endpoint URL
+CROW_ENDPOINT="http://localhost:18000"
+echo "Using Crow endpoint: $CROW_ENDPOINT"
 
 # Replace <CROW_ENDPOINT> in config.yaml with the actual endpoint
 if [ -f "config.yaml" ]; then
