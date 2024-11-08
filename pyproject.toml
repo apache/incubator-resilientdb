@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "resilient-python-cache"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python library for syncing ResilientDB data via WebSocket and HTTP with seamless reconnection."
 authors = ["Apratim Shukla <apratimshukla6@gmail.com>"]
 license = "Apache-2.0"
 homepage = "https://github.com/ResilientEcosystem/resilient-python-cache"
 repository = "https://github.com/ResilientEcosystem/resilient-python-cache"
 keywords = ["websocket", "mongodb", "sync", "reconnection", "resilientdb"]
+readme = "README.md"
 
 packages = [
     { include = "resilient_python_cache" }
