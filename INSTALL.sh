@@ -140,6 +140,8 @@ else
     exit 1
 fi
 
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config & 
+
 echo "ResilientDB-GraphQL server has been built."
 
 # Deactivate virtual environment
@@ -173,17 +175,9 @@ echo "Installing dependencies for ResDB-ORM..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Configure config.yaml
-echo "Configuring config.yaml..."
-
-# Prompt user to enter the Crow endpoint
-echo "Enter the Crow endpoint URL (e.g., http://localhost:18000):"
-read -p "Crow Endpoint URL: " CROW_ENDPOINT
-
-if [ -z "$CROW_ENDPOINT" ]; then
-    CROW_ENDPOINT="http://localhost:18000"
-    echo "Using default Crow endpoint: $CROW_ENDPOINT"
-fi
+# Configure config.yaml with the Crow endpoint
+CROW_ENDPOINT="http://0.0.0.0:18000"
+echo "Using Crow endpoint: $CROW_ENDPOINT"
 
 # Replace <CROW_ENDPOINT> in config.yaml with the actual endpoint
 if [ -f "config.yaml" ]; then
@@ -193,6 +187,9 @@ else
     echo "Error: config.yaml file not found."
     exit 1
 fi
+
+# Install ResDB-ORM package in editable mode for testing
+pip install -e .
 
 # Verify installation
 echo "Running test script to verify installation..."
