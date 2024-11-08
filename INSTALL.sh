@@ -173,10 +173,7 @@ echo "Installing dependencies for ResDB-ORM..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Configure config.yaml
-echo "Configuring config.yaml..."
-
-# Set the Crow endpoint URL
+# Configure config.yaml with the Crow endpoint
 CROW_ENDPOINT="http://localhost:18000"
 echo "Using Crow endpoint: $CROW_ENDPOINT"
 
@@ -188,6 +185,9 @@ else
     echo "Error: config.yaml file not found."
     exit 1
 fi
+
+# Install ResDB-ORM package in editable mode for testing
+pip install -e .
 
 # Verify installation
 echo "Running test script to verify installation..."
