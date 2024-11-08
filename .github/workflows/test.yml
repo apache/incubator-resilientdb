@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-test:
@@ -13,33 +16,50 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-
-      - name: Install ResContract CLI
-        run: npm install -g rescontract-cli
-
-      - name: Install and Test ResilientDB with ResContract CLI
-        env:
-          ResDB_Home: ~/incubator-resilientdb  # Use full path expansion
+      - name: Set up Node.js and NVM
         run: |
-          # Install ResilientDB
-          echo "Cloning and installing ResilientDB..."
-          git clone https://github.com/apache/incubator-resilientdb.git ~/incubator-resilientdb
-          cd ~/incubator-resilientdb
+          sudo apt update
+          sudo apt install -y nodejs npm
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          source ~/.bashrc
+          nvm install node
+          sudo npm install -g n
+          sudo n latest
+          hash -r
+          node --version
+
+      - name: Install ResilientDB
+        run: |
+          cd $HOME
+          git clone https://github.com/apache/incubator-resilientdb.git
+          cd incubator-resilientdb
           ./INSTALL.sh
           ./service/tools/contract/service_tools/start_contract_service.sh
           bazel build service/tools/contract/api_tools/contract_tools
+          bazel build service/tools/kv/api_tools/kv_service_tools
+        env:
+          ResDB_Home: ${{ github.workspace }}/incubator-resilientdb
 
-          # Confirm build output location
-          echo "Listing build output files to confirm contract_tools location..."
-          ls -R ~/incubator-resilientdb/bazel-bin/service/tools/contract/api_tools/
+      - name: Set ResDB_Home Environment Variable
+        run: echo "ResDB_Home=${{ github.workspace }}/incubator-resilientdb" >> $GITHUB_ENV
 
-          # Set environment variable for ResDB_Home
-          echo "ResDB_Home=$HOME/incubator-resilientdb" >> $GITHUB_ENV
+      - name: Install ResContract CLI
+        run: |
+          cd $HOME
+          git clone https://github.com/ResilientEcosystem/ResContract.git
+          cd ResContract
+          sudo npm install -g
+          npm install commander
 
-          # Run CLI Tests
+      - name: Install Solidity Compiler (solc)
+        run: |
+          sudo add-apt-repository -y ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install -y solc
+
+      - name: Run CLI Tests
+        env:
+          ResDB_Home: ${{ env.ResDB_Home }}
+        run: |
           echo "Testing create command"
-          rescontract create --config ~/incubator-resilientdb/service/tools/config/interface/service.config
+          rescontract create --config $ResDB_Home/service/tools/config/interface/service.config
