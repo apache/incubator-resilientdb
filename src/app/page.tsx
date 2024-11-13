@@ -1,4 +1,4 @@
- 
+
 import Dashboard from "@/app/dashboard/page";
 import Head from "next/head";
 
