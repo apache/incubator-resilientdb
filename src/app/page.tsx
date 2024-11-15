@@ -1,18 +1,18 @@
+import { Main, Section, Container, Box } from "@/components/craft";
 
-import Dashboard from "@/app/dashboard/page";
-import Head from "next/head";
-
-export default function Home() {
+export default function Page() {
   return (
-    <>
-    <Head>
-      <title> MemView </title> 
-      <meta name = "Memview" content = "dashboard"/>
-      <meta name = "viewport" content = "width=device-width, initial-scale=1"/>
-    </Head>
-    <main>
-      <Dashboard />
-    </main>
-    </>
+    <Main>
+      <Section>
+        <Container>
+          <h1>Heading</h1>
+          <p>Content</p>
+          <Box direction="row" wrap={true} gap={4}>
+            <div>Item 1</div>
+            <div>Item 2</div>
+          </Box>
+        </Container>
+      </Section>
+    </Main>
   );
 }
