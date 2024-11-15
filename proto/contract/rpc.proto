@@ -31,6 +31,7 @@ message Request {
         CREATE_ACCOUNT = 1; // deploy contract
         DEPLOY = 2; // deploy contract
         EXECUTE = 3; // execute contract
+        ADD_ADDRESS = 4; // add address
     };
 
     CMD cmd = 1;
@@ -38,6 +39,7 @@ message Request {
     optional DeployInfo deploy_info = 3;
     optional string contract_address = 4;
     optional Params func_params = 5;
+    optional string external_address = 6;
 }
 
 

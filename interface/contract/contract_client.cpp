@@ -43,6 +43,19 @@ absl::StatusOr<Account> ContractClient::CreateAccount() {
   return response.account();
 }
 
+absl::Status ContractClient::AddExternalAddress(
+    const std::string& external_address) {
+  Request request;
+  Response response;
+  request.set_cmd(Request::ADD_ADDRESS);
+  request.set_external_address(external_address);
+  int ret = SendRequest(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("Add address failed.");
+  }
+  return absl::OkStatus();
+}
+
 absl::StatusOr<Contract> ContractClient::DeployContract(
     const std::string& caller_address, const std::string& contract_name,
     const std::string& contract_path,

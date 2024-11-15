@@ -60,6 +60,11 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     } else {
       ret = -1;
     }
+  } else if (request.cmd() == Request::ADD_ADDRESS) {  // New command handling
+    absl::Status status = AddAddress(request);
+    if (!status.ok()) {
+      ret = -1;
+    }
   }
 
   response.set_ret(ret);
@@ -78,6 +83,12 @@ absl::StatusOr<Account> ContractTransactionManager::CreateAccount() {
   Account account;
   account.set_address(address);
   return account;
+}
+
+absl::Status ContractTransactionManager::AddAddress(const Request& request) {
+  Address address = AddressManager::HexToAddress(request.external_address());
+  address_manager_->AddExternalAddress(address);
+  return absl::OkStatus();
 }
 
 absl::StatusOr<Contract> ContractTransactionManager::Deploy(
