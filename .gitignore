@@ -128,3 +128,6 @@ venv/
 .DS_store
 
 bazel-*
+
+MODULE.bazel
+MODULE.bazel.lock
