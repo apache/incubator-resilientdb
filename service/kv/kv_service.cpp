@@ -19,14 +19,18 @@
 
 #include <glog/logging.h>
 
+#include <cstdlib>
+#include <optional>
+#include <ostream>
+
 #include "chain/storage/memory_db.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
-#ifdef ENABLE_LEVELDB
+// #ifdef ENABLE_LEVELDB
 #include "chain/storage/leveldb.h"
-#endif
+// #endif
 
 using namespace resdb;
 using namespace resdb::storage;
@@ -37,13 +41,19 @@ void ShowUsage() {
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
-#ifdef ENABLE_LEVELDB
-  LOG(INFO) << "use leveldb storage.";
-  return NewResLevelDB(db_path, config_data);
-#endif
+  LOG(ERROR) << "use leveldb storage.";
+  return NewResLevelDB(db_path,
+                       std::nullopt);  // sending config_data as arg2 throws a
+                                       // type error. TODO investigate.
 
-  LOG(INFO) << "use memory storage.";
-  return NewMemoryDB();
+  // LOG(ERROR) << "use memory storage.";
+  // return NewMemoryDB();
+}
+
+void signal_handler(int signum) {
+  std::cout << "Received signal: " << signum << ", exiting cleanly..."
+            << std::endl;
+  exit(0);
 }
 
 int main(int argc, char** argv) {
@@ -51,8 +61,10 @@ int main(int argc, char** argv) {
     ShowUsage();
     exit(0);
   }
+  // signal(SIGINT, signal_handler);
   google::InitGoogleLogging(argv[0]);
-  FLAGS_minloglevel = 1;
+  // FLAGS_minloglevel = google::GLOG_INFO;
+  //  INFO level doesnt work
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];
@@ -72,7 +84,7 @@ int main(int argc, char** argv) {
   ResConfigData config_data = config->GetConfigData();
 
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
-  LOG(INFO) << "db path:" << db_path;
+  LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,

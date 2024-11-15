@@ -22,7 +22,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 bool_flag(
     name = "enable_leveldb",
-    build_setting_default = False,
+    build_setting_default = True, #TODO: test this config 
     visibility = ["//visibility:public"],
 )
 
