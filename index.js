@@ -248,9 +248,48 @@ program
     }
   });
 
+program
+  .command('add_address')
+  .description('Add an external address to the system')
+  .requiredOption('-c, --config <path>', 'Path to the config file')
+  .requiredOption('-e, --external-address <address>', 'External address to add')
+  .action(async (options) => {
+    try {
+      const configPath = options.config;
+      const externalAddress = options.externalAddress;
+      const resDBHome = await ensureResDBHome();
+      const commandPath = path.join(
+        resDBHome,
+        'bazel-bin',
+        'service',
+        'tools',
+        'contract',
+        'api_tools',
+        'contract_tools'
+      );
+
+      if (!fs.existsSync(configPath)) {
+        logger.error(`Config file not found at ${configPath}`);
+        console.error(`Error: Config file not found at ${configPath}`);
+        process.exit(1);
+      }
+
+      await handleExecFile(commandPath, [
+        'add_address',
+        '-c',
+        configPath,
+        '-e',
+        externalAddress,
+      ]);
+    } catch (error) {
+      logger.error(`Error executing add_address command: ${error.message}`);
+      console.error(`Error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
 if (!process.argv.slice(2).length) {
   program.outputHelp();
 }
 
 program.parse(process.argv);
-
