@@ -31,6 +31,7 @@ class RetrieveTransaction:
     operation: str
     metadata: typing.Optional["str"]
     asset: str
+    signerPublicKey: str
 
 @strawberry.type
 class CommitTransaction:
@@ -104,6 +105,7 @@ class Query:
             uri=data["outputs"][0]["condition"]["uri"],
             type=data["outputs"][0]["condition"]["details"]["type"],
             publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
+            signer_public_key=data["inputs"][0]["owners_before"][0] if data["inputs"],
             operation=data["operation"],
             metadata=data["metadata"],
             asset=str(data["asset"])
