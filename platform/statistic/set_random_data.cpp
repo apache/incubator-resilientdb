@@ -27,6 +27,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 std::string Exec(const char* cmd) {
@@ -64,11 +65,13 @@ int main(int argc, char** argv) {
   if (command == "test") {
     for (int i = 0; i < std::stoi(value); i++) {
       usleep(1000000);
-      std::string test =
-          "/home/jyu25/nexres/bazel-bin/example/kv_server_tools "
-          "/home/jyu25/nexres/example/kv_client_config.config set " +
-          std::to_string(std::rand() % 500) + " " +
-          std::to_string(std::rand() % 500);
+      std::stringstream ss;
+      ss << " bazel-bin/service/tools/kv/api_tools/kv_service_tools --config "
+            "service/tools/config/interface/service.config --cmd set "
+         << "--key key" << (std::rand() % 500) << " " << "--value value"
+         << (std::rand() % 500);
+
+      std::string test = ss.str();
       output = Exec(test.c_str());
       std::cout << i << " " << output << std::endl;
     }
@@ -83,4 +86,6 @@ int main(int argc, char** argv) {
       std::cout << ++count << " " << output << std::endl;
     }
   }
+
+  return 0;
 }
