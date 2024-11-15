@@ -105,7 +105,7 @@ class Query:
             uri=data["outputs"][0]["condition"]["uri"],
             type=data["outputs"][0]["condition"]["details"]["type"],
             publicKey=data["outputs"][0]["condition"]["details"]["public_key"],
-            signer_public_key=data["inputs"][0]["owners_before"][0],
+            signerPublicKey=data["inputs"][0]["owners_before"][0],
             operation=data["operation"],
             metadata=data["metadata"],
             asset=str(data["asset"])
