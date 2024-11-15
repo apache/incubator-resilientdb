@@ -5,7 +5,7 @@ import {
   GraphQLNonNull,
   GraphQLBoolean,
 } from 'graphql';
-import { createAccount, compileContract, deployContract, executeContract } from './cli-functions.js';
+import { createAccount, addAddress, compileContract, deployContract, executeContract } from './cli-functions.js';
 
 const RootQuery = new GraphQLObjectType({
   name: 'Query',
@@ -31,6 +31,22 @@ const RootMutation = new GraphQLObjectType({
       async resolve(parent, args) {
         try {
           const result = await createAccount(args.config, args.type);
+          return result;
+        } catch (error) {
+          throw new Error(error);
+        }
+      },
+    },
+    addAddress: {
+      type: GraphQLString,
+      args: {
+        config: { type: new GraphQLNonNull(GraphQLString) },
+        address: { type: new GraphQLNonNull(GraphQLString) },
+        type: { type: GraphQLString },
+      },
+      async resolve(parent, args) {
+        try {
+          const result = await addAddress(args.config, args.address, args.type);
           return result;
         } catch (error) {
           throw new Error(error);

@@ -70,6 +70,31 @@ export async function createAccount(config, type = 'path') {
   }
 }
 
+export async function addAddress(config, address, type = 'path') {
+  let configPath = config;
+
+  if (type === 'data') {
+    const configFilename = path.join(os.tmpdir(), `config-${crypto.randomUUID()}.tmp`);
+    fs.writeFileSync(configFilename, config);
+    configPath = configFilename;
+  }
+
+  const command = 'rescontract';
+  const cliArgs = ['add_address', '-c', configPath, '-e', address];
+
+  try {
+    const result = await handleExecFile(command, cliArgs);
+    return result;
+  } catch (error) {
+    throw error;
+  } finally {
+    if (type === 'data' && fs.existsSync(configPath)) {
+      fs.unlinkSync(configPath);
+    }
+  }
+}
+
+
 export async function compileContract(source, type = 'path') {
   let sourcePath = source;
   let outputPath = '';
