@@ -65,3 +65,11 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+
+cc_binary(
+    name = "lmdb",
+    srcs = ["lmdb_test.cpp"],
+    deps = [],
+    copts = ["-I/usr/include"],  # Add the LMDB header file path (if needed)
+    linkopts = ["-llmdb"],  # Link the LMDB librar
+)
