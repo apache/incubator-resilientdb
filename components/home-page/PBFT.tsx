@@ -9,9 +9,6 @@ import Balancer from "react-wrap-balancer";
 import { Section, Container } from "@/components/craft";
 import { Button } from "@/components/ui/button";
 
-// Asset imports
-import Placeholder from "@/public/placeholder.jpg";
-
 const PBFT = () => {
   return (
     <Section>
@@ -25,11 +22,10 @@ const PBFT = () => {
             height={300}
           />
         </div>
-        <h3>We have this amazing feature in our app.</h3>
+        <h3>PBFT Graph goes here</h3>
         <p className="text-muted-foreground">
           <Balancer>
-            Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-            labore et dolore magna aliqua.
+          This graph illustrates the message transmission process in PBFT with four nodes, highlighting the request, prepare, and commit phases to achieve consensus and ensure transaction validity.
           </Balancer>
         </p>
         <div className="not-prose mt-8 flex items-center gap-2">

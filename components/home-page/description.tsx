@@ -17,21 +17,21 @@ type FeatureText = {
 const featureText: FeatureText[] = [
   {
     icon: <Coins className="h-6 w-6" />,
-    title: "Lorem Ipsum",
+    title: "Request",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "In the Request phase, a client sends a transaction proposal to the leader node, which verifies and broadcasts the request to all other nodes, initiating the consensus process and waiting for responses.",
   },
   {
     icon: <Coins className="h-6 w-6" />,
-    title: "Lorem Ipsum",
+    title: "Pre-Prepare / Prepare",
     description:
-      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      "In the Pre-Prepare phase, the primary node proposes a transaction to all replicas, and in the Prepare phase, each replica validates the transaction and broadcasts a 'prepare' message to indicate agreement.",
   },
   {
     icon: <Coins className="h-6 w-6" />,
-    title: "Lorem Ipsum",
+    title: "Commit",
     description:
-      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+      "In the Commit phase, once a quorum of nodes has validated the transaction, the leader node sends a commit message to all nodes, finalizing the transaction and ensuring consistency across the network.",
   },
 ];
 
@@ -42,12 +42,12 @@ const Description = () => {
         <div className="flex flex-col gap-6">
           <h3 className="text-4xl">
             <Balancer>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit
+              A little to know about PBFT 
             </Balancer>
           </h3>
           <h4 className="text-2xl font-light opacity-70">
             <Balancer>
-              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+            PBFT (Practical Byzantine Fault Tolerance) is a consensus algorithm designed to ensure reliable and secure distributed systems, allowing them to reach an agreement even in the presence of faulty or malicious nodes, as long as less than one-third of the nodes are compromised.
             </Balancer>
           </h4>
 

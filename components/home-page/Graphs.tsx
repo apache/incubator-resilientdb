@@ -36,9 +36,7 @@ const Graphs = () => {
       <Container>
         <h2 className="!mt-0 mb-4">This is a Feature with an Image Carousel</h2>
         <p>
-          Use it to showcase your latest images. Get started at
-          components.bridgher.to and make sure to install brijr/craft for
-          styling.
+          We will use this to show static graphs on the landing page, a representation of what would be plotted real time.
         </p>
         <Carousel className="mt-6 w-full">
           <CarouselContent className="-ml-1">

@@ -23,8 +23,8 @@ export default function Footer() {
             </Link>
             <p>
               <Balancer>
-                brijr/components is a collection of Next.js, React, Typescript
-                components for building landing pages and websites.
+                
+The MemLens project analyzes ResilientDB’s performance to enhance efficiency on resource-limited devices.
               </Balancer>
             </p>
             <div className="mb-6 flex flex-col gap-4 text-sm text-muted-foreground underline underline-offset-4 md:mb-0 md:flex-row">
@@ -34,8 +34,8 @@ export default function Footer() {
             </div>
             <p className="text-muted-foreground">
               ©{" "}
-              <a href="https://github.com/brijr/components">brijr/components</a>
-              . All rights reserved. 2024-present.
+              <a href="https://github.com/brijr/components">MemLens</a>
+              . All rights reserved. 2024-Present.
             </p>
           </div>
         </Container>

@@ -22,7 +22,7 @@ export function NavBar() {
                     </SheetTrigger>
                     <SheetContent side="left">
                         <SheetHeader>
-                            <SheetTitle>fabrika.</SheetTitle>
+                            <SheetTitle>MemLens.</SheetTitle>
                             <SheetDescription>
                                 Scale and launch products with expert developers, on-demand, at a flat monthly fee
                             </SheetDescription>

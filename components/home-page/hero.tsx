@@ -24,9 +24,9 @@ const Hero = () => {
           alt="Company Logo"
           className="not-prose mb-6 dark:invert md:mb-8"
         />
-        <h1 className="!mb-0">
+        <h1 className="text-4xl font-bold mb-4">
           <Balancer>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          MemLens: ResilientDB Performance Profiling
           </Balancer>
         </h1>
         <h3 className="text-muted-foreground">
