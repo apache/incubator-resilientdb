@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-navigation-menu": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.20",
