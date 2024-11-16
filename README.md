@@ -198,6 +198,11 @@ mutation {
     arguments: "1000",
     owner: "0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8"
   )
+  {
+    ownerAddress
+    contractAddress
+    contractName
+  }
 }
 ```
 
@@ -205,7 +210,11 @@ mutation {
 ```json
 {
   "data": {
-    "deployContract": "owner_address: 0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8\ncontract_address: 0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1\ncontract_name: token.sol:Token"
+    "deployContract": {
+      "ownerAddress": "0x67c6697351ff4aec29cdbaabf2fbe3467cc254f8",
+      "contractAddress": "0xfc08e5bfebdcf7bb4cf5aafc29be03c1d53898f1",
+      "contractName": "token.sol:Token"
+    }
   }
 }
 ```
@@ -228,7 +237,7 @@ mutation {
 ```json
 {
   "data": {
-    "executeContract": "result: 0x0000000000000000000000000000000000000000000000000000000000000001"
+    "executeContract": "Execution successful"
   }
 }
 ```
