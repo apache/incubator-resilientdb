@@ -19,6 +19,15 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+const DeployContractOutput = new GraphQLObjectType({
+  name: 'DeployContractOutput',
+  fields: {
+    ownerAddress: { type: GraphQLString },
+    contractAddress: { type: GraphQLString },
+    contractName: { type: GraphQLString },
+  },
+});
+
 const RootMutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
@@ -69,7 +78,7 @@ const RootMutation = new GraphQLObjectType({
       },
     },
     deployContract: {
-      type: GraphQLString,
+      type: DeployContractOutput,
       args: {
         config: { type: new GraphQLNonNull(GraphQLString) },
         contract: { type: new GraphQLNonNull(GraphQLString) },

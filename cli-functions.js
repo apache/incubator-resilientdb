@@ -61,7 +61,8 @@ export async function createAccount(config, type = 'path') {
     if (type === 'data') {
       fs.unlinkSync(configPath);
     }
-    return result;
+    const address = result.match(/address: \"(0x[0-9a-fA-F]+)\"/)[1];
+    return address;
   } catch (error) {
     if (type === 'data' && fs.existsSync(configPath)) {
       fs.unlinkSync(configPath);
@@ -117,7 +118,8 @@ export async function compileContract(source, type = 'path') {
     if (type === 'data') {
       return path.basename(outputPath);
     }
-    return result;
+    const successMessage = result.match(/Compiled successfully to (\/[^\s]+)/)[0];
+    return successMessage;
   } catch (error) {
     throw error;
   } finally {
@@ -157,7 +159,15 @@ export async function deployContract(config, contract, name, args, owner, type =
 
   try {
     const result = await handleExecFile(command, cliArgs);
-    return result;
+    const ownerAddress = result.match(/owner_address: \"(0x[0-9a-fA-F]+)\"/)[1];
+    const contractAddress = result.match(/contract_address: \"(0x[0-9a-fA-F]+)\"/)[1];
+    const contractName = result.match(/contract_name: \"([^\"]+)\"/)[1];
+
+    return {
+      ownerAddress,
+      contractAddress,
+      contractName
+    };
   } catch (error) {
     throw error;
   } finally {
@@ -195,6 +205,8 @@ export async function executeContract(config, sender, contract, functionName, ar
 
   try {
     const result = await handleExecFile(command, cliArgs);
+    const success = result.includes("0x0000000000000000000000000000000000000000000000000000000000000001");
+    return success ? "Execution successful" : "Execution failed";
     return result;
   } catch (error) {
     throw error;
