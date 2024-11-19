@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@pyroscope/flamegraph": "^0.35.6",
     "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-navigation-menu": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
