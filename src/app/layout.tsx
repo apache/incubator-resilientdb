@@ -38,7 +38,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="layout-wrapper">
-            <NavBar />
             <main>{children}</main>
             <Footer />
           </div>

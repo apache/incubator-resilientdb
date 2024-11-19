@@ -28,6 +28,7 @@ type SectionProps = {
   children: React.ReactNode;
   className?: string;
   id?: string;
+  style?: React.CSSProperties;
 };
 
 type ContainerProps = {
