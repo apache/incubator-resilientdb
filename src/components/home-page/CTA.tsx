@@ -1,6 +1,4 @@
 // React and Next.js imports
-import Link from "next/link";
-
 // Third-party library imports
 import Balancer from "react-wrap-balancer";
 
@@ -17,15 +15,16 @@ const Cta = () => {
         <h2 className="!my-0">Lets get started!</h2>
         <h3 className="!mb-0 text-muted-foreground">
           <Balancer>
-            This is where we gonna have the button to move to the visualiser. This is the CTA.
+            This is where we gonna have the button to move to the visualiser.
+            This is the CTA.
           </Balancer>
         </h3>
         <div className="not-prose mx-auto flex items-center gap-2">
           <Button className="w-fit" asChild>
-            <Link href="#">Get Started</Link>
+            <a href="#">Get Started</a>
           </Button>
           <Button className="w-fit" variant="link" asChild>
-            <Link href="#">Learn More {"->"}</Link>
+            <a href="#">Learn More {"->"}</a>
           </Button>
         </div>
       </Container>

@@ -1,6 +1,4 @@
 import * as React from "react";
-import Image from "next/image";
-
 import { Section, Container } from "@/components/craft";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -36,7 +34,8 @@ const Graphs = () => {
       <Container>
         <h2 className="!mt-0 mb-4">This is a Feature with an Image Carousel</h2>
         <p>
-          We will use this to show static graphs on the landing page, a representation of what would be plotted real time.
+          We will use this to show static graphs on the landing page, a
+          representation of what would be plotted real time.
         </p>
         <Carousel className="mt-6 w-full">
           <CarouselContent className="-ml-1">
@@ -48,13 +47,12 @@ const Graphs = () => {
                 <div className="p-1">
                   <Card className="relative overflow-hidden">
                     <CardContent className="not-prose flex aspect-square items-center justify-center">
-                      <Image
-                        src={photo.src}
-                        alt="Presets.com Example Image"
+                      <image
+                        href={photo.src}
                         width={720}
                         height={480}
                         className="absolute inset-0 h-full w-full object-cover"
-                      ></Image>
+                      />
                     </CardContent>
                   </Card>
                 </div>
