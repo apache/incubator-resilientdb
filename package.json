@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@grafana/flamegraph": "^11.3.1",
-    "@pyroscope/flamegraph": "^0.35.6",
+    "@pyroscope/flamegraph": "^0.34.3",
     "@pyroscope/models": "^0.4.7",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-collapsible": "^1.1.1",
