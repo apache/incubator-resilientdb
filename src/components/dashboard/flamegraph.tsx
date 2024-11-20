@@ -1,6 +1,6 @@
 import "@pyroscope/flamegraph/dist/index.css";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { FlamegraphRenderer, Box } from "@pyroscope/flamegraph";
 import { ProfileData1 } from "@/mock/test_flamegraph";
@@ -15,17 +15,19 @@ import {
   SelectValue,
 } from "../ui/select";
 import { FlamegraphRendererProps } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlamegraphRenderer";
+import { pyroscopeApi } from "@/lib/api";
 
 export const Flamegraph = () => {
   const [flamegraphDisplayType, setFlamegraphDisplayType] =
     useState<ViewTypes>("both");
+  const [searchQueryToggle, setSearchQueryToggle] = useState(true); //dummy dispatch not used functionally
   const [query, setSearchQuery] = useState<
     FlamegraphRendererProps["sharedQuery"]
   >({
     searchQuery: "",
-    onQueryChange: (value: any) => console.log(value),
+    onQueryChange: (value: any) => {},
     syncEnabled: true,
-    toggleSync: undefined,
+    toggleSync: setSearchQueryToggle,
   });
   function handleFlamegraphTypeChange(value: any) {
     setFlamegraphDisplayType(value);
@@ -34,6 +36,26 @@ export const Flamegraph = () => {
   function reserFlamegraph() {
     setFlamegraphDisplayType("both");
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await pyroscopeApi.get(
+          "/render?query=cpp_client_1.cpu%7B%7D&from=now-5m&until=now&format=json",
+          {
+            withCredentials: false,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -53,6 +75,9 @@ export const Flamegraph = () => {
         <div className="flex flex-row space-x-2">
           <Button variant="outline" size="sm" disabled>
             Download
+          </Button>
+          <Button variant="outline" size="sm" disabled>
+            Refresh Graph
           </Button>
           <Select onValueChange={handleFlamegraphTypeChange}>
             <SelectTrigger className="w-[120px] h-[30px]">
