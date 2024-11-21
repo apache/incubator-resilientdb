@@ -11,7 +11,13 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     // Generate the initial random background string
-    setRandomString(generateRandomString(10000));
+    setRandomString(generateRandomString(10100));
+
+    // Update random string every second (1000 ms)
+    const interval = setInterval(() => {
+      setRandomString(generateRandomString(10100));
+    }, 500);
+
     // Create the typewriter effect with line breaks
     typeWriterEffect(
       "MemLens :", // First line to type
@@ -21,11 +27,14 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
         typeWriterEffect(
           "The ResiliantDB Memory Profiler", // Second line to type
           setSecondLineText,
-          100,
+          70,
           () => {} // No callback needed after the second line finishes
         );
       }
     );
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
   }, []);
 
   function onMouseMove({ currentTarget, clientX, clientY }: any) {
@@ -45,20 +54,20 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
         onMouseMove={onMouseMove}
         className="group/card w-full relative overflow-hidden flex items-center justify-center h-full"
       >
-        <CardPattern mouseX={mouseX} mouseY={mouseY} randomString={randomString} />
+        <CardPattern randomString={randomString} /> {/* Remove mouseX, mouseY to make it static */}
         <div className="relative z-10 text-center">
           {/* Render the first part with larger font size */}
           <span
-            className="dark:text-white text-black text-5xl font-bold"
-            style={{ WebkitTextStroke: "1px black" }}
+            className="dark:text-white text-black text-7xl font-bold"
+            style={{ WebkitTextStroke: "3px black" }}
           >
             {firstLineText}
           </span>
           <br />
           {/* Render the second part with smaller font size */}
           <span
-            className="dark:text-white text-black text-2xl font-medium"
-            style={{ WebkitTextStroke: "0.5px black" }}
+            className="dark:text-white text-black text-5xl font-medium"
+            style={{ WebkitTextStroke: "1px black" }}
           >
             {secondLineText}
           </span>
@@ -69,21 +78,17 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
 };
 
 // Generates the moving spotlight effect and the random string background
-function CardPattern({ mouseX, mouseY, randomString }: any) {
-  const maskImage = useMotionTemplate`radial-gradient(250px at ${mouseX}px ${mouseY}px, white, transparent)`;
-  const style = { maskImage, WebkitMaskImage: maskImage };
-
+function CardPattern({ randomString }: any) {
   return (
     <div className="pointer-events-none">
-      {/* Translucent Background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-700 opacity-40"></div>
+      {/* Translucent Black Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black to-black opacity-40 z-0"></div> {/* Black Gradient with lower z-index */}
 
-      {/* Spotlight with string */}
+      {/* Random string background visible across entire screen */}
       <motion.div
-        className="absolute inset-0 opacity-100 mix-blend-overlay group-hover/card:opacity-100"
-        style={style}
+        className="absolute inset-0 opacity-15 mix-blend-screen z-10" // Mix blend mode for contrast and visibility
       >
-        <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-white font-mono font-bold transition duration-500">
+        <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-green-500 font-mono font-bold transition duration-500 z-20">
           {randomString}
         </p>
       </motion.div>
