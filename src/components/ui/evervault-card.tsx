@@ -11,12 +11,9 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
   useEffect(() => {
     // Generate the initial random background string
     setRandomString(generateRandomString(10000));
+
     // Create the typewriter effect
-    typeWriterEffect(
-      "MemLens :\nThe ResiliantDB Memory Profiler",
-      setText,
-      100
-    );
+    typeWriterEffect("MemLens :\nContinuous Profiling for ResilientDB", setText, 70);
   }, []);
 
   function onMouseMove({ currentTarget, clientX, clientY }: any) {
@@ -39,10 +36,10 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
         <CardPattern mouseX={mouseX} mouseY={mouseY} randomString={randomString} />
         <div className="relative z-10 text-center">
           <span
-            className="dark:text-white text-black text-5xl font-bold"
+            className="dark:text-white text-black text-5xl font-bold whitespace-pre-wrap"
             style={{ WebkitTextStroke: "1px black" }}
           >
-            {text}
+            {text} {/* Display the text with newlines */}
           </span>
         </div>
       </div>
@@ -84,7 +81,7 @@ export const generateRandomString = (length: number) => {
   return result;
 };
 
-// Custom Typewriter Effect
+// Custom Typewriter Effect with line breaks support
 const typeWriterEffect = (
   fullText: string,
   setText: (text: string) => void,
