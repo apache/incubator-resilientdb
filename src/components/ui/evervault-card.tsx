@@ -1,7 +1,5 @@
-"use client";  // <-- Add this line at the top
-
 import { useMotionValue } from "framer-motion";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMotionTemplate, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -48,14 +46,6 @@ export const EvervaultCard = ({
           randomString={randomString}
         />
         <div className="relative z-10 flex items-center justify-center">
-          {/* Commented out the black rounded rectangle */}
-          {/* 
-          <div className="relative h-44 w-96 flex items-center justify-center text-white font-bold text-4xl">
-            <div className="absolute w-full h-full bg-white/[0.8] dark:bg-black/[0.8] blur-sm" />
-          </div>
-          */}
-
-          {/* Keep the text centered */}
           <span className="dark:text-white text-black z-20 text-4xl font-bold">
             {text}
           </span>
@@ -66,18 +56,25 @@ export const EvervaultCard = ({
 };
 
 export function CardPattern({ mouseX, mouseY, randomString }: any) {
-  let maskImage = useMotionTemplate`radial-gradient(250px at ${mouseX}px ${mouseY}px, white, transparent)`;
+  let maskImage = useMotionTemplate`radial-gradient(200px at ${mouseX}px ${mouseY}px, white, transparent)`;
   let style = { maskImage, WebkitMaskImage: maskImage };
 
   return (
     <div className="pointer-events-none">
-      <div className="absolute inset-0 [mask-image:linear-gradient(white,transparent)] group-hover/card:opacity-50"></div>
+      {/* Base translucency layer */}
+      <motion.div
+        className="absolute inset-0 text-xs text-white opacity-15 break-words whitespace-pre-wrap font-mono font-bold"
+      >
+        {randomString}
+      </motion.div>
+
+      {/* Flashlight effect */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-700 opacity-0  group-hover/card:opacity-100 backdrop-blur-xl transition duration-500"
         style={style}
       />
       <motion.div
-        className="absolute inset-0 opacity-0 mix-blend-overlay  group-hover/card:opacity-100"
+        className="absolute inset-0 mix-blend-overlay opacity-0 group-hover/card:opacity-100"
         style={style}
       >
         <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-white font-mono font-bold transition duration-500">
