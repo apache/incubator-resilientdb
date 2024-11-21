@@ -6,14 +6,26 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const [randomString, setRandomString] = useState("");
-  const [text, setText] = useState("");
+  const [firstLineText, setFirstLineText] = useState(""); // State for the first line
+  const [secondLineText, setSecondLineText] = useState(""); // State for the second line
 
   useEffect(() => {
     // Generate the initial random background string
     setRandomString(generateRandomString(10000));
-
-    // Create the typewriter effect
-    typeWriterEffect("MemLens :\nContinuous Profiling for ResilientDB", setText, 70);
+    // Create the typewriter effect with line breaks
+    typeWriterEffect(
+      "MemLens :", // First line to type
+      setFirstLineText, // Function to update the first line text
+      100, // Speed (controls how fast each character is typed)
+      () => { // Callback to start the second line after the first one finishes
+        typeWriterEffect(
+          "The ResiliantDB Memory Profiler", // Second line to type
+          setSecondLineText,
+          100,
+          () => {} // No callback needed after the second line finishes
+        );
+      }
+    );
   }, []);
 
   function onMouseMove({ currentTarget, clientX, clientY }: any) {
@@ -35,11 +47,20 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
       >
         <CardPattern mouseX={mouseX} mouseY={mouseY} randomString={randomString} />
         <div className="relative z-10 text-center">
+          {/* Render the first part with larger font size */}
           <span
-            className="dark:text-white text-black text-5xl font-bold whitespace-pre-wrap"
+            className="dark:text-white text-black text-5xl font-bold"
             style={{ WebkitTextStroke: "1px black" }}
           >
-            {text} {/* Display the text with newlines */}
+            {firstLineText}
+          </span>
+          <br />
+          {/* Render the second part with smaller font size */}
+          <span
+            className="dark:text-white text-black text-2xl font-medium"
+            style={{ WebkitTextStroke: "0.5px black" }}
+          >
+            {secondLineText}
           </span>
         </div>
       </div>
@@ -85,7 +106,8 @@ export const generateRandomString = (length: number) => {
 const typeWriterEffect = (
   fullText: string,
   setText: (text: string) => void,
-  speed: number
+  speed: number,
+  callback: () => void // Callback function to start typing second line
 ) => {
   let index = 0;
   let currentText = ""; // Local variable to track progress
@@ -96,6 +118,8 @@ const typeWriterEffect = (
       setText(currentText); // Update the state with the new value
       index++;
       setTimeout(typing, speed); // Recursive call with delay
+    } else {
+      callback(); // Once typing is done, call the callback to start the second line
     }
   };
 
