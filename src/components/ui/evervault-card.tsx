@@ -1,32 +1,28 @@
-import { useMotionValue } from "framer-motion";
+import { useMotionValue, useMotionTemplate, motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useMotionTemplate, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-export const EvervaultCard = ({
-  text,
-  className,
-}: {
-  text?: string;
-  className?: string;
-}) => {
-  let mouseX = useMotionValue(0);
-  let mouseY = useMotionValue(0);
-
+export const EvervaultCard = ({ className }: { className?: string }) => {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
   const [randomString, setRandomString] = useState("");
+  const [text, setText] = useState("");
 
   useEffect(() => {
-    let str = generateRandomString(10000); // Adjusted length to ensure full string
-    setRandomString(str);
+    // Generate the initial random background string
+    setRandomString(generateRandomString(10000));
+    // Create the typewriter effect
+    typeWriterEffect(
+      "MemLens :\nThe ResiliantDB Memory Profiler",
+      setText,
+      100
+    );
   }, []);
 
   function onMouseMove({ currentTarget, clientX, clientY }: any) {
-    let { left, top } = currentTarget.getBoundingClientRect();
+    const { left, top } = currentTarget.getBoundingClientRect();
     mouseX.set(clientX - left);
     mouseY.set(clientY - top);
-
-    const str = generateRandomString(10000); // Adjusted length for full string
-    setRandomString(str);
   }
 
   return (
@@ -40,13 +36,12 @@ export const EvervaultCard = ({
         onMouseMove={onMouseMove}
         className="group/card w-full relative overflow-hidden flex items-center justify-center h-full"
       >
-        <CardPattern
-          mouseX={mouseX}
-          mouseY={mouseY}
-          randomString={randomString}
-        />
-        <div className="relative z-10 flex items-center justify-center">
-          <span className="dark:text-white text-black z-20 text-4xl font-bold">
+        <CardPattern mouseX={mouseX} mouseY={mouseY} randomString={randomString} />
+        <div className="relative z-10 text-center">
+          <span
+            className="dark:text-white text-black text-5xl font-bold"
+            style={{ WebkitTextStroke: "1px black" }}
+          >
             {text}
           </span>
         </div>
@@ -55,26 +50,19 @@ export const EvervaultCard = ({
   );
 };
 
-export function CardPattern({ mouseX, mouseY, randomString }: any) {
-  let maskImage = useMotionTemplate`radial-gradient(200px at ${mouseX}px ${mouseY}px, white, transparent)`;
-  let style = { maskImage, WebkitMaskImage: maskImage };
+// Generates the moving spotlight effect and the random string background
+function CardPattern({ mouseX, mouseY, randomString }: any) {
+  const maskImage = useMotionTemplate`radial-gradient(250px at ${mouseX}px ${mouseY}px, white, transparent)`;
+  const style = { maskImage, WebkitMaskImage: maskImage };
 
   return (
     <div className="pointer-events-none">
-      {/* Base translucency layer */}
-      <motion.div
-        className="absolute inset-0 text-xs text-white opacity-15 break-words whitespace-pre-wrap font-mono font-bold"
-      >
-        {randomString}
-      </motion.div>
+      {/* Translucent Background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-700 opacity-40"></div>
 
-      {/* Flashlight effect */}
+      {/* Spotlight with string */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-green-500 to-blue-700 opacity-0  group-hover/card:opacity-100 backdrop-blur-xl transition duration-500"
-        style={style}
-      />
-      <motion.div
-        className="absolute inset-0 mix-blend-overlay opacity-0 group-hover/card:opacity-100"
+        className="absolute inset-0 opacity-100 mix-blend-overlay group-hover/card:opacity-100"
         style={style}
       >
         <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-white font-mono font-bold transition duration-500">
@@ -85,6 +73,7 @@ export function CardPattern({ mouseX, mouseY, randomString }: any) {
   );
 }
 
+// Function for generating random background strings
 const characters =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 export const generateRandomString = (length: number) => {
@@ -93,4 +82,25 @@ export const generateRandomString = (length: number) => {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
+};
+
+// Custom Typewriter Effect
+const typeWriterEffect = (
+  fullText: string,
+  setText: (text: string) => void,
+  speed: number
+) => {
+  let index = 0;
+  let currentText = ""; // Local variable to track progress
+
+  const typing = () => {
+    if (index < fullText.length) {
+      currentText += fullText[index]; // Add the next character
+      setText(currentText); // Update the state with the new value
+      index++;
+      setTimeout(typing, speed); // Recursive call with delay
+    }
+  };
+
+  typing();
 };
