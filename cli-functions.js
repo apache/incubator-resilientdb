@@ -85,7 +85,12 @@ export async function addAddress(config, address, type = 'path') {
 
   try {
     const result = await handleExecFile(command, cliArgs);
-    return result;
+
+    if (result.includes("Address added successfully")) {
+      return "Address added successfully";
+    } else {
+      throw new Error("Failed to add address. Unexpected output: " + result);
+    }
   } catch (error) {
     throw error;
   } finally {
