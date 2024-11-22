@@ -1,24 +1,38 @@
 /*global chrome*/
 import React, { createContext, useState, useEffect } from 'react';
 import CryptoJS from 'crypto-js';
+import { keccak256 } from 'js-sha3';
 import nacl from 'tweetnacl';
 import Base58 from 'bs58';
+import { useNavigate } from 'react-router-dom';
 
 export const GlobalContext = createContext();
 
 export const GlobalProvider = ({ children }) => {
+  const [serviceMode, setServiceMode] = useState('KV'); // KV or Contract
   const [values, setValues] = useState({ password: '', showPassword: false });
   const [confirmValues, setConfirmValues] = useState({ password: '', showPassword: false });
   const [loginValues, setLoginValues] = useState({ password: '', showPassword: false });
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
+  const [ownerAddress, setOwnerAddress] = useState(''); // To store the generated owner's address
   const [keyPairs, setKeyPairs] = useState([]);
   const [selectedKeyPairIndex, setSelectedKeyPairIndex] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [storedPassword, setStoredPassword] = useState('');
+
+  const navigate = useNavigate();
   
   // Alert state for modals
   const [alert, setAlert] = useState({ isOpen: false, message: '' });
+
+  // Generate owner's address
+  const generateOwnerAddress = (publicKey) => {
+    const decodedPublicKey = Base58.decode(publicKey);
+    const addressHash = keccak256(Buffer.from(decodedPublicKey));
+    const address = `0x${addressHash.slice(-40)}`;
+    return address;
+  };
 
   // Function to encrypt and store key pairs
   const saveKeyPairsToStorage = (keyPairs, password) => {
@@ -122,6 +136,10 @@ export const GlobalProvider = ({ children }) => {
         setPrivateKey(updatedKeyPairs[newIndex].privateKey);
         saveSelectedKeyPairIndex(newIndex);
 
+        // Generate and set the ownerAddress
+        const ownerAddress = generateOwnerAddress(updatedKeyPairs[newIndex].publicKey);
+        setOwnerAddress(ownerAddress);
+
         // Update 'store' with the new key pair
         const encryptedPrivateKey = CryptoJS.AES.encrypt(updatedKeyPairs[newIndex].privateKey, password).toString();
         const hash = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
@@ -162,6 +180,7 @@ export const GlobalProvider = ({ children }) => {
     const keyPair = nacl.sign.keyPair();
     const newPublicKey = Base58.encode(keyPair.publicKey);
     const newPrivateKey = Base58.encode(keyPair.secretKey.slice(0, 32)); // Using the first 32 bytes as seed
+    const ownerAddress = generateOwnerAddress(newPublicKey);
     const newKeyPair = { publicKey: newPublicKey, privateKey: newPrivateKey };
 
     // Load existing key pairs
@@ -184,6 +203,7 @@ export const GlobalProvider = ({ children }) => {
       setKeyPairs(updatedKeyPairs);
       setPublicKey(newPublicKey);
       setPrivateKey(newPrivateKey);
+      setOwnerAddress(ownerAddress);
       const newIndex = updatedKeyPairs.length - 1;
       setSelectedKeyPairIndex(newIndex);
       saveSelectedKeyPairIndex(newIndex);
@@ -237,6 +257,10 @@ export const GlobalProvider = ({ children }) => {
             setPublicKey(updatedKeyPairs[0].publicKey);
             setPrivateKey(updatedKeyPairs[0].privateKey);
             saveSelectedKeyPairIndex(0);
+
+            // Generate and set the ownerAddress
+            const ownerAddress = generateOwnerAddress(updatedKeyPairs[0].publicKey);
+            setOwnerAddress(ownerAddress);
         }
 
         // Update 'store' with the new selected key pair
@@ -275,10 +299,19 @@ export const GlobalProvider = ({ children }) => {
                 setPublicKey(loadedKeyPairs[index].publicKey);
                 setPrivateKey(loadedKeyPairs[index].privateKey);
                 setSelectedKeyPairIndex(index);
+
+                // Generate and set the ownerAddress
+                const ownerAddress = generateOwnerAddress(loadedKeyPairs[index].publicKey);
+                setOwnerAddress(ownerAddress);
+
               } else if (loadedKeyPairs.length > 0) {
                 setPublicKey(loadedKeyPairs[0].publicKey);
                 setPrivateKey(loadedKeyPairs[0].privateKey);
                 setSelectedKeyPairIndex(0);
+
+                // Generate and set the ownerAddress
+                const ownerAddress = generateOwnerAddress(loadedKeyPairs[0].publicKey);
+                setOwnerAddress(ownerAddress);
               }
               setIsAuthenticated(true);
             });
@@ -300,6 +333,10 @@ export const GlobalProvider = ({ children }) => {
       setSelectedKeyPairIndex(index);
       saveSelectedKeyPairIndex(index);
 
+      // Generate and set the ownerAddress
+      const ownerAddress = generateOwnerAddress(keyPairs[index].publicKey);
+      setOwnerAddress(ownerAddress);
+
       const password = storedPassword;
       if (!password) {
         console.error('Password is not available');
@@ -320,33 +357,46 @@ export const GlobalProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    // Retrieve the mode from storage when the app starts
+    chrome.storage.local.get(['serviceMode'], (result) => {
+      if (result.serviceMode) {
+        setServiceMode(result.serviceMode);
+        navigate(result.serviceMode === 'KV' ? '/dashboard' : '/contract');
+      }
+    });
+  }, []);
+
+  const toggleServiceMode = () => {
+    const newMode = serviceMode === 'KV' ? 'Contract' : 'KV';
+    setServiceMode(newMode);
+    chrome.storage.local.set({ serviceMode: newMode }, () => {
+      // Clear connections when mode changes
+      chrome.storage.local.remove(['connections'], () => {
+        navigate(newMode === 'KV' ? '/dashboard' : '/contract');
+      });
+    });
+  };
+
   return (
     <GlobalContext.Provider
       value={{
-        values,
-        setValues,
-        confirmValues,
-        setConfirmValues,
-        loginValues,
-        setLoginValues,
-        publicKey,
-        setPublicKey,
-        privateKey,
-        setPrivateKey,
-        keyPairs,
-        setKeyPairs,
+        values, setValues,
+        confirmValues, setConfirmValues,
+        loginValues, setLoginValues,
+        publicKey, setPublicKey,
+        privateKey, setPrivateKey,
+        keyPairs, setKeyPairs,
         generateKeyPair,
-        selectedKeyPairIndex,
-        setSelectedKeyPairIndex,
+        selectedKeyPairIndex, setSelectedKeyPairIndex,
         setSelectedKeyPair: setSelectedKeyPairFn,
-        isAuthenticated,
-        setIsAuthenticated,
-        storedPassword,
-        setStoredPassword,
+        isAuthenticated, setIsAuthenticated,
+        storedPassword, setStoredPassword,
         deleteKeyPair,
         appendKeyPairs,
-        alert, // For alert modal
-        setAlert, // For alert modal
+        alert, setAlert,
+        serviceMode, setServiceMode, toggleServiceMode,
+        ownerAddress, setOwnerAddress,
       }}
     >
       {children}

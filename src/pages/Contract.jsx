@@ -34,8 +34,10 @@ import { faLock, faUnlock } from '@fortawesome/free-solid-svg-icons';
 import graphql from "../images/logos/graphql.png";
 import { GlobalContext } from '../context/GlobalContext';
 import { useNavigate } from 'react-router-dom';
+import { keccak256 } from 'js-sha3';
+import Base58 from 'bs58';
 
-function Dashboard() {
+function Contract() {
     const {
         publicKey,
         privateKey,
@@ -53,6 +55,8 @@ function Dashboard() {
         setAlert, // For alert modal
         serviceMode,
         toggleServiceMode,
+        ownerAddress,
+        setOwnerAddress,
     } = useContext(GlobalContext);
 
     const [tabId, setTabId] = useState(null);
@@ -73,15 +77,21 @@ function Dashboard() {
     const keyPairFileInputRef = useRef(null);
     const navigate = useNavigate();
 
-    // State variables for transaction data and handling
-    const [transactionData, setTransactionData] = useState(null);
-    const [transactionError, setTransactionError] = useState('');
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
-    const [successResponse, setSuccessResponse] = useState(null);
+    // New State Variables for Deployment
+    const [solidityFileName, setSolidityFileName] = useState('');
+    const [solidityContent, setSolidityContent] = useState('');
+    const [deployJsonFileName, setDeployJsonFileName] = useState('');
+    const [deployJsonContent, setDeployJsonContent] = useState('');
+    const [deployError, setDeployError] = useState('');
+    const [showContractModal, setShowContractModal] = useState(false);
+    const [contractAddress, setContractAddress] = useState('');
+    const [copyMessage, setCopyMessage] = useState('');
+
+    // Add the missing state declaration
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    // State for copying transaction ID
-    const [isIdCopied, setIsIdCopied] = useState(false);
+    // State for copying Contract Address
+    const [isAddressCopied, setIsAddressCopied] = useState(false);
 
     const defaultOptions = {
         loop: true,
@@ -101,6 +111,14 @@ function Dashboard() {
         preserveAspectRatio: 'xMidYMid slice',
         renderer: 'svg'
         }
+    };
+
+    // Function to generate owner's address
+    const generateOwnerAddress = (publicKey) => {
+        const decodedPublicKey = Base58.decode(publicKey);
+        const addressHash = keccak256(Buffer.from(decodedPublicKey));
+        const address = `0x${addressHash.slice(-40)}`;
+        return address;
     };
 
     // Function to get full hostname from URL
@@ -381,11 +399,11 @@ function Dashboard() {
         }
     };       
 
-    // Function to copy public key
-    const handleCopyPublicKey = () => {
+    // Function to copy owner address
+    const handleCopyOwnerAddress = () => {
         try {
         const tempInput = document.createElement('input');
-        tempInput.value = publicKey;
+        tempInput.value = ownerAddress;
         document.body.appendChild(tempInput);
         tempInput.select();
         document.execCommand('copy');
@@ -400,9 +418,10 @@ function Dashboard() {
         }
     };
 
-    // Function to download key pair as JSON
+    // Function to download key pair including owner address
     const handleDownloadKeyPair = () => {
         const keyPair = {
+        ownerAddress: ownerAddress,
         publicKey: publicKey,
         privateKey: privateKey,
         };
@@ -415,12 +434,16 @@ function Dashboard() {
         downloadAnchorNode.remove();
     };
 
-    // Function to download all key pairs as JSON
+    // Function to download all key pairs including owner addresses
     const handleDownloadAllKeyPairs = () => {
-        const allKeyPairs = keyPairs.map(({ publicKey, privateKey }) => ({
-        publicKey,
-        privateKey,
-        }));
+        const allKeyPairs = keyPairs.map(({ publicKey, privateKey }) => {
+        const ownerAddress = generateOwnerAddress(publicKey);
+        return {
+            ownerAddress,
+            publicKey,
+            privateKey,
+        };
+        });
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allKeyPairs));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
@@ -430,115 +453,148 @@ function Dashboard() {
         downloadAnchorNode.remove();
     };
 
-    const handleFileUpload = (e) => {
+    // New Handlers for Deployment
+    const handleSolidityFileUpload = (e) => {
         const file = e.target.files[0];
-        if (file && file.type === 'application/json') {
-        setJsonFileName(file.name); // Show file name once uploaded
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-            const json = JSON.parse(event.target.result);
-            // Validate JSON data
-            if (json.asset && json.recipientAddress && json.amount) {
-                setTransactionData(json);
-                setTransactionError(''); // Clear any previous error
-            } else {
-                setTransactionData(null);
-                setTransactionError('Invalid JSON format: Missing required fields.');
-                setAlert({ isOpen: true, message: 'Invalid JSON format: Missing required fields.' });
-            }
-            } catch (err) {
-            console.error('Error parsing JSON:', err);
-            setTransactionData(null);
-            setTransactionError('Invalid JSON format.');
-            setAlert({ isOpen: true, message: 'Invalid JSON format.' });
-            }
-        };
-        reader.readAsText(file);
+        if (file && file.name.endsWith('.sol')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setSolidityContent(event.target.result);
+                setSolidityFileName(file.name); // Set after reading
+                setDeployError(''); // Reset error message
+            };
+            reader.readAsText(file);
         } else {
-        setJsonFileName(''); // Clear if the file is not JSON
-        setTransactionData(null);
-        setTransactionError('Please upload a JSON file.');
-        setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
+            setSolidityFileName('');
+            setSolidityContent('');
+            setDeployError('Please upload a valid Solidity (.sol) file.');
+            if (solidityFileInputRef.current) {
+                solidityFileInputRef.current.value = '';
+            }
         }
     };
 
-    // Function to handle file upload for key pairs
-    const handleKeyPairFileUpload = (e) => {
+    const handleDeployJsonFileUpload = (e) => {
         const file = e.target.files[0];
         if (file && file.type === 'application/json') {
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const uploadedKeyPairs = JSON.parse(event.target.result);
-
-                    // Ensure the uploaded data is either an array or an object
-                    if (Array.isArray(uploadedKeyPairs)) {
-                        appendKeyPairs(uploadedKeyPairs);
-                        // After appending, the context sets the selectedKeyPairIndex to the last one
-                    } else if (uploadedKeyPairs.publicKey && uploadedKeyPairs.privateKey) {
-                        appendKeyPairs([uploadedKeyPairs]); // Wrap single key pair into an array
-                        // After appending, the context sets the selectedKeyPairIndex to the last one
+                    const json = JSON.parse(event.target.result);
+                    // Validate JSON data
+                    if (typeof json.arguments === 'string' && typeof json.contract_name === 'string') {
+                        setDeployJsonContent(json);
+                        setDeployError('');
+                        setDeployJsonFileName(file.name); // Set file name after validation
                     } else {
-                        console.error('Invalid JSON format for key pairs.');
-                        setAlert({ isOpen: true, message: 'Invalid JSON format for key pairs.' });
+                        setDeployJsonContent(null);
+                        setDeployError('Invalid JSON: Missing "arguments" and "contract_name"');
+                        if (deployJsonFileInputRef.current) {
+                            deployJsonFileInputRef.current.value = '';
+                        }
                     }
                 } catch (err) {
                     console.error('Error parsing JSON:', err);
-                    setAlert({ isOpen: true, message: 'Error parsing JSON file.' });
+                    setDeployJsonContent(null);
+                    setDeployError('Invalid JSON format.');
+                    if (deployJsonFileInputRef.current) {
+                        deployJsonFileInputRef.current.value = '';
+                    }
                 }
             };
             reader.readAsText(file);
         } else {
-            console.error('Please upload a valid JSON file.');
-            setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
+            setDeployJsonFileName('');
+            setDeployJsonContent(null);
+            setDeployError('Please upload a valid JSON file.');
+            if (deployJsonFileInputRef.current) {
+                deployJsonFileInputRef.current.value = '';
+            }
         }
     };
 
-    const handleDragEnter = (e) => {
+    // New Handlers for Deployment Drag and Drop
+    const handleDeployDragEnter = (e) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    const handleDragOver = (e) => {
+    const handleDeployDragOver = (e) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    const handleDrop = (e) => {
+    const handleDeployDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
         const file = e.dataTransfer.files[0];
         if (file && file.type === 'application/json') {
-        setJsonFileName(file.name);
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-            const json = JSON.parse(event.target.result);
-            // Validate JSON data
-            if (json.asset && json.recipientAddress && json.amount) {
-                setTransactionData(json);
-                setTransactionError(''); // Clear any previous error
-            } else {
-                setTransactionData(null);
-                setTransactionError('Invalid JSON format: Missing required fields.');
-                setAlert({ isOpen: true, message: 'Invalid JSON format: Missing required fields.' });
-            }
-            } catch (err) {
-            console.error('Error parsing JSON:', err);
-            setTransactionData(null);
-            setTransactionError('Invalid JSON format.');
-            setAlert({ isOpen: true, message: 'Invalid JSON format.' });
-            }
-        };
-        reader.readAsText(file);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    // Validate JSON data
+                    if (typeof json.arguments === 'string' && typeof json.contract_name === 'string') {
+                        setDeployJsonContent(json);
+                        setDeployError('');
+                        setDeployJsonFileName(file.name); // Set file name after validation
+                    } else {
+                        setDeployJsonContent(null);
+                        setDeployError('Invalid JSON format: "arguments" and "contract_name" are required.');
+                        if (deployJsonFileInputRef.current) {
+                            deployJsonFileInputRef.current.value = '';
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error parsing JSON:', err);
+                    setDeployJsonContent(null);
+                    setDeployError('Invalid JSON format.');
+                    if (deployJsonFileInputRef.current) {
+                        deployJsonFileInputRef.current.value = '';
+                    }
+                }
+            };
+            reader.readAsText(file);
         } else {
-        setJsonFileName('');
-        setTransactionData(null);
-        setTransactionError('Please upload a JSON file.');
-        setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
+            setDeployJsonFileName('');
+            setDeployJsonContent(null);
+            setDeployError('Please upload a valid JSON file.');
+            if (deployJsonFileInputRef.current) {
+                deployJsonFileInputRef.current.value = '';
+            }
+        }
+    };
+
+    // Handler functions for Solidity Drag and Drop
+    const handleSolidityDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleSolidityDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleSolidityDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.sol')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setSolidityContent(event.target.result);
+                setSolidityFileName(file.name); // Set after reading
+                setDeployError(''); // Reset error message
+            };
+            reader.readAsText(file);
+        } else {
+            setSolidityFileName('');
+            setSolidityContent('');
+            setDeployError('Please upload a valid Solidity (.sol) file.');
+            if (solidityFileInputRef.current) {
+                solidityFileInputRef.current.value = '';
+            }
         }
     };
 
@@ -550,56 +606,71 @@ function Dashboard() {
         keyPairFileInputRef.current.click();
     };
 
-    const handleSubmit = () => {
-        if (!transactionData) {
-        setTransactionError('No valid transaction data found.');
-        setAlert({ isOpen: true, message: 'No valid transaction data found.' });
-        return;
-        }
-        if (!isConnected) {
-        setTransactionError('Please connect to a net before submitting a transaction.');
-        setAlert({ isOpen: true, message: 'Please connect to a net before submitting a transaction.' });
-        return;
-        }
-
-        // Send transaction data to background script
-        chrome.runtime.sendMessage({
-        action: 'submitTransactionFromDashboard',
-        transactionData: transactionData,
-        domain: domain,
-        net: selectedNet,
-        }, (response) => {
-        if (response.success) {
-            setSuccessResponse(response.data);
-            setShowSuccessModal(true);
-            setTransactionError('');
-            setJsonFileName(''); // Clear the file name after successful submission
-            setTransactionData(null);
-        } else {
-            setTransactionError(response.error || 'Transaction submission failed.');
-            setAlert({ isOpen: true, message: response.error || 'Transaction submission failed.' });
-        }
-        });
+    // New Handlers for Deployment
+    const handleDeployFileClick = () => {
+        deployJsonFileInputRef.current.click();
     };
 
-    // Function to handle transaction ID click
-    const handleIdClick = () => {
-        try {
-        const transactionId = (successResponse && successResponse.postTransaction && successResponse.postTransaction.id) || '';
-        const tempInput = document.createElement('input');
-        tempInput.value = transactionId;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        setIsIdCopied(true);
-        setTimeout(() => {
-            setIsIdCopied(false);
-        }, 1500);
-        } catch (err) {
-        setAlert({ isOpen: true, message: 'Unable to copy transaction ID.' });
-        console.error('Unable to copy text: ', err);
+    const deployJsonFileInputRef = useRef(null);
+    const solidityFileInputRef = useRef(null);
+
+    // New Handler for Deployment
+    const handleDeploy = () => {
+        // Validate that both Solidity and JSON files are uploaded
+        if (!solidityContent || !deployJsonContent) {
+            setDeployError('Both Solidity contract and JSON configuration files are required.');
+            return;
         }
+
+        // Ensure JSON has required fields
+        const { arguments: args, contract_name } = deployJsonContent;
+        if (!args || !contract_name) {
+            setDeployError('JSON file must contain "arguments" and "contract_name".');
+            return;
+        }
+
+        if (!isConnected) {
+            setDeployError('Please connect to a net before deploying a contract.');
+            return;
+        }
+
+        // Send deployment data to background script
+        chrome.runtime.sendMessage({
+            action: 'deployContractChain',
+            soliditySource: solidityContent,
+            deployConfig: {
+                arguments: args,
+                contract_name: contract_name
+            },
+            ownerAddress: ownerAddress,
+            domain: domain,
+            net: selectedNet
+        }, (response) => {
+            if (response.success) {
+                if (response.contractAddress) {
+                    setContractAddress(response.contractAddress);
+                    setShowContractModal(true);
+                    // Clear the uploaded files
+                    setSolidityFileName('');
+                    setSolidityContent('');
+                    setDeployJsonFileName('');
+                    setDeployJsonContent(null);
+                    setDeployError('');
+
+                    // Reset file input values
+                    if (solidityFileInputRef.current) {
+                        solidityFileInputRef.current.value = '';
+                    }
+                    if (deployJsonFileInputRef.current) {
+                        deployJsonFileInputRef.current.value = '';
+                    }
+                } else {
+                    setDeployError('Deployment succeeded but no contract address returned.');
+                }
+            } else {
+                setDeployError(response.error || 'Contract deployment failed.');
+            }
+        });
     };
 
     // Function to handle favicon load error
@@ -639,6 +710,54 @@ function Dashboard() {
         setAlert({ isOpen: false, message: '' });
     };
 
+    // Handler function for uploading key pairs
+    const handleKeyPairFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/json') {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = JSON.parse(event.target.result);
+                    // Assume json is an array of keyPairs or a single keyPair
+                    if (Array.isArray(json)) {
+                        appendKeyPairs(json);
+                        setAlert({ isOpen: true, message: 'Key pairs uploaded successfully.' });
+                    } else if (json.publicKey && json.privateKey) {
+                        appendKeyPairs([json]);
+                        setAlert({ isOpen: true, message: 'Key pair uploaded successfully.' });
+                    } else {
+                        setAlert({ isOpen: true, message: 'Invalid JSON format for key pair.' });
+                    }
+                } catch (err) {
+                    console.error('Error parsing key pair JSON:', err);
+                    setAlert({ isOpen: true, message: 'Invalid JSON format for key pair.' });
+                }
+            };
+            reader.readAsText(file);
+        } else {
+            setAlert({ isOpen: true, message: 'Please upload a valid JSON file.' });
+        }
+    };
+
+    const handleAddressClick = () => {
+        try {
+        const address = contractAddress;
+        const tempInput = document.createElement('input');
+        tempInput.value = address;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        setIsAddressCopied(true);
+        setTimeout(() => {
+            setIsAddressCopied(false);
+        }, 1500);
+        } catch (err) {
+        setDeployError('Unable to copy contract address.');
+        console.error('Unable to copy text: ', err);
+        }
+    };
+
     return (
         <>
         <div className="lottie-background">
@@ -652,7 +771,7 @@ function Dashboard() {
                 </div>
                 <div className="badge-container">
                 <span className="badge" onClick={toggleServiceMode}>
-                    {serviceMode === 'KV' ? 'Key-Value' : 'Smart Contract'}
+                    {serviceMode === 'Contract' ? 'Smart Contract' : 'Key-Value'}
                 </span>
                 </div>
                 <div className="header__icon open-panel">
@@ -723,40 +842,6 @@ function Dashboard() {
             </div>
             )}
 
-            {showSuccessModal && (
-            <div className="overlay">
-                <div className="modal">
-                <div className="modal-content">
-                    <h2>Transaction Submitted Successfully!</h2>
-                    {/* Extract transaction ID */}
-                    {successResponse && successResponse.postTransaction && successResponse.postTransaction.id ? (
-                    <div className="fieldset">
-                        <div className="radio-option radio-option--full">
-                            <input
-                            type="radio"
-                            name="transactionId"
-                            id="txId"
-                            value={successResponse.postTransaction.id}
-                            checked
-                            readOnly
-                            onClick={handleIdClick}
-                            />
-                            <label htmlFor="txId">
-                            <span>{isIdCopied ? 'Copied' : `${successResponse.postTransaction.id.slice(0, 5)}...${successResponse.postTransaction.id.slice(-5)}`}</span>
-                            </label>
-                        </div>
-                    </div>
-                    ) : (
-                    <p>No transaction ID found.</p>
-                    )}
-                    <button onClick={() => setShowSuccessModal(false)} className="button-close" title="Close Modal">
-                    Close
-                    </button>
-                </div>
-                </div>
-            </div>
-            )}
-
             {/* Alert Modal */}
             {alert.isOpen && (
                 <div className="overlay">
@@ -769,6 +854,37 @@ function Dashboard() {
                                     Okay
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Contract Address Modal */}
+            {showContractModal && (
+                <div className="overlay">
+                    <div className="modal">
+                        <div className="modal-content">
+                            <h2>Contract Deployed Successfully!</h2>
+                            <p>Contract Address:</p>
+                            <div className="fieldset">
+                                <div className="radio-option radio-option--full">
+                                    <input
+                                    type="radio"
+                                    name="contractAddress"
+                                    id="contractAddress"
+                                    value={contractAddress}
+                                    checked
+                                    readOnly
+                                    onClick={handleAddressClick}
+                                    />
+                                    <label htmlFor="contractAddress">
+                                    <span>{isAddressCopied ? 'Copied' : `${contractAddress.slice(0, 5)}...${contractAddress.slice(-5)}`}</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowContractModal(false)} className="button-close" title="Close Modal">
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -816,28 +932,58 @@ function Dashboard() {
                 )}
                 </div>
 
-                <div className="file-upload">
-                    <div
-                    className={`drag_box_outline ${jsonFileName ? 'file-uploaded' : ''}`}
-                    onDragEnter={handleDragEnter}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                    onClick={handleFileClick}
-                    >
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
-                        accept="application/json"
-                        onChange={handleFileUpload}
-                    />
-                    {jsonFileName ? (
-                        <span className="filename">{jsonFileName} uploaded</span>
-                    ) : (
-                        <span className="filename">Click to Upload JSON File</span>
-                    )}
+                {/* Deploy Contract Section */}
+                <div className="deploy-section">
+                    <div className="file-upload-row">
+                        {/* Solidity Contract Upload */}
+                        <div className="file-upload">
+                            <div
+                                className={`drag_box_outline ${solidityFileName ? 'file-uploaded' : ''}`}
+                                onDragEnter={handleSolidityDragEnter}
+                                onDragOver={handleSolidityDragOver}
+                                onDrop={handleSolidityDrop}
+                                onClick={() => solidityFileInputRef.current.click()}
+                            >
+                                <input
+                                    type="file"
+                                    ref={solidityFileInputRef}
+                                    style={{ display: 'none' }}
+                                    accept=".sol"
+                                    onChange={handleSolidityFileUpload}
+                                />
+                                {solidityFileName ? (
+                                    <span className="filename">{solidityFileName} uploaded</span>
+                                ) : (
+                                    <span className="filename">Contract (.sol)</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* JSON Configuration Upload */}
+                        <div className="file-upload">
+                            <div
+                                className={`drag_box_outline ${deployJsonFileName ? 'file-uploaded' : ''}`}
+                                onDragEnter={handleDeployDragEnter}
+                                onDragOver={handleDeployDragOver}
+                                onDrop={handleDeployDrop}
+                                onClick={() => deployJsonFileInputRef.current.click()}
+                            >
+                                <input
+                                    type="file"
+                                    ref={deployJsonFileInputRef}
+                                    style={{ display: 'none' }}
+                                    accept="application/json"
+                                    onChange={handleDeployJsonFileUpload}
+                                />
+                                {deployJsonFileName ? (
+                                    <span className="filename">{deployJsonFileName} uploaded</span>
+                                ) : (
+                                    <span className="filename">Configuration (.json)</span>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    {transactionError && <p className="error-message">{transactionError}</p>}
+                    {deployError && <p className="error-message">{deployError}</p>}
                 </div>
             </div>
 
@@ -852,11 +998,14 @@ function Dashboard() {
                             onChange={(e) => switchKeyPair(Number(e.target.value))}
                             className="select"
                             >
-                            {keyPairs.map((keyPair, index) => (
+                            {keyPairs.map((keyPair, index) => {
+                                const ownerAddr = generateOwnerAddress(keyPair.publicKey);
+                                return (
                                 <option key={index} value={index}>
-                                {`${keyPair.publicKey.slice(0, 4)}...${keyPair.publicKey.slice(-4)}`}
+                                    {`${ownerAddr.slice(0, 4)}...${ownerAddr.slice(-4)}`}
                                 </option>
-                            ))}
+                                );
+                            })}
                             </select>
                             <i className="fas fa-chevron-down"></i>
                         </div>
@@ -866,7 +1015,7 @@ function Dashboard() {
                                 <DeleteIcon style={{ color: 'white' }} />
                             </button>
                             )}
-                            <button onClick={handleCopyPublicKey} className="icon-button" title="Copy Public Key">
+                            <button onClick={handleCopyOwnerAddress} className="icon-button" title="Copy Owner Address">
                                 <ContentCopyIcon style={{ color: isCopied ? 'grey' : 'white' }} />
                             </button>
                             <button onClick={handleDownloadKeyPair} className="icon-button" title="Download Key Pair">
@@ -923,9 +1072,16 @@ function Dashboard() {
                 </div>
             )}
 
-            <button className="button button--full button--main open-popup" onClick={handleSubmit} title="Submit Transaction">
-                Submit
+            {/* Deploy Button */}
+            <button
+                className="button button--full button--main open-popup"
+                onClick={handleDeploy}
+                title="Deploy Contract"
+                disabled={!solidityContent || !deployJsonContent || !isConnected}
+            >
+                Deploy
             </button>
+
             <p className="bottom-navigation" style={{ backgroundColor: 'transparent', display: 'flex', justifyContent: 'center', textShadow: '1px 1px 1px rgba(0, 0, 0, 0.3)', color: 'rgb(255, 255, 255, 0.5)', fontSize: '9px' }}>
                 ResVault v{versionData.version}
             </p>
@@ -936,4 +1092,4 @@ function Dashboard() {
 
 }
 
-export default Dashboard;
+export default Contract;

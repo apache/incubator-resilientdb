@@ -555,5 +555,175 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
+    } else if (request.action === 'deployContractChain') {
+        // Handler for deploying contract chain
+        (async function() {
+            const domain = request.domain;
+            const net = request.net;
+            const ownerAddress = request.ownerAddress;
+            const soliditySource = request.soliditySource;
+            const deployConfig = request.deployConfig; // Contains arguments and contract_name
+
+            // Retrieve the signer's keys and URL from storage
+            chrome.storage.local.get(['keys', 'connectedNets'], async function (result) {
+                const keys = result.keys || {};
+                const connectedNets = result.connectedNets || {};
+
+                if (!connectedNets[domain] || connectedNets[domain] !== net) {
+                    sendResponse({ success: false, error: 'Not connected to the specified net for this domain.' });
+                    return;
+                }
+
+                if (!keys[domain] || !keys[domain][net]) {
+                    sendResponse({ success: false, error: 'Keys not found for the specified domain and net.' });
+                    return;
+                }
+
+                const { url, exportedKey } = keys[domain][net];
+
+                try {
+                    // Import the key material from JWK format
+                    const keyMaterial = await crypto.subtle.importKey(
+                        'jwk',
+                        exportedKey,
+                        { name: 'AES-GCM',
+                        },
+                        true,
+                        ['encrypt', 'decrypt']
+                    );
+
+                    const decryptedUrl = await decryptData(url.ciphertext, url.iv, keyMaterial);
+
+                    // 1. Perform addAddress mutation
+                    const addAddressMutation = `
+                    mutation {
+                      addAddress(
+                        config: "5 127.0.0.1 10005",
+                        address: "${escapeGraphQLString(ownerAddress)}",
+                        type: "data"
+                      )
+                    }
+                    `;
+
+                    const addAddressResponse = await fetch(decryptedUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ query: addAddressMutation }),
+                    });
+
+                    if (!addAddressResponse.ok) {
+                        throw new Error(`Network response was not ok: ${addAddressResponse.statusText}`);
+                    }
+
+                    const addAddressResult = await addAddressResponse.json();
+                    if (addAddressResult.errors) {
+                        console.error('GraphQL errors in addAddress:', addAddressResult.errors);
+                        sendResponse({ success: false, error: 'Error in addAddress mutation.', errors: addAddressResult.errors });
+                        return;
+                    }
+
+                    // Check if addAddress was successful
+                    if (addAddressResult.data && addAddressResult.data.addAddress === "Address added successfully") {
+                        // 2. Perform compileContract mutation
+                        const escapedSoliditySource = escapeGraphQLString(soliditySource);
+
+                        const compileContractMutation = `
+                        mutation {
+                          compileContract(
+                            source: """${escapedSoliditySource}""",
+                            type: "data"
+                        )
+                        }
+                        `;
+
+                        const compileContractResponse = await fetch(decryptedUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ query: compileContractMutation }),
+                        });
+
+                        if (!compileContractResponse.ok) {
+                            throw new Error(`Network response was not ok: ${compileContractResponse.statusText}`);
+                        }
+
+                        const compileContractResult = await compileContractResponse.json();
+                        if (compileContractResult.errors) {
+                            console.error('GraphQL errors in compileContract:', compileContractResult.errors);
+                            sendResponse({ success: false, error: 'Error in compileContract mutation.', errors: compileContractResult.errors });
+                            return;
+                        }
+
+                        // Extract the contract filename
+                        const contractFilename = compileContractResult.data.compileContract;
+                        if (!contractFilename) {
+                            sendResponse({ success: false, error: 'Failed to compile contract.' });
+                            return;
+                        }
+
+                        // 3. Perform deployContract mutation
+                        const { arguments: args, contract_name } = deployConfig;
+                        const deployContractMutation = `
+                        mutation {
+                          deployContract(
+                            config: "5 127.0.0.1 10005",
+                            contract: "${escapeGraphQLString(contractFilename)}",
+                            name: "/tmp/${escapeGraphQLString(contractFilename.replace('.json', '.sol'))}:${escapeGraphQLString(contract_name)}",
+                            arguments: "${escapeGraphQLString(args)}",
+                            owner: "${escapeGraphQLString(ownerAddress)}",
+                            type: "data"
+                          ){
+                            ownerAddress
+                            contractAddress
+                            contractName
+                          }
+                        }
+                        `;
+
+                        const deployContractResponse = await fetch(decryptedUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ query: deployContractMutation }),
+                        });
+
+                        if (!deployContractResponse.ok) {
+                            throw new Error(`Network response was not ok: ${deployContractResponse.statusText}`);
+                        }
+
+                        const deployContractResult = await deployContractResponse.json();
+                        if (deployContractResult.errors) {
+                            console.error('GraphQL errors in deployContract:', deployContractResult.errors);
+                            sendResponse({ success: false, error: 'Error in deployContract mutation.', errors: deployContractResult.errors });
+                            return;
+                        }
+
+                        // Extract the contract address and return success
+                        if (deployContractResult.data && deployContractResult.data.deployContract && deployContractResult.data.deployContract.contractAddress) {
+                            const contractAddress = deployContractResult.data.deployContract.contractAddress;
+                            sendResponse({ success: true, contractAddress: contractAddress });
+                            return;
+                        } else {
+                            sendResponse({ success: false, error: 'Failed to deploy contract.' });
+                            return;
+                        }
+
+                    } else {
+                        sendResponse({ success: false, error: 'Failed to add address.' });
+                        return;
+                    }
+
+                } catch (error) {
+                    console.error('Error deploying contract chain:', error);
+                    sendResponse({ success: false, error: error.message });
+                }
+            });
+        })();
+
+        return true; // Keep the message channel open for async sendResponse
     }
 });

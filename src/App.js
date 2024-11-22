@@ -6,11 +6,12 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Logs from "./pages/Logs";
+import Contract from "./pages/Contract";
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { GlobalContext } from './context/GlobalContext';
 
 function App() {
-  const { isAuthenticated } = useContext(GlobalContext);
+  const { serviceMode, isAuthenticated } = useContext(GlobalContext);
 
   return (
     <Routes>
@@ -21,10 +22,15 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </>
-      ) : (
+      ) : serviceMode === 'KV' ? (
         <>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </>
+      ) : (
+        <>
+          <Route path="/contract" element={<Contract />} />
+          <Route path="*" element={<Navigate to="/contract" replace />} />
         </>
       )}
     </Routes>

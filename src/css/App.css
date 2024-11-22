@@ -3179,9 +3179,17 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
   width: 100%;
 }
 
+.file-upload-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
 .file-upload {
   user-select: none;
   cursor: pointer;
+  flex: 1;
+  margin: 0 5px;
 }
 
 .drag_box {
