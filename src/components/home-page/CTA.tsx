@@ -1,35 +1,78 @@
-// React and Next.js imports
-// Third-party library imports
-import Balancer from "react-wrap-balancer";
+"use client";
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-// UI component imports
-import { Button } from "@/components/ui/button";
+export const WobbleCard = ({
+  children,
+  containerClassName,
+  className,
+}: {
+  children: React.ReactNode;
+  containerClassName?: string;
+  className?: string;
+}) => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isHovering, setIsHovering] = useState(false);
 
-// Custom components
-import { Section, Container } from "@/components/craft";
-
-const Cta = () => {
+  const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
+    const { clientX, clientY } = event;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (clientX - (rect.left + rect.width / 2)) / 20;
+    const y = (clientY - (rect.top + rect.height / 2)) / 20;
+    setMousePosition({ x, y });
+  };
   return (
-    <Section className="px-4">
-      <Container className="flex flex-col items-center gap-6 rounded-lg border bg-accent/50 p-6 text-center md:rounded-xl md:p-12">
-        <h2 className="!my-0">Lets get started!</h2>
-        <h3 className="!mb-0 text-muted-foreground">
-          <Balancer>
-            This is where we gonna have the button to move to the visualiser.
-            This is the CTA.
-          </Balancer>
-        </h3>
-        <div className="not-prose mx-auto flex items-center gap-2">
-          <Button className="w-fit" asChild>
-            <a href="#">Get Started</a>
-          </Button>
-          <Button className="w-fit" variant="link" asChild>
-            <a href="#">Learn More {"->"}</a>
-          </Button>
-        </div>
-      </Container>
-    </Section>
+    <motion.section
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => {
+        setIsHovering(false);
+        setMousePosition({ x: 0, y: 0 });
+      }}
+      style={{
+        transform: isHovering
+          ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0) scale3d(1, 1, 1)`
+          : "translate3d(0px, 0px, 0) scale3d(1, 1, 1)",
+        transition: "transform 0.1s ease-out",
+      }}
+      className={cn(
+        "mx-auto w-full bg-gray-800 relative rounded-2xl overflow-hidden shadow-lg",
+        containerClassName
+      )}
+    >
+      <div
+        className="relative h-full sm:mx-0 sm:rounded-2xl overflow-hidden"
+        style={{
+          boxShadow:
+            "0 10px 32px rgba(34, 42, 53, 0.12), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.05), 0 4px 6px rgba(34, 42, 53, 0.08), 0 24px 108px rgba(47, 48, 55, 0.10)",
+        }}
+      >
+        <motion.div
+          style={{
+            transform: isHovering
+              ? `translate3d(${-mousePosition.x}px, ${-mousePosition.y}px, 0) scale3d(1.03, 1.03, 1)`
+              : "translate3d(0px, 0px, 0) scale3d(1, 1, 1)",
+            transition: "transform 0.1s ease-out",
+          }}
+          className={cn("h-full px-6 py-16 sm:px-10 text-gray-200", className)}
+        >
+          <Noise />
+          {children}
+        </motion.div>
+      </div>
+    </motion.section>
   );
 };
 
-export default Cta;
+const Noise = () => {
+  return (
+    <div
+      className="absolute inset-0 w-full h-full scale-[1.2] transform opacity-10 [mask-image:radial-gradient(#fff,transparent,75%)]"
+      style={{
+        backgroundImage: "url(/noise.webp)",
+        backgroundSize: "30%",
+      }}
+    ></div>
+  );
+};

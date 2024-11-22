@@ -1,10 +1,10 @@
 import PBFT from "@/components/home-page/PBFT";
 import Graphs from "@/components/home-page/Graphs";
-import Cta from "@/components/home-page/CTA";
+
 //import { EvervaultCardDemo } from "@/components/home-page/hero";
 import { Main, Section, Container } from "@/components/craft";
 import Description from "@/components/home-page/description";
-
+import { WobbleCard } from "./CTA";
 import { Button } from "@/components/ui/button";
 import {
   DiscIcon as DiscordIcon,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Navbar from "../ui/navbar";
 import { GoogleGeminiEffectDemo } from "./hero";
+import Footer from "../ui/footer";
 
 export function HomePage() {
   return (
@@ -24,9 +25,13 @@ export function HomePage() {
           <Description />
           <PBFT />
           <Graphs />
-          <Cta />
+          <WobbleCard containerClassName="custom-container" className="custom-card">
+          <h2 className="text-white text-2xl">Hover to Wobble</h2>
+          <p className="text-gray-200">This is some sample content inside the wobble card.</p>
+      </WobbleCard>
         </Container>
       </Section>
+      <Footer/>
     </Main>
   );
 }

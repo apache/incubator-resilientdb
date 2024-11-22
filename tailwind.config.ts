@@ -13,7 +13,8 @@ export default {
 			fontFamily: {
 				sans: [
 					"var(--font-sans)",
-					"sans-serif"
+					"sans-serif",
+					"Poppins"
 				]
 			},
 			colors: {

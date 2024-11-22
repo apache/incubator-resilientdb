@@ -25,9 +25,19 @@ export const GoogleGeminiEffect = ({
         className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1 }} // Fade-in effect duration
+        transition={{ duration: 1 }}
+        style={{ transform: "translateY(-20px)" }} // Fade-in effect duration
       >
-        {title || `MemLens : The ResiliantDB Memory Profiler`}
+        {title || `MemLens :`}
+      </motion.p>
+      <motion.p
+        className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        style={{ transform: "translateY(-40px)" }} // Fade-in effect duration
+      >
+        {title || `The ResiliantDB Memory Profiler`}
       </motion.p>
 
       {/* Fade-in effect on description */}

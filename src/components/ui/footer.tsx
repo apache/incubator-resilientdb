@@ -1,45 +1,99 @@
-import Image from "next/image";
-import Link from "next/link";
-import Balancer from "react-wrap-balancer";
+import React from 'react';
+import { FaLinkedin, FaGithub, FaTwitter } from 'react-icons/fa';
 
-import { Section, Container } from "../craft";
-import Logo from "@/public/logo.svg";
-
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
-    <footer className="not-prose border-t">
-      <Section>
-        <Container className="grid gap-6">
-          <div className="grid gap-4">
-            <Link href="/">
-              <h3 className="sr-only">brijr/components</h3>
-              <Image
-                src="/logo.svg"
-                alt="Logo"
-                width={120}
-                height={27.27}
-                className="transition-all hover:opacity-75 dark:invert"
-              ></Image>
-            </Link>
-            <p>
-              <Balancer>
-                
-The MemLens project analyzes ResilientDB’s performance to enhance efficiency on resource-limited devices.
-              </Balancer>
-            </p>
-            <div className="mb-6 flex flex-col gap-4 text-sm text-muted-foreground underline underline-offset-4 md:mb-0 md:flex-row">
-              <Link href="/privacy-policy">Privacy Policy</Link>
-              <Link href="/terms-of-service">Terms of Service</Link>
-              <Link href="/cookie-policy">Cookie Policy</Link>
-            </div>
-            <p className="text-muted-foreground">
-              ©{" "}
-              <a href="https://github.com/brijr/components">MemLens</a>
-              . All rights reserved. 2024-Present.
+    <footer className="bg-zinc-900 text-gray-300 py-8 font-['Poppins',sans-serif]">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col md:flex-row justify-between">
+          {/* Left Section: Logo and Description */}
+          <div className="mb-6 md:mb-0 flex-1">
+            <img
+              src="/placeholder.svg?height=40&width=120"
+              alt="Company Logo"
+              className="h-10 mb-4"
+            />
+            <p className="text-sm text-gray-400 max-w-xs">
+              Empowering innovation through cutting-edge technology solutions.
             </p>
           </div>
-        </Container>
-      </Section>
+
+          {/* Middle Section: Quick Links */}
+          <div className="mb-6 md:mb-0 flex-1">
+            <h3 className="text-lg font-semibold mb-4 text-white">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-white transition-colors duration-300 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                  Home
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-white transition-colors duration-300 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                  Services
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-white transition-colors duration-300 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                  About
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-white transition-colors duration-300 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Right Section: Connect With Us */}
+          <div className="flex-1 md:ml-auto md:text-right">
+            <h3 className="text-lg font-semibold mb-4 text-white">Connect With Us</h3>
+            <div className="flex justify-center md:justify-end space-x-4">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+              >
+                <FaLinkedin size={24} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+              >
+                <FaGithub size={24} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
+              >
+                <FaTwitter size={24} />
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Bottom Section */}
+        <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Your Company Name. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
   );
-}
+};
+
+export default Footer;
