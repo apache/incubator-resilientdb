@@ -48,14 +48,20 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
     poe_ = std::make_unique<PoE>(
-        config_.GetSelfInfo().id(), f,
+        config_, config_.GetSelfInfo().id(), f,
                                    total_replicas, GetSignatureVerifier());
     InitProtocol(poe_.get());
+    poe_->SetFailFunc([&](const Transaction& txn) {
+      SendFail(txn.proxy_id(), txn.hash());
+    });
   }
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<MessageType_Name(request->user_type());
+  if(config_.GetSelfInfo().id()==2){
+    //return true;
+  }
   if (request->user_type() == MessageType::Propose) {
     std::unique_ptr<Transaction> txn = std::make_unique<Transaction>();
     if (!txn->ParseFromString(request->data())) {
@@ -74,7 +80,35 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     poe_->ReceivePrepare(std::move(proposal));
     return 0;
-  } 
+  } else if (request->user_type() == MessageType::Commit) {
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    poe_->ReceiveCommit(std::move(proposal));
+    return 0;
+  } else if (request->user_type() == MessageType::Support) {
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    poe_->ReceiveSupport(std::move(proposal));
+    return 0;
+  } else if (request->user_type() == MessageType::Cert) {
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    poe_->ReceiveCert(std::move(proposal));
+    return 0;
+  }
+
   return 0;
 }
 
@@ -84,8 +118,14 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
   txn->set_uid(request->uid());
+  int proxy_id = txn->proxy_id();
+  std::string hash = txn->hash();
   //LOG(ERROR)<<"receive txn";
-  return poe_->ReceiveTransaction(std::move(txn));
+  bool ret = poe_->ReceiveTransaction(std::move(txn));
+  if(!ret){
+    SendFail(proxy_id, hash);
+  }
+  return ret;
 }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
@@ -103,6 +143,7 @@ int Consensus::CommitMsgInternal(const Transaction& txn) {
   transaction_executor_->Commit(std::move(request));
   return 0;
 }
+
 
 }  // namespace poe
 }  // namespace resdb

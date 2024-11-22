@@ -44,3 +44,7 @@ Run the script:
 	./performance/run_performance.sh config/kv_performance_server.conf
 
 Results will be saved locally and be shown on the screen as well.
+
+Run Other protocol:
+
+  POE: ./performance/run_performance.sh config/poe_performance_server.conf

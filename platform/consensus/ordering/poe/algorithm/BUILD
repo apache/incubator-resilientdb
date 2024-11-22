@@ -11,5 +11,6 @@ cc_library(
         "//common/crypto:signature_verifier",
         "//platform/consensus/ordering/common/algorithm:protocol_base",
         "//platform/common/queue:lock_free_queue",
+        "//platform/config:resdb_config",
     ],
 )

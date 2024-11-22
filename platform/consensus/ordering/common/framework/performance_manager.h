@@ -46,12 +46,15 @@ class PerformanceManager {
 
   int StartEval();
 
-  int ProcessResponseMsg(std::unique_ptr<Context> context,
+  virtual int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
   void SetDataFunc(std::function<std::string()> func);
 
   protected:
   virtual void SendMessage(const Request& request);
+  void SendResponseToClient(const BatchUserResponse& batch_response);
+  void RequestDone();
+  void Wait();
 
  private:
   // Add response messages which will be sent back to the caller
@@ -59,7 +62,8 @@ class PerformanceManager {
   comm::CollectorResultCode AddResponseMsg(
       std::unique_ptr<Request> request,
       std::function<void(std::unique_ptr<BatchUserResponse>)> call_back);
-  void SendResponseToClient(const BatchUserResponse& batch_response);
+  void LogLatency(
+      const BatchUserResponse& batch_response);
 
   struct QueueItem {
     std::unique_ptr<Context> context;
@@ -68,16 +72,18 @@ class PerformanceManager {
   int DoBatch(const std::vector<std::unique_ptr<QueueItem>>& batch_req);
   int BatchProposeMsg();
   int GetPrimary();
+
   std::unique_ptr<Request> GenerateUserRequest();
 
  protected:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
+  std::atomic<bool> stop_;
+  int id_;
 
  private:
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread user_req_thread_[16];
-  std::atomic<bool> stop_;
   Stats* global_stats_;
   std::atomic<int> send_num_;
   std::mutex mutex_;
@@ -93,10 +99,12 @@ class PerformanceManager {
   std::map<int64_t, int> response_[response_set_size_];
   std::mutex response_lock_[response_set_size_];
   int replica_num_;
-  int id_;
   int primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
+  
+  std::mutex n_mutex_;
+  std::condition_variable vote_cv_;
 };
 
 }  // namespace common

@@ -41,7 +41,7 @@ Consensus::Consensus(const ResDBConfig& config,
           config,
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchUserResponse> resp_msg) {
-            ResponseMsg(*resp_msg);
+            ResponseMsg(*request, *resp_msg);
           },
           nullptr, std::move(executor))) {
   LOG(INFO) << "is running is performance mode:"
@@ -174,6 +174,10 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   return 0;
 }
 
+int Consensus::ResponseMsg(const Request &request, const BatchUserResponse& batch_resp) {
+  return ResponseMsg(batch_resp);
+}
+
 int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
     Request request;
     request.set_seq(batch_resp.seq());
@@ -181,10 +185,22 @@ int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
     request.set_sender_id(config_.GetSelfInfo().id());
     request.set_proxy_id(batch_resp.proxy_id());
     batch_resp.SerializeToString(request.mutable_data());
+    //LOG(ERROR)<<" send back to proxy:"<<request.proxy_id();
     //global_stats_->AddResponseDelay(GetCurrentTime()- batch_resp.createtime());
     replica_communicator_->SendMessage(request, request.proxy_id());
   return 0;
 }
+
+void Consensus::SendFail(const int proxy_id, const std::string& hash){
+  Request request;
+  request.set_type(Request::TYPE_RESPONSE);
+  request.set_sender_id(config_.GetSelfInfo().id());
+  request.set_proxy_id(proxy_id);
+  request.set_ret(-2);
+  request.set_hash(hash);
+  replica_communicator_->SendMessage(request, request.proxy_id());
+}
+
 /*
 int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
   if (batch_resp.proxy_id() == 0) {

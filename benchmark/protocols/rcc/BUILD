@@ -12,11 +12,6 @@ cc_binary(
         "//platform/consensus/ordering/rcc/framework:consensus",
         "//service/utils:server_factory",
     ],
-    linkopts = [
-      "-l:libprofiler.a",
-      "-pthread",
-      "-L/usr/local/lib"
-    ]
 )
 
 cc_binary(

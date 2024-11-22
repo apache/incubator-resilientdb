@@ -13,7 +13,7 @@ RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  batch_size_ = 5;
+  batch_size_ = 1;
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
@@ -120,7 +120,7 @@ bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 
 void RCC::AsyncSend() {
 
-  int limit = 2;
+  int limit = 30;
   bool start = false;
   int64_t last_time = 0;
 
