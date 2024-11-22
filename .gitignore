@@ -1,10 +1,7 @@
 deps/*/
-<<<<<<< HEAD
 scripts/deploy/config/key.conf
 scripts/deploy/config_out/
 deploy/kv_server/output/
-=======
->>>>>>> 4b50ac6c0980c0650ac2a24d84a901b36ce2298c
 .idea/
 .vscode/
 .DS_Store
@@ -14,4 +11,3 @@ bazel-*
 venv
 sdk_validator/venv
 __pycache__
-scripts/deploy/config_out/

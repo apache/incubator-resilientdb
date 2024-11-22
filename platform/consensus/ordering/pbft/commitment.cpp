@@ -96,7 +96,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   }
   */
 
-/*
   // check signatures
   bool valid = verifier_->VerifyMessage(user_request->data(),
                                         user_request->data_signature());
@@ -106,7 +105,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     LOG(ERROR) << " msg:" << user_request->data().size();
     return -2;
   }
-  */
 
   if (pre_verify_func_ && !pre_verify_func_(*user_request)) {
     LOG(ERROR) << " check by the user func fail";
@@ -170,8 +168,6 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     return -2;
   }
 
-
-  //LOG(ERROR) << "the request from sender:" << request->sender_id() << " seq:" << request->seq();
   /*
     if(request->hash() != "null" + std::to_string(request->seq())
         && SignatureVerifier::CalculateHash(request->data()) != request->hash())
@@ -232,9 +228,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
-  if(config_.GetSelfInfo().id() ==2) {
-    //return 0;
-  }
   global_stats_->IncPrepare();
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
@@ -243,7 +236,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   // If it has received enough same requests(2f+1), broadcast the commit
   // message.
   uint64_t seq_ = request->seq();
-  //LOG(ERROR) << "prepare from sender:" << request->sender_id() << " seq:" << request->seq();
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {
@@ -303,7 +295,7 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_current_view(batch_resp->current_view());
     request.set_proxy_id(batch_resp->proxy_id());
     request.set_primary_id(batch_resp->primary_id());
-    //LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
+    // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
   }
