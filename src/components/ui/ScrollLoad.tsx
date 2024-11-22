@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { motion, MotionValue } from "framer-motion";
 
 const transition = {
-  duration: 0,
-  ease: "linear",
-};
+    duration: 4, // Adjust this duration to change the fade-in speed
+    ease: "linear",
+  };
 
 export const GoogleGeminiEffect = ({
   pathLengths,
@@ -20,18 +20,26 @@ export const GoogleGeminiEffect = ({
 }) => {
   return (
     <div className={cn("sticky top-80", className)}>
-      <p className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300">
+      {/* Fade-in effect on title */}
+      <motion.p
+        className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }} // Fade-in effect duration
+      >
         {title || `MemLens : The ResiliantDB Memory Profiler`}
-      </p>
-      <p className="text-xs md:text-xl font-normal text-center text-neutral-400 mt-4 max-w-lg mx-auto">
+      </motion.p>
+
+      {/* Fade-in effect on description */}
+      <motion.p
+        className="text-xs md:text-xl font-normal text-center text-neutral-400 mt-4 max-w-lg mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }} // Added delay for description fade-in
+      >
         {description ||
           `Visualise about the processes like never before!`}
-      </p>
-      {/*<div className="w-full h-[890px] -top-60 md:-top-40  flex items-center justify-center bg-red-transparent absolute ">
-        <button className="font-bold bg-white rounded-full md:px-4 md:py-2 px-2 py-1 md:mt-24 mt-8 z-30 md:text-base text-black text-xs  w-fit mx-auto ">
-          ui.aceternity.com
-        </button>
-      </div>*/}
+      </motion.p>
       <svg
         width="1440"
         height="890"
