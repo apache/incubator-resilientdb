@@ -14,6 +14,7 @@ import {
 import Navbar from "../ui/navbar";
 import { GoogleGeminiEffectDemo } from "./hero";
 import Footer from "../ui/footer";
+import PBFTVisualization from "../ui/PBFT graph/PBFTVisualization";
 
 export function HomePage() {
   return (
@@ -23,7 +24,7 @@ export function HomePage() {
       <Section>
         <Container>
           <Description />
-          <PBFT />
+          <PBFTVisualization />
           <Graphs />
           <WobbleCard containerClassName="custom-container" className="custom-card">
           <h2 className="text-white text-2xl">Hover to Wobble</h2>

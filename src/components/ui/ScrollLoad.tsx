@@ -37,7 +37,7 @@ export const GoogleGeminiEffect = ({
         transition={{ duration: 1 }}
         style={{ transform: "translateY(-40px)" }} // Fade-in effect duration
       >
-        {title || `The ResiliantDB Memory Profiler`}
+        {title || `Continuous Profiling of ResilientDB`}
       </motion.p>
 
       {/* Fade-in effect on description */}
@@ -48,7 +48,7 @@ export const GoogleGeminiEffect = ({
         transition={{ duration: 1, delay: 0.5 }} // Added delay for description fade-in
       >
         {description ||
-          `Visualise about the processes like never before!`}
+          `Tracking CPU Memory and More...`}
       </motion.p>
       <svg
         width="1440"
