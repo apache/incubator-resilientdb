@@ -301,7 +301,7 @@ mutation {
   deployContract(
     config: "5 127.0.0.1 10005",
     contract: "contract-20f42b42-f56f-45e8-8264-33cf8d93f8be.json",
-    name: "Token",
+    name: "/path/to/.json/file:Token",
     arguments: "1000",
     owner: "0x255d051758e95ed4abb2cdc69bb454110e827441",
     type: "data"
