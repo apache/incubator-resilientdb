@@ -11,10 +11,12 @@ import {
   GithubIcon,
   BarChart2Icon,
 } from "lucide-react";
+import Navbar from "../ui/navbar";
 
 export function HomePage() {
   return (
     <Main className="px-0 py-0">
+      <Navbar />
       <EvervaultCardDemo />
       <Section>
         <Container>
@@ -108,7 +110,7 @@ export function HomePageV1() {
         </div>
       </header>
       <main className="container mx-auto px-4 py-20 text-center relative z-10">
-        <h1 className="text-7xl font-bold mb-6">
+        <h1 className="text-7xl font-bold mb-6 text-white">
           VISUALIZE
           <br />
           <span className="bg-gradient-to-r from-[#3498DB] to-[#E74C3C] text-transparent bg-clip-text">
@@ -125,9 +127,10 @@ export function HomePageV1() {
           Analyze Now
         </Button>
       </main>
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
+      <div className="absolute inset-0 bg-black opacity-100 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
+            {/* Change the flame gradient to darker tones */}
             <linearGradient
               id="flameGradient"
               x1="0%"
@@ -135,9 +138,9 @@ export function HomePageV1() {
               x2="0%"
               y2="100%"
             >
-              <stop offset="0%" stopColor="#E74C3C" />
-              <stop offset="50%" stopColor="#E67E22" />
-              <stop offset="100%" stopColor="#F1C40F" />
+              <stop offset="0%" stopColor="#333" />
+              <stop offset="50%" stopColor="#444" />
+              <stop offset="100%" stopColor="#555" />
             </linearGradient>
             <pattern
               id="hexPattern"
@@ -152,7 +155,7 @@ export function HomePageV1() {
                 y="50"
                 fontFamily="monospace"
                 fontSize="10"
-                fill="#3498DB"
+                fill="#888"  // Set text color to gray
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
@@ -185,13 +188,13 @@ export function HomePageV1() {
           <g transform="translate(50, 100)">
             <path
               d="M0,100 Q50,-20 100,80 T200,60 T300,40 T400,70 T500,30"
-              stroke="#3498DB"
+              stroke="#888"  // Darker line color
               strokeWidth="3"
               fill="none"
             />
             <path
               d="M0,100 Q50,150 100,120 T200,140 T300,100 T400,130 T500,110"
-              stroke="#E74C3C"
+              stroke="#444"  // Darker line color
               strokeWidth="3"
               fill="none"
             />
@@ -200,7 +203,7 @@ export function HomePageV1() {
       </div>
       {/* Floating icon */}
       <div className="absolute bottom-10 right-10">
-        <BarChart2Icon className="h-16 w-16 text-[#3498DB] animate-pulse" />
+        <BarChart2Icon className="h-16 w-16 text-[#888] animate-pulse" /> {/* Darker floating icon */}
       </div>
     </Main>
   );

@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export const EvervaultCard = ({ className }: { className?: string }) => {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const mouseX = useMotionValue(0); // Track mouse X position
+  const mouseY = useMotionValue(0); // Track mouse Y position
   const [randomString, setRandomString] = useState("");
   const [firstLineText, setFirstLineText] = useState(""); // State for the first line
   const [secondLineText, setSecondLineText] = useState(""); // State for the second line
@@ -13,7 +13,7 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
     // Generate the initial random background string
     setRandomString(generateRandomString(10100));
 
-    // Update random string every second (1000 ms)
+    // Update random string every 500 ms
     const interval = setInterval(() => {
       setRandomString(generateRandomString(10100));
     }, 500);
@@ -23,7 +23,8 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
       "MemLens :", // First line to type
       setFirstLineText, // Function to update the first line text
       100, // Speed (controls how fast each character is typed)
-      () => { // Callback to start the second line after the first one finishes
+      () => {
+        // Callback to start the second line after the first one finishes
         typeWriterEffect(
           "The ResiliantDB Memory Profiler", // Second line to type
           setSecondLineText,
@@ -37,10 +38,11 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Mouse move handler
   function onMouseMove({ currentTarget, clientX, clientY }: any) {
     const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
+    mouseX.set(clientX - left); // Set X relative to the card
+    mouseY.set(clientY - top); // Set Y relative to the card
   }
 
   return (
@@ -51,12 +53,12 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
       )}
     >
       <div
-        onMouseMove={onMouseMove}
+        onMouseMove={onMouseMove} // Attach mouse tracking here
         className="group/card w-full relative overflow-hidden flex items-center justify-center h-full"
       >
-        <CardPattern randomString={randomString} /> {/* Remove mouseX, mouseY to make it static */}
+        {/* Add the CardPattern with spotlight */}
+        <CardPattern randomString={randomString} mouseX={mouseX} mouseY={mouseY} />
         <div className="relative z-10 text-center">
-          {/* Render the first part with larger font size */}
           <span
             className="dark:text-white text-black text-7xl font-bold"
             style={{ WebkitTextStroke: "3px black" }}
@@ -64,7 +66,6 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
             {firstLineText}
           </span>
           <br />
-          {/* Render the second part with smaller font size */}
           <span
             className="dark:text-white text-black text-5xl font-medium"
             style={{ WebkitTextStroke: "1px black" }}
@@ -78,20 +79,31 @@ export const EvervaultCard = ({ className }: { className?: string }) => {
 };
 
 // Generates the moving spotlight effect and the random string background
-function CardPattern({ randomString }: any) {
+function CardPattern({ randomString, mouseX, mouseY }: any) {
+  const maskImage = useMotionTemplate`radial-gradient(250px at ${mouseX}px ${mouseY}px, rgba(255,255,255,0.8), transparent)`; // Spotlight effect
+  const style = { maskImage, WebkitMaskImage: maskImage };
+
   return (
     <div className="pointer-events-none">
       {/* Translucent Black Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black to-black opacity-40 z-0"></div> {/* Black Gradient with lower z-index */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black to-black opacity-40 z-0"></div>
 
-      {/* Random string background visible across entire screen */}
-      <motion.div
-        className="absolute inset-0 opacity-15 mix-blend-screen z-10" // Mix blend mode for contrast and visibility
-      >
+      {/* Random string background */}
+      <div className="absolute inset-0 opacity-30 mix-blend-lighten z-10">
         <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-green-500 font-mono font-bold transition duration-500 z-20">
           {randomString}
         </p>
-      </motion.div>
+      </div>
+
+      {/* Spotlight */}
+      <motion.div
+        className="absolute inset-0 z-30"
+        style={{
+          ...style, // Apply spotlight style
+          mixBlendMode: "normal", // Blend mode for spotlight
+          opacity: 0.6, // Adjust spotlight visibility
+        }}
+      />
     </div>
   );
 }
