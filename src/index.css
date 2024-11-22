@@ -107,3 +107,13 @@
 div[role="toolbar"] {
   display: none !important;
 }
+
+/* CSS for the fade transition effect */
+.fade-enter, .fade-exit {
+  opacity: 0;
+  transition: opacity 500ms ease-in-out;
+}
+
+.fade-enter-active, .fade-exit-active {
+  opacity: 1;
+}

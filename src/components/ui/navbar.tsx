@@ -9,7 +9,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-black shadow-lg fixed top-0 left-0 w-full z-50">
+    <nav className="bg-black bg-opacity-30 backdrop-blur-lg fixed top-0 left-0 w-full z-50 shadow-lg">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between">
           <div className="flex space-x-7">

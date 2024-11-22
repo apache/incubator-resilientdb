@@ -1,7 +1,7 @@
 import PBFT from "@/components/home-page/PBFT";
 import Graphs from "@/components/home-page/Graphs";
 import Cta from "@/components/home-page/CTA";
-import { EvervaultCardDemo } from "@/components/home-page/hero";
+//import { EvervaultCardDemo } from "@/components/home-page/hero";
 import { Main, Section, Container } from "@/components/craft";
 import Description from "@/components/home-page/description";
 
@@ -12,12 +12,13 @@ import {
   BarChart2Icon,
 } from "lucide-react";
 import Navbar from "../ui/navbar";
+import { GoogleGeminiEffectDemo } from "./hero";
 
 export function HomePage() {
   return (
     <Main className="px-0 py-0">
       <Navbar />
-      <EvervaultCardDemo />
+      <GoogleGeminiEffectDemo />
       <Section>
         <Container>
           <Description />
@@ -208,3 +209,4 @@ export function HomePageV1() {
     </Main>
   );
 }
+
