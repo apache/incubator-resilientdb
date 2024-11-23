@@ -1,8 +1,32 @@
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import PBFTVisualization from "@/components/ui/PBFT graph/PBFTVisualization"; // Adjust path if needed
+import { useEffect, useRef, useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import PBFTVisualization from "@/components/ui/PBFT graph/PBFTVisualization"
 
-const PBFTPage = () => {
+export default function App() {
+  const [isVisible, setIsVisible] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the component is visible
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current)
+      }
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-gray-900 p-4 text-white">
       <h1 className="text-3xl font-bold text-center mb-8">
@@ -17,7 +41,9 @@ const PBFTPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <PBFTVisualization />
+            <div ref={containerRef} className={`pbft-visualization ${isVisible ? 'visible' : ''}`}>
+              <PBFTVisualization />
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-gray-800 text-white">
@@ -29,6 +55,18 @@ const PBFTPage = () => {
               <div>
                 <h3 className="text-xl font-semibold mb-2">Color Legend</h3>
                 <div className="space-y-2">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-yellow-500 mr-2"></div>
+                    <span>Client</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-green-500 mr-2"></div>
+                    <span>Primary Node</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-blue-500 mr-2"></div>
+                    <span>Secondary Nodes</span>
+                  </div>
                   <div className="flex items-center">
                     <div className="w-4 h-4 bg-green-500 mr-2"></div>
                     <span>Request</span>
@@ -61,12 +99,15 @@ const PBFTPage = () => {
                   <li>Nodes send reply messages to the client</li>
                 </ol>
               </div>
+              <div>
+                <h3 className="text-xl font-semibold mb-2">Replay Animation</h3>
+                <p>Click the replay button at the bottom of the visualization to restart the animation.</p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PBFTPage;

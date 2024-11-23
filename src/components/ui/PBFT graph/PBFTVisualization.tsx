@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import './PBFTVisualization.css'
 
 interface Message {
@@ -16,39 +16,43 @@ interface Message {
 export default function PBFTVisualization() {
   const [animationStarted, setAnimationStarted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [animationKey, setAnimationKey] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
-  const nodes = ['Client', 'Node 0', 'Node 1', 'Node 2', 'Node 3']
+  const nodes = ['Client', 'Primary', 'Node 1', 'Node 2', 'Node 3']
   const phases = ['Request', 'Pre-prepare', 'Prepare', 'Commit', 'Reply']
   
   const messages: Message[] = [
     // Request phase
-    { id: 'req1', from: 'Client', to: 'Node 0', phase: 'Request', color: '#4CAF50', delay: 0, duration: 2 },
+    { id: 'req1', from: 'Client', to: 'Primary', phase: 'Request', color: '#FFA726', delay: 0, duration: 2 },
     
     // Pre-prepare phase
-    { id: 'pp1', from: 'Node 0', to: 'Node 1', phase: 'Pre-prepare', color: '#FFA726', delay: 2, duration: 2 },
-    { id: 'pp2', from: 'Node 0', to: 'Node 2', phase: 'Pre-prepare', color: '#FFA726', delay: 2, duration: 2 },
-    { id: 'pp3', from: 'Node 0', to: 'Node 3', phase: 'Pre-prepare', color: '#FFA726', delay: 2, duration: 2 },
+    { id: 'pp1', from: 'Primary', to: 'Node 1', phase: 'Pre-prepare', color: '#4CAF50', delay: 2, duration: 2 },
+    { id: 'pp2', from: 'Primary', to: 'Node 2', phase: 'Pre-prepare', color: '#4CAF50', delay: 2, duration: 2 },
+    { id: 'pp3', from: 'Primary', to: 'Node 3', phase: 'Pre-prepare', color: '#4CAF50', delay: 2, duration: 2 },
     
     // Prepare phase
-    { id: 'p1', from: 'Node 1', to: 'Node 0', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
+    { id: 'p1', from: 'Node 1', to: 'Primary', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
     { id: 'p2', from: 'Node 1', to: 'Node 2', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
     { id: 'p3', from: 'Node 1', to: 'Node 3', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
-    { id: 'p4', from: 'Node 2', to: 'Node 0', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
+    { id: 'p4', from: 'Node 2', to: 'Primary', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
     { id: 'p5', from: 'Node 2', to: 'Node 1', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
     { id: 'p6', from: 'Node 2', to: 'Node 3', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
+    { id: 'p7', from: 'Node 3', to: 'Primary', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
+    { id: 'p8', from: 'Node 3', to: 'Node 1', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
+    { id: 'p9', from: 'Node 3', to: 'Node 2', phase: 'Prepare', color: '#29B6F6', delay: 4, duration: 2 },
     
     // Commit phase
-    { id: 'c1', from: 'Node 0', to: 'Node 1', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
-    { id: 'c2', from: 'Node 0', to: 'Node 2', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
-    { id: 'c3', from: 'Node 0', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
-    { id: 'c4', from: 'Node 1', to: 'Node 0', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c1', from: 'Primary', to: 'Node 1', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c2', from: 'Primary', to: 'Node 2', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c3', from: 'Primary', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c4', from: 'Node 1', to: 'Primary', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c5', from: 'Node 1', to: 'Node 2', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c6', from: 'Node 1', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
-    { id: 'c7', from: 'Node 2', to: 'Node 0', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c7', from: 'Node 2', to: 'Primary', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c8', from: 'Node 2', to: 'Node 1', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c9', from: 'Node 2', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
-    
+    { id: 'c10', from: 'Node 3', to: 'Primary', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c11', from: 'Node 3', to: 'Node 1', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c12', from: 'Node 3', to: 'Node 2', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
   ]
 
   useEffect(() => {
@@ -74,10 +78,9 @@ export default function PBFTVisualization() {
 
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(() => setAnimationStarted(true), 500)
-      return () => clearTimeout(timer)
+      setAnimationStarted(true);
     }
-  }, [isVisible, animationKey])
+  }, [isVisible]);
 
   const getNodeY = (node: string) => {
     const index = nodes.indexOf(node)
@@ -95,9 +98,14 @@ export default function PBFTVisualization() {
     return `M ${startX} ${fromY} C ${midX} ${fromY}, ${midX} ${toY}, ${endX} ${toY}`
   }
 
+  const handleReplay = () => {
+    setAnimationStarted(false);
+    setTimeout(() => setAnimationStarted(true), 100);
+  }
+
   return (
     <div ref={containerRef} className="pbft-visualization">
-      <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
+      <svg viewBox="0 0 1200 600" className="pbft-svg">
         {/* Background grid */}
         <defs>
           <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
@@ -136,13 +144,12 @@ export default function PBFTVisualization() {
               x2="1050" 
               y2={getNodeY(node)} 
               className="timeline"
-              strokeDasharray={node === 'Node 3' ? '5,5' : 'none'}
             />
             <circle 
               cx="100" 
               cy={getNodeY(node)} 
               r="20" 
-              className={`node ${node === 'Node 0' ? 'primary' : 'secondary'} ${node === 'Node 3' ? 'faulty' : ''}`}
+              className={`node ${node === 'Client' ? 'client' : node === 'Primary' ? 'primary' : 'secondary'}`}
             />
             <text 
               x="50" 
@@ -185,7 +192,7 @@ export default function PBFTVisualization() {
         {/* Reply phase */}
         {animationStarted && (
           <g className="reply-combination">
-            {['Node 0', 'Node 1', 'Node 2'].map((node, index) => (
+            {['Primary', 'Node 1', 'Node 2', 'Node 3'].map((node, index) => (
               <g key={`reply-${node}`}>
                 <path
                   d={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
@@ -217,16 +224,24 @@ export default function PBFTVisualization() {
         {/* Replay button */}
         <g
           className="replay-button"
-          onClick={() => {
-            setAnimationStarted(false)
-            setAnimationKey(prev => prev + 1)
-            setTimeout(() => setAnimationStarted(true), 100)
-          }}
+          onClick={handleReplay}
         >
-          <circle cx="600" cy="580" r="20" fill="#4CAF50" />
+          <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
           <path
-            d="M 595 570 L 595 590 L 610 580 Z"
-            fill="white"
+            d="M 600 568 A 12 12 0 1 1 588 580 L 588 576"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M 584 580 L 588 576 L 592 580"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </g>
       </svg>
