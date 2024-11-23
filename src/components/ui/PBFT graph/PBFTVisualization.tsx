@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import './PBFTVisualization.css'
 
 interface Message {
@@ -15,6 +15,9 @@ interface Message {
 
 export default function PBFTVisualization() {
   const [animationStarted, setAnimationStarted] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
   const nodes = ['Client', 'Node 0', 'Node 1', 'Node 2', 'Node 3']
   const phases = ['Request', 'Pre-prepare', 'Prepare', 'Commit', 'Reply']
   
@@ -42,17 +45,39 @@ export default function PBFTVisualization() {
     { id: 'c4', from: 'Node 1', to: 'Node 0', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c5', from: 'Node 1', to: 'Node 2', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     { id: 'c6', from: 'Node 1', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c7', from: 'Node 2', to: 'Node 0', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c8', from: 'Node 2', to: 'Node 1', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
+    { id: 'c9', from: 'Node 2', to: 'Node 3', phase: 'Commit', color: '#EF5350', delay: 6, duration: 2 },
     
-    // Reply phase
-    { id: 'r1', from: 'Node 0', to: 'Client', phase: 'Reply', color: '#AB47BC', delay: 8, duration: 2 },
-    { id: 'r2', from: 'Node 1', to: 'Client', phase: 'Reply', color: '#AB47BC', delay: 8, duration: 2 },
-    { id: 'r3', from: 'Node 2', to: 'Client', phase: 'Reply', color: '#AB47BC', delay: 8, duration: 2 },
   ]
 
   useEffect(() => {
-    const timer = setTimeout(() => setAnimationStarted(true), 500)
-    return () => clearTimeout(timer)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% of the component is visible
+    )
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current)
+    }
+
+    return () => {
+      if (containerRef.current) {
+        observer.unobserve(containerRef.current)
+      }
+    }
   }, [])
+
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => setAnimationStarted(true), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible, animationKey])
 
   const getNodeY = (node: string) => {
     const index = nodes.indexOf(node)
@@ -71,8 +96,8 @@ export default function PBFTVisualization() {
   }
 
   return (
-    <div className="pbft-visualization">
-      <svg viewBox="0 0 1200 600" className="pbft-svg">
+    <div ref={containerRef} className="pbft-visualization">
+      <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
         {/* Background grid */}
         <defs>
           <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
@@ -157,50 +182,53 @@ export default function PBFTVisualization() {
           </g>
         ))}
 
-        {/* Reply combination effect */}
+        {/* Reply phase */}
         {animationStarted && (
           <g className="reply-combination">
-            <path
-              d={`M 1050 ${getNodeY('Node 0')} Q 1100 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
-              className="reply-path"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="1000"
-                to="0"
-                dur="2s"
-                begin="8s"
-                fill="freeze"
-              />
-            </path>
-            <path
-              d={`M 1050 ${getNodeY('Node 1')} Q 1100 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
-              className="reply-path"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="1000"
-                to="0"
-                dur="2s"
-                begin="8s"
-                fill="freeze"
-              />
-            </path>
-            <path
-              d={`M 1050 ${getNodeY('Node 2')} Q 1100 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
-              className="reply-path"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="1000"
-                to="0"
-                dur="2s"
-                begin="8s"
-                fill="freeze"
-              />
-            </path>
+            {['Node 0', 'Node 1', 'Node 2'].map((node, index) => (
+              <g key={`reply-${node}`}>
+                <path
+                  d={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
+                  className="reply-path"
+                  stroke="#AB47BC"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="1000"
+                    to="0"
+                    dur="2s"
+                    begin={`${8 + index * 0.2}s`}
+                    fill="freeze"
+                  />
+                </path>
+                <circle r="4" fill="#AB47BC">
+                  <animateMotion
+                    path={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
+                    dur="2s"
+                    begin={`${8 + index * 0.2}s`}
+                    fill="freeze"
+                  />
+                </circle>
+              </g>
+            ))}
           </g>
         )}
+
+        {/* Replay button */}
+        <g
+          className="replay-button"
+          onClick={() => {
+            setAnimationStarted(false)
+            setAnimationKey(prev => prev + 1)
+            setTimeout(() => setAnimationStarted(true), 100)
+          }}
+        >
+          <circle cx="600" cy="580" r="20" fill="#4CAF50" />
+          <path
+            d="M 595 570 L 595 590 L 610 580 Z"
+            fill="white"
+          />
+        </g>
       </svg>
     </div>
   )
