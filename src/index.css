@@ -117,3 +117,9 @@ div[role="toolbar"] {
 .fade-enter-active, .fade-exit-active {
   opacity: 1;
 }
+
+.logo {
+  width: 120px;
+  height: auto;
+}
+

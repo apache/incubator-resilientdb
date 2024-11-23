@@ -24,6 +24,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@react-three/fiber": "^8.17.10",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/typography": "^0.5.15",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",

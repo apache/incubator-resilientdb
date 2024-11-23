@@ -15,7 +15,8 @@ const Navbar: React.FC = () => {
           <div className="flex space-x-7">
             <div>
               <a href="#" className="flex items-center py-4 px-2">
-                <span className="font-semibold text-gray-500 text-lg">Logo</span>
+                {/* Updated to use PNG image */}
+                <img src="/Memlens.png" alt="Logo" className="logo" />
               </a>
             </div>
           </div>
