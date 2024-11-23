@@ -16,6 +16,7 @@ interface Message {
 export default function PBFTVisualization() {
   const [animationStarted, setAnimationStarted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [animationKey, setAnimationKey] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const nodes = ['Client', 'Primary', 'Node 1', 'Node 2', 'Node 3']
   const phases = ['Request', 'Pre-prepare', 'Prepare', 'Commit', 'Reply']
@@ -62,7 +63,7 @@ export default function PBFTVisualization() {
           setIsVisible(true)
         }
       },
-      { threshold: 0.1 } // Trigger when 10% of the component is visible
+      { threshold: 0.2 } // Trigger when 40% of the component is visible
     )
 
     if (containerRef.current) {
@@ -81,6 +82,13 @@ export default function PBFTVisualization() {
       setAnimationStarted(true);
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => setAnimationStarted(true), 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isVisible, animationKey])
 
   const getNodeY = (node: string) => {
     const index = nodes.indexOf(node)
@@ -105,7 +113,7 @@ export default function PBFTVisualization() {
 
   return (
     <div ref={containerRef} className="pbft-visualization">
-      <svg viewBox="0 0 1200 600" className="pbft-svg">
+      <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
         {/* Background grid */}
         <defs>
           <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
@@ -224,9 +232,13 @@ export default function PBFTVisualization() {
         {/* Replay button */}
         <g
           className="replay-button"
-          onClick={handleReplay}
+          onClick={() => {
+            setAnimationStarted(false)
+            setAnimationKey(prev => prev + 1)
+            setTimeout(() => setAnimationStarted(true), 100)
+          }}
         >
-          <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
+         <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
           <path
             d="M 600 568 A 12 12 0 1 1 588 580 L 588 576"
             fill="none"
