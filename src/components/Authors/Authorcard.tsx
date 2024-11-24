@@ -1,16 +1,15 @@
 "use client";
-import React from "react";
+
 import { CardBody, CardContainer, CardItem } from "@/components/Authors/3d-card";
 import { Link } from 'react-router-dom';
-
 interface AuthorCardProps {
   name: string;
   description: string;
   imageSrc: string;
-  twitterHandle: string;
+  LinkedinHandle: string;
 }
 
-export function AuthorCard({ name, description, imageSrc, twitterHandle }: AuthorCardProps) {
+export function AuthorCard({ name, description, imageSrc, LinkedinHandle }: AuthorCardProps) {
   return (
     <CardContainer className="inter-var">
       <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border">
@@ -40,12 +39,12 @@ export function AuthorCard({ name, description, imageSrc, twitterHandle }: Autho
           <CardItem
             translateZ={20}
             as={Link}
-            href={`https://twitter.com/${twitterHandle}`}
+            href={`https://www.linkedin.com/in/${LinkedinHandle}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
           >
-            Follow on Twitter →
+            <a href={`https://www.linkedin.com/in/${LinkedinHandle}`}>Follow me on LinkedIn →</a>
           </CardItem>
           <CardItem
             translateZ={20}
