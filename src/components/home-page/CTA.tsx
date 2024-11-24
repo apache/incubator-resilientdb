@@ -21,8 +21,8 @@ export const WobbleCard = ({
   const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
     const { clientX, clientY } = event;
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = (clientX - (rect.left + rect.width / 2)) / 20;
-    const y = (clientY - (rect.top + rect.height / 2)) / 20;
+    const x = (clientX - (rect.left + rect.width / 2)) / 60;
+    const y = (clientY - (rect.top + rect.height / 2)) / 60;
     setMousePosition({ x, y });
   };
 
@@ -46,7 +46,7 @@ export const WobbleCard = ({
       }}
       style={{
         transform: isHovering
-          ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0) scale3d(1.03, 1.03, 1) rotate3d(1, 1, 0, 5deg)`
+          ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0) scale3d(1.01, 1.01, 1) rotate3d(0.8, 0.8, 0, 3deg)`
           : "translate3d(0px, 0px, 0) scale3d(1, 1, 1) rotate3d(0, 0, 0, 0deg)",
         transition: "transform 0.2s ease-out",
       }}
@@ -64,9 +64,7 @@ export const WobbleCard = ({
       >
         <motion.div
           style={{
-            transform: isHovering
-              ? `translate3d(${-mousePosition.x}px, ${-mousePosition.y}px, 0) scale3d(1.05, 1.05, 1)`
-              : "translate3d(0px, 0px, 0) scale3d(1, 1, 1)",
+            transform: isHovering ? "scale3d(1.05, 1.05, 1)" : "scale3d(1, 1, 1)",
             transition: "transform 0.2s ease-out",
           }}
           className={cn(

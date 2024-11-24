@@ -13,6 +13,7 @@ import Navbar from "../ui/navbar";
 import { GoogleGeminiEffectDemo } from "./hero";
 import Footer from "../ui/footer";
 import PBFTVisualization from "../ui/PBFT graph/PBFTVisualization";
+import { GlowingStarsBackgroundCardPreview } from "./newCTA";
 
 export function HomePage() {
   return (
@@ -24,10 +25,11 @@ export function HomePage() {
           <Description />
           <PBFTVisualization />
           <Graphs />
-          <WobbleCard containerClassName="custom-container" className="custom-card">
+          <GlowingStarsBackgroundCardPreview/>
+          {/* <WobbleCard containerClassName="custom-container" className="custom-card">
           <h2 className="text-white text-2xl">Hover to Wobble</h2>
           <p className="text-gray-200">This is some sample content inside the wobble card.</p>
-      </WobbleCard>
+      </WobbleCard> */}
         </Container>
       </Section>
       <Footer/>
