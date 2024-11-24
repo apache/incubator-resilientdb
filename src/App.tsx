@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { HomePage } from "@/components/home-page/homePage";
 import PBFTPage from "@/components/home-page/PBFT"; // Import the new PBFT page
-import { ThreeDCardDemo } from "./components/Authors/Authorcard";
+import AuthorsPage from "./components/Authors/AuthorPage";
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pbft" element={<PBFTPage />} /> {/* Add this */}
-          <Route path="/authors" element={<ThreeDCardDemo />} />
+          <Route path="/authors" element={<AuthorsPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
