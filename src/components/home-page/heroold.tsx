@@ -21,7 +21,7 @@ const Hero = () => {
           className="not-prose mb-6 dark:invert md:mb-8"
         />
         <h1 className="text-4xl font-bold mb-4">
-          <Balancer>MemLens: ResilientDB Performance Profiling</Balancer>
+          <Balancer>MemLens ResilientDB Performance Profiling</Balancer>
         </h1>
         <h3 className="text-muted-foreground">
           <Balancer>

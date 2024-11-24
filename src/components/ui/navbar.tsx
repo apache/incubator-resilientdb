@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import React, { useState } from "react";
+import { Menu, X } from "lucide-react";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,17 +47,28 @@ const Navbar: React.FC = () => {
             </a>
           </div>
           <div className="md:hidden flex items-center">
-            <button className="outline-none mobile-menu-button" onClick={toggleMenu}>
+            <button
+              className="outline-none mobile-menu-button"
+              onClick={toggleMenu}
+            >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">Home</a>
-        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">Services</a>
-        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">About</a>
-        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">Contact</a>
+      <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
+        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">
+          Home
+        </a>
+        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">
+          Services
+        </a>
+        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">
+          About
+        </a>
+        <a href="#" className="block py-2 px-4 text-sm hover:bg-gray-200">
+          Contact
+        </a>
       </div>
     </nav>
   );

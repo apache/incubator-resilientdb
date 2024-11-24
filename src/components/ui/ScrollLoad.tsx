@@ -1,11 +1,12 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion, MotionValue } from "framer-motion";
+import { Button } from "./button";
 
 const transition = {
-    duration: 4, // Adjust this duration to change the fade-in speed
-    ease: "linear",
-  };
+  duration: 4, // Adjust this duration to change the fade-in speed
+  ease: "linear",
+};
 
 export const GoogleGeminiEffect = ({
   pathLengths,
@@ -28,16 +29,16 @@ export const GoogleGeminiEffect = ({
         transition={{ duration: 1 }}
         style={{ transform: "translateY(-20px)" }} // Fade-in effect duration
       >
-        {title || `MemLens :`}
+        {title || `MemLens`}
       </motion.p>
       <motion.p
-        className="text-lg md:text-7xl font-normal pb-4 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"
+        className="text-lg md:text-5xl font-normal pb-4 mt-2 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
         style={{ transform: "translateY(-40px)" }} // Fade-in effect duration
       >
-        {title || `Continuous Profiling of ResilientDB`}
+        {title || `A Continuous Profiling Tool for ResilientDB`}
       </motion.p>
 
       {/* Fade-in effect on description */}
@@ -47,8 +48,7 @@ export const GoogleGeminiEffect = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.5 }} // Added delay for description fade-in
       >
-        {description ||
-          `Tracking CPU Memory and More...`}
+        {description || `Tracks CPU, Memory, Build statistics and More...`}
       </motion.p>
       <svg
         width="1440"
