@@ -1,7 +1,10 @@
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react'
+import { Button } from "@/components/ui/button"
+import { Maximize2 } from 'lucide-react'
 import './PBFTVisualization.css'
+import FullScreenButton from './FullScreenButton'
 
 interface Message {
   id: string
@@ -63,7 +66,7 @@ export default function PBFTVisualization() {
           setIsVisible(true)
         }
       },
-      { threshold: 0.2 } // Trigger when 40% of the component is visible
+      { threshold: 0.2 } // Trigger when 20% of the component is visible
     )
 
     if (containerRef.current) {
@@ -76,12 +79,6 @@ export default function PBFTVisualization() {
       }
     }
   }, [])
-
-  useEffect(() => {
-    if (isVisible) {
-      setAnimationStarted(true);
-    }
-  }, [isVisible]);
 
   useEffect(() => {
     if (isVisible) {
@@ -107,156 +104,164 @@ export default function PBFTVisualization() {
   }
 
   const handleReplay = () => {
-    setAnimationStarted(false);
-    setTimeout(() => setAnimationStarted(true), 100);
+    setAnimationStarted(false)
+    setAnimationKey(prev => prev + 1)
+    setTimeout(() => setAnimationStarted(true), 100)
   }
 
   return (
-    <div ref={containerRef} className="pbft-visualization">
-      <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
-        {/* Background grid */}
-        <defs>
-          <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
+    <div className="pbft-container">
+      <div ref={containerRef} className="pbft-visualization">
+        <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
+          {/* Background grid */}
+          <defs>
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
 
-        {/* Phase columns */}
-        {phases.map((phase, index) => (
-          <g key={phase}>
-            <line
-              x1={150 + index * 200}
-              y1="50"
-              x2={150 + index * 200}
-              y2="550"
-              className="phase-line"
-            />
-            <text
-              x={250 + index * 200}
-              y="30"
-              className="phase-label"
-              textAnchor="middle"
-            >
-              {phase}
-            </text>
-          </g>
-        ))}
-
-        {/* Nodes */}
-        {nodes.map((node, index) => (
-          <g key={node}>
-            <line 
-              x1="150" 
-              y1={getNodeY(node)} 
-              x2="1050" 
-              y2={getNodeY(node)} 
-              className="timeline"
-            />
-            <circle 
-              cx="100" 
-              cy={getNodeY(node)} 
-              r="20" 
-              className={`node ${node === 'Client' ? 'client' : node === 'Primary' ? 'primary' : 'secondary'}`}
-            />
-            <text 
-              x="50" 
-              y={getNodeY(node)} 
-              className="node-label"
-            >
-              {node}
-            </text>
-          </g>
-        ))}
-
-        {/* Messages */}
-        {animationStarted && messages.map((msg) => (
-          <g key={msg.id} className="message">
-            <path 
-              d={getMessagePath(msg.from, msg.to, msg.phase)} 
-              stroke={msg.color}
-              className="message-path"
-            >
-              <animate
-                attributeName="stroke-dashoffset"
-                from="1000"
-                to="0"
-                dur={`${msg.duration}s`}
-                begin={`${msg.delay}s`}
-                fill="freeze"
+          {/* Phase columns */}
+          {phases.map((phase, index) => (
+            <g key={phase}>
+              <line
+                x1={150 + index * 200}
+                y1="50"
+                x2={150 + index * 200}
+                y2="550"
+                className="phase-line"
               />
-            </path>
-            <circle r="4" fill={msg.color} className="message-dot">
-              <animateMotion
-                path={getMessagePath(msg.from, msg.to, msg.phase)}
-                dur={`${msg.duration}s`}
-                begin={`${msg.delay}s`}
-                fill="freeze"
+              <text
+                x={250 + index * 200}
+                y="30"
+                className="phase-label"
+                textAnchor="middle"
+              >
+                {phase}
+              </text>
+            </g>
+          ))}
+
+          {/* Nodes */}
+          {nodes.map((node, index) => (
+            <g key={node}>
+              <line 
+                x1="150" 
+                y1={getNodeY(node)} 
+                x2="1050" 
+                y2={getNodeY(node)} 
+                className="timeline"
               />
-            </circle>
-          </g>
-        ))}
+              <circle 
+                cx="100" 
+                cy={getNodeY(node)} 
+                r="20" 
+                className={`node ${node === 'Client' ? 'client' : node === 'Primary' ? 'primary' : 'secondary'}`}
+              />
+              <text 
+                x="50" 
+                y={getNodeY(node)} 
+                className="node-label"
+              >
+                {node}
+              </text>
+            </g>
+          ))}
 
-        {/* Reply phase */}
-        {animationStarted && (
-          <g className="reply-combination">
-            {['Primary', 'Node 1', 'Node 2', 'Node 3'].map((node, index) => (
-              <g key={`reply-${node}`}>
-                <path
-                  d={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
-                  className="reply-path"
-                  stroke="#AB47BC"
-                >
-                  <animate
-                    attributeName="stroke-dashoffset"
-                    from="1000"
-                    to="0"
-                    dur="2s"
-                    begin={`${8 + index * 0.2}s`}
-                    fill="freeze"
-                  />
-                </path>
-                <circle r="4" fill="#AB47BC">
-                  <animateMotion
-                    path={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
-                    dur="2s"
-                    begin={`${8 + index * 0.2}s`}
-                    fill="freeze"
-                  />
-                </circle>
-              </g>
-            ))}
-          </g>
-        )}
+          {/* Messages */}
+          {animationStarted && messages.map((msg) => (
+            <g key={msg.id} className="message">
+              <path 
+                d={getMessagePath(msg.from, msg.to, msg.phase)} 
+                stroke={msg.color}
+                className="message-path"
+              >
+                <animate
+                  attributeName="stroke-dashoffset"
+                  from="1000"
+                  to="0"
+                  dur={`${msg.duration}s`}
+                  begin={`${msg.delay}s`}
+                  fill="freeze"
+                />
+              </path>
+              <circle r="4" fill={msg.color} className="message-dot">
+                <animateMotion
+                  path={getMessagePath(msg.from, msg.to, msg.phase)}
+                  dur={`${msg.duration}s`}
+                  begin={`${msg.delay}s`}
+                  fill="freeze"
+                />
+              </circle>
+            </g>
+          ))}
 
-        {/* Replay button */}
-        <g
-          className="replay-button"
-          onClick={() => {
-            setAnimationStarted(false)
-            setAnimationKey(prev => prev + 1)
-            setTimeout(() => setAnimationStarted(true), 100)
-          }}
-        >
-         <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
-          <path
-            d="M 600 568 A 12 12 0 1 1 588 580 L 588 576"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M 584 580 L 588 576 L 592 580"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </g>
-      </svg>
+          {/* Reply phase */}
+          {animationStarted && (
+            <g className="reply-combination">
+              {['Primary', 'Node 1', 'Node 2', 'Node 3'].map((node, index) => (
+                <g key={`reply-${node}`}>
+                  <path
+                    d={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
+                    className="reply-path"
+                    stroke="#AB47BC"
+                  >
+                    <animate
+                      attributeName="stroke-dashoffset"
+                      from="1000"
+                      to="0"
+                      dur="2s"
+                      begin={`${8 + index * 0.2}s`}
+                      fill="freeze"
+                    />
+                  </path>
+                  <circle r="4" fill="#AB47BC" opacity="0">
+                    <animate
+                      attributeName="opacity"
+                      from="0"
+                      to="1"
+                      dur="0.1s"
+                      begin={`${8 + index * 0.2}s`}
+                      fill="freeze"
+                    />
+                    <animateMotion
+                      path={`M 950 ${getNodeY(node)} C 1000 ${getNodeY(node)}, 1000 ${getNodeY('Client')}, 1050 ${getNodeY('Client')}`}
+                      dur="2s"
+                      begin={`${8 + index * 0.2}s`}
+                      fill="freeze"
+                    />
+                  </circle>
+                </g>
+              ))}
+            </g>
+          )}
+
+          {/* Replay button */}
+          <g
+            className="replay-button"
+            onClick={handleReplay}
+          >
+            <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
+            <path
+              d="M 600 568 A 12 12 0 1 1 588 580 L 588 576"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M 584 580 L 588 576 L 592 580"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        </svg>
+      </div>
+      <FullScreenButton/>
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import PBFT from "@/components/home-page/PBFT";
 import Graphs from "@/components/home-page/Graphs";
-
+import { Maximize2 } from 'lucide-react'
 //import { EvervaultCardDemo } from "@/components/home-page/hero";
 import { Main, Section, Container } from "@/components/craft";
 import Description from "@/components/home-page/description";

@@ -23,8 +23,12 @@ export function Dashboard() {
         <nav className="border-b border-slate-800 px-4 py-3">
           <div className="mx-auto flex items-center justify-between">
             <div className="flex items-center space-x-8">
-              <a href="/" className="text-xl font-bold">
-                MemLens
+              <a href="/">
+              <img
+              src="/Memlens.png"  // Changed to PNG logo
+              alt="Company Logo"
+              className="h-6 mb-0"
+              />
               </a>
               <TabsList className="bg-slate-900">
                 <TabsTrigger value="bazelBuild">Bazel Build</TabsTrigger>

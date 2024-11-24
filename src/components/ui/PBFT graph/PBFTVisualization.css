@@ -5,12 +5,14 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  overflow: hidden;
+  position: relative;
 }
 
 .pbft-svg {
   width: 100%;
   height: auto;
-  overflow: visible;
+  display: block;
 }
 
 .timeline {
@@ -83,5 +85,34 @@
 
 .replay-button:hover path {
   stroke: #cccccc;
+}
+
+.full-screen-button-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.full-screen-button {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.full-screen-button:hover {
+  background-color: #ffffff;
+  color: #2a2a2a;
+}
+
+.pbft-container {
+  background-color: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
 }
 
