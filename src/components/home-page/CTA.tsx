@@ -15,7 +15,6 @@ export const WobbleCard = ({
 }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
-  const [swipeComplete, setSwipeComplete] = useState(false);
 
   const navigate = useNavigate();
 
@@ -27,10 +26,14 @@ export const WobbleCard = ({
     setMousePosition({ x, y });
   };
 
-  const handleSwipeComplete = () => {
+  const handleNavigateDashboard = () => {
     console.log("Navigating to /dashboard");
-    setSwipeComplete(true);
-    setTimeout(() => navigate("/dashboard"), 300); // Delay for animation
+    navigate("/dashboard");
+  };
+
+  const handleOtherAction = () => {
+    console.log("Second button clicked");
+    // Placeholder for other action
   };
 
   return (
@@ -48,7 +51,7 @@ export const WobbleCard = ({
         transition: "transform 0.2s ease-out",
       }}
       className={cn(
-        "mx-auto w-full bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 relative rounded-2xl overflow-hidden shadow-xl",
+        "mx-auto w-full bg-black relative rounded-2xl overflow-hidden shadow-xl",
         containerClassName
       )}
     >
@@ -73,24 +76,40 @@ export const WobbleCard = ({
         >
           <Noise />
           {children}
-          {/* Swipe to Unlock */}
-          <div className="mt-8 relative w-full h-16 bg-gray-700 rounded-full overflow-hidden">
-            <motion.div
-              drag="x"
-              dragConstraints={{ left: 0, right: 300 }} // Adjust based on width
-              onDragEnd={(e, info) => {
-                if (info.offset.x > 250) handleSwipeComplete(); // Trigger navigation
+          {/* Buttons centered horizontally */}
+          <div className="flex justify-center gap-4 mt-8">
+            {/* First Button */}
+            <motion.button
+              style={{
+                position: "relative",
+                zIndex: 1000,
+                fontFamily: "'Poppins', sans-serif",
               }}
-              className="absolute top-0 left-0 w-16 h-16 bg-blue-600 rounded-full cursor-pointer flex items-center justify-center"
-              style={{ zIndex: 1000 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              onClick={(event) => {
+                event.stopPropagation();
+                console.log("First button clicked");
+                handleNavigateDashboard();
+              }}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-400 hover:scale-105 hover:shadow-lg transition-all duration-200 ease-in-out"
             >
-              <span className="text-white font-bold text-lg">→</span>
-            </motion.div>
-            <p className="absolute inset-0 flex items-center justify-center text-white font-semibold text-lg">
-                Move to Dashboard
-            </p>
+              <span className="text-lg font-semibold">Go to Dashboard</span>
+            </motion.button>
+            {/* Second Button */}
+            <motion.button
+              style={{
+                position: "relative",
+                zIndex: 1000,
+                fontFamily: "'Poppins', sans-serif",
+              }}
+              onClick={(event) => {
+                event.stopPropagation();
+                console.log("Second button clicked");
+                handleOtherAction();
+              }}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-400 hover:scale-105 hover:shadow-lg transition-all duration-200 ease-in-out"
+            >
+              <span className="text-lg font-semibold">Second Action</span>
+            </motion.button>
           </div>
         </motion.div>
       </div>
