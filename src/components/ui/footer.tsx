@@ -9,9 +9,9 @@ const Footer: React.FC = () => {
           {/* Left Section: Logo and Description */}
           <div className="mb-6 md:mb-0 flex-1">
             <img
-              src="/placeholder.svg?height=40&width=120"
+              src="/Memlens.png"  // Changed to PNG logo
               alt="Company Logo"
-              className="h-10 mb-4"
+              className="h-16 mb-10"
             />
             <p className="text-sm text-gray-400 max-w-xs">
               Empowering innovation through cutting-edge technology solutions.
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
 
         {/* Footer Bottom Section */}
         <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Your Company Name. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} MemLens. All rights reserved.</p>
         </div>
       </div>
     </footer>
