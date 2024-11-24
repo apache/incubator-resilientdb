@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react'
-import { Button } from "@/components/ui/button"
-import { Maximize2 } from 'lucide-react'
 import './PBFTVisualization.css'
 import FullScreenButton from './FullScreenButton'
 
@@ -185,7 +183,15 @@ export default function PBFTVisualization() {
                   fill="freeze"
                 />
               </path>
-              <circle r="4" fill={msg.color} className="message-dot">
+              <circle r="4" fill={msg.color} className="message-dot" opacity="0">
+                <animate
+                  attributeName="opacity"
+                  from="0"
+                  to="0.8"
+                  dur="0.1s"
+                  begin={`${msg.delay}s`}
+                  fill="freeze"
+                />
                 <animateMotion
                   path={getMessagePath(msg.from, msg.to, msg.phase)}
                   dur={`${msg.duration}s`}
@@ -219,7 +225,7 @@ export default function PBFTVisualization() {
                     <animate
                       attributeName="opacity"
                       from="0"
-                      to="1"
+                      to="0.8"
                       dur="0.1s"
                       begin={`${8 + index * 0.2}s`}
                       fill="freeze"
