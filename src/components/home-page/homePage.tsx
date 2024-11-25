@@ -22,10 +22,10 @@ export function HomePage() {
         <Container>
           <Description />
           <PBFTVisualization />
-          <div className="bg-[#1a1a1a] min-h-screen mt-14">
-          {/* Your existing content, including the PBFT consensus visualization */}
+          {/* <div className="bg-[#1a1a1a] min-h-screen mt-14">
+          {/* Your existing content, including the PBFT consensus visualization
           <InteractiveCharts />
-          </div>
+          </div> */}
           <GlowingStarsBackgroundCardPreview/>
         </Container>
       </Section>

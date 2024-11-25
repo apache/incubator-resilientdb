@@ -1,6 +1,5 @@
 import React from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 const data = [
   { operation: 'SELECT', count: 1200, color: '#8884d8' },
@@ -13,26 +12,21 @@ const data = [
 
 export const DatabaseOperationsHistogram: React.FC = () => {
   return (
-    <ChartContainer
-      config={{
-        count: {
-          label: "Operation Count",
-          color: "hsl(var(--chart-1))",
-        },
-      }}
-      className="h-[400px]"
-    >
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="operation" stroke="#fff" />
           <YAxis stroke="#fff" />
-          <ChartTooltip content={<ChartTooltipContent />} />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#333', border: 'none' }}
+            labelStyle={{ color: '#fff' }}
+          />
           <Legend />
-          <Bar dataKey="count" fill="var(--color-count)" />
+          <Bar dataKey="count" fill="#8884d8" />
         </BarChart>
       </ResponsiveContainer>
-    </ChartContainer>
+    </div>
   );
 };
 

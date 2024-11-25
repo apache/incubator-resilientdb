@@ -11,7 +11,7 @@ const data = [
 
 export const PerformanceMetricsChart: React.FC = () => {
   return (
-    <div className="h-[400px]">
+    <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400;700&display=swap");
-
+@import "slick-carousel/slick/slick.css";
+@import "slick-carousel/slick/slick-theme.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -121,5 +122,30 @@ div[role="toolbar"] {
 .logo {
   width: 120px;
   height: auto;
+}
+
+.slick-slide {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.slick-slide:not(.slick-active) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.slick-list {
+  overflow: visible !important;
+}
+
+.slick-track {
+  display: flex !important;
+}
+
+.slick-slide {
+  height: auto !important;
+}
+
+.slick-slide > div {
+  height: 100%;
 }
 
