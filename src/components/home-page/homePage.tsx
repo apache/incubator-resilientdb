@@ -1,8 +1,5 @@
-import Graphs from "@/components/home-page/Graphs";
-//import { EvervaultCardDemo } from "@/components/home-page/hero";
 import { Main, Section, Container } from "@/components/craft";
 import Description from "@/components/home-page/description";
-import { WobbleCard } from "./CTA";
 import { Button } from "@/components/ui/button";
 import {
   DiscIcon as DiscordIcon,
@@ -13,7 +10,8 @@ import Navbar from "../ui/navbar";
 import { GoogleGeminiEffectDemo } from "./hero";
 import Footer from "../ui/footer";
 import PBFTVisualization from "../ui/PBFT graph/PBFTVisualization";
-import { GlowingStarsBackgroundCardPreview } from "./newCTA";
+import { GlowingStarsBackgroundCardPreview } from "../ui/starcardcta";
+import { InteractiveCharts } from "../HPGraphs/InteractiveCharts";
 
 export function HomePage() {
   return (
@@ -24,12 +22,11 @@ export function HomePage() {
         <Container>
           <Description />
           <PBFTVisualization />
-          <Graphs />
+          <div className="bg-[#1a1a1a] min-h-screen mt-14">
+          {/* Your existing content, including the PBFT consensus visualization */}
+          <InteractiveCharts />
+          </div>
           <GlowingStarsBackgroundCardPreview/>
-          {/* <WobbleCard containerClassName="custom-container" className="custom-card">
-          <h2 className="text-white text-2xl">Hover to Wobble</h2>
-          <p className="text-gray-200">This is some sample content inside the wobble card.</p>
-      </WobbleCard> */}
         </Container>
       </Section>
       <Footer/>

@@ -1,7 +1,8 @@
-"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+
+// Utility function to replace Next.js cn
+const cn = (...classes: string[]) => classes.filter(Boolean).join(' ');
 
 export const GlowingStarsBackgroundCard = ({
   className,
@@ -21,8 +22,8 @@ export const GlowingStarsBackgroundCard = ({
         setMouseEnter(false);
       }}
       className={cn(
-        "bg-[linear-gradient(110deg,#333_0.6%,#222)] p-4 max-w-md max-h-[20rem] h-full w-full rounded-xl border border-[#eaeaea] dark:border-neutral-600",
-        className
+        "bg-[linear-gradient(110deg,#333_0.6%,#222)] p-4 max-w-4xl h-[20rem] w-full rounded-xl border border-[#eaeaea] dark:border-neutral-600",
+        className || ""
       )}
     >
       <div className="flex justify-center items-center">
@@ -41,7 +42,7 @@ export const GlowingStarsDescription = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <p className={cn("text-base text-white max-w-[16rem]", className)}>
+    <p className={cn("text-base text-white max-w-[24rem]", className || "")}>
       {children}
     </p>
   );
@@ -55,7 +56,7 @@ export const GlowingStarsTitle = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <h2 className={cn("font-bold text-2xl text-[#eaeaea]", className)}>
+    <h2 className={cn("font-bold text-2xl text-[#eaeaea]", className || "")}>
       {children}
     </h2>
   );
@@ -151,7 +152,29 @@ const Glow = ({ delay }: { delay: number }) => {
       exit={{
         opacity: 0,
       }}
-      className="absolute  left-1/2 -translate-x-1/2 z-10 h-[4px] w-[4px] rounded-full bg-blue-500 blur-[1px] shadow-2xl shadow-blue-400"
+      className="absolute left-1/2 -translate-x-1/2 z-10 h-[4px] w-[4px] rounded-full bg-blue-500 blur-[1px] shadow-2xl shadow-blue-400"
     />
   );
 };
+
+export function GlowingStarsBackgroundCardPreview() {
+  return (
+    <div className="flex py-20 items-center justify-center antialiased">
+      <GlowingStarsBackgroundCard>
+        <GlowingStarsTitle>Crunch the numbers!</GlowingStarsTitle>
+        <div className="flex justify-between items-end">
+          <GlowingStarsDescription>
+            The power of full-stack to the frontend. Read the release notes.
+          </GlowingStarsDescription>
+          <button
+            onClick={() => window.location.href = '/dashboard'}
+            className="px-4 py-2 bg-white text-black rounded-md hover:bg-black hover:text-white transition-colors"
+          >
+            Explore the dashboard
+          </button>
+        </div>
+      </GlowingStarsBackgroundCard>
+    </div>
+  );
+}
+
