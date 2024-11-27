@@ -24,7 +24,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <a
-                  href="#"
+                  href="/"
                   className="hover:text-white transition-colors duration-300 flex items-center"
                 >
                   <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
@@ -33,11 +33,20 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/Bismanpal-Singh/MemLens"
                   className="hover:text-white transition-colors duration-300 flex items-center"
                 >
                   <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
-                  Services
+                  Check out our code
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/authors"
+                  className="hover:text-white transition-colors duration-300 flex items-center"
+                >
+                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
+                  About the team
                 </a>
               </li>
               <li>
@@ -46,16 +55,7 @@ const Footer: React.FC = () => {
                   className="hover:text-white transition-colors duration-300 flex items-center"
                 >
                   <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
-                  About
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="hover:text-white transition-colors duration-300 flex items-center"
-                >
-                  <span className="w-1 h-1 bg-blue-500 rounded-full mr-2"></span>
-                  Contact
+                  Blog
                 </a>
               </li>
             </ul>
