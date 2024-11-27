@@ -16,8 +16,9 @@ import {
 } from "../ui/select";
 import { FlamegraphRendererProps } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlamegraphRenderer";
 import { middlewareApi } from "@/lib/api";
-import { Download, RefreshCcw } from "lucide-react";
+import { Download, RefreshCcw, Flame } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader } from "../ui/loader";
 
 const Flamegraph = () => {
   /**
@@ -38,6 +39,7 @@ const Flamegraph = () => {
     useState<ViewTypes>("both");
   const [_, setSearchQueryToggle] = useState(true); //dummy dispatch not used functionally
   const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [query, setSearchQuery] = useState<
     FlamegraphRendererProps["sharedQuery"]
   >({
@@ -70,15 +72,20 @@ const Flamegraph = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const response = await middlewareApi.post("/pyroscope/getProfile", {
           query: clientName,
         });
-        setProfilingData(response?.data);
-        // setProfilingData(ProfileData1);
-        console.log(response?.data);
+        if (response?.data?.error) {
+          setProfilingData(ProfileData1);
+        } else {
+          setProfilingData(response?.data);
+        }
+        setLoading(false);
       } catch (error) {
         console.log(error);
         setProfilingData(ProfileData1);
+        setLoading(false);
       }
     };
     fetchData();
@@ -132,19 +139,34 @@ const Flamegraph = () => {
               <SelectItem value="sandwich">Sandwich</SelectItem>
             </SelectContent>
           </Select>
+          <Select onValueChange={handleFlamegraphTypeChange}>
+            <SelectTrigger className="w-[120px] h-[30px]">
+              <SelectValue placeholder="Interval" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="table">Table</SelectItem>
+              <SelectItem value="flamegraph">Flamegraph</SelectItem>
+              <SelectItem value="both">Both</SelectItem>
+              <SelectItem value="sandwich">Sandwich</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="flex-1 bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
-        <FlamegraphRenderer
-          key={flamegraphDisplayType} // Force a re-render when the type changes
-          profile={profilingData}
-          showCredit={false}
-          panesOrientation="horizontal"
-          onlyDisplay={flamegraphDisplayType}
-          showToolbar={true}
-          colorMode="dark"
-          sharedQuery={query}
-        />
+        {loading ? (
+          <Loader className="h-[800px] p-4" />
+        ) : (
+          <FlamegraphRenderer
+            key={flamegraphDisplayType} // Force a re-render when the type changes
+            profile={profilingData}
+            showCredit={false}
+            panesOrientation="horizontal"
+            onlyDisplay={flamegraphDisplayType}
+            showToolbar={true}
+            colorMode="dark"
+            sharedQuery={query}
+          />
+        )}
       </div>
     </>
   );
@@ -152,9 +174,12 @@ const Flamegraph = () => {
 
 export const FlamegraphCard = () => {
   return (
-    <Card className="bg-slate-900 border-slate-800 flex-1 min-h-0">
+    <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
       <CardHeader>
-        <CardTitle>Flamegraph</CardTitle>
+        <div className="flex items-center gap-2">
+          <Flame className="w-6 h-6 text-blue-400" />
+          <CardTitle className="text-2xl font-bold">Flamegraph</CardTitle>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col h-full">
         <Flamegraph />

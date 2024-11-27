@@ -71,7 +71,9 @@ const Navbar: React.FC = () => {
       <div className={`md:hidden ${isOpen ? "block" : "hidden"}`}>
         <Link
           to="/"
-          className={`block py-2 px-4 text-sm hover:bg-gray-200 ${isActive("/")}`}
+          className={`block py-2 px-4 text-sm hover:bg-gray-200 ${isActive(
+            "/"
+          )}`}
         >
           Home
         </Link>

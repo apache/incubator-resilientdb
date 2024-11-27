@@ -31,7 +31,9 @@ export const DependencyGraph = () => {
     const graphvizElement = select("#graph")
       .graphviz()
       .logEvents(true)
-      .transition(() => d3.transition("main").ease(d3.easeLinear).duration(700)) // Smooth transition
+      .transition(() =>
+        d3.transition("main").ease(d3.easeCubicIn).duration(700)
+      ) // Smooth transition
       .tweenShapes(false)
       .on("initEnd", render);
 
@@ -121,7 +123,9 @@ export const DependencyGraph = () => {
             <SelectContent className="bg-slate-800 border-slate-700 text-white">
               <SelectItem value="2">2 Levels</SelectItem>
               <SelectItem value="3">3 Levels</SelectItem>
-              <SelectItem value="4">4 Levels</SelectItem>
+              <SelectItem value="4" disabled>
+                4 Levels
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
