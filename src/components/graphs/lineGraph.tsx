@@ -18,56 +18,67 @@ import {
   ChartTooltipContent,
 } from "../ui/chart";
 
+interface DataPoint {
+  index: number;
+  timestamp: number;
+  value: number;
+}
+
+interface ChartState {
+  data: DataPoint[];
+  left: number | 'dataMin';
+  right: number | 'dataMax';
+  refAreaLeft: string | null | undefined;
+  refAreaRight: string | null | undefined;
+  top: number | 'dataMax+1';
+  bottom: number | 'dataMin-1';
+  animation: boolean;
+}
+
 const getAxisYDomain = (
-  data: any[],
+  data: DataPoint[],
   from: number,
   to: number,
-  ref: string,
   offset: number
-) => {
-  const refData: any[] = data.slice(from, to);
-  console.log("Ref Data", refData);
-  let [bottom, top] = [refData[0][ref], refData[0][ref]];
+): [number, number] => {
+  const refData = data.slice(from, to);
+  let [bottom, top] = [refData[0].value, refData[0].value];
 
   refData.forEach((d) => {
-    if (d[ref] > top) top = d[ref];
-    if (d[ref] < bottom) bottom = d[ref];
+    if (d.value > top) top = d.value;
+    if (d.value < bottom) bottom = d.value;
   });
 
   return [(bottom | 0) - offset, (top | 0) + offset];
 };
 
-const initialState = {
-  left: "dataMin",
-  right: "dataMax",
-  refAreaLeft: "",
-  refAreaRight: "",
-  top: "dataMax+1",
-  bottom: "dataMin-1",
-  top2: "dataMax+20",
-  bottom2: "dataMin-20",
+const initialState: ChartState = {
+  data: [],
+  left: 'dataMin',
+  right: 'dataMax',
+  refAreaLeft: null,
+  refAreaRight: null,
+  top: 'dataMax+1',
+  bottom: 'dataMin-1',
   animation: true,
 };
 
-const chartConfig = {
+const chartConfig: ChartConfig = {
   kv_service: {
     label: "KV Service",
     color: "hsl(var(--chart-1))",
   },
-} satisfies ChartConfig;
+};
 
-export default class App extends Component<any, any> {
-  constructor(props: any) {
+export default class App extends Component<{}, ChartState> {
+  constructor(props: {}) {
     super(props);
-    const chartsData = cpuChartData?.data?.result[0]?.values.map((val, idx) => {
-      return {
-        key: idx,
-        timestamp: val[0],
-        value: val[1],
-      };
-    });
-    const startState = { ...initialState, data: chartsData };
-    this.state = startState;
+    const chartsData = cpuChartData?.data?.result[0]?.values.map((val, idx) => ({
+      index: idx,
+      timestamp: Number(val[0]) * 1000, // Convert to milliseconds
+      value: parseFloat(String(val[1])),
+    }));
+    this.state = { ...initialState, data: chartsData };
   }
 
   formatXAxis = (tickItem: number) => {
@@ -81,59 +92,49 @@ export default class App extends Component<any, any> {
   };
 
   zoom() {
-    let { refAreaLeft, refAreaRight } = this.state;
-    const { data } = this.state;
+  const { refAreaLeft, refAreaRight, data } = this.state;
 
-    if (refAreaLeft === refAreaRight || refAreaRight === "") {
-      this.setState(() => ({
-        refAreaLeft: "",
-        refAreaRight: "",
-      }));
-      return;
-    }
-
-    // xAxis domain
-    if (refAreaLeft > refAreaRight)
-      [refAreaLeft, refAreaRight] = [refAreaRight, refAreaLeft];
-
-    // yAxis domain
-    const [bottom, top] = getAxisYDomain(
-      data,
-      refAreaLeft,
-      refAreaRight,
-      "value",
-      1
-    );
-
-    this.setState(() => ({
-      refAreaLeft: "",
-      refAreaRight: "",
-      data: data.slice(),
-      left: refAreaLeft,
-      right: refAreaRight,
-      bottom,
-      top,
-    }));
+  if (!refAreaLeft || !refAreaRight || refAreaLeft === refAreaRight) {
+    this.setState({ refAreaLeft: null, refAreaRight: null });
+    return;
   }
+
+  const leftIndex = data.findIndex((d) => d.timestamp === Number(refAreaLeft));
+  const rightIndex = data.findIndex((d) => d.timestamp === Number(refAreaRight));
+
+  if (leftIndex === -1 || rightIndex === -1) {
+    this.setState({ refAreaLeft: null, refAreaRight: null });
+    return;
+  }
+
+  const [minIndex, maxIndex] = [Math.min(leftIndex, rightIndex), Math.max(leftIndex, rightIndex)];
+  const [bottom, top] = getAxisYDomain(data, minIndex, maxIndex, 1);
+
+  this.setState({
+    refAreaLeft: null,
+    refAreaRight: null,
+    left: data[minIndex].timestamp,
+    right: data[maxIndex].timestamp,
+    bottom,
+    top,
+  });
+}
 
   zoomOut() {
     const { data } = this.state;
-    this.setState(() => ({
+    this.setState({
       data: data.slice(),
-      refAreaLeft: "",
-      refAreaRight: "",
-      left: "dataMin",
-      right: "dataMax",
-      top: "dataMax+1",
-      bottom: "dataMin",
-    }));
+      refAreaLeft: null,
+      refAreaRight: null,
+      left: 'dataMin',
+      right: 'dataMax',
+      top: 'dataMax+1',
+      bottom: 'dataMin-1',
+    });
   }
 
   render() {
-    const { data, left, right, refAreaLeft, refAreaRight, top, bottom } =
-      this.state;
-
-    console.log(this.state);
+    const { data, left, right, refAreaLeft, refAreaRight, top, bottom } = this.state;
 
     return (
       <ChartContainer config={chartConfig} className="aspect-auto w-full">
@@ -147,45 +148,25 @@ export default class App extends Component<any, any> {
 
           <ResponsiveContainer width="100%" height={400}>
             <LineChart
-              width={1500}
-              height={400}
               data={data}
-              margin={{
-                top: 20,
-                right: 20,
-                left: 20,
-                bottom: 20,
-              }}
-              onMouseDown={(e: any) =>
-                this.setState({ refAreaLeft: e.activeLabel })
-              }
-              onMouseMove={(e: any) =>
-                this.state.refAreaLeft &&
-                this.setState({ refAreaRight: e.activeLabel })
-              }
-              // eslint-disable-next-line react/jsx-no-bind
+              margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+              onMouseDown={(e) => e && this.setState({ refAreaLeft: e.activeLabel })}
+              onMouseMove={(e) => e && refAreaLeft && this.setState({ refAreaRight: e.activeLabel })}
               onMouseUp={this.zoom.bind(this)}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 allowDataOverflow
-                dataKey="key"
-                tickLine={false}
-                axisLine={true}
-                tickMargin={8}
-                minTickGap={32}
-                // tickFormatter={this.formatXAxis.bind(this)}
+                dataKey="timestamp"
                 domain={[left, right]}
+                type="number"
+                tickFormatter={this.formatXAxis}
               />
               <YAxis
                 allowDataOverflow
                 domain={[bottom, top]}
                 type="number"
                 yAxisId="1"
-                ticks={Array.from(
-                  { length: Math.ceil(25 / 1) + 1 },
-                  (_, i) => i * 1
-                )}
               />
               <ChartTooltip
                 content={
@@ -197,10 +178,10 @@ export default class App extends Component<any, any> {
               />
               <Line
                 yAxisId="1"
-                type="natural"
+                type="monotone"
                 dataKey="value"
-                animationDuration={300}
                 stroke={`hsl(var(--chart-1))`}
+                animationDuration={300}
                 dot={false}
               />
               {refAreaLeft && refAreaRight ? (
