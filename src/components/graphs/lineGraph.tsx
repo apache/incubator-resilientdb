@@ -26,41 +26,34 @@ interface DataPoint {
 
 interface ChartState {
   data: DataPoint[];
-  left: number | 'dataMin';
-  right: number | 'dataMax';
-  refAreaLeft: string | null | undefined;
-  refAreaRight: string | null | undefined;
-  top: number | 'dataMax+1';
-  bottom: number | 'dataMin-1';
+  left: number;
+  right: number;
+  refAreaLeft: number | null;
+  refAreaRight: number | null;
+  top: number;
+  bottom: number;
   animation: boolean;
 }
 
 const getAxisYDomain = (
   data: DataPoint[],
-  from: number,
-  to: number,
+  left: number,
+  right: number,
   offset: number
 ): [number, number] => {
-  const refData = data.slice(from, to);
-  let [bottom, top] = [refData[0].value, refData[0].value];
+  const filteredData = data.filter(
+    (d) => d.timestamp >= left && d.timestamp <= right
+  );
+  if (filteredData.length === 0) return [0, 100];
 
-  refData.forEach((d) => {
+  let [bottom, top] = [filteredData[0].value, filteredData[0].value];
+
+  filteredData.forEach((d) => {
     if (d.value > top) top = d.value;
     if (d.value < bottom) bottom = d.value;
   });
 
-  return [(bottom | 0) - offset, (top | 0) + offset];
-};
-
-const initialState: ChartState = {
-  data: [],
-  left: 'dataMin',
-  right: 'dataMax',
-  refAreaLeft: null,
-  refAreaRight: null,
-  top: 'dataMax+1',
-  bottom: 'dataMin-1',
-  animation: true,
+  return [Math.max(0, Math.floor(bottom) - offset), Math.min(100, Math.ceil(top) + offset)];
 };
 
 const chartConfig: ChartConfig = {
@@ -78,7 +71,24 @@ export default class App extends Component<{}, ChartState> {
       timestamp: Number(val[0]) * 1000, // Convert to milliseconds
       value: parseFloat(String(val[1])),
     }));
-    this.state = { ...initialState, data: chartsData };
+
+    const [bottom, top] = getAxisYDomain(
+      chartsData,
+      chartsData[0].timestamp,
+      chartsData[chartsData.length - 1].timestamp,
+      1
+    );
+
+    this.state = {
+      data: chartsData,
+      left: chartsData[0].timestamp,
+      right: chartsData[chartsData.length - 1].timestamp,
+      refAreaLeft: null,
+      refAreaRight: null,
+      top,
+      bottom,
+      animation: true,
+    };
   }
 
   formatXAxis = (tickItem: number) => {
@@ -92,44 +102,41 @@ export default class App extends Component<{}, ChartState> {
   };
 
   zoom() {
-  const { refAreaLeft, refAreaRight, data } = this.state;
+    const { refAreaLeft, refAreaRight, data } = this.state;
 
-  if (!refAreaLeft || !refAreaRight || refAreaLeft === refAreaRight) {
-    this.setState({ refAreaLeft: null, refAreaRight: null });
-    return;
+    if (refAreaLeft === null || refAreaRight === null || refAreaLeft === refAreaRight) {
+      this.setState({ refAreaLeft: null, refAreaRight: null });
+      return;
+    }
+
+    const [left, right] = [Math.min(refAreaLeft, refAreaRight), Math.max(refAreaLeft, refAreaRight)];
+    const [bottom, top] = getAxisYDomain(data, left, right, 1);
+
+    this.setState({
+      refAreaLeft: null,
+      refAreaRight: null,
+      left,
+      right,
+      bottom,
+      top,
+    });
   }
-
-  const leftIndex = data.findIndex((d) => d.timestamp === Number(refAreaLeft));
-  const rightIndex = data.findIndex((d) => d.timestamp === Number(refAreaRight));
-
-  if (leftIndex === -1 || rightIndex === -1) {
-    this.setState({ refAreaLeft: null, refAreaRight: null });
-    return;
-  }
-
-  const [minIndex, maxIndex] = [Math.min(leftIndex, rightIndex), Math.max(leftIndex, rightIndex)];
-  const [bottom, top] = getAxisYDomain(data, minIndex, maxIndex, 1);
-
-  this.setState({
-    refAreaLeft: null,
-    refAreaRight: null,
-    left: data[minIndex].timestamp,
-    right: data[maxIndex].timestamp,
-    bottom,
-    top,
-  });
-}
 
   zoomOut() {
     const { data } = this.state;
+    const [bottom, top] = getAxisYDomain(
+      data,
+      data[0].timestamp,
+      data[data.length - 1].timestamp,
+      1
+    );
     this.setState({
-      data: data.slice(),
       refAreaLeft: null,
       refAreaRight: null,
-      left: 'dataMin',
-      right: 'dataMax',
-      top: 'dataMax+1',
-      bottom: 'dataMin-1',
+      left: data[0].timestamp,
+      right: data[data.length - 1].timestamp,
+      top,
+      bottom,
     });
   }
 
@@ -150,8 +157,8 @@ export default class App extends Component<{}, ChartState> {
             <LineChart
               data={data}
               margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-              onMouseDown={(e) => e && this.setState({ refAreaLeft: e.activeLabel })}
-              onMouseMove={(e) => e && refAreaLeft && this.setState({ refAreaRight: e.activeLabel })}
+              onMouseDown={(e) => e && this.setState({ refAreaLeft: e.activeLabel ? Number(e.activeLabel) : null })}
+              onMouseMove={(e) => e && refAreaLeft !== null && this.setState({ refAreaRight: e.activeLabel ? Number(e.activeLabel) : null })}
               onMouseUp={this.zoom.bind(this)}
             >
               <CartesianGrid strokeDasharray="3 3" />
@@ -167,6 +174,7 @@ export default class App extends Component<{}, ChartState> {
                 domain={[bottom, top]}
                 type="number"
                 yAxisId="1"
+                tickCount={5}
               />
               <ChartTooltip
                 content={
@@ -199,3 +207,4 @@ export default class App extends Component<{}, ChartState> {
     );
   }
 }
+
