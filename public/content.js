@@ -266,7 +266,7 @@ function generateModalContent(operation, amount, styles = {}, isCustom = false, 
       font-family: Poppins, sans-serif;
       width: 300px;
     ">
-      <div style="width: calc(100%);
+      <div id="resVaultMessageBox" style="width: calc(100%);
         padding: 20px;
         background-color: #291f57;
         border-radius: 15px;
@@ -327,7 +327,7 @@ function generateModalContent(operation, amount, styles = {}, isCustom = false, 
       font-family: Poppins, sans-serif;
       width: 300px;
     ">
-      <div style="width: calc(100%);
+      <div id="resVaultMessageBox" style="width: calc(100%);
         padding: 20px;
         background-color: #291f57;
         border-radius: 15px;
@@ -398,22 +398,22 @@ function generateModalContent(operation, amount, styles = {}, isCustom = false, 
 function applyStylesToModal(modal, styles) {
   const allowedSelectors = [
     '#resVaultModalContent',
+    "#resVaultMessageBox",
     '#amountDisplay',
     '#resVaultModalClose',
     '#resVaultModalSubmit',
     '#customMessage',
     '#poweredBy',
-    // Add other selectors if necessary
   ];
 
   const allowedStyles = {
     '#resVaultModalContent': ['background-color', 'padding', 'border-radius', 'box-shadow', 'font-family', 'width', 'position', 'top', 'left', 'transform', 'z-index'],
     '#amountDisplay': ['color', 'font-size', 'text-align', 'border', 'background-color', 'padding', 'border-radius'],
+    '#resVaultMessageBox': ['width', 'padding', 'background-color', 'border-radius', 'margin-bottom', 'box-shadow'],
     '#resVaultModalClose': ['background-color', 'color', 'border', 'padding', 'border-radius', 'cursor', 'width'],
     '#resVaultModalSubmit': ['background-color', 'color', 'border', 'padding', 'border-radius', 'cursor', 'width'],
     '#customMessage': ['color', 'font-size', 'text-align', 'background-color', 'padding', 'border-radius'],
     '#poweredBy': ['color', 'font-size', 'text-align'],
-    // Other elements...
   };
 
   for (const selector in styles) {
