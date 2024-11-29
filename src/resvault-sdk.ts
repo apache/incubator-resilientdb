@@ -18,15 +18,73 @@ export default class ResVaultSDK {
    * Send a message using postMessage.
    * @param {Message} message - The message to send.
    */
-  sendMessage(message: Message): void {
+  public sendMessage(message: Message): void {
     window.postMessage(message, this.targetOrigin);
+  }
+
+  /**
+   * Commit transaction.
+   * @param {Object} params - Parameters for the transaction.
+   * @param {string} params.amount - The amount.
+   * @param {any} params.data - The data.
+   * @param {string} params.recipient - The recipient.
+   * @param {Object} [params.styles] - Optional styles to override the modal's appearance.
+   */
+  public commitTransaction({
+    amount,
+    data,
+    recipient,
+    styles = {},
+  }: {
+    amount: string;
+    data: any;
+    recipient: string;
+    styles?: any;
+  }) {
+    this.sendMessage({
+      type: 'commit',
+      direction: 'commit',
+      amount,
+      data,
+      recipient,
+      styles,
+    });
+  }
+
+  /**
+   * Custom transaction.
+   * @param {Object} params - Parameters for the transaction.
+   * @param {any} params.data - The data.
+   * @param {string} params.recipient - The recipient.
+   * @param {string} [params.customMessage] - Custom message for the modal.
+   * @param {Object} [params.styles] - Optional styles to override the modal's appearance.
+   */
+  public customTransaction({
+    data,
+    recipient,
+    customMessage,
+    styles = {},
+  }: {
+    data: any;
+    recipient: string;
+    customMessage?: string;
+    styles?: any;
+  }) {
+    this.sendMessage({
+      type: 'custom',
+      direction: 'custom',
+      data,
+      recipient,
+      customMessage,
+      styles,
+    });
   }
 
   /**
    * Add a message listener for the content script.
    * @param {Function} handler - The handler to invoke when a message is received.
    */
-  addMessageListener(handler: (event: MessageEvent) => void): void {
+  public addMessageListener(handler: (event: MessageEvent) => void): void {
     if (typeof handler !== 'function') {
       throw new Error('Handler must be a function');
     }
@@ -40,7 +98,7 @@ export default class ResVaultSDK {
    * Remove a message listener.
    * @param {Function} handler - The handler to remove.
    */
-  removeMessageListener(handler: (event: MessageEvent) => void): void {
+  public removeMessageListener(handler: (event: MessageEvent) => void): void {
     const index = this.messageHandlers.indexOf(handler);
     if (index !== -1) {
       this.messageHandlers.splice(index, 1);
