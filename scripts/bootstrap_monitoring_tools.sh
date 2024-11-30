@@ -50,6 +50,10 @@ done
 echo "Assigning system-level monitoring to Pyroscope..."
 sudo pyroscope connect --spy-name ebpfspy --application-name system --pid -1
 
+# Run process-exporter for kv_service
+echo "Starting process-exporter for kv_service..."
+sudo process-exporter -procnames kv_service &
+
 ps aux | grep -E 'pyroscope connect.* --application-name cpp_client_[0-9]+'
 
 echo "All processes have been assigned client names."
