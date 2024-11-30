@@ -7,6 +7,7 @@ import { FlamegraphCard } from "../graphs/flamegraph";
 import { DependencyGraph } from "../graphs/dependency";
 import { startCase } from "@/lib/utils";
 import { CpuGraph } from "../graphs/cpu";
+import { CpuPage } from "../graphs/cpuCard";
 
 const tabVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -78,8 +79,7 @@ export function Dashboard() {
               <DependencyGraph />
             </TabsContent>
             <TabsContent value="CPU" className="space-y-8">
-              <CpuGraph />
-              <FlamegraphCard />
+              <CpuPage />
             </TabsContent>
           </motion.div>
         </main>

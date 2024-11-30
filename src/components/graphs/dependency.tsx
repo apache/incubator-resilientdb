@@ -31,10 +31,10 @@ export const DependencyGraph = () => {
     const graphvizElement = select("#graph")
       .graphviz()
       .logEvents(true)
-      .transition(() =>
-        d3.transition("main").ease(d3.easeCubicIn).duration(700)
-      ) // Smooth transition
-      .tweenShapes(false)
+      // .transition(() =>
+      //   d3.transition("main").ease(d3.easeCubicIn).duration(700)
+      // ) // Smooth transition
+      // .tweenShapes(false)
       .on("initEnd", render);
 
     // Function to update the graph size and attributes
