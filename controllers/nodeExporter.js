@@ -13,28 +13,31 @@ const logger = require('../utils/logger');
  * @returns {void} - Sends the profiling data as a response.
  */
 async function getCpuUsage(req,res){
-    const { query, from = "now-5m" , until = "now" ,format = "json" } = req.body
-    const baseUrl = buildUrl(getEnv("PYROSCOPE_BASE_URL"),{
-        query: `${query}.cpu`,
-        from: from,
-        until: until,
-        format: format
+    const { query, from = "now-5m" , until = "now" ,step = 28 } = req.body
+    logger.info(req.body)
+    const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"),{
+        query,
+        start:from,
+        end:until,
+        step
     })
     let config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: baseUrl,
       };
+      logger.info(config)
       try {
         const response = await axios.request(config) 
         return res.send(response.data)
       } catch (error) {
-        return res.send({
+        logger.error(error)
+        return res.status(400).send({
             error: error
         })
       }
 }
 
 module.exports = {
-    getProfilingData
+    getCpuUsage
 }

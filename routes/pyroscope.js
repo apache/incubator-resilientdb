@@ -4,8 +4,8 @@ const router = express.Router();
 
 /**
  * Health check route
- * @route GET /healthcheck
- * @returns {Object} 200 - Health status
+ * @route GET /getProfile
+ * @returns {Object} 200 - proflingData
  */
 router.post("/getProfile", getProfilingData);
 
