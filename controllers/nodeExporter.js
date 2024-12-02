@@ -40,25 +40,6 @@ async function getCpuUsage(req, res) {
  * @param {string} groupname - The groupname to filter for.
  * @returns {Object} - The filtered and simplified data.
  */
-function processNodeExporterData(data, groupname) {
-    if (!data || !data.result || !Array.isArray(data.result)) {
-        throw new Error("Invalid data structure from Node Exporter");
-    }
-
-    // Find the result for the specified groupname
-    const filteredResult = data.result.find(item => item.metric.groupname === groupname);
-
-    if (!filteredResult) {
-        throw new Error(`No data found for groupname: ${groupname}`);
-    }
-
-    // Return simplified structure (e.g., just the values or timestamps and values)
-    return {
-        metric: filteredResult.metric,
-        values: filteredResult.values // You can further simplify this as needed
-    };
-}
-
 module.exports = {
     getCpuUsage
 };
