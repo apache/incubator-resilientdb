@@ -2,12 +2,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Github, Star } from "lucide-react";
+import { Github, Star } from 'lucide-react';
 import { FlamegraphCard } from "../graphs/flamegraph";
 import { DependencyGraph } from "../graphs/dependency";
 import { startCase } from "@/lib/utils";
 import { CpuGraph } from "../graphs/cpu";
 import { CpuPage } from "../graphs/cpuCard";
+import { MemoryTrackerPage } from "../graphs/MemorySpecs/memoryTrackerPage";
 
 const tabVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -35,7 +36,7 @@ export function Dashboard() {
                 />
               </a>
               <TabsList className="bg-slate-900/50 backdrop-blur-sm">
-                {["bazel_build", "CPU", "targets", "help"].map((tab) => (
+                {["bazel_build", "CPU", "Memory Tracker", "targets", "help"].map((tab) => (
                   <TabsTrigger
                     key={tab}
                     value={tab}
@@ -80,6 +81,9 @@ export function Dashboard() {
             </TabsContent>
             <TabsContent value="CPU" className="space-y-8">
               <CpuPage />
+            </TabsContent>
+            <TabsContent value="Memory Tracker" className="space-y-8">
+              <MemoryTrackerPage />
             </TabsContent>
           </motion.div>
         </main>
