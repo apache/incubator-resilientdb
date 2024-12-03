@@ -383,7 +383,7 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
         until: parseFloat((until / 1000).toFixed(3)),
         step: 7,
       });
-      console.log(response?.data)
+      console.log(response?.data);
       const data = response?.data?.data.map((val, idx) => ({
         index: idx,
         timestamp: Number(val[0]) * 1000,
@@ -590,5 +590,3 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
     </Card>
   );
 };
-
-// export default CpuLineGraphFunc;
