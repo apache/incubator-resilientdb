@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
-import { useState } from "react"
+import { useState, useCallback } from "react"
+import { Button } from "@/components/ui/button"
+import { RefreshCw, Info } from 'lucide-react'
 
 const generateRandomData = (length: number) => {
   return Array.from({ length }, (_, i) => ({
@@ -51,19 +53,53 @@ const MetricChart = ({ title, data, yAxisLabel }) => (
 )
 
 export function MemoryMetricsGrid() {
+  const [metricsData, setMetricsData] = useState({
+    ioTime: generateRandomData(20),
+    diskRW: generateRandomData(20),
+    diskIOPS: generateRandomData(20),
+    diskWaitTime: generateRandomData(20)
+  })
+
+  const refreshData = useCallback(() => {
+    setMetricsData({
+      ioTime: generateRandomData(20),
+      diskRW: generateRandomData(20),
+      diskIOPS: generateRandomData(20),
+      diskWaitTime: generateRandomData(20)
+    })
+  }, [])
+
   const metrics = [
-    { title: "Time Spent Doing I/O", yAxisLabel: "%" },
-    { title: "Disk R/W Data", yAxisLabel: "B" },
-    { title: "Disk IOPS", yAxisLabel: "" },
-    { title: "Disk Average Wait Time", yAxisLabel: "ms" }
+    { title: "Time Spent Doing I/O", yAxisLabel: "%", data: metricsData.ioTime },
+    { title: "Disk R/W Data", yAxisLabel: "B", data: metricsData.diskRW },
+    { title: "Disk IOPS", yAxisLabel: "", data: metricsData.diskIOPS },
+    { title: "Disk Average Wait Time", yAxisLabel: "ms", data: metricsData.diskWaitTime }
   ]
 
   return (
-    <div className="grid grid-cols-2 gap-6 mt-8">
-      {metrics.map((metric) => (
-        <MetricChart key={metric.title} title={metric.title} data={generateRandomData(20)} yAxisLabel={metric.yAxisLabel} />
-      ))}
-    </div>
+    <Card className="bg-slate-900 p-6">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl font-bold text-white">Memory Metrics</CardTitle>
+        <div className="flex items-center space-x-2">
+          <Button onClick={refreshData} variant="outline" size="icon">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+          <button
+            className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+            onClick={() => window.open("https://gmail.com", "_blank")}
+          >
+            <Info size={24} />
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 gap-6">
+          {metrics.map((metric) => (
+            <MetricChart key={metric.title} title={metric.title} data={metric.data} yAxisLabel={metric.yAxisLabel} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
