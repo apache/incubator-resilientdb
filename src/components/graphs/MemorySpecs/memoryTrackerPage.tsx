@@ -2,36 +2,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CacheHitOdometers } from "./cacheHitOdometers"
 import { MemoryMetricsGrid } from "./memoryMetricsGrid"
 import { Info } from 'lucide-react'
-// import { useState } from "react"
-// import {
-//   Tooltip,
-//   TooltipContent,
-//   TooltipProvider,
-//   TooltipTrigger,
-// } from "@/components/ui/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export function MemoryTrackerPage() {
-  // const [showTooltip1, setShowTooltip1] = useState(false)
 
   return (
     <div className="space-y-8">
       <div className="relative">
         <div className="absolute top-2 right-2 z-10">
-          {/* <TooltipProvider>
-            <Tooltip open={showTooltip1}>
-              <TooltipTrigger asChild> */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
-                  className="p-2 bg-slate-700 text-slate-400 rounded"
+                  className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
                   onClick={() => window.open("https://google.com", "_blank")}
                 >
                   <Info size={24} />
                 </button>
-          {/* </TooltipTrigger>
+              </TooltipTrigger>
               <TooltipContent>
-                <p>Click on the i button to understand these metrics.</p>
+                <p>Click for more information about these metrics</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider> */}
+          </TooltipProvider>
         </div>
         <Card className="bg-slate-900 text-white">
           <CardHeader>
@@ -48,3 +46,4 @@ export function MemoryTrackerPage() {
     </div>
   )
 }
+

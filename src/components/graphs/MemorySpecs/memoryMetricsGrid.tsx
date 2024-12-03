@@ -3,6 +3,12 @@ import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveCo
 import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { RefreshCw, Info } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const generateRandomData = (length: number) => {
   return Array.from({ length }, (_, i) => ({
@@ -84,12 +90,21 @@ export function MemoryMetricsGrid() {
           <Button onClick={refreshData} variant="outline" size="icon">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          <button
-            className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-            onClick={() => window.open("https://gmail.com", "_blank")}
-          >
-            <Info size={24} />
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+                  onClick={() => window.open("https://gmail.com", "_blank")}
+                >
+                  <Info size={24} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Click for more information about these metrics</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent>
