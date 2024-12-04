@@ -27,7 +27,7 @@ export const GoogleGeminiEffect = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        style={{ transform: "translateY(-20px)" }} // Fade-in effect duration
+        style={{ transform: "translateY(-100px)" }} // Fade-in effect duration
       >
         {title || `MemLens`}
       </motion.p>
@@ -36,7 +36,7 @@ export const GoogleGeminiEffect = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        style={{ transform: "translateY(-40px)" }} // Fade-in effect duration
+        style={{ transform: "translateY(-120px)" }} // Fade-in effect duration
       >
         {title || `A Continuous Profiling Tool for ResilientDB`}
       </motion.p>
@@ -46,7 +46,8 @@ export const GoogleGeminiEffect = ({
         className="text-xs md:text-xl font-normal text-center text-neutral-400 mt-4 max-w-lg mx-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5 }} // Added delay for description fade-in
+        transition={{ duration: 2, delay: 0.5 }}
+        style={{ transform: "translateY(-100px)" }} // Added delay for description fade-in
       >
         {description || `Tracks CPU, Memory, Build statistics and More...`}
       </motion.p>
