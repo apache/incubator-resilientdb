@@ -1,16 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CacheHitOdometers } from "./cacheHitOdometers"
-import { MemoryMetricsGrid } from "./memoryMetricsGrid"
-import { Info } from 'lucide-react'
+import { StorageEngineMetrics } from "./storageEngineMetrics";
+import { MemoryMetricsGrid } from "./memoryMetricsGrid";
+import { Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
+import { TerminalController } from "./terminal";
 
 export function MemoryTrackerPage() {
-
   return (
     <div className="space-y-8">
       <div className="relative">
@@ -31,19 +30,12 @@ export function MemoryTrackerPage() {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Card className="bg-slate-900 text-white">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Cache Hit Gauges</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CacheHitOdometers />
-          </CardContent>
-        </Card>
-      </div>
-      <div>
-        <MemoryMetricsGrid />
+        <div className="space-y-4">
+          <TerminalController />
+          <StorageEngineMetrics />
+          <MemoryMetricsGrid />
+        </div>
       </div>
     </div>
-  )
+  );
 }
-

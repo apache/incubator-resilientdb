@@ -2,11 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Github, Star } from 'lucide-react';
-import { FlamegraphCard } from "../graphs/flamegraph";
+import { Github, Star } from "lucide-react";
 import { DependencyGraph } from "../graphs/dependency";
 import { startCase } from "@/lib/utils";
-import { CpuGraph } from "../graphs/cpu";
 import { CpuPage } from "../graphs/cpuCard";
 import { MemoryTrackerPage } from "../graphs/MemorySpecs/memoryTrackerPage";
 
@@ -16,7 +14,7 @@ const tabVariants = {
 };
 
 export function Dashboard() {
-  const [activeTab, setActiveTab] = useState("CPU");
+  const [activeTab, setActiveTab] = useState("memory_tracker");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 text-slate-50">
@@ -36,7 +34,7 @@ export function Dashboard() {
                 />
               </a>
               <TabsList className="bg-slate-900/50 backdrop-blur-sm">
-                {["bazel_build", "CPU", "Memory Tracker", "targets", "help"].map((tab) => (
+                {["memory_tracker", "cpu", "bazel_build"].map((tab) => (
                   <TabsTrigger
                     key={tab}
                     value={tab}
@@ -79,10 +77,10 @@ export function Dashboard() {
             <TabsContent value="bazel_build">
               <DependencyGraph />
             </TabsContent>
-            <TabsContent value="CPU" className="space-y-8">
+            <TabsContent value="cpu" className="space-y-8">
               <CpuPage />
             </TabsContent>
-            <TabsContent value="Memory Tracker" className="space-y-8">
+            <TabsContent value="memory_tracker" className="space-y-8">
               <MemoryTrackerPage />
             </TabsContent>
           </motion.div>

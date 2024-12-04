@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { NotFound } from "../ui/not-found";
 
 interface DataPoint {
   index: number;
@@ -369,7 +370,7 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
   const [top, setTop] = useState<number>(0);
   const [bottom, setBottom] = useState<number>(0);
   const [refresh, setRefresh] = useState<boolean>(false);
-  const [, setError] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const fetchData = async () => {
     try {
@@ -389,6 +390,7 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
         timestamp: Number(val[0]) * 1000,
         value: parseFloat(String(val[1])),
       }));
+      console.log(data);
       const [bottom, top] = getAxisYDomain(
         data,
         data[0].timestamp,
@@ -485,20 +487,32 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between mb-4">
-          <div className="flex flex-row space-x-2">
-            <Button variant="outline" size="icon" onClick={refreshLineGraph}>
-              <RefreshCcw />
-            </Button>
-            <Button
-              onClick={zoomOut}
-              className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Zoom Out
-            </Button>
-          </div>
-          <div className="flex flex-row space-x-2">
-            {/* <Select>
+        {error ? (
+          <NotFound
+            onRefresh={function (): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
+        ) : (
+          <>
+            <div className="flex justify-between mb-4">
+              <div className="flex flex-row space-x-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={refreshLineGraph}
+                >
+                  <RefreshCcw />
+                </Button>
+                <Button
+                  onClick={zoomOut}
+                  className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Zoom Out
+                </Button>
+              </div>
+              <div className="flex flex-row space-x-2">
+                {/* <Select>
               <SelectTrigger className="w-[120px] h-[30px]">
                 <SelectValue placeholder="App Name" />
               </SelectTrigger>
@@ -521,71 +535,77 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
                 <SelectItem value="sandwich">Sandwich</SelectItem>
               </SelectContent>
             </Select> */}
-          </div>
-        </div>
-        <ChartContainer config={chartConfig} className="aspect-auto w-full">
-          <div style={{ userSelect: "none" }}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart
-                data={data}
-                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-                onMouseDown={(e) =>
-                  e &&
-                  setRefAreaLeft(e.activeLabel ? Number(e.activeLabel) : null)
-                }
-                onMouseMove={(e) =>
-                  e &&
-                  refAreaLeft !== null &&
-                  setRefAreaRight(e.activeLabel ? Number(e.activeLabel) : null)
-                }
-                onMouseUp={zoom}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  allowDataOverflow
-                  dataKey="timestamp"
-                  domain={[left, right]}
-                  type="number"
-                  tickFormatter={formatXAxis}
-                />
-                <YAxis
-                  allowDataOverflow
-                  domain={[bottom, top]}
-                  type="number"
-                  yAxisId="1"
-                  tickCount={5}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      className="w-[200px]"
-                      // nameKey="kv_service"
+              </div>
+            </div>
+            <ChartContainer config={chartConfig} className="aspect-auto w-full">
+              <div style={{ userSelect: "none" }}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart
+                    data={data}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                    onMouseDown={(e) =>
+                      e &&
+                      setRefAreaLeft(
+                        e.activeLabel ? Number(e.activeLabel) : null
+                      )
+                    }
+                    onMouseMove={(e) =>
+                      e &&
+                      refAreaLeft !== null &&
+                      setRefAreaRight(
+                        e.activeLabel ? Number(e.activeLabel) : null
+                      )
+                    }
+                    onMouseUp={zoom}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      allowDataOverflow
+                      dataKey="timestamp"
+                      domain={[left, right]}
+                      type="number"
+                      tickFormatter={formatXAxis}
                     />
-                  }
-                />
-                <Line
-                  yAxisId="1"
-                  type="monotone"
-                  dataKey="value"
-                  name="KV Service"
-                  stroke="hsl(var(--chart-1))"
-                  dot={false}
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
-                  connectNulls
-                />
-                {refAreaLeft && refAreaRight && (
-                  <ReferenceArea
-                    yAxisId="1"
-                    x1={refAreaLeft}
-                    x2={refAreaRight}
-                    strokeOpacity={0.3}
-                  />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartContainer>
+                    <YAxis
+                      allowDataOverflow
+                      domain={[bottom, top]}
+                      type="number"
+                      yAxisId="1"
+                      tickCount={5}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="w-[200px]"
+                          // nameKey="kv_service"
+                        />
+                      }
+                    />
+                    <Line
+                      yAxisId="1"
+                      type="monotone"
+                      dataKey="value"
+                      name="KV Service"
+                      stroke="hsl(var(--chart-1))"
+                      dot={false}
+                      strokeWidth={2}
+                      activeDot={{ r: 8 }}
+                      connectNulls
+                    />
+                    {refAreaLeft && refAreaRight && (
+                      <ReferenceArea
+                        yAxisId="1"
+                        x1={refAreaLeft}
+                        x2={refAreaRight}
+                        strokeOpacity={0.3}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </ChartContainer>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,48 +1,60 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
-import { useState, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { RefreshCw, Info } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Info, MemoryStick } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 
 const generateRandomData = (length: number) => {
   return Array.from({ length }, (_, i) => ({
     name: i.toString(),
-    value: Math.floor(Math.random() * 100)
-  }))
-}
+    value: Math.floor(Math.random() * 100),
+  }));
+};
 
 const MetricChart = ({ title, data, yAxisLabel }) => (
-  <Card className="bg-slate-800">
+  <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
     <CardHeader>
-      <CardTitle className="text-lg font-semibold text-white">{title}</CardTitle>
+      <CardTitle className="text-lg font-semibold text-white">
+        {title}
+      </CardTitle>
     </CardHeader>
     <CardContent>
       <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-          <XAxis 
-            dataKey="name" 
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        >
+          <XAxis
+            dataKey="name"
             stroke="#888888"
             fontSize={12}
             tickLine={false}
-            axisLine={{ stroke: '#888888' }}
+            axisLine={{ stroke: "#888888" }}
           />
           <YAxis
             stroke="#888888"
             fontSize={12}
             tickLine={false}
-            axisLine={{ stroke: '#888888' }}
+            axisLine={{ stroke: "#888888" }}
             tickFormatter={(value) => `${value}${yAxisLabel}`}
           />
           <RechartsTooltip
-            contentStyle={{ backgroundColor: '#334155', border: 'none' }}
-            labelStyle={{ color: '#94a3b8' }}
-            itemStyle={{ color: '#e2e8f0' }}
+            contentStyle={{ backgroundColor: "#334155", border: "none" }}
+            labelStyle={{ color: "#94a3b8" }}
+            itemStyle={{ color: "#e2e8f0" }}
           />
           <Line
             type="monotone"
@@ -56,36 +68,47 @@ const MetricChart = ({ title, data, yAxisLabel }) => (
       </ResponsiveContainer>
     </CardContent>
   </Card>
-)
+);
 
 export function MemoryMetricsGrid() {
   const [metricsData, setMetricsData] = useState({
     ioTime: generateRandomData(20),
     diskRW: generateRandomData(20),
     diskIOPS: generateRandomData(20),
-    diskWaitTime: generateRandomData(20)
-  })
+    diskWaitTime: generateRandomData(20),
+  });
 
   const refreshData = useCallback(() => {
     setMetricsData({
       ioTime: generateRandomData(20),
       diskRW: generateRandomData(20),
       diskIOPS: generateRandomData(20),
-      diskWaitTime: generateRandomData(20)
-    })
-  }, [])
+      diskWaitTime: generateRandomData(20),
+    });
+  }, []);
 
   const metrics = [
-    { title: "Time Spent Doing I/O", yAxisLabel: "%", data: metricsData.ioTime },
+    {
+      title: "Time Spent Doing I/O",
+      yAxisLabel: "%",
+      data: metricsData.ioTime,
+    },
     { title: "Disk R/W Data", yAxisLabel: "B", data: metricsData.diskRW },
     { title: "Disk IOPS", yAxisLabel: "", data: metricsData.diskIOPS },
-    { title: "Disk Average Wait Time", yAxisLabel: "ms", data: metricsData.diskWaitTime }
-  ]
+    {
+      title: "Disk Average Wait Time",
+      yAxisLabel: "ms",
+      data: metricsData.diskWaitTime,
+    },
+  ];
 
   return (
     <Card className="bg-slate-900 p-6">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold text-white">Memory Metrics</CardTitle>
+        <div className="flex items-center gap-2">
+          <MemoryStick className="w-6 h-6 text-blue-400" />
+          <CardTitle className="text-2xl font-bold">Memory Metrics</CardTitle>
+        </div>
         <div className="flex items-center space-x-2">
           <Button onClick={refreshData} variant="outline" size="icon">
             <RefreshCw className="h-4 w-4" />
@@ -110,11 +133,15 @@ export function MemoryMetricsGrid() {
       <CardContent>
         <div className="grid grid-cols-2 gap-6">
           {metrics.map((metric) => (
-            <MetricChart key={metric.title} title={metric.title} data={metric.data} yAxisLabel={metric.yAxisLabel} />
+            <MetricChart
+              key={metric.title}
+              title={metric.title}
+              data={metric.data}
+              yAxisLabel={metric.yAxisLabel}
+            />
           ))}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

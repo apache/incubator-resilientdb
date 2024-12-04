@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
   };
 
   const isActive = (path: string) =>
-    location.pathname === path ? "text-green-500 font-bold" : "text-gray-500";
+    location.pathname === path ? "text-blue-400 font-bold" : "text-gray-500";
 
   return (
     <nav className="bg-black bg-opacity-30 backdrop-blur-lg fixed top-0 left-0 w-full z-50 shadow-lg">
@@ -27,7 +27,7 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-1">
             <Link
               to="/"
-              className={`py-4 px-2 font-semibold hover:text-green-500 transition duration-300 ${isActive(
+              className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/"
               )}`}
             >
@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link
               to="/dashboard"
-              className={`py-4 px-2 font-semibold hover:text-green-500 transition duration-300 ${isActive(
+              className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/dashboard"
               )}`}
             >
@@ -43,7 +43,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link
               to="/authors"
-              className={`py-4 px-2 font-semibold hover:text-green-500 transition duration-300 ${isActive(
+              className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/authors"
               )}`}
             >
@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link
               to="/blog"
-              className={`py-4 px-2 font-semibold hover:text-green-500 transition duration-300 ${isActive(
+              className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/blog"
               )}`}
             >

@@ -12,7 +12,6 @@ export const Loader: React.FC<LoaderProps> = ({
   size = "md",
   text,
   className,
-  loading = false,
   ...props
 }) => {
   const sizeClasses = {
