@@ -29,12 +29,12 @@ async function cpuUsage(req,res){
         const response = await axios.request(config) 
         return res.send(response.data)
       } catch (error) {
-        return res.send({
-            error: error
-        })
+        return res.status(500).send({
+          error: error
+      })
       }
 }
 
 module.exports = {
-    getProfilingData
+    cpuUsage
 }
