@@ -1,5 +1,5 @@
 const express = require("express");
-const { getCpuUsage, getDiskIOPS, getDiskWaitTime, getTimeSpentDoingIO } = require("../controllers/nodeExporter");
+const { getCpuUsage, getDiskIOPS, getDiskWaitTime, getTimeSpentDoingIO, getDiskRWData } = require("../controllers/nodeExporter");
 const router = express.Router();
 
 /**
@@ -11,5 +11,6 @@ router.post("/getCpuUsage", getCpuUsage);
 router.post("/getDiskIOPS", getDiskIOPS);
 router.post("/getDiskWaitTime", getDiskWaitTime);
 router.post("/getTimeSpentDoingIO", getTimeSpentDoingIO);
+router.post("/getDiskRWData", getDiskRWData);
 
 module.exports = router;
