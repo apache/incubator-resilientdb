@@ -72,100 +72,92 @@ async function getDiskIOPS(req, res) {
 async function getDiskWaitTime(req, res) {
     const { from = "now-5m", until = "now", step = 28 } = req.body;
 
-    const queries = [
-        "rate(node_disk_read_time_seconds_total{device='sda'}[5m]) / rate(node_disk_reads_completed_total{device='sda'}[5m])",
-        "rate(node_disk_write_time_seconds_total{device='sda'}[5m]) / rate(node_disk_writes_completed_total{device='sda'}[5m])",
-    ];
-
     try {
-        // Fetch data for both queries
+        // Define queries for both metrics
+        const queries = {
+            readWaitTime: "rate(node_disk_read_time_seconds_total{device='sda'}[5m]) / rate(node_disk_reads_completed_total{device='sda'}[5m])",
+            writeWaitTime: "rate(node_disk_write_time_seconds_total{device='sda'}[5m]) / rate(node_disk_writes_completed_total{device='sda'}[5m])",
+        };
+
+        // Execute Prometheus queries in parallel
         const responses = await Promise.all(
-            queries.map((query) => {
+            Object.entries(queries).map(async ([key, query]) => {
                 const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
                     query,
                     start: from,
                     end: until,
                     step,
                 });
-                return axios.get(baseUrl);
+                const response = await axios.get(baseUrl);
+                return {
+                    key,
+                    values: response?.data?.data?.result?.[0]?.values || [],
+                };
             })
         );
 
-        // Parse responses for "read" and "write" metrics
-        const readWaitTime = responses[0]?.data?.data?.result?.[0]?.values || [];
-        const writeWaitTime = responses[1]?.data?.data?.result?.[0]?.values || [];
-
-        // Format the data for plotting
-        const formattedData = {
-            readWaitTime: readWaitTime.map(([timestamp, value]) => ({
+        // Format the responses for each metric
+        const formattedData = responses.reduce((acc, { key, values }) => {
+            acc[key] = values.map(([timestamp, value]) => ({
                 time: new Date(timestamp * 1000).toISOString(),
                 value: parseFloat(value),
-            })),
-            writeWaitTime: writeWaitTime.map(([timestamp, value]) => ({
-                time: new Date(timestamp * 1000).toISOString(),
-                value: parseFloat(value),
-            })),
-        };
+            }));
+            return acc;
+        }, {});
 
-        // Send the formatted data
+        // Send formatted data to the frontend
         return res.send({ data: formattedData });
     } catch (error) {
         logger.error(error);
         return res.status(400).send({
-            error: error.message || "An error occurred",
+            error: error.message || "An error occurred while fetching Disk Wait Time data",
         });
     }
 }
+
 // Time spent doing IO
 
 async function getTimeSpentDoingIO(req, res) {
-    const { query, from = "now-5m", until = "now", step = 28 } = req.body;
-    logger.info(req.body);
+    const { from = "now-5m", until = "now", step = 28 } = req.body;
 
-    // Build the Prometheus query URL
-    const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
-        query,
-        start: from,
-        end: until,
-        step
-    });
-
-    const config = {
-        method: 'get',
-        maxBodyLength: Infinity,
-        url: baseUrl,
-    };
-
-    logger.info(config);
+    const query = "rate(node_disk_io_time_seconds_total{device='sda', job='node_exporter'}[5m])";
 
     try {
-        // Make the API request to Prometheus
+        // Build the Prometheus query URL
+        const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
+            query,
+            start: from,
+            end: until,
+            step,
+        });
+
+        const config = {
+            method: 'get',
+            url: baseUrl,
+        };
+
+        // Fetch data from Prometheus
         const response = await axios.request(config);
 
-        // Access the 'result' array and filter by 'device' and 'job'
-        const data = response?.data?.data?.result.filter(
-            (val) => val?.metric?.device === 'sda' && val?.metric?.job === 'node_exporter'
-        );
+        // Parse response
+        const result = response?.data?.data?.result?.[0]?.values || [];
 
-        // Extract 'values' from the filtered data
-        let responseData = [];
-        if (data && data.length > 0) {
-            responseData = data[0]?.values.map(([timestamp, value]) => ({
-                timestamp: Number(timestamp), // Convert timestamp to number
-                value: parseFloat(value),     // Convert value to number
-            }));
-        }
+        // Format data for the frontend
+        const formattedData = result.map(([timestamp, value]) => ({
+            time: new Date(timestamp * 1000).toISOString(),
+            value: parseFloat(value),
+        }));
 
-        // Send the formatted data in the response
-        return res.send({ data: responseData });
+        return res.send({ data: formattedData });
     } catch (error) {
-        // Log the error and send a failure response
-        logger.error(error);
+        logger.error("Error fetching Disk IO Time data:", error);
         return res.status(400).send({
-            error: error.message || "An error occurred while fetching Disk IO Time data",
+            error: error.message || "Failed to fetch Disk IO Time data",
         });
     }
 }
+
+
 /**
  * Processes Node Exporter data to find a specific groupname and simplify the structure.
  * 

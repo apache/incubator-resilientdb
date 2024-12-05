@@ -9,7 +9,7 @@ const router = express.Router();
  */
 router.post("/getCpuUsage", getCpuUsage);
 router.post("/getDiskIOPS", getDiskIOPS);
-router.post("/getDiskIOPS", getDiskWaitTime);
-router.post("/getDiskIOPS", getTimeSpentDoingIO);
+router.post("/getDiskWaitTime", getDiskWaitTime);
+router.post("/getTimeSpentDoingIO", getTimeSpentDoingIO);
 
 module.exports = router;
