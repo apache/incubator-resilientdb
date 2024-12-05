@@ -17,25 +17,27 @@ import {
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { NotFound } from "@/components/ui/not-found";
 
-interface LevelDbStats {
-  level: number;
-  files: number;
-  size_mb: number;
-  time_sec: number;
-  read_mb: number;
-  write_mb: number;
+interface LevelDBStat {
+  Level: string;
+  Files: string;
+  "Size(MB)": string;
+  "Time(sec)": string;
+  "Read(MB)": string;
+  "Write(MB)": string;
 }
 
 interface StorageMetrics {
   ext_cache_hit_ratio: number;
   level_db_approx_mem_size: number;
-  level_db_stats: LevelDbStats[];
+  level_db_stats: LevelDBStat[];
   max_resident_set_size: number;
   resident_set_size: number;
 }
@@ -56,6 +58,9 @@ interface LevelDbCardProps {
   rssSize: number;
 }
 
+interface LevelDBStatsTableProps {
+  stats: LevelDBStat[];
+}
 const CacheHitGauge = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const [p99Value, setP99Value] = useState(0);
@@ -99,8 +104,9 @@ const CacheHitGauge = () => {
             GO
           </Button>
         ) : (
-          <div className="w-full h-64 relative">
+          <div className="w-full h-48 relative">
             <GaugeChart
+              style={{ height: "12rem" }}
               id="p99-gauge-chart"
               nrOfLevels={10}
               colors={["#10B981", "#FBBF24", "#EF4444"]}
@@ -198,7 +204,7 @@ export function StorageEngineMetrics() {
       {loading ? (
         <Loader className="h-[400px]" />
       ) : (
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex flex-row justify-between space-x-2">
             <CacheHitRatio ratio={data?.ext_cache_hit_ratio} />
             <LevelDbCard
@@ -206,6 +212,9 @@ export function StorageEngineMetrics() {
               rssSize={data?.resident_set_size}
             />
             <CacheHitGauge />
+          </div>
+          <div className="flex flex-row justify-between space-x-2">
+            <LevelDBStatsTable stats={data?.level_db_stats} />
           </div>
         </CardContent>
       )}
@@ -229,6 +238,53 @@ export function CacheHitRatio({ ratio }: CacheHitRatioProps) {
         <p className="mt-2 text-sm text-muted-foreground">
           {percentage}% of requests are served from the LRU cache.
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function LevelDBStatsTable({ stats }: LevelDBStatsTableProps) {
+  if (!stats) {
+    return (
+      <Card>
+        <NotFound
+          onRefresh={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
+      </Card>
+    );
+  }
+  return (
+    <Card className="w-full max-w-md flex-1">
+      <CardHeader>
+        <CardTitle>Level DB Stats</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Level</TableHead>
+              <TableHead>Files</TableHead>
+              <TableHead>Size (MB)</TableHead>
+              <TableHead>Time (sec)</TableHead>
+              <TableHead>Read (MB)</TableHead>
+              <TableHead>Write (MB)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {stats.map((stat) => (
+              <TableRow key={stat.Level}>
+                <TableCell>{stat.Level}</TableCell>
+                <TableCell>{stat.Files}</TableCell>
+                <TableCell>{stat["Size(MB)"]}</TableCell>
+                <TableCell>{stat["Time(sec)"]}</TableCell>
+                <TableCell>{stat["Read(MB)"]}</TableCell>
+                <TableCell>{stat["Write(MB)"]}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

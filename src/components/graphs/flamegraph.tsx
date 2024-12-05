@@ -1,9 +1,9 @@
 import "@pyroscope/flamegraph/dist/index.css";
 
-import React, { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useState } from "react";
 import { FlamegraphRenderer } from "@pyroscope/flamegraph";
-import { ProfileData1 } from "@/mock/test_flamegraph";
+import { ProfileData1 } from "@/static/test_flamegraph";
 import { Button } from "../ui/button";
 import { ViewTypes } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlameGraph/FlameGraphComponent/viewTypes";
 import { Input } from "../ui/input";
@@ -20,17 +20,21 @@ import { Download, RefreshCcw, Flame } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "../ui/loader";
 import { NotFound } from "../ui/not-found";
+import { ModeContext } from "@/hooks/context";
+import { ModeType } from "../toggle";
+import { useToast } from "@/hooks/use-toast";
 
 interface FlamegraphCardProps {
   from: string | number;
   until: string | number;
 }
 export const Flamegraph = (props: FlamegraphCardProps) => {
-  console.log(props);
+  const { toast } = useToast();
   /**
    * UI Client Data
    */
 
+  const mode = useContext<ModeType>(ModeContext);
   const [clientName, setClientName] = useState("cpp_client_1");
   const [profilingData, setProfilingData] = useState(ProfileData1);
 
@@ -77,6 +81,16 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
   }
 
   useEffect(() => {
+    if (mode === "offline") {
+      setProfilingData(ProfileData1);
+      toast({
+        title: "Offline Mode",
+        description: "Using sample data in offline mode.",
+        variant: "default",
+      });
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -93,44 +107,52 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
         });
         if (response?.data?.error) {
           setError(response?.data?.error);
+          toast({
+            title: "Error",
+            description: response?.data?.error,
+            variant: "destructive",
+          });
         } else {
           setProfilingData(response?.data);
+          toast({
+            title: "Data Updated",
+            description: `Flamegraph data updated for ${clientName}`,
+            variant: "default",
+          });
         }
         setLoading(false);
       } catch (error) {
-        console.log(error);
         setError(error.message);
         setLoading(false);
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
       }
     };
     fetchData();
-  }, [clientName, refresh, props.from]);
+  }, [clientName, refresh, props.from, props.until, mode, toast]);
   return (
     <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Flame className="w-6 h-6 text-blue-400" />
-          <CardTitle className="text-2xl font-bold">Flamegraph</CardTitle>
+        <div className="flex justify-between">
+          <div className="flex items-center gap-2">
+            <Flame className="w-6 h-6 text-blue-400" />
+            <CardTitle className="text-2xl font-bold">Flamegraph</CardTitle>
+          </div>
+          <Button variant="outline" size="icon" onClick={refreshFlamegraph}>
+            <RefreshCcw />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col h-full">
         {error ? (
-          <NotFound
-            onRefresh={function (): void {
-              throw new Error("Function not implemented.");
-            }}
-          />
+          <NotFound onRefresh={refreshFlamegraph} />
         ) : (
           <>
             <div className="flex justify-between mb-4">
               <div className="flex flex-row space-x-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={refreshFlamegraph}
-                >
-                  <RefreshCcw />
-                </Button>
                 <Input
                   placeholder="Filter by function name"
                   onChange={(e) =>

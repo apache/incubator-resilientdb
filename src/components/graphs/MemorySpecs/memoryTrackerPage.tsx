@@ -8,8 +8,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TerminalController } from "./terminal";
+import { useContext } from "react";
+import { ModeContext } from "@/hooks/context";
 
 export function MemoryTrackerPage() {
+  const mode = useContext(ModeContext);
+  console.log("Mode", mode);
   return (
     <div className="space-y-8">
       <div className="relative">

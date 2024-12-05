@@ -4,10 +4,12 @@ import { Dashboard } from "@/components/dashboard/dashboard";
 import { HomePage } from "@/components/home-page/homePage";
 import PBFTPage from "@/components/home-page/PBFT"; // Import the new PBFT page
 import AuthorsPage from "./components/Authors/AuthorPage";
+import { Toaster } from "./components/ui/toaster";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Toaster />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />

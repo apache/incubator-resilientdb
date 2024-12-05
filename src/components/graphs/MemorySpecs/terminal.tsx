@@ -110,8 +110,9 @@ export const TerminalController = (props = {}) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-fit bg-inheri">
+        <div className="h-fit bg-inherit">
           <Terminal
+            key="terminal"
             colorMode={ColorMode.Dark}
             height="300px"
             onInput={processCommand}
