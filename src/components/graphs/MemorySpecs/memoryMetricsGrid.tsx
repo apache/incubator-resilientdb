@@ -82,44 +82,38 @@ export function MemoryMetricsGrid() {
   
   const fetchIoTimeData = async () => {
     try {
-      setLoadingDiskIOPS(true); // Indicate loading
-      setErrorDiskIOPS(null); // Clear any previous errors
-  
-      const until = new Date().getTime(); // Current time
-      const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // Last 1 hour
-      const step = 14; // Step size in seconds
-  
-      // Prometheus query for Disk IO Time
-      const query = "rate(node_disk_io_time_seconds_total{device='sda'}[5m])";
-  
-      // Make API call
-      const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
-        query,
-        from: parseFloat((from / 1000).toFixed(3)),
-        until: parseFloat((until / 1000).toFixed(3)),
-        step,
-      });
-  
-      // Process the response to format data for the chart
-      const data = response?.data?.data.map((val) => ({
-        name: new Date(Math.floor(Number(val[0]) / 60) * 60 * 1000).toLocaleTimeString(), // Format timestamp
-        value: Math.floor(parseFloat(val[1]) * 1000), // Convert seconds to milliseconds
-      }));
-  
-      console.log("Disk IO Time Data:", data);
-      setIoTimeData(data); // Update state with new data
-      setLoadingDiskIOPS(false); // Loading complete
+        setLoadingDiskIOPS(true); // Set loading state
+        setErrorDiskIOPS(null); // Clear errors
+
+        const until = new Date().getTime(); // Current timestamp in ms
+        const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // 1 hour ago
+
+        // Fetch data from the backend
+        const response = await middlewareApi.post("/nodeExporter/getTimeSpentDoingIO", {
+            from: parseFloat((from / 1000).toFixed(3)),
+            until: parseFloat((until / 1000).toFixed(3)),
+            step: 14,
+        });
+
+        const data = response?.data?.data.map((item) => ({
+            name: new Date(item.time).toLocaleTimeString(), // Format time
+            value: Math.floor(item.value * 1000), // Convert seconds to milliseconds
+        }));
+
+        console.log("Disk IO Time Data:", data);
+        setIoTimeData(data); // Update state with data
+        setLoadingDiskIOPS(false); // Reset loading state
     } catch (error) {
-      console.error("Error fetching Disk IO Time data:", error);
-      setErrorDiskIOPS(error?.message || "Failed to fetch Disk IO Time data.");
-      setLoadingDiskIOPS(false); // Reset loading on error
+        console.error("Error fetching Disk IO Time data:", error);
+        setErrorDiskIOPS(error?.message || "Failed to fetch Disk IO Time data.");
+        setLoadingDiskIOPS(false); // Reset loading on error
     }
-  };
+};
 
   const fetchDiskRWData = async () => {
     // Replace this with actual API call
     setDiskRWData(generateRandomData(20));
-  };
+};
 
   const fetchDiskIOPSData = async () => {
     try {
@@ -164,45 +158,33 @@ export function MemoryMetricsGrid() {
 
 const fetchDiskWaitTimeData = async () => {
   try {
-    setLoadingDiskIOPS(true); // Set loading state
-    setErrorDiskIOPS(null); // Clear any previous errors
+    setLoadingDiskIOPS(true); // Indicate loading state
+    setErrorDiskIOPS(null); // Clear previous errors
 
-    const until = new Date().getTime();
+    const until = new Date().getTime(); // Current time
     const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // Last 1 hour
     const step = 14; // Step size in seconds
 
-    // Query for read wait time
-    const readQuery = "rate(node_disk_read_time_seconds_total{device='sda'}[5m]) / rate(node_disk_reads_completed_total{device='sda'}[5m])";
-    const writeQuery = "rate(node_disk_write_time_seconds_total{device='sda'}[5m]) / rate(node_disk_writes_completed_total{device='sda'}[5m])";
-
-    // Fetch data for both queries
-    const [readResponse, writeResponse] = await Promise.all([
-      middlewareApi.post("/nodeExporter/getDiskIOPS", {
-        query: readQuery,
-        from: parseFloat((from / 1000).toFixed(3)),
-        until: parseFloat((until / 1000).toFixed(3)),
-        step,
-      }),
-      middlewareApi.post("/nodeExporter/getDiskIOPS", {
-        query: writeQuery,
-        from: parseFloat((from / 1000).toFixed(3)),
-        until: parseFloat((until / 1000).toFixed(3)),
-        step,
-      }),
-    ]);
+    // Call the backend API
+    const response = await middlewareApi.post("/nodeExporter/getDiskWaitTime", {
+      from: parseFloat((from / 1000).toFixed(3)),
+      until: parseFloat((until / 1000).toFixed(3)),
+      step,
+    });
 
     // Format the data for the chart
-    const processMetricData = (response, label) =>
-      response?.data?.data.map((val) => ({
-        name: new Date(Math.floor(Number(val[0]) / 60) * 60 * 1000).toLocaleTimeString(), // Format timestamp
-        value: Math.floor(parseFloat(val[1]) * 1000), // Convert to milliseconds
+    const processMetricData = (metricData, label) =>
+      metricData.map(({ time, value }) => ({
+        name: new Date(time).toLocaleTimeString(), // Format timestamp
+        value: Math.floor(value * 1000), // Convert to milliseconds
         metric: label, // Identify metric type (read/write)
       }));
 
-    const readData = processMetricData(readResponse, "Read");
-    const writeData = processMetricData(writeResponse, "Write");
+    const readData = processMetricData(response?.data?.data?.readWaitTime, "Read");
+    const writeData = processMetricData(response?.data?.data?.writeWaitTime, "Write");
 
-    setDiskWaitTimeData([...readData, ...writeData]); // Combine and set data
+    // Combine data and update state
+    setDiskWaitTimeData([...readData, ...writeData]);
     setLoadingDiskIOPS(false); // Reset loading state
   } catch (error) {
     console.error("Error fetching Disk Wait Time data:", error);
@@ -221,7 +203,7 @@ const fetchDiskWaitTimeData = async () => {
   const metrics = [
     {
       title: "Time Spent Doing I/O",
-      yAxisLabel: "%",
+      yAxisLabel: "ms",
       data: ioTimeData,
       onRefresh: fetchIoTimeData,
     },
