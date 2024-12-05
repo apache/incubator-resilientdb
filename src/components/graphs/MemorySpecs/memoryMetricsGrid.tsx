@@ -110,51 +110,83 @@ export function MemoryMetricsGrid() {
     }
 };
 
-  const fetchDiskRWData = async () => {
-    // Replace this with actual API call
-    setDiskRWData(generateRandomData(20));
+const fetchDiskRWData = async () => {
+  try {
+    setLoadingDiskIOPS(true); // Indicate loading state
+    setErrorDiskIOPS(null); // Clear previous errors
+
+    const until = new Date().getTime(); // Current time
+    const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // Last 1 hour
+    const step = 14; // Step size in seconds
+
+    // Call the backend API
+    const response = await middlewareApi.post("/nodeExporter/getDiskRWData", {
+      from: parseFloat((from / 1000).toFixed(3)),
+      until: parseFloat((until / 1000).toFixed(3)),
+      step,
+    });
+
+    // Format the data for the chart
+    const processMetricData = (metricData, label) =>
+      metricData.map(({ time, value }) => ({
+        name: new Date(time).toLocaleTimeString(), // Format timestamp
+        value: Math.floor(value * 1000), // Convert to milliseconds
+        metric: label, // Identify metric type (read/write)
+      }));
+
+    const readMergedData = processMetricData(response?.data?.data?.readMerged, "Read Merged");
+    const writeMergedData = processMetricData(response?.data?.data?.writeMerged, "Write Merged");
+
+    // Combine data and update state
+    setDiskRWData([...readMergedData, ...writeMergedData]);
+    setLoadingDiskIOPS(false); // Reset loading state
+  } catch (error) {
+    console.error("Error fetching Disk Merged Data:", error);
+    setErrorDiskIOPS(error?.message || "Failed to fetch Disk Merged Data.");
+    setLoadingDiskIOPS(false); // Reset loading state on error
+  }
 };
 
-  const fetchDiskIOPSData = async () => {
-    try {
-      setLoadingDiskIOPS(true); // Indicate that loading has started
-      setErrorDiskIOPS(null); // Clear any previous errors
-  
-      const until = new Date().getTime();
-      const from = new Date(until - 1 * 60 * 60 * 1000).getTime();
-      const step = 14; // Step size in seconds
-  
-      // Make the API call
-      const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
-        query: "rate(node_disk_writes_completed_total{device='sda',job='node_exporter'}[5m])",
-        from: parseFloat((from / 1000).toFixed(3)),
-        until: parseFloat((until / 1000).toFixed(3)),
-        step,
-      });
-  
-      // Process the response to format data for the chart
-      const data = response?.data?.data.map((val) => {
-        // Round the timestamp to the nearest minute (floor seconds)
-        const timestamp = Math.floor(Number(val[0]) / 60) * 60;
-        
-        // Round the value to two decimal places
-        const roundedValue = Math.floor(parseFloat(val[1]) * 100) / 100;
-        
-        return {
-          name: new Date(timestamp * 1000).toLocaleTimeString(), // Format timestamp
-          value: roundedValue, // Round IOPS rate value
-        };
-      });
+const fetchDiskIOPSData = async () => {
+  try {
+    setLoadingDiskIOPS(true); // Indicate that loading has started
+    setErrorDiskIOPS(null); // Clear any previous errors
 
-      console.log("Disk IOPS Data:", data);
-      setDiskIOPSData(data); // Update state with the new data
-      setLoadingDiskIOPS(false); // Loading is complete
-    } catch (error) {
-      console.error("Error fetching DiskIOPS data:", error);
-      setErrorDiskIOPS(error?.message || "Failed to fetch DiskIOPS data.");
-      setLoadingDiskIOPS(false); // Ensure loading is complete even on error
-    }
+    const until = new Date().getTime();
+    const from = new Date(until - 1 * 60 * 60 * 1000).getTime();
+    const step = 14; // Step size in seconds
+
+    // Make the API call without sending the query
+    const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
+      from: parseFloat((from / 1000).toFixed(3)),
+      until: parseFloat((until / 1000).toFixed(3)),
+      step,
+    });
+
+    // Process the response to format data for the chart
+    const data = response?.data?.data.map((val) => {
+      // Round the timestamp to the nearest minute (floor seconds)
+      const timestamp = Math.floor(Number(val[0]) / 60) * 60;
+      
+      // Round the value to two decimal places
+      const roundedValue = Math.floor(parseFloat(val[1]) * 100) / 100;
+      
+      return {
+        name: new Date(timestamp * 1000).toLocaleTimeString(), // Format timestamp
+        value: roundedValue, // Round IOPS rate value
+      };
+    });
+
+    console.log("Disk IOPS Data:", data);
+    setDiskIOPSData(data); // Update state with the new data
+    setLoadingDiskIOPS(false); // Loading is complete
+  } catch (error) {
+    console.error("Error fetching DiskIOPS data:", error);
+    setErrorDiskIOPS(error?.message || "Failed to fetch DiskIOPS data.");
+    setLoadingDiskIOPS(false); // Ensure loading is complete even on error
+  }
 };
+
 
 const fetchDiskWaitTimeData = async () => {
   try {
