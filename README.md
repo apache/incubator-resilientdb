@@ -94,13 +94,22 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
 ---
 ## Contribution
  1. Harish Gokul (http://github.com/harish876):
-    Lead Developer of for MemLens responsible for 
+    Lead Developer for MemLens responsible for 
       - Ideation, Execution and Architecture Design for the project.
       - Development of CPP Hooks, integration of prometheus hooks, and third party profiling libraries.
       - Development of profiling environment
       - Development of MemLens middleware service 
       - Contributed heavily to the frontend dashboard design.
       - Documentation and blog author.
+
+ 1. Bismanpal Singh Anand (http://github.com/bismanpal-singh):
+    Designer & Developer for MemLens responsible for 
+      - Structured and Designed the MemLens website.
+      - Experimented with various approaches to enhance usability while maintaining simplicity and elegance.
+      - Contributed to the design of the frontend dashboard, ensuring intuitive visualization of metrics and data.
+      - Contributed in implementing the MemLens middleware service to bridge data collection and presentation.
+      - Contributed heavily to the frontend dashboard design.
+      - Gathered memory metrics and profiling data by working with APIs & tools and integrated them into the dashboard
 
 ---
 
