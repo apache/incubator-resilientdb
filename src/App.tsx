@@ -2,7 +2,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { HomePage } from "@/components/home-page/homePage";
-import PBFTPage from "@/components/home-page/PBFT"; // Import the new PBFT page
+import PBFTPage from "@/components/home-page/PBFTFullView"; // Import the new PBFT page
 import AuthorsPage from "./components/Authors/AuthorPage";
 import { Toaster } from "./components/ui/toaster";
 

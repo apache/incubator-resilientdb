@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
 
         {/* Footer Bottom Section */}
         <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} MemLens. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} MemLens. Built at UC Davis.</p>
         </div>
       </div>
     </footer>

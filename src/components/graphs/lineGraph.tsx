@@ -14,7 +14,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../ui/chart";
+} from "../ui/LineGraphChart";
 import { middlewareApi } from "@/lib/api";
 import { Loader } from "../ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";

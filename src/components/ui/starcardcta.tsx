@@ -164,13 +164,13 @@ export function GlowingStarsBackgroundCardPreview() {
         <GlowingStarsTitle>Crunch the numbers!</GlowingStarsTitle>
         <div className="flex justify-between items-end">
           <GlowingStarsDescription>
-            The power of full-stack to the frontend. Read the release notes.
+            Head into world of Statistics and Data through the Memory Lens!
           </GlowingStarsDescription>
           <button
             onClick={() => window.location.href = '/dashboard'}
             className="px-4 py-2 bg-white text-black rounded-md hover:bg-black hover:text-white transition-colors"
           >
-            Explore the dashboard
+            Enter MemLens
           </button>
         </div>
       </GlowingStarsBackgroundCard>
