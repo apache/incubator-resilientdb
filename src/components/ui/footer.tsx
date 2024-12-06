@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
               className="h-16 mb-10"
             />
             <p className="text-sm text-gray-400 max-w-xs">
-            A powerful memory profiling tool designed to optimize performance and ensure resilience for ResilientDB.
+            A memory profiling tool for visualizing and analyzing the stats and performance of ResilientDB.
             </p>
           </div>
 

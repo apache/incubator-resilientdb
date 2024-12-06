@@ -1,3 +1,10 @@
+.pbft-container {
+  background-color: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
+}
+
 .pbft-visualization {
   background-color: #1a1a1a;
   padding: 2rem;
@@ -5,7 +12,7 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
 }
 
@@ -13,6 +20,7 @@
   width: 100%;
   height: auto;
   display: block;
+  overflow: visible;
 }
 
 .timeline {
@@ -107,12 +115,5 @@
 .full-screen-button:hover {
   background-color: #ffffff;
   color: #2a2a2a;
-}
-
-.pbft-container {
-  background-color: #1a1a1a;
-  padding: 1rem;
-  border-radius: 8px;
-  width: 100%;
 }
 

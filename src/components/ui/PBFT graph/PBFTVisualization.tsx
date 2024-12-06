@@ -62,9 +62,12 @@ export default function PBFTVisualization() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true)
+        } else {
+          setIsVisible(false)
+          setAnimationStarted(false)
         }
       },
-      { threshold: 0.2 } // Trigger when 20% of the component is visible
+      { threshold: 0.5 } // Trigger when 50% of the component is visible
     )
 
     if (containerRef.current) {
@@ -79,11 +82,11 @@ export default function PBFTVisualization() {
   }, [])
 
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && !animationStarted) {
       const timer = setTimeout(() => setAnimationStarted(true), 500)
       return () => clearTimeout(timer)
     }
-  }, [isVisible, animationKey])
+  }, [isVisible, animationStarted])
 
   const getNodeY = (node: string) => {
     const index = nodes.indexOf(node)
@@ -108,9 +111,9 @@ export default function PBFTVisualization() {
   }
 
   return (
-    <div className="pbft-container">
-      <div ref={containerRef} className="pbft-visualization">
-        <svg viewBox="0 0 1200 600" className="pbft-svg" key={animationKey}>
+    <div className="pbft-container" ref={containerRef}>
+      <div className="pbft-visualization">
+        <svg viewBox="0 0 1200 620" className="pbft-svg" key={animationKey}>
           {/* Background grid */}
           <defs>
             <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
@@ -183,7 +186,7 @@ export default function PBFTVisualization() {
                   fill="freeze"
                 />
               </path>
-              <circle r="4" fill={msg.color} className="message-dot" opacity="0">
+              <circle r="4" fill={msg.color} className="message-dot" opacity="0.8">
                 <animate
                   attributeName="opacity"
                   from="0"
@@ -221,7 +224,7 @@ export default function PBFTVisualization() {
                       fill="freeze"
                     />
                   </path>
-                  <circle r="4" fill="#AB47BC" opacity="0">
+                  <circle r="4" fill="#AB47BC" opacity="0.8">
                     <animate
                       attributeName="opacity"
                       from="0"
@@ -247,9 +250,9 @@ export default function PBFTVisualization() {
             className="replay-button"
             onClick={handleReplay}
           >
-            <circle cx="600" cy="580" r="24" fill="#2a2a2a" />
+            <circle cx="600" cy="600" r="24" fill="#2a2a2a" />
             <path
-              d="M 600 568 A 12 12 0 1 1 588 580 L 588 576"
+              d="M 600 588 A 12 12 0 1 1 588 600 L 588 596"
               fill="none"
               stroke="#ffffff"
               strokeWidth="2"
@@ -257,7 +260,7 @@ export default function PBFTVisualization() {
               strokeLinejoin="round"
             />
             <path
-              d="M 584 580 L 588 576 L 592 580"
+              d="M 584 600 L 588 596 L 592 600"
               fill="none"
               stroke="#ffffff"
               strokeWidth="2"

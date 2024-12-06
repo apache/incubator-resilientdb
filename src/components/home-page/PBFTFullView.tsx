@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import PBFTVisualization from "@/components/ui/PBFT graph/PBFTVisualization"
-import Navbar from "@/components/ui/navbar"  // Import the Navbar
+import Navbar from "@/components/ui/navbar"
 
-export default function App() {
+export default function PBFTFullView() {
   const [isVisible, setIsVisible] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -30,8 +30,8 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-900 p-4 text-white">
-      <Navbar />  {/* Place the Navbar component here */}
-      <div className="mt-16"> {/* Adds space below the navbar */}
+      <Navbar />
+      <div className="mt-16">
         <h1 className="text-3xl font-bold text-center mb-8">
           PBFT Consensus Visualization
         </h1>
