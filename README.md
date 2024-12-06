@@ -102,7 +102,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
       - Contributed heavily to the frontend dashboard design.
       - Documentation and blog author.
 
- 1. Bismanpal Singh Anand (http://github.com/bismanpal-singh):
+ 1. Bismanpal Anand (http://github.com/bismanpal-singh):
     Designer & Developer for MemLens responsible for 
       - Structured and Designed the MemLens website.
       - Experimented with various approaches to enhance usability while maintaining simplicity and elegance.
