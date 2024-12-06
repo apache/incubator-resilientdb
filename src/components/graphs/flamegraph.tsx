@@ -47,6 +47,8 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
    */
   const [flamegraphDisplayType, setFlamegraphDisplayType] =
     useState<ViewTypes>("both");
+  const [flamegraphInterval, setFlamegraphInterval] =
+    useState<ViewTypes>("now-5m");
   const [_, setSearchQueryToggle] = useState(true); //dummy dispatch not used functionally
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState("");
@@ -62,6 +64,10 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
 
   function handleFlamegraphTypeChange(value: string) {
     setFlamegraphDisplayType(value);
+  }
+
+  function handleFlamegraphIntervalChange(value: string) {
+    setFlamegraphInterval(value);
   }
 
   function handleDownload() {
@@ -94,7 +100,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        let from: string | number = "now-5m";
+        let from: string | number = flamegraphInterval;
         let until: string | number = "now";
         if (props.from && props.until) {
           from = props.from;
@@ -112,6 +118,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
             description: response?.data?.error,
             variant: "destructive",
           });
+          setError(response?.data?.error);
         } else {
           setProfilingData(response?.data);
           toast({
@@ -129,10 +136,11 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
           description: error.message,
           variant: "destructive",
         });
+        setError(error?.message);
       }
     };
     fetchData();
-  }, [clientName, refresh, props.from, props.until, mode, toast]);
+  }, [clientName, refresh, props.from, props.until, mode, flamegraphInterval]);
   return (
     <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
       <CardHeader>
@@ -187,6 +195,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
                     <SelectItem value="system">Host</SelectItem>
                   </SelectContent>
                 </Select>
+
                 <Select onValueChange={handleFlamegraphTypeChange}>
                   <SelectTrigger className="w-[120px] h-[30px]">
                     <SelectValue placeholder="Graph Type" />
@@ -198,15 +207,17 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
                     <SelectItem value="sandwich">Sandwich</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select onValueChange={handleFlamegraphTypeChange}>
+
+                <Select onValueChange={handleFlamegraphIntervalChange}>
                   <SelectTrigger className="w-[120px] h-[30px]">
                     <SelectValue placeholder="Interval" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="table">Table</SelectItem>
-                    <SelectItem value="flamegraph">Flamegraph</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
-                    <SelectItem value="sandwich">Sandwich</SelectItem>
+                    <SelectItem value="now-5m">Last 5 minutes</SelectItem>
+                    <SelectItem value="now-30m">Last 30 minutes</SelectItem>
+                    <SelectItem value="now-1h">Last 1 hour</SelectItem>
+                    <SelectItem value="now-12h">Last 12 hours</SelectItem>
+                    <SelectItem value="now-24h">Last 24 hours</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

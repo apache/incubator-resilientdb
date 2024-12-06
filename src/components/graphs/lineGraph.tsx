@@ -20,6 +20,7 @@ import { Loader } from "../ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Cpu, RefreshCcw } from "lucide-react";
 import { NotFound } from "../ui/not-found";
+import { useToast } from "@/hooks/use-toast";
 
 interface DataPoint {
   index: number;
@@ -82,6 +83,7 @@ interface CpuLineGraphProps {
 }
 
 export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
+  const { toast } = useToast();
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
@@ -96,22 +98,45 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
   const fetchData = async () => {
     try {
       const until = new Date().getTime();
-      const from = new Date(until - 1 * 60 * 60 * 1000).getTime();
+      const from = new Date(until - 2 * 60 * 60 * 1000).getTime();
 
       const response = await middlewareApi.post("/nodeExporter/getCpuUsage", {
         query:
           "sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname=~'.+'}[5m])) by (groupname) * 100",
         from: parseFloat((from / 1000).toFixed(3)),
         until: parseFloat((until / 1000).toFixed(3)),
-        step: 14,
+        step: 28,
       });
-      console.log(response?.data);
+      if (
+        Array.isArray(response?.data?.data) &&
+        response?.data?.data.length == 0
+      ) {
+        toast({
+          title: "No Data",
+          description:
+            "No CPU usage data available for the selected time range.",
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        setError("No CPU usage data available for the selected time range"),
+          setLoading(false);
+        return;
+      }
+      if (response?.data?.error) {
+        console.log("here");
+        toast({
+          title: "Error",
+          description: response?.data?.error,
+          variant: "destructive",
+        });
+        setLoading(false);
+        setError(response?.data?.error);
+        return;
+      }
       const data = response?.data?.data.map((val, idx) => ({
         index: idx,
         timestamp: Number(val[0]) * 1000,
         value: parseFloat(String(val[1])),
       }));
-      console.log(data);
       const [bottom, top] = getAxisYDomain(
         data,
         data[0].timestamp,
@@ -128,6 +153,11 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
       console.log(error);
       setLoading(false);
       setError(error?.message);
+      toast({
+        title: "Error",
+        description: "Unable to CPU Line Graph data",
+        variant: "destructive",
+      });
     }
   };
 
@@ -214,7 +244,7 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
       </CardHeader>
       <CardContent>
         {error ? (
-          <NotFound onRefresh={refreshLineGraph} />
+          <NotFound content="No data available" onRefresh={refreshLineGraph} />
         ) : (
           <>
             <div className="flex justify-between mb-4">
