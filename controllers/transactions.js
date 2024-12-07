@@ -77,9 +77,10 @@ async function calculateP99(req, res) {
   let promises = [];
   let responseTimes = [];
 
-  for (let i = 0; i < samples; i++) {
-    const key = `key_${Math.random().toString(36).substr(2, 8)}`;
-    const value = `value_${Math.random().toString(36).substr(2, 5)}`;
+  for (let i = 0; i < Math.min(50,samples); i++) {
+    const randomValue = getRandomInt(samples)
+    const key = `key_${randomValue}`;
+    const value = `value_${randomValue}`;
 
     const data = {
       id: key,
@@ -128,6 +129,10 @@ async function calculateP99(req, res) {
       error: "Failed to warm cache.",
     });
   }
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
 }
 
 module.exports = {

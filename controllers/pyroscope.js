@@ -29,7 +29,7 @@ async function getProfilingData(req,res){
         const response = await axios.request(config) 
         return res.send(response.data)
       } catch (error) {
-        return res.send({
+        return res.status(500).send({
             error: error
         })
       }
