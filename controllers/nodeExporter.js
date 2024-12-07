@@ -53,28 +53,31 @@ async function getDiskIOPS(req, res) {
     };
   
     try {
-      // Make the API call to the Prometheus server
-      const response = await axios.request(config);
+        // Make the API call to the Prometheus server
+        const response = await axios.request(config);
       
-      // Filter the results based on device and job
-      let data = response?.data?.data?.result.filter((val) => 
-        val?.metric?.device === 'sda' && val?.metric?.job === 'node_exporter'
-      );
+        // Filter the results based on device and job
+        const data = response?.data?.data?.result.filter(
+          (val) => val?.metric?.device === "sda" && val?.metric?.job === "node_exporter"
+        );
       
-      // Extract values from the first matching entry if available
-      let responseData = [];
-      if (data.length > 0) {
-        responseData = data[0]?.values;
-      }
-  
-      // Send the filtered data back to the frontend
-      return res.send({ data: responseData });
-    } catch (error) {
-      logger.error(error);
-      return res.status(400).send({
-        error: error.message || "An error occurred while fetching the DiskIOPS data"
-      });
-    }
+        // Extract and format the values for the frontend
+        const formattedResponseData =
+          data.length > 0
+            ? data[0]?.values.map(([timestamp, value]) => ({
+                time: new Date(Number(timestamp) * 1000).toISOString(), // Convert timestamp to ISO format
+                value: parseFloat(value).toFixed(2), // Limit value to two decimal places
+              }))
+            : [];
+      
+        // Send the formatted data back to the frontend
+        return res.send({ data: formattedResponseData });
+      } catch (error) {
+        logger.error(error);
+        return res.status(400).send({
+          error: error.message || "An error occurred while fetching the DiskIOPS data",
+        });
+      }      
   }  
 /// Disk Wait time : 
 
