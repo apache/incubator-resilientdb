@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Info, MemoryStick } from "lucide-react";
+import { Info, MemoryStick } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +22,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { middlewareApi } from "@/lib/api";
+import { ModeType } from "@/components/toggle";
+import { ModeContext } from "@/hooks/context";
+import { useToast } from "@/hooks/use-toast";
+import { DiskRWData, TimeDuringIOData, DiskIOPSData, DiskWaitTimeData } from "@/static/MemoryStats";
 
 const MetricChart = ({ title, data, yAxisLabel, onRefresh }) => (
   <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
@@ -73,6 +77,8 @@ const MetricChart = ({ title, data, yAxisLabel, onRefresh }) => (
 );
 
 export function MemoryMetricsGrid() {
+  const { toast } = useToast()
+  const mode = useContext<ModeType>(ModeContext)
   const [ioTimeData, setIoTimeData] = useState([]);
   const [diskRWData, setDiskRWData] = useState([]);
   const [diskIOPSData, setDiskIOPSData] = useState([]);
@@ -81,6 +87,16 @@ export function MemoryMetricsGrid() {
   const [errorDiskIOPS, setErrorDiskIOPS] = useState(null); // Error state
   
   const fetchIoTimeData = async () => {
+    if (mode === "offline") {
+      setIoTimeData(TimeDuringIOData?.data); 
+      toast({
+        title: "Offline Mode",
+        description: "Using sample data in offline mode.",
+        variant: "default",
+      });
+    return
+    }
+
     try {
         setLoadingDiskIOPS(true); // Set loading state
         setErrorDiskIOPS(null); // Clear errors
@@ -111,6 +127,10 @@ export function MemoryMetricsGrid() {
 };
 
 const fetchDiskRWData = async () => {
+  if (mode === "offline") {
+    setDiskRWData(DiskRWData?.data?.writeMerged) 
+    return
+  }
   try {
     setLoadingDiskIOPS(true); // Indicate loading state
     setErrorDiskIOPS(null); // Clear previous errors
@@ -148,6 +168,16 @@ const fetchDiskRWData = async () => {
 };
 
 const fetchDiskIOPSData = async () => {
+  if (mode === "offline") {
+    // Transform the data into the desired format
+    const formattedData = DiskIOPSData?.data.map(([timestamp, value]) => ({
+      time: new Date(timestamp * 1000).toISOString(), // Convert timestamp to ISO string
+      value: parseFloat(value), // Convert value from string to number
+    }));
+
+    setDiskIOPSData(formattedData); // Set the formatted data
+    return;
+  }
   try {
     setLoadingDiskIOPS(true); // Indicate that loading has started
     setErrorDiskIOPS(null); // Clear any previous errors
@@ -187,8 +217,11 @@ const fetchDiskIOPSData = async () => {
   }
 };
 
-
 const fetchDiskWaitTimeData = async () => {
+  if (mode === "offline") {
+    setDiskWaitTimeData(DiskWaitTimeData?.data?.writeWaitTime) 
+    return
+  }
   try {
     setLoadingDiskIOPS(true); // Indicate loading state
     setErrorDiskIOPS(null); // Clear previous errors
@@ -226,11 +259,11 @@ const fetchDiskWaitTimeData = async () => {
 };
 
   useEffect(() => {
-    fetchIoTimeData();
-    fetchDiskRWData();
-    fetchDiskIOPSData();
-    fetchDiskWaitTimeData();
-  }, []);
+      fetchIoTimeData();
+      fetchDiskRWData();
+      fetchDiskIOPSData();
+      fetchDiskWaitTimeData();
+  }, [mode]);
 
   const metrics = [
     {
@@ -298,9 +331,3 @@ const fetchDiskWaitTimeData = async () => {
     </Card>
   );
 }
-
-const generateRandomData = (length: number) =>
-  Array.from({ length }, (_, i) => ({
-    name: i.toString(),
-    value: Math.floor(Math.random() * 100),
-  }));
