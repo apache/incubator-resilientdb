@@ -17,13 +17,13 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { NotFound } from "@/components/ui/not-found";
+import { useToast } from "@/hooks/use-toast";
 
 interface LevelDBStat {
   Level: string;
@@ -40,6 +40,8 @@ interface StorageMetrics {
   level_db_stats: LevelDBStat[];
   max_resident_set_size: number;
   resident_set_size: number;
+  num_reads: number;
+  num_writes: number;
 }
 
 interface MemoryMetric {
@@ -142,6 +144,7 @@ const CacheHitGauge = () => {
 };
 
 export function StorageEngineMetrics() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -157,12 +160,20 @@ export function StorageEngineMetrics() {
       const response = await middlewareApi.post(
         "/statsExporter/getTransactionData"
       );
-      console.log(response?.data);
       setData(response?.data);
+      toast({
+        title: "Data Updated",
+        description: "Storage Engine Metrics Fetched Successfully",
+      });
       setLoading(false);
     } catch (error) {
       setLoading(false);
       setError(error);
+      toast({
+        title: "Error",
+        description: "Unable to fetch data",
+        variant: "destructive",
+      });
     }
   }
 
@@ -210,6 +221,8 @@ export function StorageEngineMetrics() {
             <LevelDbCard
               levelDbSize={data?.level_db_approx_mem_size}
               rssSize={data?.resident_set_size}
+              numReads={data?.num_reads}
+              numWrites={data?.num_writes}
             />
             <CacheHitGauge />
           </div>
@@ -291,7 +304,12 @@ export function LevelDBStatsTable({ stats }: LevelDBStatsTableProps) {
 }
 
 //TODO: refactor
-export function LevelDbCard({ levelDbSize, rssSize }: LevelDbCardProps) {
+export function LevelDbCard({
+  levelDbSize,
+  rssSize,
+  numReads,
+  numWrites,
+}: LevelDbCardProps) {
   const size = Math.round(levelDbSize / 1000);
 
   const memoryMetrics: MemoryMetric[] = [
@@ -306,6 +324,20 @@ export function LevelDbCard({ levelDbSize, rssSize }: LevelDbCardProps) {
       value: String(rssSize) + " MB",
       description: "Current Resident Set Size (physical memory used)",
       link: "https://en.wikipedia.org/wiki/Resident_set_size",
+    },
+    {
+      name: "Number of Reads by process",
+      value: numReads,
+      description:
+        "Number of times the file system had to read from the disk on behalf of processes.",
+      link: "https://www.gnu.org/software/libc/manual/html_node/Resource-Usage.html",
+    },
+    {
+      name: "Number of Writes by process",
+      value: numWrites,
+      description:
+        "The number of times the file system had to write to the disk on behalf of processes.",
+      link: "https://www.gnu.org/software/libc/manual/html_node/Resource-Usage.html",
     },
   ];
 
