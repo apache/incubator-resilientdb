@@ -18,9 +18,10 @@ import {
 import { middlewareApi } from "@/lib/api";
 import { Loader } from "../ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Cpu, RefreshCcw } from "lucide-react";
+import { Cpu, Info, RefreshCcw } from "lucide-react";
 import { NotFound } from "../ui/not-found";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 interface DataPoint {
   index: number;
@@ -231,103 +232,116 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
 
   return (
     <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
-      <CardHeader>
-        <div className="flex justify-between">
-          <div className="flex items-center gap-2">
-            <Cpu className="w-6 h-6 text-blue-400" />
-            <CardTitle className="text-2xl font-bold">CPU Usage</CardTitle>
+  <CardHeader>
+    <div className="flex justify-between">
+      <div className="flex items-center gap-2">
+        <Cpu className="w-6 h-6 text-blue-400" />
+        <CardTitle className="text-2xl font-bold">CPU Usage</CardTitle>
+      </div>
+      <div className="flex items-center gap-2">
+      <Button variant="outline" size="icon" onClick={refreshLineGraph}>
+          <RefreshCcw />
+        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+              >
+                <Info size={18.5} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Click for more information about these metrics</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    </div>
+  </CardHeader>
+  <CardContent>
+    {error ? (
+      <NotFound content="No data available" onRefresh={refreshLineGraph} />
+    ) : (
+      <>
+        <div className="flex justify-between mb-4">
+          <div className="flex flex-row space-x-2">
+            <Button
+              onClick={zoomOut}
+              className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Zoom Out
+            </Button>
           </div>
-          <Button variant="outline" size="icon" onClick={refreshLineGraph}>
-            <RefreshCcw />
-          </Button>
+          <div className="flex flex-row space-x-2"></div>
         </div>
-      </CardHeader>
-      <CardContent>
-        {error ? (
-          <NotFound content="No data available" onRefresh={refreshLineGraph} />
-        ) : (
-          <>
-            <div className="flex justify-between mb-4">
-              <div className="flex flex-row space-x-2">
-                <Button
-                  onClick={zoomOut}
-                  className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Zoom Out
-                </Button>
-              </div>
-              <div className="flex flex-row space-x-2"></div>
-            </div>
-            <ChartContainer config={chartConfig} className="aspect-auto w-full">
-              <div style={{ userSelect: "none" }}>
-                <ResponsiveContainer width="100%" height={400}>
-                  <LineChart
-                    data={data}
-                    margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-                    onMouseDown={(e) =>
-                      e &&
-                      setRefAreaLeft(
-                        e.activeLabel ? Number(e.activeLabel) : null
-                      )
-                    }
-                    onMouseMove={(e) =>
-                      e &&
-                      refAreaLeft !== null &&
-                      setRefAreaRight(
-                        e.activeLabel ? Number(e.activeLabel) : null
-                      )
-                    }
-                    onMouseUp={zoom}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      allowDataOverflow
-                      dataKey="timestamp"
-                      domain={[left, right]}
-                      type="number"
-                      tickFormatter={formatXAxis}
+        <ChartContainer config={chartConfig} className="aspect-auto w-full">
+          <div style={{ userSelect: "none" }}>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart
+                data={data}
+                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                onMouseDown={(e) =>
+                  e &&
+                  setRefAreaLeft(e.activeLabel ? Number(e.activeLabel) : null)
+                }
+                onMouseMove={(e) =>
+                  e &&
+                  refAreaLeft !== null &&
+                  setRefAreaRight(e.activeLabel ? Number(e.activeLabel) : null)
+                }
+                onMouseUp={zoom}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  allowDataOverflow
+                  dataKey="timestamp"
+                  domain={[left, right]}
+                  type="number"
+                  tickFormatter={formatXAxis}
+                />
+                <YAxis
+                  allowDataOverflow
+                  domain={[bottom, top]}
+                  type="number"
+                  yAxisId="1"
+                  tickCount={5}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent
+                      className="w-[200px]"
+                      // nameKey="kv_service"
                     />
-                    <YAxis
-                      allowDataOverflow
-                      domain={[bottom, top]}
-                      type="number"
-                      yAxisId="1"
-                      tickCount={5}
-                    />
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent
-                          className="w-[200px]"
-                          // nameKey="kv_service"
-                        />
-                      }
-                    />
-                    <Line
-                      yAxisId="1"
-                      type="monotone"
-                      dataKey="value"
-                      name="KV Service"
-                      stroke="hsl(var(--chart-1))"
-                      dot={false}
-                      strokeWidth={2}
-                      activeDot={{ r: 8 }}
-                      connectNulls
-                    />
-                    {refAreaLeft && refAreaRight && (
-                      <ReferenceArea
-                        yAxisId="1"
-                        x1={refAreaLeft}
-                        x2={refAreaRight}
-                        strokeOpacity={0.3}
-                      />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </ChartContainer>
-          </>
-        )}
-      </CardContent>
-    </Card>
+                  }
+                />
+                <Line
+                  yAxisId="1"
+                  type="monotone"
+                  dataKey="value"
+                  name="KV Service"
+                  stroke="hsl(var(--chart-1))"
+                  dot={false}
+                  strokeWidth={2}
+                  activeDot={{ r: 8 }}
+                  connectNulls
+                />
+                {refAreaLeft && refAreaRight && (
+                  <ReferenceArea
+                    yAxisId="1"
+                    x1={refAreaLeft}
+                    x2={refAreaRight}
+                    strokeOpacity={0.3}
+                  />
+                )}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartContainer>
+      </>
+    )}
+  </CardContent>
+</Card>
+
   );
 };

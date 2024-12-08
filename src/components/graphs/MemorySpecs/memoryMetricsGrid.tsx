@@ -14,6 +14,7 @@ import {
   MemoryStickIcon,
   RefreshCcw,
   InfoIcon,
+  Info,
 } from "lucide-react";
 import {
   Tooltip,
@@ -42,15 +43,17 @@ const MetricChart = ({ title, data, yAxisLabel, onRefresh, info }) => {
               <MemoryStickIcon className="w-6 h-6 text-blue-400" />
               <CardTitle className="text-2xl font-bold">{title}</CardTitle>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={onRefresh}>
                 <RefreshCcw />
               </Button>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded">
-                      <InfoIcon size={12} />
+                    <button
+                      className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+                    >
+                      <Info size={18.5} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>

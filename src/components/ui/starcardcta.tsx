@@ -161,10 +161,10 @@ export function GlowingStarsBackgroundCardPreview() {
   return (
     <div className="flex py-20 items-center justify-center antialiased">
       <GlowingStarsBackgroundCard>
-        <GlowingStarsTitle>Crunch the numbers!</GlowingStarsTitle>
+        <GlowingStarsTitle>Explore the Dashboard!</GlowingStarsTitle>
         <div className="flex justify-between items-end">
           <GlowingStarsDescription>
-            Head into world of Statistics and Data through the Memory Lens!
+            Head into world of Statistics and Data through the Memory Lens.
           </GlowingStarsDescription>
           <button
             onClick={() => window.location.href = '/dashboard'}

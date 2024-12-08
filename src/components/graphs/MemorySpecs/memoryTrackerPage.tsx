@@ -23,13 +23,12 @@ export function MemoryTrackerPage() {
               <TooltipTrigger asChild>
                 <button
                   className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                  onClick={() => window.open("https://google.com", "_blank")}
                 >
-                  <Info size={24} />
+                  <Info size={22} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Click for more information about these metrics</p>
+                <p>Click for more information about these metrics</p> 
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

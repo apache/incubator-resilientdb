@@ -15,7 +15,6 @@ interface Message {
 }
 
 export default function PBFTVisualization() {
-  const [animationStarted, setAnimationStarted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [animationKey, setAnimationKey] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -62,12 +61,12 @@ export default function PBFTVisualization() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true)
+          setAnimationKey(prev => prev + 1) // Reset animation when becoming visible
         } else {
           setIsVisible(false)
-          setAnimationStarted(false)
         }
       },
-      { threshold: 0.5 } // Trigger when 50% of the component is visible
+      { threshold: 0.7 } // Trigger when 70% of the component is visible
     )
 
     if (containerRef.current) {
@@ -80,13 +79,6 @@ export default function PBFTVisualization() {
       }
     }
   }, [])
-
-  useEffect(() => {
-    if (isVisible && !animationStarted) {
-      const timer = setTimeout(() => setAnimationStarted(true), 500)
-      return () => clearTimeout(timer)
-    }
-  }, [isVisible, animationStarted])
 
   const getNodeY = (node: string) => {
     const index = nodes.indexOf(node)
@@ -105,9 +97,7 @@ export default function PBFTVisualization() {
   }
 
   const handleReplay = () => {
-    setAnimationStarted(false)
     setAnimationKey(prev => prev + 1)
-    setTimeout(() => setAnimationStarted(true), 100)
   }
 
   return (
@@ -170,7 +160,7 @@ export default function PBFTVisualization() {
           ))}
 
           {/* Messages */}
-          {animationStarted && messages.map((msg) => (
+          {isVisible && messages.map((msg) => (
             <g key={msg.id} className="message">
               <path 
                 d={getMessagePath(msg.from, msg.to, msg.phase)} 
@@ -186,7 +176,7 @@ export default function PBFTVisualization() {
                   fill="freeze"
                 />
               </path>
-              <circle r="4" fill={msg.color} className="message-dot" opacity="0.8">
+              <circle r="4" fill={msg.color} className="message-dot">
                 <animate
                   attributeName="opacity"
                   from="0"
@@ -206,7 +196,7 @@ export default function PBFTVisualization() {
           ))}
 
           {/* Reply phase */}
-          {animationStarted && (
+          {isVisible && (
             <g className="reply-combination">
               {['Primary', 'Node 1', 'Node 2', 'Node 3'].map((node, index) => (
                 <g key={`reply-${node}`}>
@@ -224,7 +214,7 @@ export default function PBFTVisualization() {
                       fill="freeze"
                     />
                   </path>
-                  <circle r="4" fill="#AB47BC" opacity="0.8">
+                  <circle r="4" fill="#AB47BC">
                     <animate
                       attributeName="opacity"
                       from="0"

@@ -16,13 +16,14 @@ import {
 } from "../ui/select";
 import { FlamegraphRendererProps } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlamegraphRenderer";
 import { middlewareApi } from "@/lib/api";
-import { Download, RefreshCcw, Flame } from "lucide-react";
+import { Download, RefreshCcw, Flame, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "../ui/loader";
 import { NotFound } from "../ui/not-found";
 import { ModeContext } from "@/hooks/context";
 import { ModeType } from "../toggle";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
 
 interface FlamegraphCardProps {
   from: string | number;
@@ -149,9 +150,25 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
             <Flame className="w-6 h-6 text-blue-400" />
             <CardTitle className="text-2xl font-bold">Flamegraph</CardTitle>
           </div>
+          <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={refreshFlamegraph}>
-            <RefreshCcw />
+          <RefreshCcw />
           </Button>
+          <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+              >
+                <Info size={18.5} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Click for more information about these metrics</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col h-full">

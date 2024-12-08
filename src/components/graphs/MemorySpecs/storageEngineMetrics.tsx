@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GaugeChart from "react-gauge-chart";
 import { Progress } from "@/components/ui/progress";
-import { Database, InfoIcon, RefreshCcw, RefreshCw } from "lucide-react";
+import { Database, Info, InfoIcon, RefreshCcw, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { middlewareApi } from "@/lib/api";
 import { Loader } from "@/components/ui/loader";
@@ -187,30 +187,26 @@ export function StorageEngineMetrics() {
             Storage Engine Metrics
           </CardTitle>
         </div>
-        <div className="flex flex-row items-center justify-between space-x-4">
-          <Button
-            onClick={() => setRefresh((prev) => !prev)}
-            variant="outline"
-            size="icon"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                  onClick={() => window.open("https://gmail.com", "_blank")}
-                >
-                  <InfoIcon size={12} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Click for more information about these metrics</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setRefresh((prev) => !prev)}>
+                <RefreshCcw />
+              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+                      //onClick={() => window.open("https://gmail.com", "_blank")}
+                    >
+                      <Info size={18.5} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                  <p>Click for more information about these metrics</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
       </CardHeader>
       {loading ? (
         <Loader className="h-[400px]" />
