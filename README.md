@@ -1,22 +1,3 @@
-<!--
-  - Licensed to the Apache Software Foundation (ASF) under one
-  - or more contributor license agreements.  See the NOTICE file
-  - distributed with this work for additional information
-  - regarding copyright ownership.  The ASF licenses this file
-  - to you under the Apache License, Version 2.0 (the
-  - "License"); you may not use this file except in compliance
-  - with the License.  You may obtain a copy of the License at
-  -
-  -   http://www.apache.org/licenses/LICENSE-2.0
-  -
-  - Unless required by applicable law or agreed to in writing,
-  - software distributed under the License is distributed on an
-  - "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  - KIND, either express or implied.  See the License for the
-  - specific language governing permissions and limitations
-  - under the License.
-  -->
-
 ![](https://img.shields.io/github/v/release/resilientdb/resilientdb)
 ![](https://img.shields.io/badge/language-c++-orange.svg)
 ![](https://img.shields.io/badge/platform-Ubuntu20.0+-lightgrey.svg)
@@ -41,7 +22,7 @@ Download address for run-directly software package: https://downloads.apache.org
 4. ResilientDB exposes a wide range of interfaces such as a **Key-Value** store, **Smart Contracts**, **UTXO**, and **Python SDK**. Following are some of the decentralized applications (DApps) built on top of ResilientDB: **[NFT Marketplace](https://nft.resilientdb.com/)** and **[Debitable](https://debitable.resilientdb.com/)**.
 5. To persist blockchain, chain state, and metadata, ResilientDB provides durability through  **LevelDB**.
 6. ResilientDB provides access to a seamless **GUI display** for deployment and maintenance, and supports  **Grafana** for plotting monitoring data. 
-7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://expolab.resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
+7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
 
 <div align = "center">
 <img src="./img/resdb-v2.png" width="220">
@@ -89,7 +70,7 @@ Install dependencies:
 
     ./INSTALL.sh
 
-For non-root users, see [INSTALL/README.md](https://github.com/apache/incubator-resilientdb/blob/master/INSTALL/README.md)
+For non-root users, see [INSTALL/README.md](https://github.com/apache/incubator-resilientdb/blob/install/INSTALL/README.md)
 
 Run ResilientDB (Providing a Key-Value Service):
 
@@ -100,10 +81,6 @@ Run ResilientDB (Providing a Key-Value Service):
 Build Interactive Tools:
 
     bazel build service/tools/kv/api_tools/kv_service_tools
-
-### Issues ###
-If you cannot build the project successfully, try to reduce the bazel jobs [here](
-https://github.com/apache/incubator-resilientdb/blob/master/.bazelrc#L1).
 
 ## Functions ##
 ResilientDB supports two types of functions: version-based and non-version-based.
@@ -360,11 +337,21 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    docker exec -it myserver bash
    ```
 
-5. **NOTE: If you encounter a Connection Refused error**
-
-   Run the following command within the container:
-   ```shell
-   ./service/tools/kv/server_tools/start_kv_service.sh
-   ```
-
    Verify the functionality of the service by performing set and get operations provided above [functions](README.md#functions).
+
+
+## Custom Port ##
+When starting the service locally, current services are running on 10000 port-base with 5 services where the server config is located [here](https://github.com/apache/incubator-resilientdb/blob/master/service/tools/config/server/server.config)
+
+If you want to change the setting,  you need to generate the certificates.
+
+Go the the workspace where the resilientdb repo is localted.
+
+Change the setting parameters here and run the script:
+  ./service/tools/kv/server_tools/generate_config.sh
+
+Then re-run the start script:
+  ./service/tools/kv/server_tools/start_kv_service.sh
+
+
+
