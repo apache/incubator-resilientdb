@@ -60,12 +60,16 @@ do
   tot=$(($tot+1))
 done
 
+echo $PWD
 echo "node num:"$tot
+echo "base port:"${BASE_PORT}
+echo "client num:" ${CLIENT_NUM}
 
 for ip in ${iplist[@]};
 do
   port=$((${BASE_PORT}+${idx}))
-  public_key=${key_path}/node_${idx}.key.pub 
+  public_key=${key_path}/node${idx}.key.pub 
+  echo "get ip:"${ip}
 
   # create public key
   # create server config
@@ -81,5 +85,8 @@ do
   idx=$(($idx+1))
 done
 
-python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ../config/template.config
-mv server.config.json server.config
+python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json 
+mv server.config.json ${output_path}/server/server.config
+mv client.config ${output_path}/interface/service.config
+echo "config done:" ${output_path}/server/server.config
+
