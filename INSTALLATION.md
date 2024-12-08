@@ -50,7 +50,7 @@ npm run start
 ```
 
 ###  Monitoring tools
-Follow this [link](https://github.com/harish876/MemLens-middleware) to setup prometheus, grafana and a few other monitoring tools used in this application.
+Follow this to setup prometheus, grafana and a few other monitoring tools used in this application.
 1. [Prometheus Installation](https://medium.com/@abdullah.eid.2604/prometheus-installation-on-linux-ubuntu-c4497e5154f6)
 2. [Node Exporter Installation](https://medium.com/@abdullah.eid.2604/node-exporter-installation-on-linux-ubuntu-8203d033f69c)
 3. [Process Exporter Installation](https://developer.couchbase.com/tutorial-process-exporter-setup)
