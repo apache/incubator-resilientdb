@@ -378,9 +378,12 @@ If you want to change the setting,  you need to generate the certificates.
 Go the the workspace where the resilientdb repo is localted.
 
 Change the setting parameters here and run the script:
+  ```shell
   ./service/tools/kv/server_tools/generate_config.sh
+  ```
 
 Then re-run the start script:
+  ```shell
   ./service/tools/kv/server_tools/start_kv_service.sh
-
+  ```
 
