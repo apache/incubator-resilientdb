@@ -64,7 +64,6 @@ int main(int argc, char** argv) {
 
   if (command == "test") {
     for (int i = 0; i < std::stoi(value); i++) {
-      usleep(1000000);
       std::stringstream ss;
       ss << " bazel-bin/service/tools/kv/api_tools/kv_service_tools --config "
             "service/tools/config/interface/service.config --cmd set "

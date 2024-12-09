@@ -30,6 +30,7 @@
 #include "service/utils/server_factory.h"
 // #ifdef ENABLE_LEVELDB
 #include "chain/storage/leveldb.h"
+#include "chain/storage/lmdb.h"
 // #endif
 
 using namespace resdb;
@@ -42,9 +43,12 @@ void ShowUsage() {
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
   LOG(ERROR) << "use leveldb storage.";
-  return NewResLevelDB(db_path,
-                       std::nullopt);  // sending config_data as arg2 throws a
-                                       // type error. TODO investigate.
+  return NewResLevelDB(db_path, std::nullopt);
+  // sending config_data as arg2 throws
+  // type error. TODO investigate.
+
+  // LOG(ERROR) << "use lmdb storage.";
+  // return NewResLmdb(db_path);
 
   // LOG(ERROR) << "use memory storage.";
   // return NewMemoryDB();
@@ -83,7 +87,11 @@ int main(int argc, char** argv) {
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
 
-  std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+  // std::string db_path =
+  //     "./" + std::to_string(config->GetSelfInfo().port()) + "_db.mdb";
+  // LOG(ERROR) << "db path:" << db_path;
+
+  std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db";
   LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(

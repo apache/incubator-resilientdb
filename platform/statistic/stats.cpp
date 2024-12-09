@@ -25,7 +25,6 @@
 
 #include "common/utils/utils.h"
 #include "proto/kv/kv.pb.h"
-#include "sys/resource.h"
 
 #define DEBUG 1
 
@@ -218,6 +217,41 @@ void Stats::CrowRoute() {
             res.body = "Success";
             res.end();
           });
+      CROW_ROUTE(app, "/transaction_data")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 4";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            nlohmann::json mem_view_json;
+            int status =
+                getrusage(RUSAGE_SELF, &transaction_summary_.process_stats_);
+            if (status == 0) {
+              mem_view_json["resident_set_size"] = getRSS();
+              mem_view_json["max_resident_set_size"] =
+                  transaction_summary_.process_stats_.ru_maxrss;
+              mem_view_json["num_reads"] =
+                  transaction_summary_.process_stats_.ru_inblock;
+              mem_view_json["num_writes"] =
+                  transaction_summary_.process_stats_.ru_oublock;
+            }
+
+            mem_view_json["ext_cache_hit_ratio"] =
+                transaction_summary_.ext_cache_hit_ratio;
+            mem_view_json["level_db_stats"] =
+                transaction_summary_.level_db_stats;
+            mem_view_json["level_db_approx_mem_size"] =
+                transaction_summary_.level_db_approx_mem_size;
+            res.body = mem_view_json.dump();
+            mem_view_json.clear();
+            res.end();
+          });
       app.port(8500 + transaction_summary_.port).multithreaded().run();
       sleep(1);
     } catch (const std::exception& e) {
@@ -247,6 +281,15 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
 
 void Stats::SetPrimaryId(int primary_id) {
   transaction_summary_.primary_id = primary_id;
+}
+
+void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
+                                    std::string level_db_stats,
+                                    std::string level_db_approx_mem_size) {
+  transaction_summary_.ext_cache_hit_ratio = ext_cache_hit_ratio;
+  transaction_summary_.level_db_stats = level_db_stats;
+  transaction_summary_.level_db_approx_mem_size = level_db_approx_mem_size;
+  LOG(ERROR) << "Invoked SetStorageEngineMetrics\n";
 }
 
 void Stats::RecordStateTime(std::string state) {
@@ -345,6 +388,8 @@ void Stats::SendSummary() {
     summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
+  summary_json_["ext_cache_hit_ratio"] =
+      transaction_summary_.ext_cache_hit_ratio;
   consensus_history_[std::to_string(transaction_summary_.txn_number)] =
       summary_json_;
 

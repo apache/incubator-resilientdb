@@ -2,11 +2,11 @@
 
 #include "chain/storage/lmdb.h"
 
+#include <glog/logging.h>
 #include <lmdb++.h>
 
 #include <iostream>
 #include <memory>
-#include <sstream>
 
 #include "chain/storage/storage.h"
 
@@ -18,16 +18,14 @@ using ItemsType = std::map<std::string, ValueType>;
 using ValuesType = std::vector<ValueType>;
 
 std::unique_ptr<Storage> NewResLmdb(const std::string& path) {
-  size_t map_size = 1024UL * 1024UL * 1024UL;
-  return std::make_unique<LmdbStorage>(path, map_size);
+  return std::make_unique<LmdbStorage>(path);
 }
 
 LmdbStorage::LmdbStorage(const std::string& db_path,
                          size_t map_size = 1024UL * 1024UL * 1024UL)
-    : env_(lmdb::env::create()), dbi_(lmdb::dbi::open(nullptr, nullptr)) {
-  env_.set_mapsize(map_size);
-  env_.open(db_path.c_str(), 0, 0664);
-  dbi_ = lmdb::dbi::open(env_, nullptr);  // TODO: resolve env_ error
+    : env_(lmdb::env::create()) {
+  env_.set_mapsize(map_size);           // Set maximum size of the database
+  env_.open(db_path.c_str(), 0, 0664);  // Open the database
 }
 
 LmdbStorage::~LmdbStorage() = default;
@@ -35,7 +33,9 @@ LmdbStorage::~LmdbStorage() = default;
 int LmdbStorage::SetValue(const std::string& key, const std::string& value) {
   try {
     auto txn = lmdb::txn::begin(env_);
-    dbi_.put(txn, key, value);
+    auto dbi = lmdb::dbi::open(txn, nullptr);
+    dbi.put(txn, key, value);
+    LOG(ERROR) << value;
     txn.commit();
     return 0;
   } catch (const std::exception& e) {
@@ -47,33 +47,22 @@ int LmdbStorage::SetValue(const std::string& key, const std::string& value) {
 std::string LmdbStorage::GetValue(const std::string& key) {
   try {
     auto txn = lmdb::txn::begin(env_, nullptr, MDB_RDONLY);
-    std::string value;
-    if (dbi_.get(txn, key, value)) {
-      return value;
+    auto dbi = lmdb::dbi::open(txn, nullptr);
+    auto cursor = lmdb::cursor::open(txn, dbi);
+    std::string nkey, value;
+    nkey = key;
+    while (cursor.get(nkey, value, MDB_NEXT)) {
+      LOG(ERROR) << "value: " << value.c_str();
     }
-    return "";  // Key not found
+    cursor.close();
+    return value;
   } catch (const std::exception& e) {
     std::cerr << "GetValue error: " << e.what() << std::endl;
     return "";
   }
 }
 
-std::string LmdbStorage::GetAllValues() {
-  std::stringstream result;
-  try {
-    auto txn = lmdb::txn::begin(env_, nullptr, MDB_RDONLY);
-    auto cursor = lmdb::cursor::open(txn, dbi_);
-    std::string key, value;
-    while (cursor.get(key, value, MDB_NEXT)) {
-      result << key << ":" << value << "\n";
-    }
-    cursor.close();
-    txn.abort();  // Read-only transaction doesn't need commit
-  } catch (const std::exception& e) {
-    std::cerr << "GetAllValues error: " << e.what() << std::endl;
-  }
-  return result.str();
-}
+std::string LmdbStorage::GetAllValues() { return ""; }
 
 std::string LmdbStorage::GetRange(const std::string& start,
                                   const std::string& end) {
@@ -97,6 +86,33 @@ ValueType LmdbStorage::GetValueWithVersion(const std::string& key,
     }
   }
   return {"", -1};
+}
+// Return a map of <key, <value, version>>
+std::map<std::string, std::pair<std::string, int>> LmdbStorage::GetAllItems() {
+  std::map<std::string, std::pair<std::string, int>> resp;
+  return resp;
+}
+
+std::map<std::string, std::pair<std::string, int>> LmdbStorage::GetKeyRange(
+    const std::string& min_key, const std::string& max_key) {
+  std::map<std::string, std::pair<std::string, int>> resp;
+
+  return resp;
+}
+
+// Return a list of <value, version>
+std::vector<std::pair<std::string, int>> LmdbStorage::GetHistory(
+    const std::string& key, int min_version, int max_version) {
+  std::vector<std::pair<std::string, int>> resp;
+
+  return resp;
+}
+
+// Return a list of <value, version>
+std::vector<std::pair<std::string, int>> LmdbStorage::GetTopHistory(
+    const std::string& key, int top_number) {
+  std::vector<std::pair<std::string, int>> resp;
+  return resp;
 }
 
 bool LmdbStorage::Flush() {

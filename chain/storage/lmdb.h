@@ -103,7 +103,6 @@ class LmdbStorage : public Storage {
 
  private:
   lmdb::env env_;  ///< LMDB environment.
-  lmdb::dbi dbi_;
 };
 
 }  // namespace storage
