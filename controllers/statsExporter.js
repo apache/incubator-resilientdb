@@ -43,7 +43,6 @@ async function getTransactionData(req,res){
       try {
         let response = await axios.request(config) 
         const statsData = response?.data?.level_db_stats;
-        console.log(statsData)
         response.data.level_db_stats = processStatsData(statsData);
         return res.send(response.data)
       } catch (error) {
