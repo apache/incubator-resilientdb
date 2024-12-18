@@ -1,11 +1,14 @@
 //@ts-nocheck
+import { ModeType } from "@/components/toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ModeContext } from "@/hooks/context";
 import { middlewareApi } from "@/lib/api";
 import { SquareTerminal } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
 
 export const TerminalController = (props = {}) => {
+  const mode = useContext<ModeType>(ModeContext);
   const [terminalLineData, setTerminalLineData] = useState([
     <TerminalOutput>Welcome to ResilientDB Playground!</TerminalOutput>,
   ]);
@@ -13,10 +16,15 @@ export const TerminalController = (props = {}) => {
   const processCommand = async (command: string) => {
     const args = command.split(" ");
     let output: JSX.Element;
-    console.log(args);
 
     if (args[0] === "resdb") {
-      if (args[1] === "set" && args[2] === "--key" && args[4] === "--value") {
+      if (mode === "offline") {
+        output = <p>Unable to run get and set method in offline mode</p>;
+      } else if (
+        args[1] === "set" &&
+        args[2] === "--key" &&
+        args[4] === "--value"
+      ) {
         console.log("here");
         const key = args[3].replace(/"/g, "");
         const value = args[5].replace(/"/g, "");

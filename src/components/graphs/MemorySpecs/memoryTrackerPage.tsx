@@ -13,7 +13,6 @@ import { ModeContext } from "@/hooks/context";
 
 export function MemoryTrackerPage() {
   const mode = useContext(ModeContext);
-  console.log("Mode", mode);
   return (
     <div className="space-y-8">
       <div className="relative">
@@ -21,21 +20,19 @@ export function MemoryTrackerPage() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button
-                  className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                >
+                <button className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded">
                   <Info size={22} />
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Click for more information about these metrics</p> 
+                <p>Click for more information about these metrics</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
         <div className="space-y-4">
           <TerminalController />
-          <StorageEngineMetrics />
+          {!(mode === "offline") && <StorageEngineMetrics />}
           <MemoryMetricsGrid />
         </div>
       </div>

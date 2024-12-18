@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GaugeChart from "react-gauge-chart";
 import { Progress } from "@/components/ui/progress";
 import { Database, Info, InfoIcon, RefreshCcw, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { middlewareApi } from "@/lib/api";
 import { Loader } from "@/components/ui/loader";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/table";
 import { NotFound } from "@/components/ui/not-found";
 import { useToast } from "@/hooks/use-toast";
+import { ModeType } from "@/components/toggle";
+import { ModeContext } from "@/hooks/context";
 
 interface LevelDBStat {
   Level: string;
@@ -147,6 +149,7 @@ const CacheHitGauge = () => {
 };
 
 export function StorageEngineMetrics() {
+  const mode = useContext<ModeType>(ModeContext);
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -154,6 +157,13 @@ export function StorageEngineMetrics() {
   const [data, setData] = useState<StorageMetrics>(null);
 
   useEffect(() => {
+    if (mode === "offline") {
+      toast({
+        title: "Offline Mode",
+        description: "Storage Engine Metrics Cannot be fetched in offline mode",
+      });
+      return;
+    }
     fetchTransactionData();
   }, [refresh]);
 
@@ -172,11 +182,6 @@ export function StorageEngineMetrics() {
     } catch (error) {
       setLoading(false);
       setError(error);
-      toast({
-        title: "Error",
-        description: "Unable to fetch data",
-        variant: "destructive",
-      });
     }
   }
 
@@ -224,7 +229,7 @@ export function StorageEngineMetrics() {
             <LevelDBSizeCard size={data?.level_db_approx_mem_size} />
             <LevelDbCard
               levelDbSize={data?.level_db_approx_mem_size}
-              rssSize={data?.resident_set_size}
+              rssSize={data?.resident_set_size || 0}
               numReads={data?.num_reads}
               numWrites={data?.num_writes}
             />
@@ -249,11 +254,11 @@ export function CacheHitRatio({ ratio }: CacheHitRatioProps) {
       <CardContent>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">Hit Rate</span>
-          <span className="text-2xl font-bold">{percentage}%</span>
+          <span className="text-2xl font-bold">{percentage || 0}%</span>
         </div>
-        <Progress value={percentage} className="h-2" />
+        <Progress value={percentage || 0} className="h-2" />
         <p className="mt-2 text-sm text-muted-foreground">
-          {percentage}% of requests are served from the LRU cache.
+          {percentage || 0}% of requests are served from the LRU cache.
         </p>
       </CardContent>
     </Card>
@@ -325,7 +330,7 @@ export function LevelDbCard({
     // },
     {
       name: "RSS",
-      value: String(rssSize) + " MB",
+      value: rssSize ? String(rssSize || 0) + " MB" : 0,
       description: "Current Resident Set Size (physical memory used)",
       link: "https://en.wikipedia.org/wiki/Resident_set_size",
     },
@@ -363,7 +368,7 @@ export function LevelDbCard({
             {memoryMetrics.map((metric) => (
               <TableRow key={metric.name}>
                 <TableCell>{metric.name}</TableCell>
-                <TableCell>{metric.value}</TableCell>
+                <TableCell>{metric.value || 0}</TableCell>
                 <TableCell>
                   <TooltipProvider>
                     <Tooltip>
@@ -404,7 +409,7 @@ export function LevelDBSizeCard({ size }: LevelDBSizeCardProps) {
       </CardHeader>
       <div className="flex flex-col justify-center items-center flex-grow p-6">
         <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-center">
-          {Math.floor(size / 1000)} KB
+          {Math.floor((size || 0) / 1000)} KB
         </div>
         <p className="text-xs text-muted-foreground mt-2">LevelDB Storage</p>
         <p className="text-sm text-center mt-4 max-w-xs text-muted-foreground">
