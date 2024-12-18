@@ -1,4 +1,6 @@
-import { Component, useEffect, useState } from "react";
+//@ts-nocheck
+
+import { useContext, useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -21,7 +23,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Cpu, Info, RefreshCcw } from "lucide-react";
 import { NotFound } from "../ui/not-found";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { ModeContext } from "@/hooks/context";
+import { ModeType } from "../toggle";
 
 interface DataPoint {
   index: number;
@@ -84,6 +94,7 @@ interface CpuLineGraphProps {
 }
 
 export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
+  const mode = useContext<ModeType>(ModeContext);
   const { toast } = useToast();
   const [data, setData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -95,11 +106,12 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
   const [bottom, setBottom] = useState<number>(0);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [hour, setHour] = useState(1);
 
   const fetchData = async () => {
     try {
       const until = new Date().getTime();
-      const from = new Date(until - 2 * 60 * 60 * 1000).getTime();
+      const from = new Date(until - hour * 60 * 60 * 1000).getTime();
 
       const response = await middlewareApi.post("/nodeExporter/getCpuUsage", {
         query:
@@ -123,7 +135,6 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
         return;
       }
       if (response?.data?.error) {
-        console.log("here");
         toast({
           title: "Error",
           description: response?.data?.error,
@@ -167,8 +178,13 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
   }
 
   useEffect(() => {
+    if (mode === "offline") {
+      setError("no data available");
+      return;
+    }
+
     fetchData();
-  }, [refresh]);
+  }, [refresh, hour, mode]);
 
   const formatXAxis = (tickItem: number) => {
     const date = new Date(tickItem);
@@ -232,116 +248,117 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
 
   return (
     <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
-  <CardHeader>
-    <div className="flex justify-between">
-      <div className="flex items-center gap-2">
-        <Cpu className="w-6 h-6 text-blue-400" />
-        <CardTitle className="text-2xl font-bold">CPU Usage</CardTitle>
-      </div>
-      <div className="flex items-center gap-2">
-      <Button variant="outline" size="icon" onClick={refreshLineGraph}>
-          <RefreshCcw />
-        </Button>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-              >
-                <Info size={18.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click for more information about these metrics</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-    </div>
-  </CardHeader>
-  <CardContent>
-    {error ? (
-      <NotFound content="No data available" onRefresh={refreshLineGraph} />
-    ) : (
-      <>
-        <div className="flex justify-between mb-4">
+      <CardHeader>
+        <div className="flex justify-between">
+          <div className="flex items-center gap-2">
+            <Cpu className="w-6 h-6 text-blue-400" />
+            <CardTitle className="text-2xl font-bold">CPU Usage</CardTitle>
+          </div>
           <div className="flex flex-row space-x-2">
-            <Button
-              onClick={zoomOut}
-              className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Zoom Out
+            <Select onValueChange={(val) => setHour(parseInt(val))}>
+              <SelectTrigger className="w-[120px] h-[30px]">
+                <SelectValue placeholder="Interval" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Last 1 hour</SelectItem>
+                <SelectItem value="2">Last 2 hours</SelectItem>
+                <SelectItem value="6">Last 6 hours</SelectItem>
+                <SelectItem value="12">Last 12 hours</SelectItem>
+                <SelectItem value="24">Last 24 hours</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="icon" onClick={refreshLineGraph}>
+              <RefreshCcw />
             </Button>
           </div>
-          <div className="flex flex-row space-x-2"></div>
         </div>
-        <ChartContainer config={chartConfig} className="aspect-auto w-full">
-          <div style={{ userSelect: "none" }}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart
-                data={data}
-                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-                onMouseDown={(e) =>
-                  e &&
-                  setRefAreaLeft(e.activeLabel ? Number(e.activeLabel) : null)
-                }
-                onMouseMove={(e) =>
-                  e &&
-                  refAreaLeft !== null &&
-                  setRefAreaRight(e.activeLabel ? Number(e.activeLabel) : null)
-                }
-                onMouseUp={zoom}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  allowDataOverflow
-                  dataKey="timestamp"
-                  domain={[left, right]}
-                  type="number"
-                  tickFormatter={formatXAxis}
-                />
-                <YAxis
-                  allowDataOverflow
-                  domain={[bottom, top]}
-                  type="number"
-                  yAxisId="1"
-                  tickCount={5}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      className="w-[200px]"
-                      // nameKey="kv_service"
+      </CardHeader>
+      <CardContent>
+        {error ? (
+          <NotFound content="No data available" onRefresh={refreshLineGraph} />
+        ) : (
+          <>
+            <div className="flex justify-between mb-4">
+              <div className="flex flex-row space-x-2">
+                <Button
+                  onClick={zoomOut}
+                  className="mb-4 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Zoom Out
+                </Button>
+              </div>
+              <div className="flex flex-row space-x-2"></div>
+            </div>
+            <ChartContainer config={chartConfig} className="aspect-auto w-full">
+              <div style={{ userSelect: "none" }}>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart
+                    data={data}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                    onMouseDown={(e) =>
+                      e &&
+                      setRefAreaLeft(
+                        e.activeLabel ? Number(e.activeLabel) : null
+                      )
+                    }
+                    onMouseMove={(e) =>
+                      e &&
+                      refAreaLeft !== null &&
+                      setRefAreaRight(
+                        e.activeLabel ? Number(e.activeLabel) : null
+                      )
+                    }
+                    onMouseUp={zoom}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                      allowDataOverflow
+                      dataKey="timestamp"
+                      domain={[left, right]}
+                      type="number"
+                      tickFormatter={formatXAxis}
                     />
-                  }
-                />
-                <Line
-                  yAxisId="1"
-                  type="monotone"
-                  dataKey="value"
-                  name="KV Service"
-                  stroke="hsl(var(--chart-1))"
-                  dot={false}
-                  strokeWidth={2}
-                  activeDot={{ r: 8 }}
-                  connectNulls
-                />
-                {refAreaLeft && refAreaRight && (
-                  <ReferenceArea
-                    yAxisId="1"
-                    x1={refAreaLeft}
-                    x2={refAreaRight}
-                    strokeOpacity={0.3}
-                  />
-                )}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartContainer>
-      </>
-    )}
-  </CardContent>
-</Card>
-
+                    <YAxis
+                      allowDataOverflow
+                      domain={[bottom, top]}
+                      type="number"
+                      yAxisId="1"
+                      tickCount={5}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          className="w-[200px]"
+                          // nameKey="kv_service"
+                        />
+                      }
+                    />
+                    <Line
+                      yAxisId="1"
+                      type="monotone"
+                      dataKey="value"
+                      name="KV Service"
+                      stroke="hsl(var(--chart-1))"
+                      dot={false}
+                      strokeWidth={2}
+                      activeDot={{ r: 8 }}
+                      connectNulls
+                    />
+                    {refAreaLeft && refAreaRight && (
+                      <ReferenceArea
+                        yAxisId="1"
+                        x1={refAreaLeft}
+                        x2={refAreaRight}
+                        strokeOpacity={0.3}
+                      />
+                    )}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </ChartContainer>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };

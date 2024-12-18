@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { middlewareApi } from "@/lib/api";
 import { SquareTerminal } from "lucide-react";

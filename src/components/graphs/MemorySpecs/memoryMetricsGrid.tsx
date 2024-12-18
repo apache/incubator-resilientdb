@@ -50,9 +50,7 @@ const MetricChart = ({ title, data, yAxisLabel, onRefresh, info }) => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button
-                      className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                    >
+                    <button className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded">
                       <Info size={18.5} />
                     </button>
                   </TooltipTrigger>
@@ -206,44 +204,44 @@ export function MemoryMetricsGrid() {
     }
   };
 
-const fetchDiskIOPSData = async () => {
-  if (mode === "offline") {
-    setDiskIOPSData(DiskIOPSData?.data) 
-    return
-  }
-  try {
-    setLoadingDiskIOPS(true); // Indicate loading state
-    setErrorDiskIOPS(null); // Clear previous errors
-  
-    const until = new Date().getTime(); // Current time
-    const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // Last 1 hour
-    const step = 14; // Step size in seconds
-  
-    // Call the backend API
-    const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
-      from: parseFloat((from / 1000).toFixed(3)),
-      until: parseFloat((until / 1000).toFixed(3)),
-      step,
-    });
-  
-    // Format the data for the chart
-    const processMetricData = (metricData) =>
-      metricData.map(({ time, value }) => ({
-        name: new Date(time).toLocaleTimeString(), // Format timestamp for X-axis
-        value: parseFloat(value).toFixed(2), // Limit to 2 decimal places
-      }));
-  
-    const formattedData = processMetricData(response?.data?.data || []);
-  
-    console.log("Formatted Disk IOPS Data:", formattedData);
-    setDiskIOPSData(formattedData); // Update state with formatted data
-    setLoadingDiskIOPS(false); // Reset loading state
-  } catch (error) {
-    console.error("Error fetching Disk IOPS data:", error);
-    setErrorDiskIOPS(error?.message || "Failed to fetch Disk IOPS data.");
-    setLoadingDiskIOPS(false); // Reset loading state on error
-  }        
-};
+  const fetchDiskIOPSData = async () => {
+    if (mode === "offline") {
+      setDiskIOPSData(DiskIOPSData?.data);
+      return;
+    }
+    try {
+      setLoadingDiskIOPS(true); // Indicate loading state
+      setErrorDiskIOPS(null); // Clear previous errors
+
+      const until = new Date().getTime(); // Current time
+      const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // Last 1 hour
+      const step = 14; // Step size in seconds
+
+      // Call the backend API
+      const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
+        from: parseFloat((from / 1000).toFixed(3)),
+        until: parseFloat((until / 1000).toFixed(3)),
+        step,
+      });
+
+      // Format the data for the chart
+      const processMetricData = (metricData) =>
+        metricData.map(({ time, value }) => ({
+          name: new Date(time).toLocaleTimeString(), // Format timestamp for X-axis
+          value: parseFloat(value).toFixed(2), // Limit to 2 decimal places
+        }));
+
+      const formattedData = processMetricData(response?.data?.data || []);
+
+      console.log("Formatted Disk IOPS Data:", formattedData);
+      setDiskIOPSData(formattedData); // Update state with formatted data
+      setLoadingDiskIOPS(false); // Reset loading state
+    } catch (error) {
+      console.error("Error fetching Disk IOPS data:", error);
+      setErrorDiskIOPS(error?.message || "Failed to fetch Disk IOPS data.");
+      setLoadingDiskIOPS(false); // Reset loading state on error
+    }
+  };
 
   const fetchDiskWaitTimeData = async () => {
     if (mode === "offline") {
@@ -340,7 +338,7 @@ const fetchDiskIOPSData = async () => {
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-center gap-2">
           <MemoryStick className="w-6 h-6 text-blue-400" />
-          <CardTitle className="text-2xl font-bold">Memory Metrics</CardTitle>
+          <CardTitle className="text-2xl font-bold">Disk Metrics</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

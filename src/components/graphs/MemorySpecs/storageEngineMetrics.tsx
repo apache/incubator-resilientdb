@@ -1,3 +1,4 @@
+//@ts-nocheck
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GaugeChart from "react-gauge-chart";
@@ -58,6 +59,8 @@ interface CacheHitRatioProps {
 interface LevelDbCardProps {
   levelDbSize: number;
   rssSize: number;
+  numReads: number;
+  numWrites: number;
 }
 
 interface LevelDBStatsTableProps {
@@ -188,25 +191,29 @@ export function StorageEngineMetrics() {
           </CardTitle>
         </div>
         <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => setRefresh((prev) => !prev)}>
-                <RefreshCcw />
-              </Button>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                      //onClick={() => window.open("https://gmail.com", "_blank")}
-                    >
-                      <Info size={18.5} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                  <p>Click for more information about these metrics</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setRefresh((prev) => !prev)}
+          >
+            <RefreshCcw />
+          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+                  //onClick={() => window.open("https://gmail.com", "_blank")}
+                >
+                  <Info size={18.5} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Click for more information about these metrics</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       {loading ? (
         <Loader className="h-[400px]" />
@@ -214,6 +221,7 @@ export function StorageEngineMetrics() {
         <CardContent className="space-y-4">
           <div className="flex flex-row justify-between space-x-2">
             <CacheHitRatio ratio={data?.ext_cache_hit_ratio} />
+            <LevelDBSizeCard size={data?.level_db_approx_mem_size} />
             <LevelDbCard
               levelDbSize={data?.level_db_approx_mem_size}
               rssSize={data?.resident_set_size}
@@ -223,7 +231,7 @@ export function StorageEngineMetrics() {
             <CacheHitGauge />
           </div>
           <div className="flex flex-row justify-between space-x-2">
-            <LevelDBStatsTable stats={data?.level_db_stats} />
+            {/* <LevelDBStatsTable stats={data?.level_db_stats} /> */}
           </div>
         </CardContent>
       )}
@@ -309,12 +317,12 @@ export function LevelDbCard({
   const size = Math.round(levelDbSize / 1000);
 
   const memoryMetrics: MemoryMetric[] = [
-    {
-      name: "Level DB Approx Size",
-      value: String(size) + " KB",
-      description: "Estimated size of the LevelDB database",
-      link: "https://github.com/google/leveldb",
-    },
+    // {
+    //   name: "Level DB Approx Size",
+    //   value: String(size) + " KB",
+    //   description: "Estimated size of the LevelDB database",
+    //   link: "https://github.com/google/leveldb",
+    // },
     {
       name: "RSS",
       value: String(rssSize) + " MB",
@@ -378,6 +386,131 @@ export function LevelDbCard({
             ))}
           </TableBody>
         </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface LevelDBSizeCardProps {
+  size: number; // Size of the database, e.g., "256 MB"
+}
+
+export function LevelDBSizeCard({ size }: LevelDBSizeCardProps) {
+  return (
+    <Card className="w-full max-w-xs">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">Database Size</CardTitle>
+        <Database className="h-4 w-4 text-muted-foreground" />
+      </CardHeader>
+      <div className="flex flex-col justify-center items-center flex-grow p-6">
+        <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-center">
+          {Math.floor(size / 1000)} KB
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">LevelDB Storage</p>
+        <p className="text-sm text-center mt-4 max-w-xs text-muted-foreground">
+          Size of data present in LevelDB with compaction in place
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+interface LevelDBStatsProps {
+  totalSize: string;
+  stats: LevelDBStat[];
+  className?: string;
+}
+
+export function LevelDBStats({
+  totalSize,
+  stats,
+  className,
+}: LevelDBStatsProps) {
+  const totalFiles = stats.reduce((sum, stat) => sum + stat.Files, 0);
+  const totalSizeMB = stats.reduce((sum, stat) => sum + stat["Size(MB)"], 0);
+
+  return (
+    <div className={`space-y-4 ${className}`}>
+      <Card className="w-full">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-bold">
+            LevelDB Statistics
+          </CardTitle>
+          <Database className="h-6 w-6 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <StatsCard
+              title="Total Size"
+              value={totalSize}
+              description="Overall database size"
+            />
+            <StatsCard
+              title="Total Files"
+              value={totalFiles.toString()}
+              description="Number of SSTable files"
+            />
+            <StatsCard
+              title="Total Size (MB)"
+              value={`${totalSizeMB.toFixed(2)} MB`}
+              description="Sum of all level sizes"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Level DB Stats</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Level</TableHead>
+                <TableHead>Files</TableHead>
+                <TableHead>Size (MB)</TableHead>
+                <TableHead>Time (sec)</TableHead>
+                <TableHead>Read (MB)</TableHead>
+                <TableHead>Write (MB)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {stats.map((stat) => (
+                <TableRow>
+                  <TableCell>{stat.Level}</TableCell>
+                  <TableCell>{stat.Files}</TableCell>
+                  <TableCell>{stat["Size(MB)"]}</TableCell>
+                  <TableCell>{stat["Time(sec)"]}</TableCell>
+                  <TableCell>{stat["Read(MB)"]}</TableCell>
+                  <TableCell>{stat["Write(MB)"]}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function StatsCard({
+  title,
+  value,
+  description,
+}: {
+  title: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
   );

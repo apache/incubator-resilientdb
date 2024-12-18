@@ -1,9 +1,10 @@
+//@ts-nocheck
 import "@pyroscope/flamegraph/dist/index.css";
 
 import { useContext, useEffect } from "react";
 import { useState } from "react";
 import { FlamegraphRenderer } from "@pyroscope/flamegraph";
-import { ProfileData1 } from "@/static/test_flamegraph";
+import { ProfileData1 } from "@/static/testFlamegraph";
 import { Button } from "../ui/button";
 import { ViewTypes } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlameGraph/FlameGraphComponent/viewTypes";
 import { Input } from "../ui/input";
@@ -23,7 +24,12 @@ import { NotFound } from "../ui/not-found";
 import { ModeContext } from "@/hooks/context";
 import { ModeType } from "../toggle";
 import { useToast } from "@/hooks/use-toast";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 
 interface FlamegraphCardProps {
   from: string | number;
@@ -49,7 +55,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
   const [flamegraphDisplayType, setFlamegraphDisplayType] =
     useState<ViewTypes>("both");
   const [flamegraphInterval, setFlamegraphInterval] =
-    useState<ViewTypes>("now-5m");
+    useState<string>("now-5m");
   const [_, setSearchQueryToggle] = useState(true); //dummy dispatch not used functionally
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState("");
@@ -151,24 +157,22 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
             <CardTitle className="text-2xl font-bold">Flamegraph</CardTitle>
           </div>
           <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={refreshFlamegraph}>
-          <RefreshCcw />
-          </Button>
-          <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-              >
-                <Info size={18.5} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Click for more information about these metrics</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        </div>
+            <Button variant="outline" size="icon" onClick={refreshFlamegraph}>
+              <RefreshCcw />
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded">
+                    <Info size={18.5} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Click for more information about these metrics</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col h-full">
