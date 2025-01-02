@@ -1,4 +1,4 @@
-export server=//benchmark/protocols/pbft:kv_server_performance
+#export COPTS="--define enable_leveldb=True"
 
 ./script/deploy.sh $1
 
@@ -7,30 +7,50 @@ export server=//benchmark/protocols/pbft:kv_server_performance
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
 
-bazel run //benchmark/protocols/pbft:kv_service_tools -- $PWD/config_out/client.config 
+bazel run //benchmark/protocols/pbft:kv_service_tools 
+
+for((i=1;;i++))
+do
+config_file=$PWD/config_out/client${i}.config
+if [ ! -f "$config_file" ]; then
+  break;
+fi
+echo "get cofigfile:"$config_file
+../../bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
+done
 
 sleep 60
+
+# for ip in ${iplist[@]};
+# do
+#   ssh $ssh_options_cloud -p 22 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "tc qdisc del dev eth0 root" &
+# done
+# wait
+
 
 echo "benchmark done"
 count=1
 for ip in ${iplist[@]};
 do
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "killall -9 ${server_bin}"` 
+`ssh $ssh_options_cloud -p 2222 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "killall -9 ${server_bin}"` &
+# `ssh $ssh_options_cloud -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "killall -9 ${server_bin}"` 
 ((count++))
 done
+wait
 
-while [ $count -gt 0 ]; do
-        wait $pids
-        count=`expr $count - 1`
-done
-
+# while [ $count -gt 0 ]; do
+#         wait $pids
+#         count=`expr $count - 1`
+# done
 
 echo "getting results"
 for ip in ${iplist[@]};
 do
-  echo "scp -i ${key} ubuntu@${ip}:/home/ubuntu/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} ubuntu@${ip}:/home/ubuntu/${server_bin}.log result_${ip}_log` 
+  # echo "scp $ssh_options_cloud -i ${key} root@${ip}:/root/${server_bin}.log ./${ip}_log"
+  `scp $ssh_options_cloud -P 2222 -i ${key} root@${ip}:/root/${server_bin}.log result_${ip}_log` &
+  # `scp $ssh_options_cloud -i ${key} root@${ip}:/root/${server_bin}.log result_${ip}_log` 
 done
+wait
 
 python3 performance/calculate_result.py `ls result_*_log` > results.log
 

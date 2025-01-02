@@ -3,7 +3,8 @@ syntax = "proto3";
 package resdb;
 
 import "common/proto/signature_info.proto";
-import "platform/proto/durable.proto";
+import "chain/storage/proto/leveldb_config.proto";
+import "chain/storage/proto/rocksdb_config.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -20,8 +21,8 @@ message RegionInfo {
 message ResConfigData{
   repeated RegionInfo region = 1;
   int32 self_region_id = 2;
-  optional RocksDBInfo rocksdb_info = 3;
-  optional LevelDBInfo leveldb_info = 4;
+  optional storage.RocksDBInfo rocksdb_info = 3;
+  optional storage.LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
   optional int32 view_change_timeout_ms = 10;
   optional bool not_need_signature = 6; // when delivering messages, it should be signed or not.
@@ -44,6 +45,9 @@ message ResConfigData{
   optional int32 max_client_complaint_num = 21;
 
   optional int32 duplicate_check_frequency_useconds = 22;
+
+// for fides failure.
+  optional int32 failure_num = 23;
 }
 
 message ReplicaStates {

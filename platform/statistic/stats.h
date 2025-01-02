@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #pragma once
@@ -39,6 +33,24 @@ class Stats {
   void Stop();
 
   void AddLatency(uint64_t run_time);
+  void AddQueuingLatency(uint64_t run_time);
+  void AddRoundLatency(uint64_t run_time);
+  void AddCommitLatency(uint64_t run_time);
+  void AddCommitQueuingLatency(uint64_t run_time);
+  void AddVerifyLatency(uint64_t run_time);
+  void AddExecuteQueuingLatency(uint64_t run_time);
+  void AddExecuteLatency(uint64_t run_time);
+  void AddCommitRuntime(uint64_t run_time);
+  void AddCommitRoundLatency(uint64_t run_time);
+  void AddCommitWaitingLatency(uint64_t run_time);
+  void AddCommitDelay(uint64_t run_time);
+  void AddExecutePrepareDelay(uint64_t run_time);
+  void AddCommitInterval(uint64_t run_time);
+  void AddCommitTxn(int num);
+  void AddCommitBlock(int num);
+  void AddBlockSize(int size);
+  void AddCommitRatio(uint64_t num);
+  void AddExecuteDelay(uint64_t run_time);
 
   void Monitor();
   void MonitorGlobal();
@@ -69,6 +81,9 @@ class Stats {
   void ServerProcess();
   void SetPrometheus(const std::string& prometheus_address);
 
+  void AddNewTransactions(int num);
+  void ConsumeTransactions(int num);
+
  protected:
   Stats(int sleep_time = 5);
   ~Stats();
@@ -96,9 +111,26 @@ class Stats {
   std::atomic<uint64_t> run_req_run_time_;
   std::atomic<uint64_t> seq_gap_;
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
+  std::atomic<uint64_t> num_transactions_, num_transactions_time_, num_consumed_transactions_, num_consumed_transactions_time_;
+  std::atomic<uint64_t> queuing_num_, queuing_time_, round_num_, round_time_, commit_num_, commit_time_;
+  std::atomic<uint64_t> execute_queuing_num_, execute_queuing_time_, verify_num_, verify_time_;
+  std::atomic<uint64_t> execute_num_, execute_time_;
+  std::atomic<uint64_t> commit_running_num_, commit_running_time_;
+  std::atomic<uint64_t> commit_queuing_num_, commit_queuing_time_;
+  std::atomic<uint64_t> commit_round_num_, commit_round_time_;
+  std::atomic<uint64_t> commit_txn_num_, commit_txn_time_;
+  std::atomic<uint64_t> commit_block_num_, commit_block_time_;
+  std::atomic<uint64_t> commit_delay_num_, commit_delay_time_;
+  std::atomic<uint64_t> commit_waiting_num_, commit_waiting_time_;
+  std::atomic<uint64_t> execute_prepare_num_, execute_prepare_time_;
+  std::atomic<uint64_t> commit_interval_num_, commit_interval_time_;
+  std::atomic<uint64_t> block_size_num_, block_size_;
+  std::atomic<uint64_t> commit_ratio_num_, commit_ratio_time_;
+  std::atomic<uint64_t> execute_delay_num_, execute_delay_time_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::unique_ptr<PrometheusHandler> prometheus_;
+
 };
 
 }  // namespace resdb

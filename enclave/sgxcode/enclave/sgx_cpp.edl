@@ -1,0 +1,45 @@
+// Copyright (c) Open Enclave SDK contributors.
+// Licensed under the MIT License.
+
+enclave {
+    from "openenclave/edl/syscall.edl" import *;
+    from "platform.edl" import *;
+
+
+    trusted {
+        public int request_counter([out] uint32_t* index);
+        public int get_counter([in] uint32_t* index, 
+                                size_t previous_size, 
+                                size_t limit_count,
+                                [user_check] uint32_t* counter_value_array,
+                                [user_check] size_t* buffer_size_array,
+                                [user_check] unsigned char** previous_attestation, 
+                                [out] uint32_t* counter_value);
+
+        public int reset_prng([in] uint32_t* seed, [in] uint32_t* range);
+        public int generate_rdrand([out] uint32_t* rdrandNum);
+        public int generate_rand(size_t input_len, 
+                                 size_t limit_count,
+                                 [user_check] uint32_t* counter_value_array,
+                                 [user_check] size_t* buffer_size_array,
+                                 [user_check] unsigned char** previous_attestation, 
+                                 [out] uint32_t* randNum);
+
+        public int generate_key([in] size_t *key_size);
+        public int update_key([in] unsigned char* priv_key, size_t priv_len,
+                              [in] unsigned char* pub_key, size_t pub_len);
+        public int get_pubkey([user_check] unsigned char** key_buf, 
+                              [out] size_t* key_len);
+        public int encrypt([user_check] unsigned char* input_buf, 
+                            [user_check] unsigned char** output_buf, 
+                            size_t input_len, size_t* output_len);
+        public int decrypt([user_check] unsigned char* input_buf, 
+                            [user_check] unsigned char** output_buf, 
+                            size_t input_len, size_t* output_len);
+    };
+
+    //untrusted {
+    //    no untrusted functions in this sample
+    //};
+};
+

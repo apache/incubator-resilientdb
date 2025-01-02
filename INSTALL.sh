@@ -7,7 +7,7 @@ curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel.gpg
 sudo mv bazel.gpg /etc/apt/trusted.gpg.d/ 
 echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt update && sudo apt install bazel=5.0.0 -y
+sudo apt update && sudo apt install bazel=6.3.2 -y
 sudo apt install clang-format -y
 rm $PWD/.git/hooks/pre-push
 ln -s $PWD/hooks/pre-push $PWD/.git/hooks/pre-push
@@ -27,7 +27,7 @@ cd bazel_build
 
 unzip bazel-6.0.0-dist.zip
 
-export JAVA_HOME='/usr/lib/jvm/java-1.11.0-openjdk-arm64/'
+export JAVA_HOME='/usr/lib/jvm/java-1.11.0-openjdk-amd64'
 env EXTRA_BAZEL_ARGS="--host_javabase=@local_jdk//:jdk" bash ./compile.sh
 sudo cp output/bazel /usr/local/bin/
 cd ..
@@ -40,3 +40,14 @@ bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
 
 sudo apt-get install python3.10-dev -y
 sudo apt-get install python3-dev -y
+
+# Build sgx code
+cd enclave/
+rm ./sgx_cpp_*
+cd sgxcode/
+rm -rf build || true
+mkdir build && cd build/
+cmake .. && make
+cd ../..
+cp sgxcode/build/host/sgx_cpp_* ./
+ldconfig /usr/local/lib64/

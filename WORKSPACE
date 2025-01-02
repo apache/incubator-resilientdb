@@ -3,6 +3,36 @@ workspace(name = "com_resdb_nexres")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//:repositories.bzl", "nexres_repositories")
 
+new_local_repository(
+    name = "openenclave_host",
+    path = "/opt/openenclave_0_17_0",
+    build_file_content = """
+cc_import(
+    name = "oehost_lib",
+    static_library = "lib/openenclave/host/liboehost.a",
+    visibility = ["//visibility:public"],
+)
+
+exports_files(["lib/openenclave/host/liboehost.a"])
+"""
+)
+
+new_local_repository(
+    name = "openenclave",
+    path = "/opt/openenclave_0_17_0/include",
+    build_file_content = """
+package(default_visibility = ["//visibility:public"])
+filegroup(
+    name = "headerfile",
+    srcs = glob(["**/*.h"]),
+)
+cc_library(
+    name = "headers",
+    hdrs = [":headerfile"]
+)
+"""
+)
+
 nexres_repositories()
 
 http_archive(
@@ -198,8 +228,8 @@ http_archive(
 
 http_archive(
     name = "pybind11_bazel",
-    strip_prefix = "pybind11_bazel-master",
-    urls = ["https://github.com/pybind/pybind11_bazel/archive/master.zip"],
+    strip_prefix = "pybind11_bazel-2.11.1.bzl.1",
+    urls = ["https://github.com/pybind/pybind11_bazel/archive/refs/tags/v2.11.1.bzl.1.zip"]
 )
 
 http_archive(

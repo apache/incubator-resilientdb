@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package resdb.storage;
+
+message Value {
+    bytes value = 1;
+    int32 version = 2;
+}
+
+message ValueHistory {
+  repeated Value value = 1;
+}
+

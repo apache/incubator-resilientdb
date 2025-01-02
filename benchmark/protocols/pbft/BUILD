@@ -6,6 +6,7 @@ cc_binary(
     name = "kv_server_performance",
     srcs = ["kv_server_performance.cpp"],
     deps = [
+        "//chain/storage:memory_db",
         "//executor/kv:kv_executor",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/pbft:consensus_manager_pbft",

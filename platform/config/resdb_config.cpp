@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/config/resdb_config.h"
@@ -68,7 +62,7 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
   if (config_data_.client_batch_num() == 0) {
-    config_data_.set_client_batch_num(client_batch_num_);
+    config_data_.set_client_batch_num(100);
   }
   if (config_data_.worker_num() == 0) {
     config_data_.set_worker_num(worker_num_);
@@ -82,8 +76,8 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
   if (config_data_.tcp_batch_num() == 0) {
     config_data_.set_tcp_batch_num(100);
   }
-  if (!config_data_.has_recovery_enabled()) {
-    config_data_.set_recovery_enabled(true);
+  if (config_data_.max_process_txn() == 0) {
+    config_data_.set_max_process_txn(64);
   }
 }
 
@@ -186,7 +180,7 @@ void ResDBConfig::SetSignatureVerifierEnabled(bool enable_sv) {
 }
 
 // Performance setting
-bool ResDBConfig::IsPerformanceRunning() {
+bool ResDBConfig::IsPerformanceRunning() const {
   return is_performance_running_ || GetConfigData().is_performance_running();
 }
 
@@ -257,6 +251,18 @@ uint32_t ResDBConfig::GetViewchangeCommitTimeout() const {
 
 void ResDBConfig::SetViewchangeCommitTimeout(uint64_t timeout_ms) {
   config_data_.set_view_change_timeout_ms(timeout_ms);
+}
+
+uint32_t ResDBConfig::GetFailureNum() const {
+  if (config_data_.failure_num()) {
+    return config_data_.failure_num();
+  }
+  return failure_num_;
+}
+
+void ResDBConfig::SetFailureNum(uint32_t num) {
+  config_data_.set_failure_num(num);
+  failure_num_ = num;
 }
 
 }  // namespace resdb

@@ -8,9 +8,15 @@ set -e
 
 script_path=${BAZEL_WORKSPACE_PATH}/scripts
 
-if [[ -z $server ]];
+echo "server is: $server"
+
+if [[ -z $server ]]; then
+  server=//service/kv:kv_service
+fi
+
+if [[ -z $client_num ]];
 then
-server=//service/kv:kv_service
+client_num=1
 fi
 
 # obtain the src path
@@ -18,7 +24,8 @@ server_path=`echo "$server" | sed 's/:/\//g'`
 server_path=${server_path:1}
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
-grafna_port=8090
+enclave_path=${BAZEL_WORKSPACE_PATH}/enclave/sgxcode/build/enclave/enclave.signed
+#grafna_port=8090
 
 bin_path=${BAZEL_WORKSPACE_PATH}/bazel-bin/${server_path}
 output_path=${script_path}/deploy/config_out
@@ -39,6 +46,7 @@ echo "server name:"${server_bin}
 echo "admin config path:"${admin_key_path}
 echo "output path:"${output_path}
 echo "deploy to :"${deploy_iplist[@]}
+echo "client num :"${client_num}
 
 # generate keys and certificates.
 
@@ -46,10 +54,10 @@ cd ${script_path}
 echo "where am i:"$PWD
 
 deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#iplist[@]}
-deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
+deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${client_num} ${deploy_iplist[@]}
 
 # build kv server
-bazel build ${server}
+bazel build ${server} 
 
 if [ $? != 0 ]
 then
@@ -62,7 +70,8 @@ function run_cmd(){
   count=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" &
+     ssh $ssh_options_cloud -p 2222 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "$1" &
+    #  ssh $ssh_options_cloud -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "$1" &
     ((count++))
   done
 
@@ -73,11 +82,13 @@ function run_cmd(){
 }
 
 function run_one_cmd(){
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
+  ssh $ssh_options_cloud -p 2222 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "$1" 
+  # ssh $ssh_options_cloud -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
-run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
+run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert; rm -rf wal_log"
+#run_cmd "rm -rf ${server_bin}; rm -rf server.config;" 
 
 sleep 1
 
@@ -86,14 +97,23 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/ &
+  # scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${enclave_path} root@${ip}:/root/  > null 2>&1 &
+  scp $ssh_options_cloud -P 2222 -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${enclave_path} root@${ip}:/root/  > null 2>&1 &
+  # scp $ssh_options_cloud -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${enclave_path} root@${ip}:/root/  > null 2>&1 &
   ((count++))
 done
+wait
 
-while [ $count -gt 0 ]; do
-  wait $pids
-  count=`expr $count - 1`
-done
+# while [ $count -gt 0 ]; do
+#   wait $pids
+#   count=`expr $count - 1`
+# done
+
+# for ip in ${deploy_iplist[@]};
+# do
+#   ssh $ssh_options_cloud -p 22 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "tc qdisc add dev eth0 root netem delay 40ms 0ms" &
+# done
+# wait
 
 echo "start to run"
 # Start server
@@ -103,16 +123,20 @@ for ip in ${deploy_iplist[@]};
 do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
-  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &" &
+  enclave="./enclave.signed"
+  echo "nohup ./${server_bin} server.config ${private_key} ${cert} ${enclave} --simulate"
+  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert} ${enclave} --simulate > ~/${server_bin}.log 2>&1 &" &
   ((count++))
   ((idx++))
 done
+wait
 
-while [ $count -gt 0 ]; do
-  wait $pids
-  count=`expr $count - 1`
-done
+# while [ $count -gt 0 ]; do
+#   wait $pids
+#   count=`expr $count - 1`
+# done
 
+echo "Check ready logs"
 # Check ready logs
 idx=1
 for ip in ${deploy_iplist[@]};
@@ -120,7 +144,9 @@ do
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    # echo ssh $ssh_options_cloud -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"
+    resp=`ssh $ssh_options_cloud -p 2222 -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    # resp=`ssh $ssh_options_cloud -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no root@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     fi
