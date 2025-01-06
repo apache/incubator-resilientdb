@@ -50,4 +50,3 @@ jobs:
             CXX: g++-11
         run: |
           bazel build ...
-          #sudo apt install gcc-11 g++-11
