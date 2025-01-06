@@ -49,4 +49,5 @@ jobs:
             CC: gcc-11
             CXX: g++-11
         run: |
+          sudo apt install gcc-11 g++-11
           bazel build ...
