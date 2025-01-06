@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: gcc-11
-        sudo apt install gcc-11 g++-11
+        run: sudo apt install gcc-11 g++-11
       - name: Mount bazel cache
         uses: actions/cache@v3
         with:
