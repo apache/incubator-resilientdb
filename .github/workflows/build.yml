@@ -34,12 +34,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-
       - name: Mount bazel cache
         uses: actions/cache@v3
         with:
           path: "/home/runner/.cache/bazel"
           key: bazel
-
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.10'
       - name: build
-        run: bazel build ...
+        shell: bash
+        env:
+            CC: gcc-11
+            CXX: g++-11
+        run: |
+          bazel build ...
