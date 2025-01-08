@@ -17,19 +17,56 @@ import {
 } from "../ui/select";
 import { FlamegraphRendererProps } from "@pyroscope/flamegraph/dist/packages/pyroscope-flamegraph/src/FlamegraphRenderer";
 import { middlewareApi } from "@/lib/api";
-import { Download, RefreshCcw, Flame, Info } from "lucide-react";
+import { Download, RefreshCcw, Flame, Info, Map } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "../ui/loader";
 import { NotFound } from "../ui/not-found";
 import { ModeContext } from "@/hooks/context";
 import { ModeType } from "../toggle";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+import { useTour } from "@/hooks/use-tour";
+import { Tour } from "../ui/tour";
+
+const steps = [
+  {
+    content: <h2>This is a flamegraph to visualize the stack trace</h2>,
+    placement: "center",
+    target: "body",
+  },
+  {
+    content: (
+      <h2>
+        Enter a function name for example "SetValue" to see the functions it
+        invokes
+      </h2>
+    ),
+    target: "#function-name",
+  },
+  {
+    content: <h2>Click a function to investigate it in a different mode.</h2>,
+    placement: "center",
+    target: "body",
+  },
+  {
+    content: (
+      <h2>
+        Choose the "sandwich" method to explore all functions made by it.
+        Explore others as well!
+      </h2>
+    ),
+    target: "#graph-type",
+  },
+  {
+    content: <h2>Click on this button to refresh the data</h2>,
+    target: "#refresh",
+  },
+  {
+    content: (
+      <h2>Click on this icon to get more info and context on this feature</h2>
+    ),
+    target: "#info-tip",
+  },
+];
 
 interface FlamegraphCardProps {
   from: string | number;
@@ -93,6 +130,12 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
     setRefresh((prev) => !prev);
   }
 
+  const { startTour, setSteps } = useTour();
+
+  useEffect(() => {
+    setSteps(steps);
+  }, []);
+
   useEffect(() => {
     if (mode === "offline") {
       setProfilingData(ProfileData1);
@@ -148,8 +191,10 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
     };
     fetchData();
   }, [clientName, refresh, props.from, props.until, mode, flamegraphInterval]);
+
   return (
     <Card className="w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
+      <Tour />
       <CardHeader>
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
@@ -158,20 +203,21 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={refreshFlamegraph}>
-              <RefreshCcw />
+              <RefreshCcw id="refresh" />
             </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded">
-                    <Info size={18.5} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Click for more information about these metrics</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <button
+              onClick={startTour}
+              className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+            >
+              <Map id="tour-tip" size={16} />
+            </button>
+            <a
+              target="_blank"
+              href="https://pyroscope.io/blog/what-is-a-flamegraph/"
+              className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
+            >
+              <Info id="info-tip" size={16} />
+            </a>
           </div>
         </div>
       </CardHeader>
@@ -183,6 +229,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
             <div className="flex justify-between mb-4">
               <div className="flex flex-row space-x-2">
                 <Input
+                  id="function-name"
                   placeholder="Filter by function name"
                   onChange={(e) =>
                     setSearchQuery((prev) => {
@@ -196,7 +243,12 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
                 />
               </div>
               <div className="flex flex-row space-x-2">
-                <Button variant="outline" size="icon" onClick={handleDownload}>
+                <Button
+                  id="download-graph"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleDownload}
+                >
                   <Download />
                 </Button>
 
@@ -218,7 +270,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
                 </Select>
 
                 <Select onValueChange={handleFlamegraphTypeChange}>
-                  <SelectTrigger className="w-[120px] h-[30px]">
+                  <SelectTrigger className="w-[120px] h-[30px]" id="graph-type">
                     <SelectValue placeholder="Graph Type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -248,6 +300,7 @@ export const Flamegraph = (props: FlamegraphCardProps) => {
                 <Loader className="h-[800px] p-4" />
               ) : (
                 <FlamegraphRenderer
+                  id="flamegraph"
                   key={flamegraphDisplayType} // Force a re-render when the type changes
                   profile={profilingData}
                   showCredit={false}

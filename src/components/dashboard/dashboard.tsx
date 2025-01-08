@@ -1,8 +1,8 @@
+//@ts-nocheck
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Github, Star } from "lucide-react";
+import { Github } from "lucide-react";
 import { DependencyGraph } from "../graphs/dependency";
 import { startCase } from "@/lib/utils";
 import { CpuPage } from "../graphs/cpuCard";
@@ -10,17 +10,47 @@ import { MemoryTrackerPage } from "../graphs/MemorySpecs/memoryTrackerPage";
 import { ToggleState, ModeType } from "../toggle";
 import { ModeContext } from "@/hooks/context";
 import { middlewareApi } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
+import Banner from "../ui/banner";
+import { TourProvider, useTour } from "@/hooks/use-tour";
+import { Tour } from "../ui/tour";
 
 const tabVariants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
+const steps = [
+  {
+    content: <h2>Welcome to MemLens. Let's begin our journey!</h2>,
+    placement: "center",
+    target: "body",
+  },
+  {
+    content: (
+      <h2>Click on this icon to take a guided tour of this component</h2>
+    ),
+    target: "#tour-tip",
+  },
+  {
+    content: (
+      <h2>Click on this icon to get more info and context on this feature</h2>
+    ),
+    target: "#info-tip",
+  },
+];
+
 export function Dashboard() {
+  return (
+    <TourProvider autoStart={true}>
+      <DashboardComponent />
+    </TourProvider>
+  );
+}
+
+function DashboardComponent() {
+  const { setSteps } = useTour();
   const [activeTab, setActiveTab] = useState("memory_tracker");
-  const [mode, setMode] = useState<ModeType>("live");
-  const { toast } = useToast();
+  const [mode, setMode] = useState<ModeType>("offline");
 
   async function getMode() {
     try {
@@ -36,11 +66,23 @@ export function Dashboard() {
   }
 
   useEffect(() => {
+    setSteps(steps);
+  }, [setSteps]);
+
+  useEffect(() => {
     getMode();
   }, []);
 
+  useEffect(() => {
+    if (mode === "offline") {
+      setActiveTab("cpu");
+    }
+  }, [mode]);
+
   return (
     <ModeContext.Provider value={mode}>
+      <Banner />
+      <Tour />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 text-slate-50">
         <Tabs
           value={activeTab}
@@ -52,7 +94,7 @@ export function Dashboard() {
               <div className="flex items-center space-x-8">
                 <a href="/">
                   <img
-                    src="/Memlens.png" // Changed to PNG logo
+                    src="/Memlens.png"
                     alt="Company Logo"
                     className="h-6 mb-0"
                   />
@@ -70,7 +112,9 @@ export function Dashboard() {
                 </TabsList>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-slate-400">v1.0.0</span>
+                <span id="version" className="text-sm text-slate-400">
+                  v1.0.0
+                </span>
                 <a
                   href="https://github.com/Bismanpal-Singh/MemLens"
                   target="_blank"

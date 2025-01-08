@@ -3,6 +3,7 @@ import { Flamegraph } from "./flamegraph";
 import { CpuLineGraphFunc } from "./lineGraph";
 import { ModeType } from "../toggle";
 import { ModeContext } from "@/hooks/context";
+import { TourProvider } from "@/hooks/use-tour";
 
 export function CpuPage() {
   const mode = useContext<ModeType>(ModeContext);
@@ -12,9 +13,9 @@ export function CpuPage() {
   });
 
   return (
-    <>
+    <TourProvider>
       {!(mode === "offline") && <CpuLineGraphFunc setDate={setDate} />}
       <Flamegraph {...date} />
-    </>
+    </TourProvider>
   );
 }
