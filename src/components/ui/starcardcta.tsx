@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 // Utility function to replace Next.js cn
-const cn = (...classes: string[]) => classes.filter(Boolean).join(' ');
+const cn = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
 export const GlowingStarsBackgroundCard = ({
   className,
@@ -166,15 +167,14 @@ export function GlowingStarsBackgroundCardPreview() {
           <GlowingStarsDescription>
             Head into world of Statistics and Data through the Memory Lens.
           </GlowingStarsDescription>
-          <button
-            onClick={() => window.location.href = '/dashboard'}
+          <Link
+            to="/dashboard"
             className="px-4 py-2 bg-white text-black rounded-md hover:bg-black hover:text-white transition-colors"
           >
             Enter MemLens
-          </button>
+          </Link>
         </div>
       </GlowingStarsBackgroundCard>
     </div>
   );
 }
-
