@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
               Meet the Team
             </Link>
             <Link
-              to="/blog"
+              to="https://blog.resilientdb.com/2024/12/07/MemLens.html"
               className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/blog"
               )}`}
