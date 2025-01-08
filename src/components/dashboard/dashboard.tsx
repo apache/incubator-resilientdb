@@ -116,7 +116,7 @@ function DashboardComponent() {
                   v1.0.0
                 </span>
                 <a
-                  href="https://github.com/Bismanpal-Singh/MemLens"
+                  href="https://github.com/harish876/MemLens"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-4 py-2 text-sm font-medium text-slate-400 border border-slate-400 rounded hover:text-slate-100 hover:bg-slate-800 transition-colors"
