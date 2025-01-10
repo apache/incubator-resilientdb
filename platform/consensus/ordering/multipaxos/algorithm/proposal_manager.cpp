@@ -11,7 +11,6 @@ ProposalManager::ProposalManager(int32_t id, int limit_count, SignatureVerifier*
     : id_(id) {
     round_ = 1;
     seq_ = 1;
-    assert(verifier_ != nullptr);
 }
 
 std::unique_ptr<Proposal> ProposalManager::GenerateProposal(

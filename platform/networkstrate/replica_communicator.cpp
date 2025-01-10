@@ -34,7 +34,8 @@ ReplicaCommunicator::ReplicaCommunicator(
       verifier_(verifier),
       is_running_(false),
       batch_queue_("bc_batch", tcp_batch),
-      is_use_long_conn_(is_use_long_conn) {
+      is_use_long_conn_(is_use_long_conn),
+      tcp_batch_(tcp_batch) {
   global_stats_ = Stats::GetGlobalStats();
   if (is_use_long_conn_) {
     worker_ = std::make_unique<boost::asio::io_service::work>(io_service_);
@@ -45,6 +46,7 @@ ReplicaCommunicator::ReplicaCommunicator(
   LOG(ERROR)<<" tcp batch:"<<tcp_batch;
 
   StartBroadcastInBackGround();
+
 }
 
 ReplicaCommunicator::~ReplicaCommunicator() {
@@ -122,6 +124,78 @@ void ReplicaCommunicator::StartBroadcastInBackGround() {
   });
 }
 
+void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int port) {
+  single_bq_[std::make_pair(ip,port)] = std::make_unique<BatchQueue<std::unique_ptr<QueueItem>>>("s_batch", tcp_batch_);
+
+  ReplicaInfo replica_info;
+  for (const auto& replica : replicas_) {
+    if (replica.ip() == ip) {
+      replica_info = replica;
+      break;
+    }
+  }
+
+  if (replica_info.ip().empty()) {
+    for (const auto& replica : GetClientReplicas()) {
+      if (replica.ip() == ip) {
+        replica_info = replica;
+        break;
+      }
+    }
+  }
+
+
+  single_thread_.push_back(std::thread([&](BatchQueue<std::unique_ptr<QueueItem>> *bq, ReplicaInfo replica_info) {
+    while (IsRunning()) {
+      std::vector<std::unique_ptr<QueueItem>> batch_req =
+          bq->Pop(50000);
+      if (batch_req.empty()) {
+        continue;
+      }
+      BroadcastData broadcast_data;
+      for (auto& queue_item : batch_req) {
+        broadcast_data.add_data()->swap(queue_item->data);
+      }
+
+      global_stats_->SendBroadCastMsg(broadcast_data.data_size());
+      //LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size();
+      int ret = SendMessageFromPool(broadcast_data, {replica_info});
+      if (ret < 0) {
+        LOG(ERROR) << "broadcast request fail:";
+      }
+      //LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size()<<" done";
+    }
+  }, single_bq_[std::make_pair(ip,port)].get(), replica_info));
+}
+
+
+int ReplicaCommunicator::SendSingleMessage(const google::protobuf::Message& message, 
+const ReplicaInfo& replica_info) {
+
+  std::string ip = replica_info.ip();
+  int port = replica_info.port();
+
+
+
+
+    //LOG(ERROR)<<" send msg ip:"<<ip<<" port:"<<port;
+  global_stats_->BroadCastMsg();
+  if (is_use_long_conn_) {
+    auto item = std::make_unique<QueueItem>();
+    item->data = NetChannel::GetRawMessageString(message, verifier_);
+    std::lock_guard<std::mutex> lk(smutex_);
+    if(single_bq_.find(std::make_pair(ip, port)) == single_bq_.end()){
+      StartSingleInBackGround(ip, port);
+    }
+    assert(single_bq_[std::make_pair(ip, port)] != nullptr);
+    single_bq_[std::make_pair(ip, port)]->Push(std::move(item));
+    return 0;
+  } else {
+    LOG(ERROR) << "send internal";
+    return SendMessageInternal(message, replicas_);
+  }
+}
+
 int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message) {
   global_stats_->BroadCastMsg();
   if (is_use_long_conn_) {
@@ -137,6 +211,8 @@ int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message) {
 
 int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                      const ReplicaInfo& replica_info) {
+  return SendSingleMessage(message, replica_info);
+
   if (is_use_long_conn_) {
     std::string data = NetChannel::GetRawMessageString(message, verifier_);
     BroadcastData broadcast_data;
@@ -215,6 +291,7 @@ AsyncReplicaClient* ReplicaCommunicator::GetClientFromPool(
     auto client = std::make_unique<AsyncReplicaClient>(
         &io_service_, ip, port + (is_use_long_conn_ ? 10000 : 0), true);
     client_pools_[std::make_pair(ip, port)] = std::move(client);
+    //StartSingleInBackGround(ip, port);
   }
   return client_pools_[std::make_pair(ip, port)].get();
 }

@@ -26,6 +26,7 @@ class MultiPaxos: public common::ProtocolBase {
     void AsyncSend();
     void AsyncCommit();
     void AsyncCommitSeq();
+    void AsyncLearn();
 
     void CommitProposal(std::unique_ptr<Proposal> p);
 
@@ -36,11 +37,11 @@ class MultiPaxos: public common::ProtocolBase {
 
  private:
   LockFreeQueue<Transaction> txns_;
-  LockFreeQueue<Proposal> commit_q_;
+  LockFreeQueue<Proposal> commit_q_, learn_q_;
 
   std::unique_ptr<ProposalManager> proposal_manager_;
 
-  std::thread send_thread_, commit_thread_, commit_seq_thread_;
+  std::thread send_thread_, commit_thread_, commit_seq_thread_, learn_thread_;
 
   int batch_size_;
 
@@ -54,6 +55,7 @@ class MultiPaxos: public common::ProtocolBase {
   std::map<int, std::unique_ptr<Proposal> > commit_data_;
   std::condition_variable vote_cv_;
   int start_seq_;
+  int master_;
 };
 
 }  // namespace tusk

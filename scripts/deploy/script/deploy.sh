@@ -79,6 +79,7 @@ function run_cmd(){
 }
 
 function run_one_cmd(){
+  echo " $1"
   ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
 }
 

@@ -138,7 +138,7 @@ void ConsensusManager::HeartBeat() {
       if (config_.IsTestMode()) {
         sleep_time = 1;
       } else {
-        sleep_time = 30;
+        sleep_time = 60 * 2;
       }
     }
   }

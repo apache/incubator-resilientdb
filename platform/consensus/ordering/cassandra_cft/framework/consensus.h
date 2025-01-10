@@ -26,29 +26,34 @@
 #pragma once
 
 #include "executor/common/transaction_manager.h"
-#include "platform/consensus/execution/transaction_executor.h"
-#include "platform/consensus/ordering/multipaxos/algorithm/multipaxos.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
+#include "platform/consensus/ordering/cassandra_cft/algorithm/cassandra.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
-namespace multipaxos {
+namespace cassandra_cft {
 
-class Consensus : public common::Consensus{
+class Consensus : public common::Consensus {
  public:
   Consensus(const ResDBConfig& config,
             std::unique_ptr<TransactionManager> transaction_manager);
+  virtual ~Consensus() = default;
 
-  protected:
+ private:
   int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const Transaction& txn);
 
-  private:
-    std::unique_ptr<MultiPaxos> multipaxos_;
-    bool failure_mode_ = false;
+  int Prepare(const Transaction& txn);
+
+ protected:
+  std::unique_ptr<Cassandra> cassandra_cft_;
+  Stats* global_stats_;
+  int64_t start_;
+  std::mutex mutex_;
+  int send_num_[200];
 };
 
-}  // namespace tusk
+}  // namespace cassandra_cft
 }  // namespace resdb

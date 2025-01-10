@@ -44,6 +44,7 @@ PerformanceManager::PerformanceManager(
   stop_ = false;
   eval_started_ = false;
   eval_ready_future_ = eval_ready_promise_.get_future();
+  LOG(ERROR)<<"?????";
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
@@ -53,6 +54,7 @@ PerformanceManager::PerformanceManager(
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
   }
+  LOG(ERROR)<<"?????";
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
   total_num_ = 0;
@@ -62,6 +64,7 @@ PerformanceManager::PerformanceManager(
   if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
+  LOG(ERROR)<<"?????";
 }
 
 PerformanceManager::~PerformanceManager() {

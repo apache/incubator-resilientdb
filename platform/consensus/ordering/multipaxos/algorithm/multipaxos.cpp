@@ -16,9 +16,11 @@ MultiPaxos::MultiPaxos(int id, int f, int total_num, SignatureVerifier * verifie
     send_thread_ = std::thread(&MultiPaxos::AsyncSend, this);
     commit_thread_ = std::thread(&MultiPaxos::AsyncCommit, this);
     commit_seq_thread_ = std::thread(&MultiPaxos::AsyncCommitSeq, this);
-    batch_size_ = 10;
+    learn_thread_ = std::thread(&MultiPaxos::AsyncLearn, this);
+    batch_size_ = 15;
     start_seq_ = 1;
-  }
+    master_ = 1;
+}
 
 MultiPaxos::~MultiPaxos() {
 }
@@ -91,15 +93,23 @@ void MultiPaxos::AsyncCommit() {
     int proposer = p->header().proposer();
     int round = p->header().view();
     std::unique_ptr<Proposal> data = nullptr;
-    {
+    while(data == nullptr) {
       std::unique_lock<std::mutex> lk(mutex_);
       auto it = receive_.find(round);
+      if(it == receive_.end()){
+        //LOG(ERROR)<<" proposer:"<<proposer<<" round:"<<round<<" not exist";
+        usleep(100);
+        continue;
+      }
       assert(it != receive_.end());
       auto dit = it->second.find(proposer);
+      if(dit == it->second.end()){
+        continue;
+      }
       assert(dit != it->second.end());
       data = std::move(dit->second);
-      assert(data != nullptr);
     }
+    assert(data != nullptr);
     AddCommitData(std::move(data));
   }
 }
@@ -111,10 +121,10 @@ void MultiPaxos::AsyncCommitSeq() {
       break;
     }
     std::unique_ptr<Proposal> data = GetCommitData();
-    int proposer = data->header().proposer();
-    int round = data->header().view();
-    int proposal_seq = data->header().proposal_id();
-    LOG(ERROR)<<" commit proposer:"<<proposer<< " round:"<<round<<" seq:"<<proposal_seq;
+    //int proposer = data->header().proposer();
+    //int round = data->header().view();
+    //int proposal_seq = data->header().proposal_id();
+    //LOG(ERROR)<<" commit proposer:"<<proposer<< " round:"<<round<<" seq:"<<proposal_seq;
     for(Transaction& txn : *data->mutable_transactions()){
       txn.set_id(seq++);
       Commit(txn);
@@ -122,7 +132,34 @@ void MultiPaxos::AsyncCommitSeq() {
   }
 }
 
+void MultiPaxos::AsyncLearn() {
+  int seq = 1;
+  while (!IsStop()) {
+    auto proposal = learn_q_.Pop();
+    if(proposal == nullptr){
+      continue;
+    }
+
+    int round = proposal->header().view();
+    int sender = proposal->sender();
+    int proposer = proposal->header().proposer();
+
+    std::unique_lock<std::mutex> lk(learn_mutex_);
+    learn_receive_[round].insert(sender);
+    //LOG(ERROR)<<"RECEIVE proposer learn:"<<round<<" size:"<<learn_receive_[round].size()<<" proposer:"<<proposer<<" sender:"<<sender;
+    if(learn_receive_[round].size() == f_+1){
+      CommitProposal(std::move(proposal));
+    }
+
+  }
+}
+
+
 bool MultiPaxos::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
+  if(id_ != master_) {
+    SendMessage(MessageType::Redirect, *txn, master_);
+    return true;
+  }
   txn->set_proposer(id_);
   txns_.Push(std::move(txn));
   return true;
@@ -135,8 +172,8 @@ bool MultiPaxos::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
 
   bool done = false;
   {
-    //LOG(ERROR)<<"recv proposal from:"<<proposer<<" round:"<<round<<" seq:"<<seq;
     std::unique_lock<std::mutex> lk(mutex_);
+    //LOG(ERROR)<<"recv proposal from:"<<proposer<<" round:"<<round<<" seq:"<<seq;
     receive_[round][proposer] = std::move(proposal);
     done = true;
   }
@@ -152,16 +189,7 @@ bool MultiPaxos::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
 }
 
 bool MultiPaxos::ReceiveLearn(std::unique_ptr<Proposal> proposal) {
-  int round = proposal->header().view();
-  int sender = proposal->sender();
-  int proposer = proposal->header().proposer();
-
-  std::unique_lock<std::mutex> lk(learn_mutex_);
-  learn_receive_[round].insert(sender);
-  LOG(ERROR)<<"RECEIVE proposer learn:"<<round<<" size:"<<learn_receive_[round].size()<<" proposer:"<<proposer;
-  if(learn_receive_[round].size() == f_+1){
-    CommitProposal(std::move(proposal));
-  }
+  learn_q_.Push(std::move(proposal));
   return true;
 }
 

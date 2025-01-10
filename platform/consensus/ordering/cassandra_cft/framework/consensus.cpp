@@ -23,7 +23,7 @@
  *
  */
 
-#include "platform/consensus/ordering/multipaxos/framework/consensus.h"
+#include "platform/consensus/ordering/cassandra_cft/framework/consensus.h"
 
 #include <glog/logging.h>
 #include <unistd.h>
@@ -31,72 +31,49 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
-namespace multipaxos {
+namespace cassandra_cft {
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
-    : common::Consensus(config, std::move(executor)) {
-
-  Init();
-  failure_mode_ = config.GetConfigData().failure_mode();
-
+    : common::Consensus(config, std::move(executor)){
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
+  Init();
+
+  start_ = 0;
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    multipaxos_= std::make_unique<MultiPaxos>(config_.GetSelfInfo().id(), f, total_replicas, GetSignatureVerifier());
-    InitProtocol(multipaxos_.get());
+    cassandra_cft_ = std::make_unique<Cassandra>(
+        config_.GetSelfInfo().id(), f,
+                                   total_replicas, config.GetConfigData().failure_mode());
+
+    InitProtocol(cassandra_cft_.get());
+
+
+    cassandra_cft_->SetPrepareFunction([&](const Transaction& msg) { 
+      return Prepare(msg); 
+    });
   }
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  //LOG(ERROR)<<"recv request:"<<MessageType_Name(request->user_type());
-  //int64_t current_time = GetCurrentTime();
-  //LOG(ERROR)<<" failure more:"<<failure_mode_;
-  if(failure_mode_ && config_.GetSelfInfo().id() == 2) {
+  //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<MessageType_Name(request->user_type());
+  if (request->user_type() == MessageType::NewProposal) {
+    // LOG(ERROR)<<"receive proposal:";
+    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+    if (!proposal->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    if (!cassandra_cft_->ReceiveProposal(std::move(proposal))) {
+      return -1;
+    }
     return 0;
-  }
-
-  if(request->user_type() == MessageType::Propose) {
-    std::unique_ptr<Proposal> p = std::make_unique<Proposal>();
-    if (!p->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    multipaxos_->ReceiveProposal(std::move(p));
-  }
-  else if(request->user_type() == MessageType::Redirect) {
-    std::unique_ptr<Transaction> p = std::make_unique<Transaction>();
-    if (!p->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    multipaxos_->ReceiveTransaction(std::move(p));
-
-  }
-  else if(request->user_type() == MessageType::Query) {
-    std::unique_ptr<Proposal> p = std::make_unique<Proposal>();
-    if (!p->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    //multipaxos_->ReceivePropose(std::move(p));
-  }
-  else if(request->user_type() == MessageType::Learn) {
-    std::unique_ptr<Proposal> p = std::make_unique<Proposal>();
-    if (!p->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    multipaxos_->ReceiveLearn(std::move(p));
-  }
+  } 
   return 0;
 }
 
@@ -105,8 +82,8 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_data(request->data());
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
-  txn->set_user_seq(request->user_seq());
-  return multipaxos_->ReceiveTransaction(std::move(txn));
+  //LOG(ERROR)<<"receive txn";
+  return cassandra_cft_->ReceiveTransaction(std::move(txn));
 }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
@@ -114,15 +91,33 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 }
 
 int Consensus::CommitMsgInternal(const Transaction& txn) {
-  //LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id();
+  //LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<" uid:"<<txn.uid();
   std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_queuing_time(txn.queuing_time());
   request->set_data(txn.data());
   request->set_seq(txn.id());
-  request->set_proxy_id(txn.proxy_id());
+  request->set_uid(txn.uid());
+  //if (txn.proposer_id() == config_.GetSelfInfo().id()) {
+    request->set_proxy_id(txn.proxy_id());
+   // LOG(ERROR)<<"commit txn:"<<txn.id()<<" proxy id:"<<request->uid();
+    //assert(request->uid()>0);
+  //}
+
   transaction_executor_->AddExecuteMessage(std::move(request));
   return 0;
 }
 
 
-}  // namespace fairdag
+int Consensus::Prepare(const Transaction& txn) {
+  // LOG(ERROR)<<"prepare txn:"<<txn.id()<<" proxy id:"<<txn.proxy_id()<<"
+  // uid:"<<txn.uid();
+  std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_data(txn.data());
+  request->set_uid(txn.uid());
+  transaction_executor_->Prepare(std::move(request));
+  return 0;
+}
+
+
+}  // namespace cassandra_cft
 }  // namespace resdb
