@@ -25,8 +25,10 @@
 
 #include "chain/storage/proto/leveldb_config.pb.h"
 #include "chain/storage/storage.h"
+#include "common/lru/lru_cache.h"
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace storage {
@@ -65,6 +67,8 @@ class ResLevelDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int top_number) override;
 
+  void GetMetrics();
+
   bool Flush() override;
 
  private:
@@ -75,6 +79,10 @@ class ResLevelDB : public Storage {
   ::leveldb::WriteBatch batch_;
   unsigned int write_buffer_size_ = 64 << 20;
   unsigned int write_batch_size_ = 1;
+  std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
+
+ protected:
+  Stats* global_stats_ = nullptr;
 };
 
 }  // namespace storage

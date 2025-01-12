@@ -25,9 +25,11 @@ cc_binary(
     name = "kv_service",
     srcs = ["kv_service.cpp"],
     copts = select({
-        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
-        "//conditions:default": [],
+        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB","-g","-ggdb"],
+        "//conditions:default": ["-pg", "-g", "-ggdb"],  # Add debug symbols here too
+
     }),
+    linkopts = ["-pg","-g","-ggdb"],    # Enable profiling during linking
     deps = [
         "//platform/config:resdb_config_utils",
         "//executor/kv:kv_executor",
@@ -35,7 +37,9 @@ cc_binary(
         "//common:comm",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-    ] + select({
+        "//chain/storage:leveldb",
+        "//chain/storage:lmdb",
+	] + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
         "//conditions:default": [],
     }),

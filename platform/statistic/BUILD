@@ -19,6 +19,7 @@
 package(default_visibility = [
     "//platform:__subpackages__",
     "//service:__subpackages__",
+    "//chain/storage:__subpackages__",
 ])
 
 cc_library(
@@ -53,4 +54,6 @@ cc_library(
 cc_binary(
     name = "set_random_data",
     srcs = ["set_random_data.cpp"],
+    copts = ["-pg"],
+    linkopts = ["-pg"],
 )

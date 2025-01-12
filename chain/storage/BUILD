@@ -47,13 +47,29 @@ cc_library(
     name = "leveldb",
     srcs = ["leveldb.cpp"],
     hdrs = ["leveldb.h"],
+    linkopts = ["-pg","-g","-ggdb"],    # Enable profiling during linking
     deps = [
         ":storage",
         "//chain/storage/proto:kv_cc_proto",
         "//chain/storage/proto:leveldb_config_cc_proto",
         "//common:comm",
+        "//common/lru:lru_cache",
+        "//platform/statistic:stats",
         "//third_party:leveldb",
     ],
+)
+
+cc_library(
+    name = "lmdb",
+    srcs = ["lmdb.cpp"],
+    hdrs = ["lmdb.h"],
+    deps = [
+        ":storage",
+        "//chain/storage/proto:kv_cc_proto",
+        "//common:comm",
+    ],
+    copts = ["-I/usr/include"],  # Add the LMDB header file path (if needed)
+    linkopts = ["-llmdb"],  # Link the LMDB librar
 )
 
 cc_test(
@@ -64,4 +80,12 @@ cc_test(
         ":memory_db",
         "//common/test:test_main",
     ],
+)
+
+cc_binary(
+    name = "lmdb_test",
+    srcs = ["lmdb_test.cpp"],
+    deps = [],
+    copts = ["-I/usr/include"],  # Add the LMDB header file path (if needed)
+    linkopts = ["-llmdb"],  # Link the LMDB librar
 )

@@ -18,18 +18,10 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-
-bool_flag(
-    name = "enable_leveldb",
-    build_setting_default = True, #TODO: test this config 
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "enable_leveldb_setting",
-    values = {
-        "define": "enable_leveldb=True",
-    },
-    visibility = ["//visibility:public"],
+cc_library(
+    name = "lru_cache",
+    srcs = ["lru_cache.cpp"],
+    hdrs = ["lru_cache.h"],
+    linkopts = ["-pg","-g","-ggdb"],    # Enable profiling during linking
+    copts = ["-pg"],
 )
