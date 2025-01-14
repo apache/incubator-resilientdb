@@ -81,7 +81,7 @@ function DashboardComponent() {
 
   return (
     <ModeContext.Provider value={mode}>
-      <Banner />
+      {mode === "offline" && <Banner />}
       <Tour />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 text-slate-50">
         <Tabs
