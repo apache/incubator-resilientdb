@@ -19,6 +19,8 @@
 set +e
 
 CURRENT_PATH=$PWD
+user=ubuntu
+home_path=/home/ubuntu
 
 i=0
 while [ ! -f "WORKSPACE" ]

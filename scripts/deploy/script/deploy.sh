@@ -85,7 +85,7 @@ function run_cmd(){
   idx=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "cd ${main_folder}/$idx; $1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "cd ${main_folder}/$idx; $1" &
     ((count++))
     ((idx++))
   done
@@ -98,20 +98,20 @@ function run_cmd(){
 
 function run_one_cmd(){
   echo "run one:"$1
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
+  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
 if [ $performance ];
 then
-run_cmd "rm -rf /home/ubuntu/${main_folder}"
+run_cmd "rm -rf ${home_path}/${main_folder}"
 fi
 
 idx=1
 for ip in ${deploy_iplist[@]};
 do
-  run_one_cmd "mkdir -p /home/ubuntu/${main_folder}/$idx" &
-  folder="/home/ubuntu/${main_folder}/$idx"
+  run_one_cmd "mkdir -p ${home_path}/${main_folder}/$idx" &
+  folder="${home_path}/${main_folder}/$idx"
   run_one_cmd "rm -rf ${folder}/${server_bin}; rm ${folder}/${server_bin}*.log; rm -rf ${folder}/server.config; rm -rf ${folder}/cert;"
   ((count++))
   ((idx++))
@@ -133,8 +133,8 @@ idx=1
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  echo "scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/${main_folder}/$idx" 
-  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/${main_folder}/$idx &
+  echo "scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${user}@${ip}:${home_path}/${main_folder}/$idx" 
+  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${user}@${ip}:${home_path}/${main_folder}/$idx &
   ((count++))
   ((idx++))
 done
@@ -170,7 +170,7 @@ do
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "cd ${main_folder}/$idx; grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "cd ${main_folder}/$idx; grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     fi

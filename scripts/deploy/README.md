@@ -63,3 +63,8 @@ Run the script:
 	./performance/pbft_performance.sh config/kv_performance_server.conf
 
 Results will be saved locally and be shown on the screen as well.
+
+
+## Using non-ubuntu account ##
+The default path for the workspace to deploy the system is /home/ubuntu
+If you want to change the path, you can update ``script/env.sh``
