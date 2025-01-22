@@ -111,7 +111,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
       - Contributed heavily to the frontend dashboard design.
       - Gathered memory metrics and profiling data by working with APIs & tools and integrated them into the dashboard
 
----
+----
 
 ## License
   TODO
