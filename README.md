@@ -14,8 +14,6 @@ This repo runs Thunderbolt on SMALLBANK
 
 You can find the latest ResilientDB documentation, including a programming guide, on the **[project web blog](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file only contains basic setup instructions.
 
-![Nexres](./img/nexres.pdf)
-
 ## OS Requirements
 Ubuntu 20+
 
