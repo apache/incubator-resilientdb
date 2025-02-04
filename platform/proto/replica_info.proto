@@ -1,28 +1,9 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 syntax = "proto3";
 
 package resdb;
 
 import "common/proto/signature_info.proto";
-import "chain/storage/proto/leveldb_config.proto";
+import "platform/proto/durable.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -39,7 +20,8 @@ message RegionInfo {
 message ResConfigData{
   repeated RegionInfo region = 1;
   int32 self_region_id = 2;
-  optional storage.LevelDBInfo leveldb_info = 4;
+  optional RocksDBInfo rocksdb_info = 3;
+  optional LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
   optional int32 view_change_timeout_ms = 10;
   optional bool not_need_signature = 6; // when delivering messages, it should be signed or not.
@@ -55,15 +37,9 @@ message ResConfigData{
   optional string recovery_path = 18;
   optional int32 recovery_buffer_size = 19;
   optional int32 recovery_ckpt_time_s = 20;
-  optional bool enable_resview = 23;
-  optional bool enable_faulty_switch = 24;
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;
-
-  optional int32 max_client_complaint_num = 21;
-
-  optional int32 duplicate_check_frequency_useconds = 22;
 }
 
 message ReplicaStates {

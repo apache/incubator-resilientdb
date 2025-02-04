@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "chain/state/chain_state.h"
@@ -23,22 +29,64 @@
 
 namespace resdb {
 
-ChainState::ChainState() : max_seq_(0) {}
+ChainState::ChainState(std::unique_ptr<Storage> storage)
+    : storage_(std::move(storage)) {}
 
-Request* ChainState::Get(uint64_t seq) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  if (data_.find(seq) == data_.end()) {
-    return nullptr;
+Storage* ChainState::GetStorage() {
+  return storage_ ? storage_.get() : nullptr;
+}
+
+int ChainState::SetValue(const std::string& key, const std::string& value) {
+  if (storage_) {
+    return storage_->SetValue(key, value);
   }
-  return data_[seq].get();
+  kv_map_[key] = value;
+  return 0;
 }
 
-void ChainState::Put(std::unique_ptr<Request> request) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  max_seq_ = request->seq();
-  data_[max_seq_] = std::move(request);
+std::string ChainState::GetValue(const std::string& key) {
+  if (storage_) {
+    return storage_->GetValue(key);
+  }
+  auto search = kv_map_.find(key);
+  if (search != kv_map_.end())
+    return search->second;
+  else {
+    return "";
+  }
 }
 
-uint64_t ChainState::GetMaxSeq() { return max_seq_; }
+std::string ChainState::GetAllValues(void) {
+  if (storage_) {
+    return storage_->GetAllValues();
+  }
+  std::string values = "[";
+  bool first_iteration = true;
+  for (auto kv : kv_map_) {
+    if (!first_iteration) values.append(",");
+    first_iteration = false;
+    values.append(kv.second);
+  }
+  values.append("]");
+  return values;
+}
+
+std::string ChainState::GetRange(const std::string& min_key,
+                                 const std::string& max_key) {
+  if (storage_) {
+    return storage_->GetRange(min_key, max_key);
+  }
+  std::string values = "[";
+  bool first_iteration = true;
+  for (auto kv : kv_map_) {
+    if (kv.first >= min_key && kv.first <= max_key) {
+      if (!first_iteration) values.append(",");
+      first_iteration = false;
+      values.append(kv.second);
+    }
+  }
+  values.append("]");
+  return values;
+}
 
 }  // namespace resdb

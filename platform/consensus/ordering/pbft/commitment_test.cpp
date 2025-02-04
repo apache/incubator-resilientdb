@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/commitment.h"
@@ -41,22 +47,16 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Test;
 
-ResDBConfig GenerateConfig() {
-  ResConfigData data;
-  data.set_duplicate_check_frequency_useconds(100000);
-  return ResDBConfig({GenerateReplicaInfo(1, "127.0.0.1", 1234),
-                      GenerateReplicaInfo(2, "127.0.0.1", 1235),
-                      GenerateReplicaInfo(3, "127.0.0.1", 1236),
-                      GenerateReplicaInfo(4, "127.0.0.1", 1237)},
-                     GenerateReplicaInfo(1, "127.0.0.1", 1234), data);
-}
-
 class CommitmentTest : public Test {
  public:
   CommitmentTest()
       :  // just set the monitor time to 1 second to return early.
         global_stats_(Stats::GetGlobalStats(1)),
-        config_(GenerateConfig()),
+        config_({GenerateReplicaInfo(1, "127.0.0.1", 1234),
+                 GenerateReplicaInfo(2, "127.0.0.1", 1235),
+                 GenerateReplicaInfo(3, "127.0.0.1", 1236),
+                 GenerateReplicaInfo(4, "127.0.0.1", 1237)},
+                GenerateReplicaInfo(1, "127.0.0.1", 1234)),
         system_info_(config_),
         checkpoint_manager_(config_, &replica_communicator_, &verifier_),
         message_manager_(std::make_unique<MessageManager>(
@@ -155,8 +155,6 @@ TEST_F(CommitmentTest, NoPrimary) {
 TEST_F(CommitmentTest, NewRequest) {
   auto context = std::make_unique<Context>();
   context->signature.set_signature("signature");
-  Request request;
-  request.set_data("data");
 
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();
@@ -164,12 +162,8 @@ TEST_F(CommitmentTest, NewRequest) {
     propose_done.set_value(true);
   }));
 
-  EXPECT_CALL(verifier_,
-              VerifyMessage(::testing::_, EqualsProto(SignatureInfo())))
-      .WillOnce(Return(true));
-
   EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
-                                           std::make_unique<Request>(request)),
+                                           std::make_unique<Request>()),
             0);
   propose_done_future.get();
 }
@@ -183,24 +177,18 @@ TEST_F(CommitmentTest, SeqConsumeAll) {
       config_, message_manager_.get(), &replica_communicator_, &verifier_);
   std::promise<bool> done;
   std::future<bool> done_future = done.get_future();
-  EXPECT_CALL(verifier_,
-              VerifyMessage(::testing::_, EqualsProto(SignatureInfo())))
-      .WillRepeatedly(Return(true));
   for (int i = 0; i < 3; ++i) {
     std::unique_ptr<MockNetChannel> channel =
         std::make_unique<MockNetChannel>("127.0.0.1", 0);
     auto context = std::make_unique<Context>();
     context->signature.set_signature("signature");
-    Request request;
-    request.set_data("sig" + std::to_string(i));
-    request.set_hash("hash" + std::to_string(i));
     if (i < 2) {
-      EXPECT_EQ(commitment_->ProcessNewRequest(
-                    std::move(context), std::make_unique<Request>(request)),
+      EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
+                                               std::make_unique<Request>()),
                 0);
     } else {
-      EXPECT_EQ(commitment_->ProcessNewRequest(
-                    std::move(context), std::make_unique<Request>(request)),
+      EXPECT_EQ(commitment_->ProcessNewRequest(std::move(context),
+                                               std::make_unique<Request>()),
                 -2);
     }
   }
@@ -331,7 +319,6 @@ TEST_F(CommitmentTest, ProcessCommitMsgWithResponse) {
 
   BatchUserResponse batch_resp;
 
-  batch_resp.set_primary_id(1);
   batch_resp.set_proxy_id(1);
   batch_resp.set_seq(1);
   batch_resp.set_current_view(1);
@@ -343,7 +330,6 @@ TEST_F(CommitmentTest, ProcessCommitMsgWithResponse) {
   resp_request.set_current_view(1);
   resp_request.set_seq(1);
   resp_request.set_proxy_id(1);
-  resp_request.set_primary_id(1);
   batch_resp.SerializeToString(resp_request.mutable_data());
 
   EXPECT_CALL(replica_communicator_, SendMessage(EqualsProto(resp_request), 1))

@@ -1,56 +1,51 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
+#export server=//benchmark/protocols/pbft:kv_server_performance
+#export COPTS="--define enable_leveldb=True"
 
-
-./script/deploy.sh $1
-. ./script/load_config.sh $1
 . ./script/env.sh
+./script/deploy.sh $1
+
+. ./script/load_config.sh $1
 
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
-
-bazel run //benchmark/protocols/pbft:kv_service_tools -- $PWD/config_out/client.config 
+user=junchao
+home_path="/users/junchao"
 
 sleep 60
 
+bazel run //benchmark/protocols/pbft:kv_service_tools 
+for((i=1;;i++))
+do
+config_file=$PWD/config_out/client${i}.config
+if [ ! -f "$config_file" ]; then
+  break;
+fi
+echo "get cofigfile:"$config_file
+${BAZEL_WORKSPACE_PATH}/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
+done
+
+echo "wait"
+sleep 60
+
 echo "benchmark done"
-count=1
 for ip in ${iplist[@]};
 do
- echo "server bin:"${server_bin}
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "killall -9 ${server_bin}"` 
-((count++))
+echo "$ip"
+`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "killall -9 ${server_bin}"` & 
 done
 
-while [ $count -gt 0 ]; do
-        wait $pids
-        count=`expr $count - 1`
-done
+wait
 
-idx=1
+i=0
 echo "getting results"
 for ip in ${iplist[@]};
 do
+  i=`expr $i + 1`
   echo "scp -i ${key} ${user}@${ip}:${home_path}/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} ${user}@${ip}:${home_path}/resilientdb_app/${idx}/${server_bin}.log result_${ip}_log` 
-  ((idx++))
+  `scp -i ${key} ${user}@${ip}:${home_path}/${server_bin}.log result_${i}_log` &
 done
+
+wait
 
 python3 performance/calculate_result.py `ls result_*_log` > results.log
 

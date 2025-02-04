@@ -1,25 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #pragma once
-
-#include <semaphore.h>
 
 #include "common/crypto/signature_verifier.h"
 #include "platform/config/resdb_config.h"
@@ -28,55 +32,8 @@
 #include "platform/consensus/ordering/pbft/message_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/viewchange_message.pb.h"
-#include "platform/statistic/stats.h"
 
 namespace resdb {
-
-enum ViewChangeTimerType { TYPE_COMPLAINT, TYPE_VIEWCHANGE, TYPE_NEWVIEW };
-
-class ViewChangeTimeout {
- public:
-  ViewChangeTimeout(ViewChangeTimerType type, uint64_t view, uint64_t proxy_id,
-                    std::string hash, uint64_t start_time,
-                    uint64_t timeout_length_)
-      : type(type),
-        view(view),
-        proxy_id(proxy_id),
-        hash(hash),
-        start_time(start_time),
-        timeout_time(start_time + timeout_length_) {}
-
-  ViewChangeTimerType type;
-  uint64_t view;
-  uint64_t proxy_id;
-  std::string hash;
-  uint64_t start_time;
-  uint64_t timeout_time;
-
-  bool operator<(const ViewChangeTimeout& other) const {
-    return timeout_time > other.timeout_time;
-  }
-};
-
-class ComplaningClients {
- public:
-  ComplaningClients();
-  ComplaningClients(uint64_t proxy_id);
-  std::shared_ptr<ViewChangeTimeout> SetComplaining(std::string hash,
-                                                    uint64_t view);
-  void ReleaseComplaining(std::string hash);
-  void set_proxy_id(uint64_t proxy_id) { this->proxy_id = proxy_id; }
-
-  uint CountViewChangeTimeout(std::string hash);
-  void EraseViewChangeTimeout(std::string hash);
-
- protected:
-  uint64_t proxy_id;
-  bool is_complaining;
-  uint64_t timeout_length_;
-  std::mutex complain_state_lock;
-  std::set<std::string> viewchange_timeout_set;
-};
 
 class ViewChangeManager {
  public:
@@ -99,14 +56,7 @@ class ViewChangeManager {
     NONE = 0,
     READY_VIEW_CHANGE = 1,
     READY_NEW_VIEW = 2,
-    VIEW_CHANGE_FAIL = 3,
   };
-
-  void AddComplaintTimer(uint64_t proxy_id, std::string hash);
-  void AddViewChangeTimer();
-  void AddNewViewTimer();
-  void CheckComplaintTimeout();
-  void SetDuplicateManager(DuplicateManager* manager);
 
  private:
   void SendViewChangeMsg();
@@ -121,15 +71,10 @@ class ViewChangeManager {
 
   bool ChangeStatue(ViewChangeStatus status);
 
-  void MonitoringViewChangeTimeOut();
-  bool CheckTimeOut(ViewChangeTimeout& info);
-  void MonitoringCheckpointState();
-
  protected:
   ResDBConfig config_;
   CheckPointManager* checkpoint_manager_;
   MessageManager* message_manager_;
-  Stats* global_stats_;
   SystemInfo* system_info_;
   ReplicaCommunicator* replica_communicator_;
   SignatureVerifier* verifier_;
@@ -140,21 +85,6 @@ class ViewChangeManager {
   ViewChangeStatus status_;
   std::atomic<bool> started_;
   uint32_t view_change_counter_;
-
-  std::mutex vc_mutex_;
-  std::thread server_checking_timeout_thread_;
-  std::thread checkpoint_state_thread_;
-  sem_t timeout_cnt_;
-  sem_t viewchange_timer_signal_;
-  // LockFreeQueue<ViewChangeTimeout> timeout_info_queue;
-  std::map<uint64_t, std::priority_queue<std::shared_ptr<ViewChangeTimeout>>>
-      viewchange_timeout_min_heap_;
-  std::map<uint64_t, ComplaningClients> complaining_clients_;
-  std::atomic<bool> stop_;
-  uint64_t timeout_length_ = 10000000;
-
-  LockFreeCollectorPool* collector_pool_;
-  DuplicateManager* duplicate_manager_;
 };
 
 }  // namespace resdb

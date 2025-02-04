@@ -25,6 +25,7 @@
 
 #include "chain/storage/leveldb.h"
 #include "chain/storage/memory_db.h"
+#include "chain/storage/rocksdb.h"
 
 namespace resdb {
 namespace storage {
@@ -33,6 +34,7 @@ namespace {
 enum StorageType {
   MEM = 0,
   LEVELDB = 1,
+  ROCKSDB = 2,
 };
 
 class KVStorageTest : public ::testing::TestWithParam<StorageType> {
@@ -46,6 +48,10 @@ class KVStorageTest : public ::testing::TestWithParam<StorageType> {
       case LEVELDB:
         Reset();
         storage = NewResLevelDB(path_);
+        break;
+      case ROCKSDB:
+        Reset();
+        storage = NewResRocksDB(path_);
         break;
     }
   }
@@ -219,7 +225,7 @@ TEST_P(KVStorageTest, GetHistory) {
 }
 
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
-                        ::testing::Values(MEM, LEVELDB));
+                        ::testing::Values(MEM, LEVELDB, ROCKSDB));
 
 }  // namespace
 }  // namespace storage

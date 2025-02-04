@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+
+package resdb.rcc;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+}
+
+enum ProposalType{
+    NewMsg  = 0;
+    Prepared = 1;
+    Commit = 2;
+    Ready_execute = 3;
+  };
+
+message Header {
+  bytes hash = 1;
+  int32 seq = 2;
+  int32 proposer_id = 3;
+  int32 proposal_id = 4;
+  int32 sender = 5;
+  int32 create_time = 6;
+  ProposalType status = 7;
+}
+
+message Proposal {
+  
+    Header header = 1;
+  repeated Transaction transactions = 3;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  ConsensusMsg = 1;
+};
+

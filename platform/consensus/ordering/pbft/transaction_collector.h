@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #pragma once
@@ -66,11 +72,6 @@ class AtomicUniquePtr {
     return ptr_.get();
   }
 
-  void Clear() {
-    v_ = 0;
-    ptr_ = nullptr;
-  }
-
  private:
   std::unique_ptr<T> ptr_;
   std::atomic<int> v_;
@@ -83,8 +84,7 @@ class TransactionCollector {
       : seq_(seq),
         executor_(executor),
         status_(TransactionStatue::None),
-        enable_viewchange_(enable_viewchange),
-        view_(0) {}
+        enable_viewchange_(enable_viewchange) {}
 
   ~TransactionCollector() = default;
 
@@ -99,22 +99,17 @@ class TransactionCollector {
 
   // Add a message and count by its hash value.
   // After it is done call_back will be triggered.
-  int AddRequest(
-      std::unique_ptr<Request> request, const SignatureInfo& signature,
-      bool is_main_request,
-      std::function<void(const Request&, int received_count,
-                         CollectorDataType* data,
-                         std::atomic<TransactionStatue>* status, bool force)>
-          call_back);
+  int AddRequest(std::unique_ptr<Request> request,
+                 const SignatureInfo& signature, bool is_main_request,
+                 std::function<void(const Request&, int received_count,
+                                    CollectorDataType* data,
+                                    std::atomic<TransactionStatue>* status)>
+                     call_back);
 
   std::vector<RequestInfo> GetPreparedProof();
   TransactionStatue GetStatus() const;
 
   uint64_t Seq();
-
-  bool IsPrepared();
-
-  std::vector<std::string> GetAllStoredHash();
 
  private:
   int Commit();
@@ -123,19 +118,16 @@ class TransactionCollector {
   uint64_t seq_;
   TransactionExecutor* executor_;
   std::atomic<bool> is_committed_ = false;
-  std::atomic<bool> is_prepared_ = false;
   std::vector<std::unique_ptr<Context>> context_list_;
   std::map<std::string, std::list<std::unique_ptr<RequestInfo>>>
       data_[Request::NUM_OF_TYPE];
   std::vector<std::unique_ptr<RequestInfo>> prepared_proof_;
   AtomicUniquePtr<RequestInfo> atomic_mian_request_;
   std::atomic<TransactionStatue> status_ = TransactionStatue::None;
+  std::bitset<128> senders_[Request::NUM_OF_TYPE];
   bool enable_viewchange_;
   std::mutex mutex_;
   std::vector<SignatureInfo> commit_certs_;
-  std::map<std::string, std::bitset<128>> senders_[Request::NUM_OF_TYPE];
-  std::set<std::unique_ptr<RequestInfo>> other_main_request_;
-  uint64_t view_;
 };
 
 }  // namespace resdb

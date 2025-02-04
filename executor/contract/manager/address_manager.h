@@ -33,7 +33,7 @@ class AddressManager {
   // Create an address holding a 20 byte value
   Address CreateRandomAddress();
   bool Exist(const Address& address);
-  void AddExternalAddress(const Address& address);
+
   static Address CreateContractAddress(const Address& owner);
 
   static std::string AddressToHex(const Address& address);

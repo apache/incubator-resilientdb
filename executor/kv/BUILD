@@ -1,31 +1,68 @@
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
 package(default_visibility = ["//visibility:public"])
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+bool_flag(
+    name = "enable_leveldb",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+bool_flag(
+    name = "enable_rocksdb",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "enable_leveldb_setting",
+    values = {
+        "define": "enable_leveldb=True",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "enable_rocksdb_setting",
+    values = {
+        "define": "enable_rocksdb=True",
+    },
+    visibility = ["//visibility:public"],
+)
 
 cc_library(
     name = "kv_executor",
     srcs = ["kv_executor.cpp"],
     hdrs = ["kv_executor.h"],
     deps = [
-        "//chain/storage",
+        "//chain/state:chain_state",
+        "//common:comm",
+        "//executor/common:transaction_manager",
+        "//platform/config:resdb_config_utils",
+        "//proto/kv:kv_cc_proto",
+    ],
+)
+
+cc_library(
+    name = "ext_kv_executor",
+    srcs = ["ext_kv_executor.cpp"],
+    hdrs = ["ext_kv_executor.h"],
+    deps = [
+        ":kv_executor",
+        "//chain/state:chain_state",
+        "//common:comm",
+        "//executor/common:transaction_manager",
+        "//platform/config:resdb_config_utils",
+        "//proto/kv:kv_cc_proto",
+    ],
+)
+
+cc_library(
+    name = "quecc_executor",
+    srcs = ["quecc_executor.cpp"],
+    hdrs = ["quecc_executor.h"],
+    deps = [
+        "//chain/state:chain_state",
         "//common:comm",
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config_utils",
@@ -38,7 +75,17 @@ cc_test(
     srcs = ["kv_executor_test.cpp"],
     deps = [
         ":kv_executor",
-        "//chain/storage:memory_db",
+        "//chain/storage:mock_storage",
+        "//common/test:test_main",
+    ],
+)
+
+cc_test(
+    name = "quecc_executor_test",
+    srcs = ["quecc_executor_test.cpp"],
+    deps = [
+        ":quecc_executor",
+        "//chain/storage:mock_storage",
         "//common/test:test_main",
     ],
 )

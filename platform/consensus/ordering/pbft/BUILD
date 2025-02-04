@@ -1,22 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
 package(default_visibility = ["//visibility:private"])
 
 cc_library(
@@ -80,7 +61,7 @@ cc_library(
         ":lock_free_collector_pool",
         ":transaction_collector",
         ":transaction_utils",
-        "//chain/state:chain_state",
+        "//chain/storage:txn_memory_db",
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config",
         "//platform/networkstrate:server_comm",
@@ -107,7 +88,6 @@ cc_library(
         "//common/utils",
         "//platform/common/queue:batch_queue",
         "//platform/config:resdb_config",
-        "//platform/consensus/execution:duplicate_manager",
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
@@ -133,12 +113,10 @@ cc_library(
     hdrs = ["checkpoint_manager.h"],
     deps = [
         ":transaction_utils",
-        "//chain/state:chain_state",
+        "//chain/storage:txn_memory_db",
         "//common/crypto:signature_verifier",
-        "//interface/common:resdb_txn_accessor",
         "//platform/config:resdb_config",
         "//platform/consensus/checkpoint",
-        "//platform/consensus/execution:transaction_executor",
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
@@ -170,14 +148,12 @@ cc_library(
         "//platform/consensus/execution:system_info",
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:viewchange_message_cc_proto",
-        "//platform/statistic:stats",
     ],
 )
 
 cc_test(
     name = "viewchange_manager_test",
     srcs = ["viewchange_manager_test.cpp"],
-    tags = ["manual"],
     deps = [
         ":viewchange_manager",
         "//common/crypto:mock_signature_verifier",

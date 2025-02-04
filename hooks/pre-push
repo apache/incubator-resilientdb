@@ -1,0 +1,7 @@
+#!/bin/sh
+
+sh scripts/format.sh
+
+git commit -a -m "format code"
+
+exit 0

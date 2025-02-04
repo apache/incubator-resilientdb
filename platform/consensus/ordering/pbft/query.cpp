@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/query.h"
@@ -50,65 +56,22 @@ int Query::ProcessGetReplicaState(std::unique_ptr<Context> context,
 
 int Query::ProcessQuery(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> request) {
-  if (config_.GetPublicKeyCertificateInfo()
-          .public_key()
-          .public_key_info()
-          .type() == CertificateKeyInfo::CLIENT) {
-    auto find_primary = [&]() {
-      auto config_data = config_.GetConfigData();
-      for (const auto& r : config_data.region()) {
-        for (const auto& replica : r.replica_info()) {
-          if (replica.id() == 1) {
-            return replica;
-          }
-        }
-      }
-    };
-    ReplicaInfo primary = find_primary();
-    std::string ip = primary.ip();
-    int port = primary.port();
-
-    LOG(ERROR) << "redirect to primary:" << ip << " port:" << port;
-    auto client = std::make_unique<NetChannel>(ip, port);
-    if (client->SendRawMessage(*request) == 0) {
-      QueryResponse resp;
-      if (client->RecvRawMessage(&resp) == 0) {
-        if (context != nullptr && context->client != nullptr) {
-          LOG(ERROR) << "send response from primary:"
-                     << resp.transactions_size();
-          int ret = context->client->SendRawMessage(resp);
-          if (ret) {
-            LOG(ERROR) << "send resp fail ret:" << ret;
-          }
-        }
-      }
-    }
-    return 0;
-  }
-
   QueryRequest query;
   if (!query.ParseFromString(request->data())) {
     LOG(ERROR) << "parse data fail";
     return -2;
   }
+  // LOG(ERROR) << "request:" << query.DebugString();
 
   QueryResponse response;
-  if (query.max_seq() == 0 && query.min_seq() == 0) {
-    uint64_t mseq = message_manager_->GetNextSeq();
-    response.set_max_seq(mseq - 1);
-    LOG(ERROR) << "get max seq:" << mseq;
-  } else {
-    for (uint64_t i = query.min_seq(); i <= query.max_seq(); ++i) {
-      Request* ret_request = message_manager_->GetRequest(i);
-      if (ret_request == nullptr) {
-        break;
-      }
-      Request* txn = response.add_transactions();
-      txn->set_data(ret_request->data());
-      txn->set_hash(ret_request->hash());
-      txn->set_seq(ret_request->seq());
-      txn->set_proxy_id(ret_request->proxy_id());
+  for (uint64_t i = query.min_seq(); i <= query.max_seq(); ++i) {
+    Request* ret_request = message_manager_->GetRequest(i);
+    if (ret_request == nullptr) {
+      break;
     }
+    Request* txn = response.add_transactions();
+    txn->set_data(ret_request->data());
+    txn->set_seq(ret_request->seq());
   }
 
   if (context != nullptr && context->client != nullptr) {

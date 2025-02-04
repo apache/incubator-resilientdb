@@ -1,22 +1,3 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
 set -e
 
 # load environment parameters
@@ -32,13 +13,18 @@ then
 server=//service/kv:kv_service
 fi
 
+if [[ -z $client_num ]];
+then
+client_num=1
+fi
+
 # obtain the src path
-main_folder=resilientdb_app
 server_path=`echo "$server" | sed 's/:/\//g'`
 server_path=${server_path:1}
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
-grafna_port=8090
+user=junchao
+home_path=/users/${user}
 
 bin_path=${BAZEL_WORKSPACE_PATH}/bazel-bin/${server_path}
 output_path=${script_path}/deploy/config_out
@@ -59,18 +45,18 @@ echo "server name:"${server_bin}
 echo "admin config path:"${admin_key_path}
 echo "output path:"${output_path}
 echo "deploy to :"${deploy_iplist[@]}
+echo "client num :"${client_num}
 
 # generate keys and certificates.
 
 cd ${script_path}
 echo "where am i:"$PWD
 
-deploy/script/generate_admin_key.sh ${BAZEL_WORKSPACE_PATH} ${admin_key_path} 
 deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#iplist[@]}
-deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
+deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${client_num} ${deploy_iplist[@]}
 
 # build kv server
-bazel build ${server}
+bazel build ${server} ${COPTS}
 
 if [ $? != 0 ]
 then
@@ -80,14 +66,11 @@ fi
 
 # commands functions
 function run_cmd(){
-  echo "run cmd:"$1
   count=1
-  idx=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "cd ${main_folder}/$idx; $1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "$1" &
     ((count++))
-    ((idx++))
   done
 
   while [ $count -gt 0 ]; do
@@ -97,46 +80,27 @@ function run_cmd(){
 }
 
 function run_one_cmd(){
-  echo "run one:"$1
+  echo $1
   ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
-if [ $performance ];
-then
-run_cmd "rm -rf ${home_path}/${main_folder}"
-fi
+run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert; rm -rf wal_log"
+#run_cmd "rm -rf ${server_bin};" 
 
-idx=1
-for ip in ${deploy_iplist[@]};
-do
-  run_one_cmd "mkdir -p ${home_path}/${main_folder}/$idx" &
-  folder="${home_path}/${main_folder}/$idx"
-  run_one_cmd "rm -rf ${folder}/${server_bin}; rm ${folder}/${server_bin}*.log; rm -rf ${folder}/server.config; rm -rf ${folder}/cert;"
-  ((count++))
-  ((idx++))
-done
+sleep 1
 
-while [ $count -gt 0 ]; do
-  wait $pids
-  count=`expr $count - 1`
-done
-
-
-#run_cmd "killall -9 ${server_bin}"
-#run_cmd "rm -rf ${server_bin}; rm ${server_bin}*.log; rm -rf server.config; rm -rf cert;"
-#run_cmd "rm -rf ${main_folder};"
+SOURCE=${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json
+#SOURCE=${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/tpcc.json
 
 # upload config files and binary
 echo "upload configs"
-idx=1
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  echo "scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${user}@${ip}:${home_path}/${main_folder}/$idx" 
-  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ${user}@${ip}:${home_path}/${main_folder}/$idx &
+  #scp -i ${key} -r ${bin_path} cert ubuntu@${ip}:/home/ubuntu/ &
+  scp -i ${key} -r ${bin_path} ${SOURCE} ${output_path}/server.config ${output_path}/cert ${user}@${ip}:${home_path}  > null 2>&1 &
   ((count++))
-  ((idx++))
 done
 
 while [ $count -gt 0 ]; do
@@ -152,10 +116,9 @@ for ip in ${deploy_iplist[@]};
 do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
-  run_one_cmd "cd ${main_folder}/$idx; nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &" &
+  run_one_cmd "nohup ./${server_bin} server.config ${private_key} ${cert}  > ${server_bin}.log 2>&1 &" &
   ((count++))
   ((idx++))
-  ((grafna_port++))
 done
 
 while [ $count -gt 0 ]; do
@@ -170,7 +133,7 @@ do
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "cd ${main_folder}/$idx; grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     fi

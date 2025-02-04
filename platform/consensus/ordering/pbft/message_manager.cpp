@@ -1,27 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/message_manager.h"
 
 #include <glog/logging.h>
-
-#include "common/utils/utils.h"
 
 namespace resdb {
 
@@ -39,17 +43,12 @@ MessageManager::MessageManager(
           [&](std::unique_ptr<Request> request,
               std::unique_ptr<BatchUserResponse> resp_msg) {
             if (request->is_recovery()) {
-              if (checkpoint_manager_) {
-                checkpoint_manager_->AddCommitData(std::move(request));
-              }
               return;
             }
             resp_msg->set_proxy_id(request->proxy_id());
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
-            resp_msg->set_primary_id(GetCurrentPrimary());
-            if (transaction_executor_->NeedResponse() &&
-                resp_msg->proxy_id() != 0) {
+            if (transaction_executor_->NeedResponse()) {
               queue_.Push(std::move(resp_msg));
             }
             if (checkpoint_manager_) {
@@ -63,7 +62,6 @@ MessageManager::MessageManager(
   global_stats_ = Stats::GetGlobalStats();
   transaction_executor_->SetSeqUpdateNotifyFunc(
       [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
-  checkpoint_manager_->SetExecutor(transaction_executor_.get());
 }
 
 MessageManager::~MessageManager() {
@@ -97,8 +95,6 @@ absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   global_stats_->SeqGap(next_seq_ - max_executed_seq);
   if (next_seq_ - max_executed_seq >
       static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
-    // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " <<
-    // max_executed_seq;
     return absl::InvalidArgumentError("Seq has been used up.");
   }
   return next_seq_++;
@@ -132,8 +128,7 @@ bool MessageManager::IsValidMsg(const Request& request) {
 }
 
 bool MessageManager::MayConsensusChangeStatus(
-    int type, int received_count, std::atomic<TransactionStatue>* status,
-    bool ret) {
+    int type, int received_count, std::atomic<TransactionStatue>* status) {
   switch (type) {
     case Request::TYPE_PRE_PREPARE:
       if (*status == TransactionStatue::None) {
@@ -163,7 +158,7 @@ bool MessageManager::MayConsensusChangeStatus(
       }
       break;
   }
-  return ret;
+  return false;
 }
 
 // Add commit messages and return the number of messages have been received.
@@ -180,20 +175,17 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   int type = request->type();
   uint64_t seq = request->seq();
   int resp_received_count = 0;
-  int proxy_id = request->proxy_id();
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
       [&](const Request& request, int received_count,
           TransactionCollector::CollectorDataType* data,
-          std::atomic<TransactionStatue>* status, bool force) {
-        if (MayConsensusChangeStatus(type, received_count, status, force)) {
+          std::atomic<TransactionStatue>* status) {
+        if (MayConsensusChangeStatus(type, received_count, status)) {
           resp_received_count = 1;
         }
       });
-  if (ret == 1) {
-    SetLastCommittedTime(proxy_id);
-  } else if (ret != 0) {
+  if (ret != 0) {
     return CollectorResultCode::INVALID;
   }
   if (resp_received_count > 0) {
@@ -234,60 +226,14 @@ TransactionStatue MessageManager::GetTransactionState(uint64_t seq) {
 }
 
 int MessageManager::GetReplicaState(ReplicaState* state) {
+  state->set_view(GetCurrentView());
+  *state->mutable_replica_info() = config_.GetSelfInfo();
   *state->mutable_replica_config() = config_.GetConfigData();
   return 0;
 }
 
 Storage* MessageManager::GetStorage() {
   return transaction_executor_->GetStorage();
-}
-
-void MessageManager::SetLastCommittedTime(uint64_t proxy_id) {
-  lct_lock_.lock();
-  last_committed_time_[proxy_id] = GetCurrentTime();
-  lct_lock_.unlock();
-}
-
-uint64_t MessageManager::GetLastCommittedTime(uint64_t proxy_id) {
-  lct_lock_.lock();
-  auto value = last_committed_time_[proxy_id];
-  lct_lock_.unlock();
-  return value;
-}
-
-bool MessageManager::IsPreapared(uint64_t seq) {
-  return collector_pool_->GetCollector(seq)->IsPrepared();
-}
-
-uint64_t MessageManager::GetHighestPreparedSeq() {
-  return checkpoint_manager_->GetHighestPreparedSeq();
-}
-
-void MessageManager::SetHighestPreparedSeq(uint64_t seq) {
-  return checkpoint_manager_->SetHighestPreparedSeq(seq);
-}
-
-void MessageManager::SetDuplicateManager(DuplicateManager* manager) {
-  transaction_executor_->SetDuplicateManager(manager);
-}
-
-void MessageManager::SendResponse(std::unique_ptr<Request> request) {
-  std::unique_ptr<BatchUserResponse> response =
-      std::make_unique<BatchUserResponse>();
-  response->set_createtime(GetCurrentTime());
-  // response->set_local_id(batch_request.local_id());
-  response->set_hash(request->hash());
-  response->set_proxy_id(request->proxy_id());
-  response->set_seq(request->seq());
-  response->set_current_view(GetCurrentView());
-  response->set_primary_id(GetCurrentPrimary());
-  if (transaction_executor_->NeedResponse() && response->proxy_id() != 0) {
-    queue_.Push(std::move(response));
-  }
-}
-
-LockFreeCollectorPool* MessageManager::GetCollectorPool() {
-  return collector_pool_.get();
 }
 
 }  // namespace resdb

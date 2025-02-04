@@ -1,25 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "interface/kv/kv_client.h"
 
 #include <glog/logging.h>
+
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -47,9 +55,9 @@ std::unique_ptr<std::string> KVClient::Get(const std::string& key) {
   return std::make_unique<std::string>(response.value());
 }
 
-std::unique_ptr<std::string> KVClient::GetAllValues() {
+std::unique_ptr<std::string> KVClient::GetValues() {
   KVRequest request;
-  request.set_cmd(KVRequest::GETALLVALUES);
+  request.set_cmd(KVRequest::GETVALUES);
   KVResponse response;
   int ret = SendRequest(request, &response);
   if (ret != 0) {
@@ -74,75 +82,38 @@ std::unique_ptr<std::string> KVClient::GetRange(const std::string& min_key,
   return std::make_unique<std::string>(response.value());
 }
 
-int KVClient::Set(const std::string& key, const std::string& data,
-                  int version) {
+int KVClient::Set(
+    const std::vector<std::pair<std::string, std::string>>& key_pairs) {
   KVRequest request;
-  request.set_cmd(KVRequest::SET_WITH_VERSION);
-  request.set_key(key);
-  request.set_value(data);
-  request.set_version(version);
+  for (const std::pair<std::string, std::string>& p : key_pairs) {
+    auto* op = request.add_ops();
+    op->set_cmd(KVRequest::SET);
+    op->set_key(p.first);
+    op->set_value(p.second);
+  }
   return SendRequest(request);
 }
 
-std::unique_ptr<ValueInfo> KVClient::Get(const std::string& key, int version) {
+std::vector<std::pair<std::string, std::string>> KVClient::Get(
+    const std::vector<std::string>& keys) {
   KVRequest request;
-  request.set_cmd(KVRequest::GET_WITH_VERSION);
-  request.set_key(key);
-  request.set_version(version);
+  for (const std::string& k : keys) {
+    auto* op = request.add_ops();
+    op->set_cmd(KVRequest::GET);
+    op->set_key(k);
+  }
   KVResponse response;
   int ret = SendRequest(request, &response);
   if (ret != 0) {
     LOG(ERROR) << "send request fail, ret:" << ret;
-    return nullptr;
+    return std::vector<std::pair<std::string, std::string>>();
   }
-  return std::make_unique<ValueInfo>(response.value_info());
-}
 
-std::unique_ptr<Items> KVClient::GetKeyRange(const std::string& min_key,
-                                             const std::string& max_key) {
-  KVRequest request;
-  request.set_cmd(KVRequest::GET_KEY_RANGE);
-  request.set_min_key(min_key);
-  request.set_max_key(max_key);
-  KVResponse response;
-  int ret = SendRequest(request, &response);
-  if (ret != 0) {
-    LOG(ERROR) << "send request fail, ret:" << ret;
-    return nullptr;
+  std::vector<std::pair<std::string, std::string>> resp;
+  for (const auto& info : response.resp_info()) {
+    resp.push_back(std::make_pair(info.key(), info.value()));
   }
-  return std::make_unique<Items>(response.items());
-}
-
-std::unique_ptr<Items> KVClient::GetKeyHistory(const std::string& key,
-                                               int min_version,
-                                               int max_version) {
-  KVRequest request;
-  request.set_cmd(KVRequest::GET_HISTORY);
-  request.set_key(key);
-  request.set_min_version(min_version);
-  request.set_max_version(max_version);
-  KVResponse response;
-  int ret = SendRequest(request, &response);
-  if (ret != 0) {
-    LOG(ERROR) << "send request fail, ret:" << ret;
-    return nullptr;
-  }
-  return std::make_unique<Items>(response.items());
-}
-
-std::unique_ptr<Items> KVClient::GetKeyTopHistory(const std::string& key,
-                                                  int top_number) {
-  KVRequest request;
-  request.set_cmd(KVRequest::GET_TOP);
-  request.set_key(key);
-  request.set_top_number(top_number);
-  KVResponse response;
-  int ret = SendRequest(request, &response);
-  if (ret != 0) {
-    LOG(ERROR) << "send request fail, ret:" << ret;
-    return nullptr;
-  }
-  return std::make_unique<Items>(response.items());
+  return resp;
 }
 
 }  // namespace resdb

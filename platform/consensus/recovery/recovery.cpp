@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/recovery/recovery.h"
@@ -60,8 +66,8 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
     buffer_size_ = 1024;
   }
 
-  LOG(INFO) << "file path:" << file_path_
-            << " dir:" << std::filesystem::path(file_path_).parent_path();
+  LOG(ERROR) << "file path:" << file_path_
+             << " dir:" << std::filesystem::path(file_path_).parent_path();
 
   recovery_ckpt_time_s_ = config_.GetConfigData().recovery_ckpt_time_s();
   if (recovery_ckpt_time_s_ == 0) {
@@ -71,18 +77,14 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
   int ret =
       mkdir(std::filesystem::path(file_path_).parent_path().c_str(), 0777);
   if (ret) {
-    LOG(INFO) << "mkdir fail:" << ret << " error:" << strerror(errno);
+    LOG(ERROR) << "mkdir fail:" << ret << " error:" << strerror(errno);
   }
 
   fd_ = -1;
-  stop_ = false;
-  Init();
-}
-
-void Recovery::Init() {
   GetLastFile();
   SwitchFile(file_path_);
 
+  stop_ = false;
   ckpt_thread_ = std::thread(&Recovery::UpdateStableCheckPoint, this);
 }
 
@@ -182,7 +184,7 @@ void Recovery::FinishFile(int64_t seq) {
 
   std::rename(file_path_.c_str(), new_file_path.c_str());
 
-  LOG(INFO) << "rename:" << file_path_ << " to:" << new_file_path;
+  LOG(ERROR) << "rename:" << file_path_ << " to:" << new_file_path;
   std::string next_file_path = GenerateFile(seq, -1, -1);
   file_path_ = next_file_path;
 
@@ -210,6 +212,7 @@ void Recovery::SwitchFile(const std::string& file_path) {
 }
 
 void Recovery::OpenFile(const std::string& path) {
+  LOG(ERROR) << "open file:" << path;
   if (fd_ >= 0) {
     close(fd_);
   }
@@ -219,21 +222,20 @@ void Recovery::OpenFile(const std::string& path) {
   }
 
   int pos = lseek(fd_, 0, SEEK_END);
-  LOG(INFO) << "file path:" << path << " len:" << pos << " fd:" << fd_;
-
+  LOG(INFO) << "file path:" << path << " len:" << pos;
   if (pos == 0) {
     WriteSystemInfo();
   }
 
   lseek(fd_, 0, SEEK_END);
-  LOG(INFO) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR)
-            << " fd:" << fd_;
+  LOG(ERROR) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR);
   assert(fd_ >= 0);
 }
 
 void Recovery::WriteSystemInfo() {
   int view = system_info_->GetCurrentView();
   int primary_id = system_info_->GetPrimaryId();
+  LOG(ERROR) << "write system info:" << view << " primary id:" << primary_id;
   SystemInfoData data;
   data.set_view(view);
   data.set_primary_id(primary_id);
@@ -356,7 +358,6 @@ void Recovery::Flush() {
   Write(reinterpret_cast<const char*>(&len), sizeof(len));
   Write(reinterpret_cast<const char*>(buffer_.c_str()), len);
   buffer_.clear();
-  fsync(fd_);
 }
 
 void Recovery::Write(const char* data, size_t len) {
@@ -456,11 +457,10 @@ void Recovery::ReadLogsFromFiles(
     std::function<void(std::unique_ptr<Context> context,
                        std::unique_ptr<Request> request)>
         call_back) {
-  int fd = open(path.c_str(), O_CREAT | O_RDONLY, 0666);
+  int fd = open(path.c_str(), O_CREAT | O_RDWR, 0666);
   if (fd < 0) {
     LOG(ERROR) << " open file fail:" << path;
   }
-  LOG(INFO) << "read logs:" << path << " pos:" << lseek(fd, 0, SEEK_CUR);
   assert(fd >= 0);
 
   size_t data_len = 0;
@@ -481,7 +481,7 @@ void Recovery::ReadLogsFromFiles(
       LOG(ERROR) << "parse info fail:" << data.size();
       return;
     }
-    LOG(INFO) << "read system info:" << info.DebugString();
+    LOG(ERROR) << "read system info:" << info.DebugString();
     if (file_idx == 0) {
       system_callback(info);
     }
@@ -511,18 +511,15 @@ void Recovery::ReadLogsFromFiles(
   if (request_list.size() == 0) {
     ftruncate(fd, 0);
   }
-  uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
     if (ckpt < recovery_data->request->seq()) {
       recovery_data->request->set_is_recovery(true);
-      max_seq = recovery_data->request->seq();
       call_back(std::move(recovery_data->context),
                 std::move(recovery_data->request));
     }
   }
 
-  LOG(ERROR) << "read log from files:" << path << " done"
-             << " recovery max seq:" << max_seq;
+  LOG(ERROR) << "read log from files:" << path << " done";
 
   close(fd);
 }

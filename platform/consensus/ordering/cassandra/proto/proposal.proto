@@ -1,0 +1,117 @@
+
+syntax = "proto3";
+
+package resdb.cassandra;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer_id = 5;
+  int64 uid = 6;
+}
+
+message Header {
+  bytes hash = 1;
+  int32 height = 2;
+  int32 proposer_id = 3;
+  int32 proposal_id = 4;
+  bytes prehash = 5;
+}
+
+message History {
+  bytes hash = 1;
+  int32 state = 2;
+  int32 sender = 3;
+  int32 id = 4;
+}
+
+message WeakProposal {
+  repeated bytes hash = 1;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated History history = 2;
+  int32 nonce = 3;
+  repeated Transaction transactions = 4;
+  uint64 create_time = 5;
+  repeated Block block = 6;
+  WeakProposal weak_proposals = 7;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  Vote = 1;
+  Prepare = 2;
+  VoteAck = 3;
+  Commit = 4;
+  Recovery = 5;
+  NewBlocks = 6;
+  ProposalAck = 7;
+  CMD_BlockACK = 8;
+  CMD_BlockQuery = 9;
+  CMD_SingleBlock = 10;
+  CMD_ProposalQuery = 11;
+  CMD_ProposalQueryResponse = 12;
+};
+
+message VoteMessage {
+  bytes hash = 1;
+  int32 proposer_id = 2;
+  MessageType type = 3;
+  int32 sender_id = 4;
+  int32 proposal_id = 5;
+};
+
+message CommittedProposals{
+  repeated Proposal proposals = 1;
+  int32 sender_id = 2;
+};
+
+message HashValue{
+	repeated uint64 bits = 1;
+};
+
+message Block {
+  message BlockData { 
+    repeated Transaction transaction = 1;
+  }
+  BlockData data = 1;
+  bytes hash = 2;
+  int32 sender_id = 3;
+  int32 local_id = 4;
+  int64 create_time = 5;
+}
+
+message BlockACK {
+  bytes hash = 2;
+  int32 sender_id = 3;
+  int32 local_id = 4;
+  int32 responder = 5;
+}
+
+message BlockQuery {
+  bytes hash = 2;
+  int32 proposer = 3;
+  int32 local_id = 4;
+  int32 sender = 5;
+}
+
+message ProposalQuery {
+  bytes hash = 2;
+  int32 proposer = 3;
+  int32 id = 4;
+  int32 sender = 5;
+}
+
+message ProposalQueryResp {
+  repeated Proposal proposal = 1;
+}
+
+message ProposalResponse {
+  Header header = 1;
+  int32 leader = 2;
+}
+

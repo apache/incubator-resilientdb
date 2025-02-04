@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/query.h"
@@ -152,12 +158,10 @@ MATCHER_P(EqualsProtoNoConfigData, replica, "") {
 
 TEST_F(QueryTest, QueryState) {
   ReplicaState replica_state;
-  replica_state.mutable_replica_config()->set_view_change_timeout_ms(100);
-  replica_state.mutable_replica_config()->set_client_batch_num(100);
-  replica_state.mutable_replica_config()->set_worker_num(64);
-  replica_state.mutable_replica_config()->set_input_worker_num(1);
-  replica_state.mutable_replica_config()->set_output_worker_num(1);
-  replica_state.mutable_replica_config()->set_tcp_batch_num(100);
+  replica_state.set_view(1);
+  replica_state.mutable_replica_info()->set_id(1);
+  replica_state.mutable_replica_info()->set_ip("127.0.0.1");
+  replica_state.mutable_replica_info()->set_port(1234);
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);
@@ -178,7 +182,6 @@ TEST_F(QueryTest, QueryTxn) {
   QueryResponse response;
   auto txn = response.add_transactions();
   txn->set_seq(1);
-  txn->set_proxy_id(1);
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);

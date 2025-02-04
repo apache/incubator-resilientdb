@@ -1,27 +1,32 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include <glog/logging.h>
 
 #include <boost/algorithm/string.hpp>
 #include <vector>
-#include <unistd.h>  // For getopt
 
 #include "interface/contract/contract_client.h"
 #include "platform/config/resdb_config_utils.h"
@@ -32,18 +37,9 @@ using resdb::contract::ContractClient;
 
 void ShowUsage() {
   printf(
-      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contract "
-      "path> -a <params> -e <external address>\n");
+      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contact "
+      "path> -a <params> \n");
   exit(0);
-}
-
-void AddAddress(ContractClient* client, const std::string& external_address) {
-  absl::Status status = client->AddExternalAddress(external_address);
-  if (!status.ok()) {
-    printf("Add address failed\n");
-  } else {
-    printf("Address added successfully\n");
-  }
 }
 
 void CreateAccount(ContractClient* client) {
@@ -83,16 +79,16 @@ void ExecuteContract(ContractClient* client, const std::string& caller_address,
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    ShowUsage();
+    printf("<cmd> -c [config]\n");
     return 0;
   }
 
   std::string cmd = argv[1];
   std::string caller_address, contract_name, contract_path, params,
-      contract_address, func_name, external_address;  // Added external_address
+      contract_address, func_name;
   int c;
   std::string client_config_file;
-  while ((c = getopt(argc, argv, "m:c:a:n:p:h:f:s:e:")) != -1) {  // Added 'e:'
+  while ((c = getopt(argc, argv, "m:c:a:n:p:h:f:s:")) != -1) {
     switch (c) {
       case 'm':
         caller_address = optarg;
@@ -115,13 +111,7 @@ int main(int argc, char** argv) {
       case 's':
         contract_address = optarg;
         break;
-      case 'e':
-        external_address = optarg;  // Handle the 'e' option
-        break;
       case 'h':
-        ShowUsage();
-        break;
-      default:
         ShowUsage();
         break;
     }
@@ -136,8 +126,6 @@ int main(int argc, char** argv) {
 
   if (cmd == "create") {
     CreateAccount(&client);
-  } else if (cmd == "add_address") {
-    AddAddress(&client, external_address);
   } else if (cmd == "deploy") {
     std::vector<std::string> init_params;
     boost::split(init_params, params, boost::is_any_of(","));
@@ -155,7 +143,5 @@ int main(int argc, char** argv) {
 
     ExecuteContract(&client, caller_address, contract_address, func_name,
                     func_params);
-  } else {
-    ShowUsage();
   }
 }

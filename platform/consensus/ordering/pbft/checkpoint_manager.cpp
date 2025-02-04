@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/checkpoint_manager.h"
@@ -31,22 +37,16 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
                                      SignatureVerifier* verifier)
     : config_(config),
       replica_communicator_(replica_communicator),
-      txn_db_(std::make_unique<ChainState>()),
+      txn_db_(std::make_unique<TxnMemoryDB>()),
       verifier_(verifier),
-      stop_(false),
-      txn_accessor_(config),
-      highest_prepared_seq_(0) {
+      stop_(false) {
   current_stable_seq_ = 0;
-  if (config_.GetConfigData().enable_viewchange()) {
-    config_.EnableCheckPoint(true);
-  }
   if (config_.IsCheckPointEnabled()) {
     stable_checkpoint_thread_ =
         std::thread(&CheckPointManager::UpdateStableCheckPointStatus, this);
     checkpoint_thread_ =
         std::thread(&CheckPointManager::UpdateCheckPointStatus, this);
   }
-  sem_init(&committable_seq_signal_, 0, 0);
 }
 
 CheckPointManager::~CheckPointManager() { Stop(); }
@@ -61,11 +61,7 @@ void CheckPointManager::Stop() {
   }
 }
 
-std::string GetHash(const std::string& h1, const std::string& h2) {
-  return SignatureVerifier::CalculateHash(h1 + h2);
-}
-
-ChainState* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
+TxnMemoryDB* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
 
 uint64_t CheckPointManager::GetMaxTxnSeq() { return txn_db_->GetMaxSeq(); }
 
@@ -98,8 +94,7 @@ bool CheckPointManager::IsValidCheckpointProof(
     }
     senders.insert(signature.node_id());
   }
-
-  return (static_cast<int>(senders.size()) >= config_.GetMinDataReceiveNum()) ||
+  return (senders.size() >= config_.GetMinDataReceiveNum()) ||
          (stable_ckpt.seq() == 0 && senders.size() == 0);
 }
 
@@ -139,13 +134,6 @@ int CheckPointManager::ProcessCheckPoint(std::unique_ptr<Context> context,
           .push_back(checkpoint_data.hash_signature());
       new_data_++;
     }
-    if (sender_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())]
-            .size() == 1) {
-      for (auto& hash_ : checkpoint_data.hashs()) {
-        hash_ckpt_[std::make_pair(checkpoint_seq, checkpoint_data.hash())]
-            .push_back(hash_);
-      }
-    }
     Notify();
   }
   return 0;
@@ -164,7 +152,6 @@ bool CheckPointManager::Wait() {
 }
 
 void CheckPointManager::UpdateStableCheckPointStatus() {
-  uint64_t last_committable_seq = 0;
   while (!stop_) {
     if (!Wait()) {
       continue;
@@ -175,65 +162,6 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       std::lock_guard<std::mutex> lk(mutex_);
       for (auto it : sender_ckpt_) {
         if (it.second.size() >=
-            static_cast<size_t>(config_.GetMinCheckpointReceiveNum())) {
-          committable_seq_ = it.first.first;
-          committable_hash_ = it.first.second;
-          std::set<uint32_t> senders_ =
-              sender_ckpt_[std::make_pair(committable_seq_, committable_hash_)];
-          sem_post(&committable_seq_signal_);
-          if (last_seq_ < committable_seq_ &&
-              last_committable_seq < committable_seq_) {
-            auto replicas_ = config_.GetReplicaInfos();
-            for (auto& replica_ : replicas_) {
-              std::string last_hash;
-              uint64_t last_seq;
-              {
-                std::lock_guard<std::mutex> lk(lt_mutex_);
-                last_hash = last_hash_;
-                // last_seq_ = last_seq > last_committable_seq ? last_seq :
-                // last_committable_seq;
-                last_seq = last_seq_;
-              }
-              if (senders_.count(replica_.id()) &&
-                  last_seq < committable_seq_) {
-                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << "
-                // " << committable_seq_;
-                auto requests = txn_accessor_.GetRequestFromReplica(
-                    last_seq + 1, committable_seq_, replica_);
-                if (requests.ok()) {
-                  bool fail = false;
-                  for (auto& request : *requests) {
-                    if (SignatureVerifier::CalculateHash(request.data()) !=
-                        request.hash()) {
-                      LOG(ERROR)
-                          << "The hash of the request does not match the data.";
-                      fail = true;
-                      break;
-                    }
-                    last_hash = GetHash(last_hash, request.hash());
-                  }
-                  if (fail) {
-                    continue;
-                  } else if (last_hash != committable_hash_) {
-                    LOG(ERROR) << "The hash of requests returned do not match. "
-                               << last_seq + 1 << " " << committable_seq_;
-                  } else {
-                    last_committable_seq = committable_seq_;
-                    for (auto& request : *requests) {
-                      if (executor_) {
-                        executor_->Commit(std::make_unique<Request>(request));
-                      }
-                    }
-                    SetHighestPreparedSeq(committable_seq_);
-                    // LOG(ERROR) << "[4]";
-                    break;
-                  }
-                }
-              }
-            }
-          }
-        }
-        if (it.second.size() >=
             static_cast<size_t>(config_.GetMinDataReceiveNum())) {
           stable_seq = it.first.first;
           stable_hash = it.first.second;
@@ -242,14 +170,12 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       new_data_ = 0;
     }
 
-    // LOG(ERROR) << "current stable seq:" << current_stable_seq_
-    //  << " stable seq:" << stable_seq;
+    LOG(ERROR) << "current stable seq:" << current_stable_seq_
+               << " stable seq:" << stable_seq;
     std::vector<SignatureInfo> votes;
     if (current_stable_seq_ < stable_seq) {
       std::lock_guard<std::mutex> lk(mutex_);
       votes = sign_ckpt_[std::make_pair(stable_seq, stable_hash)];
-      std::set<uint32_t> senders_ =
-          sender_ckpt_[std::make_pair(stable_seq, stable_hash)];
 
       auto it = sender_ckpt_.begin();
       while (it != sender_ckpt_.end()) {
@@ -263,17 +189,19 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       }
       stable_ckpt_.set_seq(stable_seq);
       stable_ckpt_.set_hash(stable_hash);
-      stable_ckpt_.mutable_signatures()->Clear();
       for (auto vote : votes) {
         *stable_ckpt_.add_signatures() = vote;
       }
       current_stable_seq_ = stable_seq;
-      // LOG(INFO) << "done. stable seq:" << current_stable_seq_
-      //           << " votes:" << stable_ckpt_.DebugString();
-      // LOG(INFO) << "done. stable seq:" << current_stable_seq_;
+      LOG(INFO) << "done. stable seq:" << current_stable_seq_
+                << " votes:" << stable_ckpt_.DebugString();
     }
     UpdateStableCheckPointCallback(current_stable_seq_);
   }
+}
+
+std::string GetHash(const std::string& h1, const std::string& h2) {
+  return SignatureVerifier::CalculateHash(h1 + h2);
 }
 
 void CheckPointManager::SetTimeoutHandler(
@@ -288,48 +216,38 @@ void CheckPointManager::TimeoutHandler() {
 }
 
 void CheckPointManager::UpdateCheckPointStatus() {
+  uint64_t last_seq = 0;
   uint64_t last_ckpt_seq = 0;
+  std::string last_hash;
   int water_mark = config_.GetCheckPointWaterMark();
   int timeout_ms = config_.GetViewchangeCommitTimeout();
-  std::vector<std::string> stable_hashs;
-  std::vector<uint64_t> stable_seqs;
   while (!stop_) {
     auto request = data_queue_.Pop(timeout_ms);
     if (request == nullptr) {
-      // if (last_seq > 0) {
-      //   TimeoutHandler();
-      // }
+      if (last_seq > 0) {
+        TimeoutHandler();
+      }
       continue;
     }
-    std::string hash_ = request->hash();
     uint64_t current_seq = request->seq();
-    if (current_seq != last_seq_ + 1) {
-      LOG(ERROR) << "seq invalid:" << last_seq_ << " current:" << current_seq;
+    if (current_seq != last_seq + 1) {
+      LOG(ERROR) << "seq invalid:" << last_seq << " current:" << current_seq;
       continue;
     }
-    {
-      std::lock_guard<std::mutex> lk(lt_mutex_);
-      last_hash_ = GetHash(last_hash_, request->hash());
-      last_seq_++;
-    }
-    bool is_recovery = request->is_recovery();
+    last_hash = GetHash(last_hash, request->hash());
+    last_seq++;
     txn_db_->Put(std::move(request));
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
-      if (!is_recovery) {
-        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
-                            stable_seqs);
-      }
+      BroadcastCheckPoint(last_ckpt_seq, last_hash);
     }
   }
   return;
 }
 
-void CheckPointManager::BroadcastCheckPoint(
-    uint64_t seq, const std::string& hash,
-    const std::vector<std::string>& stable_hashs,
-    const std::vector<uint64_t>& stable_seqs) {
+void CheckPointManager::BroadcastCheckPoint(uint64_t seq,
+                                            const std::string& hash) {
   CheckPointData checkpoint_data;
   std::unique_ptr<Request> checkpoint_request = NewRequest(
       Request::TYPE_CHECKPOINT, Request(), config_.GetSelfInfo().id());
@@ -346,36 +264,6 @@ void CheckPointManager::BroadcastCheckPoint(
 
   checkpoint_data.SerializeToString(checkpoint_request->mutable_data());
   replica_communicator_->BroadCast(*checkpoint_request);
-}
-
-void CheckPointManager::WaitSignal() {
-  std::unique_lock<std::mutex> lk(mutex_);
-  signal_.wait(lk, [&] { return !stable_hash_queue_.Empty(); });
-}
-
-std::unique_ptr<std::pair<uint64_t, std::string>>
-CheckPointManager::PopStableSeqHash() {
-  return stable_hash_queue_.Pop();
-}
-
-uint64_t CheckPointManager::GetHighestPreparedSeq() {
-  std::lock_guard<std::mutex> lk(lt_mutex_);
-  return highest_prepared_seq_;
-}
-
-void CheckPointManager::SetHighestPreparedSeq(uint64_t seq) {
-  std::lock_guard<std::mutex> lk(lt_mutex_);
-  highest_prepared_seq_ = seq;
-}
-
-sem_t* CheckPointManager::CommitableSeqSignal() {
-  std::lock_guard<std::mutex> lk(lt_mutex_);
-  return &committable_seq_signal_;
-}
-
-uint64_t CheckPointManager::GetCommittableSeq() {
-  std::lock_guard<std::mutex> lk(lt_mutex_);
-  return committable_seq_;
 }
 
 }  // namespace resdb

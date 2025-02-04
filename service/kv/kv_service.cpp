@@ -1,49 +1,64 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include <glog/logging.h>
 
-#include "chain/storage/memory_db.h"
+#include "chain/state/chain_state.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
 #ifdef ENABLE_LEVELDB
-#include "chain/storage/leveldb.h"
+#include "chain/storage/res_leveldb.h"
+#endif
+#ifdef ENABLE_ROCKSDB
+#include "chain/storage/res_rocksdb.h"
 #endif
 
 using namespace resdb;
-using namespace resdb::storage;
 
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
 
-std::unique_ptr<Storage> NewStorage(const std::string& db_path,
-                                    const ResConfigData& config_data) {
-#ifdef ENABLE_LEVELDB
-  LOG(INFO) << "use leveldb storage.";
-  return NewResLevelDB(db_path, config_data);
+std::unique_ptr<ChainState> NewState(const std::string& cert_file,
+                                     const ResConfigData& config_data) {
+  std::unique_ptr<Storage> storage = nullptr;
+
+#ifdef ENABLE_ROCKSDB
+  storage = NewResRocksDB(cert_file.c_str(), config_data);
+  LOG(INFO) << "use rocksdb storage.";
 #endif
 
-  LOG(INFO) << "use memory storage.";
-  return NewMemoryDB();
+#ifdef ENABLE_LEVELDB
+  storage = NewResLevelDB(cert_file.c_str(), config_data);
+  LOG(INFO) << "use leveldb storage.";
+#endif
+  std::unique_ptr<ChainState> state =
+      std::make_unique<ChainState>(std::move(storage));
+  return state;
 }
 
 int main(int argc, char** argv) {
@@ -51,31 +66,29 @@ int main(int argc, char** argv) {
     ShowUsage();
     exit(0);
   }
-  google::InitGoogleLogging(argv[0]);
-  FLAGS_minloglevel = 1;
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];
   char* cert_file = argv[3];
+  char* logging_dir = nullptr;
 
-  if (argc == 5) {
-    std::string grafana_port = argv[4];
-    std::string grafana_address = "0.0.0.0:" + grafana_port;
+  if (argc >= 6) {
+    logging_dir = argv[5];
+  }
 
+  if (argc >= 5) {
     auto monitor_port = Stats::GetGlobalStats(5);
-    monitor_port->SetPrometheus(grafana_address);
-    LOG(ERROR) << "monitoring prot:" << grafana_address;
+    monitor_port->SetPrometheus(argv[4]);
+    LOG(ERROR) << "prot:" << argv[4];
   }
 
   std::unique_ptr<ResDBConfig> config =
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
 
-  std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
-  LOG(INFO) << "db path:" << db_path;
-
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr);
+      std::make_unique<KVExecutor>(NewState(cert_file, config_data)),
+      logging_dir);
   server->Run();
 }

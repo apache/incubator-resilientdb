@@ -1,0 +1,109 @@
+#pragma once
+
+#include <map>
+
+#include "platform/consensus/ordering/cassandra/algorithm/comm/proposal_state.h"
+#include "platform/consensus/ordering/cassandra/algorithm/fast_path/ranking.h"
+#include "platform/consensus/ordering/cassandra/proto/proposal.pb.h"
+
+namespace resdb {
+namespace cassandra {
+namespace cassandra_fp {
+
+class ProposalGraph {
+ public:
+  ProposalGraph(int fault_num, int total_num);
+  inline void SetCommitCallBack(std::function<void(const Proposal&)> func) {
+    commit_callback_ = func;
+  }
+
+  bool AddProposal(const Proposal& proposal);
+  /*
+  bool ChangeState(const std::string& hash, ProposalState state);
+
+  int Receive(const VoteMessage& msg,
+      std::function<bool(int received_num, ProposalState *state)> callback);
+
+  int CheckReceive(const std::string& hash,
+      std::function<bool(int received_num, ProposalState * state)> callback);
+
+  std::string GetLatestCommit()const;
+
+  void Commit(const std::string& hash);
+  bool RecoveryCommit(const Proposal& proposal);
+  */
+
+  Proposal* GetLatestStrongestProposal();
+  const Proposal* GetProposalInfo(const std::string& hash) const;
+
+  int GetCurrentHeight();
+  /*
+  std::vector<Proposal> GetCommittedProposalFrom(const Proposal& proposal)
+  const;
+  */
+
+  void Clear(const std::string& hash);
+  void IncreaseHeight();
+  ProposalState GetProposalState(const std::string& hash) const;
+
+  std::vector<std::unique_ptr<Proposal>> GetNotFound(int height,
+                                                     const std::string& hash);
+
+  std::vector<Proposal*> GetNewProposals(int height);
+
+  void Confirm(int height, int leader);
+  void CheckHistory(const Proposal& proposal);
+  void CheckState(const Proposal& proposal);
+  int GetLeader(const std::string& hash);
+
+ private:
+  struct NodeInfo {
+    Proposal proposal;
+    ProposalState state;
+    int score;
+    int is_main;
+    // std::set<int> received_num[5];
+    std::map<int, std::set<int>> votes;
+
+    NodeInfo(const Proposal& proposal)
+        : proposal(proposal), state(ProposalState::New), score(0), is_main(0) {}
+  };
+
+  bool VerifyParent(const Proposal& proposal);
+
+  bool Compare(const NodeInfo& p1, const NodeInfo& p2);
+  bool Cmp(int id1, int id2);
+  int StateScore(const ProposalState& state);
+  int CompareState(const ProposalState& state1, const ProposalState& state2);
+
+  Proposal* GetStrongestProposal();
+  // Proposal * GetLatestCommitProposal();
+
+  void UpdateHistory(Proposal* proposal);
+  int CheckState(NodeInfo* node_info, ProposalState state);
+  void UpgradeState(ProposalState& state);
+  void TryUpgradeHeight(int height);
+
+  void Commit(const std::string& hash);
+
+ private:
+  Proposal latest_commit_;
+  std::map<std::string, std::vector<std::string>> g_;
+  std::map<std::string, std::unique_ptr<NodeInfo>> node_info_;
+  std::map<std::string, std::vector<VoteMessage>> not_found_;
+  std::unique_ptr<Ranking> ranking_;
+  std::map<int, int> commit_num_;
+  std::map<int, std::set<std::string>> last_node_;
+  int current_height_;
+  uint32_t f_, total_num_;
+  std::function<void(const Proposal&)> commit_callback_;
+  std::map<int, std::set<int>> pending_header_;
+  std::map<int, std::map<std::string, std::vector<std::unique_ptr<Proposal>>>>
+      not_found_proposal_;
+  std::map<std::string, Proposal*> new_proposals_;
+  std::string latest_sp_;
+};
+
+}  // namespace cassandra_fp
+}  // namespace cassandra
+}  // namespace resdb

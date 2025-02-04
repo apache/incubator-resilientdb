@@ -1,83 +1,42 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #pragma once
 
-#include <crow.h>
-
 #include <chrono>
 #include <future>
-#include <nlohmann/json.hpp>
 
-#include "boost/asio.hpp"
-#include "boost/beast.hpp"
-#include "platform/common/network/tcp_socket.h"
-#include "platform/proto/resdb.pb.h"
 #include "platform/statistic/prometheus_handler.h"
-#include "proto/kv/kv.pb.h"
-
-namespace asio = boost::asio;
-namespace beast = boost::beast;
-using tcp = asio::ip::tcp;
 
 namespace resdb {
-
-struct VisualData {
-  // Set when initializing
-  int replica_id;
-  int primary_id;
-  std::string ip;
-  int port;
-
-  // Set when new txn is received
-  int txn_number;
-  std::vector<std::string> txn_command;
-  std::vector<std::string> txn_key;
-  std::vector<std::string> txn_value;
-
-  // Request state if primary_id==replica_id, pre_prepare state otherwise
-  std::chrono::system_clock::time_point request_pre_prepare_state_time;
-  std::chrono::system_clock::time_point prepare_state_time;
-  std::vector<std::chrono::system_clock::time_point>
-      prepare_message_count_times_list;
-  std::chrono::system_clock::time_point commit_state_time;
-  std::vector<std::chrono::system_clock::time_point>
-      commit_message_count_times_list;
-  std::chrono::system_clock::time_point execution_time;
-};
 
 class Stats {
  public:
   static Stats* GetGlobalStats(int sleep_seconds = 5);
 
   void Stop();
-
-  void RetrieveProgress();
-  void SetProps(int replica_id, std::string ip, int port, bool resview_flag,
-                bool faulty_flag);
-  void SetPrimaryId(int primary_id);
-  void RecordStateTime(std::string state);
-  void GetTransactionDetails(BatchUserRequest batch_request);
-  void SendSummary();
-  void CrowRoute();
-  bool IsFaulty();
-  void ChangePrimary(int primary_id);
 
   void AddLatency(uint64_t run_time);
 
@@ -138,16 +97,6 @@ class Stats {
   std::atomic<uint64_t> seq_gap_;
   std::atomic<uint64_t> total_request_, total_geo_request_, geo_request_;
   int monitor_sleep_time_ = 5;  // default 5s.
-
-  std::thread crow_thread_;
-  bool enable_resview;
-  bool enable_faulty_switch_;
-  VisualData transaction_summary_;
-  std::atomic<bool> make_faulty_;
-  std::atomic<uint64_t> prev_num_prepare_;
-  std::atomic<uint64_t> prev_num_commit_;
-  nlohmann::json summary_json_;
-  nlohmann::json consensus_history_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
 };

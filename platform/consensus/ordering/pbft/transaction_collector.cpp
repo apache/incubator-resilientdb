@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Copyright (c) 2019-2022 ExpoLab, UC Davis
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation
+ * files (the "Software"), to deal in the Software without
+ * restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
  */
 
 #include "platform/consensus/ordering/pbft/transaction_collector.h"
@@ -26,8 +32,6 @@
 namespace resdb {
 
 uint64_t TransactionCollector::Seq() { return seq_; }
-
-bool TransactionCollector::IsPrepared() { return is_prepared_; }
 
 TransactionStatue TransactionCollector::GetStatus() const { return status_; }
 
@@ -70,7 +74,7 @@ int TransactionCollector::AddRequest(
     std::unique_ptr<Request> request, const SignatureInfo& signature,
     bool is_main_request,
     std::function<void(const Request&, int received_count, CollectorDataType*,
-                       std::atomic<TransactionStatue>* status, bool force)>
+                       std::atomic<TransactionStatue>* status)>
         call_back) {
   if (request == nullptr) {
     LOG(ERROR) << "request empty";
@@ -81,7 +85,6 @@ int TransactionCollector::AddRequest(
   std::string hash = request->hash();
   int type = request->type();
   uint64_t seq = request->seq();
-  uint64_t view = request->current_view();
   if (is_committed_) {
     return -2;
   }
@@ -99,14 +102,8 @@ int TransactionCollector::AddRequest(
     auto request_info = std::make_unique<RequestInfo>();
     request_info->signature = signature;
     request_info->request = std::move(request);
-    bool force = false;
-    if (view_ && view_ < view && !is_prepared_) {
-      force = true;
-      atomic_mian_request_.Clear();
-    }
     int ret = atomic_mian_request_.Set(request_info);
     if (!ret) {
-      other_main_request_.insert(std::move(request_info));
       LOG(ERROR) << "set main request fail: data existed:" << seq
                  << " ret:" << ret;
       return -2;
@@ -116,55 +113,16 @@ int TransactionCollector::AddRequest(
       LOG(ERROR) << "set main request data fail";
       return -2;
     }
-    view_ = view;
-    call_back(*main_request->request.get(), 1, nullptr, &status_, force);
+    call_back(*main_request->request.get(), 1, nullptr, &status_);
     return 0;
   } else {
+    /*
     if (enable_viewchange_) {
-      if (type == Request::TYPE_PREPARE) {
-        if (status_.load() <= TransactionStatue::READY_PREPARE) {
-          auto request_info = std::make_unique<RequestInfo>();
-          request_info->signature = signature;
-          request_info->request = std::make_unique<Request>(*request);
-          std::lock_guard<std::mutex> lk(mutex_);
-          if (is_prepared_) {
-            return 0;
-          }
-          prepared_proof_.push_back(std::move(request_info));
-          if (senders_[type].count(hash) == 0) {
-            senders_[type].insert(std::make_pair(hash, std::bitset<128>()));
-          }
-          senders_[type][hash][sender_id] = 1;
-          call_back(*request, senders_[type][hash].count(), nullptr, &status_,
-                    false);
-          if (status_.load() == TransactionStatue::READY_COMMIT) {
-            is_prepared_ = true;
-            if (atomic_mian_request_.Reference() != nullptr &&
-                atomic_mian_request_.Reference()->request->hash() != hash) {
-              atomic_mian_request_.Clear();
-              for (auto it = other_main_request_.begin();
-                   it != other_main_request_.end(); it++) {
-                if ((*it)->request->hash() == hash) {
-                  auto request_info = std::make_unique<RequestInfo>();
-                  request_info->signature = (*it)->signature;
-                  request_info->request = std::move((*it)->request);
-                  atomic_mian_request_.Set(request_info);
-                  break;
-                }
-              }
-              other_main_request_.clear();
-            }
-            int pos = 0;
-            for (size_t i = 0; i < prepared_proof_.size(); i++) {
-              if (prepared_proof_[i]->request->hash() == hash) {
-                prepared_proof_[pos++] = std::move(prepared_proof_[i]);
-              }
-            }
-            prepared_proof_.erase(prepared_proof_.begin() + pos,
-                                  prepared_proof_.end());
-          }
-        }
-        return 0;
+      if (status_.load() == READY_PREPARE) {
+        auto request_info = std::make_unique<RequestInfo>();
+        request_info->signature = signature;
+        request_info->request = std::make_unique<Request>(*request);
+        prepared_proof_.push_back(std::move(request_info));
       }
     }
     if (request->type() == Request::TYPE_COMMIT) {
@@ -175,20 +133,11 @@ int TransactionCollector::AddRequest(
         commit_certs_.push_back(request->data_signature());
       }
     }
-
-    {
-      std::lock_guard<std::mutex> lk(mutex_);
-      if (senders_[type].count(hash) == 0) {
-        senders_[type].insert(std::make_pair(hash, std::bitset<128>()));
-      }
-      senders_[type][hash][sender_id] = 1;
-      call_back(*request, senders_[type][hash].count(), nullptr, &status_,
-                false);
-    }
-
+    */
+    senders_[type][sender_id] = 1;
+    call_back(*request, senders_[type].count(), nullptr, &status_);
     if (status_.load() == TransactionStatue::READY_EXECUTE) {
       Commit();
-      return 1;
     }
   }
   return 0;
@@ -221,18 +170,6 @@ int TransactionCollector::Commit() {
     executor_->Commit(std::move(main_request->request));
   }
   return 0;
-}
-
-std::vector<std::string> TransactionCollector::GetAllStoredHash() {
-  std::vector<std::string> v;
-  auto main_request = atomic_mian_request_.Reference();
-  if (main_request) {
-    v.push_back(main_request->request->hash());
-  }
-  for (auto& info : other_main_request_) {
-    v.push_back(info->request->hash());
-  }
-  return v;
 }
 
 }  // namespace resdb
