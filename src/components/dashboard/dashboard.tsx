@@ -14,6 +14,7 @@ import Banner from "../ui/banner";
 import { TourProvider, useTour } from "@/hooks/use-tour";
 import { Tour } from "../ui/tour";
 import { Explorer } from "../graphs/explorer";
+import { ResView } from "../graphs/resView";
 
 const tabVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -101,17 +102,21 @@ function DashboardComponent() {
                   />
                 </a>
                 <TabsList className="bg-slate-900/50 backdrop-blur-sm">
-                  {["memory_tracker", "cpu", "bazel_build", "explorer"].map(
-                    (tab) => (
-                      <TabsTrigger
-                        key={tab}
-                        value={tab}
-                        className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                      >
-                        {startCase(tab)}
-                      </TabsTrigger>
-                    )
-                  )}
+                  {[
+                    "memory_tracker",
+                    "cpu",
+                    // "bazel_build",
+                    "explorer",
+                    "resview",
+                  ].map((tab) => (
+                    <TabsTrigger
+                      key={tab}
+                      value={tab}
+                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                    >
+                      {startCase(tab)}
+                    </TabsTrigger>
+                  ))}
                 </TabsList>
               </div>
               <div className="flex items-center space-x-4">
@@ -160,6 +165,9 @@ function DashboardComponent() {
               </TabsContent>
               <TabsContent value="explorer" className="space-y-8">
                 <Explorer />
+              </TabsContent>
+              <TabsContent value="resview" className="space-y-8">
+                <ResView />
               </TabsContent>
             </motion.div>
           </main>
