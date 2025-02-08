@@ -129,7 +129,7 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int por
 
   ReplicaInfo replica_info;
   for (const auto& replica : replicas_) {
-    if (replica.ip() == ip) {
+    if (replica.ip() == ip && replica.port() == port) {
       replica_info = replica;
       break;
     }
@@ -137,7 +137,7 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int por
 
   if (replica_info.ip().empty()) {
     for (const auto& replica : GetClientReplicas()) {
-      if (replica.ip() == ip) {
+      if (replica.ip() == ip && replica.port() == port) {
         replica_info = replica;
         break;
       }
@@ -158,12 +158,12 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int por
       }
 
       global_stats_->SendBroadCastMsg(broadcast_data.data_size());
-      //LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size();
+      LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size();
       int ret = SendMessageFromPool(broadcast_data, {replica_info});
       if (ret < 0) {
         LOG(ERROR) << "broadcast request fail:";
       }
-      //LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size()<<" done";
+      LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size()<<" done";
     }
   }, single_bq_[std::make_pair(ip,port)].get(), replica_info));
 }
@@ -178,16 +178,18 @@ const ReplicaInfo& replica_info) {
 
 
 
-    //LOG(ERROR)<<" send msg ip:"<<ip<<" port:"<<port;
+    LOG(ERROR)<<" send msg ip:"<<ip<<" port:"<<port;
   global_stats_->BroadCastMsg();
   if (is_use_long_conn_) {
     auto item = std::make_unique<QueueItem>();
     item->data = NetChannel::GetRawMessageString(message, verifier_);
     std::lock_guard<std::mutex> lk(smutex_);
     if(single_bq_.find(std::make_pair(ip, port)) == single_bq_.end()){
+	    LOG(ERROR)<<"????";
       StartSingleInBackGround(ip, port);
     }
     assert(single_bq_[std::make_pair(ip, port)] != nullptr);
+	    LOG(ERROR)<<"????"<<" ip:"<<ip<<" port:"<<port;
     single_bq_[std::make_pair(ip, port)]->Push(std::move(item));
     return 0;
   } else {
@@ -310,6 +312,7 @@ void ReplicaCommunicator::BroadCast(const google::protobuf::Message& message) {
 
 void ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                       int64_t node_id) {
+	LOG(ERROR)<<" send message to:"<<node_id;
   ReplicaInfo target_replica;
   for (const auto& replica : replicas_) {
     if (replica.id() == node_id) {
@@ -331,6 +334,7 @@ void ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
     return;
   }
 
+  	LOG(ERROR)<<" target replica:"<<target_replica.DebugString();
   int ret = SendMessage(message, target_replica);
   if (ret < 0) {
     LOG(ERROR) << "broadcast request fail:";

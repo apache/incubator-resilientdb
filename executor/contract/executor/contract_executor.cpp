@@ -30,6 +30,7 @@ ContractTransactionManager::ContractTransactionManager(void)
 
 std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     const std::string& client_request) {
+	LOG(ERROR)<<"???????";
   Request request;
   Response response;
 
@@ -38,11 +39,13 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     return nullptr;
   }
 
+  LOG(ERROR)<<" request cmd:"<<request.cmd();
   int ret = 0;
   if (request.cmd() == Request::CREATE_ACCOUNT) {
     absl::StatusOr<Account> account_or = CreateAccount();
     if (account_or.ok()) {
       response.mutable_account()->Swap(&(*account_or));
+    LOG(ERROR)<<" create count:"<<response.account().DebugString();
     } else {
       ret = -1;
     }
@@ -111,6 +114,7 @@ absl::StatusOr<std::string> ContractTransactionManager::Execute(
     LOG(ERROR) << "caller doesn't have an account";
     return absl::InvalidArgumentError("Account not exist.");
   }
+  LOG(ERROR)<<" func param:"<<request.func_params().DebugString();
 
   return contract_manager_->ExecContract(
       caller_address, AddressManager::HexToAddress(request.contract_address()),
