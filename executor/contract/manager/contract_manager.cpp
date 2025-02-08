@@ -36,8 +36,8 @@ void AppendArgToInput(std::vector<uint8_t>& code, const std::string& arg) {
   AppendArgToInput(code, eevm::to_uint256(arg));
 }
 
-ContractManager::ContractManager() {
-  gs_ = std::make_unique<eevm::SimpleGlobalState>();
+ContractManager::ContractManager(Storage* storage) {
+  gs_ = std::make_unique<GlobalState>(storage);
 }
 
 std::string ContractManager::GetFuncAddress(const Address& contract_address,
@@ -84,7 +84,7 @@ Address ContractManager::DeployContract(const Address& owner_address,
 
 absl::StatusOr<eevm::AccountState> ContractManager::GetContract(
     const Address& address) {
-  if (!gs_->exists(address)) {
+  if (!gs_->Exists(address)) {
     return absl::InvalidArgumentError("Contract not exist.");
   }
 

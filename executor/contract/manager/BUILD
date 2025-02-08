@@ -15,6 +15,7 @@ cc_library(
     deps = [
         ":address_manager",
         ":utils",
+        ":global_state",
         "//common:comm",
         "//proto/contract:func_params_cc_proto",
     ],
@@ -29,6 +30,7 @@ cc_test(
     tags = ["manual"],
     deps = [
         ":contract_manager",
+        "//chain/storage:memory_db",
         "//common/test:test_main",
     ],
 )
@@ -51,3 +53,37 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+
+cc_library(
+    name = "global_view",
+    srcs = ["global_view.cpp"],
+    hdrs = ["global_view.h"],
+    deps = [
+        ":utils",
+        "//chain/storage:storage",
+        "//common:comm",
+    ],
+)
+
+
+cc_library(
+    name = "evm_state",
+    hdrs = ["evm_state.h"],
+    deps = [
+        ":utils",
+        "//common:comm",
+    ],
+)
+
+
+cc_library(
+    name = "global_state",
+    srcs = ["global_state.cpp"],
+    hdrs = ["global_state.h"],
+    deps = [
+        ":evm_state",
+        ":global_view",
+        "//common:comm",
+    ],
+)
+

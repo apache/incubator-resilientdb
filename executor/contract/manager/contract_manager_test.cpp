@@ -25,16 +25,18 @@
 #include <fstream>
 
 #include "executor/contract/manager/address_manager.h"
+#include "chain/storage/memory_db.h"
 
 namespace resdb {
 namespace contract {
 namespace {
 
 using ::testing::Test;
+using resdb::storage::MemoryDB;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
-                             "/service/contract/executor/manager/";
+                             "/executor/contract/manager/";
 
 Address get_random_address() { return AddressManager().CreateRandomAddress(); }
 
@@ -61,16 +63,17 @@ class ContractManagerTest : public Test {
  protected:
   Address owner_address_;
   nlohmann::json contract_json_;
+  MemoryDB db_;
 };
 
 TEST_F(ContractManagerTest, NoContract) {
-  ContractManager manager;
+  ContractManager manager(&db_);
   auto account = manager.GetContract(1234);
   EXPECT_FALSE(account.ok());
 }
 
 TEST_F(ContractManagerTest, DeployContract) {
-  ContractManager manager;
+  ContractManager manager(&db_);
 
   DeployInfo deploy_info;
   deploy_info.set_contract_bin(contract_json_["bin"]);
@@ -90,7 +93,7 @@ TEST_F(ContractManagerTest, DeployContract) {
 }
 
 TEST_F(ContractManagerTest, InitContract) {
-  ContractManager manager;
+  ContractManager manager(&db_);
 
   DeployInfo deploy_info;
   deploy_info.set_contract_bin(contract_json_["bin"]);
@@ -116,7 +119,7 @@ TEST_F(ContractManagerTest, InitContract) {
 }
 
 TEST_F(ContractManagerTest, ExecContract) {
-  ContractManager manager;
+  ContractManager manager(&db_);
 
   DeployInfo deploy_info;
   deploy_info.set_contract_bin(contract_json_["bin"]);
@@ -217,7 +220,7 @@ TEST_F(ContractManagerTest, ExecContract) {
 }
 
 TEST_F(ContractManagerTest, NoFunc) {
-  ContractManager manager;
+  ContractManager manager(&db_);
 
   DeployInfo deploy_info;
   deploy_info.set_contract_bin(contract_json_["bin"]);
