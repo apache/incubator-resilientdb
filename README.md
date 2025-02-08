@@ -1,4 +1,4 @@
-# MemLens
+# [MemLens](https://blog.resilientdb.com/2024/12/07/MemLens.html)
 
 MemLens is a comprehensive CPU and memory profiler for ResilientDB which aims to provide granular performance metrics by integrating profiling tools like eBPF, node exporter, process exporter, LevelDB internal statistics and custom prometheus hooks. We aim to provide a platform which provides database specific metrics that provides detailed information on what happens under the hood and help optimize system performance. This is an ambitious idea which we are improving on constantly but are proud to share a packaged version of MemLens currently.
 
@@ -111,7 +111,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
       - Contributed heavily to the frontend dashboard design.
       - Gathered memory metrics and profiling data by working with APIs & tools and integrated them into the dashboard
 
----
+----
 
 ## License
   TODO
