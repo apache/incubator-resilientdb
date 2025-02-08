@@ -41,6 +41,25 @@ const steps = [
   },
 ];
 
+const tabMapping = [
+  {
+    id: "cpu",
+    tag: "Execution View",
+  },
+  {
+    id: "explorer",
+    tag: "Data View",
+  },
+  {
+    id: "resview",
+    tag: "Protocol View",
+  },
+  {
+    id: "memory_tracker",
+    tag: "Memory View",
+  },
+];
+
 export function Dashboard() {
   return (
     <TourProvider autoStart={true}>
@@ -51,7 +70,7 @@ export function Dashboard() {
 
 function DashboardComponent() {
   const { setSteps } = useTour();
-  const [activeTab, setActiveTab] = useState("memory_tracker");
+  const [activeTab, setActiveTab] = useState("cpu");
   const [mode, setMode] = useState<ModeType>("offline");
 
   async function getMode() {
@@ -102,19 +121,13 @@ function DashboardComponent() {
                   />
                 </a>
                 <TabsList className="bg-slate-900/50 backdrop-blur-sm">
-                  {[
-                    "memory_tracker",
-                    "cpu",
-                    // "bazel_build",
-                    "explorer",
-                    "resview",
-                  ].map((tab) => (
+                  {tabMapping.map((tab) => (
                     <TabsTrigger
-                      key={tab}
-                      value={tab}
+                      key={tab.id}
+                      value={tab.id}
                       className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                     >
-                      {startCase(tab)}
+                      {tab.tag}
                     </TabsTrigger>
                   ))}
                 </TabsList>

@@ -112,7 +112,7 @@ export function Explorer() {
               <DatabaseCard loading={loading} data={data} />
               <ChainInfoCard loading={loading} data={data} />
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-1 gap-4">
               <MiscellaneousDataCard loading={loading} data={data} />
               {/* <TransactionHistoryCard loading={loading} data={data} /> */}
             </div>
