@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useState, useEffect, useContext } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

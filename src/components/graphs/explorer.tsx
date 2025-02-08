@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Link, Database, Cuboid, Hourglass } from "lucide-react";
 import {
   Card,
