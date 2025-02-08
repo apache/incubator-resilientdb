@@ -9,13 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import {
-  MemoryStick,
-  MemoryStickIcon,
-  RefreshCcw,
-  InfoIcon,
-  Info,
-} from "lucide-react";
+import { MemoryStick, MemoryStickIcon, RefreshCcw, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -111,8 +105,8 @@ export function MemoryMetricsGrid() {
   const [diskRWData, setDiskRWData] = useState([]);
   const [diskIOPSData, setDiskIOPSData] = useState([]);
   const [diskWaitTimeData, setDiskWaitTimeData] = useState([]);
-  const [loadingDiskIOPS, setLoadingDiskIOPS] = useState(false); // Loading state
-  const [errorDiskIOPS, setErrorDiskIOPS] = useState(null); // Error state
+  const [_, setLoadingDiskIOPS] = useState(false); // Loading state
+  const [_, setErrorDiskIOPS] = useState(null); // Error state
 
   const fetchIoTimeData = async () => {
     if (mode === "offline") {
