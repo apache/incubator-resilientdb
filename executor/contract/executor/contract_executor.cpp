@@ -24,13 +24,12 @@
 namespace resdb {
 namespace contract {
 
-ContractTransactionManager::ContractTransactionManager(void)
-    : contract_manager_(std::make_unique<ContractManager>()),
+ContractTransactionManager::ContractTransactionManager(Storage * storage)
+    : contract_manager_(std::make_unique<ContractManager>(storage)),
       address_manager_(std::make_unique<AddressManager>()) {}
 
 std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     const std::string& client_request) {
-	LOG(ERROR)<<"???????";
   Request request;
   Response response;
 

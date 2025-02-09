@@ -58,6 +58,8 @@ class KVExecutor : public TransactionManager {
 
  private:
   std::unique_ptr<Storage> storage_;
+
+  std::unique_ptr<TransactionManager> contract_manager_;
 };
 
 }  // namespace resdb

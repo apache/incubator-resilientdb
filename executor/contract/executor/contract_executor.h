@@ -31,7 +31,7 @@ namespace contract {
 
 class ContractTransactionManager : public TransactionManager {
  public:
-  ContractTransactionManager(void);
+  ContractTransactionManager(Storage * storage);
   virtual ~ContractTransactionManager() = default;
 
   std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
