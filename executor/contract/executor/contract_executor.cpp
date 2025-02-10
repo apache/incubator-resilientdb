@@ -38,9 +38,8 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     return nullptr;
   }
 
-  LOG(ERROR)<<" request cmd:"<<request.cmd();
   int ret = 0;
-  if (request.cmd() == Request::CREATE_ACCOUNT) {
+  if (request.cmd() == contract::Request::CREATE_ACCOUNT) {
     absl::StatusOr<Account> account_or = CreateAccount();
     if (account_or.ok()) {
       response.mutable_account()->Swap(&(*account_or));
@@ -48,17 +47,32 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     } else {
       ret = -1;
     }
-  } else if (request.cmd() == Request::DEPLOY) {
+  } else if (request.cmd() == contract::Request::DEPLOY) {
     absl::StatusOr<Contract> contract_or = Deploy(request);
     if (contract_or.ok()) {
       response.mutable_contract()->Swap(&(*contract_or));
     } else {
       ret = -1;
     }
-  } else if (request.cmd() == Request::EXECUTE) {
+  } else if (request.cmd() == contract::Request::EXECUTE) {
     auto res_or = Execute(request);
     if (res_or.ok()) {
       response.set_res(*res_or);
+    } else {
+      ret = -1;
+    }
+  } else if (request.cmd() == resdb::contract::Request::GETBALANCE) {
+    auto res_or = GetBalance(request);
+    if (res_or.ok()) {
+      response.set_res(*res_or);
+    } else {
+      ret = -1;
+    }
+
+  } else if (request.cmd() == resdb::contract::Request::SETBALANCE) {
+    auto res_or = SetBalance(request);
+    if (res_or.ok()) {
+      response.set_res("1");
     } else {
       ret = -1;
     }
@@ -113,12 +127,32 @@ absl::StatusOr<std::string> ContractTransactionManager::Execute(
     LOG(ERROR) << "caller doesn't have an account";
     return absl::InvalidArgumentError("Account not exist.");
   }
-  LOG(ERROR)<<" func param:"<<request.func_params().DebugString();
 
   return contract_manager_->ExecContract(
       caller_address, AddressManager::HexToAddress(request.contract_address()),
       request.func_params());
 }
+
+absl::StatusOr<std::string> ContractTransactionManager::GetBalance(
+    const Request& request) {
+
+  Address account =
+      AddressManager::HexToAddress(request.account());
+  return contract_manager_->GetBalance(account);
+}
+
+absl::StatusOr<std::string> ContractTransactionManager::SetBalance(
+    const Request& request) {
+
+  Address account =
+      AddressManager::HexToAddress(request.account());
+  Address balance =
+      AddressManager::HexToAddress(request.balance());
+  int ret = contract_manager_->SetBalance(account, balance);
+  return std::to_string(ret);
+}
+
+
 
 }  // namespace contract
 }  // namespace resdb

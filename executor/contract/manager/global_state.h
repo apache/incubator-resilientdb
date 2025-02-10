@@ -31,6 +31,9 @@ class GlobalState : public EVMState {
 
   const eevm::SimpleAccount& GetAccount(const eevm::Address& addr);
 
+  std::string GetBalance(const eevm::Address& account);
+  int SetBalance(const eevm::Address& account, const uint256_t& balance);
+
  protected:
   void Insert(const StateEntry& p);
 

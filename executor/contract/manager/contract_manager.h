@@ -44,6 +44,9 @@ class ContractManager {
                                            const Address& contract_address,
                                            const Params& func_param);
 
+  std::string GetBalance(const Address& account);
+  int SetBalance(const Address& account, const uint256_t& balance);
+
  private:
   std::string GetFuncAddress(const Address& contract_address,
                              const std::string& func_name);
