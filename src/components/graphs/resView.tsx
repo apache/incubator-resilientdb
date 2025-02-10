@@ -18,7 +18,8 @@ export function ResView() {
           </div>
         </div>
         <CardDescription className="mt-4 text-slate-300">
-          Get Information on ResDB's internal blockchain data
+          Get Information on each and every step a transaction follows the PBFT
+          protocol.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">

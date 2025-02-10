@@ -41,3 +41,6 @@
   color: #888;
 }
 
+iframe {
+  pointer-events: auto;
+}

@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, DotIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
+import { Link } from "react-router-dom";
 
 export interface Transaction {
   cmd: string;
@@ -60,18 +62,12 @@ const columns: ColumnDef<Block>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("number")}</div>
+      <Link to="#" className="flex align-middle">
+        {" "}
+        <DotIcon className="h-16 w-16 text-blue-300" />
+        <span className="my-auto">{row.getValue("number")}</span>
+      </Link>
     ),
-  },
-  {
-    accessorKey: "transactions",
-    header: "Transactions",
-    cell: ({ row }) => {
-      const transactions = row.getValue(
-        "transactions"
-      ) as Block["transactions"];
-      return `${transactions.length} (${transactions[0].cmd})`;
-    },
   },
   {
     accessorKey: "size",
@@ -86,7 +82,17 @@ const columns: ColumnDef<Block>[] = [
         </Button>
       );
     },
-    cell: ({ row }) => <div>{row.getValue("size")}</div>,
+    cell: ({ row }) => <div>{`${row.getValue("size")} Bytes`}</div>,
+  },
+  {
+    accessorKey: "transactions",
+    header: "Command",
+    cell: ({ row }) => {
+      const transactions = row.getValue(
+        "transactions"
+      ) as Block["transactions"];
+      return <Badge variant="outline">{transactions[0].cmd}</Badge>;
+    },
   },
   {
     accessorKey: "createdAt",

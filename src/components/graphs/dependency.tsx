@@ -110,9 +110,7 @@ export const DependencyGraph = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <GitGraph className="w-6 h-6 text-blue-400" />
-            <CardTitle className="text-2xl font-bold">
-              Dependency Graph
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Explorer</CardTitle>
           </div>
           <Select onValueChange={handleDepSizeChange}>
             <SelectTrigger

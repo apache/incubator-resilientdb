@@ -107,7 +107,7 @@ export function MemoryMetricsGrid() {
   const [diskIOPSData, setDiskIOPSData] = useState([]);
   const [diskWaitTimeData, setDiskWaitTimeData] = useState([]);
   const [_, setLoadingDiskIOPS] = useState(false); // Loading state
-  const [_, setErrorDiskIOPS] = useState(null); // Error state
+  const [__, setErrorDiskIOPS] = useState(null); // Error state
 
   const fetchIoTimeData = async () => {
     if (mode === "offline") {
