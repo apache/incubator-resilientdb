@@ -21,6 +21,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <vector>
+#include <unistd.h>  // For getopt
 
 #include "interface/contract/contract_client.h"
 #include "platform/config/resdb_config_utils.h"
@@ -31,9 +32,18 @@ using resdb::contract::ContractClient;
 
 void ShowUsage() {
   printf(
-      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contact "
-      "path> -a <params> \n");
+      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contract "
+      "path> -a <params> -e <external address>\n");
   exit(0);
+}
+
+void AddAddress(ContractClient* client, const std::string& external_address) {
+  absl::Status status = client->AddExternalAddress(external_address);
+  if (!status.ok()) {
+    printf("Add address failed\n");
+  } else {
+    printf("Address added successfully\n");
+  }
 }
 
 void CreateAccount(ContractClient* client) {
@@ -73,16 +83,16 @@ void ExecuteContract(ContractClient* client, const std::string& caller_address,
 
 int main(int argc, char** argv) {
   if (argc < 3) {
-    printf("<cmd> -c [config]\n");
+    ShowUsage();
     return 0;
   }
 
   std::string cmd = argv[1];
   std::string caller_address, contract_name, contract_path, params,
-      contract_address, func_name;
+      contract_address, func_name, external_address;  // Added external_address
   int c;
   std::string client_config_file;
-  while ((c = getopt(argc, argv, "m:c:a:n:p:h:f:s:")) != -1) {
+  while ((c = getopt(argc, argv, "m:c:a:n:p:h:f:s:e:")) != -1) {  // Added 'e:'
     switch (c) {
       case 'm':
         caller_address = optarg;
@@ -105,7 +115,13 @@ int main(int argc, char** argv) {
       case 's':
         contract_address = optarg;
         break;
+      case 'e':
+        external_address = optarg;  // Handle the 'e' option
+        break;
       case 'h':
+        ShowUsage();
+        break;
+      default:
         ShowUsage();
         break;
     }
@@ -120,6 +136,8 @@ int main(int argc, char** argv) {
 
   if (cmd == "create") {
     CreateAccount(&client);
+  } else if (cmd == "add_address") {
+    AddAddress(&client, external_address);
   } else if (cmd == "deploy") {
     std::vector<std::string> init_params;
     boost::split(init_params, params, boost::is_any_of(","));
@@ -137,5 +155,7 @@ int main(int argc, char** argv) {
 
     ExecuteContract(&client, caller_address, contract_address, func_name,
                     func_params);
+  } else {
+    ShowUsage();
   }
 }

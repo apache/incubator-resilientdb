@@ -39,5 +39,15 @@ jobs:
         with:
           path: "/home/runner/.cache/bazel"
           key: bazel
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.10'
       - name: build
-        run: bazel test ...
+        shell: bash
+        env:
+            CC: gcc-11
+            CXX: g++-11
+        run: |
+          sudo apt install gcc-11 g++-11
+          bazel build ...

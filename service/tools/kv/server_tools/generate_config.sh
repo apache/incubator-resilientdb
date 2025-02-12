@@ -16,31 +16,19 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-set +e
 
-CURRENT_PATH=$PWD
-user=ubuntu
-home_path=/home/ubuntu
+iplist=(
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+)
 
-i=0
-while [ ! -f "WORKSPACE" ]
-do
-cd ..
-((i++))
-if [ "$PWD" = "/home" ]; then
-  break
-fi
-done
+WORKSPACE=$PWD
+CERT_PATH=$PWD/service/tools/data/cert/
+CONFIG_PATH=$PWD/service/tools/config/
+PORT_BASE=20000
+CLIENT_NUM=1
 
-BAZEL_WORKSPACE_PATH=$PWD
-if [ "$PWD" = "/home" ]; then
-echo "bazel path not found"
-BAZEL_WORKSPACE_PATH=$CURRENT_PATH
-fi
-
-export BAZEL_WORKSPACE_PATH=$PWD
-
-echo "use bazel path:"$BAZEL_WORKSPACE_PATH
-
-# go back to the current dir
-cd $CURRENT_PATH
+./service/tools/config/generate_config.sh ${WORKSPACE} ${CERT_PATH} ${CERT_PATH} ${CONFIG_PATH} ${CERT_PATH} ${CLIENT_NUM} ${PORT_BASE} ${iplist[@]} 

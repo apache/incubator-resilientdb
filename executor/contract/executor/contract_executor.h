@@ -40,6 +40,7 @@ class ContractTransactionManager : public TransactionManager {
   absl::StatusOr<Account> CreateAccount();
   absl::StatusOr<Contract> Deploy(const Request& request);
   absl::StatusOr<std::string> Execute(const Request& request);
+  absl::Status AddAddress(const Request& request);
 
  private:
   std::unique_ptr<ContractManager> contract_manager_;

@@ -368,3 +368,22 @@ We also provide access to a [deployment script](https://github.com/resilientdb/r
    ```
 
    Verify the functionality of the service by performing set and get operations provided above [functions](README.md#functions).
+
+
+## Custom Ports ##
+When starting the service locally, current services are running on 10000 port-base with 5 services where the server config is located [here](https://github.com/apache/incubator-resilientdb/blob/master/service/tools/config/server/server.config)
+
+If you want to change the setting,  you need to generate the certificates.
+
+Go the the workspace where the resilientdb repo is localted.
+
+Change the setting parameters here and run the script:
+  ```shell
+  ./service/tools/kv/server_tools/generate_config.sh
+  ```
+
+Then re-run the start script:
+  ```shell
+  ./service/tools/kv/server_tools/start_kv_service.sh
+  ```
+

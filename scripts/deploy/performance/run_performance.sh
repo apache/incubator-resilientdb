@@ -20,6 +20,7 @@
 
 ./script/deploy.sh $1
 . ./script/load_config.sh $1
+. ./script/env.sh
 
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
@@ -33,7 +34,7 @@ count=1
 for ip in ${iplist[@]};
 do
  echo "server bin:"${server_bin}
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "killall -9 ${server_bin}"` 
+`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "killall -9 ${server_bin}"` 
 ((count++))
 done
 
@@ -46,8 +47,8 @@ idx=1
 echo "getting results"
 for ip in ${iplist[@]};
 do
-  echo "scp -i ${key} ubuntu@${ip}:/home/ubuntu/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} ubuntu@${ip}:/home/ubuntu/resilientdb_app/${idx}/${server_bin}.log result_${ip}_log` 
+  echo "scp -i ${key} ${user}@${ip}:${home_path}/${server_bin}.log ./${ip}_log"
+  `scp -i ${key} ${user}@${ip}:${home_path}/resilientdb_app/${idx}/${server_bin}.log result_${ip}_log` 
   ((idx++))
 done
 

@@ -34,6 +34,10 @@ Address AddressManager::CreateRandomAddress() {
   return address;
 }
 
+void AddressManager::AddExternalAddress(const Address& address) {
+  users_.insert(address);  // New method implementation
+}
+
 bool AddressManager::Exist(const Address& address) {
   return users_.find(address) != users_.end();
 }
