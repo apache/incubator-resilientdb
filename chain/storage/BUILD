@@ -59,19 +59,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "lmdb",
-    srcs = ["lmdb.cpp"],
-    hdrs = ["lmdb.h"],
-    deps = [
-        ":storage",
-        "//chain/storage/proto:kv_cc_proto",
-        "//common:comm",
-    ],
-    copts = ["-I/usr/include"],  # Add the LMDB header file path (if needed)
-    linkopts = ["-llmdb"],  # Link the LMDB librar
-)
-
 cc_test(
     name = "kv_storage_test",
     srcs = ["kv_storage_test.cpp"],
@@ -80,12 +67,4 @@ cc_test(
         ":memory_db",
         "//common/test:test_main",
     ],
-)
-
-cc_binary(
-    name = "lmdb_test",
-    srcs = ["lmdb_test.cpp"],
-    deps = [],
-    copts = ["-I/usr/include"],  # Add the LMDB header file path (if needed)
-    linkopts = ["-llmdb"],  # Link the LMDB librar
 )

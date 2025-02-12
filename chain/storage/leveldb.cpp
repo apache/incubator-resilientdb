@@ -23,7 +23,6 @@
 #include <unistd.h>
 
 #include "chain/storage/proto/kv.pb.h"
-#include "leveldb/cache.h"
 #include "leveldb/options.h"
 
 namespace resdb {
@@ -53,6 +52,13 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
       path = (*config).path();
     }
   }
+  if ((*config).enable_block_cache()) {
+    LRUCache<std::string, std::string>* block_cache =
+        new LRUCache<std::string, std::string>(1000);
+    block_cache_ =
+        std::unique_ptr<LRUCache<std::string, std::string>>(block_cache);
+    LOG(ERROR) << "initialized block cache" << std::endl;
+  }
   global_stats_ = Stats::GetGlobalStats();
   CreateDB(path);
 }
@@ -70,10 +76,6 @@ void ResLevelDB::CreateDB(const std::string& path) {
   if (status.ok()) {
     db_ = std::unique_ptr<leveldb::DB>(db);
   }
-  LRUCache<std::string, std::string>* block_cache =
-      new LRUCache<std::string, std::string>(1000);
-  block_cache_ =
-      std::unique_ptr<LRUCache<std::string, std::string>>(block_cache);
   assert(status.ok());
   LOG(ERROR) << "Successfully opened LevelDB";
 }
@@ -88,7 +90,9 @@ ResLevelDB::~ResLevelDB() {
 }
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
-  block_cache_->Put(key, value);
+  if (block_cache_) {
+    block_cache_->Put(key, value);
+  }
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
@@ -107,7 +111,10 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
 
 std::string ResLevelDB::GetValue(const std::string& key) {
   std::string value = "";
-  std::string cached_result = block_cache_->Get(key);
+  std::string cached_result = "";
+  if (block_cache_) {
+    std::string cached_result = block_cache_->Get(key);
+  }
   if (cached_result != "") {
     LOG(ERROR) << "Cache Hit for key: " << key << cached_result;
     GetMetrics();
@@ -155,6 +162,9 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
 }
 
 void ResLevelDB::GetMetrics() {
+  if (!block_cache_) {
+    return;
+  }
   std::string stats;
   std::string approximate_size;
   db_->GetProperty("leveldb.stats", &stats);
