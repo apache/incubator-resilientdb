@@ -25,9 +25,11 @@ cc_binary(
     name = "kv_service",
     srcs = ["kv_service.cpp"],
     copts = select({
-        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
-        "//conditions:default": [],
+        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB","-g","-ggdb"],
+        "//conditions:default": ["-pg", "-g", "-ggdb"],
+
     }),
+    linkopts = ["-pg","-g","-ggdb"],
     deps = [
         "//platform/config:resdb_config_utils",
         "//executor/kv:kv_executor",
@@ -35,7 +37,7 @@ cc_binary(
         "//common:comm",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-    ] + select({
+	] + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
         "//conditions:default": [],
     }),

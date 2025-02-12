@@ -26,6 +26,14 @@
 #include "common/utils/utils.h"
 #include "proto/kv/kv.pb.h"
 
+#define DEBUG 1
+
+#if DEBUG
+#define PRINT_MEM_USAGE(phase) printRUsage(phase)
+#else
+#define PRINT_MEM_USAGE(phase)
+#endif
+
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 using tcp = asio::ip::tcp;
@@ -37,7 +45,7 @@ Stats* Stats::GetGlobalStats(int seconds) {
   std::unique_lock<std::mutex> lk(g_mutex);
   static Stats stats(seconds);
   return &stats;
-}
+}  // gets a singelton instance of Stats Class
 
 Stats::Stats(int sleep_time) {
   monitor_sleep_time_ = sleep_time;
@@ -96,6 +104,64 @@ Stats::~Stats() {
   }
 }
 
+long getRSS() {
+  long rss = 0;
+  FILE* fp = NULL;
+  if ((fp = fopen("/proc/self/statm", "r")) == NULL) {
+    return 0;
+  }
+
+  unsigned long size, resident, share, text, lib, data, dt;
+  if (fscanf(fp, "%lu %lu %lu %lu %lu %lu %lu", &size, &resident, &share, &text,
+             &lib, &data, &dt) != 7) {
+    fclose(fp);
+    return 0;
+  }
+  fclose(fp);
+
+  long page_size = sysconf(_SC_PAGESIZE);
+  rss = resident * page_size;
+
+  // Convert to MB
+  rss = rss / (1024 * 1024);
+
+  return rss;
+}
+
+void printRUsage(const std::string& phase) {
+  struct rusage usage;
+  int status = getrusage(RUSAGE_SELF, &usage);
+  if (status != 0) {
+    LOG(ERROR) << "getrusage failed";
+    return;
+  }
+
+  long long rss = getRSS();
+
+  LOG(ERROR) << "Resource usage after " << phase << " phase:\n"
+             << "User CPU time used: " << usage.ru_utime.tv_sec << " sec, "
+             << usage.ru_utime.tv_usec << " microsec\n"
+             << "System CPU time used: " << usage.ru_stime.tv_sec << " sec, "
+             << usage.ru_stime.tv_usec << " microsec\n"
+             << "Maximum resident set size (memory): " << (usage.ru_maxrss)
+             << " KB\n"
+             << "Resident set size (memory): " << rss << " MB\n"
+             << "Integral shared memory size: " << usage.ru_ixrss << " KB\n"
+             << "Integral unshared data size: " << usage.ru_idrss << " KB\n"
+             << "Integral unshared stack size: " << usage.ru_isrss << " KB\n"
+             << "Page reclaims (soft page faults): " << usage.ru_minflt << "\n"
+             << "Page faults (hard page faults): " << usage.ru_majflt << "\n"
+             << "Swaps: " << usage.ru_nswap << "\n"
+             << "Block input operations: " << usage.ru_inblock << "\n"
+             << "Block output operations: " << usage.ru_oublock << "\n"
+             << "IPC messages sent: " << usage.ru_msgsnd << "\n"
+             << "IPC messages received: " << usage.ru_msgrcv << "\n"
+             << "Signals received: " << usage.ru_nsignals << "\n"
+             << "Voluntary context switches: " << usage.ru_nvcsw << "\n"
+             << "Involuntary context switches: " << usage.ru_nivcsw << "\n"
+             << "----------------------------------\n";
+}
+
 void Stats::CrowRoute() {
   crow::SimpleApp app;
   while (!stop_) {
@@ -151,6 +217,41 @@ void Stats::CrowRoute() {
             res.body = "Success";
             res.end();
           });
+      CROW_ROUTE(app, "/transaction_data")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 4";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            nlohmann::json mem_view_json;
+            int status =
+                getrusage(RUSAGE_SELF, &transaction_summary_.process_stats_);
+            if (status == 0) {
+              mem_view_json["resident_set_size"] = getRSS();
+              mem_view_json["max_resident_set_size"] =
+                  transaction_summary_.process_stats_.ru_maxrss;
+              mem_view_json["num_reads"] =
+                  transaction_summary_.process_stats_.ru_inblock;
+              mem_view_json["num_writes"] =
+                  transaction_summary_.process_stats_.ru_oublock;
+            }
+
+            mem_view_json["ext_cache_hit_ratio"] =
+                transaction_summary_.ext_cache_hit_ratio;
+            mem_view_json["level_db_stats"] =
+                transaction_summary_.level_db_stats;
+            mem_view_json["level_db_approx_mem_size"] =
+                transaction_summary_.level_db_approx_mem_size;
+            res.body = mem_view_json.dump();
+            mem_view_json.clear();
+            res.end();
+          });
       app.port(8500 + transaction_summary_.port).multithreaded().run();
       sleep(1);
     } catch (const std::exception& e) {
@@ -182,6 +283,15 @@ void Stats::SetPrimaryId(int primary_id) {
   transaction_summary_.primary_id = primary_id;
 }
 
+void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
+                                    std::string level_db_stats,
+                                    std::string level_db_approx_mem_size) {
+  transaction_summary_.ext_cache_hit_ratio = ext_cache_hit_ratio;
+  transaction_summary_.level_db_stats = level_db_stats;
+  transaction_summary_.level_db_approx_mem_size = level_db_approx_mem_size;
+  LOG(ERROR) << "Invoked SetStorageEngineMetrics\n";
+}
+
 void Stats::RecordStateTime(std::string state) {
   if (!enable_resview) {
     return;
@@ -189,10 +299,13 @@ void Stats::RecordStateTime(std::string state) {
   if (state == "request" || state == "pre-prepare") {
     transaction_summary_.request_pre_prepare_state_time =
         std::chrono::system_clock::now();
+    PRINT_MEM_USAGE(state);
   } else if (state == "prepare") {
     transaction_summary_.prepare_state_time = std::chrono::system_clock::now();
+    PRINT_MEM_USAGE(state);
   } else if (state == "commit") {
     transaction_summary_.commit_state_time = std::chrono::system_clock::now();
+    PRINT_MEM_USAGE(state);
   }
 }
 
@@ -275,6 +388,8 @@ void Stats::SendSummary() {
     summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
+  summary_json_["ext_cache_hit_ratio"] =
+      transaction_summary_.ext_cache_hit_ratio;
   consensus_history_[std::to_string(transaction_summary_.txn_number)] =
       summary_json_;
 

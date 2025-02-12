@@ -19,52 +19,9 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "storage",
-    hdrs = ["storage.h"],
-    deps = [
-    ],
-)
-
-cc_library(
-    name = "mock_storage",
-    hdrs = ["mock_storage.h"],
-    deps = [
-        ":storage",
-    ],
-)
-
-cc_library(
-    name = "memory_db",
-    srcs = ["memory_db.cpp"],
-    hdrs = ["memory_db.h"],
-    deps = [
-        ":storage",
-        "//common:comm",
-    ],
-)
-
-cc_library(
-    name = "leveldb",
-    srcs = ["leveldb.cpp"],
-    hdrs = ["leveldb.h"],
+    name = "lru_cache",
+    srcs = ["lru_cache.cpp"],
+    hdrs = ["lru_cache.h"],
     linkopts = ["-pg","-g","-ggdb"],    # Enable profiling during linking
-    deps = [
-        ":storage",
-        "//chain/storage/proto:kv_cc_proto",
-        "//chain/storage/proto:leveldb_config_cc_proto",
-        "//common:comm",
-        "//common/lru:lru_cache",
-        "//platform/statistic:stats",
-        "//third_party:leveldb",
-    ],
-)
-
-cc_test(
-    name = "kv_storage_test",
-    srcs = ["kv_storage_test.cpp"],
-    deps = [
-        ":leveldb",
-        ":memory_db",
-        "//common/test:test_main",
-    ],
+    copts = ["-pg"],
 )
