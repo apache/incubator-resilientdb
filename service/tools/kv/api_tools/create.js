@@ -1,0 +1,3 @@
+{
+  "command":"create_account",
+}

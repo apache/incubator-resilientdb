@@ -11,6 +11,17 @@ cc_binary(
 )
 
 cc_binary(
+    name = "contract_service_tools",
+    srcs = ["contract_service_tools.cpp"],
+    deps = [
+        "//common/proto:signature_info_cc_proto",
+        "//interface/kv:contract_client",
+        "//platform/config:resdb_config_utils",
+    ],
+)
+
+
+cc_binary(
     name = "kv_client_txn_tools",
     srcs = ["kv_client_txn_tools.cpp"],
     deps = [

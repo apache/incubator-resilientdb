@@ -25,14 +25,12 @@
 #include <vector>
 #include <fstream>
 
-#include "interface/contract/contract_client.h"
+#include "interface/kv/contract_client.h"
 #include "platform/config/resdb_config_utils.h"
 
 using resdb::GenerateResDBConfig;
 using resdb::ResDBConfig;
 using resdb::contract::ContractClient;
-
-
 
 void ShowUsage() {
   printf(
