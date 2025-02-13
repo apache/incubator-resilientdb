@@ -88,10 +88,7 @@ message Request {
     int64 uid = 23;
     int64 create_time = 24;
     int64 commit_time = 25;
-<<<<<<< HEAD
     bytes data_hash = 26;
-=======
->>>>>>> master
 }
 
 // The response message containing response
