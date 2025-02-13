@@ -16,31 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-set +e
+bazel_path=$1; shift
+output_path=$1; shift
+key_num=$1
 
-CURRENT_PATH=$PWD
-user=ubuntu
-home_path=/home/ubuntu
+echo "generate key in:"${output_path}
+echo "key num:"$key_num
 
-i=0
-while [ ! -f "WORKSPACE" ]
-do
-cd ..
-((i++))
-if [ "$PWD" = "/home" ]; then
-  break
-fi
-done
+bazel build //tools:key_generator_tools
+rm -rf ${output_path}
+mkdir -p ${output_path}
 
-BAZEL_WORKSPACE_PATH=$PWD
-if [ "$PWD" = "/home" ]; then
-echo "bazel path not found"
-BAZEL_WORKSPACE_PATH=$CURRENT_PATH
-fi
-
-export BAZEL_WORKSPACE_PATH=$PWD
-
-echo "use bazel path:"$BAZEL_WORKSPACE_PATH
-
-# go back to the current dir
-cd $CURRENT_PATH
+echo `${bazel_path}/bazel-bin/tools/key_generator_tools "${output_path}/admin" "AES"`
