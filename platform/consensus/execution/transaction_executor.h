@@ -62,15 +62,7 @@ class TransactionExecutor {
 
   void SetDuplicateManager(DuplicateManager* manager);
 
-  void AddExecuteMessage(std::unique_ptr<Request> message);
-
   Storage* GetStorage();
-
-  void RegisterExecute(int64_t seq);
-  void WaitForExecute(int64_t seq);
-  void FinishExecute(int64_t seq);
-
-  void Prepare(std::unique_ptr<Request> request);
 
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
@@ -88,15 +80,6 @@ class TransactionExecutor {
 
   void UpdateMaxExecutedSeq(uint64_t seq);
 
-  bool SetFlag(uint64_t uid, int f);
-  void ClearPromise(uint64_t uid);
-  void PrepareMessage();
-  void GCProcess();
-
-  bool AddFuture(uint64_t uid);
-  std::unique_ptr<std::future<int>> GetFuture(uint64_t uid);
-  std::promise<int>* GetPromise(uint64_t uid);
-
  protected:
   ResDBConfig config_;
 
@@ -108,43 +91,11 @@ class TransactionExecutor {
   SystemInfo* system_info_ = nullptr;
   std::unique_ptr<TransactionManager> transaction_manager_ = nullptr;
   std::map<uint64_t, std::unique_ptr<Request>> candidates_;
-  std::thread ordering_thread_, execute_OOO_thread_;
-  std::vector<std::thread> execute_thread_;
+  std::thread ordering_thread_, execute_thread_, execute_OOO_thread_;
   LockFreeQueue<Request> commit_queue_, execute_queue_, execute_OOO_queue_;
   std::atomic<bool> stop_;
   Stats* global_stats_ = nullptr;
   DuplicateManager* duplicate_manager_;
-  int execute_thread_num_ = 10;
-  static const int blucket_num_ = 1024;
-  int blucket_[blucket_num_];
-  std::condition_variable cv_;
-  std::mutex mutex_;
-
-  enum PrepareType {
-    Start_Prepare = 1,
-    Start_Execute = 2,
-    End_Prepare = 4,
-  };
-
-
-  std::vector<std::thread> prepare_thread_;
-  std::thread gc_thread_;
-  static const int mod = 2048;
-  std::mutex f_mutex_[mod], fd_mutex_[mod];
-  LockFreeQueue<Request> prepare_queue_;
-  LockFreeQueue<int64_t> gc_queue_;
-  typedef std::unique_ptr<std::promise<int>> PromiseType;
-  std::map<uint64_t, PromiseType> pre_[mod];
-
-  std::map<uint64_t, std::unique_ptr<std::future<int>>> pre_f_[mod];
-  std::map<uint64_t, int> flag_[mod];
-
-  std::map<uint64_t, std::unique_ptr<BatchUserRequest>> req_[mod];
-  std::unordered_map<
-      uint64_t,
-      std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>>
-      data_[mod];
-
 };
 
 }  // namespace resdb
