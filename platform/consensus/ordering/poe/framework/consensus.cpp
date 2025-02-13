@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/poe/framework/consensus.h"
@@ -35,7 +29,7 @@ namespace poe {
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
-    : common::Consensus(config, std::move(executor)){
+    : common::Consensus(config, std::move(executor)) {
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
@@ -47,21 +41,13 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    poe_ = std::make_unique<PoE>(
-        config_, config_.GetSelfInfo().id(), f,
-                                   total_replicas, GetSignatureVerifier());
+    poe_ = std::make_unique<PoE>(config_.GetSelfInfo().id(), f, total_replicas,
+                                 GetSignatureVerifier());
     InitProtocol(poe_.get());
-    poe_->SetFailFunc([&](const Transaction& txn) {
-      SendFail(txn.proxy_id(), txn.hash());
-    });
   }
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<MessageType_Name(request->user_type());
-  if(config_.GetSelfInfo().id()==2){
-    //return true;
-  }
   if (request->user_type() == MessageType::Propose) {
     std::unique_ptr<Transaction> txn = std::make_unique<Transaction>();
     if (!txn->ParseFromString(request->data())) {
@@ -80,35 +66,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     poe_->ReceivePrepare(std::move(proposal));
     return 0;
-  } else if (request->user_type() == MessageType::Commit) {
-    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
-    if (!proposal->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    poe_->ReceiveCommit(std::move(proposal));
-    return 0;
-  } else if (request->user_type() == MessageType::Support) {
-    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
-    if (!proposal->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    poe_->ReceiveSupport(std::move(proposal));
-    return 0;
-  } else if (request->user_type() == MessageType::Cert) {
-    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
-    if (!proposal->ParseFromString(request->data())) {
-      LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
-      return -1;
-    }
-    poe_->ReceiveCert(std::move(proposal));
-    return 0;
   }
-
   return 0;
 }
 
@@ -118,14 +76,7 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
   txn->set_uid(request->uid());
-  int proxy_id = txn->proxy_id();
-  std::string hash = txn->hash();
-  //LOG(ERROR)<<"receive txn";
-  bool ret = poe_->ReceiveTransaction(std::move(txn));
-  if(!ret){
-    SendFail(proxy_id, hash);
-  }
-  return ret;
+  return poe_->ReceiveTransaction(std::move(txn));
 }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
@@ -133,7 +84,6 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 }
 
 int Consensus::CommitMsgInternal(const Transaction& txn) {
-  //LOG(ERROR)<<"commit txn:"<<txn.seq()<<" proxy id:"<<txn.proxy_id()<<" uid:"<<txn.uid();
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_data(txn.data());
   request->set_seq(txn.seq());
@@ -143,7 +93,6 @@ int Consensus::CommitMsgInternal(const Transaction& txn) {
   transaction_executor_->Commit(std::move(request));
   return 0;
 }
-
 
 }  // namespace poe
 }  // namespace resdb

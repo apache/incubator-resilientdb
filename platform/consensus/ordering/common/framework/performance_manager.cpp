@@ -1,26 +1,20 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 #include "platform/consensus/ordering/common/framework/performance_manager.h"
@@ -37,7 +31,7 @@ using comm::CollectorResultCode;
 PerformanceManager::PerformanceManager(
     const ResDBConfig& config, ReplicaCommunicator* replica_communicator,
     SignatureVerifier* verifier)
-     : config_(config),
+    : config_(config),
       replica_communicator_(replica_communicator),
       batch_queue_("user request"),
       verifier_(verifier) {
@@ -58,12 +52,8 @@ PerformanceManager::PerformanceManager(
   total_num_ = 0;
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
-  primary_ = 1;
-  if (config_.GetConfigData().multiply_primary()){
-    LOG(ERROR)<<" set multi primary";
-    primary_ = id_ % replica_num_;
-    if (primary_ == 0) primary_ = replica_num_;
-  }
+  primary_ = id_ % replica_num_;
+  if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
 }
@@ -94,12 +84,12 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 50000000; ++i) {
+  for (int i = 0; i < 100000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 500000) {
+    if (i == 2000000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -118,55 +108,53 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   // The callback will be triggered if it received f+1 messages.
   if (request->ret() == -2) {
     // LOG(INFO) << "get response fail:" << request->ret();
-    RequestDone();
+    send_num_--;
     return 0;
   }
 
-  //LOG(INFO) << "get response:" << request->seq() << " sender:"<<request->sender_id();
+  // LOG(INFO) << "get response:" << request->seq() << "
+  // sender:"<<request->sender_id();
   std::unique_ptr<BatchUserResponse> batch_response = nullptr;
-  CollectorResultCode ret =
-      AddResponseMsg(std::move(request), [&](std::unique_ptr<BatchUserResponse> request) {
+  CollectorResultCode ret = AddResponseMsg(
+      std::move(request), [&](std::unique_ptr<BatchUserResponse> request) {
         batch_response = std::move(request);
         return;
       });
 
   if (ret == CollectorResultCode::STATE_CHANGED) {
     assert(batch_response);
-      SendResponseToClient(*batch_response);
+    SendResponseToClient(*batch_response);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
 
 CollectorResultCode PerformanceManager::AddResponseMsg(
     std::unique_ptr<Request> request,
-    std::function<void(std::unique_ptr<BatchUserResponse>)> response_call_back) {
+    std::function<void(std::unique_ptr<BatchUserResponse>)>
+        response_call_back) {
   if (request == nullptr) {
     return CollectorResultCode::INVALID;
   }
 
-  //uint64_t seq = request->seq();
-
-  std::unique_ptr<BatchUserResponse> batch_response = std::make_unique<BatchUserResponse>();
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
   if (!batch_response->ParseFromString(request->data())) {
-    LOG(ERROR) << "parse response fail:"<<request->data().size()
-    <<" seq:"<<request->seq(); return CollectorResultCode::INVALID;
+    LOG(ERROR) << "parse response fail:" << request->data().size()
+               << " seq:" << request->seq();
+    return CollectorResultCode::INVALID;
   }
 
   uint64_t seq = batch_response->local_id();
-  //LOG(ERROR)<<"receive seq:"<<seq;
 
   bool done = false;
   {
     int idx = seq % response_set_size_;
     std::unique_lock<std::mutex> lk(response_lock_[idx]);
     if (response_[idx].find(seq) == response_[idx].end()) {
-      //LOG(ERROR)<<"has done local seq:"<<seq<<" global seq:"<<request->seq();
       return CollectorResultCode::OK;
     }
     response_[idx][seq]++;
-    //LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<" num:"<<response_[idx][seq]<<" send:"<<send_num_;
     if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
-      //LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<" num:"<<response_[idx][seq]<<" done:"<<send_num_;
       response_[idx].erase(response_[idx].find(seq));
       done = true;
     }
@@ -178,41 +166,17 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   return CollectorResultCode::OK;
 }
 
-void PerformanceManager::LogLatency(
+void PerformanceManager::SendResponseToClient(
     const BatchUserResponse& batch_response) {
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    //LOG(ERROR)<<" log lat:"<<run_time;
+    LOG(ERROR) << "receive current:" << GetCurrentTime()
+               << " create time:" << create_time << " run time:" << run_time
+               << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
   }
-}
-
-void PerformanceManager::SendResponseToClient(
-    const BatchUserResponse& batch_response) {
-  LogLatency(batch_response);
-  RequestDone();
-}
-
-void PerformanceManager::Wait() {
-
-  auto check = [&]() {
-    return static_cast<int>(send_num_) <= static_cast<int>(config_.GetMaxProcessTxn());
-  };
-
-  while (!check()) {
-    std::unique_lock<std::mutex> lk(n_mutex_);
-    vote_cv_.wait_for(lk, std::chrono::microseconds(1000000),
-        [&] { return check(); });
-   //     LOG(ERROR)<<" wait done";
-  }
-}
-
-void PerformanceManager::RequestDone() {
-  std::unique_lock<std::mutex> lk(n_mutex_);
   send_num_--;
-  //LOG(ERROR)<<" request done:"<<send_num_;
-  vote_cv_.notify_one();
 }
 
 // =================== request ========================
@@ -224,20 +188,16 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   bool start = false;
   while (!stop_) {
-    Wait();
-    /*
-    if (static_cast<int>(send_num_) > static_cast<int>(config_.GetMaxProcessTxn())) {
-      // LOG(ERROR)<<"wait send num:"<<send_num_;
+    if (send_num_ > config_.GetMaxProcessTxn()) {
       usleep(100000);
       continue;
     }
-    */
     if (batch_req.size() < config_.ClientBatchNum()) {
       std::unique_ptr<QueueItem> item =
           batch_queue_.Pop(config_.ClientBatchWaitTimeMS());
       if (item == nullptr) {
-        if(start){
-          LOG(ERROR)<<"no data";
+        if (start) {
+          LOG(ERROR) << "no data";
         }
         continue;
       }
@@ -247,9 +207,7 @@ int PerformanceManager::BatchProposeMsg() {
       }
     }
     start = true;
-    for(int i = 0; i < 1;++i){
-      DoBatch(batch_req);
-    }
+    DoBatch(batch_req);
     batch_req.clear();
   }
   return 0;
@@ -299,7 +257,6 @@ int PerformanceManager::DoBatch(
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
-  //LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary()<<" local id:"<<batch_request.local_id();
   if (total_num_++ == 1000000) {
     stop_ = true;
     LOG(WARNING) << "total num is done:" << total_num_;
@@ -311,7 +268,7 @@ int PerformanceManager::DoBatch(
   return 0;
 }
 
-void PerformanceManager::SendMessage(const Request& request){
+void PerformanceManager::SendMessage(const Request& request) {
   replica_communicator_->SendMessage(request, GetPrimary());
 }
 

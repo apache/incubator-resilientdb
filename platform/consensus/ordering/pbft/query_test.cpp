@@ -152,10 +152,12 @@ MATCHER_P(EqualsProtoNoConfigData, replica, "") {
 
 TEST_F(QueryTest, QueryState) {
   ReplicaState replica_state;
-  replica_state.set_view(1);
-  replica_state.mutable_replica_info()->set_id(1);
-  replica_state.mutable_replica_info()->set_ip("127.0.0.1");
-  replica_state.mutable_replica_info()->set_port(1234);
+  replica_state.mutable_replica_config()->set_view_change_timeout_ms(100);
+  replica_state.mutable_replica_config()->set_client_batch_num(100);
+  replica_state.mutable_replica_config()->set_worker_num(64);
+  replica_state.mutable_replica_config()->set_input_worker_num(1);
+  replica_state.mutable_replica_config()->set_output_worker_num(1);
+  replica_state.mutable_replica_config()->set_tcp_batch_num(100);
 
   std::unique_ptr<MockNetChannel> channel =
       std::make_unique<MockNetChannel>("127.0.0.1", 0);

@@ -57,6 +57,7 @@ PerformanceManager::PerformanceManager(
   stop_ = false;
   eval_started_ = false;
   eval_ready_future_ = eval_ready_promise_.get_future();
+
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
@@ -74,7 +75,7 @@ PerformanceManager::PerformanceManager(
     send_num_.push_back(0);
   }
   total_num_ = 0;
-  timeout_length_ = 10000000;  // 10s
+  timeout_length_ = 100000000;  // 10s
 }
 
 PerformanceManager::~PerformanceManager() {
@@ -107,12 +108,12 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 60000000000; ++i) {
+  for (int i = 0; i < 60000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 20000000) {
+    if (i == 2000000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -191,8 +192,18 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
+  if (!batch_response->ParseFromString(request->data())) {
+    LOG(ERROR) << "parse response fail:" << request->data().size()
+               << " seq:" << request->seq();
+    return CollectorResultCode::INVALID;
+  }
+
+  uint64_t seq = batch_response->local_id();
+
   int type = request->type();
-  uint64_t seq = request->seq();
+  seq = request->seq();
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,
@@ -299,6 +310,7 @@ int PerformanceManager::DoBatch(
   }
 
   batch_request.set_createtime(GetCurrentTime());
+  batch_request.set_local_id(local_id_++);
   batch_request.SerializeToString(new_request->mutable_data());
   if (verifier_) {
     auto signature_or = verifier_->SignMessage(new_request->data());
@@ -388,7 +400,6 @@ void PerformanceManager::MonitoringClientTimeOut() {
     if (CheckTimeOut(client_timeout.hash)) {
       auto request = GetTimeOutRequest(client_timeout.hash);
       if (request) {
-        LOG(ERROR) << "Client Request Timeout " << client_timeout.hash;
         replica_communicator_->BroadCast(*request);
       }
     }
