@@ -47,6 +47,7 @@ class ContractTransactionManagerTest : public Test {
  public:
   ContractTransactionManagerTest() : executor_(&db_)  {
     std::string contract_path = test_dir + "test_data/contract.json";
+    contract_name_ = "token.sol:Token";
 
     std::ifstream contract_fstream(contract_path);
     if (!contract_fstream) {
@@ -152,6 +153,7 @@ class ContractTransactionManagerTest : public Test {
   }
 
  protected:
+  std::string contract_name_;
   nlohmann::json contracts_json_;
   MemoryDB db_;
   ContractTransactionManager executor_;
@@ -162,7 +164,7 @@ TEST_F(ContractTransactionManagerTest, ExecContract) {
   Account account = CreateAccount();
   EXPECT_FALSE(account.address().empty());
 
-  std::string contract_name = "ERC20.sol:ERC20Token";
+  std::string contract_name = contract_name_;
   std::string contract_code = contracts_json_[contract_name]["bin"];
   nlohmann::json func_hashes = contracts_json_[contract_name]["hashes"];
 
@@ -246,7 +248,7 @@ TEST_F(ContractTransactionManagerTest, DeployFail) {
   Account account = CreateAccount();
   EXPECT_FALSE(account.address().empty());
 
-  std::string contract_name = "ERC20.sol:ERC20Token";
+  std::string contract_name = contract_name_;
   std::string contract_code = contracts_json_[contract_name]["bin"];
   nlohmann::json func_hashes = contracts_json_[contract_name]["hashes"];
 
@@ -271,7 +273,7 @@ TEST_F(ContractTransactionManagerTest, NoFunc) {
   Account account = CreateAccount();
   EXPECT_FALSE(account.address().empty());
 
-  std::string contract_name = "ERC20.sol:ERC20Token";
+  std::string contract_name = contract_name_;
   std::string contract_code = contracts_json_[contract_name]["bin"];
   nlohmann::json func_hashes = contracts_json_[contract_name]["hashes"];
 
@@ -307,7 +309,7 @@ TEST_F(ContractTransactionManagerTest, GetFromKV) {
   Account account = CreateAccount();
   EXPECT_FALSE(account.address().empty());
 
-  std::string contract_name = "ERC20.sol:ERC20Token";
+  std::string contract_name = contract_name_;
   std::string contract_code = contracts_json_[contract_name]["bin"];
   nlohmann::json func_hashes = contracts_json_[contract_name]["hashes"];
 
@@ -415,6 +417,102 @@ TEST_F(ContractTransactionManagerTest, GetFromKV) {
     }
   }
 }
+
+TEST_F(ContractTransactionManagerTest, GetFromKV2) {
+  // create an account.
+  Account account = CreateAccount();
+  EXPECT_FALSE(account.address().empty());
+
+  std::string contract_name = contract_name_;
+  std::string contract_code = contracts_json_[contract_name]["bin"];
+  nlohmann::json func_hashes = contracts_json_[contract_name]["hashes"];
+
+  // deploy
+  DeployInfo deploy_info;
+  deploy_info.set_contract_bin(contract_code);
+  deploy_info.set_contract_name(contract_name);
+
+  for (auto& func : func_hashes.items()) {
+    FuncInfo* new_func = deploy_info.add_func_info();
+    new_func->set_func_name(func.key());
+    new_func->set_hash(func.value());
+  }
+  deploy_info.add_init_param("1000");
+
+  absl::StatusOr<Contract> contract_or = Deploy(account, deploy_info);
+  EXPECT_TRUE(contract_or.ok());
+  Contract contract = *contract_or;
+
+  // query owner should return 1000
+  {
+    Params func_params;
+    func_params.set_func_name("balanceOf(address)");
+    func_params.add_param(account.address());
+
+    auto result =
+        Execute(account.address(), contract.contract_address(), func_params);
+    EXPECT_EQ(*result, 0x3e8);
+  }
+
+  //Account transfer_receiver = CreateAccount();
+  //EXPECT_FALSE(account.address().empty());
+  // receiver 0
+  {
+    Params func_params;
+    func_params.set_func_name("balanceOf(address)");
+    func_params.add_param("0x1be8e78d765a2e63339fc99a66320db73158a35a");
+
+    auto result =
+        Execute(account.address(), contract.contract_address(), func_params);
+    EXPECT_EQ(*result, 0);
+  }
+
+  // transfer 400 to receiver
+  {
+    Params func_params;
+    func_params.set_func_name("transfer(address,uint256)");
+    func_params.add_param("0x1be8e78d765a2e63339fc99a66320db73158a35a");
+    func_params.add_param("400");
+
+    auto result =
+        Execute(account.address(), contract.contract_address(), func_params);
+    EXPECT_EQ(*result, 1);
+  }
+
+  // query owner should return 600
+  {
+    Params func_params;
+    func_params.set_func_name("balanceOf(address)");
+    func_params.add_param(account.address());
+
+    auto result =
+        Execute(account.address(), contract.contract_address(), func_params);
+    EXPECT_EQ(*result, 600);
+
+    {
+      auto result = GetBalance(account.address());
+    EXPECT_EQ(*result, 600);
+    }
+  }
+
+  // receiver 400
+  {
+    Params func_params;
+    func_params.set_func_name("balanceOf(address)");
+    func_params.add_param("0x1be8e78d765a2e63339fc99a66320db73158a35a");
+
+    auto result =
+        Execute(account.address(), contract.contract_address(), func_params);
+    EXPECT_EQ(*result, 400);
+
+    {
+      auto result = GetBalance("0x1be8e78d765a2e63339fc99a66320db73158a35a");
+      EXPECT_EQ(*result, 400);
+    }
+  }
+
+}
+
 
 
 }  // namespace

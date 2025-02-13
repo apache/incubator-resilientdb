@@ -43,6 +43,9 @@ class ContractClient : public TransactionConstructor {
       const std::string& func_name,
       const std::vector<std::string>& func_params);
 
+  absl::StatusOr<std::string> GetBalance(const std::string& address);
+  absl::StatusOr<std::string> SetBalance(const std::string& address, const std::string& balance);
+
   private:
   int SendRequestInternal(const resdb::contract::Request& request, resdb::contract::Response* response);
 };

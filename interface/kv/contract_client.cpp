@@ -117,6 +117,36 @@ absl::StatusOr<std::string> ContractClient::ExecuteContract(
   }
   return response.res();
 }
+  
+
+absl::StatusOr<std::string> ContractClient::GetBalance(const std::string& address) {
+  Request request;
+  Response response;
+  request.set_account(address);
+
+  request.set_cmd(Request::GETBALANCE);
+
+  int ret = SendRequestInternal(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("Deploy contract fail.");
+  }
+  return response.res();
+}
+
+absl::StatusOr<std::string> ContractClient::SetBalance(const std::string& address, const std::string& balance) {
+  Request request;
+  Response response;
+  request.set_account(address);
+  request.set_balance(balance);
+
+  request.set_cmd(Request::SETBALANCE);
+
+  int ret = SendRequestInternal(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("Deploy contract fail.");
+  }
+  return response.res();
+}
 
 int ContractClient::SendRequestInternal(const Request& request, Response * response) {
   KVRequest kv_request;

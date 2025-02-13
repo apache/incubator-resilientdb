@@ -14,8 +14,8 @@ using eevm::SimpleAccount;
 uint256_t AccountToAddress(const eevm::Address& account) {
     std::vector<uint8_t> code;
     code.resize(64);
+    std::fill(code.begin(), code.end(), 0);
     eevm::to_big_endian(account, code.data());
-    code[63]=1;
 
     uint8_t h[32];
     eevm::keccak_256(code.data(), static_cast<unsigned int>(64), h);

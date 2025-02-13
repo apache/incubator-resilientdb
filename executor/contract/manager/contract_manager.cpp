@@ -103,6 +103,7 @@ absl::StatusOr<std::string> ContractManager::ExecContract(
 
   std::vector<uint8_t> inputs = eevm::to_bytes(func_addr);
   for (const std::string& param : func_param.param()) {
+    LOG(ERROR)<<"input param:"<<param;
     AppendArgToInput(inputs, param);
   }
 

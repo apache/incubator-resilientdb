@@ -132,14 +132,14 @@ int main(int argc, char** argv) {
   }
 
   nlohmann::json js = ReadJSConfig(config_file);
+  std::cout<<js<<std::endl;
   cmd = GetValue(js, "command");
 
-  printf("client config path = %s config path = %s cmd = %s\n", client_config_file.c_str(), config_file.c_str(), cmd.c_str());
   ResDBConfig config = GenerateResDBConfig(client_config_file);
   config.SetClientTimeoutMs(100000);
 
   ContractClient client(config);
-
+  printf("cmd = %s\n", cmd.c_str());
   if (cmd == "create_account") {
     CreateAccount(&client);
   } else if (cmd == "deploy") {
@@ -174,5 +174,17 @@ int main(int argc, char** argv) {
     ExecuteContract(&client, caller_address, contract_address, func_name,
                     func_params);
   }
+  else if (cmd == "get_balance") {
+    std::string address = GetValue(js, "address");
+    auto balance_or = client.GetBalance(address);
+    printf("get address %s balance %s\n", address.c_str(), (*balance_or).c_str());
+  } else if (cmd == "set_balance") {
+    std::string address = GetValue(js, "address");
+    std::string balance = GetValue(js, "balance");
+    printf("address %s balance %s\n", address.c_str(), balance.c_str());
+    auto ret = client.SetBalance(address, balance);
+    printf("set address %s balance %s\n", address.c_str(), balance.c_str(), *ret);
+  }
+
 }
 
