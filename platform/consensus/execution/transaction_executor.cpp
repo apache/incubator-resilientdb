@@ -244,6 +244,7 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   //          << batch_request.user_requests_size()<<" proxy
   //          id:"<<request->proxy_id();
   std::unique_ptr<BatchUserResponse> response;
+   global_stats_->GetTransactionDetails(batch_request);
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
@@ -289,6 +290,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   //  <<request->proxy_id()<<" need execute:"<<need_execute;
 
   std::unique_ptr<BatchUserResponse> response;
+  global_stats_->GetTransactionDetails(*batch_request_p);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatch(*batch_request_p);
@@ -324,6 +326,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     }
   }
   // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
+
+  if (duplicate_manager_) {	      
+    duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());		    
+  }
 
   if (response == nullptr) {
     response = std::make_unique<BatchUserResponse>();
