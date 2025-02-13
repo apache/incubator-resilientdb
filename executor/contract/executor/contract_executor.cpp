@@ -37,7 +37,6 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     LOG(ERROR) << "parse data fail";
     return nullptr;
   }
-  LOG(ERROR)<<" get cmd:"<<contract::Request_CMD_Name(request.cmd());
   int ret = 0;
   if (request.cmd() == contract::Request::CREATE_ACCOUNT) {
     absl::StatusOr<Account> account_or = CreateAccount();
@@ -138,7 +137,6 @@ absl::StatusOr<std::string> ContractTransactionManager::GetBalance(
 
   Address account =
       AddressManager::HexToAddress(request.account());
-      LOG(ERROR)<<" account addr:"<<request.account();
   return contract_manager_->GetBalance(account);
 }
 

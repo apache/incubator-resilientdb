@@ -138,8 +138,8 @@ ConsensusManagerPBFT::PopComplainedRequest() {
 // The implementation of PBFT.
 int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
-   LOG(INFO) << "recv impl type:" << request->type() << " "
-            << "sender id:" << request->sender_id();
+  // LOG(INFO) << "recv impl type:" << request->type() << " "
+  //          << "sender id:" << request->sender_id();
   // If it is in viewchange, push the request to the queue
   // for the requests from the new view which come before
   // the local new view done.

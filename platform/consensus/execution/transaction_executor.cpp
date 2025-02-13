@@ -265,7 +265,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   uint64_t uid = request->uid();
   int64_t seq = request->seq();
   RegisterExecute(request->seq());
-  LOG(ERROR)<<"EXECUTE seq:"<<seq;
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
   std::vector<std::unique_ptr<google::protobuf::Message>> * data_p = nullptr;
@@ -338,8 +337,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   assert(batch_request_p);
 
-   LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
-
   // LOG(INFO) << " get request batch size:"
   // << batch_request.user_requests_size()<<" proxy id:"
   //  <<request->proxy_id()<<" need execute:"<<need_execute;
@@ -348,26 +345,13 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   // need_execute = false;
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
-	    LOG(ERROR)<<"?????";
       response = transaction_manager_->ExecuteBatch(*batch_request_p);
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
-      /*
-      if (data == nullptr) {
-        int64_t start_time = GetCurrentTime();
-        data = std::move(transaction_manager_->Prepare(*batch_request));
-        int64_t end_time = GetCurrentTime();
-        if (end_time - start_time > 10) {
-          // LOG(ERROR)<<"exec data done:"<<uid<<" wait
-          // time:"<<(end_time-start_time);
-        }
-      }
-      */
       if(data_p == nullptr) {
         int64_t start_time = GetCurrentTime();
         data = std::move(transaction_manager_->Prepare(*batch_request_p));
-	LOG(ERROR)<<" prepare:";
         int64_t end_time = GetCurrentTime();
         if (end_time - start_time > 10) {
           // LOG(ERROR)<<"exec data done:"<<uid<<" wait
@@ -377,7 +361,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
       }
 
       WaitForExecute(request->seq());
-	    LOG(ERROR)<<"?????";
 	    if(data_p->empty() || (*data_p)[0] == nullptr){
 		    response = transaction_manager_->ExecuteBatch(*batch_request_p);
 	    }
@@ -404,7 +387,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_createtime(batch_request_p->createtime() + request->queuing_time());
   response->set_local_id(batch_request_p->local_id());
   global_stats_->AddCommitDelay(GetCurrentTime()- response->createtime());
-  LOG(ERROR)<<" proxy id:"<<batch_request_p->proxy_id()<<" local id:"<<batch_request_p->local_id()<<" latency:"<<GetCurrentTime()- response->createtime();
 
   response->set_seq(request->seq());
 

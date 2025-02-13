@@ -149,7 +149,6 @@ CollectorResultCode ResponseManager::AddResponseMsg(
 
   int type = request->type();
   uint64_t seq = request->seq();
-  LOG(ERROR)<<" add response type :"<<type<<" seq:"<<seq;
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,

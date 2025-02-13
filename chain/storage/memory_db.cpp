@@ -30,7 +30,6 @@ MemoryDB::MemoryDB() {}
 
 int MemoryDB::SetValue(const std::string& key, const std::string& value) {
   kv_map_[key] = value;
-  LOG(ERROR)<<" set key:"<<key;
   return 0;
 }
 
@@ -62,7 +61,6 @@ std::string MemoryDB::GetRange(const std::string& min_key,
 }
 
 std::string MemoryDB::GetValue(const std::string& key) {
-  LOG(ERROR)<<" get key:"<<key;
   auto search = kv_map_.find(key);
   if (search != kv_map_.end())
     return search->second;
