@@ -270,7 +270,7 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
     if (public_key.public_key_info().type() == CertificateKeyInfo::REPLICA) {
       replica_num++;
       if (!ReplicaExisted(info, replicas)) {
-         //AddNewReplica(info);
+        // AddNewReplica(info);
       }
     } else {
       if (!ReplicaExisted(info, clients_)) {
@@ -360,7 +360,6 @@ std::unique_ptr<ReplicaCommunicator> ConsensusManager::GetReplicaClient(
 void ConsensusManager::AddNewReplica(const ReplicaInfo& info) {}
 
 void ConsensusManager::AddNewClient(const ReplicaInfo& info) {
-  std::unique_lock<std::mutex> lk(mutex_);
   clients_.push_back(info);
   bc_client_->UpdateClientReplicas(clients_);
 }
