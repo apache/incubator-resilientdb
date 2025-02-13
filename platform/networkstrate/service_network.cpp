@@ -71,7 +71,8 @@ void ServiceNetwork::AcceptorHandler(const char* buffer, size_t data_len) {
     std::unique_ptr<QueueItem> item = std::make_unique<QueueItem>();
     item->socket = nullptr;
     item->data = std::move(sub_request_info);
-    // LOG(ERROR) << "receve data from acceptor:" << data.is_resp()<<" data  len:"<<item->data->data_len;
+    // LOG(ERROR) << "receve data from acceptor:" << data.is_resp()<<" data
+    // len:"<<item->data->data_len;
     global_stats_->ServerCall();
     input_queue_.Push(std::move(item));
   }
