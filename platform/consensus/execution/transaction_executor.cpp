@@ -251,7 +251,13 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   // LOG(INFO) << " get request batch size:"
   //          << batch_request.user_requests_size()<<" proxy
   //          id:"<<request->proxy_id();
+<<<<<<< HEAD
+=======
+  // std::unique_ptr<BatchUserResponse> batch_response =
+  //     std::make_unique<BatchUserResponse>();
+>>>>>>> master
   std::unique_ptr<BatchUserResponse> response;
+  global_stats_->GetTransactionDetails(batch_request);
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
@@ -342,7 +348,11 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   //  <<request->proxy_id()<<" need execute:"<<need_execute;
 
   std::unique_ptr<BatchUserResponse> response;
+<<<<<<< HEAD
   // need_execute = false;
+=======
+  global_stats_->GetTransactionDetails(batch_request);
+>>>>>>> master
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatch(*batch_request_p);
@@ -388,7 +398,14 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_local_id(batch_request_p->local_id());
   global_stats_->AddCommitDelay(GetCurrentTime()- response->createtime());
 
+<<<<<<< HEAD
   response->set_seq(request->seq());
+=======
+  response->set_proxy_id(batch_request.proxy_id());
+  response->set_createtime(batch_request.createtime());
+  response->set_local_id(batch_request.local_id());
+  response->set_hash(batch_request.hash());
+>>>>>>> master
 
   if (post_exec_func_) {
     post_exec_func_(std::move(request), std::move(response));

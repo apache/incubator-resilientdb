@@ -90,46 +90,9 @@ void ConsensusManager::HeartBeat() {
   std::mutex mutex;
   std::condition_variable cv;
   while (IsRunning()) {
-    auto keys = verifier_->GetAllPublicKeys();
-
-    std::vector<ReplicaInfo> replicas = GetAllReplicas();
-    LOG(ERROR) << "all replicas:" << replicas.size();
-    std::vector<ReplicaInfo> client_replicas = GetClientReplicas();
-    HeartBeatInfo hb_info;
-    for (const auto& key : keys) {
-      *hb_info.add_public_keys() = key;
-    }
-    for (const auto& client : client_replicas) {
-      replicas.push_back(client);
-    }
-    auto client = GetReplicaClient(replicas, false);
-    if (client == nullptr) {
-      continue;
-    }
-
-    // If it is not a client node, broadcost the current primary to the client.
-    if (config_.GetPublicKeyCertificateInfo()
-            .public_key()
-            .public_key_info()
-            .type() == CertificateKeyInfo::REPLICA) {
-      hb_info.set_primary(GetPrimary());
-      hb_info.set_version(GetVersion());
-    }
-    LOG(ERROR) << " server:" << config_.GetSelfInfo().id() << " sends HB"
-               << " is ready:" << is_ready_
-               << " client size:" << client_replicas.size()
-               << " svr size:" << replicas.size();
-
-    Request request;
-    request.set_type(Request::TYPE_HEART_BEAT);
-    request.mutable_region_info()->set_region_id(
-        config_.GetConfigData().self_region_id());
-    hb_info.SerializeToString(request.mutable_data());
-
-    int ret = client->SendHeartBeat(request);
-    if (ret <= 0) {
-      LOG(ERROR) << " server:" << config_.GetSelfInfo().id()
-                 << " sends HB fail:" << ret;
+    {
+      std::unique_lock<std::mutex> lk(hb_mutex_);
+      SendHeartBeat();
     }
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::microseconds(sleep_time * 1000000),
@@ -138,9 +101,58 @@ void ConsensusManager::HeartBeat() {
       if (config_.IsTestMode()) {
         sleep_time = 1;
       } else {
-        sleep_time = 60 * 2;
+        sleep_time = 60;
       }
     }
+  }
+}
+
+void ConsensusManager::SendHeartBeat() {
+  auto keys = verifier_->GetAllPublicKeys();
+
+  std::vector<ReplicaInfo> replicas = GetAllReplicas();
+  LOG(ERROR) << "all replicas:" << replicas.size();
+  std::vector<ReplicaInfo> client_replicas = GetClientReplicas();
+  HeartBeatInfo hb_info;
+  hb_info.set_sender(config_.GetSelfInfo().id());
+  hb_info.set_ip(config_.GetSelfInfo().ip());
+  hb_info.set_port(config_.GetSelfInfo().port());
+  hb_info.set_hb_version(version_);
+  for (const auto& key : keys) {
+    *hb_info.add_public_keys() = key;
+    hb_info.add_node_version(hb_[key.public_key_info().node_id()]);
+  }
+  for (const auto& client : client_replicas) {
+    replicas.push_back(client);
+  }
+  auto client = GetReplicaClient(replicas, false);
+  if (client == nullptr) {
+    return;
+  }
+
+  // If it is not a client node, broadcost the current primary to the client.
+  if (config_.GetPublicKeyCertificateInfo()
+          .public_key()
+          .public_key_info()
+          .type() == CertificateKeyInfo::REPLICA) {
+    hb_info.set_primary(GetPrimary());
+    hb_info.set_version(GetVersion());
+  }
+  LOG(ERROR) << " server:" << config_.GetSelfInfo().id() << " sends HB"
+             << " is ready:" << is_ready_
+             << " client size:" << client_replicas.size()
+             << " svr size:" << replicas.size();
+
+  Request request;
+  request.set_type(Request::TYPE_HEART_BEAT);
+  request.mutable_region_info()->set_region_id(
+      config_.GetConfigData().self_region_id());
+  hb_info.SerializeToString(request.mutable_data());
+
+  int ret = client->SendHeartBeat(request);
+  if (ret <= 0) {
+    LOG(ERROR) << " server:" << config_.GetSelfInfo().id()
+               << " sends HB fail:" << ret;
   }
 }
 
@@ -158,27 +170,27 @@ int ConsensusManager::Process(std::unique_ptr<Context> context,
     return -1;
   }
 
-  // Check if the certificate is valid.
-  if (message.has_signature() && verifier_) {
-    bool valid = verifier_->VerifyMessage(message.data(), message.signature());
-    if (!valid) {
-      LOG(ERROR) << "request is not valid:"
-                 << message.signature().DebugString();
-      LOG(ERROR) << " msg:" << message.data().size();
-      return -2;
-    }
-  } else {
-  }
-
   std::unique_ptr<Request> request = std::make_unique<Request>();
   if (!request->ParseFromString(message.data())) {
     LOG(ERROR) << "parse data info fail";
     return -1;
   }
 
-  std::string tmp;
-  if (!request->SerializeToString(&tmp)) {
-    return -1;
+  if (request->type() == Request::TYPE_HEART_BEAT) {
+    return Dispatch(std::move(context), std::move(request));
+  }
+
+  // Check if the certificate is valid.
+  if (message.has_signature() && verifier_) {
+    bool valid = verifier_->VerifyMessage(message.data(), message.signature());
+    if (!valid) {
+      LOG(ERROR) << "request is not valid:"
+                 << message.signature().DebugString();
+      LOG(ERROR) << " msg:" << message.data().size()
+                 << " is recovery:" << request->is_recovery();
+      return -2;
+    }
+  } else {
   }
 
   // forward the signature to the request so that it can be included in the
@@ -187,6 +199,7 @@ int ConsensusManager::Process(std::unique_ptr<Context> context,
   // LOG(ERROR) << "======= server:" << config_.GetSelfInfo().id()
   //          << " get request type:" << request->type()
   //         << " from:" << request->sender_id();
+
   return Dispatch(std::move(context), std::move(request));
 }
 
@@ -202,6 +215,7 @@ int ConsensusManager::Dispatch(std::unique_ptr<Context> context,
 
 int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
                                        std::unique_ptr<Request> request) {
+  std::unique_lock<std::mutex> lk(hb_mutex_);
   std::vector<ReplicaInfo> replicas = GetReplicas();
   HeartBeatInfo hb_info;
   if (!hb_info.ParseFromString(request->data())) {
@@ -210,9 +224,12 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
   }
 
   LOG(ERROR) << "receive public size:" << hb_info.public_keys().size()
-            << " primary:" << hb_info.primary()
-            << " version:" << hb_info.version()
-            << " from region:" << request->region_info().region_id();
+             << " primary:" << hb_info.primary()
+             << " version:" << hb_info.version()
+             << " from region:" << request->region_info().region_id()
+             << " sender:" << hb_info.sender()
+             << " last send:" << hb_info.hb_version()
+             << " current v:" << hb_[hb_info.sender()];
 
   if (request->region_info().region_id() ==
       config_.GetConfigData().self_region_id()) {
@@ -261,6 +278,18 @@ int ConsensusManager::ProcessHeartBeat(std::unique_ptr<Context> context,
       }
     }
   }
+
+  if (!hb_info.ip().empty() && hb_info.hb_version() > 0 &&
+      hb_[hb_info.sender()] != hb_info.hb_version()) {
+    ReplicaInfo info;
+    info.set_ip(hb_info.ip());
+    info.set_port(hb_info.port());
+    info.set_id(hb_info.sender());
+    // bc_client_->Flush(info);
+    hb_[hb_info.sender()] = hb_info.hb_version();
+    SendHeartBeat();
+  }
+
   if (!is_ready_ && replica_num >= config_.GetMinDataReceiveNum()) {
     LOG(ERROR) << "============ Server " << config_.GetSelfInfo().id()
                << " is ready "

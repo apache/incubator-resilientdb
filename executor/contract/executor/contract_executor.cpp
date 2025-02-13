@@ -95,6 +95,12 @@ absl::StatusOr<Account> ContractTransactionManager::CreateAccount() {
   return account;
 }
 
+absl::Status ContractTransactionManager::AddAddress(const Request& request) {
+  Address address = AddressManager::HexToAddress(request.external_address());
+  address_manager_->AddExternalAddress(address);
+  return absl::OkStatus();
+}
+
 absl::StatusOr<Contract> ContractTransactionManager::Deploy(
     const Request& request) {
   Address caller_address =

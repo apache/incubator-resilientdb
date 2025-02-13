@@ -21,7 +21,14 @@
 
 #include <glog/logging.h>
 
+#include <ctime>
+
 #include "common/utils/utils.h"
+#include "proto/kv/kv.pb.h"
+
+namespace asio = boost::asio;
+namespace beast = boost::beast;
+using tcp = asio::ip::tcp;
 
 namespace resdb {
 
@@ -59,9 +66,22 @@ Stats::Stats(int sleep_time) {
   send_broad_cast_msg_ = 0;
 
   prometheus_ = nullptr;
-
   global_thread_ =
       std::thread(&Stats::MonitorGlobal, this);  // pass by reference
+
+  transaction_summary_.port = -1;
+
+  // Setup websocket here
+  make_faulty_.store(false);
+  transaction_summary_.request_pre_prepare_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.prepare_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.commit_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.execution_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.txn_number = 0;
 }
 
 void Stats::Stop() { stop_ = true; }
@@ -71,6 +91,208 @@ Stats::~Stats() {
   if (global_thread_.joinable()) {
     global_thread_.join();
   }
+  if (enable_resview && crow_thread_.joinable()) {
+    crow_thread_.join();
+  }
+}
+
+void Stats::CrowRoute() {
+  crow::SimpleApp app;
+  while (!stop_) {
+    try {
+      CROW_ROUTE(app, "/consensus_data")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 1";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            // Send your response
+            res.body = consensus_history_.dump();
+            res.end();
+          });
+      CROW_ROUTE(app, "/get_status")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 2";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            // Send your response
+            res.body = IsFaulty() ? "Faulty" : "Not Faulty";
+            res.end();
+          });
+      CROW_ROUTE(app, "/make_faulty")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 3";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            // Send your response
+            if (enable_faulty_switch_) {
+              make_faulty_.store(!make_faulty_.load());
+            }
+            res.body = "Success";
+            res.end();
+          });
+      app.port(8500 + transaction_summary_.port).multithreaded().run();
+      sleep(1);
+    } catch (const std::exception& e) {
+    }
+  }
+  app.stop();
+}
+
+bool Stats::IsFaulty() { return make_faulty_.load(); }
+
+void Stats::ChangePrimary(int primary_id) {
+  transaction_summary_.primary_id = primary_id;
+  make_faulty_.store(false);
+}
+
+void Stats::SetProps(int replica_id, std::string ip, int port,
+                     bool resview_flag, bool faulty_flag) {
+  transaction_summary_.replica_id = replica_id;
+  transaction_summary_.ip = ip;
+  transaction_summary_.port = port;
+  enable_resview = resview_flag;
+  enable_faulty_switch_ = faulty_flag;
+  if (resview_flag) {
+    crow_thread_ = std::thread(&Stats::CrowRoute, this);
+  }
+}
+
+void Stats::SetPrimaryId(int primary_id) {
+  transaction_summary_.primary_id = primary_id;
+}
+
+void Stats::RecordStateTime(std::string state) {
+  if (!enable_resview) {
+    return;
+  }
+  if (state == "request" || state == "pre-prepare") {
+    transaction_summary_.request_pre_prepare_state_time =
+        std::chrono::system_clock::now();
+  } else if (state == "prepare") {
+    transaction_summary_.prepare_state_time = std::chrono::system_clock::now();
+  } else if (state == "commit") {
+    transaction_summary_.commit_state_time = std::chrono::system_clock::now();
+  }
+}
+
+void Stats::GetTransactionDetails(BatchUserRequest batch_request) {
+  if (!enable_resview) {
+    return;
+  }
+  transaction_summary_.txn_number = batch_request.seq();
+  transaction_summary_.txn_command.clear();
+  transaction_summary_.txn_key.clear();
+  transaction_summary_.txn_value.clear();
+  for (auto& sub_request : batch_request.user_requests()) {
+    KVRequest kv_request;
+    if (!kv_request.ParseFromString(sub_request.request().data())) {
+      break;
+    }
+    if (kv_request.cmd() == KVRequest::SET) {
+      transaction_summary_.txn_command.push_back("SET");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back(kv_request.value());
+    } else if (kv_request.cmd() == KVRequest::GET) {
+      transaction_summary_.txn_command.push_back("GET");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back("");
+    } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+      transaction_summary_.txn_command.push_back("GETALLVALUES");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back("");
+    } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+      transaction_summary_.txn_command.push_back("GETRANGE");
+      transaction_summary_.txn_key.push_back(kv_request.key());
+      transaction_summary_.txn_value.push_back(kv_request.value());
+    }
+  }
+}
+
+void Stats::SendSummary() {
+  if (!enable_resview) {
+    return;
+  }
+  transaction_summary_.execution_time = std::chrono::system_clock::now();
+
+  // Convert Transaction Summary to JSON
+  summary_json_["replica_id"] = transaction_summary_.replica_id;
+  summary_json_["ip"] = transaction_summary_.ip;
+  summary_json_["port"] = transaction_summary_.port;
+  summary_json_["primary_id"] = transaction_summary_.primary_id;
+  summary_json_["propose_pre_prepare_time"] =
+      transaction_summary_.request_pre_prepare_state_time.time_since_epoch()
+          .count();
+  summary_json_["prepare_time"] =
+      transaction_summary_.prepare_state_time.time_since_epoch().count();
+  summary_json_["commit_time"] =
+      transaction_summary_.commit_state_time.time_since_epoch().count();
+  summary_json_["execution_time"] =
+      transaction_summary_.execution_time.time_since_epoch().count();
+  for (size_t i = 0;
+       i < transaction_summary_.prepare_message_count_times_list.size(); i++) {
+    summary_json_["prepare_message_timestamps"].push_back(
+        transaction_summary_.prepare_message_count_times_list[i]
+            .time_since_epoch()
+            .count());
+  }
+  for (size_t i = 0;
+       i < transaction_summary_.commit_message_count_times_list.size(); i++) {
+    summary_json_["commit_message_timestamps"].push_back(
+        transaction_summary_.commit_message_count_times_list[i]
+            .time_since_epoch()
+            .count());
+  }
+  summary_json_["txn_number"] = transaction_summary_.txn_number;
+  for (size_t i = 0; i < transaction_summary_.txn_command.size(); i++) {
+    summary_json_["txn_commands"].push_back(
+        transaction_summary_.txn_command[i]);
+  }
+  for (size_t i = 0; i < transaction_summary_.txn_key.size(); i++) {
+    summary_json_["txn_keys"].push_back(transaction_summary_.txn_key[i]);
+  }
+  for (size_t i = 0; i < transaction_summary_.txn_value.size(); i++) {
+    summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
+  }
+
+  consensus_history_[std::to_string(transaction_summary_.txn_number)] =
+      summary_json_;
+
+  LOG(ERROR) << summary_json_.dump();
+
+  // Reset Transaction Summary Parameters
+  transaction_summary_.request_pre_prepare_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.prepare_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.commit_state_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.execution_time =
+      std::chrono::system_clock::time_point::min();
+  transaction_summary_.prepare_message_count_times_list.clear();
+  transaction_summary_.commit_message_count_times_list.clear();
+
+  summary_json_.clear();
 }
 
 void Stats::MonitorGlobal() {
@@ -507,6 +729,8 @@ void Stats::IncPrepare() {
     prometheus_->Inc(PREPARE, 1);
   }
   num_prepare_++;
+  transaction_summary_.prepare_message_count_times_list.push_back(
+      std::chrono::system_clock::now());
 }
 
 void Stats::IncCommit() {
@@ -514,6 +738,8 @@ void Stats::IncCommit() {
     prometheus_->Inc(COMMIT, 1);
   }
   num_commit_++;
+  transaction_summary_.commit_message_count_times_list.push_back(
+      std::chrono::system_clock::now());
 }
 
 void Stats::IncPendingExecute() { pending_execute_++; }

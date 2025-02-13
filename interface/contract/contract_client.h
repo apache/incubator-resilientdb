@@ -32,6 +32,7 @@ class ContractClient : public TransactionConstructor {
   ContractClient(const ResDBConfig& config);
 
   absl::StatusOr<Account> CreateAccount();
+  absl::Status AddExternalAddress(const std::string& external_address);
   absl::StatusOr<Contract> DeployContract(
       const std::string& caller_address, const std::string& contract_name,
       const std::string& contract_path,

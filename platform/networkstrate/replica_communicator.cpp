@@ -322,7 +322,7 @@ void ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
   }
 
   if (target_replica.ip().empty()) {
-    LOG(ERROR) << "no replica info";
+    LOG(ERROR) << "no replica info node:" << node_id;
     return;
   }
 

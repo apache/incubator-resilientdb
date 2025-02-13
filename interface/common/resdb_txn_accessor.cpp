@@ -147,4 +147,45 @@ absl::StatusOr<std::vector<Request>> ResDBTxnAccessor::GetRequestFromReplica(
   return txn_resp;
 }
 
+absl::StatusOr<uint64_t> ResDBTxnAccessor::GetBlockNumbers() {
+  QueryRequest request;
+  request.set_min_seq(0);
+  request.set_max_seq(0);
+
+  std::vector<std::unique_ptr<NetChannel>> clients;
+  std::vector<std::thread> ths;
+  std::string final_str;
+  std::mutex mtx;
+  std::condition_variable resp_cv;
+  bool success = false;
+
+  std::unique_ptr<NetChannel> client =
+      GetNetChannel(replicas_[0].ip(), replicas_[0].port());
+
+  LOG(INFO) << "ip:" << replicas_[0].ip() << " port:" << replicas_[0].port();
+
+  std::string response_str;
+  int ret = 0;
+  for (int i = 0; i < 5; ++i) {
+    ret = client->SendRequest(request, Request::TYPE_QUERY);
+    if (ret) {
+      continue;
+    }
+    client->SetRecvTimeout(100000);
+    ret = client->RecvRawMessageStr(&response_str);
+    LOG(INFO) << "receive str:" << ret << " len:" << response_str.size();
+    if (ret != 0) {
+      continue;
+    }
+    break;
+  }
+
+  QueryResponse resp;
+  if (response_str.empty() || !resp.ParseFromString(response_str)) {
+    LOG(ERROR) << "parse fail len:" << final_str.size();
+    return absl::InternalError("recv data fail.");
+  }
+  return resp.max_seq();
+}
+
 }  // namespace resdb

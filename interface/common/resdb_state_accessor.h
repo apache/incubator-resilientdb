@@ -34,7 +34,7 @@ class ResDBStateAccessor {
   virtual ~ResDBStateAccessor() = default;
 
   // Obtain ReplicaState of each replica.
-  absl::StatusOr<std::vector<ReplicaState>> GetReplicaStates();
+  absl::StatusOr<ReplicaState> GetReplicaState();
 
  protected:
   virtual std::unique_ptr<NetChannel> GetNetChannel(const std::string& ip,

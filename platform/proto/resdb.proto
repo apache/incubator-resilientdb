@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 syntax = "proto3";
 
 import "platform/proto/replica_info.proto";
@@ -69,7 +88,10 @@ message Request {
     int64 uid = 23;
     int64 create_time = 24;
     int64 commit_time = 25;
+<<<<<<< HEAD
     bytes data_hash = 26;
+=======
+>>>>>>> master
 }
 
 // The response message containing response
@@ -116,8 +138,13 @@ message BatchUserResponse {
 
 message HeartBeatInfo{
   repeated CertificateKey public_keys = 1;
+  repeated int64 node_version = 8;
   uint32 primary = 2;
   uint64 version= 3;
+  int32 sender = 4;
+  string ip = 5;
+  int32 port = 6;
+  int64 hb_version = 7;
 }
 
 message ClientCertInfo {
@@ -176,6 +203,7 @@ message QueryRequest {
 
 message QueryResponse {
   repeated Request transactions = 1;
+  uint64 max_seq = 2;
 }
 
 message CustomQueryResponse {

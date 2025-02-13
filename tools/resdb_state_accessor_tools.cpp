@@ -34,12 +34,10 @@ int main(int argc, char** argv) {
   ResDBConfig config = GenerateResDBConfig(config_file);
 
   ResDBStateAccessor client(config);
-  auto states = client.GetReplicaStates();
+  auto states = client.GetReplicaState();
   if (!states.ok()) {
     LOG(ERROR) << "get replica state fail";
     exit(1);
   }
-  for (auto& state : *states) {
-    LOG(ERROR) << state.DebugString();
-  }
+  LOG(ERROR) << (*states).DebugString();
 }

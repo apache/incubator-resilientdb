@@ -27,9 +27,6 @@
 #ifdef ENABLE_LEVELDB
 #include "chain/storage/leveldb.h"
 #endif
-#ifdef ENABLE_ROCKSDB
-#include "chain/storage/rocksdb.h"
-#endif
 
 using namespace resdb;
 using namespace resdb::storage;
@@ -40,11 +37,6 @@ void ShowUsage() {
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
-#ifdef ENABLE_ROCKSDB
-  LOG(INFO) << "use rocksdb storage.";
-  return NewResRocksDB(db_path, config_data);
-#endif
-
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";
   return NewResLevelDB(db_path, config_data);
@@ -60,6 +52,7 @@ int main(int argc, char** argv) {
     exit(0);
   }
   google::InitGoogleLogging(argv[0]);
+  FLAGS_minloglevel = 1;
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];

@@ -1,10 +1,28 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 syntax = "proto3";
 
 package resdb;
 
 import "common/proto/signature_info.proto";
 import "chain/storage/proto/leveldb_config.proto";
-import "chain/storage/proto/rocksdb_config.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -21,7 +39,6 @@ message RegionInfo {
 message ResConfigData{
   repeated RegionInfo region = 1;
   int32 self_region_id = 2;
-  optional storage.RocksDBInfo rocksdb_info = 3;
   optional storage.LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
   optional int32 view_change_timeout_ms = 10;
@@ -38,6 +55,8 @@ message ResConfigData{
   optional string recovery_path = 18;
   optional int32 recovery_buffer_size = 19;
   optional int32 recovery_ckpt_time_s = 20;
+  optional bool enable_resview = 23;
+  optional bool enable_faulty_switch = 24;
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;
