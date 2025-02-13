@@ -23,11 +23,7 @@
 #include <nlohmann/json.hpp>
 #include <boost/algorithm/string.hpp>
 #include <vector>
-<<<<<<< HEAD
 #include <fstream>
-=======
-#include <unistd.h>  // For getopt
->>>>>>> master
 
 #include "interface/contract/contract_client.h"
 #include "platform/config/resdb_config_utils.h"
@@ -40,28 +36,17 @@ using resdb::contract::ContractClient;
 
 void ShowUsage() {
   printf(
-      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contract "
-      "path> -a <params> -e <external address>\n");
+      "<cmd> -c <config> -m <caller address> -n <contract name> -p <contact "
+      "path> -a <params> \n");
   exit(0);
 }
 
-<<<<<<< HEAD
 static struct option long_options[] = {
     { "cmd", required_argument, NULL, 'm'},
     { "config_file", required_argument, NULL, 'f'},
     { 0, 0, 0, 0 }
 };
 
-=======
-void AddAddress(ContractClient* client, const std::string& external_address) {
-  absl::Status status = client->AddExternalAddress(external_address);
-  if (!status.ok()) {
-    printf("Add address failed\n");
-  } else {
-    printf("Address added successfully\n");
-  }
-}
->>>>>>> master
 
 void CreateAccount(ContractClient* client) {
   auto account = client->CreateAccount();
@@ -118,13 +103,8 @@ if(!js.contains(key)){
 
 
 int main(int argc, char** argv) {
-<<<<<<< HEAD
   if (argc < 2) {
     printf("<cmd> -c [config]\n");
-=======
-  if (argc < 3) {
-    ShowUsage();
->>>>>>> master
     return 0;
   }
 
@@ -133,15 +113,11 @@ int main(int argc, char** argv) {
   
   std::string cmd;
   std::string caller_address, contract_name, contract_path, params,
-      contract_address, func_name, external_address;  // Added external_address
+      contract_address, func_name;
   int c;
   int option_index;
   std::string client_config_file;
-<<<<<<< HEAD
   while ((c = getopt_long(argc, argv, "c:h", long_options, &option_index)) != -1) {
-=======
-  while ((c = getopt(argc, argv, "m:c:a:n:p:h:f:s:e:")) != -1) {  // Added 'e:'
->>>>>>> master
     switch (c) {
       case -1:
         break;
@@ -151,13 +127,7 @@ int main(int argc, char** argv) {
       case 'c':
         client_config_file = optarg;
         break;
-      case 'e':
-        external_address = optarg;  // Handle the 'e' option
-        break;
       case 'h':
-        ShowUsage();
-        break;
-      default:
         ShowUsage();
         break;
     }
@@ -174,8 +144,6 @@ int main(int argc, char** argv) {
 
   if (cmd == "create_account") {
     CreateAccount(&client);
-  } else if (cmd == "add_address") {
-    AddAddress(&client, external_address);
   } else if (cmd == "deploy") {
     
     contract_path = GetValue(js, "contract_path");
@@ -207,12 +175,6 @@ int main(int argc, char** argv) {
 
     ExecuteContract(&client, caller_address, contract_address, func_name,
                     func_params);
-  } else {
-    ShowUsage();
   }
-<<<<<<< HEAD
 }
 
-=======
-}
->>>>>>> master

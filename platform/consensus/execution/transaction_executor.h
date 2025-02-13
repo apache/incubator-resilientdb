@@ -91,7 +91,6 @@ class TransactionExecutor {
   bool SetFlag(uint64_t uid, int f);
   void ClearPromise(uint64_t uid);
   void PrepareMessage();
-  void GCProcess();
 
   bool AddFuture(uint64_t uid);
   std::unique_ptr<std::future<int>> GetFuture(uint64_t uid);
@@ -128,7 +127,6 @@ class TransactionExecutor {
 
 
   std::vector<std::thread> prepare_thread_;
-  std::thread gc_thread_;
   static const int mod = 2048;
   std::mutex f_mutex_[mod], fd_mutex_[mod];
   LockFreeQueue<Request> prepare_queue_;
