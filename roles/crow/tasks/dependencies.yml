@@ -1,0 +1,11 @@
+---
+- name: Clone GraphQL repository
+  git:
+    repo: https://github.com/ResilientApp/ResilientDB-GraphQL.git
+    dest: "{{ graphql_dir }}"
+    version: main
+
+- name: Build Crow HTTP Server
+  command: bazel build service/http_server:crow_service_main
+  args:
+    chdir: "{{ graphql_dir }}"

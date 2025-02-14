@@ -1,0 +1,6 @@
+---
+- include_tasks: dependencies.yml
+  tags: ['resilientdb', 'all']
+
+- include_tasks: service.yml
+  tags: ['resilientdb', 'all']

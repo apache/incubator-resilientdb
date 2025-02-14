@@ -1,0 +1,9 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+  tags: ['nginx', 'all']
+
+- include_tasks: configure.yml
+  tags: ['nginx', 'all']

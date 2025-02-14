@@ -1,0 +1,39 @@
+---
+- name: Install Python 3.10
+  apt:
+    name:
+      - python3.10
+      - python3.10-dev
+      - python3.10-venv
+    state: present
+
+- name: Verify Python 3.10 installation
+  stat:
+    path: /usr/bin/python3.10
+  register: python3_10_bin
+
+- name: Register Python 3.10 alternative
+  command: update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 2
+  when: python3_10_bin.stat.exists
+
+- name: Set Python 3.10 as default
+  alternatives:
+    name: python3
+    path: /usr/bin/python3.10
+  when: python3_10_bin.stat.exists
+
+- name: Install base dependencies
+  apt:
+    name:
+      - git
+      - build-essential
+      - curl
+      - apt-transport-https
+      - gnupg
+      - protobuf-compiler
+      - rapidjson-dev
+      - clang-format
+      - openjdk-11-jdk
+      - zip
+      - unzip
+    update_cache: yes

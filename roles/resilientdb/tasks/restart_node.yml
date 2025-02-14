@@ -1,0 +1,10 @@
+---
+- name: Enable and restart ResilientDB KV Server node instance {{ item }}
+  systemd:
+    name: "resilientdb-kv@{{ item }}"
+    state: restarted
+    enabled: yes
+
+- name: Pause for 5 seconds after restarting node instance {{ item }}
+  pause:
+    seconds: 5

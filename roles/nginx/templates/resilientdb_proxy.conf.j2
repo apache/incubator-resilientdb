@@ -1,0 +1,16 @@
+server {
+    listen 80;
+    server_name {{ nginx_domain | default('localhost') }};
+
+    location /crow/ {
+        proxy_pass http://{{ nginx_domain | default('localhost') }}:{{ crow_port }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /graphql {
+        proxy_pass http://{{ nginx_domain | default('localhost') }}:{{ graphql_port }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

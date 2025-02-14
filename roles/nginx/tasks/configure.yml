@@ -1,0 +1,19 @@
+---
+- name: Remove default nginx site if present
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Create Nginx config
+  template:
+    src: resilientdb_proxy.conf.j2
+    dest: /etc/nginx/sites-available/resilientdb.conf
+  notify: reload nginx
+
+- name: Enable site
+  file:
+    src: /etc/nginx/sites-available/resilientdb.conf
+    dest: /etc/nginx/sites-enabled/resilientdb.conf
+    state: link
+  notify: reload nginx

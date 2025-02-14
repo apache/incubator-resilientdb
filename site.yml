@@ -1,0 +1,13 @@
+---
+- name: Main playbook
+  hosts: resilientdb_cluster
+  become: yes
+  vars_files:
+    - inventories/production/group_vars/all.yml
+  roles:
+    - { role: common, tags: ['all'] }
+    - { role: resilientdb, tags: ['all', 'resilientdb'] }
+    - { role: crow, tags: ['all', 'crow'] }
+    - { role: graphql, tags: ['all', 'graphql'] }
+    - { role: nginx, tags: ['all', 'nginx'] }
+  tags: ['all']

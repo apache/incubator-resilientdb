@@ -1,0 +1,15 @@
+---
+- name: Create systemd service
+  template:
+    src: graphql_service.service.j2
+    dest: /etc/systemd/system/graphql.service
+    force: yes
+  notify:
+    - reload systemd
+    - restart graphql
+
+- name: Enable and restart service
+  systemd:
+    name: graphql
+    state: restarted
+    enabled: yes

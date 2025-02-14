@@ -1,0 +1,14 @@
+[Unit]
+Description=Crow HTTP Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory={{ graphql_dir }}
+ExecStart={{ graphql_dir }}/bazel-bin/service/http_server/crow_service_main service/tools/config/interface/client.config service/http_server/server_config.config
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+[Unit]
+Description=ResilientDB GraphQL Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory={{ graphql_dir }}
+ExecStart=/usr/bin/gunicorn \
+    -w 10 \
+    -b 0.0.0.0:{{ graphql_port }} \
+    --pythonpath {{ graphql_dir }}/venv/lib/python3.10/site-packages \
+    --timeout 120 \
+    app:app
+Restart=always
+RestartSec=5
+Environment="PATH={{ graphql_dir }}/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+[Install]
+WantedBy=multi-user.target

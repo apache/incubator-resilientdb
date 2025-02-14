@@ -1,0 +1,19 @@
+[Unit]
+Description=ResilientDB KV Client Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory={{ resilientdb_dir }}
+ExecStart={{ resilientdb_dir }}/bazel-bin/service/kv/kv_service \
+    {{ resilientdb_dir }}/service/tools/config/server/server.config \
+    {{ resilientdb_dir }}/service/tools/data/cert/node5.key.pri \
+    {{ resilientdb_dir }}/service/tools/data/cert/cert_5.cert
+Restart=always
+RestartSec=5
+StandardOutput=append:{{ resilientdb_dir }}/client.log
+StandardError=append:{{ resilientdb_dir }}/client_error.log
+
+[Install]
+WantedBy=multi-user.target

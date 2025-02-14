@@ -1,0 +1,17 @@
+---
+- name: Add Bazel repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8"
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install Bazel with downgrade allowance
+  apt:
+    name: "bazel={{ bazel_version }}"
+    state: present
+    allow_downgrades: yes
+    force: yes

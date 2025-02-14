@@ -1,0 +1,33 @@
+---
+- name: Install system requirements
+  apt:
+    name:
+      - gunicorn
+      - python3.10-venv
+      - python3.10-dev
+      - build-essential
+    state: present
+
+- name: Create virtual environment
+  command: "python3.10 -m venv {{ graphql_dir }}/venv"
+  args:
+    creates: "{{ graphql_dir }}/venv/bin/python"
+  register: venv_created
+  changed_when: venv_created.rc == 0
+
+- name: Ensure pip is installed in the virtualenv
+  command: "{{ graphql_dir }}/venv/bin/python -m ensurepip --upgrade"
+  args:
+    creates: "{{ graphql_dir }}/venv/bin/pip"
+
+- name: Ensure pip is upgraded
+  pip:
+    name: pip
+    virtualenv: "{{ graphql_dir }}/venv"
+    state: latest
+
+- name: Install Python dependencies
+  pip:
+    requirements: "{{ graphql_dir }}/requirements.txt"
+    virtualenv: "{{ graphql_dir }}/venv"
+    extra_args: --no-cache-dir
