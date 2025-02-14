@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     
     contract_path = GetValue(js, "contract_path");
     contract_name = GetValue(js, "contract_name");
-    contract_address = GetValue(js, "contract_address");
+    contract_address = GetValue(js, "owner_address");
     params = GetValue(js, "init_params");
 
     printf("contract path %s cmd %s contract name %s caller_address %s init params %s\n", contract_path.c_str(), cmd.c_str(), contract_name.c_str(), contract_address.c_str(), params.c_str());
