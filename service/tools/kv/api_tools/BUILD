@@ -36,6 +36,7 @@ cc_binary(
         "//common/proto:signature_info_cc_proto",
         "//interface/kv:contract_client",
         "//platform/config:resdb_config_utils",
+	"//common:boost_comm",
     ],
 )
 
