@@ -387,3 +387,8 @@ Then re-run the start script:
   ./service/tools/kv/server_tools/start_kv_service.sh
   ```
 
+
+
+## Smart Contract ##
+If you want to use smart contracts, please go to:
+https://blog.resilientdb.com/2025/02/14/GettingStartedSmartContract.html
