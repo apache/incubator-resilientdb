@@ -43,7 +43,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
     const google::protobuf::Message& request) {
   KVResponse kv_response;
   const KVRequest& kv_request = dynamic_cast<const KVRequest&>(request);
-  // LOG(ERROR)<<"execute request:";
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
@@ -95,6 +94,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
+  LOG(ERROR)<<" execute cmd:"<<kv_request.cmd();
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
@@ -135,10 +135,12 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
+  LOG(ERROR)<<" set key:"<<key;
   storage_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
+  LOG(ERROR)<<" get key:"<<key;
   return storage_->GetValue(key);
 }
 
