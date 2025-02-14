@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
     std::string balance = GetValue(js, "balance");
     printf("address %s balance %s\n", address.c_str(), balance.c_str());
     auto ret = client.SetBalance(address, balance);
-    printf("set address %s balance %s\n", address.c_str(), balance.c_str(), *ret);
+    printf("set address %s balance %s ret %s\n", address.c_str(), balance.c_str(), (*ret).c_str());
   }
 
 }
