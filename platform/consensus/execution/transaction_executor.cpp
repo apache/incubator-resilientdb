@@ -255,8 +255,6 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
                                   bool need_execute) {
-  uint64_t uid = request->uid();
-  int64_t seq = request->seq();
   RegisterExecute(request->seq());
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
@@ -327,8 +325,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
 
-  if (duplicate_manager_) {	      
-    duplicate_manager_->AddExecuted(batch_request.hash(), batch_request.seq());		    
+  if (duplicate_manager_ && batch_request_p) {	      
+    duplicate_manager_->AddExecuted(batch_request_p->hash(), batch_request_p->seq());		    
   }
 
   if (response == nullptr) {
