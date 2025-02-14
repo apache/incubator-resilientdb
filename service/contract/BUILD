@@ -26,5 +26,6 @@ cc_binary(
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/pbft:consensus_manager_pbft",
         "//service/utils:server_factory",
+        "//chain/storage:memory_db",
     ],
 )

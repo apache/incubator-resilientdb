@@ -40,6 +40,7 @@ cc_test(
     tags = ["manual"],
     deps = [
         ":contract_executor",
+        "//chain/storage:memory_db",
         "//common/test:test_main",
     ],
 )

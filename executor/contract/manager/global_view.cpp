@@ -17,31 +17,27 @@
  * under the License.
  */
 
-#pragma once
 
-#include "interface/rdbc/transaction_constructor.h"
-#include "proto/contract/account.pb.h"
-#include "proto/contract/contract.pb.h"
+#include "executor/contract/manager/global_view.h"
+
+#include <glog/logging.h>
+
+#include "eEVM/util.h"
 
 namespace resdb {
 namespace contract {
 
-// ContractClient to send data to the contract server.
-class ContractClient : public TransactionConstructor {
- public:
-  ContractClient(const ResDBConfig& config);
+GlobalView::GlobalView(resdb::Storage* storage) : storage_(storage) {}
 
-  absl::StatusOr<Account> CreateAccount();
-  absl::StatusOr<Contract> DeployContract(
-      const std::string& caller_address, const std::string& contract_name,
-      const std::string& contract_path,
-      const std::vector<std::string>& init_params);
+void GlobalView::store(const uint256_t& key, const uint256_t& value) {
+  storage_->SetValue(eevm::to_hex_string(key), eevm::to_hex_string(value));
+}
 
-  absl::StatusOr<std::string> ExecuteContract(
-      const std::string& caller_address, const std::string& contract_address,
-      const std::string& func_name,
-      const std::vector<std::string>& func_params);
-};
+uint256_t GlobalView::load(const uint256_t& key) {
+  return eevm::to_uint256(storage_->GetValue(eevm::to_hex_string(key)));
+}
+
+bool GlobalView::remove(const uint256_t& key) { return true; }
 
 }  // namespace contract
 }  // namespace resdb

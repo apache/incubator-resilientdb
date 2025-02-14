@@ -76,6 +76,9 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
   if (config_data_.tcp_batch_num() == 0) {
     config_data_.set_tcp_batch_num(100);
   }
+  if (config_data_.max_process_txn() == 0) {
+    config_data_.set_max_process_txn(64);
+  }
 }
 
 void ResDBConfig::SetConfigData(const ResConfigData& config_data) {
@@ -177,7 +180,7 @@ void ResDBConfig::SetSignatureVerifierEnabled(bool enable_sv) {
 }
 
 // Performance setting
-bool ResDBConfig::IsPerformanceRunning() {
+bool ResDBConfig::IsPerformanceRunning() const {
   return is_performance_running_ || GetConfigData().is_performance_running();
 }
 

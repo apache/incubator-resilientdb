@@ -17,14 +17,14 @@
  * under the License.
  */
 
-#include "interface/contract/contract_client.h"
+#include "interface/kv/contract_client.h"
 
 #include <glog/logging.h>
 
 #include <fstream>
 #include <nlohmann/json.hpp>
 
-#include "proto/contract/rpc.pb.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 namespace contract {
@@ -36,7 +36,7 @@ absl::StatusOr<Account> ContractClient::CreateAccount() {
   Request request;
   Response response;
   request.set_cmd(Request::CREATE_ACCOUNT);
-  int ret = SendRequest(request, &response);
+  int ret = SendRequestInternal(request, &response);
   if (ret != 0 || response.ret() != 0) {
     return absl::InternalError("Account not exist.");
   }
@@ -88,7 +88,7 @@ absl::StatusOr<Contract> ContractClient::DeployContract(
 
   request.set_cmd(Request::DEPLOY);
   LOG(ERROR) << "send request:" << request.DebugString();
-  int ret = SendRequest(request, &response);
+  int ret = SendRequestInternal(request, &response);
   if (ret != 0 || response.ret() != 0) {
     return absl::InternalError("Deploy contract fail.");
   }
@@ -109,13 +109,61 @@ absl::StatusOr<std::string> ContractClient::ExecuteContract(
   }
 
   request.set_cmd(Request::EXECUTE);
+
   LOG(ERROR) << "send request:" << request.DebugString();
-  int ret = SendRequest(request, &response);
+  int ret = SendRequestInternal(request, &response);
   if (ret != 0 || response.ret() != 0) {
     return absl::InternalError("Deploy contract fail.");
   }
   return response.res();
 }
+  
+
+absl::StatusOr<std::string> ContractClient::GetBalance(const std::string& address) {
+  Request request;
+  Response response;
+  request.set_account(address);
+
+  request.set_cmd(Request::GETBALANCE);
+
+  int ret = SendRequestInternal(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("Deploy contract fail.");
+  }
+  return response.res();
+}
+
+absl::StatusOr<std::string> ContractClient::SetBalance(const std::string& address, const std::string& balance) {
+  Request request;
+  Response response;
+  request.set_account(address);
+  request.set_balance(balance);
+
+  request.set_cmd(Request::SETBALANCE);
+
+  int ret = SendRequestInternal(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("Deploy contract fail.");
+  }
+  return response.res();
+}
+
+int ContractClient::SendRequestInternal(const Request& request, Response * response) {
+  KVRequest kv_request;
+  request.SerializeToString(kv_request.mutable_smart_contract_request());
+  KVResponse kv_response;
+
+  int ret = SendRequest(kv_request, &kv_response);
+  if (ret != 0) {
+    return ret;
+  }
+  printf("get response from sm\n");
+  
+  response->ParseFromString(kv_response.smart_contract_response());
+  return 0;
+}
+
+
 
 }  // namespace contract
 }  // namespace resdb

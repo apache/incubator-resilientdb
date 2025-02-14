@@ -19,28 +19,25 @@
 
 #pragma once
 
-#include "interface/rdbc/transaction_constructor.h"
-#include "proto/contract/account.pb.h"
-#include "proto/contract/contract.pb.h"
+#include <map>
+
+#include "eEVM/storage.h"
+#include "chain/storage/storage.h"
 
 namespace resdb {
 namespace contract {
 
-// ContractClient to send data to the contract server.
-class ContractClient : public TransactionConstructor {
+class GlobalView : public eevm::Storage {
  public:
-  ContractClient(const ResDBConfig& config);
+  GlobalView(resdb::Storage* storage);
+  virtual ~GlobalView() = default;
 
-  absl::StatusOr<Account> CreateAccount();
-  absl::StatusOr<Contract> DeployContract(
-      const std::string& caller_address, const std::string& contract_name,
-      const std::string& contract_path,
-      const std::vector<std::string>& init_params);
+  void store(const uint256_t& key, const uint256_t& value) override;
+  uint256_t load(const uint256_t& key) override;
+  bool remove(const uint256_t& key) override;
 
-  absl::StatusOr<std::string> ExecuteContract(
-      const std::string& caller_address, const std::string& contract_address,
-      const std::string& func_name,
-      const std::vector<std::string>& func_params);
+ private:
+  resdb::Storage* storage_;
 };
 
 }  // namespace contract

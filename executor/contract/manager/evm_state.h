@@ -17,30 +17,26 @@
  * under the License.
  */
 
+
 #pragma once
 
-#include "interface/rdbc/transaction_constructor.h"
-#include "proto/contract/account.pb.h"
-#include "proto/contract/contract.pb.h"
+#include "eEVM/globalstate.h"
 
 namespace resdb {
 namespace contract {
 
-// ContractClient to send data to the contract server.
-class ContractClient : public TransactionConstructor {
+class EVMState : public eevm::GlobalState {
  public:
-  ContractClient(const ResDBConfig& config);
+  EVMState() = default;
+  virtual ~EVMState() = default;
 
-  absl::StatusOr<Account> CreateAccount();
-  absl::StatusOr<Contract> DeployContract(
-      const std::string& caller_address, const std::string& contract_name,
-      const std::string& contract_path,
-      const std::vector<std::string>& init_params);
+ protected:
+  const eevm::Block& get_current_block() override { return block_; }
+  uint256_t get_block_hash(uint8_t offset) override { return 0; }
 
-  absl::StatusOr<std::string> ExecuteContract(
-      const std::string& caller_address, const std::string& contract_address,
-      const std::string& func_name,
-      const std::vector<std::string>& func_params);
+ private:
+  // Unused.
+  eevm::Block block_;
 };
 
 }  // namespace contract

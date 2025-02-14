@@ -31,22 +31,29 @@ message Request {
         CREATE_ACCOUNT = 1; // deploy contract
         DEPLOY = 2; // deploy contract
         EXECUTE = 3; // execute contract
-        ADD_ADDRESS = 4; // add address
+        GETBALANCE = 4; // get balance directly (key-value)
+        SETBALANCE = 5; // set balance directly (key-value)
     };
 
     CMD cmd = 1;
+
+    // for smart-contract
     string caller_address = 2;
     optional DeployInfo deploy_info = 3;
     optional string contract_address = 4;
     optional Params func_params = 5;
-    optional string external_address = 6;
+
+    // for key-value
+    optional string account = 6;
+    // hex string
+    optional string balance = 7;
 }
 
 
 
 message Response {
-int32 ret = 1;
-optional Account account = 2;
-optional Contract contract = 3;
-optional string res = 4;
+  int32 ret = 1;
+  optional Account account = 2;
+  optional Contract contract = 3;
+  optional string res = 4;
 }

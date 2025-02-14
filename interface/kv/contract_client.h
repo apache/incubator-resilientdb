@@ -19,34 +19,35 @@
 
 #pragma once
 
-#include "executor/common/transaction_manager.h"
-#include "executor/contract/manager/address_manager.h"
-#include "executor/contract/manager/contract_manager.h"
-#include "platform/config/resdb_config_utils.h"
-#include "proto/contract/func_params.pb.h"
+#include "interface/rdbc/transaction_constructor.h"
+#include "proto/contract/account.pb.h"
+#include "proto/contract/contract.pb.h"
 #include "proto/contract/rpc.pb.h"
 
 namespace resdb {
 namespace contract {
 
-class ContractTransactionManager : public TransactionManager {
+// ContractClient to send data to the contract server.
+class ContractClient : public TransactionConstructor {
  public:
-  ContractTransactionManager(Storage * storage);
-  virtual ~ContractTransactionManager() = default;
+  ContractClient(const ResDBConfig& config);
 
-  std::unique_ptr<std::string> ExecuteData(const std::string& request) override;
-
- private:
   absl::StatusOr<Account> CreateAccount();
-  absl::StatusOr<Contract> Deploy(const Request& request);
-  absl::StatusOr<std::string> Execute(const Request& request);
+  absl::StatusOr<Contract> DeployContract(
+      const std::string& caller_address, const std::string& contract_name,
+      const std::string& contract_path,
+      const std::vector<std::string>& init_params);
 
-  absl::StatusOr<std::string> GetBalance(const Request& request);
-  absl::StatusOr<std::string> SetBalance(const Request& request);
+  absl::StatusOr<std::string> ExecuteContract(
+      const std::string& caller_address, const std::string& contract_address,
+      const std::string& func_name,
+      const std::vector<std::string>& func_params);
 
- private:
-  std::unique_ptr<ContractManager> contract_manager_;
-  std::unique_ptr<AddressManager> address_manager_;
+  absl::StatusOr<std::string> GetBalance(const std::string& address);
+  absl::StatusOr<std::string> SetBalance(const std::string& address, const std::string& balance);
+
+  private:
+  int SendRequestInternal(const resdb::contract::Request& request, resdb::contract::Response* response);
 };
 
 }  // namespace contract
