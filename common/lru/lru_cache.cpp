@@ -1,7 +1,5 @@
 #include "lru_cache.h"
 
-#include <algorithm>
-
 namespace resdb {
 
 template <typename KeyType, typename ValueType>
@@ -15,52 +13,52 @@ template <typename KeyType, typename ValueType>
 LRUCache<KeyType, ValueType>::~LRUCache() {
   um_.clear();
   dq_.clear();
+  key_iter_map_.clear();
 }
 
 template <typename KeyType, typename ValueType>
 ValueType LRUCache<KeyType, ValueType>::Get(KeyType key) {
-  if (!um_.count(key)) {
+  if (um_.find(key) == um_.end()) {
     cache_misses_++;
     return ValueType();
   }
 
-  auto it = std::find(dq_.begin(), dq_.end(), key);
-  dq_.erase(it);
-  dq_.push_front(key);
+  // Move the accessed key to the front of the list
+  dq_.splice(dq_.begin(), dq_, key_iter_map_[key]);
 
   cache_hits_++;
-  return um_.at(key);
+  return um_[key];
 }
 
 template <typename KeyType, typename ValueType>
 void LRUCache<KeyType, ValueType>::Put(KeyType key, ValueType value) {
-  int s = dq_.size();
-
-  if (!um_.count(key)) {
-    if (s == m_) {
-      um_.erase(dq_.back());
+  if (um_.find(key) == um_.end()) {
+    if (dq_.size() == m_) {
+      // Remove the least recently used key
+      KeyType lru_key = dq_.back();
       dq_.pop_back();
+      um_.erase(lru_key);
+      key_iter_map_.erase(lru_key);
     }
-    // Insert the new key and value in the map and add it as most recently
-    // used
-    um_[key] = value;
+    // Insert the new key and value
     dq_.push_front(key);
+    key_iter_map_[key] = dq_.begin();
   } else {
-    // If the key is already in the cache, just update it and move it to the
-    // front
+    // Update the value and move the key to the front of the list
     um_[key] = value;
-    auto it = std::find(dq_.begin(), dq_.end(), key);
-    dq_.erase(it);
-    dq_.push_front(key);
+    dq_.splice(dq_.begin(), dq_, key_iter_map_[key]);
   }
+  um_[key] = value;
 }
 
 template <typename KeyType, typename ValueType>
 void LRUCache<KeyType, ValueType>::SetCapacity(int new_capacity) {
   if (new_capacity < m_) {
     while (dq_.size() > new_capacity) {
-      um_.erase(dq_.back());
+      KeyType lru_key = dq_.back();
       dq_.pop_back();
+      um_.erase(lru_key);
+      key_iter_map_.erase(lru_key);
     }
   }
   m_ = new_capacity;
@@ -70,6 +68,7 @@ template <typename KeyType, typename ValueType>
 void LRUCache<KeyType, ValueType>::Flush() {
   um_.clear();
   dq_.clear();
+  key_iter_map_.clear();
   cache_hits_ = 0;
   cache_misses_ = 0;
 }
@@ -98,4 +97,5 @@ template class LRUCache<int, int>;
 template class LRUCache<std::string, int>;
 template class LRUCache<int, std::string>;
 template class LRUCache<std::string, std::string>;
+
 }  // namespace resdb

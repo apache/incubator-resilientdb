@@ -23,7 +23,6 @@
 #include <unistd.h>
 
 #include "chain/storage/proto/kv.pb.h"
-#include "leveldb/cache.h"
 #include "leveldb/options.h"
 
 namespace resdb {
@@ -54,8 +53,7 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
     }
   }
   if ((*config).enable_block_cache()) {
-    std::unique_ptr<LRUCache<std::string, std::string>> block_cache_ =
-        std::make_unique<LRUCache<std::string, std::string>>(1000);
+    block_cache_ = std::make_unique<LRUCache<std::string, std::string>>(1000);
     LOG(ERROR) << "initialized block cache" << std::endl;
   }
   global_stats_ = Stats::GetGlobalStats();
@@ -113,6 +111,7 @@ std::string ResLevelDB::GetValue(const std::string& key) {
   std::string cached_result = "";
   if (block_cache_) {
     std::string cached_result = block_cache_->Get(key);
+    LOG(ERROR) << "Value at block_cache_ Get: " << cached_result << std::endl;
   }
   if (cached_result != "") {
     LOG(ERROR) << "Cache Hit for key: " << key << cached_result;
