@@ -52,6 +52,8 @@ cc_library(
         "//chain/storage/proto:kv_cc_proto",
         "//chain/storage/proto:leveldb_config_cc_proto",
         "//common:comm",
+        "//common/lru:lru_cache",
+        "//platform/statistic:stats",
         "//third_party:leveldb",
     ],
 )
