@@ -47,7 +47,6 @@ cc_library(
     name = "leveldb",
     srcs = ["leveldb.cpp"],
     hdrs = ["leveldb.h"],
-    linkopts = ["-pg","-g","-ggdb"],    # Enable profiling during linking
     deps = [
         ":storage",
         "//chain/storage/proto:kv_cc_proto",
