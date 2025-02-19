@@ -19,3 +19,4 @@ apache_release
 .cache/
 resdb/
 100*_db/
+gmon.out
