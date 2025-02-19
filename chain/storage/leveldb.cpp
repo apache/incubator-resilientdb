@@ -20,8 +20,10 @@
 #include "chain/storage/leveldb.h"
 
 #include <glog/logging.h>
+#include <unistd.h>
 
 #include "chain/storage/proto/kv.pb.h"
+#include "leveldb/options.h"
 
 namespace resdb {
 namespace storage {
@@ -50,6 +52,11 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
       path = (*config).path();
     }
   }
+  if ((*config).enable_block_cache()) {
+    block_cache_ = std::make_unique<LRUCache<std::string, std::string>>(1000);
+    LOG(ERROR) << "initialized block cache" << std::endl;
+  }
+  global_stats_ = Stats::GetGlobalStats();
   CreateDB(path);
 }
 
@@ -74,15 +81,22 @@ ResLevelDB::~ResLevelDB() {
   if (db_) {
     db_.reset();
   }
+  if (block_cache_) {
+    block_cache_->Flush();
+  }
 }
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
+  if (block_cache_) {
+    block_cache_->Put(key, value);
+  }
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
     leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
     if (status.ok()) {
       batch_.Clear();
+      GetMetrics();
       return 0;
     } else {
       LOG(ERROR) << "flush buffer fail:" << status.ToString();
@@ -94,7 +108,16 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
 
 std::string ResLevelDB::GetValue(const std::string& key) {
   std::string value = "";
+  std::string cached_result = "";
+  if (block_cache_) {
+    std::string cached_result = block_cache_->Get(key);
+  }
+  if (cached_result != "") {
+    GetMetrics();
+    return cached_result;
+  }
   leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+  GetMetrics();
   if (status.ok()) {
     return value;
   } else {
@@ -132,6 +155,19 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
 
   delete it;
   return values;
+}
+
+void ResLevelDB::GetMetrics() {
+  if (!block_cache_) {
+    return;
+  }
+  std::string stats;
+  std::string approximate_size;
+  db_->GetProperty("leveldb.stats", &stats);
+  db_->GetProperty("leveldb.approximate-memory-usage", &approximate_size);
+  LOG(ERROR) << "LevelDB Stats" << stats << " : " << approximate_size << "\n";
+  global_stats_->SetStorageEngineMetrics(block_cache_->GetCacheHitRatio(),
+                                         stats, approximate_size);
 }
 
 bool ResLevelDB::Flush() {
