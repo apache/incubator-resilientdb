@@ -111,10 +111,8 @@ std::string ResLevelDB::GetValue(const std::string& key) {
   std::string cached_result = "";
   if (block_cache_) {
     std::string cached_result = block_cache_->Get(key);
-    LOG(ERROR) << "Value at block_cache_ Get: " << cached_result << std::endl;
   }
   if (cached_result != "") {
-    LOG(ERROR) << "Cache Hit for key: " << key << cached_result;
     GetMetrics();
     return cached_result;
   }
