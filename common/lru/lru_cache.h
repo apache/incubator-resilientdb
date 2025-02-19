@@ -18,13 +18,14 @@ class LRUCache {
   double GetCacheHitRatio() const;
 
  private:
-  int m_;
+  int capacity_;
   int cache_hits_;
   int cache_misses_;
-  std::list<KeyType> dq_;  // Doubly linked list to store keys
-  std::unordered_map<KeyType, ValueType> um_;  // Hash map for key-value pairs
+  std::list<KeyType> key_list_;  // Doubly linked list to store keys
+  std::unordered_map<KeyType, ValueType>
+      lookup_;  // Hash map for key-value pairs
   std::unordered_map<KeyType, typename std::list<KeyType>::iterator>
-      key_iter_map_;  // Hash map for key-iterator pairs
+      rlookup_;  // Hash map for key-iterator pairs
 };
 
 }  // namespace resdb

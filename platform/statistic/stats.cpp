@@ -26,14 +26,6 @@
 #include "common/utils/utils.h"
 #include "proto/kv/kv.pb.h"
 
-#define DEBUG 1
-
-#if DEBUG
-#define PRINT_MEM_USAGE(phase) printRUsage(phase)
-#else
-#define PRINT_MEM_USAGE(phase)
-#endif
-
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 using tcp = asio::ip::tcp;
@@ -126,40 +118,6 @@ long getRSS() {
   rss = rss / (1024 * 1024);
 
   return rss;
-}
-
-void printRUsage(const std::string& phase) {
-  struct rusage usage;
-  int status = getrusage(RUSAGE_SELF, &usage);
-  if (status != 0) {
-    LOG(ERROR) << "getrusage failed";
-    return;
-  }
-
-  long long rss = getRSS();
-
-  LOG(ERROR) << "Resource usage after " << phase << " phase:\n"
-             << "User CPU time used: " << usage.ru_utime.tv_sec << " sec, "
-             << usage.ru_utime.tv_usec << " microsec\n"
-             << "System CPU time used: " << usage.ru_stime.tv_sec << " sec, "
-             << usage.ru_stime.tv_usec << " microsec\n"
-             << "Maximum resident set size (memory): " << (usage.ru_maxrss)
-             << " KB\n"
-             << "Resident set size (memory): " << rss << " MB\n"
-             << "Integral shared memory size: " << usage.ru_ixrss << " KB\n"
-             << "Integral unshared data size: " << usage.ru_idrss << " KB\n"
-             << "Integral unshared stack size: " << usage.ru_isrss << " KB\n"
-             << "Page reclaims (soft page faults): " << usage.ru_minflt << "\n"
-             << "Page faults (hard page faults): " << usage.ru_majflt << "\n"
-             << "Swaps: " << usage.ru_nswap << "\n"
-             << "Block input operations: " << usage.ru_inblock << "\n"
-             << "Block output operations: " << usage.ru_oublock << "\n"
-             << "IPC messages sent: " << usage.ru_msgsnd << "\n"
-             << "IPC messages received: " << usage.ru_msgrcv << "\n"
-             << "Signals received: " << usage.ru_nsignals << "\n"
-             << "Voluntary context switches: " << usage.ru_nvcsw << "\n"
-             << "Involuntary context switches: " << usage.ru_nivcsw << "\n"
-             << "----------------------------------\n";
 }
 
 void Stats::CrowRoute() {
@@ -299,13 +257,10 @@ void Stats::RecordStateTime(std::string state) {
   if (state == "request" || state == "pre-prepare") {
     transaction_summary_.request_pre_prepare_state_time =
         std::chrono::system_clock::now();
-    PRINT_MEM_USAGE(state);
   } else if (state == "prepare") {
     transaction_summary_.prepare_state_time = std::chrono::system_clock::now();
-    PRINT_MEM_USAGE(state);
   } else if (state == "commit") {
     transaction_summary_.commit_state_time = std::chrono::system_clock::now();
-    PRINT_MEM_USAGE(state);
   }
 }
 
