@@ -33,14 +33,12 @@ async function getCpuUsage(req, res) {
     }
 }
 
-//// Disk IOPS : 
-
 async function getDiskIOPS(req, res) {
-    const { from = "now-5m", until = "now", step = 28 } = req.body;
+    const { from = "now-12h", until = "now", step = 28 } = req.body;
     
     // Build the base URL using the parameters from the request
     const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
-      query: "rate(node_disk_writes_completed_total{device='sda',job='node_exporter'}[5m])", // Fixed query
+      query: "rate(node_disk_writes_completed_total{device='vda',job='node_exporter'}[5m])", // Fixed query
       start: from,
       end: until,
       step
@@ -58,7 +56,7 @@ async function getDiskIOPS(req, res) {
       
         // Filter the results based on device and job
         const data = response?.data?.data?.result.filter(
-          (val) => val?.metric?.device === "sda" && val?.metric?.job === "node_exporter"
+            (val) => val?.metric?.device === "vda" && val?.metric?.job === "node_exporter"
         );
       
         // Extract and format the values for the frontend
@@ -87,8 +85,8 @@ async function getDiskWaitTime(req, res) {
     try {
         // Define queries for both metrics
         const queries = {
-            readWaitTime: "rate(node_disk_read_time_seconds_total{device='sda'}[5m]) / rate(node_disk_reads_completed_total{device='sda'}[5m])",
-            writeWaitTime: "rate(node_disk_write_time_seconds_total{device='sda'}[5m]) / rate(node_disk_writes_completed_total{device='sda'}[5m])",
+            readWaitTime: "rate(node_disk_read_time_seconds_total{device='vda'}[5m]) / rate(node_disk_reads_completed_total{device='vda'}[5m])",
+            writeWaitTime: "rate(node_disk_write_time_seconds_total{device='vda'}[5m]) / rate(node_disk_writes_completed_total{device='vda'}[5m])",
         };
 
         // Execute Prometheus queries in parallel
@@ -131,7 +129,7 @@ async function getDiskWaitTime(req, res) {
 async function getTimeSpentDoingIO(req, res) {
     const { from = "now-5m", until = "now", step = 28 } = req.body;
 
-    const query = "rate(node_disk_io_time_seconds_total{device='sda', job='node_exporter'}[5m])";
+    const query = "rate(node_disk_io_time_seconds_total{device='vda', job='node_exporter'}[5m])";
 
     try {
         // Build the Prometheus query URL
@@ -174,8 +172,8 @@ async function getDiskRWData(req, res) {
     try {
         // Define queries for both metrics (Read and Write Merged)
         const queries = {
-            readMerged: "rate(node_disk_reads_merged_total{device='sda'}[5m])",
-            writeMerged: "rate(node_disk_writes_merged_total{device='sda'}[5m])",
+            readMerged: "rate(node_disk_reads_merged_total{device='vda'}[5m])",
+            writeMerged: "rate(node_disk_writes_merged_total{device='vda'}[5m])",
         };
 
         // Execute Prometheus queries in parallel

@@ -74,8 +74,6 @@ function processStatsData(statsData){
   return parsedStatsData
 }
 
-
-
 module.exports = {
     getTransactionData
 }
