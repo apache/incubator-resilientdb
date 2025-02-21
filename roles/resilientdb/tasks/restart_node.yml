@@ -4,6 +4,8 @@
     name: "resilientdb-kv@{{ item }}"
     state: restarted
     enabled: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
 
 - name: Pause for 5 seconds after restarting node instance {{ item }}
   pause:

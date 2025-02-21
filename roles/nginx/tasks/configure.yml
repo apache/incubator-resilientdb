@@ -11,7 +11,7 @@
     dest: /etc/nginx/sites-available/resilientdb.conf
   notify: reload nginx
 
-- name: Enable site
+- name: Enable Nginx site
   file:
     src: /etc/nginx/sites-available/resilientdb.conf
     dest: /etc/nginx/sites-enabled/resilientdb.conf

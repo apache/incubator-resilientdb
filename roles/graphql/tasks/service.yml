@@ -1,5 +1,5 @@
 ---
-- name: Create systemd service
+- name: Create systemd service for GraphQL
   template:
     src: graphql_service.service.j2
     dest: /etc/systemd/system/graphql.service
@@ -8,8 +8,10 @@
     - reload systemd
     - restart graphql
 
-- name: Enable and restart service
+- name: Enable and restart GraphQL service
   systemd:
     name: graphql
     state: restarted
     enabled: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes

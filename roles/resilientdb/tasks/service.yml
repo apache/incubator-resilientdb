@@ -58,6 +58,8 @@
   systemd:
     daemon_reload: yes
   changed_when: false
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
 
 - name: Restart ResilientDB KV Server nodes sequentially
   include_tasks: restart_node.yml
@@ -68,9 +70,13 @@
     - "4"
   loop_control:
     loop_var: item
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
 
 - name: Restart ResilientDB KV Client node
   systemd:
     name: resilientdb-client
     state: restarted
     enabled: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes

@@ -9,9 +9,8 @@
     update_cache: yes
     cache_valid_time: 3600
 
-- name: Install Bazel with downgrade allowance
+- name: Install Bazel
   apt:
     name: "bazel={{ bazel_version }}"
     state: present
-    allow_downgrades: yes
     force: yes

@@ -1,10 +1,13 @@
 ---
+- name: reload systemd
+  systemd:
+    daemon_reload: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
+
 - name: restart crow
   systemd:
     name: crow-http
     state: restarted
-    daemon_reload: yes
-
-- name: reload systemd
-  systemd:
-    daemon_reload: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes

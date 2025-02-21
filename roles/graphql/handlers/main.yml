@@ -2,8 +2,12 @@
 - name: reload systemd
   systemd:
     daemon_reload: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
 
 - name: restart graphql
   systemd:
     name: graphql
     state: restarted
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
