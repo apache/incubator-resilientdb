@@ -19,7 +19,7 @@ const authors = [
     name: "Bismanpal Singh Anand",
     description:
       "Harmonized the design, user experience, and backend systems to create intuitive, data-driven interfaces and seamlessly integrated dashboards.",
-    imageSrc: "B.JPG",
+    imageSrc: "B.jpg",
     LinkedinHandle: "bismanpal-singh",
     GithubHandle: "bismanpal-singh",
     title: "Full-Stack Maestro",
