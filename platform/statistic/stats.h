@@ -64,8 +64,8 @@ struct VisualData {
 
   // Storage Engine Stats
   double ext_cache_hit_ratio_;
-  std::string level_db_stats;
-  std::string level_db_approx_mem_size;
+  std::string level_db_stats_;
+  std::string level_db_approx_mem_size_;
 
   // process stats
   struct rusage process_stats_;

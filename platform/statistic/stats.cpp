@@ -203,9 +203,9 @@ void Stats::CrowRoute() {
             mem_view_json["ext_cache_hit_ratio"] =
                 transaction_summary_.ext_cache_hit_ratio_;
             mem_view_json["level_db_stats"] =
-                transaction_summary_.level_db_stats;
+                transaction_summary_.level_db_stats_;
             mem_view_json["level_db_approx_mem_size"] =
-                transaction_summary_.level_db_approx_mem_size;
+                transaction_summary_.level_db_approx_mem_size_;
             res.body = mem_view_json.dump();
             mem_view_json.clear();
             res.end();
@@ -245,8 +245,8 @@ void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
                                     std::string level_db_stats,
                                     std::string level_db_approx_mem_size) {
   transaction_summary_.ext_cache_hit_ratio_ = ext_cache_hit_ratio;
-  transaction_summary_.level_db_stats = level_db_stats;
-  transaction_summary_.level_db_approx_mem_size = level_db_approx_mem_size;
+  transaction_summary_.level_db_stats_ = level_db_stats;
+  transaction_summary_.level_db_approx_mem_size_ = level_db_approx_mem_size;
 }
 
 void Stats::RecordStateTime(std::string state) {
