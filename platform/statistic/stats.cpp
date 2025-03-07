@@ -247,7 +247,6 @@ void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
   transaction_summary_.ext_cache_hit_ratio_ = ext_cache_hit_ratio;
   transaction_summary_.level_db_stats = level_db_stats;
   transaction_summary_.level_db_approx_mem_size = level_db_approx_mem_size;
-  LOG(ERROR) << "Invoked SetStorageEngineMetrics\n";
 }
 
 void Stats::RecordStateTime(std::string state) {

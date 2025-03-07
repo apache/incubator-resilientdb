@@ -22,6 +22,8 @@
 #include <glog/logging.h>
 #include <unistd.h>
 
+#include <cstdint>
+
 #include "chain/storage/proto/kv.pb.h"
 #include "leveldb/options.h"
 
@@ -53,7 +55,12 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
     }
   }
   if ((*config).enable_block_cache()) {
-    block_cache_ = std::make_unique<LRUCache<std::string, std::string>>(1000);
+    uint32_t capacity = 1000;
+    if ((*config).has_block_cache_capacity()) {
+      capacity = (*config).block_cache_capacity();
+    }
+    block_cache_ =
+        std::make_unique<LRUCache<std::string, std::string>>(capacity);
     LOG(ERROR) << "initialized block cache" << std::endl;
   }
   global_stats_ = Stats::GetGlobalStats();
@@ -158,17 +165,17 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
   return values;
 }
 
-void ResLevelDB::UpdateMetrics() {
-  if (!block_cache_) {
-    return;
+bool ResLevelDB::UpdateMetrics() {
+  if (block_cache_ == nullptr) {
+    return false;
   }
   std::string stats;
   std::string approximate_size;
   db_->GetProperty("leveldb.stats", &stats);
   db_->GetProperty("leveldb.approximate-memory-usage", &approximate_size);
-  LOG(ERROR) << "LevelDB Stats" << stats << " : " << approximate_size << "\n";
   global_stats_->SetStorageEngineMetrics(block_cache_->GetCacheHitRatio(),
                                          stats, approximate_size);
+  return true;
 }
 
 bool ResLevelDB::Flush() {

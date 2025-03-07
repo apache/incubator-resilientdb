@@ -23,33 +23,94 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <cstddef>
 #include <filesystem>
 
 namespace resdb {
 namespace storage {
 namespace {
 
+enum class CacheConfig { DISABLED, ENABLED };
+
 class TestableResLevelDB : public ResLevelDB {
  public:
   using ResLevelDB::block_cache_;
+  using ResLevelDB::global_stats_;
   using ResLevelDB::ResLevelDB;
 };
 
-class LevelDBBlockCacheTest : public ::testing::Test {
+class LevelDBTest : public ::testing::TestWithParam<CacheConfig> {
+ protected:
+  LevelDBTest() {
+    LevelDBInfo config;
+    if (GetParam() == CacheConfig::ENABLED) {
+      config.set_enable_block_cache(true);
+      config.set_block_cache_capacity(1000);
+    } else {
+      Reset();
+    }
+    storage = std::make_unique<TestableResLevelDB>(config);
+  }
+
  protected:
   std::unique_ptr<TestableResLevelDB> storage;
   std::string path_ = "/tmp/leveldb_test";
 
-  void TearDown() override { std::filesystem::remove_all(path_.c_str()); }
+ private:
+  void Reset() { std::filesystem::remove_all(path_.c_str()); }
 };
 
-TEST_F(LevelDBBlockCacheTest, BlockCacheEnabled) {
-  LevelDBInfo config;
-  config.set_enable_block_cache(true);
-  auto storage = std::make_unique<TestableResLevelDB>(config);
-  EXPECT_TRUE(storage->block_cache_ != nullptr);
+TEST_P(LevelDBTest, BlockCacheEnabled) {
+  if (GetParam() == CacheConfig::ENABLED) {
+    EXPECT_TRUE(storage->block_cache_ != nullptr);
+    EXPECT_TRUE(storage->block_cache_->GetCapacity() == 1000);
+  } else {
+    EXPECT_TRUE(storage->block_cache_ == nullptr);
+    EXPECT_FALSE(storage->UpdateMetrics());
+  }
 }
+
+TEST_P(LevelDBTest, AddValueAndCheckCache) {
+  if (GetParam() == CacheConfig::ENABLED) {
+    // Add a value
+    std::string key = "test_key";
+    std::string value = "test_value";
+    EXPECT_EQ(storage->SetValue(key, value), 0);
+
+    // Check if CacheHit is incremented in the Stats class
+    EXPECT_TRUE(storage->block_cache_->Get(key) == "test_value");
+    EXPECT_EQ(storage->block_cache_->GetCacheHits(), 1);
+  }
+}
+
+TEST_P(LevelDBTest, CacheEvictionPolicy) {
+  if (GetParam() == CacheConfig::ENABLED) {
+    // Insert 1000 values
+    for (int i = 1; i <= 1000; ++i) {
+      std::string key = "key_" + std::to_string(i);
+      std::string value = "value_" + std::to_string(i);
+      EXPECT_EQ(storage->SetValue(key, value), 0);
+    }
+
+    // Insert the 1001st value
+    std::string key_1001 = "key_1001";
+    std::string value_1001 = "value_1001";
+    EXPECT_EQ(storage->SetValue(key_1001, value_1001), 0);
+
+    // Check that the 1001st value is not present in the cache
+    EXPECT_TRUE(storage->GetValue("key_1") == "value_1");
+    EXPECT_EQ(storage->block_cache_->GetCacheMisses(), 1);
+
+    // Expect key_2 to be present in cache and hence a cache hit
+    EXPECT_TRUE(storage->GetValue("key_2") == "value_2");
+    EXPECT_EQ(storage->block_cache_->GetCacheHits(), 1);
+
+    EXPECT_TRUE(storage->UpdateMetrics());
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(LevelDBTest, LevelDBTest,
+                        ::testing::Values(CacheConfig::ENABLED,
+                                          CacheConfig::DISABLED));
 
 }  // namespace
 }  // namespace storage

@@ -80,6 +80,11 @@ void LRUCache<KeyType, ValueType>::SetCapacity(int new_capacity) {
 }
 
 template <typename KeyType, typename ValueType>
+int LRUCache<KeyType, ValueType>::GetCapacity() {
+  return capacity_;
+}
+
+template <typename KeyType, typename ValueType>
 void LRUCache<KeyType, ValueType>::Flush() {
   lookup_.clear();
   key_list_.clear();
