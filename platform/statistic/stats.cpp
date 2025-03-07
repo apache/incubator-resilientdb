@@ -96,14 +96,14 @@ Stats::~Stats() {
   }
 }
 
-long getRSS() {
-  long rss = 0;
+int64_t GetRSS() {
+  int64_t rss = 0;
   FILE* fp = NULL;
   if ((fp = fopen("/proc/self/statm", "r")) == NULL) {
     return 0;
   }
 
-  unsigned long size, resident, share, text, lib, data, dt;
+  uint64_t size, resident, share, text, lib, data, dt;
   if (fscanf(fp, "%lu %lu %lu %lu %lu %lu %lu", &size, &resident, &share, &text,
              &lib, &data, &dt) != 7) {
     fclose(fp);
@@ -111,7 +111,7 @@ long getRSS() {
   }
   fclose(fp);
 
-  long page_size = sysconf(_SC_PAGESIZE);
+  int64_t page_size = sysconf(_SC_PAGESIZE);
   rss = resident * page_size;
 
   // Convert to MB
@@ -191,7 +191,7 @@ void Stats::CrowRoute() {
             int status =
                 getrusage(RUSAGE_SELF, &transaction_summary_.process_stats_);
             if (status == 0) {
-              mem_view_json["resident_set_size"] = getRSS();
+              mem_view_json["resident_set_size"] = GetRSS();
               mem_view_json["max_resident_set_size"] =
                   transaction_summary_.process_stats_.ru_maxrss;
               mem_view_json["num_reads"] =
@@ -201,7 +201,7 @@ void Stats::CrowRoute() {
             }
 
             mem_view_json["ext_cache_hit_ratio"] =
-                transaction_summary_.ext_cache_hit_ratio;
+                transaction_summary_.ext_cache_hit_ratio_;
             mem_view_json["level_db_stats"] =
                 transaction_summary_.level_db_stats;
             mem_view_json["level_db_approx_mem_size"] =
@@ -244,7 +244,7 @@ void Stats::SetPrimaryId(int primary_id) {
 void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
                                     std::string level_db_stats,
                                     std::string level_db_approx_mem_size) {
-  transaction_summary_.ext_cache_hit_ratio = ext_cache_hit_ratio;
+  transaction_summary_.ext_cache_hit_ratio_ = ext_cache_hit_ratio;
   transaction_summary_.level_db_stats = level_db_stats;
   transaction_summary_.level_db_approx_mem_size = level_db_approx_mem_size;
   LOG(ERROR) << "Invoked SetStorageEngineMetrics\n";
@@ -344,7 +344,7 @@ void Stats::SendSummary() {
   }
 
   summary_json_["ext_cache_hit_ratio"] =
-      transaction_summary_.ext_cache_hit_ratio;
+      transaction_summary_.ext_cache_hit_ratio_;
   consensus_history_[std::to_string(transaction_summary_.txn_number)] =
       summary_json_;
 

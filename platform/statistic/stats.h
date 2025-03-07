@@ -63,7 +63,7 @@ struct VisualData {
   std::chrono::system_clock::time_point execution_time;
 
   // Storage Engine Stats
-  double ext_cache_hit_ratio;
+  double ext_cache_hit_ratio_;
   std::string level_db_stats;
   std::string level_db_approx_mem_size;
 

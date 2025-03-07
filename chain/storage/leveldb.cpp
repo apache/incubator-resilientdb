@@ -96,7 +96,7 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
     leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
     if (status.ok()) {
       batch_.Clear();
-      GetMetrics();
+      UpdateMetrics();
       return 0;
     } else {
       LOG(ERROR) << "flush buffer fail:" << status.ToString();
@@ -107,22 +107,23 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
 }
 
 std::string ResLevelDB::GetValue(const std::string& key) {
-  std::string value = "";
-  std::string cached_result = "";
+  std::string value;
+  bool found_in_cache = false;
+
   if (block_cache_) {
-    std::string cached_result = block_cache_->Get(key);
+    value = block_cache_->Get(key);
+    found_in_cache = !value.empty();
   }
-  if (cached_result != "") {
-    GetMetrics();
-    return cached_result;
+
+  if (!found_in_cache) {
+    leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+    if (!status.ok()) {
+      value.clear();  // Ensure value is empty if not found in DB
+    }
   }
-  leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
-  GetMetrics();
-  if (status.ok()) {
-    return value;
-  } else {
-    return "";
-  }
+
+  UpdateMetrics();
+  return value;
 }
 
 std::string ResLevelDB::GetAllValues(void) {
@@ -157,7 +158,7 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
   return values;
 }
 
-void ResLevelDB::GetMetrics() {
+void ResLevelDB::UpdateMetrics() {
   if (!block_cache_) {
     return;
   }
