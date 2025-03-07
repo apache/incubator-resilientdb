@@ -79,10 +79,10 @@ class ResLevelDB : public Storage {
   ::leveldb::WriteBatch batch_;
   unsigned int write_buffer_size_ = 64 << 20;
   unsigned int write_batch_size_ = 1;
-  std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
 
  protected:
   Stats* global_stats_ = nullptr;
+  std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
 };
 
 }  // namespace storage

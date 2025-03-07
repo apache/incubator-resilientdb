@@ -66,4 +66,18 @@ cc_test(
         ":memory_db",
         "//common/test:test_main",
     ],
+    timeout = "short",  # Set the timeout to "short"
+    size = "small",     # Set the size to "small"
+)
+
+cc_test(
+    name = "leveldb_test",
+    srcs = ["leveldb_test.cpp"],
+    deps = [
+        ":leveldb",
+        "//platform/statistic:stats",
+        "//common/test:test_main",
+    ],
+    timeout = "short",  # Set the timeout to "short"
+    size = "small",     # Set the size to "small"
 )
