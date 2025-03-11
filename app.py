@@ -29,8 +29,9 @@ db = Resdb(db_root_url)
 import strawberry
 import typing
 import ast
-from typing import Optional, List
+import json
 
+from typing import Optional, List, Any
 from flask import Flask
 from flask_cors import CORS
 
@@ -38,6 +39,16 @@ app = Flask(__name__)
 CORS(app) # This will enable CORS for all routes
 
 from strawberry.flask.views import GraphQLView
+
+@strawberry.scalar(description="Custom JSON scalar")
+class JSONScalar:
+    @staticmethod
+    def serialize(value: Any) -> Any:
+        return value  # Directly return the JSON object
+
+    @staticmethod
+    def parse_value(value: Any) -> Any:
+        return value  # Accept JSON as is
 
 @strawberry.type
 class RetrieveTransaction:
@@ -49,7 +60,7 @@ class RetrieveTransaction:
     publicKey: str
     operation: str
     metadata: typing.Optional["str"]
-    asset: strawberry.JSON
+    asset: JSONScalar
     signerPublicKey: str
 
 @strawberry.type
@@ -63,7 +74,7 @@ class PrepareAsset:
     signerPublicKey: str
     signerPrivateKey: str
     recipientPublicKey: str
-    asset: strawberry.JSON
+    asset: JSONScalar
 
 @strawberry.type
 class Query:
