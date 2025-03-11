@@ -16,9 +16,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#
 
+name: Check Apache License
 
-# https://www.robotstxt.org/robotstxt.html
-User-agent: *
-Disallow:
+on:
+  push
+
+jobs:
+  ubuntu-build:
+    name: check license
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout
+       uses: actions/checkout@v2
+       with:
+         repository: ${{github.repository}}
+         ref: ${{ env.BRANCH_NAME }}
+
+     - name: Check License Header
+       uses: apache/skywalking-eyes/header@main
