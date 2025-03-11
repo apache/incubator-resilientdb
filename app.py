@@ -49,7 +49,7 @@ class RetrieveTransaction:
     publicKey: str
     operation: str
     metadata: typing.Optional["str"]
-    asset: str
+    asset: strawberry.JSON
     signerPublicKey: str
 
 @strawberry.type
@@ -63,7 +63,7 @@ class PrepareAsset:
     signerPublicKey: str
     signerPrivateKey: str
     recipientPublicKey: str
-    asset: str
+    asset: strawberry.JSON
 
 @strawberry.type
 class Query:
@@ -80,7 +80,7 @@ class Query:
             signerPublicKey=data["inputs"][0]["owners_before"][0],
             operation=data["operation"],
             metadata=data["metadata"],
-            asset=str(data["asset"])
+            asset=data["asset"]
         )
         return payload
 
@@ -92,7 +92,7 @@ class Mutation:
         operation=data.operation,
         signers=data.signerPublicKey,
         recipients=[([data.recipientPublicKey], data.amount)],
-        asset=ast.literal_eval(data.asset),
+        asset=data.asset,
         )
 
         # fulfill the tnx
