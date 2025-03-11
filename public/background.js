@@ -4,7 +4,7 @@ let faviconUrls = {};
 function arrayBufferToBase64(buffer) {
     let binary = '';
     const bytes = new Uint8Array(buffer);
-    bytes.forEach(b => binary += String.fromCharCode(b));
+    bytes.forEach(b => (binary += String.fromCharCode(b)));
     return btoa(binary);
 }
 
@@ -73,7 +73,7 @@ function getBaseDomain(url) {
     }
 }
 
-// Function to escape special characters in GraphQL strings
+// Function to escape special characters in GraphQL strings (useful for text fields)
 function escapeGraphQLString(str) {
     if (typeof str !== 'string') {
         return '';
@@ -104,14 +104,14 @@ chrome.tabs.onUpdated.addListener(updateFaviconUrl);
 // Function to generate UUID v4
 function generateUUID() {
     // Public Domain/MIT
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+        (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
     );
 }
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.action === "storeKeys") {
-        (async function() {
+    if (request.action === 'storeKeys') {
+        (async function () {
             try {
                 // Generate new key material and encrypt the new keys
                 const keyMaterial = await crypto.subtle.generateKey(
@@ -161,8 +161,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === "disconnectKeys") {
-        (async function() {
+    } else if (request.action === 'disconnectKeys') {
+        (async function () {
             // Remove the keys for the domain and net
             chrome.storage.local.get(['keys', 'connectedNets'], (result) => {
                 let keys = result.keys || {};
@@ -187,8 +187,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === "requestData") {
-        (async function() {
+    } else if (request.action === 'requestData') {
+        (async function () {
             chrome.storage.local.get(['keys', 'faviconUrls'], async function (result) {
                 const keys = result.keys || {};
                 const storedFavicons = result.faviconUrls || {};
@@ -215,21 +215,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                             publicKey: decryptedPublicKey,
                             privateKey: decryptedPrivateKey,
                             url: decryptedUrl,
-                            faviconUrl: faviconUrlForDomain
+                            faviconUrl: faviconUrlForDomain,
                         });
                     } catch (error) {
                         console.error('Error decrypting data:', error);
-                        sendResponse({ error: "Failed to decrypt data", faviconUrl: faviconUrlForDomain });
+                        sendResponse({ error: 'Failed to decrypt data', faviconUrl: faviconUrlForDomain });
                     }
                 } else {
-                    sendResponse({ error: "No keys found for domain and net", faviconUrl: faviconUrlForDomain });
+                    sendResponse({ error: 'No keys found for domain and net', faviconUrl: faviconUrlForDomain });
                 }
             });
         })();
 
         return true; // Keep the message channel open for async sendResponse
     } else if (request.action === 'getConnectedNet') {
-        (async function() {
+        (async function () {
             chrome.storage.local.get(['connectedNets'], function (result) {
                 const connectedNets = result.connectedNets || {};
                 const net = connectedNets[request.domain];
@@ -242,8 +242,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === 'submitTransactionFromDashboard') {
-        (async function() {
+    }
+
+    // ------------------------------------------------
+    // Below: Example: Using GraphQL variables for postTransaction
+    // ------------------------------------------------
+
+    else if (request.action === 'submitTransactionFromDashboard') {
+        (async function () {
             // Retrieve the necessary data
             const transactionData = request.transactionData;
             const domain = request.domain;
@@ -277,8 +283,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const keyMaterial = await crypto.subtle.importKey(
                         'jwk',
                         exportedKey,
-                        { name: 'AES-GCM',
-                        },
+                        { name: 'AES-GCM' },
                         true,
                         ['encrypt', 'decrypt']
                     );
@@ -287,32 +292,47 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const decryptedPrivateKey = await decryptData(privateKey.ciphertext, privateKey.iv, keyMaterial);
                     const decryptedUrl = await decryptData(url.ciphertext, url.iv, keyMaterial);
 
-                    // Prepare the asset data
-                    const assetData = JSON.stringify(transactionData.asset);
-
-                    // Construct the GraphQL mutation
+                    // Build the GraphQL mutation with variables
                     const mutation = `
-                        mutation {
-                            postTransaction(data: {
-                                operation: "CREATE",
-                                amount: ${parseInt(transactionData.amount)},
-                                signerPublicKey: "${escapeGraphQLString(decryptedPublicKey)}",
-                                signerPrivateKey: "${escapeGraphQLString(decryptedPrivateKey)}",
-                                recipientPublicKey: "${escapeGraphQLString(transactionData.recipientAddress)}",
-                                asset: """${assetData}"""
-                            }) {
-                                id
-                            }
+                      mutation postTransaction(
+                        $operation: String!,
+                        $amount: Int!,
+                        $signerPublicKey: String!,
+                        $signerPrivateKey: String!,
+                        $recipientPublicKey: String!,
+                        $asset: JSONScalar!
+                      ) {
+                        postTransaction(
+                          data: {
+                            operation: $operation,
+                            amount: $amount,
+                            signerPublicKey: $signerPublicKey,
+                            signerPrivateKey: $signerPrivateKey,
+                            recipientPublicKey: $recipientPublicKey,
+                            asset: $asset
+                          }
+                        ) {
+                          id
                         }
+                      }
                     `;
 
-                    // Send the mutation
+                    const variables = {
+                        operation: 'CREATE',
+                        amount: parseInt(transactionData.amount),
+                        signerPublicKey: decryptedPublicKey,
+                        signerPrivateKey: decryptedPrivateKey,
+                        recipientPublicKey: transactionData.recipientAddress,
+                        asset: transactionData.asset, // pass JS object
+                    };
+
+                    // Send the mutation with variables
                     const response = await fetch(decryptedUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ query: mutation }),
+                        body: JSON.stringify({ query: mutation, variables }),
                     });
 
                     if (!response.ok) {
@@ -322,12 +342,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const resultData = await response.json();
                     if (resultData.errors) {
                         console.error('GraphQL errors:', resultData.errors);
-                        sendResponse({ success: false, error: 'GraphQL errors occurred.', errors: resultData.errors });
+                        sendResponse({
+                            success: false,
+                            error: 'GraphQL errors occurred.',
+                            errors: resultData.errors,
+                        });
                     } else {
                         console.log('Transaction submitted successfully:', resultData.data);
                         sendResponse({ success: true, data: resultData.data });
                     }
-
                 } catch (error) {
                     console.error('Error submitting transaction:', error);
                     sendResponse({ success: false, error: error.message });
@@ -336,10 +359,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === 'submitTransaction') {
-        // Added the missing submitTransaction handler
+    }
 
-        (async function() {
+    else if (request.action === 'submitTransaction') {
+        (async function () {
             console.log('Handling submitTransaction action');
             console.log('Sender:', sender);
             let senderUrl = null;
@@ -386,37 +409,58 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         // Check if required fields are defined
                         if (!decryptedPublicKey || !decryptedPrivateKey || !request.recipient) {
                             console.error('Missing required fields for transaction submission');
-                            sendResponse({ success: false, error: 'Missing required fields for transaction' });
+                            sendResponse({
+                                success: false,
+                                error: 'Missing required fields for transaction',
+                            });
                             return;
                         }
 
-                        // Prepare asset data as a JSON string
-                        const assetData = JSON.stringify({
-                            data: request.data || {}
-                        });
-
-                        // Construct the GraphQL mutation
+                        // Prepare data for GraphQL mutation
                         const mutation = `
-                            mutation {
-                                postTransaction(data: {
-                                    operation: "CREATE",
-                                    amount: ${parseInt(request.amount)},
-                                    signerPublicKey: "${escapeGraphQLString(decryptedPublicKey)}",
-                                    signerPrivateKey: "${escapeGraphQLString(decryptedPrivateKey)}",
-                                    recipientPublicKey: "${escapeGraphQLString(request.recipient)}",
-                                    asset: """${assetData}"""
-                                }) {
-                                    id
-                                }
+                          mutation postTransaction(
+                            $operation: String!,
+                            $amount: Int!,
+                            $signerPublicKey: String!,
+                            $signerPrivateKey: String!,
+                            $recipientPublicKey: String!,
+                            $asset: JSONScalar!
+                          ) {
+                            postTransaction(
+                              data: {
+                                operation: $operation,
+                                amount: $amount,
+                                signerPublicKey: $signerPublicKey,
+                                signerPrivateKey: $signerPrivateKey,
+                                recipientPublicKey: $recipientPublicKey,
+                                asset: $asset
+                              }
+                            ) {
+                              id
                             }
+                          }
                         `;
+
+                        const variables = {
+                            operation: 'CREATE',
+                            amount: parseInt(request.amount),
+                            signerPublicKey: decryptedPublicKey,
+                            signerPrivateKey: decryptedPrivateKey,
+                            recipientPublicKey: request.recipient,
+                            asset: {
+                                data: request.data || {},
+                            },
+                        };
 
                         const response = await fetch(decryptedUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ query: mutation }),
+                            body: JSON.stringify({
+                                query: mutation,
+                                variables,
+                            }),
                         });
 
                         if (!response.ok) {
@@ -438,14 +482,16 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 } else {
                     console.error('No keys found for domain:', domain, 'and net:', net);
                     console.log('Available keys:', keys);
-                    sendResponse({ error: "No keys found for domain and net" });
+                    sendResponse({ error: 'No keys found for domain and net' });
                 }
             });
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === 'submitLoginTransaction') {
-        (async function() {
+    }
+
+    else if (request.action === 'submitLoginTransaction') {
+        (async function () {
             console.log('Handling submitLoginTransaction action');
             console.log('Sender:', sender);
             let senderUrl = null;
@@ -491,7 +537,6 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
                         // Prepare asset data with current timestamp and unique login_transaction_id
                         const currentTimestamp = Math.floor(Date.now() / 1000);
-
                         let loginTransactionId = '';
                         if (crypto.randomUUID) {
                             loginTransactionId = crypto.randomUUID().replace(/[^a-zA-Z0-9]/g, '');
@@ -499,35 +544,51 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                             loginTransactionId = generateUUID().replace(/[^a-zA-Z0-9]/g, '');
                         }
 
-                        const assetData = JSON.stringify({
-                            data: {
-                                login_timestamp: currentTimestamp,
-                                login_transaction_id: loginTransactionId
-                            }
-                        });
-
-                        // Construct the GraphQL mutation
+                        // Build variables
                         const mutation = `
-                            mutation {
-                                postTransaction(data: {
-                                    operation: "CREATE"
-                                    amount: 1
-                                    signerPublicKey: "${escapeGraphQLString(decryptedPublicKey)}"
-                                    signerPrivateKey: "${escapeGraphQLString(decryptedPrivateKey)}"
-                                    recipientPublicKey: "${escapeGraphQLString(decryptedPublicKey)}"
-                                    asset: """${assetData}"""
-                                }) {
-                                    id
-                                }
+                          mutation postTransaction(
+                            $operation: String!,
+                            $amount: Int!,
+                            $signerPublicKey: String!,
+                            $signerPrivateKey: String!,
+                            $recipientPublicKey: String!,
+                            $asset: JSONScalar!
+                          ) {
+                            postTransaction(
+                              data: {
+                                operation: $operation,
+                                amount: $amount,
+                                signerPublicKey: $signerPublicKey,
+                                signerPrivateKey: $signerPrivateKey,
+                                recipientPublicKey: $recipientPublicKey,
+                                asset: $asset
+                              }
+                            ) {
+                              id
                             }
+                          }
                         `;
+
+                        const variables = {
+                            operation: 'CREATE',
+                            amount: 1,
+                            signerPublicKey: decryptedPublicKey,
+                            signerPrivateKey: decryptedPrivateKey,
+                            recipientPublicKey: decryptedPublicKey, // self
+                            asset: {
+                                data: {
+                                    login_timestamp: currentTimestamp,
+                                    login_transaction_id: loginTransactionId,
+                                },
+                            },
+                        };
 
                         const response = await fetch(decryptedUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ query: mutation }),
+                            body: JSON.stringify({ query: mutation, variables }),
                         });
 
                         if (!response.ok) {
@@ -549,15 +610,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 } else {
                     console.error('No keys found for domain:', domain, 'and net:', net);
                     console.log('Available keys:', keys);
-                    sendResponse({ error: "No keys found for domain and net" });
+                    sendResponse({ error: 'No keys found for domain and net' });
                 }
             });
         })();
 
         return true; // Keep the message channel open for async sendResponse
-    } else if (request.action === 'deployContractChain') {
+    }
+
+    // The rest (deployContractChain, etc.) can remain the same or be adapted similarly to use variables.
+    else if (request.action === 'deployContractChain') {
         // Handler for deploying contract chain
-        (async function() {
+        (async function () {
             const domain = request.domain;
             const net = request.net;
             const ownerAddress = request.ownerAddress;
@@ -586,8 +650,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const keyMaterial = await crypto.subtle.importKey(
                         'jwk',
                         exportedKey,
-                        { name: 'AES-GCM',
-                        },
+                        { name: 'AES-GCM' },
                         true,
                         ['encrypt', 'decrypt']
                     );
@@ -620,12 +683,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const addAddressResult = await addAddressResponse.json();
                     if (addAddressResult.errors) {
                         console.error('GraphQL errors in addAddress:', addAddressResult.errors);
-                        sendResponse({ success: false, error: 'Error in addAddress mutation.', errors: addAddressResult.errors });
+                        sendResponse({
+                            success: false,
+                            error: 'Error in addAddress mutation.',
+                            errors: addAddressResult.errors,
+                        });
                         return;
                     }
 
                     // Check if addAddress was successful
-                    if (addAddressResult.data && addAddressResult.data.addAddress === "Address added successfully") {
+                    if (
+                        addAddressResult.data &&
+                        addAddressResult.data.addAddress === 'Address added successfully'
+                    ) {
                         // 2. Perform compileContract mutation
                         const escapedSoliditySource = escapeGraphQLString(soliditySource);
 
@@ -653,14 +723,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         const compileContractResult = await compileContractResponse.json();
                         if (compileContractResult.errors) {
                             console.error('GraphQL errors in compileContract:', compileContractResult.errors);
-                            sendResponse({ success: false, error: 'Error in compileContract mutation.', errors: compileContractResult.errors });
+                            sendResponse({
+                                success: false,
+                                error: 'Error in compileContract mutation.',
+                                errors: compileContractResult.errors,
+                            });
                             return;
                         }
 
                         // Extract the contract filename
                         const contractFilename = compileContractResult.data.compileContract;
                         if (!contractFilename) {
-                            sendResponse({ success: false, error: 'Failed to compile contract.' });
+                            sendResponse({
+                                success: false,
+                                error: 'Failed to compile contract.',
+                            });
                             return;
                         }
 
@@ -671,7 +748,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                           deployContract(
                             config: "5 127.0.0.1 10005",
                             contract: "${escapeGraphQLString(contractFilename)}",
-                            name: "/tmp/${escapeGraphQLString(contractFilename.replace('.json', '.sol'))}:${escapeGraphQLString(contract_name)}",
+                            name: "/tmp/${escapeGraphQLString(
+                                contractFilename.replace('.json', '.sol')
+                            )}:${escapeGraphQLString(contract_name)}",
                             arguments: "${escapeGraphQLString(args)}",
                             owner: "${escapeGraphQLString(ownerAddress)}",
                             type: "data"
@@ -692,31 +771,43 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         });
 
                         if (!deployContractResponse.ok) {
-                            throw new Error(`Network response was not ok: ${deployContractResponse.statusText}`);
+                            throw new Error(
+                                `Network response was not ok: ${deployContractResponse.statusText}`
+                            );
                         }
 
                         const deployContractResult = await deployContractResponse.json();
                         if (deployContractResult.errors) {
                             console.error('GraphQL errors in deployContract:', deployContractResult.errors);
-                            sendResponse({ success: false, error: 'Error in deployContract mutation.', errors: deployContractResult.errors });
+                            sendResponse({
+                                success: false,
+                                error: 'Error in deployContract mutation.',
+                                errors: deployContractResult.errors,
+                            });
                             return;
                         }
 
                         // Extract the contract address and return success
-                        if (deployContractResult.data && deployContractResult.data.deployContract && deployContractResult.data.deployContract.contractAddress) {
-                            const contractAddress = deployContractResult.data.deployContract.contractAddress;
+                        if (
+                            deployContractResult.data &&
+                            deployContractResult.data.deployContract &&
+                            deployContractResult.data.deployContract.contractAddress
+                        ) {
+                            const contractAddress =
+                                deployContractResult.data.deployContract.contractAddress;
                             sendResponse({ success: true, contractAddress: contractAddress });
                             return;
                         } else {
-                            sendResponse({ success: false, error: 'Failed to deploy contract.' });
+                            sendResponse({
+                                success: false,
+                                error: 'Failed to deploy contract.',
+                            });
                             return;
                         }
-
                     } else {
                         sendResponse({ success: false, error: 'Failed to add address.' });
                         return;
                     }
-
                 } catch (error) {
                     console.error('Error deploying contract chain:', error);
                     sendResponse({ success: false, error: error.message });
