@@ -25,7 +25,7 @@ export function ResView() {
       <CardContent className="p-0">
         <div className="w-full h-screen overflow-auto">
           <iframe
-            src="https://www.memlensapi.publicvm.com/pages/visualizer"
+            src="https://www.memlensapi.run.place/pages/visualizer"
             width="100%"
             height="100%"
             style={{ border: "none" }}
