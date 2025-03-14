@@ -27,8 +27,6 @@ cc_binary(
         "//interface/kv:kv_client",
         "//platform/config:resdb_config_utils",
     ],
-    copts = ["-pg"],
-    linkopts = ["-pg"]
 )
 
 cc_binary(
