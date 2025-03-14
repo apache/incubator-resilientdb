@@ -54,6 +54,4 @@ cc_library(
 cc_binary(
     name = "set_random_data",
     srcs = ["set_random_data.cpp"],
-    copts = ["-pg"],
-    linkopts = ["-pg"],
 )
