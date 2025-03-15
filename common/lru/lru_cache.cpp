@@ -19,6 +19,8 @@
 
 #include "lru_cache.h"
 
+#include "string"
+
 namespace resdb {
 
 template <typename KeyType, typename ValueType>
