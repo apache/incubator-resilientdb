@@ -22,17 +22,22 @@ export function ResView() {
           protocol.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="w-full h-screen overflow-auto">
-          <iframe
-            src="https://www.memlensapi.run.place/pages/visualizer"
-            width="100%"
-            height="100%"
-            style={{ border: "none" }}
-            title="Visualizer"
-          ></iframe>
-        </div>
-      </CardContent>
+      <CardContent className="p-0 h-screen">
+      <div className="w-full h-full overflow-hidden">
+        <iframe
+          src="https://www.memlensapi.run.place/pages/visualizer"
+          className="w-full h-full"
+          style={{
+            border: "none",
+            transform: "scale(0.75)", // Scale down the content to fit
+            transformOrigin: "top left", // Ensure scaling starts from the top-left
+            width: "133%", // Increase width to compensate for scaling
+            height: "133%", // Increase height to compensate for scaling
+          }}
+          title="Visualizer"
+        ></iframe>
+      </div>
+    </CardContent>
     </Card>
   );
 }
