@@ -20,8 +20,12 @@
 #include "chain/storage/leveldb.h"
 
 #include <glog/logging.h>
+#include <unistd.h>
+
+#include <cstdint>
 
 #include "chain/storage/proto/kv.pb.h"
+#include "leveldb/options.h"
 
 namespace resdb {
 namespace storage {
@@ -50,6 +54,16 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
       path = (*config).path();
     }
   }
+  if ((*config).enable_block_cache()) {
+    uint32_t capacity = 1000;
+    if ((*config).has_block_cache_capacity()) {
+      capacity = (*config).block_cache_capacity();
+    }
+    block_cache_ =
+        std::make_unique<LRUCache<std::string, std::string>>(capacity);
+    LOG(ERROR) << "initialized block cache" << std::endl;
+  }
+  global_stats_ = Stats::GetGlobalStats();
   CreateDB(path);
 }
 
@@ -74,15 +88,22 @@ ResLevelDB::~ResLevelDB() {
   if (db_) {
     db_.reset();
   }
+  if (block_cache_) {
+    block_cache_->Flush();
+  }
 }
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
+  if (block_cache_) {
+    block_cache_->Put(key, value);
+  }
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
     leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
     if (status.ok()) {
       batch_.Clear();
+      UpdateMetrics();
       return 0;
     } else {
       LOG(ERROR) << "flush buffer fail:" << status.ToString();
@@ -93,13 +114,23 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
 }
 
 std::string ResLevelDB::GetValue(const std::string& key) {
-  std::string value = "";
-  leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
-  if (status.ok()) {
-    return value;
-  } else {
-    return "";
+  std::string value;
+  bool found_in_cache = false;
+
+  if (block_cache_) {
+    value = block_cache_->Get(key);
+    found_in_cache = !value.empty();
   }
+
+  if (!found_in_cache) {
+    leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+    if (!status.ok()) {
+      value.clear();  // Ensure value is empty if not found in DB
+    }
+  }
+
+  UpdateMetrics();
+  return value;
 }
 
 std::string ResLevelDB::GetAllValues(void) {
@@ -132,6 +163,19 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
 
   delete it;
   return values;
+}
+
+bool ResLevelDB::UpdateMetrics() {
+  if (block_cache_ == nullptr) {
+    return false;
+  }
+  std::string stats;
+  std::string approximate_size;
+  db_->GetProperty("leveldb.stats", &stats);
+  db_->GetProperty("leveldb.approximate-memory-usage", &approximate_size);
+  global_stats_->SetStorageEngineMetrics(block_cache_->GetCacheHitRatio(),
+                                         stats, approximate_size);
+  return true;
 }
 
 bool ResLevelDB::Flush() {

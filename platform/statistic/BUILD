@@ -19,6 +19,7 @@
 package(default_visibility = [
     "//platform:__subpackages__",
     "//service:__subpackages__",
+    "//chain/storage:__subpackages__",
 ])
 
 cc_library(

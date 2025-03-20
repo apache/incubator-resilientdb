@@ -27,6 +27,7 @@ cc_binary(
     copts = select({
         "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
         "//conditions:default": [],
+
     }),
     deps = [
         "//platform/config:resdb_config_utils",
@@ -35,7 +36,7 @@ cc_binary(
         "//common:comm",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-    ] + select({
+	] + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
         "//conditions:default": [],
     }),

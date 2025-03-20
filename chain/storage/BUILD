@@ -52,6 +52,8 @@ cc_library(
         "//chain/storage/proto:kv_cc_proto",
         "//chain/storage/proto:leveldb_config_cc_proto",
         "//common:comm",
+        "//common/lru:lru_cache",
+        "//platform/statistic:stats",
         "//third_party:leveldb",
     ],
 )
@@ -64,4 +66,18 @@ cc_test(
         ":memory_db",
         "//common/test:test_main",
     ],
+    timeout = "short",  # Set the timeout to "short"
+    size = "small",     # Set the size to "small"
+)
+
+cc_test(
+    name = "leveldb_test",
+    srcs = ["leveldb_test.cpp"],
+    deps = [
+        ":leveldb",
+        "//platform/statistic:stats",
+        "//common/test:test_main",
+    ],
+    timeout = "short",  # Set the timeout to "short"
+    size = "small",     # Set the size to "small"
 )

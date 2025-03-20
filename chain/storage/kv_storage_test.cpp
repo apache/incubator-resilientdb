@@ -30,10 +30,7 @@ namespace resdb {
 namespace storage {
 namespace {
 
-enum StorageType {
-  MEM = 0,
-  LEVELDB = 1,
-};
+enum StorageType { MEM = 0, LEVELDB = 1, LEVELDB_WITH_BLOCK_CACHE = 2 };
 
 class KVStorageTest : public ::testing::TestWithParam<StorageType> {
  protected:
@@ -46,6 +43,12 @@ class KVStorageTest : public ::testing::TestWithParam<StorageType> {
       case LEVELDB:
         Reset();
         storage = NewResLevelDB(path_);
+        break;
+      case LEVELDB_WITH_BLOCK_CACHE:
+        Reset();
+        LevelDBInfo config;
+        config.set_enable_block_cache(true);
+        storage = NewResLevelDB(path_, config);
         break;
     }
   }
@@ -218,8 +221,16 @@ TEST_P(KVStorageTest, GetHistory) {
   }
 }
 
+TEST_P(KVStorageTest, BlockCacheSpecificTest) {
+  if (GetParam() == LEVELDB_WITH_BLOCK_CACHE) {
+    std::cout << "Running BlockCacheSpecificTest for LEVELDB_WITH_BLOCK_CACHE"
+              << std::endl;
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
-                        ::testing::Values(MEM, LEVELDB));
+                        ::testing::Values(MEM, LEVELDB,
+                                          LEVELDB_WITH_BLOCK_CACHE));
 
 }  // namespace
 }  // namespace storage

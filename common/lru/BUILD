@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,19 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-killall -9 kv_service
 
-SERVER_PATH=./bazel-bin/service/kv/kv_service
-SERVER_CONFIG=service/tools/config/server/server.config
-WORK_PATH=$PWD
-CERT_PATH=${WORK_PATH}/service/tools/data/cert/
-GRAFANA_PORT=8090
+package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "lru_cache",
+    srcs = ["lru_cache.cpp"],
+    hdrs = ["lru_cache.h"],
+)
 
-bazel build //service/kv:kv_service --define enable_leveldb=True $@
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert 8090 > server0.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert 8091 > server1.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert 8092 > server2.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert 8093 > server3.log &
-
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert 8094 > client.log &
+cc_test(
+    name = "lru_cache_test",
+    srcs = ["lru_cache_test.cpp"],
+    deps = [
+        "//common/lru:lru_cache",
+        "//common/test:test_main",
+    ],
+    timeout = "short",  # Set the timeout to "short"
+    size = "small",     # Set the size to "small"
+)

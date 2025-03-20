@@ -31,6 +31,7 @@
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/prometheus_handler.h"
 #include "proto/kv/kv.pb.h"
+#include "sys/resource.h"
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -60,6 +61,14 @@ struct VisualData {
   std::vector<std::chrono::system_clock::time_point>
       commit_message_count_times_list;
   std::chrono::system_clock::time_point execution_time;
+
+  // Storage Engine Stats
+  double ext_cache_hit_ratio_;
+  std::string level_db_stats_;
+  std::string level_db_approx_mem_size_;
+
+  // process stats
+  struct rusage process_stats_;
 };
 
 class Stats {
@@ -72,6 +81,9 @@ class Stats {
   void SetProps(int replica_id, std::string ip, int port, bool resview_flag,
                 bool faulty_flag);
   void SetPrimaryId(int primary_id);
+  void SetStorageEngineMetrics(double ext_cache_hit_ratio,
+                               std::string level_db_stats,
+                               std::string level_db_approx_mem_size);
   void RecordStateTime(std::string state);
   void GetTransactionDetails(BatchUserRequest batch_request);
   void SendSummary();
