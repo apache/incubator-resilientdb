@@ -1,7 +1,8 @@
+import { BASE_URL } from '@/static/url';
 import axios from 'axios';
 
 const middlewareApi = axios.create({
-    baseURL: import.meta.env.VITE_MIDDLEWARE_BASE_URL,
+    baseURL: BASE_URL,
 });
 
 export {

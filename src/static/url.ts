@@ -1,0 +1,1 @@
+export const BASE_URL = "https://www.memlensapi.run.place/api/v1/"
