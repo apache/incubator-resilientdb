@@ -12,17 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-[package]
-name = "test"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-resilientdb_rust_sdk = {path = "../../resilientdb_rust_sdk"}
-tokio = { version = "1", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = {version = "0.11.22", features = ["blocking", "json"]}
+github:
+  description: Global-Scale Sustainable Blockchain Fabric
+  #homepage: resilientdb.apache.org
+  labels:
+    - crypto 
+    - smart-contracts 
+    - blockchain 
+    - solidity 
+    - distributed-database 
+    - key-value-database 
+    - distributed-ledger 
+    - blockchain-platform
+    - utxo
+  enabled_merge_buttons:
+    squash: true
+    merge: false
+    rebase: false
+  protected_branches:
+    master:
+  
+notifications:
+  commits:      commits@resilientdb.apache.org
+  issues:       commits@resilientdb.apache.org
+  pullrequests: commits@resilientdb.apache.org
