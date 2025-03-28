@@ -1,0 +1,30 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Apache Software Foundation
+
+  paths-ignore:
+    - '.*'
+    - '.**/**'
+    - 'repositories.bzl'
+    - 'CNAME'
+    - 'WORKSPACE'
+    - '**/*.conf'
+    - '**/*.config'
+    - '**/*.json'
+    - '**/*.sol'
+    - '**/*.pri'
+    - '**/*.pub'
+    - 'Doxyfile'
+    - 'header'
+    - 'dev/.rat-excludes'
+    - '**/*.md'
+    - 'DISCLAIMER-WIP'
+    - 'NOTICE'
+    - 'LICENSE'
+    - 'documents/doxygen/.gitignore'
+    - 'third_party/loc_script/src/index.js'
+
+
+
+  comment: on-failure
