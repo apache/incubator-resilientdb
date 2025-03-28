@@ -3,7 +3,7 @@ name: Node.js Package Publish
 on:
   push:
     branches:
-      - main
+      - master
   release:
     types: [published]
 
