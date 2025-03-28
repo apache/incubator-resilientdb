@@ -16,15 +16,22 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#
 
-from .config import MongoConfig, ResilientDBConfig
-from .cache import ResilientPythonCache
-from .exceptions import ResilientPythonCacheError
+name: Check Apache License
 
-__all__ = [
-    "MongoConfig",
-    "ResilientDBConfig",
-    "ResilientPythonCache",
-    "ResilientPythonCacheError",
-]
+on:
+  push
+
+jobs:
+  ubuntu-build:
+    name: check license
+    runs-on: ubuntu-latest
+    steps:
+     - name: Checkout
+       uses: actions/checkout@v2
+       with:
+         repository: ${{github.repository}}
+         ref: ${{ env.BRANCH_NAME }}
+
+     - name: Check License Header
+       uses: apache/skywalking-eyes/header@main
