@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,6 @@
 # under the License.
 #
 #
-
-#!/bin/bash
 
 bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
 tail -f /dev/null
