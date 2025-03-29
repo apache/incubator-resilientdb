@@ -1,23 +1,27 @@
 {
   "name": "rescontract-cli",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A CLI tool for managing smart contracts in the ResilientDB ecosystem.",
   "main": "index.js",
   "bin": {
     "rescontract": "index.js"
   },
-  "keywords": ["resilientdb", "smart contracts", "cli", "blockchain"],
+  "keywords": [
+    "resilientdb",
+    "smart contracts",
+    "cli",
+    "blockchain"
+  ],
   "author": "Gopal Nambiar <gnambiar@ucdavis.edu>",
   "license": "Apache",
   "dependencies": {
-    "commander": "^9.4.0",
+    "commander": "^9.5.0",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.2.4",
-    "winston": "^3.13.0",
-    "js-yaml": "^4.1.0" 
+    "js-yaml": "^4.1.0",
+    "winston": "^3.13.0"
   },
   "engines": {
     "node": ">=14"
   }
 }
-

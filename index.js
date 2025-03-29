@@ -21,9 +21,11 @@
 const { Command } = require('commander');
 const { execFile } = require('child_process');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const { getResDBHome } = require('./config');
 const logger = require('./logger');
-const fs = require('fs');
+const { spawn } = require('child_process');
 
 const program = new Command();
 
@@ -31,7 +33,9 @@ async function ensureResDBHome() {
   try {
     const resDBHome = await getResDBHome();
     if (!resDBHome) {
-      console.error('Error: ResDB_Home is not set. Please set the ResDB_Home environment variable or provide a config.yaml file.');
+      console.error(
+        'Error: ResDB_Home is not set. Please set the ResDB_Home environment variable or provide a config.yaml file.'
+      );
       logger.error('ResDB_Home is not set.');
       process.exit(1);
     }
@@ -43,16 +47,42 @@ async function ensureResDBHome() {
   }
 }
 
-function handleExecFile(command, args, options = {}) {
+// Define the path for the deployed contracts registry file
+const registryFilePath = path.join(
+  os.homedir(),
+  '.rescontract_deployed_contracts.json'
+);
+
+// Function to load the deployed contracts registry from file
+function loadDeployedContracts() {
+  if (fs.existsSync(registryFilePath)) {
+    const data = fs.readFileSync(registryFilePath, 'utf-8');
+    return new Map(JSON.parse(data));
+  }
+  return new Map();
+}
+
+// Function to save the deployed contracts registry to file
+function saveDeployedContracts(registry) {
+  const data = JSON.stringify(Array.from(registry.entries()), null, 2);
+  fs.writeFileSync(registryFilePath, data, 'utf-8');
+}
+
+// Load the registry at the start
+const deployedContracts = loadDeployedContracts();
+
+function handleExecFile(command, args, options = {}, onData) {
   return new Promise((resolve, reject) => {
     const child = execFile(command, args, options);
 
     child.stdout.on('data', (data) => {
       process.stdout.write(data);
+      if (onData) onData(data);
     });
 
     child.stderr.on('data', (data) => {
       process.stderr.write(data);
+      if (onData) onData(data);
     });
 
     child.on('error', (error) => {
@@ -66,6 +96,39 @@ function handleExecFile(command, args, options = {}) {
         reject(new Error(`Process exited with code ${code}`));
       } else {
         resolve();
+      }
+    });
+  });
+}
+
+// Function to handle the process execution
+function handleSpawnProcess(command, args, options = {}, onData) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, options);
+
+    let output = '';
+
+    child.stdout.on('data', (data) => {
+      process.stdout.write(data); // Print to CLI
+      output += data.toString(); // Accumulate output
+      if (onData) onData(data.toString());
+    });
+
+    child.stderr.on('data', (data) => {
+      process.stderr.write(data); // Print errors to CLI
+      output += data.toString(); // Accumulate output
+      if (onData) onData(data.toString());
+    });
+
+    child.on('error', (error) => {
+      reject(error); // Handle spawn error
+    });
+
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}`));
+      } else {
+        resolve(output); // Return the full output
       }
     });
   });
@@ -177,6 +240,20 @@ program
         arguments: args,
         owner,
       } = options;
+
+      const deploymentKey = `${owner}:${name}`;
+
+      if (deployedContracts.has(deploymentKey)) {
+        const existingContractAddress =
+          deployedContracts.get(deploymentKey).contractAddress;
+        console.error(
+          JSON.stringify({
+            error: `Contract "${name}" is already deployed by owner "${owner}" at address "${existingContractAddress}".`,
+          })
+        );
+        process.exit(1);
+      }
+
       const resDBHome = await ensureResDBHome();
       const commandPath = path.join(
         resDBHome,
@@ -188,9 +265,7 @@ program
         'contract_tools'
       );
 
-      const argList = args.split(',').map((arg) => arg.trim());
-
-      await handleExecFile(commandPath, [
+      const argList = [
         'deploy',
         '-c',
         configPath,
@@ -199,69 +274,64 @@ program
         '-n',
         name,
         '-a',
-        argList.join(','),
+        args,
         '-m',
         owner,
-      ]);
-    } catch (error) {
-      logger.error(`Error executing deploy command: ${error.message}`);
-      console.error(`Error: ${error.message}`);
-      process.exit(1);
-    }
-  });
+      ];
 
-program
-  .command('execute')
-  .description('Execute a smart contract function')
-  .requiredOption('-c, --config <configPath>', 'Client configuration path')
-  .requiredOption('-m, --sender <senderAddress>', 'Sender address')
-  .requiredOption('-s, --contract <contractAddress>', 'Contract address')
-  .requiredOption(
-    '-f, --function-name <functionName>',
-    'Function name with signature'
-  )
-  .requiredOption(
-    '-a, --arguments <parameters>',
-    'Function arguments (comma-separated)'
-  )
-  .action(async (options) => {
-    try {
-      const {
-        config: configPath,
-        sender,
-        contract,
-        functionName,
-        arguments: args,
-      } = options;
-      const resDBHome = await ensureResDBHome();
-      const commandPath = path.join(
-        resDBHome,
-        'bazel-bin',
-        'service',
-        'tools',
-        'contract',
-        'api_tools',
-        'contract_tools'
+      const output = await handleSpawnProcess(commandPath, argList);
+
+      const outputLines = output.split('\n');
+      let ownerAddress = '';
+      let contractAddress = '';
+      let contractName = '';
+
+      for (const line of outputLines) {
+        const content = line.replace(/^.*\] /, '').trim();
+
+        const ownerMatch = content.match(/owner_address:\s*"(.+)"$/);
+        const contractAddressMatch = content.match(/contract_address:\s*"(.+)"$/);
+        const contractNameMatch = content.match(/contract_name:\s*"(.+)"$/);
+
+        if (ownerMatch) {
+          ownerAddress = ownerMatch[1];
+        } else if (contractAddressMatch) {
+          contractAddress = contractAddressMatch[1];
+        } else if (contractNameMatch) {
+          contractName = contractNameMatch[1];
+        }
+      }
+
+      if (!ownerAddress || !contractAddress || !contractName) {
+        console.error(
+          JSON.stringify({
+            error: 'Failed to parse deployment output.',
+          })
+        );
+        process.exit(1);
+      }
+
+      deployedContracts.set(deploymentKey, {
+        ownerAddress: ownerAddress,
+        contractAddress: contractAddress,
+        contractName: contractName,
+      });
+
+      saveDeployedContracts(deployedContracts);
+
+      console.log(
+        JSON.stringify({
+          owner_address: ownerAddress,
+          contract_address: contractAddress,
+          contract_name: contractName,
+        })
       );
-
-      const argList = args.split(',').map((arg) => arg.trim());
-
-      await handleExecFile(commandPath, [
-        'execute',
-        '-c',
-        configPath,
-        '-m',
-        sender,
-        '-s',
-        contract,
-        '-f',
-        functionName,
-        '-a',
-        argList.join(','),
-      ]);
     } catch (error) {
-      logger.error(`Error executing execute command: ${error.message}`);
-      console.error(`Error: ${error.message}`);
+      console.error(
+        JSON.stringify({
+          error: error.message,
+        })
+      );
       process.exit(1);
     }
   });
@@ -301,6 +371,44 @@ program
       ]);
     } catch (error) {
       logger.error(`Error executing add_address command: ${error.message}`);
+      console.error(`Error: ${error.message}`);
+      process.exit(1);
+    }
+  });
+
+// Optional commands to manage the registry
+
+program
+  .command('list-deployments')
+  .description('List all deployed contracts')
+  .action(() => {
+    if (deployedContracts.size === 0) {
+      console.log('No contracts have been deployed yet.');
+    } else {
+      console.log('Deployed Contracts:');
+      for (const [key, value] of deployedContracts.entries()) {
+        console.log(`Owner: ${value.ownerAddress}`);
+        console.log(`Contract Name: ${value.contractName}`);
+        console.log(`Contract Address: ${value.contractAddress}`);
+        console.log('---');
+      }
+    }
+  });
+
+program
+  .command('clear-registry')
+  .description('Clear the deployed contracts registry')
+  .action(() => {
+    try {
+      if (fs.existsSync(registryFilePath)) {
+        fs.unlinkSync(registryFilePath);
+        deployedContracts.clear();
+        console.log('Deployed contracts registry cleared.');
+      } else {
+        console.log('Deployed contracts registry is already empty.');
+      }
+    } catch (error) {
+      logger.error(`Error clearing registry: ${error.message}`);
       console.error(`Error: ${error.message}`);
       process.exit(1);
     }
