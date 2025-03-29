@@ -1,3 +1,8 @@
+const axios = require('axios');
+const { buildUrl } = require('../utils/urlHelper');
+const { getEnv } = require('../utils/envParser');
+const logger = require('../utils/logger');
+
 /**
  * Retrieves CPU profiling data from Pyroscope and sends it as a response.
  *

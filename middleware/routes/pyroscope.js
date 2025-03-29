@@ -1,5 +1,5 @@
 const express = require("express");
-const { getProfilingData } = require("../middleware/controllers/pyroscope");
+const { getProfilingData } = require("../controllers/pyroscope");
 const router = express.Router();
 
 /**

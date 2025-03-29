@@ -1,5 +1,5 @@
 const express = require("express");
-const { setValue, getValue, calculateP99 } = require("../middleware/controllers/transactions")
+const { setValue, getValue, calculateP99 } = require("../controllers/transactions")
 const router = express.Router();
 
 /**

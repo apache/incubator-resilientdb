@@ -1,10 +1,10 @@
 const express = require("express");
-const healthRoutes = require("./middleware/routes/healthcheck");
-const pyroscopeRoutes = require("./middleware/routes/pyroscope")
-const nodeExporterRoutes = require("./middleware/routes/nodeExporter")
-const statsExporterRoutes = require("./middleware/routes/statsExporter")
-const transactionsRoutes = require("./middleware/routes/transactions")
-const explorerRoutes = require("./middleware/routes/explorer")
+const healthRoutes = require("./routes/healthcheck");
+const pyroscopeRoutes = require("./routes/pyroscope")
+const nodeExporterRoutes = require("./routes/nodeExporter")
+const statsExporterRoutes = require("./routes/statsExporter")
+const transactionsRoutes = require("./routes/transactions")
+const explorerRoutes = require("./routes/explorer")
 const cors = require("cors")
 
 const app = express();

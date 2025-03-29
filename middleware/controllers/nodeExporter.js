@@ -1,7 +1,7 @@
 const axios = require('axios');
-const { buildUrl } = require('../../utils/urlHelper');
-const { getEnv } = require('../../utils/envParser');
-const logger = require('../../utils/logger');
+const { buildUrl } = require('../utils/urlHelper');
+const { getEnv } = require('../utils/envParser');
+const logger = require('../utils/logger');
 
 /**
  * Fetches CPU usage data from Node Exporter and sends it as a response.

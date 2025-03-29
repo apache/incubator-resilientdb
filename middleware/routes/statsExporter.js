@@ -1,5 +1,5 @@
 const express = require("express");
-const { getTransactionData} = require("../middleware/controllers/statsExporter");
+const { getTransactionData} = require("../controllers/statsExporter");
 const router = express.Router();
 
 /**

@@ -1,3 +1,8 @@
+const axios = require('axios');
+const { getEnv } = require('../utils/envParser');
+const { buildUrl } = require('../utils/urlHelper');
+const logger = require('../utils/logger');
+
 /**
  * Retrieves profiling data from Pyroscope and sends it as a response.
  *
