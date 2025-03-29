@@ -15,7 +15,6 @@ header:
     - '**/*.sol'
     - '**/*.pri'
     - '**/*.pub'
-    - '**/*.svg'
     - 'Doxyfile'
     - 'header'
     - 'dev/.rat-excludes'
@@ -29,4 +28,3 @@ header:
 
 
   comment: on-failure
-
