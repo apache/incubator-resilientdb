@@ -74,6 +74,10 @@ The containers share the host's process namespace (pid: "host") and mount the ho
 The containers run with elevated privileges (privileged: true) to access host resources. Use this setup cautiously in production environments.
 Ensure that only trusted users can access the exposed metrics and profiling data.
 
+### Host Changes needed
+1. Add process-exporter to prometheus.conf file
+
+
 ## TODO
 1. Add ResView as a sidecar service.
 2. Feature ideas for log tracing on both crow and resdb
