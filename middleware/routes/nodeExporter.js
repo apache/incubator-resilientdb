@@ -1,5 +1,5 @@
 const express = require("express");
-const { getCpuUsage, getDiskIOPS, getDiskWaitTime, getTimeSpentDoingIO, getDiskRWData } = require("../controllers/nodeExporter");
+const { getCpuUsage, getDiskIOPS, getDiskWaitTime, getTimeSpentDoingIO, getDiskRWData } = require("../middleware/controllers/nodeExporter");
 const router = express.Router();
 
 /**

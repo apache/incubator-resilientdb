@@ -1,95 +1,116 @@
 const axios = require('axios');
-const { buildUrl } = require('../utils/urlHelper');
-const { getEnv } = require('../utils/envParser');
-const logger = require('../utils/logger');
+const { buildUrl } = require('../../utils/urlHelper');
+const { getEnv } = require('../../utils/envParser');
+const logger = require('../../utils/logger');
+
+/**
+ * Fetches CPU usage data from Node Exporter and sends it as a response.
+ *
+ * @async
+ * @function getCpuUsage
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} req.body - The request body containing query parameters.
+ * @param {string} req.body.query - The PromQL query to fetch CPU usage data.
+ * @param {string} [req.body.from="now-5m"] - The start time for the query range (default: 5 minutes ago).
+ * @param {string} [req.body.until="now"] - The end time for the query range (default: now).
+ * @param {number} [req.body.step=28] - The step interval in seconds for the query (default: 28 seconds).
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} Sends the filtered CPU usage data or an error response.
+ */
 async function getCpuUsage(req, res) {
     const { query, from = "now-5m", until = "now", step = 28 } = req.body;
-    logger.info(req.body);
+    logger.debug(req.body);
     const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
         query,
         start: from,
         end: until,
-        step
+        step,
     });
-    let config = {
+
+    const config = {
         method: 'get',
         maxBodyLength: Infinity,
         url: baseUrl,
     };
-    logger.info(config);
+
     try {
         const response = await axios.request(config);
-        let data = response?.data?.data?.result.filter((val) => val?.metric?.groupname === 'kv_service')
-        let responseData = []
-        if(data.length > 0){
-          responseData = data[0]?.values
-        }    
-        return res.send({data : responseData});
+        const data = response?.data?.data?.result.filter((val) => val?.metric?.groupname === 'kv_service');
+        const responseData = data.length > 0 ? data[0]?.values : [];
+        return res.send({ data: responseData });
     } catch (error) {
         logger.error(error);
         return res.status(400).send({
-            error: error.message || "An error occurred"
+            error: error.message || "An error occurred",
         });
     }
 }
 
+/**
+ * Fetches Disk IOPS (Input/Output Operations Per Second) data from Node Exporter.
+ *
+ * @async
+ * @function getDiskIOPS
+ * @param {Object} req - The HTTP request object containing query parameters in the body.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} Sends the formatted Disk IOPS data or an error response.
+ */
 async function getDiskIOPS(req, res) {
     const { from = "now-12h", until = "now", step = 28 } = req.body;
-    
-    // Build the base URL using the parameters from the request
+
     const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
-      query: "rate(node_disk_writes_completed_total{device='vda',job='node_exporter'}[5m])", // Fixed query
-      start: from,
-      end: until,
-      step
+        query: "rate(node_disk_writes_completed_total{device='vda',job='node_exporter'}[5m])",
+        start: from,
+        end: until,
+        step,
     });
-  
+
     const config = {
-      method: 'get',
-      maxBodyLength: Infinity,
-      url: baseUrl,
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: baseUrl,
     };
-  
+
     try {
-        // Make the API call to the Prometheus server
         const response = await axios.request(config);
-      
-        // Filter the results based on device and job
         const data = response?.data?.data?.result.filter(
             (val) => val?.metric?.device === "vda" && val?.metric?.job === "node_exporter"
         );
-      
-        // Extract and format the values for the frontend
-        const formattedResponseData =
-          data.length > 0
+
+        const formattedResponseData = data.length > 0
             ? data[0]?.values.map(([timestamp, value]) => ({
-                time: new Date(Number(timestamp) * 1000).toISOString(), // Convert timestamp to ISO format
-                value: parseFloat(value).toFixed(2), // Limit value to two decimal places
-              }))
+                time: new Date(Number(timestamp) * 1000).toISOString(),
+                value: parseFloat(value).toFixed(2),
+            }))
             : [];
-      
-        // Send the formatted data back to the frontend
+
         return res.send({ data: formattedResponseData });
-      } catch (error) {
+    } catch (error) {
         logger.error(error);
         return res.status(400).send({
-          error: error.message || "An error occurred while fetching the DiskIOPS data",
+            error: error.message || "An error occurred while fetching the DiskIOPS data",
         });
-      }      
-  }  
-/// Disk Wait time : 
+    }
+}
 
+/**
+ * Fetches Disk Wait Time data (read and write) from Node Exporter.
+ *
+ * @async
+ * @function getDiskWaitTime
+ * @param {Object} req - The HTTP request object containing query parameters in the body.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} Sends the formatted Disk Wait Time data or an error response.
+ */
 async function getDiskWaitTime(req, res) {
     const { from = "now-5m", until = "now", step = 28 } = req.body;
 
     try {
-        // Define queries for both metrics
         const queries = {
             readWaitTime: "rate(node_disk_read_time_seconds_total{device='vda'}[5m]) / rate(node_disk_reads_completed_total{device='vda'}[5m])",
             writeWaitTime: "rate(node_disk_write_time_seconds_total{device='vda'}[5m]) / rate(node_disk_writes_completed_total{device='vda'}[5m])",
         };
 
-        // Execute Prometheus queries in parallel
         const responses = await Promise.all(
             Object.entries(queries).map(async ([key, query]) => {
                 const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
@@ -106,7 +127,6 @@ async function getDiskWaitTime(req, res) {
             })
         );
 
-        // Format the responses for each metric
         const formattedData = responses.reduce((acc, { key, values }) => {
             acc[key] = values.map(([timestamp, value]) => ({
                 time: new Date(timestamp * 1000).toISOString(),
@@ -115,7 +135,6 @@ async function getDiskWaitTime(req, res) {
             return acc;
         }, {});
 
-        // Send formatted data to the frontend
         return res.send({ data: formattedData });
     } catch (error) {
         logger.error(error);
@@ -124,15 +143,22 @@ async function getDiskWaitTime(req, res) {
         });
     }
 }
-// Time spent doing IO
 
+/**
+ * Fetches the time spent doing I/O operations from Node Exporter.
+ *
+ * @async
+ * @function getTimeSpentDoingIO
+ * @param {Object} req - The HTTP request object containing query parameters in the body.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} Sends the formatted I/O time data or an error response.
+ */
 async function getTimeSpentDoingIO(req, res) {
     const { from = "now-5m", until = "now", step = 28 } = req.body;
 
     const query = "rate(node_disk_io_time_seconds_total{device='vda', job='node_exporter'}[5m])";
 
     try {
-        // Build the Prometheus query URL
         const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
             query,
             start: from,
@@ -145,13 +171,9 @@ async function getTimeSpentDoingIO(req, res) {
             url: baseUrl,
         };
 
-        // Fetch data from Prometheus
         const response = await axios.request(config);
-
-        // Parse response
         const result = response?.data?.data?.result?.[0]?.values || [];
 
-        // Format data for the frontend
         const formattedData = result.map(([timestamp, value]) => ({
             time: new Date(timestamp * 1000).toISOString(),
             value: parseFloat(value),
@@ -165,18 +187,25 @@ async function getTimeSpentDoingIO(req, res) {
         });
     }
 }
-//  Disk Read and Write
+
+/**
+ * Fetches Disk Read and Write Merged data from Node Exporter.
+ *
+ * @async
+ * @function getDiskRWData
+ * @param {Object} req - The HTTP request object containing query parameters in the body.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<void>} Sends the formatted Disk Read and Write Merged data or an error response.
+ */
 async function getDiskRWData(req, res) {
     const { from = "now-5m", until = "now", step = 28 } = req.body;
 
     try {
-        // Define queries for both metrics (Read and Write Merged)
         const queries = {
             readMerged: "rate(node_disk_reads_merged_total{device='vda'}[5m])",
             writeMerged: "rate(node_disk_writes_merged_total{device='vda'}[5m])",
         };
 
-        // Execute Prometheus queries in parallel
         const responses = await Promise.all(
             Object.entries(queries).map(async ([key, query]) => {
                 const baseUrl = buildUrl(getEnv("NODE_EXPORTER_BASE_URL"), {
@@ -193,16 +222,14 @@ async function getDiskRWData(req, res) {
             })
         );
 
-        // Format the responses for each metric (read and write merged)
         const formattedData = responses.reduce((acc, { key, values }) => {
             acc[key] = values.map(([timestamp, value]) => ({
-                time: new Date(timestamp * 1000).toISOString(), // Ensure time is in ISO format
-                value: parseFloat(value), // Ensure value is a float
+                time: new Date(timestamp * 1000).toISOString(),
+                value: parseFloat(value),
             }));
             return acc;
         }, {});
 
-        // Send formatted data to the frontend
         return res.send({ data: formattedData });
     } catch (error) {
         logger.error(error);
@@ -212,18 +239,10 @@ async function getDiskRWData(req, res) {
     }
 }
 
-
-/**
- * Processes Node Exporter data to find a specific groupname and simplify the structure.
- * 
- * @param {Object} data - The raw data from Node Exporter.
- * @param {string} groupname - The groupname to filter for.
- * @returns {Object} - The filtered and simplified data.
- */
 module.exports = {
     getCpuUsage,
     getDiskIOPS,
     getDiskWaitTime,
     getTimeSpentDoingIO,
-    getDiskRWData
+    getDiskRWData,
 };

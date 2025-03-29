@@ -4,6 +4,7 @@
  * @property {string} [PYROSCOPE_BASE_URL] - The base URL for the Pyroscope service.
  * @property {string} [NODE_EXPORTER_BASE_URL] - The base URL for the Node exporter service.
  * @property {string} [PROCESS_EXPORTER_BASE_URL] - The base URL for the Process exporter service.
+ * @property {string} [EXPLORER_BASE_URL] - The base URL for the Explorer Service
  * @property {string} [CPP_STATS_API_BASE_URL] - The base URL for the CPP stats service.
  * @property {string} [CPP_TRANSACTIONS_API_BASE_URL] - The base URL for the CPP Graphql service.
  */
