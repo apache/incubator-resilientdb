@@ -1,0 +1,16 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Apache Software Foundation
+
+  paths-ignore:
+    - '**/*.config'
+    - '**/*.json'
+    - 'Doxyfile'
+    - 'header'
+    - 'dev/.rat-excludes'
+    - '**/*.md'
+    - 'NOTICE'
+    - 'DISCLAIMER-WIP'
+    - 'LICENSE'
+  comment: on-failure
