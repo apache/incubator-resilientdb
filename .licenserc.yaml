@@ -6,6 +6,9 @@ header:
   paths-ignore:
     - '**/*.config'
     - '**/*.json'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - '**/*.dockerignore'
     - 'Doxyfile'
     - 'header'
     - 'dev/.rat-excludes'
@@ -13,4 +16,6 @@ header:
     - 'NOTICE'
     - 'DISCLAIMER-WIP'
     - 'LICENSE'
+    - '.gitignore'
+
   comment: on-failure
