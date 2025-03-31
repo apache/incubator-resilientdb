@@ -32,6 +32,8 @@ import {
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
 import { Link } from "react-router-dom";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
+import { middlewareApi } from "@/lib/api";
 
 export interface Transaction {
   cmd: string;
@@ -91,7 +93,11 @@ const columns: ColumnDef<Block>[] = [
       const transactions = row.getValue(
         "transactions"
       ) as Block["transactions"];
-      return <Badge variant="outline">{transactions[0].cmd}</Badge>;
+      const command =
+        transactions && transactions.length > 0
+          ? transactions[0]?.cmd
+          : "No Command";
+      return <Badge variant="outline">{command}</Badge>;
     },
   },
   {
@@ -113,13 +119,57 @@ const columns: ColumnDef<Block>[] = [
   },
 ];
 
-export function BlockchainTable({
-  loading,
-  data,
-}: {
-  loading: boolean;
-  data: Block[];
-}) {
+export function BlockchainTable({ total }: { total: number }) {
+  const [loading, setLoading] = React.useState(false);
+  const [data, setData] = React.useState<Block[]>([]);
+  const [pageIndex, setPageIndex] = React.useState(0);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  // Fetch blocks data
+  const fetchBlocksData = React.useCallback(async () => {
+    console.log("Page Idx", pageIndex);
+    try {
+      setLoading(true);
+
+      const start = pageIndex * pageSize + 1;
+      const end = Math.min(total, start + pageSize - 1);
+
+      const response = await middlewareApi.get(`/explorer/getBlocks`, {
+        params: { start, end },
+      });
+      console.log("Response is: ", response?.data);
+      setData(response?.data as Block[]);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  }, [pageIndex, pageSize, total]);
+
+  // Run fetchBlocksData when pageIndex or pageSize changes
+  React.useEffect(() => {
+    fetchBlocksData();
+  }, [fetchBlocksData]); // Direct dependencies
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  const handlePageChange = (newPageIndex: number) => {
+    if (newPageIndex >= 0 && newPageIndex < totalPages) {
+      console.log("Changing page from", pageIndex, "to", newPageIndex);
+      setPageIndex(newPageIndex);
+    }
+  };
+
+  const visiblePages = 5;
+  const startPage = Math.max(
+    0,
+    Math.min(
+      pageIndex - Math.floor(visiblePages / 2),
+      totalPages - visiblePages
+    )
+  );
+  const endPage = Math.min(startPage + visiblePages, totalPages);
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -130,6 +180,7 @@ export function BlockchainTable({
   const table = useReactTable({
     data,
     columns,
+    manualPagination: true,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -141,7 +192,9 @@ export function BlockchainTable({
       sorting,
       columnFilters,
       columnVisibility,
+      pagination: { pageIndex, pageSize },
     },
+    pageCount: totalPages,
   });
 
   if (loading) {
@@ -215,6 +268,32 @@ export function BlockchainTable({
                 Columns <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(value) => {
+                setPageSize(Number(value));
+                setPageIndex(0);
+              }}
+            >
+              <SelectTrigger className="w-[150px]">
+                <span>Page Size {pageSize}</span>
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 20, 50].map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    Page Size {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              className="ml-4"
+              onClick={fetchBlocksData}
+            >
+              Refresh
+            </Button>
+
             <DropdownMenuContent align="end">
               {table
                 .getAllColumns()
@@ -279,7 +358,7 @@ export function BlockchainTable({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    No results...
                   </TableCell>
                 </TableRow>
               )}
@@ -287,21 +366,59 @@ export function BlockchainTable({
           </Table>
         </div>
         <div className="flex items-center justify-end space-x-2 py-4">
+          {/* Go to Start Button */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
+            onClick={() => handlePageChange(0)}
+            disabled={pageIndex === 0}
+          >
+            Go to Start
+          </Button>
+
+          {/* Previous Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(pageIndex - 1)}
+            disabled={pageIndex === 0}
           >
             Previous
           </Button>
+
+          {/* Page Numbers */}
+          {Array.from(
+            { length: endPage - startPage },
+            (_, i) => startPage + i
+          ).map((page) => (
+            <Button
+              key={page}
+              variant={page === pageIndex ? "default" : "outline"}
+              size="sm"
+              onClick={() => handlePageChange(page)}
+            >
+              {page + 1}
+            </Button>
+          ))}
+
+          {/* Next Button */}
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
+            onClick={() => handlePageChange(pageIndex + 1)}
+            disabled={pageIndex === totalPages - 1}
           >
             Next
+          </Button>
+
+          {/* Go to End Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(totalPages - 1)}
+            disabled={pageIndex === totalPages - 1}
+          >
+            Go to End
           </Button>
         </div>
       </div>

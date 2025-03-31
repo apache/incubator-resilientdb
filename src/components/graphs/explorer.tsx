@@ -7,30 +7,11 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { ChartConfig } from "../ui/LineGraphChart";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { NotFound } from "../ui/not-found";
 import { useEffect, useState } from "react";
 import { middlewareApi } from "@/lib/api";
 import { Skeleton } from "../ui/skeleton";
 import { formatSeconds } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Block, BlockchainTable } from "./table";
 
 type BlockchainConfig = {
@@ -58,10 +39,9 @@ type ExplorerCardProps = {
 export function Explorer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [data, setData] = useState<BlockchainConfig>({} as BlockchainConfig);
-
-  const [blocksLoading, setBlocksLoading] = useState(false);
-  const [blocksData, setBlocksData] = useState<Block[]>([]);
+  const [configData, setData] = useState<BlockchainConfig>(
+    {} as BlockchainConfig
+  );
 
   async function fetchExplorerData() {
     try {
@@ -75,21 +55,8 @@ export function Explorer() {
     }
   }
 
-  async function fetchBlocksData() {
-    try {
-      setBlocksLoading(true);
-      const response = await middlewareApi.get("/explorer/getBlocks");
-      setBlocksData(response?.data as Block[]);
-      setBlocksLoading(false);
-    } catch (error) {
-      console.log(error);
-      setBlocksLoading(false);
-    }
-  }
-
   useEffect(() => {
     fetchExplorerData();
-    fetchBlocksData();
   }, []);
 
   return (
@@ -109,17 +76,21 @@ export function Explorer() {
         <CardContent>
           <main className="p-4 space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <DatabaseCard loading={loading} data={data} />
-              <ChainInfoCard loading={loading} data={data} />
+              <DatabaseCard loading={loading} data={configData} />
+              <ChainInfoCard loading={loading} data={configData} />
             </div>
             <div className="grid md:grid-cols-1 gap-4">
-              <MiscellaneousDataCard loading={loading} data={data} />
+              <MiscellaneousDataCard loading={loading} data={configData} />
               {/* <TransactionHistoryCard loading={loading} data={data} /> */}
             </div>
           </main>
         </CardContent>
       </Card>
-      <BlocksData loading={blocksLoading} data={blocksData} />
+      {configData ? (
+        <BlocksData metadata={configData} />
+      ) : (
+        <div>Loading...</div>
+      )}
     </div>
   );
 }
@@ -405,13 +376,7 @@ function TransactionHistoryCard({ loading, data }: ExplorerCardProps) {
           </LineChart>
         </ResponsiveContainer> */
 }
-function BlocksData({
-  loading,
-  data,
-}: {
-  loading: boolean;
-  data: Array<Block>;
-}) {
+function BlocksData({ metadata }: { metadata: BlockchainConfig }) {
   return (
     <Card className="w-4/5 max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl">
       <CardHeader className="border-b border-slate-700">
@@ -426,7 +391,7 @@ function BlocksData({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <BlockchainTable loading={loading} data={data} />
+        <BlockchainTable total={metadata?.blockNum || 175} />
       </CardContent>
     </Card>
   );
