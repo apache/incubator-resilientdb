@@ -49,7 +49,7 @@ export const GoogleGeminiEffect = ({
         transition={{ duration: 1 }}
         style={{ transform: "translateY(-100px)" }} // Fade-in effect duration
       >
-        {title || `MemLens`}
+        {title || `ResLens`}
       </motion.p>
       <motion.p
         className="text-lg md:text-5xl font-normal pb-4 mt-2 text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-100 to-neutral-300"

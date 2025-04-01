@@ -20,6 +20,7 @@
 
 import React from 'react';
 import { FaLinkedin, FaGithub, FaTwitter } from 'react-icons/fa';
+import { ExternalLink } from "lucide-react";
 
 const Footer: React.FC = () => {
   return (
@@ -86,10 +87,10 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 text-white">Connect With Us</h3>
             <div className="flex justify-center md:justify-end space-x-4">
               <a
-                href="#"
+                href="https://resilientdb.apache.org/"
                 className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
               >
-                <FaLinkedin size={24} />
+                <ExternalLink size={24} />
               </a>
               <a
                 href="#"
@@ -109,7 +110,7 @@ const Footer: React.FC = () => {
 
         {/* Footer Bottom Section */}
         <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} MemLens. Built at UC Davis.</p>
+          <p>&copy; {new Date().getFullYear()} ResLens. Built at UC Davis.</p>
         </div>
       </div>
     </footer>
