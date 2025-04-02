@@ -1,25 +1,32 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ *
+ */
 
 //@ts-nocheck
-import { Link, Database, Cuboid, Hourglass } from "lucide-react";
+import {
+  Link,
+  Database,
+  Cuboid,
+  Hourglass,
+  AlertCircle,
+  RefreshCw,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -33,6 +40,15 @@ import { middlewareApi } from "@/lib/api";
 import { Skeleton } from "../ui/skeleton";
 import { formatSeconds } from "@/lib/utils";
 import { Block, BlockchainTable } from "./table";
+import {
+  ChartContainer,
+  ChartTooltipContent,
+  ChartTooltip,
+} from "../ui/LineGraphChart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { transactionHistoryData } from "@/static/transactionHistory";
+import { Button } from "../ui/button";
+import { decodeDeltaEncoding } from "@/static/encoding";
 
 type BlockchainConfig = {
   blockNum: number;
@@ -99,9 +115,9 @@ export function Explorer() {
               <DatabaseCard loading={loading} data={configData} />
               <ChainInfoCard loading={loading} data={configData} />
             </div>
-            <div className="grid md:grid-cols-1 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <MiscellaneousDataCard loading={loading} data={configData} />
-              {/* <TransactionHistoryCard loading={loading} data={data} /> */}
+              <TransactionHistoryCard />
             </div>
           </main>
         </CardContent>
@@ -250,7 +266,7 @@ function ChainInfoCard({ loading, data }: ExplorerCardProps) {
 }
 function MiscellaneousDataCard({ loading, data }: ExplorerCardProps) {
   return (
-    <Card className="h-[400px] w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
+    <Card className="h-full w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
       <CardHeader>
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
@@ -309,93 +325,138 @@ function MiscellaneousDataCard({ loading, data }: ExplorerCardProps) {
     </Card>
   );
 }
-function TransactionHistoryCard({ loading, data }: ExplorerCardProps) {
-  const chartData = [
-    { month: "January", desktop: 186 },
-    { month: "February", desktop: 305 },
-    { month: "March", desktop: 237 },
-    { month: "April", desktop: 73 },
-    { month: "May", desktop: 209 },
-    { month: "June", desktop: 214 },
-  ];
+function TransactionHistoryCard() {
+  const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  async function fetchTransactionHistory() {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await middlewareApi.get("/explorer/getEncodedBlocks");
+      const data = decodeDeltaEncoding(response?.data);
+      setChartData(data);
+    } catch (error) {
+      setError(error);
+      console.error("Failed to fetch transaction history:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchTransactionHistory();
+  }, []);
+
+  const chartConfig = {
+    desktop: {
+      label: "CreatedAt",
+      color: "hsl(var(--chart-1))",
+    },
+  } satisfies ChartConfig;
+
+  const handleRefresh = () => {
+    fetchTransactionHistory();
+  };
+
   return (
-    <Card className="h-auto w-full max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
+    <Card className="h-auto w-full max-w-8xl bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
       <CardHeader>
         <div className="flex justify-between">
           <div className="flex items-center gap-2">
             <Hourglass className="w-6 h-6 text-blue-400" />
             <CardTitle className="text-2xl font-bold">
-              {" "}
               Resilient Transaction History
             </CardTitle>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleRefresh}
+            className="text-gray-300 hover:text-white hover:bg-slate-800"
+            title="Refresh data"
+          >
+            <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+            <span className="sr-only">Refresh</span>
+          </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        {!loading ? (
-          <NotFound content="" onRefresh={null} />
-        ) : (
-          <div className="space-y-4">
-            <div className="h-[300px] w-full relative">
-              <Skeleton className="absolute left-0 top-0 bottom-0 w-2" />
-              <div className="absolute left-8 right-0 top-4 bottom-8 flex flex-col justify-between">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-0.5 w-full" />
-                ))}
+      <CardContent className="h-full">
+        {loading ? (
+          <div className="flex flex-col space-y-3 w-full h-[300px] animate-pulse">
+            <div className="flex items-center justify-center h-full">
+              <div className="space-y-4 w-full">
+                <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+                <div className="h-[200px] bg-slate-800 rounded"></div>
+                <div className="h-4 bg-slate-800 rounded w-1/2"></div>
               </div>
-              <Skeleton className="absolute left-12 right-0 bottom-0 h-2" />
-            </div>
-            <div className="flex justify-center space-x-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center">
-                  <Skeleton className="w-4 h-4 mr-2" />
-                  <Skeleton className="h-4 w-20" />
-                </div>
-              ))}
             </div>
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-[300px] text-center p-6">
+            <AlertCircle className="h-12 w-12 text-red-400 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              Failed to load transaction data
+            </h3>
+            <p className="text-gray-400 mb-4">
+              {error.message ||
+                "An unexpected error occurred while fetching transaction history."}
+            </p>
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              className="border-blue-500 text-blue-400 hover:bg-blue-950"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
+        ) : chartData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-[300px] text-center">
+            <Database className="h-12 w-12 text-gray-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">
+              No transaction data available
+            </h3>
+            <p className="text-gray-400 mb-4">
+              There are currently no transactions to display.
+            </p>
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              className="border-blue-500 text-blue-400 hover:bg-blue-950"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig}>
+            <BarChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="createdAt"
+                axisLine={false}
+                tickFormatter={(value) => value.slice(0, 6)}
+              />
+              <YAxis
+                tick={{ fontSize: 12, fill: "#6b7280" }}
+                tickLine={false}
+                axisLine={{ stroke: "bg-inherit" }}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent indicator="dashed" />}
+              />
+              <Bar dataKey="volume" fill="var(--color-desktop)" radius={4} />
+            </BarChart>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
   );
 }
-{
-  /* <ResponsiveContainer width="100%" height={350}>
-          <LineChart
-            data={chartData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <XAxis
-              dataKey="name"
-              stroke="#888888"
-              fontSize={12}
-              tickLine={false}
-              axisLine={{ stroke: "#888888" }}
-              // tickFormatter={formatXAxis}
-            />
-            <YAxis
-              stroke="#888888"
-              fontSize={12}
-              tickLine={false}
-              axisLine={{ stroke: "#888888" }}
-              tickFormatter={(value) => `${value}default`}
-            />
-            <RechartsTooltip
-              contentStyle={{ backgroundColor: "#334155", border: "none" }}
-              labelStyle={{ color: "#94a3b8" }}
-              itemStyle={{ color: "#e2e8f0" }}
-            />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#2563eb"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer> */
-}
+
 function BlocksData({ metadata }: { metadata: BlockchainConfig }) {
   return (
     <Card className="w-4/5 max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl">
