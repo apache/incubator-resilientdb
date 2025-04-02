@@ -40,6 +40,18 @@ const { getEnv } = require('../utils/envParser');
 const logger = require('../utils/logger');
 const  { parseCreateTime, parseTimeToUnixEpoch} = require('../utils/time');
 const { applyDeltaEncoding, decodeDeltaEncoding } = require('../utils/encoding');
+const sqlite3 = require('sqlite3').verbose();
+const path = require("path")
+
+// Initialize SQLite database connection
+const dbPath = path.join(__dirname, '../cache/transactions.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        logger.error('Error connecting to SQLite database:', err);
+    } else {
+        logger.info('Connected to SQLite cache database');
+    }
+});
 
 /**
  * Fetches explorer data from the EXPLORER_BASE_URL and sends it as a response.
@@ -128,7 +140,93 @@ async function getBlocks(req, res) {
 async function getEncodedBlocks(req, res) {
     const start = parseInt(req.query.start, 10);
     const end = parseInt(req.query.end, 10);
-    let baseUrl = `${getEnv("EXPLORER_BASE_URL")}/v1/blocks`
+    
+    try {
+        logger.info(`Attempting to fetch blocks ${start}-${end} from cache`);
+        const cacheData = await getDataFromCache(start, end);
+            
+        if (cacheData && cacheData.length > 0) {
+            logger.info(`Cache hit for blocks ${start}-${end}, returned ${cacheData.length} records`);
+            let modifiedData = cacheData.map(record => {
+                return {
+                    epoch: parseTimeToUnixEpoch(record.created_at),
+                    volume: record.volume || 0
+                };
+            });
+                
+            modifiedData = applyDeltaEncoding(modifiedData);
+            return res.send({
+                isCached: true,
+                ...modifiedData
+            });
+        }    
+        logger.info(`Cache miss for blocks ${start}-${end}, falling back to API`);
+        
+    } catch (cacheError) {
+        logger.error('Error retrieving data from cache. Continue to API fallback', cacheError);
+    }
+    try {
+        const apiData = await getDataFromApi(start, end);
+        const modifiedData = applyDeltaEncoding(apiData);
+        return res.send(modifiedData);
+    } catch (error) {
+        logger.error('Error fetching block data from API:', error);
+        return res.status(500).send({
+            error: 'Failed to fetch block data',
+            details: error.message,
+        });
+    }
+}
+
+/**
+ * Retrieves data from the SQLite cache
+ * 
+ * @param {number} start - Start block ID
+ * @param {number} end - End block ID
+ * @returns {Promise<Array>} - The cached block data
+ */
+function getDataFromCache(start, end) {
+    return new Promise((resolve, reject) => {
+        let query;
+        let params = [];
+        
+        // Only add WHERE clause if both start and end are valid numbers
+        if (!isNaN(start) && !isNaN(end)) {
+            query = `
+                SELECT block_id, volume, created_at 
+                FROM transactions
+                WHERE block_id BETWEEN ? AND ?  
+                ORDER BY block_id ASC
+            `;
+            params = [start, end];
+        } else {
+            query = `
+                SELECT block_id, volume, created_at 
+                FROM transactions  
+                ORDER BY block_id ASC
+                LIMIT 100
+            `;
+        }
+        
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(rows);
+            }
+        });
+    });
+}
+
+/**
+ * Retrieves data from the API
+ * 
+ * @param {number} start - Start block ID
+ * @param {number} end - End block ID
+ * @returns {Promise<Array>} - The formatted block data
+ */
+async function getDataFromApi(start, end) {
+    let baseUrl = `${getEnv("EXPLORER_BASE_URL")}/v1/blocks/1/100`; //never request the full data
 
     if (!isNaN(start) && !isNaN(end)) {
         baseUrl = `${getEnv("EXPLORER_BASE_URL")}/v1/blocks/${start}/${end}`;
@@ -140,25 +238,16 @@ async function getEncodedBlocks(req, res) {
         url: baseUrl,
     };
 
-    try {
-        const response = await axios.request(config);
-        /** @type {Array<Block>} */
-        const data = response?.data
-        let modifiedData = data.map((record)=>{
-            return {
-                epoch: parseTimeToUnixEpoch(record?.createdAt),
-                volume: record?.transactions?.length || 0
-            }
-        })
-        modifiedData = applyDeltaEncoding(modifiedData)
-        return res.send(modifiedData);
-    } catch (error) {
-        logger.error('Error fetching block data:', error);
-        return res.status(500).send({
-            error: 'Failed to fetch block data',
-            details: error.message,
-        });
-    }
+    const response = await axios.request(config);
+    /** @type {Array<Block>} */
+    const data = response?.data;
+    
+    return data.map((record) => {
+        return {
+            epoch: parseTimeToUnixEpoch(record?.createdAt),
+            volume: record?.transactions?.length || 0
+        };
+    });
 }
 
 module.exports = {
