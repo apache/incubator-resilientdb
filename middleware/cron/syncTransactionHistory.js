@@ -29,7 +29,7 @@ const { getEnv } = require('../utils/envParser');
 const logger = require('../utils/logger');
 
 
-const BATCH_SIZE = 100
+const BATCH_SIZE = 1000
 
 // Create data directory if it doesn't exist
 const dataDir = path.join(__dirname, '../cache');
@@ -188,6 +188,16 @@ function storeTransactions(blocks) {
 }
 
 /**
+ * Utility function to introduce a delay
+ * 
+ * @param {number} ms - Milliseconds to wait
+ * @returns {Promise<void>} A promise that resolves after the specified time
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Main sync function to fetch and store transaction data
  */
 async function syncTransactionHistory() {
@@ -211,6 +221,9 @@ async function syncTransactionHistory() {
                 
                 const blocks = await fetchBlockRange(currentStart, currentEnd);
                 await storeTransactions(blocks);
+
+                // Add 1 second delay to avoid overwhelming the database or API
+                await sleep(1000);
                 
                 currentStart = currentEnd + 1;
             }

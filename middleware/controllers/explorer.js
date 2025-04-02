@@ -142,11 +142,11 @@ async function getEncodedBlocks(req, res) {
     const end = parseInt(req.query.end, 10);
     
     try {
-        logger.info(`Attempting to fetch blocks ${start}-${end} from cache`);
+        logger.info(`Attempting to fetch blocks from cache`);
         const cacheData = await getDataFromCache(start, end);
             
         if (cacheData && cacheData.length > 0) {
-            logger.info(`Cache hit for blocks ${start}-${end}, returned ${cacheData.length} records`);
+            logger.info(`Cache hit for blocks, returned ${cacheData.length} records`);
             let modifiedData = cacheData.map(record => {
                 return {
                     epoch: parseTimeToUnixEpoch(record.created_at),
@@ -196,14 +196,14 @@ function getDataFromCache(start, end) {
                 SELECT block_id, volume, created_at 
                 FROM transactions
                 WHERE block_id BETWEEN ? AND ?  
-                ORDER BY block_id ASC
+                ORDER BY block_id DESC
             `;
             params = [start, end];
         } else {
             query = `
                 SELECT block_id, volume, created_at 
                 FROM transactions  
-                ORDER BY block_id ASC
+                ORDER BY block_id DESC
                 LIMIT 100
             `;
         }
