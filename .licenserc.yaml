@@ -1,0 +1,22 @@
+header:
+  license:
+    spdx-id: Apache-2.0
+    copyright-owner: Apache Software Foundation
+
+  paths-ignore:
+    - '**/*.config'
+    - '**/*.json'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - '**/*.dockerignore'
+    - 'Doxyfile'
+    - 'header'
+    - 'dev/.rat-excludes'
+    - '**/*.md'
+    - 'NOTICE'
+    - 'DISCLAIMER-WIP'
+    - 'LICENSE'
+    - '.gitignore'
+    - 'third_party/loc_script/src/index.js'
+
+  comment: on-failure
