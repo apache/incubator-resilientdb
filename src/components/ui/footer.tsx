@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
           {/* Left Section: Logo and Description */}
           <div className="mb-6 md:mb-0 flex-1">
             <img
-              src="/Reslens logo.png"  // Changed to PNG logo
+              src="/Reslens.png"  // Changed to PNG logo
               alt="Company Logo"
               className="h-16 mb-10"
             />

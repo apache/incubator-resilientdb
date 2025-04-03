@@ -135,7 +135,7 @@ function DashboardComponent() {
               <div className="flex items-center space-x-8">
                 <a href="/">
                   <img
-                    src="/Reslens logo.png"
+                    src="/Reslens.png"
                     alt="Company Logo"
                     className="h-6 mb-0"
                   />
