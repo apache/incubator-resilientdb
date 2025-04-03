@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
           {/* Left Section: Logo and Description */}
           <div className="mb-6 md:mb-0 flex-1">
             <img
-              src="/Memlens.png"  // Changed to PNG logo
+              src="/Reslens logo.png"  // Changed to PNG logo
               alt="Company Logo"
               className="h-16 mb-10"
             />
@@ -93,7 +93,7 @@ const Footer: React.FC = () => {
                 <ExternalLink size={24} />
               </a>
               <a
-                href="#"
+                href="https://github.com/ResilientEcosystem"
                 className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-110"
               >
                 <FaGithub size={24} />

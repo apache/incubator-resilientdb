@@ -43,7 +43,7 @@ const tabVariants = {
 
 const steps = [
   {
-    content: <h2>Welcome to MemLens. Let's begin our journey!</h2>,
+    content: <h2>Welcome to ResLens. Let's begin our journey!</h2>,
     placement: "center",
     target: "body",
   },
@@ -135,7 +135,7 @@ function DashboardComponent() {
               <div className="flex items-center space-x-8">
                 <a href="/">
                   <img
-                    src="/Memlens.png"
+                    src="/Reslens logo.png"
                     alt="Company Logo"
                     className="h-6 mb-0"
                   />

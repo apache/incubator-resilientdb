@@ -185,13 +185,13 @@ export function GlowingStarsBackgroundCardPreview() {
         <GlowingStarsTitle>Explore the Dashboard!</GlowingStarsTitle>
         <div className="flex justify-between items-end">
           <GlowingStarsDescription>
-            Head into world of Statistics and Data through the Memory Lens.
+            Head into world of Statistics and Data through the ResDB Memory Lens.
           </GlowingStarsDescription>
           <Link
             to="/dashboard"
             className="px-4 py-2 bg-white text-black rounded-md hover:bg-black hover:text-white transition-colors"
           >
-            Enter MemLens
+            Enter ResLens
           </Link>
         </div>
       </GlowingStarsBackgroundCard>

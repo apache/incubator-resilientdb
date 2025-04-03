@@ -1,15 +1,15 @@
 # ResilientDB Profiling and Monitoring Setup
 
-This repository provides a comprehensive guide to set up profiling and monitoring for ResilientDB using Prometheus, Grafana, and related tools. The setup includes CPU and memory metrics visualization, GraphQL integration, and MemLens configuration.
+This repository provides a comprehensive guide to set up profiling and monitoring for ResilientDB using Prometheus, Grafana, and related tools. The setup includes CPU and memory metrics visualization, GraphQL integration, and ResLens configuration.
 
 ---
 
 ## Prerequisites
 
-Before running the MemLens application, you need to start kv service on the ResDB backend and the sdk.
+Before running the ResLens application, you need to start kv service on the ResDB backend and the sdk.
 
 ### ResilientDB
-Git clone the MemLens backend repository, a fork of ResilientDB and follow the instructions to set it up:
+Git clone the ResLens backend repository, a fork of ResilientDB and follow the instructions to set it up:
 ```bash
 git clone https://github.com/harish876/incubator-resilientdb
 ```
@@ -35,14 +35,14 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/c
 ```
 
 ### Middleware
-Git clone the MemLens Middleware Repository:
+Git clone the ResLens Middleware Repository:
 
-Install MemLens Middleware:
+Install ResLens Middleware:
 ```bash
 git clone https://github.com/harish876/MemLens-middleware
 ```
 
-Setup MemLens Middleware:
+Setup ResLens Middleware:
 ```bash
 npm instal
 

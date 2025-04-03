@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
           <div className="flex space-x-7">
             <div>
               <a href="/" className="flex items-center py-4 px-2">
-                <img src="/Memlens.png" alt="Logo" className="logo" />
+                <img src="/Reslens logo.png" alt="Logo" className="logo" />
               </a>
             </div>
           </div>

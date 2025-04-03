@@ -1,6 +1,6 @@
-# [MemLens](https://blog.resilientdb.com/2024/12/07/MemLens.html)
+# [ResLens](https://blog.resilientdb.com/2024/12/07/MemLens.html)
 
-MemLens is a comprehensive CPU and memory profiler for ResilientDB which aims to provide granular performance metrics by integrating profiling tools like eBPF, node exporter, process exporter, LevelDB internal statistics and custom prometheus hooks. We aim to provide a platform which provides database specific metrics that provides detailed information on what happens under the hood and help optimize system performance. This is an ambitious idea which we are improving on constantly but are proud to share a packaged version of MemLens currently.
+ResLens is a comprehensive CPU and memory profiler for ResilientDB which aims to provide granular performance metrics by integrating profiling tools like eBPF, node exporter, process exporter, LevelDB internal statistics and custom prometheus hooks. We aim to provide a platform which provides database specific metrics that provides detailed information on what happens under the hood and help optimize system performance. This is an ambitious idea which we are improving on constantly but are proud to share a packaged version of ResLens currently.
 
 ---
 
@@ -17,7 +17,7 @@ MemLens is a comprehensive CPU and memory profiler for ResilientDB which aims to
 
 ## Overview
 
-MemLens provides CPU, memory and build statistics aiming to provide detailed information on what happens under the hood and help optimize system performance.
+ResLens provides CPU, memory and build statistics aiming to provide detailed information on what happens under the hood and help optimize system performance.
 
 ### Key Highlights:
 - Integrated terminal like playground to Get and Set values to/from `ResilientDB`.
@@ -55,7 +55,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
 - **Service Dependencies**:
   - Install our fork ResilientDB from here https://github.com/harish876/incubator-resilientDB
   - Install ResilientDB's Graphql service to expose HTTP endpoints to use the Get and Set values to the Key value store from here https://github.com/apache/incubator-resilientdb-graphql.
-  - Install MemLen's middleware service to aggregate data from our profiling services and expose HTTP endpoints to allow the MemLens Dashboard to access this data. https://github.com/harish876/MemLens-middleware
+  - Install MemLen's middleware service to aggregate data from our profiling services and expose HTTP endpoints to allow the ResLens Dashboard to access this data. https://github.com/harish876/MemLens-middleware
 
 - **System Dependencies**: These services are essential for hooking into various aspects of ResilientDB and monitoring its performance.
 
@@ -76,7 +76,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
       ```bash
       git clone https://github.com/Bismanpal-Singh/MemLens
       ```
-    2. Clone the ResilientDB repository. This is the service which will be profiled by MemLens. Follow the installation instructions to install ResilientDB and set it up.
+    2. Clone the ResilientDB repository. This is the service which will be profiled by ResLens. Follow the installation instructions to install ResilientDB and set it up.
       ```bash
       git clone https://github.com/harish876/incubator-resilientDB
       ```
@@ -84,7 +84,7 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
       ```bash
       git clone https://github.com/apache/incubator-resilientdb-graphql.
       ```
-    4. Clone the MemLens middleware service. This is the service which will be used to aggregate data from different profiling services.
+    4. Clone the ResLens middleware service. This is the service which will be used to aggregate data from different profiling services.
       ```bash
       git clone https://github.com/harish876/MemLens-middleware
       ```
@@ -94,20 +94,20 @@ MemLens provides CPU, memory and build statistics aiming to provide detailed inf
 ---
 ## Contribution
  1. Harish Gokul (http://github.com/harish876):
-    Lead Developer for MemLens responsible for 
+    Lead Developer for ResLens responsible for 
       - Ideation, Execution and Architecture Design for the project.
       - Development of CPP Hooks, integration of prometheus hooks, and third party profiling libraries.
       - Development of profiling environment
-      - Development of MemLens middleware service 
+      - Development of ResLens middleware service 
       - Contributed heavily to the frontend dashboard design.
       - Documentation and blog author.
 
  1. Bismanpal Anand (http://github.com/bismanpal-singh):
-    Designer & Developer for MemLens responsible for 
-      - Structured and Designed the MemLens website.
+    Designer & Developer for ResLens responsible for 
+      - Structured and Designed the ResLens website.
       - Experimented with various approaches to enhance usability while maintaining simplicity and elegance.
       - Contributed to the design of the frontend dashboard, ensuring intuitive visualization of metrics and data.
-      - Contributed in implementing the MemLens middleware service to bridge data collection and presentation.
+      - Contributed in implementing the ResLens middleware service to bridge data collection and presentation.
       - Contributed heavily to the frontend dashboard design.
       - Gathered memory metrics and profiling data by working with APIs & tools and integrated them into the dashboard
 
