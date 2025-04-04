@@ -144,7 +144,7 @@ export function BlockchainTable({
   cb,
 }: {
   total: number;
-  cb: () => void;
+  cb: (state: unknown) => void;
 }) {
   const [loading, setLoading] = React.useState(false);
   const [data, setData] = React.useState<Block[]>([]);
