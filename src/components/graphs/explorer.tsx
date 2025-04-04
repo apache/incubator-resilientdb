@@ -79,6 +79,11 @@ export function Explorer() {
     {} as BlockchainConfig
   );
 
+  const [paginationStats, setPaginationStats] = useState({
+    start: 1,
+    end: 10,
+  });
+
   async function fetchExplorerData() {
     try {
       setLoading(true);
@@ -115,15 +120,18 @@ export function Explorer() {
               <DatabaseCard loading={loading} data={configData} />
               <ChainInfoCard loading={loading} data={configData} />
             </div>
-            <div className="grid md:grid-cols-1 gap-4">
+            <div className="grid md:grid-cols-2 gap-4">
               <MiscellaneousDataCard loading={loading} data={configData} />
-              <TransactionHistoryCard />
+              <TransactionHistoryCard paginationStats={paginationStats} />
             </div>
           </main>
         </CardContent>
       </Card>
       {configData ? (
-        <BlocksData metadata={configData} />
+        <BlocksData
+          metadata={configData}
+          setPaginationStats={setPaginationStats}
+        />
       ) : (
         <div>Loading...</div>
       )}
@@ -325,7 +333,12 @@ function MiscellaneousDataCard({ loading, data }: ExplorerCardProps) {
     </Card>
   );
 }
-function TransactionHistoryCard() {
+function TransactionHistoryCard({
+  paginationStats,
+}: {
+  start: number;
+  end: number;
+}) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -334,7 +347,12 @@ function TransactionHistoryCard() {
     try {
       setLoading(true);
       setError(null);
-      const response = await middlewareApi.get("/explorer/getEncodedBlocks");
+      const response = await middlewareApi.get("/explorer/getEncodedBlocks", {
+        params: {
+          start: paginationStats.start,
+          end: paginationStats.end,
+        },
+      });
       const data = decodeDeltaEncoding(response?.data);
       setChartData(data);
     } catch (error) {
@@ -347,7 +365,7 @@ function TransactionHistoryCard() {
 
   useEffect(() => {
     fetchTransactionHistory();
-  }, []);
+  }, [paginationStats]);
 
   const chartConfig = {
     desktop: {
@@ -457,7 +475,13 @@ function TransactionHistoryCard() {
   );
 }
 
-function BlocksData({ metadata }: { metadata: BlockchainConfig }) {
+function BlocksData({
+  metadata,
+  setPaginationStats,
+}: {
+  metadata: BlockchainConfig;
+  setPaginationStats: () => void;
+}) {
   return (
     <Card className="w-4/5 max-w-8xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl">
       <CardHeader className="border-b border-slate-700">
@@ -472,7 +496,10 @@ function BlocksData({ metadata }: { metadata: BlockchainConfig }) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <BlockchainTable total={metadata?.blockNum || 175} />
+        <BlockchainTable
+          total={metadata?.blockNum || 175}
+          cb={setPaginationStats}
+        />
       </CardContent>
     </Card>
   );
