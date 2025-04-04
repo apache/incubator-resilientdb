@@ -97,18 +97,17 @@ async function getExplorerData(req, res) {
 async function getBlocks(req, res) {
     const start = parseInt(req.query.start, 10);
     const end = parseInt(req.query.end, 10);
-    let baseUrl = `${getEnv("EXPLORER_BASE_URL")}/v1/blocks`
 
     if (isNaN(start) || isNaN(end)) {
         return res.status(400).send({
             error: 'Pass valid start and end query params as part of the request',
         });
     }
-
+    
     const config = {
         method: 'get',
         maxBodyLength: Infinity,
-        url: baseUrl,
+        url: `${getEnv("EXPLORER_BASE_URL")}/v1/blocks/${start}/${end}`,
     };
 
     try {
@@ -196,14 +195,14 @@ function getDataFromCache(start, end) {
                 SELECT block_id, volume, created_at 
                 FROM transactions
                 WHERE block_id BETWEEN ? AND ?  
-                ORDER BY block_id DESC
+                ORDER BY block_id ASC
             `;
             params = [start, end];
         } else {
             query = `
                 SELECT block_id, volume, created_at 
                 FROM transactions  
-                ORDER BY block_id DESC
+                ORDER BY block_id ASC
                 LIMIT 100
             `;
         }
