@@ -29,11 +29,11 @@ ResVault is a chrome extension that serves as a wallet for [ResilientDB](https:/
 - Login
 - Submit Transactions
 - Transactions logging
+- User Profiles
+- Multi-account support
 
 **Pending**:
 - [ ] Password improvement
-- [ ] User Profiles
-- [ ] Multi-account support
 - [ ] Transaction details
 - [ ] View all transactions
 
