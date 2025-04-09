@@ -26,7 +26,6 @@ import Home from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Logs from "./pages/Logs";
 import Contract from "./pages/Contract";
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { GlobalContext } from './context/GlobalContext';

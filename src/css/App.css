@@ -432,12 +432,6 @@ textarea, input, select {
     color: #fff;
     opacity: 0.5;
     cursor: default !important; }
-  .button--chat {
-    background-image: url(../images/icons/chat.svg);
-    background-repeat: no-repeat;
-    background-position: 20px 50%;
-    background-size: 18px;
-    padding-left: 55px; }
 
 /* 2-3. LISTINGS */
 /*=================================*/
@@ -447,31 +441,6 @@ ul.custom-listing li {
   ul.custom-listing li span {
     font-weight: 600;
     color: #47e7ce; }
-  ul.custom-listing li.email {
-    background-image: url(../images/icons/contact.svg);
-    background-repeat: no-repeat;
-    background-position: 0px 50%;
-    background-size: 24px;
-    padding-left: 40px; }
-  ul.custom-listing li.phone {
-    background-image: url(../images/icons/mobile.svg);
-    background-repeat: no-repeat;
-    background-position: 0px 50%;
-    background-size: 24px;
-    padding-left: 40px; }
-  ul.custom-listing li.address {
-    background-image: url(../images/icons/home.svg);
-    background-repeat: no-repeat;
-    background-position: 0px 50%;
-    background-size: 24px;
-    padding-left: 40px; }
-
-ul.custom-listing--checked li {
-  padding: 5px 0 5px 30px;
-  background-image: url(../images/icons/checked-simple.svg);
-  background-repeat: no-repeat;
-  background-position: 0px 50%;
-  background-size: 18px; }
 
 /*===============================================*/
 /* 3. PAGE STRUCTURE */
@@ -1068,12 +1037,6 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between; }
-    .bottom-navigation__shop-cart {
-      background-image: url(../images/icons/cart.svg);
-      background-repeat: no-repeat;
-      background-position: 20px 50%;
-      background-size: 18px;
-      padding-left: 50px; }
 
 .bottom-fixed-button {
   width: calc(100% - 40px);
@@ -1197,20 +1160,6 @@ body.panel-closing .page, body.panel-closing .bottom-toolbar {
     font-weight: 500;
     width: 100%;
     color: #fff; }
-  .search__submit {
-    text-indent: -100px;
-    overflow: hidden;
-    width: 16px;
-    height: 16px;
-    background-image: url(../images/icons/search.svg);
-    background-color: transparent;
-    border: none;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 16px;
-    box-shadow: none;
-    -webkit-box-shadow: none;
-    -webkit-appearance: none; }
   .search__results {
     padding: 40px 0 0 0; }
 
