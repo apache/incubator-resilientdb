@@ -31,9 +31,7 @@ github:
     squash: true
     merge: false
     rebase: false
-  protected_branches:
-    master:
-  
+    
 notifications:
   commits:      commits@resilientdb.apache.org
   issues:       commits@resilientdb.apache.org
