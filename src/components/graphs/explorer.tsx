@@ -45,10 +45,11 @@ import {
   ChartTooltipContent,
   ChartTooltip,
 } from "../ui/LineGraphChart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Line, LineChart } from "recharts";
 import { transactionHistoryData } from "@/static/transactionHistory";
 import { Button } from "../ui/button";
 import { decodeDeltaEncoding } from "@/static/encoding";
+import downsampler from 'downsample-lttb';
 
 type BlockchainConfig = {
   blockNum: number;
@@ -122,7 +123,7 @@ export function Explorer() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <MiscellaneousDataCard loading={loading} data={configData} />
-              <TransactionHistoryCard paginationStats={paginationStats} />
+              <TransactionHistoryCard />
             </div>
           </main>
         </CardContent>
@@ -333,12 +334,7 @@ function MiscellaneousDataCard({ loading, data }: ExplorerCardProps) {
     </Card>
   );
 }
-function TransactionHistoryCard({
-  paginationStats,
-}: {
-  start: number;
-  end: number;
-}) {
+function TransactionHistoryCard() {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -347,14 +343,24 @@ function TransactionHistoryCard({
     try {
       setLoading(true);
       setError(null);
-      const response = await middlewareApi.get("/explorer/getEncodedBlocks", {
-        params: {
-          start: paginationStats.start,
-          end: paginationStats.end,
-        },
-      });
-      const data = decodeDeltaEncoding(response?.data);
-      setChartData(data);
+      const response = await middlewareApi.get("/explorer/getAllEncodedBlocks");
+
+      const decoded = decodeDeltaEncoding(response?.data);
+
+      // Convert your data to [x, y] pairs
+      const points = decoded.map((d) => [d.epoch / 1000, d.volume]);
+
+      // Apply LTTB
+      const sampledPoints = downsampler.processData(points, 2000);
+
+      // Convert back to { epoch, volume, createdAt }
+      const chartReady = sampledPoints.map(([x, y]) => ({
+        epoch: x,
+        volume: y,
+        createdAt: new Date(x).toISOString(),
+      }));
+
+      setChartData(chartReady);
     } catch (error) {
       setError(error);
       console.error("Failed to fetch transaction history:", error);
@@ -365,7 +371,7 @@ function TransactionHistoryCard({
 
   useEffect(() => {
     fetchTransactionHistory();
-  }, [paginationStats]);
+  }, []);
 
   const chartConfig = {
     desktop: {
@@ -450,12 +456,17 @@ function TransactionHistoryCard({
           </div>
         ) : (
           <ChartContainer config={chartConfig}>
-            <BarChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
+            <LineChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="createdAt"
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 6)}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                }
               />
               <YAxis
                 tick={{ fontSize: 12, fill: "#6b7280" }}
@@ -466,8 +477,14 @@ function TransactionHistoryCard({
                 cursor={false}
                 content={<ChartTooltipContent indicator="dashed" />}
               />
-              <Bar dataKey="volume" fill="var(--color-desktop)" radius={4} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="volume"
+                stroke="var(--color-desktop)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>
