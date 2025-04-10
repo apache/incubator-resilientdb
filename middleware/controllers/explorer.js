@@ -176,6 +176,35 @@ async function getEncodedBlocks(req, res) {
         });
     }
 }
+// Using the function below for the graph, decoupled with pagination for the table
+async function getAllEncodedBlocks(req, res) {
+    try {
+      logger.info(`Fetching ALL blocks from cache for full graph rendering`);
+  
+      const cacheData = await getDataFromCache(); // No start/end
+  
+      if (!cacheData || cacheData.length === 0) {
+        logger.warn('No cache data available for full graph');
+        return res.status(404).send({ error: 'No cached block data available' });
+      }
+  
+      const modifiedData = cacheData.map(record => ({
+        epoch: parseTimeToUnixEpoch(record.created_at),
+        volume: record.volume || 0,
+      }));
+  
+      const encoded = applyDeltaEncoding(modifiedData);
+  
+      return res.send(encoded);
+  
+    } catch (error) {
+      logger.error('Error fetching full block data:', error);
+      return res.status(500).send({
+        error: 'Failed to fetch full block data',
+        details: error.message,
+      });
+    }
+  }
 
 /**
  * Retrieves data from the SQLite cache
@@ -252,5 +281,6 @@ async function getDataFromApi(start, end) {
 module.exports = {
     getExplorerData,
     getBlocks,
-    getEncodedBlocks
+    getEncodedBlocks,
+    getAllEncodedBlocks
 };
