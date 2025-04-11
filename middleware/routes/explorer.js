@@ -29,6 +29,6 @@ const router = express.Router();
 router.get("/getExplorerData", getExplorerData);
 router.get("/getBlocks", getBlocks);
 router.get("/getEncodedBlocks", getEncodedBlocks);
-router.get("/getEncodedBlocks", getAllEncodedBlocks);
+router.get("/getAllEncodedBlocks", getAllEncodedBlocks);
 
 module.exports = router;
