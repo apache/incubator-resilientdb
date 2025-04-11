@@ -290,6 +290,6 @@ async function getDataFromApi(start, end) {
 module.exports = {
     getExplorerData,
     getBlocks,
-    getEncodedBlocks,
+    // getEncodedBlocks,
     getAllEncodedBlocks
 };

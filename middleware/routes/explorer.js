@@ -19,7 +19,7 @@
 */
 
 const express = require("express");
-const { getExplorerData, getBlocks, getEncodedBlocks, getAllEncodedBlocks } = require("../controllers/explorer");
+const { getExplorerData, getBlocks, getAllEncodedBlocks } = require("../controllers/explorer");
 const router = express.Router();
 
 /**
@@ -28,7 +28,7 @@ const router = express.Router();
  */
 router.get("/getExplorerData", getExplorerData);
 router.get("/getBlocks", getBlocks);
-router.get("/getEncodedBlocks", getEncodedBlocks);
+// router.get("/getEncodedBlocks", getEncodedBlocks);
 router.get("/getAllEncodedBlocks", getAllEncodedBlocks);
 
 module.exports = router;
