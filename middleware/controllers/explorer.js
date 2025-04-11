@@ -124,59 +124,6 @@ async function getBlocks(req, res) {
         });
     }
 }
-
-// /**
-//  * Fetches block data from the EXPLORER_BASE_URL and sends it as a response.
-//  *
-//  * @async
-//  * @function getBlocks
-//  * @param {Object} req - The HTTP request object.
-//  * @param {Object} req.query - The query parameters.
-//  * @param {number} req.query.start - The starting block number.
-//  * @param {number} req.query.end - The ending block number.
-//  * @param {Object} res - The HTTP response object.
-//  * @returns {Promise<void>} Sends the fetched data or an error response.
-//  */
-// async function getEncodedBlocks(req, res) {
-//     const start = parseInt(req.query.start, 10);
-//     const end = parseInt(req.query.end, 10);
-    
-//     try {
-//         logger.info(`Attempting to fetch blocks from cache`);
-//         const cacheData = await getDataFromCache(start, end);
-            
-//         if (cacheData && cacheData.length > 0) {
-//             logger.info(`Cache hit for blocks, returned ${cacheData.length} records`);
-//             let modifiedData = cacheData.map(record => {
-//                 return {
-//                     epoch: parseTimeToUnixEpoch(record.created_at),
-//                     volume: record.volume || 0
-//                 };
-//             });
-                
-//             modifiedData = applyDeltaEncoding(modifiedData);
-//             return res.send({
-//                 isCached: true,
-//                 ...modifiedData
-//             });
-//         }    
-//         logger.info(`Cache miss for blocks ${start}-${end}, falling back to API`);
-        
-//     } catch (cacheError) {
-//         logger.error('Error retrieving data from cache. Continue to API fallback', cacheError);
-//     }
-//     try {
-//         const apiData = await getDataFromApi(start, end);
-//         const modifiedData = applyDeltaEncoding(apiData);
-//         return res.send(modifiedData);
-//     } catch (error) {
-//         logger.error('Error fetching block data from API:', error);
-//         return res.status(500).send({
-//             error: 'Failed to fetch block data',
-//             details: error.message,
-//         });
-//     }
-// }
 // Using the function below for the graph, decoupled with pagination for the table
 async function getAllEncodedBlocks(req, res) {
     try {
@@ -290,6 +237,5 @@ async function getDataFromApi(start, end) {
 module.exports = {
     getExplorerData,
     getBlocks,
-    // getEncodedBlocks,
     getAllEncodedBlocks
 };
