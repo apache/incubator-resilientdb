@@ -17,13 +17,13 @@ This repository contains the **Monitoring Sidecar** for the ResLens project. The
 
 The repository is organized as follows:
 
-/pyroscope Dockerfile # Builds the Pyroscope server and client image connect_pyroscope.js # Script to connect Pyroscope to the parent process pyroscope-data # Directory for storing Pyroscope server data
+`/pyroscope` Dockerfile # Builds the Pyroscope server and client image connect_pyroscope.js # Script to connect Pyroscope to the parent process pyroscope-data # Directory for storing Pyroscope server data
 
-/process-exporter Dockerfile # Builds the Process Exporter image config.yml # Configuration file for Process Exporter
+`/process-exporter` Dockerfile # Builds the Process Exporter image config.yml # Configuration file for Process Exporter
 
-/middleware Dockerfile # Builds the middleware API service server.js # Main entry point for the middleware service package.json # Node.js dependencies for the middleware service
+`/middleware` Dockerfile # Builds the middleware API service server.js # Main entry point for the middleware service package.json # Node.js dependencies for the middleware service
 
-docker-compose.yml # Orchestrates the Pyroscope and Process Exporter containers README.md # Documentation for the repository
+`docker-compose.yml` # Orchestrates the Pyroscope and Process Exporter containers README.md # Documentation for the repository
 
 
 ---
@@ -43,7 +43,13 @@ Before you begin, ensure you have the following installed:
 ### 1. Build and Run the Sidecar
 Use Docker Compose to build and run the monitoring sidecar:
 ```bash
-docker-compose up --build
+docker-compose down
+```
+```bash
+docker-compose build
+```
+```bash
+docker-compose up -d
 ```
 ### 2. Access Pyroscope
 ```bash
