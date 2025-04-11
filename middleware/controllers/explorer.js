@@ -41,7 +41,8 @@ const logger = require('../utils/logger');
 const  { parseCreateTime, parseTimeToUnixEpoch} = require('../utils/time');
 const { applyDeltaEncoding, decodeDeltaEncoding } = require('../utils/encoding');
 const sqlite3 = require('sqlite3').verbose();
-const path = require("path")
+const path = require("path");
+const { devNull } = require('os');
 
 // Initialize SQLite database connection
 const dbPath = path.join(__dirname, '../cache/transactions.db');
@@ -124,64 +125,64 @@ async function getBlocks(req, res) {
     }
 }
 
-/**
- * Fetches block data from the EXPLORER_BASE_URL and sends it as a response.
- *
- * @async
- * @function getBlocks
- * @param {Object} req - The HTTP request object.
- * @param {Object} req.query - The query parameters.
- * @param {number} req.query.start - The starting block number.
- * @param {number} req.query.end - The ending block number.
- * @param {Object} res - The HTTP response object.
- * @returns {Promise<void>} Sends the fetched data or an error response.
- */
-async function getEncodedBlocks(req, res) {
-    const start = parseInt(req.query.start, 10);
-    const end = parseInt(req.query.end, 10);
+// /**
+//  * Fetches block data from the EXPLORER_BASE_URL and sends it as a response.
+//  *
+//  * @async
+//  * @function getBlocks
+//  * @param {Object} req - The HTTP request object.
+//  * @param {Object} req.query - The query parameters.
+//  * @param {number} req.query.start - The starting block number.
+//  * @param {number} req.query.end - The ending block number.
+//  * @param {Object} res - The HTTP response object.
+//  * @returns {Promise<void>} Sends the fetched data or an error response.
+//  */
+// async function getEncodedBlocks(req, res) {
+//     const start = parseInt(req.query.start, 10);
+//     const end = parseInt(req.query.end, 10);
     
-    try {
-        logger.info(`Attempting to fetch blocks from cache`);
-        const cacheData = await getDataFromCache(start, end);
+//     try {
+//         logger.info(`Attempting to fetch blocks from cache`);
+//         const cacheData = await getDataFromCache(start, end);
             
-        if (cacheData && cacheData.length > 0) {
-            logger.info(`Cache hit for blocks, returned ${cacheData.length} records`);
-            let modifiedData = cacheData.map(record => {
-                return {
-                    epoch: parseTimeToUnixEpoch(record.created_at),
-                    volume: record.volume || 0
-                };
-            });
+//         if (cacheData && cacheData.length > 0) {
+//             logger.info(`Cache hit for blocks, returned ${cacheData.length} records`);
+//             let modifiedData = cacheData.map(record => {
+//                 return {
+//                     epoch: parseTimeToUnixEpoch(record.created_at),
+//                     volume: record.volume || 0
+//                 };
+//             });
                 
-            modifiedData = applyDeltaEncoding(modifiedData);
-            return res.send({
-                isCached: true,
-                ...modifiedData
-            });
-        }    
-        logger.info(`Cache miss for blocks ${start}-${end}, falling back to API`);
+//             modifiedData = applyDeltaEncoding(modifiedData);
+//             return res.send({
+//                 isCached: true,
+//                 ...modifiedData
+//             });
+//         }    
+//         logger.info(`Cache miss for blocks ${start}-${end}, falling back to API`);
         
-    } catch (cacheError) {
-        logger.error('Error retrieving data from cache. Continue to API fallback', cacheError);
-    }
-    try {
-        const apiData = await getDataFromApi(start, end);
-        const modifiedData = applyDeltaEncoding(apiData);
-        return res.send(modifiedData);
-    } catch (error) {
-        logger.error('Error fetching block data from API:', error);
-        return res.status(500).send({
-            error: 'Failed to fetch block data',
-            details: error.message,
-        });
-    }
-}
+//     } catch (cacheError) {
+//         logger.error('Error retrieving data from cache. Continue to API fallback', cacheError);
+//     }
+//     try {
+//         const apiData = await getDataFromApi(start, end);
+//         const modifiedData = applyDeltaEncoding(apiData);
+//         return res.send(modifiedData);
+//     } catch (error) {
+//         logger.error('Error fetching block data from API:', error);
+//         return res.status(500).send({
+//             error: 'Failed to fetch block data',
+//             details: error.message,
+//         });
+//     }
+// }
 // Using the function below for the graph, decoupled with pagination for the table
 async function getAllEncodedBlocks(req, res) {
     try {
       logger.info(`Fetching ALL blocks from cache for full graph rendering`);
   
-      const cacheData = await getDataFromCache(); // No start/end
+      const cacheData = await getDataFromCache(null, null); // No start/end
   
       if (!cacheData || cacheData.length === 0) {
         logger.warn('No cache data available for full graph');
@@ -209,43 +210,51 @@ async function getAllEncodedBlocks(req, res) {
 /**
  * Retrieves data from the SQLite cache
  * 
- * @param {number} start - Start block ID
- * @param {number} end - End block ID
+ * @param {number|null} start - Start block ID
+ * @param {number|null} end - End block ID
  * @returns {Promise<Array>} - The cached block data
  */
 function getDataFromCache(start, end) {
     return new Promise((resolve, reject) => {
-        let query;
-        let params = [];
-        
-        // Only add WHERE clause if both start and end are valid numbers
-        if (!isNaN(start) && !isNaN(end)) {
-            query = `
-                SELECT block_id, volume, created_at 
-                FROM transactions
-                WHERE block_id BETWEEN ? AND ?  
-                ORDER BY block_id ASC
-            `;
-            params = [start, end];
+      let query;
+      let params = [];
+  
+      if (typeof start === "number" && typeof end === "number" && !isNaN(start) && !isNaN(end)) {
+        // Used by table view
+        query = `
+          SELECT block_id, volume, created_at 
+          FROM transactions
+          WHERE block_id BETWEEN ? AND ?  
+          ORDER BY block_id ASC
+        `;
+        params = [start, end];
+      } else if (start === null && end === null) {
+        // Used by full chart query
+        query = `
+          SELECT block_id, volume, created_at 
+          FROM transactions  
+          ORDER BY block_id ASC
+        `;
+      } else {
+        // Fallback when parameters are missing or invalid
+        query = `
+          SELECT block_id, volume, created_at 
+          FROM transactions  
+          ORDER BY block_id ASC
+          LIMIT 100
+        `;
+      }
+  
+      db.all(query, params, (err, rows) => {
+        if (err) {
+          reject(err);
         } else {
-            query = `
-                SELECT block_id, volume, created_at 
-                FROM transactions  
-                ORDER BY block_id ASC
-                LIMIT 100
-            `;
+          resolve(rows);
         }
-        
-        db.all(query, params, (err, rows) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(rows);
-            }
-        });
+      });
     });
-}
-
+  }
+  
 /**
  * Retrieves data from the API
  * 
