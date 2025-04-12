@@ -17,5 +17,5 @@ build
 Doxyfile
 header
 .*\.sol
-src-tauri/.gitignore
-src-tauri/Cargo.lock
+.*\.gitignore
+.*\.lock
