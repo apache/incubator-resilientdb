@@ -24,6 +24,8 @@ header:
     - 'LICENSE'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
+    - "src-tauri/.gitignore"
+    - "src-tauri/Cargo.lock"
 
 
 
