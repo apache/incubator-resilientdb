@@ -17,5 +17,5 @@ build
 Doxyfile
 header
 .*\.sol
-.gitignore
-.Cargo.lock
+.*\.gitignore
+.*\.Cargo.lock
