@@ -1,0 +1,23 @@
+[package]
+name = "resilientdb-orbit"
+version = "1.0.0"
+description = "ResilientDB Orbit Desktop Application"
+authors = ["Apratim Shukla"]
+license = "Apache-2.0"
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.0.1", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+# tauri-plugin-shell = "2" # uncomment to use shell
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
