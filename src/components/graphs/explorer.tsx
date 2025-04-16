@@ -45,7 +45,7 @@ import { Block, BlockchainTable } from "./table";
 //   ChartTooltipContent,
 //   ChartTooltip,
 // } from "../ui/LineGraphChart";
-// import { Line, LineChart, XAxis, YAxis, CartesianGrid, Brush } from "recharts";
+import { Line, LineChart, XAxis, YAxis, CartesianGrid, Brush } from "recharts";
 import { transactionHistoryData } from "@/static/transactionHistory";
 import { Button } from "../ui/button";
 // import { decodeDeltaEncoding } from "@/static/encoding";
