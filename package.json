@@ -60,7 +60,7 @@
     "react-typed": "^2.0.12",
     "react-typewriter-effect": "^1.1.0",
     "react-wrap-balancer": "^1.1.1",
-    "recharts": "^2.13.3",
+    "recharts": "^2.15.2",
     "shadcn-ui": "^0.2.3",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.5.4",
