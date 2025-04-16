@@ -64,6 +64,14 @@ Run the script:
 
 Results will be saved locally and be shown on the screen as well.
 
+## Test Performance  Locally
+Before running, place the private IP addresses of your machines in the file ``config/kv_performance_server_local.conf``.
+You can simply add "127.0.0.1" to the files to specify the number of nodes and clients. 
+
+Run the script:
+
+	./performance_local/pbft_performance.sh config/kv_performance_server_local.conf
+
 
 ## Using non-ubuntu account ##
 The default path for the workspace to deploy the system is /home/ubuntu
