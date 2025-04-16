@@ -19,7 +19,7 @@
  */
 
 import { useState, useEffect, useRef } from "react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea } from "recharts";
 
 import { Button } from "../ui/button"
 import { ChartContainer, ChartTooltipContent } from "../ui/LineGraphChart"
