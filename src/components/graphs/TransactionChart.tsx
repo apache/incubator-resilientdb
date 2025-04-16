@@ -150,7 +150,7 @@ export default function TransactionZoomChart() {
                 }}
                 onMouseUp={zoom}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                {/* <CartesianGrid strokeDasharray="3 3" /> */}
                 <XAxis
                   dataKey="epoch"
                   type="number"
