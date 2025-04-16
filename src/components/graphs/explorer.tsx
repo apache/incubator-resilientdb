@@ -40,16 +40,17 @@ import { middlewareApi } from "@/lib/api";
 import { Skeleton } from "../ui/skeleton";
 import { formatSeconds } from "@/lib/utils";
 import { Block, BlockchainTable } from "./table";
-import {
-  ChartContainer,
-  ChartTooltipContent,
-  ChartTooltip,
-} from "../ui/LineGraphChart";
-import { Line, LineChart } from "recharts";
+// import {
+//   ChartContainer,
+//   ChartTooltipContent,
+//   ChartTooltip,
+// } from "../ui/LineGraphChart";
+// import { Line, LineChart, XAxis, YAxis, CartesianGrid, Brush } from "recharts";
 import { transactionHistoryData } from "@/static/transactionHistory";
 import { Button } from "../ui/button";
-import { decodeDeltaEncoding } from "@/static/encoding";
-import downsampler from 'downsample-lttb';
+// import { decodeDeltaEncoding } from "@/static/encoding";
+// import downsampler from 'downsample-lttb';
+import TransactionZoomChart from "/Users/bisman/Documents/MemView FE/MemLens/src/components/graphs/TransactionChart.tsx";
 
 type BlockchainConfig = {
   blockNum: number;
@@ -123,7 +124,7 @@ export function Explorer() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <MiscellaneousDataCard loading={loading} data={configData} />
-              <TransactionHistoryCard />
+              <TransactionZoomChart />
             </div>
           </main>
         </CardContent>
@@ -334,163 +335,166 @@ function MiscellaneousDataCard({ loading, data }: ExplorerCardProps) {
     </Card>
   );
 }
-function TransactionHistoryCard() {
-  const [chartData, setChartData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// function TransactionHistoryCard() {
+//   const [chartData, setChartData] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
 
-  async function fetchTransactionHistory() {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await middlewareApi.get("/explorer/getAllEncodedBlocks");
+//   async function fetchTransactionHistory() {
+//     try {
+//       setLoading(true);
+//       setError(null);
+//       const response = await middlewareApi.get("/explorer/getAllEncodedBlocks");
 
-      const decoded = decodeDeltaEncoding(response?.data);
+//       const decoded = decodeDeltaEncoding(response?.data);
 
-      // Convert your data to [x, y] pairs
-      const points = decoded.map((d) => [d.epoch / 1000, d.volume]);
+//       // Convert your data to [x, y] pairs
+//       const points = decoded.map((d) => [d.epoch / 1000, d.volume]);
 
-      // Apply LTTB
-      const sampledPoints = downsampler.processData(points, 2000);
+//       // Apply LTTB
+//       const sampledPoints = downsampler.processData(points, 2000);
 
-      // Convert back to { epoch, volume, createdAt }
-      const chartReady = sampledPoints.map(([x, y]) => ({
-        epoch: x,
-        volume: y,
-        createdAt: new Date(x).toISOString(),
-      }));
+//       // Convert back to { epoch, volume, createdAt }
+//       const chartReady = sampledPoints.map(([x, y]) => ({
+//         epoch: x,
+//         volume: y,
+//         createdAt: new Date(x).toISOString(),
+//       }));
 
-      setChartData(chartReady);
-    } catch (error) {
-      setError(error);
-      console.error("Failed to fetch transaction history:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+//       setChartData(chartReady);
+//     } catch (error) {
+//       setError(error);
+//       console.error("Failed to fetch transaction history:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }
 
-  useEffect(() => {
-    fetchTransactionHistory();
-  }, []);
+//   useEffect(() => {
+//     fetchTransactionHistory();
+//   }, []);
 
-  const chartConfig = {
-    desktop: {
-      label: "CreatedAt",
-      color: "hsl(var(--chart-1))",
-    },
-  } satisfies ChartConfig;
+//   const chartConfig = {
+//     desktop: {
+//       label: "CreatedAt",
+//       color: "hsl(var(--chart-1))",
+//     },
+//   } satisfies ChartConfig;
 
-  const handleRefresh = () => {
-    fetchTransactionHistory();
-  };
+//   const handleRefresh = () => {
+//     fetchTransactionHistory();
+//   };
 
-  return (
-    <Card className="h-auto w-full max-w-8xl bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
-      <CardHeader>
-        <div className="flex justify-between">
-          <div className="flex items-center gap-2">
-            <Hourglass className="w-6 h-6 text-blue-400" />
-            <CardTitle className="text-2xl font-bold">
-              Resilient Transaction History
-            </CardTitle>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleRefresh}
-            className="text-gray-300 hover:text-white hover:bg-slate-800"
-            title="Refresh data"
-          >
-            <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
-            <span className="sr-only">Refresh</span>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="h-full">
-        {loading ? (
-          <div className="flex flex-col space-y-3 w-full h-[300px] animate-pulse">
-            <div className="flex items-center justify-center h-full">
-              <div className="space-y-4 w-full">
-                <div className="h-4 bg-slate-800 rounded w-3/4"></div>
-                <div className="h-[200px] bg-slate-800 rounded"></div>
-                <div className="h-4 bg-slate-800 rounded w-1/2"></div>
-              </div>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center h-[300px] text-center p-6">
-            <AlertCircle className="h-12 w-12 text-red-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              Failed to load transaction data
-            </h3>
-            <p className="text-gray-400 mb-4">
-              {error.message ||
-                "An unexpected error occurred while fetching transaction history."}
-            </p>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              className="border-blue-500 text-blue-400 hover:bg-blue-950"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Try Again
-            </Button>
-          </div>
-        ) : chartData.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-[300px] text-center">
-            <Database className="h-12 w-12 text-gray-500 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
-              No transaction data available
-            </h3>
-            <p className="text-gray-400 mb-4">
-              There are currently no transactions to display.
-            </p>
-            <Button
-              onClick={handleRefresh}
-              variant="outline"
-              className="border-blue-500 text-blue-400 hover:bg-blue-950"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-        ) : (
-          <ChartContainer config={chartConfig}>
-            <LineChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
-              <CartesianGrid vertical={false} />
-              <XAxis
-                dataKey="createdAt"
-                axisLine={false}
-                tickFormatter={(value) =>
-                  new Date(value).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                }
-              />
-              <YAxis
-                tick={{ fontSize: 12, fill: "#6b7280" }}
-                tickLine={false}
-                axisLine={{ stroke: "bg-inherit" }}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="dashed" />}
-              />
-              <Line
-                type="monotone"
-                dataKey="volume"
-                stroke="var(--color-desktop)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+//   return (
+//     <Card className="h-auto w-full max-w-8xl bg-gradient-to-br from-slate-900 to-slate-950 text-white shadow-xl">
+//       <CardHeader>
+//         <div className="flex justify-between">
+//           <div className="flex items-center gap-2">
+//             <Hourglass className="w-6 h-6 text-blue-400" />
+//             <CardTitle className="text-2xl font-bold">
+//               Resilient Transaction History
+//             </CardTitle>
+//           </div>
+//           <Button
+//             variant="ghost"
+//             size="icon"
+//             onClick={handleRefresh}
+//             className="text-gray-300 hover:text-white hover:bg-slate-800"
+//             title="Refresh data"
+//           >
+//             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
+//             <span className="sr-only">Refresh</span>
+//           </Button>
+//         </div>
+//       </CardHeader>
+//       <CardContent className="h-full">
+//       {loading ? (
+//         <div className="flex flex-col space-y-3 w-full h-[300px] animate-pulse">
+//           <div className="flex items-center justify-center h-full">
+//             <div className="space-y-4 w-full">
+//               <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+//               <div className="h-[200px] bg-slate-800 rounded"></div>
+//               <div className="h-4 bg-slate-800 rounded w-1/2"></div>
+//             </div>
+//           </div>
+//         </div>
+//       ) : error ? (
+//         <div className="flex flex-col items-center justify-center h-[300px] text-center p-6">
+//           <AlertCircle className="h-12 w-12 text-red-400 mb-4" />
+//           <h3 className="text-lg font-semibold mb-2">Failed to load transaction data</h3>
+//           <p className="text-gray-400 mb-4">
+//             {error.message || "An unexpected error occurred while fetching transaction history."}
+//           </p>
+//         </div>
+//       ) : chartData && chartData.length > 0 ? (
+//         <ChartContainer
+//           config={{
+//             desktop: {
+//               label: "CreatedAt",
+//               color: "hsl(var(--chart-1))",
+//             },
+//           }}
+//         >
+//           <LineChart data={chartData}>
+//           <XAxis
+//             dataKey="createdAt"
+//             tickFormatter={(value) =>
+//               new Date(value).toLocaleDateString("en-US", {
+//                 month: "short",
+//                 year: "numeric",
+//               })
+//             }
+//             tick={{ fill: "#cbd5e1", fontSize: 12 }}
+//           />
+//             <YAxis
+//               tick={{ fill: "#cbd5e1", fontSize: 12 }}
+//               tickLine={false}
+//               axisLine={false}
+//             />
+//             <ChartTooltip
+//               cursor={false}
+//               labelFormatter={(value) =>
+//                 new Date(value).toLocaleDateString("en-US", {
+//                   day: "numeric",
+//                   month: "short",
+//                   year: "numeric",
+//                 })
+//               }
+//               content={<ChartTooltipContent indicator="dashed" />}
+//             />
+//             <Line
+//               type="monotone"
+//               dataKey="volume"
+//               stroke="var(--color-desktop)"
+//               strokeWidth={2}
+//               dot={false}
+//             />
+//             <Brush
+//             dataKey="epoch"
+//             height={40}
+//             stroke="#38bdf8" // Accent color
+//             travellerWidth={12}
+//             travellerStroke="#38bdf8"
+//             fill="#1e293b" // dark background
+//             tickFormatter={(value) =>
+//               new Date(value).toLocaleDateString("en-US", {
+//                 month: "short",
+//                 year: "numeric",
+//               })
+//             }
+//           />
+//           </LineChart>
+//         </ChartContainer>
+//       ) : (
+//         <div className="flex flex-col items-center justify-center h-[300px] text-center p-6">
+//           <h3 className="text-lg font-semibold mb-2">No Data Available</h3>
+//           <p className="text-gray-400">There is no transaction history to display at the moment.</p>
+//         </div>
+//       )}
+//     </CardContent>
+//     </Card>
+//   );
+// }
 
 function BlocksData({
   metadata,
