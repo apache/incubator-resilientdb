@@ -33,6 +33,8 @@ github:
     rebase: false
   protected_branches:
     master:
+      required_status_checks:
+        strict: true
   
 notifications:
   commits:      commits@resilientdb.apache.org
