@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "ES2022",
     "lib": ["ES2023"],
@@ -19,7 +18,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    // Removed invalid compiler option "noUncheckedSideEffectImports"
+    "noUncheckedSideEffectImports": true
   },
   "include": ["vite.config.ts"]
 }
