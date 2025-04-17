@@ -19,6 +19,11 @@
 
 FROM node:18-alpine
 
+# Install Go for pprof tool
+RUN apk add --no-cache go
+
+# Verify go installation and PATH is set correctly
+RUN go version && which go
 
 WORKDIR /usr/src/app
 
