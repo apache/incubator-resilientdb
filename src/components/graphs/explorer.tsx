@@ -46,8 +46,7 @@ import { Block, BlockchainTable } from "./table";
 //   ChartTooltip,
 // } from "../ui/LineGraphChart";
 import { Line, LineChart, XAxis, YAxis, Brush } from "recharts";
-console.log("Is CartesianGrid imported?", typeof CartesianGrid);
-
+const CartesianGrid = undefined;
 import { transactionHistoryData } from "@/static/transactionHistory";
 import { Button } from "../ui/button";
 import TransactionZoomChart from "/Users/bisman/Documents/MemView FE/MemLens/src/components/graphs/TransactionChart.tsx";
