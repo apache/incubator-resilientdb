@@ -19,7 +19,7 @@
 */
 
 const express = require("express");
-const { getProfilingData } = require("../controllers/pyroscope");
+const { getProfilingData, explainFlamegraph } = require("../controllers/pyroscope");
 const router = express.Router();
 
 /**
@@ -28,5 +28,6 @@ const router = express.Router();
  * @returns {Object} 200 - proflingData
  */
 router.post("/getProfile", getProfilingData);
+router.post("/explainFlamegraph", explainFlamegraph);
 
 module.exports = router;

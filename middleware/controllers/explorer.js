@@ -45,15 +45,7 @@ const path = require("path");
 const { devNull } = require('os');
 
 // Initialize SQLite database connection
-const dbPath = path.join(__dirname, '../cache/transactions.db');
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        logger.error('Error connecting to SQLite database:', err);
-    } else {
-        logger.info('Connected to SQLite cache database');
-    }
-});
-
+const DB_PATH = path.join(__dirname, '../cache/transactions.db');
 /**
  * Fetches explorer data from the EXPLORER_BASE_URL and sends it as a response.
  *
@@ -162,6 +154,14 @@ async function getAllEncodedBlocks(req, res) {
  * @returns {Promise<Array>} - The cached block data
  */
 function getDataFromCache(start, end) {
+    const db = new sqlite3.Database(DB_PATH, (err) => {
+      if (err) {
+          logger.error('Error connecting to SQLite database:', err);
+      } else {
+          logger.info('Connected to SQLite cache database');
+      }
+    });
+
     return new Promise((resolve, reject) => {
       let query;
       let params = [];

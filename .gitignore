@@ -2,3 +2,4 @@ node_modules
 pyroscope-data
 .env
 cache
+.history
