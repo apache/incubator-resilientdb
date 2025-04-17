@@ -45,11 +45,10 @@ import { Block, BlockchainTable } from "./table";
 //   ChartTooltipContent,
 //   ChartTooltip,
 // } from "../ui/LineGraphChart";
-import { Line, LineChart, XAxis, YAxis, Brush } from "recharts";
-const CartesianGrid = undefined;
+import { Line, LineChart, XAxis, YAxis, Brush, CartesianGrid } from "recharts";
 import { transactionHistoryData } from "@/static/transactionHistory";
 import { Button } from "../ui/button";
-import TransactionZoomChart from "/Users/bisman/Documents/MemView FE/MemLens/src/components/graphs/TransactionChart.tsx";
+import TransactionZoomChart from "@/components/graphs/TransactionChart";
 
 type BlockchainConfig = {
   blockNum: number;

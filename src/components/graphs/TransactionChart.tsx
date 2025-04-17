@@ -19,11 +19,7 @@
  */
 
 import { useState, useEffect, useRef } from "react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea } from "recharts";
-// Prevent scope leak if any old code tries to access CartesianGrid
-// @ts-ignore
-const CartesianGrid = undefined;
-
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea, CartesianGrid } from "recharts";
 import { Button } from "../ui/button"
 import { ChartContainer, ChartTooltipContent } from "../ui/LineGraphChart"
 import { middlewareApi } from "@/lib/api"
@@ -153,7 +149,7 @@ export default function TransactionZoomChart() {
                 }}
                 onMouseUp={zoom}
               >
-                {/* <CartesianGrid strokeDasharray="3 3" /> */}
+                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="epoch"
                   type="number"
