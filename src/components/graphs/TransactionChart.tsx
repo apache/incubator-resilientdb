@@ -20,6 +20,9 @@
 
 import { useState, useEffect, useRef } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea } from "recharts";
+// Prevent scope leak if any old code tries to access CartesianGrid
+// @ts-ignore
+const CartesianGrid = undefined;
 
 import { Button } from "../ui/button"
 import { ChartContainer, ChartTooltipContent } from "../ui/LineGraphChart"
