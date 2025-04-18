@@ -26,6 +26,8 @@ graphql_dir: /opt/ResilientDB-GraphQL
 crow_port: 18000
 graphql_port: 8000
 bazel_version: 6.0.0
-java_home: /usr/lib/jvm/java-11-openjdk-amd64
+java_home_map:
+  x86_64: /usr/lib/jvm/java-11-openjdk-amd64
+  aarch64: /usr/lib/jvm/java-11-openjdk-arm64
 bazel_jobs: 40  # Default value between 1-40
 nginx_domain: localhost

@@ -19,14 +19,30 @@
   apt_repository:
     repo: "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8"
     state: present
+  when: ansible_architecture == "x86_64"
 
 - name: Update apt cache
   apt:
     update_cache: yes
     cache_valid_time: 3600
+  when: ansible_architecture == "x86_64"
 
 - name: Install Bazel
   apt:
     name: "bazel={{ bazel_version }}"
     state: present
     force: yes
+  when: ansible_architecture == "x86_64"
+
+
+- name: Install Bazel manually in one stage
+  become: yes
+  block:
+    - name: Download and install Bazel 6.0.0
+      shell: |
+        curl -Lo /usr/local/bin/bazel https://releases.bazel.build/6.0.0/release/bazel-6.0.0-linux-arm64
+        chmod +x /usr/local/bin/bazel
+        bazel version
+      args:
+        executable: /bin/bash
+  when: ansible_architecture == "aarch64"
