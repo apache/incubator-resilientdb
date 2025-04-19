@@ -50,7 +50,7 @@
   args:
     chdir: "{{ resilientdb_dir }}"
   environment:
-    JAVA_HOME: "{{ java_home }}"
+    JAVA_HOME: "{{ java_home_map[ansible_architecture] }}"
 
 - name: Ensure certificates directory exists
   file:
