@@ -20,9 +20,9 @@
 # Change Log
 
 ### Apache ResilientDB v1.11.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.11.0))
-* Support SmartContact with Key-value Storage. ([Junchao Chen](https://github.com/cjcchen))
+* Support Combined Runtime for SmartContact and Key-value Service. ([Junchao Chen](https://github.com/cjcchen))
 
-* 
+
 ### Apache ResilientDB v1.10.1 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.1))
 * Remove the binary keys from the source code. ([Junchao Chen](https://github.com/cjcchen))
 * Fix few bugs on Docker and performance tools. ([Gopal Nambiar](gopalnambiar2@gmail.com), [Junchao Chen](https://github.com/cjcchen))
