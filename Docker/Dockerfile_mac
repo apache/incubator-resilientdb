@@ -1,0 +1,34 @@
+# Use a base image for ARM64 architecture
+FROM arm64v8/ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Update package lists and install required dependencies
+RUN apt-get update && apt-get install -y \
+    apt-transport-https \
+    curl \
+    gnupg \
+    protobuf-compiler \
+    rapidjson-dev \
+    build-essential \
+    openjdk-11-jdk \
+    zip \
+    unzip \
+    clang-format
+
+# Install Bazelisk
+RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-arm64 \
+    && chmod +x /usr/local/bin/bazel
+
+# Set the working directory
+WORKDIR /app
+
+# Copy your project files to the container
+COPY . /app
+
+# Build the project with Bazel
+RUN bazel --version
+RUN bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
+RUN bazel build service/tools/kv/api_tools/kv_service_tools
+
+ENTRYPOINT ["./entrypoint.sh"]

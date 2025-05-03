@@ -1,0 +1,37 @@
+name: LOC
+
+on:
+  push:
+    branches:    
+      - master
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+     - name: Checkout
+       uses: actions/checkout@v2
+       with:
+         repository: ${{github.repository}}
+         ref: ${{ env.BRANCH_NAME }}
+
+     - name: Launch the local action
+       uses: ./ # Uses an action in the root directory
+       id: badge
+       with:
+         debug: true
+         directory: ./
+         patterns: '**/*.h|**/*.cpp'
+         badge: ./output/badge.svg
+         ignore: 'node_modules/|README'
+
+     - name: Deploy to image-data branch
+       uses: peaceiris/actions-gh-pages@v3
+       with:
+         publish_dir: ./output
+         publish_branch: image-data
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         user_name: 'github-actions[bot]'
+         user_email: 'github-actions[bot]@users.noreply.github.com'
+

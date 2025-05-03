@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package resdb;
+
+message TestRequest {
+    int32 seq = 1;
+}
+
+message TestResponse {
+}

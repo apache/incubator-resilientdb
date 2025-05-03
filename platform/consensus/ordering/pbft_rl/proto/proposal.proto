@@ -1,0 +1,67 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.pbft_rl;
+
+message Certificate {
+  SignatureInfo sign = 1;
+  int32 view = 2;
+  int32 signer = 3;
+  bytes hash = 4;
+  int32 slot = 6;
+}
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int64 create_time = 5;
+  int64 queuing_time = 6;
+  int32 proposer = 7;
+  int64 user_seq = 8;
+  int64 proposal_id = 9;
+  int64 round = 10;
+}
+
+enum ProposalType{
+    NewMsg  = 0;
+    Prepared = 1;
+    Commit = 2;
+    Ready_execute = 3;
+
+}
+
+message QC {
+  repeated SignatureInfo signatures = 1;
+  int32 view = 2;
+  bytes hash = 3;
+  int32 slot = 4;
+}
+
+message Header {
+  int32 proposer_id = 1;
+  int32 proposal_id = 2;
+  int32 view = 3;
+  QC qc = 4;
+  bytes prehash = 5;
+  int32 slot = 6;
+  int64 create_time = 7;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 2;
+  int32 sender = 3;
+  bytes hash = 4;
+  repeated Proposal local_ordering = 5;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  Vote = 1;
+  NewOrdering = 2;
+  Prepare = 3;
+  CommitProposal = 4;
+};
+

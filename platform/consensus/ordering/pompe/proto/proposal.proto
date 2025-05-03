@@ -1,0 +1,56 @@
+
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.pompe;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int64 create_time = 5;
+  int32 group_id = 6;
+  int64 queuing_time = 7;
+  int32 proposer = 8;
+  uint64 timestamp = 9;
+  int64 user_seq = 10;
+  int64 proposal_id = 11;
+  int32 round = 12;
+}
+
+message Header {
+  int32 seq = 1;
+  int32 proposer = 3;
+  int64 start_time = 2;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 3;
+  int32 sender = 5;
+  bytes hash = 6;
+  int64 ts = 2;
+  repeated Proposal cert = 4;
+  repeated Proposal ts_msg = 7;
+  int32 slot = 8;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  ProposalACK = 1;
+  ProposalTS = 2;
+  NewTS = 3;
+  SyncTS = 4;
+  Collect = 5;
+  Propose = 6;
+  Prepare = 7;
+  Commit = 8;
+};
+
+
+message TimeStampSync {
+  int64 ts = 1;
+  repeated Proposal ts_msg = 2;
+  int32 sender = 3;
+};

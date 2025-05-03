@@ -1,0 +1,78 @@
+
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.tusk;
+
+message Metadata {
+  int32 round = 1;
+  bytes hash = 2;
+  int32 sender = 3;
+  SignatureInfo sign = 4; // signature for each resp.
+  int32 proposer = 5;
+}
+
+message Reference {
+  int32 round = 1;
+  bytes hash = 2;
+  int32 proposer = 3;
+}
+
+message CertLink {
+  repeated Certificate cert = 1;
+}
+
+message ReferenceLink {
+  repeated ReferenceLink ref = 1;
+}
+
+message Certificate {
+  repeated Metadata metadata = 1;
+  int32 round = 2;
+  int32 proposer = 3;
+  bytes hash = 4;
+  CertLink strong_cert = 5;
+}
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int64 create_time = 5;
+  int32 group_id = 6;
+  int64 queuing_time = 7;
+}
+
+enum ProposalType{
+    NewMsg  = 0;
+    Prepared = 1;
+    Commit = 2;
+    Ready_execute = 3;
+};
+
+message Header {
+  int32 proposer_id = 3;
+  int32 proposal_id = 4;
+  int64 create_time = 6;
+  ProposalType status = 7;
+  int32 round = 8;
+  CertLink strong_cert = 9;
+  CertLink weak_cert = 10;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 3;
+  int32 sender = 5;
+  bytes hash = 6;
+  int64 queuing_time = 7;
+};
+
+enum MessageType {
+  NewProposal = 0;
+  NewBlock = 1;
+  BlockACK = 2;
+  Cert = 3;
+};
+
