@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package resdb.contract;
+
+message Contract {
+  string owner_address = 1;
+  string contract_address = 2;
+  string contract_name = 3;
+}
+
+

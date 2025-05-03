@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package resdb;
+
+// The TPC-C Transaction message
+message TpccTransaction {
+    enum Type {
+        TPCC_TYPE_NEWORDER = 0;
+        TPCC_TYPE_PAYMENT = 1;
+        TPCC_TYPE_ORDERSTATUS = 2;
+        TPCC_TYPE_DELIVERY = 3;
+        TPCC_TYPE_STOCKLEVEL = 4;
+    };
+
+    Type TYPE = 1;
+
+    oneof TRANSACTION {
+        NewOrderTransaction NEW_ORDER = 2;
+        PaymentTransaction PAYMENT = 3;
+        OrderStatusTransaction ORDER_STATUS = 4;
+        DeliveryTransaction DELIVERY = 5;
+        StockLevelTransaction STOCK_LEVEL = 6;
+    }
+}
+
+// New-Order transaction input parameters
+message NewOrderTransaction {
+    int32 W_ID = 1; // Warehouse ID
+    int32 D_ID = 2; // District ID
+    int32 C_ID = 3; // Customer ID
+    int32 O_OL_CNT = 4; // Order Line Count
+    repeated OrderItem ITEMS = 5; // List of items in the order
+    bytes DATE_TIME = 6; // Order Line Count
+}
+
+// Order Item details for New-Order
+message OrderItem {
+    int32 I_ID = 1;   // Item ID
+    int32 SUP_W_ID = 2; // Supplying Warehouse ID
+    int32 QTY = 3;  // Quantity to order
+}
+
+// Payment transaction input parameters
+message PaymentTransaction {
+    int32 W_ID = 1;  // Warehouse ID
+    int32 D_ID = 2;   // District ID
+    int32 C_W_ID = 3;  // Customer Warehouse ID
+    int32 C_D_ID = 4;   // Customer District ID
+    int32 C_ID = 5;   // Customer ID (either by ID or name)
+    double H_AMOUNT = 6; // Amount
+    bytes H_DATE = 7; // Date and Time
+    bytes C_LAST = 8; // Optional if lookup is by last name
+    bool BYNAME = 9; // True if lookup by name, false otherwise
+}
+
+// Order-Status transaction input parameters
+message OrderStatusTransaction {
+    int32 W_ID = 1;  // Warehouse ID
+    int32 D_ID = 2;   // District ID
+    int32 C_ID = 3;   // Customer ID (either by ID or name)
+    bytes C_LAST = 4; // Optional if lookup is by last name
+    bool BYNAME = 5;        // True if lookup by name, false otherwise
+}
+
+// Delivery transaction input parameters
+message DeliveryTransaction {
+    int32 W_ID = 1;  // Warehouse ID
+    int32 CARRIER_ID = 2;    // Carrier ID
+    bytes DATE_TIME = 3; // Date and Time
+}
+
+// Stock-Level transaction input parameters
+message StockLevelTransaction {
+    int32 W_ID = 1;  // Warehouse ID
+    int32 D_ID = 2;   // District ID
+    int32 THRESHOLD = 3;     // Threshold for low stock
+}

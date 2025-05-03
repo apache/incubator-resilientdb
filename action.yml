@@ -1,0 +1,53 @@
+# This script is from https://github.com/shadowmoose/GHA-LoC-Badge/blob/master/action.yml
+
+name: 'lines of code Badge'
+description: 'Generate a badge to display total Lines of Code'
+inputs:
+  directory:
+    description: 'The directory to scan.'
+    required: false
+    default: './'
+  badge:
+    description: 'The output path to save the badge svg - including extension!'
+    required: false
+    default: './badge.svg'
+  patterns:
+    description: 'The file patterns to search for, separated by pipes ("|").'
+    required: false
+    default: "**"
+  ignore:
+    description: 'The file patterns to ignore, even if they matched "patterns", separated by pipes ("|").'
+    required: false
+    default: "node_modules"
+  badge_label:
+    description: "The label to use for the badge."
+    required: false
+    default: "lines of code"
+  badge_color:
+    description: "The color to use for the badge."
+    required: false
+    default: "blue"
+  badge_style:
+    description: "The body style to use for the badge. ('flat' or 'classic')"
+    required: false
+    default: "classic"
+  badge_scale:
+    description: "The scale to resize this badge"
+    required: false
+    default: "1"
+  badge_labelcolor:
+    description: "The color to use for this badge label."
+    required: false
+    default: "555"
+  debug:
+    description: 'Enable debug logging'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'node12'
+  main: './src/index.js'
+
+branding:
+  icon: 'award'  
+  color: 'green'

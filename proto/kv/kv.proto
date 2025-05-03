@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package resdb;
+
+message KVRequest {
+    enum CMD {
+        NONE = 0;
+        SET = 1;
+        GET = 2;
+        GETALLVALUES = 3;
+        GETRANGE = 4;
+        SET_WITH_VERSION = 5;
+        GET_WITH_VERSION = 6;
+        GET_ALL_ITEMS = 7;
+        GET_KEY_RANGE = 8;
+        GET_HISTORY = 9;
+        GET_TOP = 10;
+    }
+    CMD cmd = 1;
+    string key = 2;
+    bytes value = 3;
+    int32 version = 4;
+    // For get key range
+    string min_key = 5;
+    string max_key = 6;
+    // For get history for a key
+    int32 min_version = 7;
+    int32 max_version = 8;
+    // For top history
+    int32 top_number = 9;
+}
+
+message ValueInfo {
+  bytes value = 2;
+  int32 version = 3;
+}
+
+message Item {
+  string key = 1;
+  ValueInfo value_info = 2;
+}
+
+message Items {
+  repeated Item item = 1;
+}
+
+message KVResponse {
+    string key = 1;
+    bytes value = 2;
+    ValueInfo value_info = 3;
+    Items items = 4;
+}
+

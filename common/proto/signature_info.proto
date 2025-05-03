@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package resdb;
+
+message SignatureInfo {
+    enum HashType{
+        NONE = 0;
+        RSA = 1;
+        ED25519 = 2;
+        CMAC_AES = 3;
+        ECDSA = 4;
+    };
+
+    HashType hash_type = 1;
+    int64 node_id = 2;
+    bytes signature = 3;
+};
+
+message SecretKey {
+    bytes public_key = 1;
+    bytes private_key = 2;
+    SignatureInfo.HashType hash_type = 3;
+};
+
+message KeyInfo {
+    bytes key = 1;
+    SignatureInfo.HashType hash_type = 2;
+}
+
+message CertificateKeyInfo {
+    enum Type {
+        REPLICA = 0;
+        CLIENT  = 1;
+    }
+    KeyInfo key = 1;
+    int64 node_id = 2;
+    Type type = 3;
+    string ip = 4;
+    int32 port = 5;
+    // the ip:port the replica uses, if it is a client node, can be ignored.
+}
+
+message CertificateKey {
+   CertificateKeyInfo public_key_info = 1; // the public key of current node.
+   SignatureInfo certificate = 2; // the certificate of `public_key_info`.
+}
+
+// CertificateInfo is published from the adminisotr and will be written to a cert file.
+message CertificateInfo {
+   KeyInfo admin_public_key = 1; // the public key owned by the administor.
+   CertificateKey public_key = 3; // public key info with certificate.
+   int64 node_id = 4;
+};
+  
+// Used to construct SignatureVerifier.
+message SignatureKeyInfo {
+    KeyInfo admin_public_key = 1; // the public key owned by the administor.
+    KeyInfo private_key = 2; // the private key from the user, used to sign messages.
+    int64 node_id = 3;  // the unique id of the replica or client.
+}
+

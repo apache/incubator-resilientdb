@@ -1,0 +1,14 @@
+deps/*/
+scripts/deploy/config/key.conf
+scripts/deploy/config_out/
+deploy/kv_server/output/
+.idea/
+.vscode/
+.DS_Store
+bazel-*
+*.log
+*.bak
+venv
+sdk_validator/venv
+__pycache__
+scripts/deploy/result_*_log

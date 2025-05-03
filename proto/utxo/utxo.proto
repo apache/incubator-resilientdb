@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package resdb.utxo;
+
+message UTXOIn {
+  int64 prev_id = 1;
+  int32 out_idx = 2;
+}
+
+message UTXOOut{
+  string address = 1;
+  int64 value = 2;
+  bool spent = 3;
+  string pub_key = 4;
+}
+
+message UTXO {
+  repeated UTXOIn in = 1;
+  repeated UTXOOut out = 2;
+  string sig = 3; // signed by the owner.
+  string address = 4;
+  int64 transaction_id = 5;
+}

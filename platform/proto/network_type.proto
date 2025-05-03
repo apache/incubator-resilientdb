@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package resdb;
+
+enum NetworkType{
+    None = 0;
+    TPORT_TYPE = 1;
+    ENVIRONMENT_EC2 = 2;
+    TCP = 3;
+};
