@@ -1,0 +1,171 @@
+#!/bin/bash
+unset GREP_OPTIONS
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+if [ -z $1 ];then
+    echo "ResilientDB Containerized with Singularity:"
+    echo "  Usage:"
+    echo -e "    ./resilientDB-singularity --clients=[] --replicas=[]"
+    echo ""
+    echo -e "    ./resilientDB-singularity -d"
+    echo -e "      default setup with 4 nodes and 1 client"
+    exit
+fi
+
+if [ "$(uname)" == "Darwin" ]; then
+	flags="-oE"
+else
+	flags="-oP"
+fi
+string_params=($(echo "$@" | grep ${flags} '\-\-[^\-\= ]+\=[^\-\= ]+'))
+replicas=0
+clients=0
+
+for var in "${string_params[@]}"; do
+    key=$(echo "$var" | grep ${flags} '\-\-[^\-\=]+' | grep ${flags} '[^\=\-]+')
+    value=$(echo "$var" | grep ${flags} '=([^\=\-]+)' | grep ${flags} '[^\=\-]+')
+    case $key in
+
+    clients)
+        if [ -n "$value" ] && [ "$value" -eq "$value" ] 2>/dev/null; then
+            if [ "$value" -gt 100 ]; then
+                printf "${RED}Invalid Number of Clients: greater than 100\nAborting...${NC}\n"
+                exit
+            else
+                clients=$value
+            fi
+        else
+            printf "${RED}Invalid Number of Clients: not a number\nAborting...${NC}\n"
+            exit
+        fi
+        ;;
+
+    replicas)
+        if [ -n "$value" ] && [ "$value" -eq "$value" ] 2>/dev/null; then
+            if [ "$value" -gt 100 ] | [ $value -lt 4 ]; then
+                printf "${RED}Invalid Number of Replicas: greater than 100 or less than 4\nAborting...${NC}\n"
+                exit
+            else
+                replicas=$value
+            fi
+        else
+            printf "${RED}Invalid Number of Replicas: not a number\nAborting...${NC}\n"
+            exit
+        fi
+        ;;
+    *) ;;
+    esac
+done
+if [ "$replicas" -eq 0 ]; then
+    replicas=4
+fi
+if [ "$clients" -eq 0 ]; then
+    clients=1
+fi
+echo -e "Number of Replicas:\t$replicas"
+echo -e "Number of Clients:\t$clients"
+
+if [ -f "singularity-compose.yml" ]; then
+    echo "Stopping previous containers..."
+    command -v singularity-compose >/dev/null 2>&1 || {
+        printf "${RED}ResilientDB requires Singularity and singularity-compose\nAborting...${NC}\n"
+        exit 1
+    }
+    singularity-compose down
+    printf "${GREEN}Successfully stopped${NC}\n"
+fi
+
+echo "Creating singularity compose file ..."
+echo "version: '2.0'" >singularity-compose.yml
+echo " " >>singularity-compose.yml
+echo "instances:" >>singularity-compose.yml
+echo " " >>singularity-compose.yml
+
+t=" "
+for i in $(seq 1 $replicas); do
+    echo -e "${t}s${i}:" >>singularity-compose.yml
+    echo -e "${t}${t}build:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}context: ./singularity-context" >>singularity-compose.yml
+    echo -e "${t}${t}${t}options:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}${t}- fakeroot" >>singularity-compose.yml
+    echo -e "${t}${t}volumes:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}- ./:/home/expo/resilientdb" >>singularity-compose.yml
+    echo -e "${t}${t}restart: always" >>singularity-compose.yml
+    echo " " >>singularity-compose.yml
+done
+for i in $(seq 1 $clients); do
+    echo -e "${t}c${i}:" >>singularity-compose.yml
+    echo -e "${t}${t}build:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}context: ./singularity-context" >>singularity-compose.yml
+    echo -e "${t}${t}${t}options:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}${t}- fakeroot" >>singularity-compose.yml
+    echo -e "${t}${t}volumes:" >>singularity-compose.yml
+    echo -e "${t}${t}${t}- ./:/home/expo/resilientdb" >>singularity-compose.yml
+    echo -e "${t}${t}restart: always" >>singularity-compose.yml
+done
+printf "${GREEN}singularity-compose file created --> singularity-compose.yml${NC}\n"
+
+echo "Starting the containers..."
+singularity-compose --debug build
+singularity-compose --debug --writable up
+# singularity instance start --bind /mnt/c/Users/samar/codingprojects/resilientdb:/home/expo/resilientdb --bind /mnt/c/Users/samar/codingprojects/resilientdb/resolv.conf:/etc/resolv.conf --bind /mnt/c/Users/samar/codingprojects/resilientdb/etc.hosts:/etc/hosts --net --network none --network-args "IP=10.22.0.2 " --hostname s1 --writable-tmpfs /mnt/c/Users/samar/codingprojects/resilientdb/singularity-context/s1.sif s1
+# singularity instance start --bind /mnt/c/Users/samar/codingprojects/resilientdb:/home/expo/resilientdb --bind /mnt/c/Users/samar/codingprojects/resilientdb/resolv.conf:/etc/resolv.conf --bind /mnt/c/Users/samar/codingprojects/resilientdb/etc.hosts:/etc/hosts --net --network none --network-args "IP=10.22.0.3" --hostname s2 --writable-tmpfs /mnt/c/Users/samar/codingprojects/resilientdb/singularity-context/s2.sif s2
+# singularity instance start --bind /mnt/c/Users/samar/codingprojects/resilientdb:/home/expo/resilientdb --bind /mnt/c/Users/samar/codingprojects/resilientdb/resolv.conf:/etc/resolv.conf --bind /mnt/c/Users/samar/codingprojects/resilientdb/etc.hosts:/etc/hosts --net --network none --network-args "IP=10.22.0.4" --hostname s3 --writable-tmpfs /mnt/c/Users/samar/codingprojects/resilientdb/singularity-context/s3.sif s3
+# singularity instance start --bind /mnt/c/Users/samar/codingprojects/resilientdb:/home/expo/resilientdb --bind /mnt/c/Users/samar/codingprojects/resilientdb/resolv.conf:/etc/resolv.conf --bind /mnt/c/Users/samar/codingprojects/resilientdb/etc.hosts:/etc/hosts --net --network none --network-args "IP=10.22.0.5" --hostname s4 --writable-tmpfs /mnt/c/Users/samar/codingprojects/resilientdb/singularity-context/s4.sif s4
+# singularity instance start --bind /mnt/c/Users/samar/codingprojects/resilientdb:/home/expo/resilientdb --bind /mnt/c/Users/samar/codingprojects/resilientdb/resolv.conf:/etc/resolv.conf --bind /mnt/c/Users/samar/codingprojects/resilientdb/etc.hosts:/etc/hosts --net --network none --network-args "IP=10.22.0.6" --hostname c1 --writable-tmpfs /mnt/c/Users/samar/codingprojects/resilientdb/singularity-context/c1.sif c1
+#scripts/singularity-ifconfig.sh doesnt seem totally necessary considering singularity generates a hosts file
+#made an ifconfig with all hosts used by etc.hosts 
+
+# printf "\nChecking Dependencies...\n"
+#if [ ! (singularity-compose --debug exec s1 bash -c cd ../expo/resilientdb && -d "deps/crypto") ]; then
+# printf "Installing dependencies..\n"
+# singularity-compose --debug exec s1 bash -c cd ../expo/resilientdb && cd deps && $(ls | xargs -n 1 tar -xvf 2>/dev/null)
+# singularity-compose --debug exec s1 bash -c cd ..
+#fi
+# pwd
+# printf "${GREEN}Dependencies has been installed${NC}\n"
+# ./scripts/startResilientDB.sh ${replicas} ${clients} ${clients}
+printf "\nChecking Dependencies...\n"
+if [ ! -d "deps/crypto" ]; then
+    printf "Installing dependencies..\n"
+    cd deps && $(ls | xargs -n 1 tar -xvf 2>/dev/null)
+    cd ..
+fi
+pwd
+printf "${GREEN}Dependencies has been installed${NC}\n"
+
+printf "\nCreating config file...\n"
+scripts/make_config.sh ${replicas} ${clients}
+printf "${GREEN}Config file has been created${NC}\n"
+
+printf "\nCompiling ResilientDB...\n"
+singularity-compose --debug exec s1 bash -c "cd ../expo/resilientdb && mkdir -p obj"
+singularity-compose --debug exec s1 bash -c "cd ../expo/resilientdb && make clean"
+singularity-compose --debug exec s1 bash -c "cd ../expo/resilientdb && make"
+printf "${GREEN}ResilientDB is compiled successfully${NC}\n"
+
+printf "\nRunning ResilientDB replicas...\n"
+mkdir -p results
+for i in $(seq 1 $replicas); do
+    echo "rep $i"
+    singularity-compose --debug exec s${i} bash -c "cd ../expo/resilientdb" && pkill rundb
+    singularity-compose --debug exec s${i} bash -c "cd ../expo/resilientdb && ./rundb -nid$((i - 1)) >results/s${replicas}_c${clients}_results_PBFT_b100_run0_node$((i - 1)).out &"
+done
+printf "${GREEN}Replicas started successfully${NC}\n"
+
+printf "\nRunning ResilientDB clients...\n"
+cl=$replicas
+for i in $(seq 1 $clients); do
+    echo "cl $i"
+    singularity-compose --debug exec c${i} bash -c "cd ../expo/resilientdb" && pkill runcl
+    singularity-compose --debug exec c${i} bash -c "cd ../expo/resilientdb && ./runcl -nid$((i + replicas - 1)) >results/s${replicas}_c${clients}_results_PBFT_b100_run0_node$((i + replicas - 1)).out &"
+done
+printf "${GREEN}Clients started successfully${NC}\n"
+
+wait
+
+scripts/result.sh ${replicas} ${clients} PBFT 100 0 >res.out
+scripts/result_colorized.sh ${replicas} ${clients} PBFT 100 0
+# rm results/*
+printf "${GREEN}Code Ran successfully${NC} ---> res.out\n"
