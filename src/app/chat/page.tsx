@@ -171,7 +171,7 @@ export default function Home() {
                 <div
                   className={`max-w-xl lg:max-w-2xl px-4 py-3 rounded-xl shadow-md 
                     ${msg.sender === "user"
-                      ? "bg-green-600 text-white rounded-br-none"
+                      ? "bg-muted text-white rounded-br-none"
                       : " text-gray-200 rounded-bl-none"}`}
                 >
                   <div className="whitespace-pre-wrap break-words">{msg.content}</div>
