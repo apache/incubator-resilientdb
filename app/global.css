@@ -1,0 +1,26 @@
+@import 'nextra-theme-docs/dist/style.css' layer(nextra);
+
+/**
+ * Custom styles
+ *
+ * You can add your own custom styles here. This file will be imported after the theme styles.
+ * This is a great place to add your own utility classes or override styles.
+ *
+ * In this case we're going to fix a glitch with the text size in the code blocks. 
+ */
+@layer overwrite {
+  :root {
+    --x-color-nextra-bg: var(--mantine-color-body);
+  }
+
+  :where(.dark) {
+    --x-color-neutral-800: var(--mantine-color-dark-6);
+  }
+
+  .x\:text-sm {
+    font-size: var(--x-text-sm) !important;
+    line-height: var(--tw-leading, var(--x-text-sm--line-height)) !important;
+  }
+}
+
+@layer components, mantine, nextra, overwrite;

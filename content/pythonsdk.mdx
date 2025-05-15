@@ -1,0 +1,41 @@
+# Python SDK
+
+The ResilientDB Python SDK provides a simple and intuitive way to interact with ResilientDB using Python. This SDK allows you to perform various operations such as creating transactions, querying the blockchain, and managing smart contracts.
+
+## Installation
+
+```bash
+pip install resilientdb-sdk
+```
+
+## Quick Start
+
+```python
+from resilientdb.client import Client
+
+# Initialize the client
+client = Client('http://localhost:8080')
+
+# Create a transaction
+transaction = client.create_transaction(
+    sender='your_public_key',
+    recipient='recipient_public_key',
+    amount=100
+)
+
+# Send the transaction
+response = client.send_transaction(transaction)
+print(f"Transaction ID: {response['id']}")
+```
+
+## Features
+
+- Simple and intuitive API
+- Async support
+- Built-in transaction management
+- Smart contract integration
+- Comprehensive error handling
+
+## Documentation
+
+For detailed documentation and examples, visit our [Python SDK Documentation](https://docs.resilientdb.com/python-sdk). 
