@@ -21,6 +21,7 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
+    "@codemirror/lang-python": "^6.2.1",
     "@gfazioli/mantine-marquee": "^2.2.7",
     "@gfazioli/mantine-text-animate": "^1.0.3",
     "@mantine/core": "8.0.0",
@@ -29,6 +30,8 @@
     "@mdx-js/react": "^3.1.0",
     "@next/bundle-analyzer": "^15.3.1",
     "@tabler/icons-react": "^3.31.0",
+    "@uiw/codemirror-theme-vscode": "^4.23.12",
+    "@uiw/react-codemirror": "^4.23.12",
     "next": "15.3.2",
     "nextra": "4.3.0-alpha.22",
     "nextra-theme-docs": "4.3.0-alpha.22",
