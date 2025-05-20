@@ -192,7 +192,7 @@ sys.modules['resdb_sdk'] = resdb_sdk
 async def __run():
 ${code
   .split('\n')
-  .map((line) => '    ' + line)
+  .map((line) => `    ${line}`)
   .join('\n')}
 
 import asyncio
@@ -206,11 +206,12 @@ loop.run_until_complete(__run())
 
       // Get output
       const stdout = await window.pyodide.runPythonAsync('sys.stdout.getvalue()');
-      if (stdout) setOutput((prev) => [...prev, stdout]);
+      if (stdout) {
+        setOutput((prev) => [...prev, stdout]);
+      }
 
       setOutput((prev) => [...prev, '✅ Code execution completed']);
     } catch (error: any) {
-      console.error('Python execution error:', error);
       setOutput((prev) => [...prev, `❌ Error: ${error.message}`]);
     } finally {
       // Clear buffers

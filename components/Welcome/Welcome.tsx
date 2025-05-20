@@ -9,8 +9,8 @@ import classes from './Welcome.module.css';
 export function Welcome() {
   return (
     <>
-      <Title maw="90vw" mx="auto" className={classes.title} ta="center" mt={100}>
-        Next Gen Docs for
+      <Title maw="90vw" mx="auto" ta="center" mt={100}>
+        <span className={classes.title}>Next Gen Docs for</span>
         <TextAnimate
           animate="in"
           by="character"
