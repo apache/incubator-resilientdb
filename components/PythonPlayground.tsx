@@ -1,23 +1,23 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
-import CodeMirror from "@uiw/react-codemirror"
-import { python } from "@codemirror/lang-python"
-import { vscodeDark } from "@uiw/codemirror-theme-vscode"
-import { Box, Button, Group, Paper, Stack, Text, Select, Tooltip } from "@mantine/core"
-import { IconPlayerPlay, IconTrash, IconTemplate } from "@tabler/icons-react"
+import { useEffect, useState } from 'react';
+import { python } from '@codemirror/lang-python';
+import { IconPlayerPlay, IconTemplate, IconTrash } from '@tabler/icons-react';
+import { vscodeDark } from '@uiw/codemirror-theme-vscode';
+import CodeMirror from '@uiw/react-codemirror';
+import { Box, Button, Group, Paper, Select, Stack, Text, Tooltip } from '@mantine/core';
 
 declare global {
   interface Window {
-    loadPyodide: (options: { indexURL: string }) => Promise<any>
-    pyodide: any
+    loadPyodide: (options: { indexURL: string }) => Promise<any>;
+    pyodide: any;
   }
 }
 
 const EXAMPLE_TEMPLATES = [
   {
-    value: "test_new_transaction",
-    label: "Test New Transaction",
+    value: 'test_new_transaction',
+    label: 'Test New Transaction',
     code: `"""
 Example: Post a new transaction with unique ID
 """
@@ -47,11 +47,11 @@ print(json.dumps(result, indent=2))
 print("\\nVerifying if transaction exists...")
 get_result = await db.transactions.retrieve(unique_id)
 print("GET Response:")
-print(json.dumps(get_result, indent=2))`
+print(json.dumps(get_result, indent=2))`,
   },
   {
-    value: "get_transaction",
-    label: "Get Transaction Only",
+    value: 'get_transaction',
+    label: 'Get Transaction Only',
     code: `"""
 Example: Get a transaction from ResilientDB
 """
@@ -66,11 +66,11 @@ tx_id = "testkey123"  # This ID exists and works
 print(f"Getting transaction with ID: {tx_id}")
 result = await db.transactions.retrieve(tx_id)
 print("Response:")
-print(json.dumps(result, indent=2))`
+print(json.dumps(result, indent=2))`,
   },
   {
-    value: "complete_workflow",
-    label: "Complete Workflow (Post & Get)",
+    value: 'complete_workflow',
+    label: 'Complete Workflow (Post & Get)',
     code: `"""
 Example: Complete workflow to post a transaction and then retrieve it
 """
@@ -109,36 +109,38 @@ for attempt in range(max_attempts):
         print("No data yet, waiting 2 seconds...")
         await asyncio.sleep(2)
 
-print("Workflow complete!")`
-  }
-]
+print("Workflow complete!")`,
+  },
+];
 
 export function PythonPlayground() {
-  const [code, setCode] = useState(EXAMPLE_TEMPLATES[0].code)
-  const [output, setOutput] = useState<string[]>(["Initializing Python environment..."])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isRunning, setIsRunning] = useState(false)
+  const [code, setCode] = useState(EXAMPLE_TEMPLATES[0].code);
+  const [output, setOutput] = useState<string[]>(['Initializing Python environment...']);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     const initPython = async () => {
       try {
         if (window.pyodide) {
-          setOutput(["✅ Python environment ready"])
-          setIsLoading(false)
-          return
+          setOutput(['✅ Python environment ready']);
+          setIsLoading(false);
+          return;
         }
 
         // Load Pyodide
-        const script = document.createElement("script")
-        script.src = "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"
-        document.head.appendChild(script)
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
+        document.head.appendChild(script);
 
-        await new Promise((resolve) => script.onload = resolve)
-        
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+
         // Initialize Pyodide
         const pyodide = await window.loadPyodide({
-          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.24.1/full/"
-        })
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
+        });
 
         // Set up stdout/stderr capture
         await pyodide.runPythonAsync(`
@@ -146,12 +148,12 @@ export function PythonPlayground() {
           from io import StringIO
           sys.stdout = StringIO()
           sys.stderr = StringIO()
-        `)
+        `);
 
         // Load and register our SDK
-        const sdk = await fetch("/resdb_sdk.py").then(res => res.text())
-        await pyodide.runPythonAsync(sdk)
-        
+        const sdk = await fetch('/resdb_sdk.py').then((res) => res.text());
+        await pyodide.runPythonAsync(sdk);
+
         // Register the SDK as a module
         await pyodide.runPythonAsync(`
 import sys
@@ -159,58 +161,65 @@ import types
 resdb_sdk = types.ModuleType('resdb_sdk')
 resdb_sdk.__dict__.update(globals())
 sys.modules['resdb_sdk'] = resdb_sdk
-        `)
-        
-        window.pyodide = pyodide
-        setOutput(["✅ Python environment ready"])
-        setIsLoading(false)
-      } catch (error) {
-        console.error("Failed to initialize Python:", error)
-        setOutput(prev => [...prev, `❌ Error: ${error instanceof Error ? error.message : "Unknown error"}`])
-        setIsLoading(false)
-      }
-    }
+        `);
 
-    initPython()
-  }, [])
+        window.pyodide = pyodide;
+        setOutput(['✅ Python environment ready']);
+        setIsLoading(false);
+      } catch (error) {
+        setOutput((prev) => [
+          ...prev,
+          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ]);
+        setIsLoading(false);
+      }
+    };
+
+    initPython();
+  }, []);
 
   const runCode = async () => {
-    if (isLoading || isRunning) return
-    setIsRunning(true)
-    setOutput(["▶ Running code..."])
+    if (isLoading || isRunning) {
+      return;
+    }
+    setIsRunning(true);
+    setOutput(['▶ Running code...']);
 
     try {
       // Wrap code in async function if it uses await
       const codeToRun = /\bawait\b/.test(code)
         ? `
 async def __run():
-${code.split('\n').map(line => '    ' + line).join('\n')}
+${code
+  .split('\n')
+  .map((line) => '    ' + line)
+  .join('\n')}
 
 import asyncio
 loop = asyncio.get_event_loop()
 loop.run_until_complete(__run())
 `
-        : code
+        : code;
 
       // Run the code and capture output
-      await window.pyodide.runPythonAsync(codeToRun)
-      
+      await window.pyodide.runPythonAsync(codeToRun);
+
       // Get output
-      const stdout = await window.pyodide.runPythonAsync("sys.stdout.getvalue()")
-      if (stdout) setOutput(prev => [...prev, stdout])
-      
-      setOutput(prev => [...prev, "✅ Code execution completed"])
+      const stdout = await window.pyodide.runPythonAsync('sys.stdout.getvalue()');
+      if (stdout) setOutput((prev) => [...prev, stdout]);
+
+      setOutput((prev) => [...prev, '✅ Code execution completed']);
     } catch (error: any) {
-      console.error("Python execution error:", error)
-      setOutput(prev => [...prev, `❌ Error: ${error.message}`])
+      console.error('Python execution error:', error);
+      setOutput((prev) => [...prev, `❌ Error: ${error.message}`]);
     } finally {
       // Clear buffers
-      await window.pyodide.runPythonAsync("sys.stdout.truncate(0)\nsys.stdout.seek(0)")
-      setIsRunning(false)
+      await window.pyodide.runPythonAsync('sys.stdout.truncate(0)\nsys.stdout.seek(0)');
+      setIsRunning(false);
     }
-  }
+  };
 
-  const clearOutput = () => setOutput([])
+  const clearOutput = () => setOutput([]);
 
   return (
     <Paper withBorder p="md" radius="md">
@@ -221,7 +230,9 @@ loop.run_until_complete(__run())
               size="xs"
               placeholder="Load example"
               data={EXAMPLE_TEMPLATES}
-              onChange={(value) => value && setCode(EXAMPLE_TEMPLATES.find(t => t.value === value)?.code || '')}
+              onChange={(value) =>
+                value && setCode(EXAMPLE_TEMPLATES.find((t) => t.value === value)?.code || '')
+              }
               leftSection={<IconTemplate size={14} />}
             />
           </Tooltip>
@@ -272,7 +283,7 @@ loop.run_until_complete(__run())
             color="blue"
             leftSection={<IconPlayerPlay size={14} />}
           >
-            {isRunning ? "Running..." : "Run"}
+            {isRunning ? 'Running...' : 'Run'}
           </Button>
           <Button
             onClick={clearOutput}
@@ -288,20 +299,20 @@ loop.run_until_complete(__run())
           withBorder
           p="xs"
           style={{
-            backgroundColor: "#1e1e1e",
-            color: "#33ff00",
-            fontFamily: "monospace",
-            height: "200px",
-            overflow: "auto"
+            backgroundColor: '#1e1e1e',
+            color: '#33ff00',
+            fontFamily: 'monospace',
+            height: '200px',
+            overflow: 'auto',
           }}
         >
           {output.map((line, i) => (
-            <Text key={i} style={{ whiteSpace: "pre-wrap", color: "inherit" }}>
+            <Text key={i} style={{ whiteSpace: 'pre-wrap', color: 'inherit' }}>
               {line}
             </Text>
           ))}
         </Paper>
       </Stack>
     </Paper>
-  )
+  );
 }

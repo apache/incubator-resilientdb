@@ -18,6 +18,7 @@ export function Welcome() {
           variant="gradient"
           component="span"
           segmentDelay={0.2}
+          className={classes.subtitle}
           duration={2}
           animation="scale"
           animateProps={{
