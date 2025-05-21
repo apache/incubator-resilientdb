@@ -2,6 +2,7 @@ import json
 import js
 import asyncio
 from typing import Dict, Any, Optional, List
+import time
 
 RESDB_REST_URL = "https://crow.resilientdb.com"
 
@@ -25,23 +26,16 @@ class TransactionDriver:
     async def send_commit(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Send a transaction to be committed"""
         try:
-            # Ensure data matches exact format that works
-            if not isinstance(data, dict) or "id" not in data or "value" not in data:
-                raise ValueError("Transaction must be a dictionary with 'id' and 'value' fields")
-            
-            # Ensure data types are correct
+            # Keep transaction format extremely simple like working curl
             transaction = {
                 "id": str(data["id"]),
                 "value": str(data["value"])
             }
             
-            # Add proper headers exactly like Postman
+            # Match curl headers exactly
             headers = {
                 "Content-Type": "application/json",
-                "Accept": "*/*",  # Changed to match Postman's Accept header
-                "User-Agent": "PostmanRuntime/7.36.0",  # Match Postman's User-Agent
-                "Accept-Encoding": "gzip, deflate, br",
-                "Connection": "keep-alive"
+                "Accept": "text/plain"
             }
             
             # Convert headers to a format js.fetch can understand
@@ -49,7 +43,7 @@ class TransactionDriver:
             for key, value in headers.items():
                 js_headers[key] = value
             
-            print("Sending request with:")
+            print(f"\nSending POST to {self.url}/v1/transactions/commit")
             print(f"Headers: {json.dumps(headers, indent=2)}")
             print(f"Body: {json.dumps(transaction, indent=2)}")
             
@@ -59,40 +53,96 @@ class TransactionDriver:
                 "body": json.dumps(transaction)
             })
             
+            print(f"\nResponse status: {response.status}")
+            print(f"Response headers: {dict(response.headers)}")
+            
+            response_text = await response.text()
+            print(f"Raw response text: '{response_text}'")
+            
+            # Handle 201 Created status with id: response
+            if response.status == 201 and response_text.startswith('id:'):
+                tx_id = response_text.split(':')[1].strip()
+                return {
+                    "status": 201,
+                    "success": True,
+                    "id": tx_id,
+                    "message": "Transaction created successfully"
+                }
+            
+            # Handle 200 OK status (server sometimes returns 200 instead of 201)
+            if response.status == 200:
+                return {
+                    "status": 200,
+                    "success": True,
+                    "id": transaction["id"],
+                    "message": "Transaction accepted"
+                }
+            
+            # Handle other responses
+            return {
+                "status": response.status,
+                "success": False,
+                "error": response_text or "Unexpected response"
+            }
+                
+        except Exception as e:
+            print(f"Error in send_commit: {str(e)}")
+            raise Exception(str(e))
+
+    async def retrieve(self, tx_id: str) -> Dict[str, Any]:
+        """Retrieve a transaction by tx_id"""
+        try:
+            print(f"\nSending GET to {self.url}/v1/transactions/{tx_id}")
+            
+            # Match curl headers for GET - using application/json
+            headers = {
+                "Accept": "application/json"
+            }
+            # Convert headers
+            js_headers = {}
+            for header_key, header_value in headers.items():
+                js_headers[header_key] = header_value
+            
+            response = await js.fetch(f"{self.url}/v1/transactions/{tx_id}", {
+                "method": "GET",
+                "headers": js_headers
+            })
+            
             print(f"Response status: {response.status}")
             print(f"Response headers: {dict(response.headers)}")
             
-            # Handle both 200 and 201 status codes
-            if response.status in [200, 201]:
-                try:
-                    response_text = await response.text()
-                    print(f"Raw response: {response_text}")
-                    if response_text:
-                        return json.loads(response_text)
-                    return {"status": response.status, "success": True, "message": "Transaction created" if response.status == 201 else "Transaction processed"}
-                except Exception as e:
-                    print(f"Failed to parse response: {str(e)}")
-                    return {"status": response.status, "success": True}
-            else:
-                response_text = await response.text()
-                print(f"Error response: {response_text}")
-                return {"status": response.status, "success": False, "error": response_text}
-                
-        except Exception as e:
-            print(f"Failed to commit transaction: {str(e)}")
-            raise Exception(str(e))
-
-    async def retrieve(self, key: str) -> Dict[str, Any]:
-        """Retrieve a transaction by key"""
-        try:
-            response = await js.fetch(f"{self.url}/v1/transactions/{key}")
             response_text = await response.text()
-            try:
-                return json.loads(response_text) if response_text else {}
-            except:
-                return {}
+            print(f"Raw response text: '{response_text}'")
+            
+            if response.status == 200:
+                if response_text:
+                    try:
+                        return json.loads(response_text)
+                    except:
+                        return {
+                            "status": 200,
+                            "raw_response": response_text
+                        }
+                # Even with empty response, if status is 200, transaction exists
+                return {
+                    "status": 200,
+                    "success": True,
+                    "id": tx_id,
+                    "message": "Transaction exists"
+                }
+            elif response.status == 404:
+                return {
+                    "status": 404,
+                    "message": "Transaction not found"
+                }
+            else:
+                return {
+                    "status": response.status,
+                    "error": response_text or "Unknown error"
+                }
+            
         except Exception as e:
-            print(f"Failed to retrieve transaction: {str(e)}")
+            print(f"Error in retrieve: {str(e)}")
             raise Exception(str(e))
 
     async def get_unspent_outputs(self, public_key: str) -> List[Dict[str, Any]]:
@@ -192,10 +242,7 @@ class Client:
             # Ensure proper headers and request format
             headers = {
                 "Content-Type": "application/json",
-                "Accept": "application/json",
-                "User-Agent": "ResilientDB-Python-SDK/1.0",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Connection": "keep-alive"
+                "Accept": "text/plain"
             }
             
             # Ensure transaction data is properly formatted
@@ -204,7 +251,7 @@ class Client:
             if "id" not in transaction or "value" not in transaction:
                 raise ValueError("Transaction must contain 'id' and 'value' fields")
                 
-            # Make request exactly like Postman
+            # Make request exactly like curl
             response = await js.fetch(f"{self.url}/v1/transactions/commit", {
                 "method": "POST",
                 "headers": js.Object.fromEntries(list(headers.items())),
@@ -212,16 +259,32 @@ class Client:
             })
             
             # Handle response
+            response_text = await response.text()
+            
+            # Handle 201 Created with id: response
+            if response.status == 201 and response_text.startswith('id:'):
+                tx_id = response_text.split(':')[1].strip()
+                return {
+                    "status": 201,
+                    "success": True,
+                    "id": tx_id,
+                    "message": "Transaction created successfully"
+                }
+            
+            # Handle 200 OK status
             if response.status == 200:
-                try:
-                    response_text = await response.text()
-                    if response_text:
-                        return json.loads(response_text)
-                    return {"status": response.status, "success": True}
-                except:
-                    return {"status": response.status, "success": True}
-            else:
-                return {"status": response.status, "success": False, "error": "Transaction failed"}
+                return {
+                    "status": 200,
+                    "success": True,
+                    "id": transaction["id"],
+                    "message": "Transaction accepted"
+                }
+            
+            return {
+                "status": response.status,
+                "success": False,
+                "error": "Transaction failed"
+            }
             
         except Exception as e:
             print(f"Error sending transaction: {str(e)}")
@@ -230,12 +293,42 @@ class Client:
     async def get_transaction(self, transaction_id):
         """Get a transaction by its ID."""
         try:
-            response = await js.fetch(f"{self.url}/v1/transactions/{transaction_id}")
+            headers = {
+                "Accept": "application/json"
+            }
+            
+            response = await js.fetch(
+                f"{self.url}/v1/transactions/{transaction_id}",
+                {
+                    "method": "GET",
+                    "headers": js.Object.fromEntries(list(headers.items()))
+                }
+            )
+            
             response_text = await response.text()
-            try:
-                return json.loads(response_text) if response_text else {}
-            except:
-                return response_text if response_text else {}
+            
+            if response.status == 200:
+                if response_text:
+                    try:
+                        return json.loads(response_text)
+                    except:
+                        return {
+                            "status": 200,
+                            "raw_response": response_text
+                        }
+                return {
+                    "status": 200,
+                    "success": True,
+                    "id": transaction_id,
+                    "message": "Transaction exists"
+                }
+            
+            return {
+                "status": response.status,
+                "success": False,
+                "message": "Transaction not found"
+            }
+            
         except Exception as e:
             print(f"Error getting transaction: {str(e)}")
             raise Exception(str(e))
