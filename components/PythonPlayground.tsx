@@ -24,25 +24,22 @@ Welcome to the ResilientDB Python Playground!
 This interactive environment allows you to test and experiment with ResilientDB's key-value store 
 using our Python SDK. The code here matches the patterns used in the official ResilientDB Python SDK.
 
-Instructions:
-1. Use the dropdown menu above to load example code
-2. Modify the code as needed
-3. Click 'Run' to execute the code
-4. View results in the output panel below
+Available Features:
+1. Basic Transaction Operations
+   - Create simple transactions
+   - Create transactions with metadata
+   - Retrieve transactions by ID
 
-Available Examples:
-- Send Transaction: Create and send a new key-value transaction
-- Get Transaction: Retrieve an existing transaction by ID
-- Complete Workflow: Full example of sending and retrieving a transaction
+Choose an example from the dropdown menu above to get started!
 
-Note: Each transaction needs a unique ID. Our examples use timestamps to generate these IDs.
+Note: Each transaction needs a unique ID. Our examples use timestamps to ensure uniqueness.
 """`,
   },
   {
     value: 'send_transaction',
-    label: 'Send Transaction',
+    label: 'Send Simple Transaction',
     code: `"""
-Example: Send a new key-value transaction to ResilientDB
+Example: Create and send a simple transaction (without metadata)
 """
 from resdb_sdk import ResilientDB, Transaction
 import json
@@ -54,8 +51,50 @@ client = ResilientDB('https://crow.resilientdb.com')
 # Create unique ID using timestamp
 unique_id = f"test_{int(time.time())}"
 
-# Create transaction object
-transaction = Transaction(id=unique_id, value="Hello from ResilientDB!")
+# Create transaction (without metadata)
+transaction = Transaction(
+    id=unique_id,
+    value="Hello from ResilientDB!"
+)
+
+print(f"Creating transaction with ID: {unique_id}")
+print("Transaction data:")
+print(json.dumps(transaction.to_dict(), indent=2))
+
+print("\\nSending transaction...")
+result = await client.transactions.create(transaction)
+print("Response:")
+print(json.dumps(result, indent=2))`,
+  },
+  {
+    value: 'send_transaction_with_metadata',
+    label: 'Send Transaction with Metadata',
+    code: `"""
+Example: Create and send a transaction with metadata
+"""
+from resdb_sdk import ResilientDB, Transaction, TransactionMetadata
+import json
+import time
+
+# Initialize ResilientDB client
+client = ResilientDB('https://crow.resilientdb.com')
+
+# Create unique ID using timestamp
+unique_id = f"test_{int(time.time())}"
+
+# Create metadata
+metadata = TransactionMetadata(
+    timestamp=time.time(),
+    source="playground",
+    tags=["test", "example"]
+)
+
+# Create transaction with metadata
+transaction = Transaction(
+    id=unique_id,
+    value="Hello from ResilientDB!",
+    metadata=metadata
+)
 
 print(f"Creating transaction with ID: {unique_id}")
 print("Transaction data:")
@@ -91,11 +130,11 @@ print(json.dumps(result, indent=2))`,
   },
   {
     value: 'complete_workflow',
-    label: 'Complete Workflow (Send + Get)',
+    label: 'Complete Workflow',
     code: `"""
-Example: Complete workflow to send a transaction and then retrieve it
+Example: Complete workflow demonstrating transaction creation and retrieval
 """
-from resdb_sdk import ResilientDB, Transaction
+from resdb_sdk import ResilientDB, Transaction, TransactionMetadata
 import json
 import time
 
@@ -108,8 +147,19 @@ print("Step 1: Creating and sending transaction...")
 # Generate unique ID using timestamp
 unique_id = f"test_{int(time.time())}"
 
-# Create transaction object
-transaction = Transaction(id=unique_id, value="Hello from ResilientDB!")
+# Create metadata
+metadata = TransactionMetadata(
+    timestamp=time.time(),
+    source="playground",
+    workflow="complete_example"
+)
+
+# Create transaction
+transaction = Transaction(
+    id=unique_id,
+    value="Complete workflow test",
+    metadata=metadata
+)
 
 print(f"Transaction ID: {unique_id}")
 print("Transaction data:")
