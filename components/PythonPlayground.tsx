@@ -16,10 +16,33 @@ declare global {
 
 const EXAMPLE_TEMPLATES = [
   {
-    value: 'test_new_transaction',
-    label: 'Test New Transaction',
+    value: 'default',
+    label: 'Welcome - Start Here',
     code: `"""
-Example: Post a new transaction with unique ID
+Welcome to the ResilientDB Python Playground!
+
+This interactive environment allows you to test and experiment with ResilientDB's key-value store 
+using our Python SDK.
+
+Instructions:
+1. Use the dropdown menu above to load example code
+2. Modify the code as needed
+3. Click 'Run' to execute the code
+4. View results in the output panel below
+
+Available Examples:
+- Send Transaction: Create and send a new key-value transaction
+- Get Transaction: Retrieve an existing transaction by ID
+- Complete Workflow: Full example of sending and retrieving a transaction
+
+Note: Each transaction needs a unique ID. Our examples use timestamps to generate these IDs.
+"""`,
+  },
+  {
+    value: 'send_transaction',
+    label: 'Send Transaction',
+    code: `"""
+Example: Send a new key-value transaction to ResilientDB
 """
 from resdb_sdk import Resdb
 import json
@@ -28,88 +51,86 @@ import time
 # Initialize ResilientDB client
 db = Resdb('https://crow.resilientdb.com')
 
-# Create transaction with unique ID but same format
+# Create unique ID using timestamp
 unique_id = f"test_{int(time.time())}"
+
+# Create transaction data
 transaction = {
     "id": unique_id,
-    "value": "Hello from Postman"  # Using same value format that worked
+    "value": "Hello from Beacon!"
 }
 
-print(f"Using unique ID: {unique_id}")
+print(f"Creating transaction with ID: {unique_id}")
 print("Transaction data:")
 print(json.dumps(transaction, indent=2))
 
 print("\\nSending transaction...")
 result = await db.transactions.send_commit(transaction)
-print("Response from send_commit:")
-print(json.dumps(result, indent=2))
-
-print("\\nVerifying if transaction exists...")
-get_result = await db.transactions.retrieve(unique_id)
-print("GET Response:")
-print(json.dumps(get_result, indent=2))`,
-  },
-  {
-    value: 'get_transaction',
-    label: 'Get Transaction Only',
-    code: `"""
-Example: Get a transaction from ResilientDB
-"""
-from resdb_sdk import Resdb
-import json
-
-# Initialize ResilientDB client
-db = Resdb('https://crow.resilientdb.com')
-
-# Get transaction
-tx_id = "testkey123"  # This ID exists and works
-print(f"Getting transaction with ID: {tx_id}")
-result = await db.transactions.retrieve(tx_id)
 print("Response:")
 print(json.dumps(result, indent=2))`,
   },
   {
-    value: 'complete_workflow',
-    label: 'Complete Workflow (Post & Get)',
+    value: 'get_transaction',
+    label: 'Get Transaction',
     code: `"""
-Example: Complete workflow to post a transaction and then retrieve it
+Example: Retrieve a transaction from ResilientDB
 """
 from resdb_sdk import Resdb
 import json
-import time
-import asyncio
 
 # Initialize ResilientDB client
 db = Resdb('https://crow.resilientdb.com')
 
-# Create transaction
-tx_id = f"test_{int(time.time())}"
+# Transaction ID to retrieve
+# Replace this with an ID from a previously sent transaction
+tx_id = "test_1234567890"
+
+print(f"Retrieving transaction with ID: {tx_id}")
+print("\\nSending GET request...")
+
+result = await db.transactions.retrieve(tx_id)
+print("\\nResponse:")
+print(json.dumps(result, indent=2))`,
+  },
+  {
+    value: 'complete_workflow',
+    label: 'Complete Workflow (Send + Get)',
+    code: `"""
+Example: Complete workflow to send a transaction and then retrieve it
+"""
+from resdb_sdk import Resdb
+import json
+import time
+
+# Initialize ResilientDB client
+db = Resdb('https://crow.resilientdb.com')
+
+# Step 1: Create and send transaction
+print("Step 1: Creating and sending transaction...")
+
+# Generate unique ID using timestamp
+unique_id = f"test_{int(time.time())}"
 transaction = {
-    "id": tx_id,
-    "value": "Hello from Python!"
+    "id": unique_id,
+    "value": "Hello from Beacon!"
 }
 
-print(f"Step 1: Created transaction with ID: {tx_id}")
-print(f"Transaction data: {json.dumps(transaction, indent=2)}")
+print(f"Transaction ID: {unique_id}")
+print("Transaction data:")
+print(json.dumps(transaction, indent=2))
 
-print("Step 2: Sending transaction...")
-result = await db.transactions.send_commit(transaction)
-print(f"Send result: {json.dumps(result, indent=2)}")
+# Send transaction
+send_result = await db.transactions.send_commit(transaction)
+print("\\nPOST Response:")
+print(json.dumps(send_result, indent=2))
 
-print("Step 3: Retrieving the transaction...")
-# Try multiple times with delays
-max_attempts = 3
-for attempt in range(max_attempts):
-    print(f"Get attempt {attempt + 1}/{max_attempts}...")
-    get_result = await db.transactions.retrieve(tx_id)
-    if get_result and get_result != "{}":
-        print(f"Success! Transaction retrieved: {json.dumps(get_result, indent=2)}")
-        break
-    if attempt < max_attempts - 1:
-        print("No data yet, waiting 2 seconds...")
-        await asyncio.sleep(2)
+# Step 2: Retrieve the transaction
+print("\\nStep 2: Retrieving the transaction...")
+get_result = await db.transactions.retrieve(unique_id)
+print("GET Response:")
+print(json.dumps(get_result, indent=2))
 
-print("Workflow complete!")`,
+print("\\nWorkflow complete!")`,
   },
 ];
 

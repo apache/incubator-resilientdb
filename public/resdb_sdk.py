@@ -3,6 +3,7 @@ import js
 import asyncio
 from typing import Dict, Any, Optional, List
 import time
+from pyodide.http import pyfetch, FetchResponse
 
 RESDB_REST_URL = "https://crow.resilientdb.com"
 
@@ -17,7 +18,7 @@ class TransactionDriver:
     async def check_health(self) -> bool:
         """Check if the endpoint is healthy"""
         try:
-            response = await js.fetch(f"{self.url}/health")
+            response = await pyfetch(f"{self.url}/health")
             return response.status == 200
         except Exception as e:
             js.js_print(f"Health check failed: {str(e)}")
@@ -26,32 +27,30 @@ class TransactionDriver:
     async def send_commit(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Send a transaction to be committed"""
         try:
-            # Keep transaction format extremely simple like working curl
+            # Keep only the essential fields and format
             transaction = {
                 "id": str(data["id"]),
-                "value": str(data["value"])
+                "value": str(data["value"]),
+                "type": "kv"
             }
             
-            # Match curl headers exactly
+            # Simplify headers to just the essential ones
             headers = {
                 "Content-Type": "application/json",
-                "Accept": "text/plain"
+                "Accept": "*/*"
             }
-            
-            # Convert headers to a format js.fetch can understand
-            js_headers = {}
-            for key, value in headers.items():
-                js_headers[key] = value
             
             print(f"\nSending POST to {self.url}/v1/transactions/commit")
             print(f"Headers: {json.dumps(headers, indent=2)}")
             print(f"Body: {json.dumps(transaction, indent=2)}")
             
-            response = await js.fetch(f"{self.url}/v1/transactions/commit", {
-                "method": "POST",
-                "headers": js_headers,
-                "body": json.dumps(transaction)
-            })
+            # Use pyfetch instead of js.fetch
+            response = await pyfetch(
+                f"{self.url}/v1/transactions/commit",
+                method="POST",
+                headers=headers,
+                body=json.dumps(transaction)
+            )
             
             print(f"\nResponse status: {response.status}")
             print(f"Response headers: {dict(response.headers)}")
@@ -69,13 +68,22 @@ class TransactionDriver:
                     "message": "Transaction created successfully"
                 }
             
-            # Handle 200 OK status (server sometimes returns 200 instead of 201)
-            if response.status == 200:
+            # Handle 200 OK status - must have non-empty response to be considered success
+            if response.status == 200 and response_text:
                 return {
                     "status": 200,
                     "success": True,
                     "id": transaction["id"],
                     "message": "Transaction accepted"
+                }
+            
+            # Empty response with 200 status means transaction was not accepted
+            if response.status == 200 and not response_text:
+                return {
+                    "status": 200,
+                    "success": False,
+                    "id": transaction["id"],
+                    "message": "Transaction was not accepted - empty response"
                 }
             
             # Handle other responses
@@ -92,21 +100,20 @@ class TransactionDriver:
     async def retrieve(self, tx_id: str) -> Dict[str, Any]:
         """Retrieve a transaction by tx_id"""
         try:
+            # Match Postman headers exactly
+            headers = {
+                "Accept": "*/*",
+                "Content-Type": "application/json"
+            }
+            
             print(f"\nSending GET to {self.url}/v1/transactions/{tx_id}")
             
-            # Match curl headers for GET - using application/json
-            headers = {
-                "Accept": "application/json"
-            }
-            # Convert headers
-            js_headers = {}
-            for header_key, header_value in headers.items():
-                js_headers[header_key] = header_value
-            
-            response = await js.fetch(f"{self.url}/v1/transactions/{tx_id}", {
-                "method": "GET",
-                "headers": js_headers
-            })
+            # Use pyfetch instead of js.fetch
+            response = await pyfetch(
+                f"{self.url}/v1/transactions/{tx_id}",
+                method="GET",
+                headers=headers
+            )
             
             print(f"Response status: {response.status}")
             print(f"Response headers: {dict(response.headers)}")
@@ -115,32 +122,49 @@ class TransactionDriver:
             print(f"Raw response text: '{response_text}'")
             
             if response.status == 200:
-                if response_text:
+                # Empty response with 200 status means transaction doesn't exist
+                if not response_text:
+                    return {
+                        "status": 404,
+                        "success": False,
+                        "id": tx_id,
+                        "message": "Transaction not found (empty response)"
+                    }
+                
+                try:
+                    # Try to parse as JSON first
+                    return json.loads(response_text)
+                except json.JSONDecodeError:
+                    # If not JSON, try to extract value from response
                     try:
-                        return json.loads(response_text)
+                        # Return the transaction data in a structured format
+                        return {
+                            "status": 200,
+                            "success": True,
+                            "id": tx_id,
+                            "value": response_text.strip(),
+                            "type": "kv"
+                        }
                     except:
                         return {
                             "status": 200,
+                            "success": True,
+                            "id": tx_id,
                             "raw_response": response_text
                         }
-                # Even with empty response, if status is 200, transaction exists
-                return {
-                    "status": 200,
-                    "success": True,
-                    "id": tx_id,
-                    "message": "Transaction exists"
-                }
             elif response.status == 404:
                 return {
                     "status": 404,
+                    "success": False,
                     "message": "Transaction not found"
                 }
             else:
                 return {
                     "status": response.status,
+                    "success": False,
                     "error": response_text or "Unknown error"
                 }
-            
+                
         except Exception as e:
             print(f"Error in retrieve: {str(e)}")
             raise Exception(str(e))
@@ -148,7 +172,7 @@ class TransactionDriver:
     async def get_unspent_outputs(self, public_key: str) -> List[Dict[str, Any]]:
         """Get unspent transaction outputs for a public key"""
         try:
-            response = await js.fetch(f"{self.url}/v1/transactions/unspent/{public_key}")
+            response = await pyfetch(f"{self.url}/v1/transactions/unspent/{public_key}")
             result = await response.json()
             js.js_print(f"Unspent outputs: {json.dumps(result, indent=2)}")
             return result
@@ -252,11 +276,12 @@ class Client:
                 raise ValueError("Transaction must contain 'id' and 'value' fields")
                 
             # Make request exactly like curl
-            response = await js.fetch(f"{self.url}/v1/transactions/commit", {
-                "method": "POST",
-                "headers": js.Object.fromEntries(list(headers.items())),
-                "body": json.dumps(transaction)
-            })
+            response = await pyfetch(
+                f"{self.url}/v1/transactions/commit",
+                method="POST",
+                headers=headers,
+                body=json.dumps(transaction)
+            )
             
             # Handle response
             response_text = await response.text()
@@ -297,12 +322,10 @@ class Client:
                 "Accept": "application/json"
             }
             
-            response = await js.fetch(
+            response = await pyfetch(
                 f"{self.url}/v1/transactions/{transaction_id}",
-                {
-                    "method": "GET",
-                    "headers": js.Object.fromEntries(list(headers.items()))
-                }
+                method="GET",
+                headers=headers
             )
             
             response_text = await response.text()
