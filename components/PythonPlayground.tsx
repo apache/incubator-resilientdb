@@ -22,7 +22,7 @@ const EXAMPLE_TEMPLATES = [
 Welcome to the ResilientDB Python Playground!
 
 This interactive environment allows you to test and experiment with ResilientDB's key-value store 
-using our Python SDK.
+using our Python SDK. The code here matches the patterns used in the official ResilientDB Python SDK.
 
 Instructions:
 1. Use the dropdown menu above to load example code
@@ -44,28 +44,25 @@ Note: Each transaction needs a unique ID. Our examples use timestamps to generat
     code: `"""
 Example: Send a new key-value transaction to ResilientDB
 """
-from resdb_sdk import Resdb
+from resdb_sdk import ResilientDB, Transaction
 import json
 import time
 
 # Initialize ResilientDB client
-db = Resdb('https://crow.resilientdb.com')
+client = ResilientDB('https://crow.resilientdb.com')
 
 # Create unique ID using timestamp
 unique_id = f"test_{int(time.time())}"
 
-# Create transaction data
-transaction = {
-    "id": unique_id,
-    "value": "Hello from Beacon!"
-}
+# Create transaction object
+transaction = Transaction(id=unique_id, value="Hello from ResilientDB!")
 
 print(f"Creating transaction with ID: {unique_id}")
 print("Transaction data:")
-print(json.dumps(transaction, indent=2))
+print(json.dumps(transaction.to_dict(), indent=2))
 
 print("\\nSending transaction...")
-result = await db.transactions.send_commit(transaction)
+result = await client.transactions.create(transaction)
 print("Response:")
 print(json.dumps(result, indent=2))`,
   },
@@ -75,11 +72,11 @@ print(json.dumps(result, indent=2))`,
     code: `"""
 Example: Retrieve a transaction from ResilientDB
 """
-from resdb_sdk import Resdb
+from resdb_sdk import ResilientDB
 import json
 
 # Initialize ResilientDB client
-db = Resdb('https://crow.resilientdb.com')
+client = ResilientDB('https://crow.resilientdb.com')
 
 # Transaction ID to retrieve
 # Replace this with an ID from a previously sent transaction
@@ -88,7 +85,7 @@ tx_id = "test_1234567890"
 print(f"Retrieving transaction with ID: {tx_id}")
 print("\\nSending GET request...")
 
-result = await db.transactions.retrieve(tx_id)
+result = await client.transactions.retrieve(tx_id)
 print("\\nResponse:")
 print(json.dumps(result, indent=2))`,
   },
@@ -98,35 +95,34 @@ print(json.dumps(result, indent=2))`,
     code: `"""
 Example: Complete workflow to send a transaction and then retrieve it
 """
-from resdb_sdk import Resdb
+from resdb_sdk import ResilientDB, Transaction
 import json
 import time
 
 # Initialize ResilientDB client
-db = Resdb('https://crow.resilientdb.com')
+client = ResilientDB('https://crow.resilientdb.com')
 
 # Step 1: Create and send transaction
 print("Step 1: Creating and sending transaction...")
 
 # Generate unique ID using timestamp
 unique_id = f"test_{int(time.time())}"
-transaction = {
-    "id": unique_id,
-    "value": "Hello from Beacon!"
-}
+
+# Create transaction object
+transaction = Transaction(id=unique_id, value="Hello from ResilientDB!")
 
 print(f"Transaction ID: {unique_id}")
 print("Transaction data:")
-print(json.dumps(transaction, indent=2))
+print(json.dumps(transaction.to_dict(), indent=2))
 
 # Send transaction
-send_result = await db.transactions.send_commit(transaction)
+send_result = await client.transactions.create(transaction)
 print("\\nPOST Response:")
 print(json.dumps(send_result, indent=2))
 
 # Step 2: Retrieve the transaction
 print("\\nStep 2: Retrieving the transaction...")
-get_result = await db.transactions.retrieve(unique_id)
+get_result = await client.transactions.retrieve(unique_id)
 print("GET Response:")
 print(json.dumps(get_result, indent=2))
 
