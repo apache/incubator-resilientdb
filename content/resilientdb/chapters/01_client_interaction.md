@@ -216,7 +216,7 @@ sequenceDiagram
     Client-->>-UserApp: Return value ("Hello!")
 ```
 
-The key takeaway is that `KVClient` and `TransactionConstructor` work together to hide the complexities of network communication, consensus ([Consensus Management (ConsensusManager)](03_consensus_management__consensusmanager_.md)), transaction execution ([Transaction Execution (TransactionManager / TransactionExecutor)](05_transaction_execution__transactionmanager___transactionexecutor_.md)), and storage ([Storage Layer (Storage / LevelDB / MemoryDB)](06_storage_layer__storage___leveldb___memorydb_.md)).
+The key takeaway is that `KVClient` and `TransactionConstructor` work together to hide the complexities of network communication, consensus ([Consensus Management (ConsensusManager)](03_consensus_management)), transaction execution ([Transaction Execution (TransactionManager / TransactionExecutor)](05_transaction_execution__transactionmanager)), and storage ([Storage Layer (Storage / LevelDB / MemoryDB)](06_storage_layer)).
 
 ## Making it Easy: Python Example
 
@@ -277,7 +277,7 @@ Now that you understand _how_ to formulate a request and initiate communication 
 
 That's exactly what we'll cover in the next chapter!
 
-**Next:** [Chapter 2: Network Communication (ReplicaCommunicator / ServiceNetwork)](02_network_communication__replicacommunicator___servicenetwork_.md)
+**Next:** [Chapter 2: Network Communication](02_network_communication)
 
 ---
 

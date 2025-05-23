@@ -290,7 +290,7 @@ You've now learned about the Storage Layer, the foundation where ResilientDB kee
 
 Now that we know how data is stored, how does ResilientDB ensure that even if a replica crashes, it can recover its state correctly? How does it periodically save snapshots of its state to avoid replaying the entire transaction history from the beginning? That's where Checkpointing and Recovery come in, the topic of our next chapter!
 
-**Next:** [Chapter 7: Checkpointing & Recovery (CheckPointManager / Recovery)](07_checkpointing___recovery__checkpointmanager___recovery_.md)
+**Next:** [Chapter 7: Checkpointing & Recovery](07_checkpointing.md)
 
 ---
 

@@ -207,7 +207,7 @@ The `ConsensusManager` deals with deciding the _order_. But before consensus can
 
 That's what we'll explore in the next chapter!
 
-**Next:** [Chapter 4: Message/Transaction Collection (TransactionCollector / MessageManager)](04_message_transaction_collection__transactioncollector___messagemanager_.md)
+**Next:** [Chapter 4: Message/Transaction Collection](04_message_transaction_collection.md)
 
 ---
 

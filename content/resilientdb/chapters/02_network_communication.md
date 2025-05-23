@@ -284,7 +284,7 @@ You've now seen the vital communication layer of ResilientDB!
 
 So, the replicas can now send and receive messages reliably. But what exactly are they saying to each other? How do they use these messages to _agree_ on the order of transactions and the state of the database? That's the magic of **consensus**, and it's the topic of our next chapter!
 
-**Next:** [Chapter 3: Consensus Management (ConsensusManager)](03_consensus_management__consensusmanager_.md)
+**Next:** [Chapter 3: Consensus Management](03_consensus_management)
 
 ---
 

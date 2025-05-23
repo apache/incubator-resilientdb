@@ -307,7 +307,7 @@ Now that we understand how transactions are proposed ([Chapter 1](01_client_inte
 
 That's the focus of our next chapter!
 
-**Next:** [Chapter 5: Transaction Execution (TransactionManager / TransactionExecutor)](05_transaction_execution__transactionmanager___transactionexecutor_.md)
+**Next:** [Chapter 5: Transaction Execution](05_transaction_execution.md)
 
 ---
 

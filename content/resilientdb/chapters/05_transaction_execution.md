@@ -279,7 +279,7 @@ You've now seen how ResilientDB takes transactions that have been agreed upon an
 
 The `TransactionManager` implementations like `KVExecutor` rely heavily on an underlying mechanism to actually store and retrieve the data persistently. How does ResilientDB handle saving data to disk or memory reliably? That's the topic of our next chapter, where we'll explore the Storage Layer!
 
-**Next:** [Chapter 6: Storage Layer (Storage / LevelDB / MemoryDB)](06_storage_layer__storage___leveldb___memorydb_.md)
+**Next:** [Chapter 6: Storage Layer](06_storage_layer.md)
 
 ---
 

@@ -433,7 +433,7 @@ Checkpointing and Recovery are essential for the long-term stability and efficie
 
 We've now journeyed through the core components of ResilientDB, from client interaction to storage and recovery. But how do we configure all these components? How do we tell ResilientDB which nodes are part of the network, which consensus algorithm to use, or where to store its data? That's the topic of our final chapter!
 
-**Next:** [Chapter 8: ResilientDB Configuration (ResDBConfig)](08_resilientdb_configuration__resdbconfig_.md)
+**Next:** [Chapter 8: ResilientDB Configuration (ResDBConfig)](08_resilientdb_configuration.md)
 
 ---
 
