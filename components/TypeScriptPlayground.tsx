@@ -1,7 +1,9 @@
 'use client';
 
+/* TODO BUILD THIS OUT */
+
 import { useEffect, useState } from 'react';
-import { python } from '@codemirror/lang-python';
+import { javascript } from '@codemirror/lang-javascript';
 import { IconPlayerPlay, IconTemplate, IconTrash, IconMessage, IconPlayerStop, IconMaximize, IconMinimize } from '@tabler/icons-react';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
@@ -9,13 +11,6 @@ import { Box, Button, Group, Paper, Select, Stack, Text, Tooltip, Textarea, Acti
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-
-declare global {
-  interface Window {
-    loadPyodide: (options: { indexURL: string }) => Promise<any>;
-    pyodide: any;
-  }
-}
 
 interface Template {
   value: string;
@@ -39,28 +34,176 @@ interface CodeProps {
 const EXAMPLE_TEMPLATES = [
   {
     value: 'default',
-    label: 'Instructions',
-    code: `
-      """
-        Instructions
-      """
-    `,
+    label: 'Welcome - Start Here',
+    code: `/**
+ * Welcome to the TypeScript Playground!
+ * 
+ * This interactive environment allows you to test and experiment with TypeScript code.
+ * The code here runs in a sandboxed environment using the TypeScript compiler.
+ * 
+ * Available Features:
+ * 1. TypeScript Type Checking
+ * 2. Code Execution
+ * 3. Error Reporting
+ * 4. AI Assistant Support
+ * 
+ * Choose an example from the dropdown menu above to get started!
+ */
+
+// Example: Basic TypeScript Interface
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  isActive: boolean;
+}
+
+// Example: Function with Type Safety
+function greetUser(user: User): string {
+  return \`Hello, \${user.name}! Your email is \${user.email}\`;
+}
+
+// Example: Using the Interface
+const user: User = {
+  id: 1,
+  name: "John Doe",
+  email: "john@example.com",
+  isActive: true
+};
+
+console.log(greetUser(user));`,
   },
   {
-    value: 'solution',
-    label: 'Solution',
-    code: `
-      """
-        Solution
-      """
-`,
+    value: 'async_await',
+    label: 'Async/Await Example',
+    code: `/**
+ * Example: Using async/await with TypeScript
+ */
+
+// Define types for our API response
+interface Todo {
+  id: number;
+  title: string;
+  completed: boolean;
+}
+
+// Async function to fetch todos
+async function fetchTodos(): Promise<Todo[]> {
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/todos');
+    const data = await response.json();
+    return data as Todo[];
+  } catch (error) {
+    console.error('Error fetching todos:', error);
+    return [];
+  }
+}
+
+// Main function to demonstrate async/await
+async function main() {
+  console.log('Fetching todos...');
+  const todos = await fetchTodos();
+  console.log('First 3 todos:', todos.slice(0, 3));
+}
+
+// Run the example
+main();`,
+  },
+  {
+    value: 'generics',
+    label: 'Generics Example',
+    code: `/**
+ * Example: Using TypeScript Generics
+ */
+
+// Generic function to create an array of a specific type
+function createArray<T>(length: number, value: T): T[] {
+  return Array(length).fill(value);
+}
+
+// Generic class for a simple stack
+class Stack<T> {
+  private items: T[] = [];
+
+  push(item: T): void {
+    this.items.push(item);
+  }
+
+  pop(): T | undefined {
+    return this.items.pop();
+  }
+
+  peek(): T | undefined {
+    return this.items[this.items.length - 1];
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+}
+
+// Example usage
+const numberStack = new Stack<number>();
+numberStack.push(1);
+numberStack.push(2);
+numberStack.push(3);
+
+console.log('Stack operations:');
+console.log('Pop:', numberStack.pop());
+console.log('Peek:', numberStack.peek());
+console.log('Is empty:', numberStack.isEmpty());
+
+// Using the generic array creator
+const stringArray = createArray<string>(3, 'hello');
+console.log('String array:', stringArray);`,
+  },
+  {
+    value: 'decorators',
+    label: 'Decorators Example',
+    code: `/**
+ * Example: Using TypeScript Decorators
+ * Note: Decorators are an experimental feature
+ */
+
+// Simple method decorator
+function log(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = function (...args: any[]) {
+    console.log(\`Calling \${propertyKey} with args:\`, args);
+    const result = originalMethod.apply(this, args);
+    console.log(\`\${propertyKey} returned:\`, result);
+    return result;
+  };
+
+  return descriptor;
+}
+
+// Class using the decorator
+class Calculator {
+  @log
+  add(a: number, b: number): number {
+    return a + b;
+  }
+
+  @log
+  multiply(a: number, b: number): number {
+    return a * b;
+  }
+}
+
+// Example usage
+const calc = new Calculator();
+console.log('Calculator operations:');
+calc.add(5, 3);
+calc.multiply(4, 2);`,
   },
 ];
 
-export function PythonPlayground({ templates }: { templates?: Template[] }) {
+export function TypeScriptPlayground({ templates }: { templates?: Template[] }) {
   const codeTemplates = templates && Array.isArray(templates) ? templates : EXAMPLE_TEMPLATES;
   const [code, setCode] = useState<string>(codeTemplates[0].code);
-  const [output, setOutput] = useState<string[]>(['Initializing Python environment...']);
+  const [output, setOutput] = useState<string[]>(['Initializing TypeScript environment...']);
   const [isLoading, setIsLoading] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -69,6 +212,146 @@ export function PythonPlayground({ templates }: { templates?: Template[] }) {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    // Initialize TypeScript environment
+    const initTypeScript = async () => {
+      try {
+        // Load TypeScript compiler
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/typescript@latest/lib/typescript.js';
+        document.head.appendChild(script);
+
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+
+        setOutput(['✅ TypeScript environment ready']);
+        setIsLoading(false);
+      } catch (error) {
+        setOutput((prev) => [
+          ...prev,
+          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ]);
+        setIsLoading(false);
+      }
+    };
+
+    initTypeScript();
+  }, []);
+
+  const runCode = async () => {
+    if (isLoading || isRunning) {
+      return;
+    }
+    setIsRunning(true);
+    setOutput(['▶ Running code...']);
+
+    try {
+      // Compile TypeScript to JavaScript
+      const jsCode = (window as any).ts.transpile(code, {
+        target: 'ES2020',
+        module: 'ES2020',
+        strict: true,
+        esModuleInterop: true,
+        skipLibCheck: true,
+        forceConsistentCasingInFileNames: true,
+      });
+
+      // Create a sandboxed environment with better console handling
+      const sandbox = `
+        const originalConsole = console;
+        const console = {
+          log: (...args) => {
+            window.parent.postMessage({ type: 'log', args: args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            )}, '*');
+            originalConsole.log(...args);
+          },
+          error: (...args) => {
+            window.parent.postMessage({ type: 'error', args: args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            )}, '*');
+            originalConsole.error(...args);
+          },
+          warn: (...args) => {
+            window.parent.postMessage({ type: 'log', args: args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            )}, '*');
+            originalConsole.warn(...args);
+          },
+          info: (...args) => {
+            window.parent.postMessage({ type: 'log', args: args.map(arg => 
+              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            )}, '*');
+            originalConsole.info(...args);
+          }
+        };
+
+        // Add error handling for uncaught errors
+        window.onerror = (message, source, lineno, colno, error) => {
+          console.error(\`Error: \${message}\nLine: \${lineno}, Column: \${colno}\`);
+          return true;
+        };
+
+        // Add promise rejection handling
+        window.onunhandledrejection = (event) => {
+          console.error(\`Unhandled Promise Rejection: \${event.reason}\`);
+        };
+
+        try {
+          ${jsCode}
+        } catch (error) {
+          console.error(error.message);
+        }
+      `;
+
+      // Create an iframe for sandboxed execution
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      // Handle messages from the sandbox
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data.type === 'log') {
+          setOutput(prev => [...prev, ...event.data.args]);
+        } else if (event.data.type === 'error') {
+          setOutput(prev => [...prev, `❌ Error: ${event.data.args.join(' ')}`]);
+        }
+      };
+
+      window.addEventListener('message', messageHandler);
+
+      // Write the sandboxed code to the iframe
+      if (iframe.contentWindow) {
+        iframe.contentWindow.document.open();
+        iframe.contentWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <script>
+                ${sandbox}
+              </script>
+            </head>
+            <body></body>
+          </html>
+        `);
+        iframe.contentWindow.document.close();
+      }
+
+      // Wait for any pending console output before cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Cleanup
+      window.removeEventListener('message', messageHandler);
+      document.body.removeChild(iframe);
+      setOutput(prev => [...prev, '✅ Code execution completed']);
+      setIsRunning(false);
+    } catch (error: any) {
+      setOutput((prev) => [...prev, `❌ Error: ${error.message}`]);
+      setIsRunning(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +362,6 @@ export function PythonPlayground({ templates }: { templates?: Template[] }) {
     setInput('');
     setIsAiLoading(true);
 
-    // Create new AbortController for this request
     const controller = new AbortController();
     setAbortController(controller);
 
@@ -143,105 +425,6 @@ export function PythonPlayground({ templates }: { templates?: Template[] }) {
     }
   };
 
-  useEffect(() => {
-    const initPython = async () => {
-      try {
-        if (window.pyodide) {
-          setOutput(['✅ Python environment ready']);
-          setIsLoading(false);
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js';
-        document.head.appendChild(script);
-
-        await new Promise((resolve) => {
-          script.onload = resolve;
-        });
-
-        const pyodide = await window.loadPyodide({
-          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
-        });
-
-
-        // Load and register our SDK
-        const sdk = await fetch('/resdb_sdk.py').then((res) => res.text());
-        await pyodide.runPythonAsync(sdk);
-
-        // Register the SDK as a module
-        await pyodide.runPythonAsync(`
-import sys
-import types
-resdb_sdk = types.ModuleType('resdb_sdk')
-resdb_sdk.__dict__.update(globals())
-sys.modules['resdb_sdk'] = resdb_sdk
-        `);
-
-        await pyodide.runPythonAsync(`
-          import sys
-          from io import StringIO
-          sys.stdout = StringIO()
-          sys.stderr = StringIO()
-        `);
-
-        window.pyodide = pyodide;
-        setOutput(['✅ Python environment ready']);
-        setIsLoading(false);
-      } catch (error) {
-        setOutput((prev) => [
-          ...prev,
-          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        ]);
-        setIsLoading(false);
-      }
-    };
-
-    initPython();
-  }, []);
-
-  const runCode = async () => {
-    if (isLoading || isRunning) {
-      return;
-    }
-    setIsRunning(true);
-    setOutput(['▶ Running code...']);
-
-    try {
-      // Wrap code in async function if it uses await
-      const codeToRun = /\bawait\b/.test(code)
-        ? `
-async def __run():
-${code
-  .split('\n')
-  .map((line: string) => `    ${line}`)
-  .join('\n')}
-
-import asyncio
-loop = asyncio.get_event_loop()
-loop.run_until_complete(__run())
-`
-        : code;
-
-      // Run the code and capture output
-      await window.pyodide.runPythonAsync(codeToRun);
-
-      // Get output
-      const stdout = await window.pyodide.runPythonAsync('sys.stdout.getvalue()');
-      if (stdout) {
-        setOutput((prev) => [...prev, stdout]);
-      }
-
-      setOutput((prev) => [...prev, '✅ Code execution completed']);
-    } catch (error: any) {
-      setOutput((prev) => [...prev, `❌ Error: ${error.message}`]);
-    } finally {
-      // Clear buffers
-      await window.pyodide.runPythonAsync('sys.stdout.truncate(0)\nsys.stdout.seek(0)');
-      setIsRunning(false);
-    }
-  };
-
   const clearOutput = () => setOutput([]);
 
   const clearConversation = () => {
@@ -281,7 +464,7 @@ loop.run_until_complete(__run())
             value={code}
             height="400px"
             theme={vscodeDark}
-            extensions={[python()]}
+            extensions={[javascript({ typescript: true })]}
             onChange={setCode}
             editable={!isLoading}
             basicSetup={{
@@ -557,4 +740,4 @@ loop.run_until_complete(__run())
       </Stack>
     </Paper>
   );
-}
+} 

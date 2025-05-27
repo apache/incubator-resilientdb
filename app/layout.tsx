@@ -13,6 +13,7 @@ import { getPageMap } from 'nextra/page-map';
 import { theme } from '../theme';
 
 import './global.css';
+import { FloatingAssistant } from '@/components/FloatingAssistant';
 
 export const metadata = {
   title: {
@@ -63,7 +64,7 @@ export default async function RootLayout({ children }: { children: any }) {
     <html lang="en" dir="ltr" {...mantineHtmlProps}>
       <Head>
         <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-        <link rel="shortcut icon" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/lighthouse.png" />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
@@ -85,6 +86,7 @@ export default async function RootLayout({ children }: { children: any }) {
           >
             {children}
           </Layout>
+          <FloatingAssistant />
         </MantineProvider>
       </body>
     </html>

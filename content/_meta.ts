@@ -14,9 +14,6 @@ export default {
   },
   resilientdb_graphql: {
     title: 'Resilient DB GraphQL',
-    theme: {
-      sidebar: false
-    }
   },
   '###': {
     type: 'separator',
@@ -24,12 +21,5 @@ export default {
   },
   pythonsdk: {
     title: 'Python SDK',
-  },
-  'release-notes': {
-    title: 'Release Notes',
-    theme: {
-      toc: false,
-      layout: 'full',
-    },
   },
 };

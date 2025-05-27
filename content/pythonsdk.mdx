@@ -1,4 +1,5 @@
 import { PythonPlayground } from '@/components/PythonPlayground'
+import { PYTHON_SDK_EXAMPLE_TEMPLATES } from '@/app/lib/constants'
 
 # Python SDK
 
@@ -34,7 +35,7 @@ print(f"Transaction ID: {response['id']}")
 
 Try out Python code directly in your browser! The playground below lets you experiment with Python code and see the results in real-time.
 
-<PythonPlayground />
+<PythonPlayground templates={PYTHON_SDK_EXAMPLE_TEMPLATES} />
 
 ### Available API Endpoints
 
