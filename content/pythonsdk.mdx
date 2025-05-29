@@ -1,5 +1,7 @@
 import { PythonPlayground } from '@/components/PythonPlayground'
 import { PYTHON_SDK_EXAMPLE_TEMPLATES } from '@/app/lib/constants'
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space } from '@mantine/core'
 
 # Python SDK
 
@@ -56,3 +58,17 @@ The ResilientDB Python SDK provides the following operations:
 ## Documentation
 
 For detailed documentation and examples, visit our [Python SDK Documentation](https://docs.resilientdb.com/python-sdk).
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="Python SDK Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-python-sdk"
+    labels={['user-feedback', 'documentation', 'python-sdk']}
+    title="Questions or Feedback about the Python SDK?"
+  />
+</Box>

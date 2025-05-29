@@ -14,6 +14,7 @@ import { theme } from '../theme';
 
 import './global.css';
 import { FloatingAssistant } from '@/components/FloatingAssistant';
+import { Providers } from './providers';
 
 export const metadata = {
   title: {
@@ -71,23 +72,25 @@ export default async function RootLayout({ children }: { children: any }) {
         />
       </Head>
       <body>
-        <MantineProvider theme={theme} defaultColorScheme="auto">
-          <Layout
-            banner={
-              <Banner storageKey="mantine-nextjs-nextra">
-                ✨ AI powered documentation for ResilientDB Ecosystem and Apps
-              </Banner>
-            }
-            navbar={<MantineNavBar />}
-            pageMap={pageMap}
-            docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
-            footer={<MantineFooter />}
-            sidebar={{ defaultMenuCollapseLevel: 1 }}
-          >
-            {children}
-          </Layout>
-          <FloatingAssistant />
-        </MantineProvider>
+        <Providers>
+          <MantineProvider theme={theme} defaultColorScheme="auto">
+            <Layout
+              banner={
+                <Banner storageKey="mantine-nextjs-nextra">
+                  ✨ AI powered documentation for ResilientDB Ecosystem and Apps
+                </Banner>
+              }
+              navbar={<MantineNavBar />}
+              pageMap={pageMap}
+              docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
+              footer={<MantineFooter />}
+              sidebar={{ defaultMenuCollapseLevel: 1 }}
+            >
+              {children}
+            </Layout>
+            <FloatingAssistant />
+          </MantineProvider>
+        </Providers>
       </body>
     </html>
   );
