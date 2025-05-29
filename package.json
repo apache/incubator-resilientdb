@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build && yarn build:pagefind",
+    "build": "next build && npm run build:pagefind",
     "build:pagefind": "pagefind --site .next/server/app --output-path public/_pagefind",
     "analyze": "ANALYZE=true next build",
     "start": "next start",
