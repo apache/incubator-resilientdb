@@ -151,27 +151,33 @@ client = ResilientDB()
 
 # Example templates
 EXAMPLE_TEMPLATES = {
-    "create_transaction": """
-# Create and send a simple transaction (without metadata)
+    "create_transaction": '''"""
+Example: Create and send a simple transaction (without metadata)
+"""
 from resdb_sdk import ResilientDB, Transaction
+import json
 import time
 
-# Initialize client
+# Initialize ResilientDB client
 client = ResilientDB('https://crow.resilientdb.com')
 
-# Create unique transaction ID
-tx_id = f"test_{int(time.time())}"
+# Create unique ID using timestamp
+unique_id = f"test_{int(time.time())}"
 
-# Create transaction object (without metadata)
+# Create transaction (without metadata)
 transaction = Transaction(
-    id=tx_id,
+    id=unique_id,
     value="Hello from ResilientDB!"
 )
 
-# Send transaction
+print(f"Creating transaction with ID: {unique_id}")
+print("Transaction data:")
+print(json.dumps(transaction.to_dict(), indent=2))
+
+print("\\nSending transaction...")
 result = await client.transactions.create(transaction)
-print(f"Transaction result: {result}")
-""",
+print("Response:")
+print(json.dumps(result, indent=2))''',
 
     "create_transaction_with_metadata": """
 # Create and send a transaction with metadata

@@ -1661,17 +1661,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/view@npm:^6.37.0":
-  version: 6.37.0
-  resolution: "@codemirror/view@npm:6.37.0"
-  dependencies:
-    "@codemirror/state": "npm:^6.5.0"
-    style-mod: "npm:^4.1.0"
-    w3c-keyname: "npm:^2.2.4"
-  checksum: 10c0/e202a2adbe5cc3bd8d65cdac2ec3905710b1a0d34856b9ada824229e3998fea13cb32326997537b60cd2d2ef68c66f50ce6f4affaeca89fa785ad3f023a43014
-  languageName: node
-  linkType: hard
-
 "@csstools/css-parser-algorithms@npm:^3.0.4":
   version: 3.0.4
   resolution: "@csstools/css-parser-algorithms@npm:3.0.4"
@@ -11861,7 +11850,6 @@ __metadata:
     "@babel/core": "npm:^7.27.1"
     "@codemirror/lang-javascript": "npm:^6.2.4"
     "@codemirror/lang-python": "npm:^6.2.1"
-    "@codemirror/view": "npm:^6.37.0"
     "@eslint/js": "npm:^9.26.0"
     "@gfazioli/mantine-marquee": "npm:^2.2.7"
     "@gfazioli/mantine-text-animate": "npm:^1.0.3"
