@@ -1,45 +1,53 @@
-'use client';
-
 import { Button, Container, Paper, Stack, Text, Title } from '@mantine/core';
 import { IconBrandGithub } from '@tabler/icons-react';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
+import { AuthProviders } from '@/components/AuthProviders';
 
-export default function SignIn() {
+function SignInContent() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
-  const error = searchParams.get('error');
+  const callbackUrl = searchParams?.get('callbackUrl') || '/';
+  const error = searchParams?.get('error');
 
   const handleGitHubSignIn = () => {
-    signIn('github', { 
-      callbackUrl: callbackUrl,
-      redirect: true,
-    });
+    signIn('github', { callbackUrl });
   };
 
   return (
-    <Container size="xs" py="xl">
+    <Container size="xs" mt={40}>
       <Paper radius="md" p="xl" withBorder>
-        <Stack gap="md">
-          <Title order={2}>Sign in to Comment</Title>
-          <Text c="dimmed" size="sm" ta="center">
-            Sign in with GitHub to leave comments and create issues
+        <Title order={2} ta="center" mt="md" mb={50}>
+          Welcome to ResilientDB Documentation
+        </Title>
+
+        {error && (
+          <Text c="red" size="sm" mb="md" ta="center">
+            {error === 'OAuthSignin' ? 'An error occurred during sign in.' : error}
           </Text>
-          {error && (
-            <Text c="red" size="sm" ta="center">
-              There was an error signing in. Please try again.
-            </Text>
-          )}
-          <Button
-            onClick={handleGitHubSignIn}
-            leftSection={<IconBrandGithub size={16} />}
-            variant="default"
-            fullWidth
-          >
-            Continue with GitHub
-          </Button>
-        </Stack>
+        )}
+
+        <Button
+          leftSection={<IconBrandGithub size={20} />}
+          variant="default"
+          color="gray"
+          fullWidth
+          onClick={handleGitHubSignIn}
+        >
+          Continue with GitHub
+        </Button>
+
+        <Text c="dimmed" size="xs" ta="center" mt={20}>
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </Text>
       </Paper>
     </Container>
+  );
+}
+
+export default function SignIn() {
+  return (
+    <AuthProviders>
+      <SignInContent />
+    </AuthProviders>
   );
 } 
