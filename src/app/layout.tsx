@@ -11,7 +11,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className=" p-0 dark bg-background text-white font-sans overflow-x-hidden">
+      <body className="p-0 dark bg-background text-white font-sans overflow-x-hidden">
         <MainNavBar />
         
         <main className="px-4 w-full">

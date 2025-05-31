@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatedAIChat } from "@/components/ui/animated-ai-chat";
+import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useEffect, useRef, useState } from "react";
 
 interface SourceNode {
@@ -174,7 +175,11 @@ export default function Home() {
                       ? "bg-muted text-white rounded-br-none"
                       : " text-gray-200 rounded-bl-none"}`}
                 >
-                  <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                  {msg.sender === "ai" ? (
+                    <MarkdownRenderer content={msg.content} />
+                  ) : (
+                    <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                  )}
                   {msg.isStreaming && msg.sender === "ai" && (
                     <span className="inline-block w-1.5 h-1.5 ml-1 bg-gray-400 rounded-full animate-pulse"></span>
                   )}
@@ -231,9 +236,7 @@ export default function Home() {
             {selectedSource.score !== undefined && (
                 <p className="text-sm text-gray-400 mb-3">Score: {selectedSource.score.toFixed(4)}</p>
             )}
-            <div className="whitespace-pre-wrap break-words text-sm">
-              {selectedSource.text}
-            </div>
+            <MarkdownRenderer content={selectedSource.text} className="text-sm" />
           </div>
         </div>
       )}

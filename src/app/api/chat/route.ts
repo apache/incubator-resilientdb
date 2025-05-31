@@ -1,22 +1,20 @@
-import { DeepSeekLLM } from "@llamaindex/deepseek"; // Import DeepSeekLLM and its model type
-import {
-    ContextChatEngine,
-    LlamaCloudRetriever, // Added import
-    MetadataMode,
-    NodeWithScore,
-    // OpenAI, // No longer using OpenAI directly here for Settings.llm
-    Settings,
-} from "llamaindex";
 import { NextRequest, NextResponse } from "next/server";
+import { chatEngineService } from "../../../services/chatEngineService";
 
-// Configure the LLM
-const deepSeekModel = (process.env.MODEL || "deepseek-chat") as "deepseek-chat" | "deepseek-coder" | undefined;
+// Initialize the chat engine service on first import
+let isServiceInitialized = false;
 
-Settings.llm = new DeepSeekLLM({
-    apiKey: process.env.DEEPSEEK_API_KEY || "",
-    model: deepSeekModel,
-});
-
+async function ensureServiceInitialized() {
+    if (!isServiceInitialized) {
+        try {
+            await chatEngineService.initialize();
+            isServiceInitialized = true;
+        } catch (error) {
+            console.error("Failed to initialize chat engine service:", error);
+            throw error;
+        }
+    }
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -26,79 +24,29 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Query is required" }, { status: 400 });
         }
 
-        if (!process.env.LLAMA_CLOUD_API_KEY) {
+        // Ensure the service is initialized
+        await ensureServiceInitialized();
+
+        // Check service status
+        const status = chatEngineService.getStatus();
+        if (!status.isInitialized) {
             return NextResponse.json(
-                { error: "LlamaCloud API key not configured" },
+                { error: "Chat engine service is not initialized", details: status.error },
                 { status: 500 }
             );
         }
 
-        if (!process.env.LLAMA_CLOUD_PROJECT_NAME) {
-            return NextResponse.json(
-                { error: "LlamaCloud project name not configured" },
-                { status: 500 }
-            );
-        }
+        // Send message with streaming support
+        const chatResponse = await chatEngineService.sendMessageWithStream(query);
 
-        const retrieverOptions: any = {
-            projectName: process.env.LLAMA_CLOUD_PROJECT_NAME as string,
-            apiKey: process.env.LLAMA_CLOUD_API_KEY as string,
-        };
-
-        if (process.env.LLAMA_CLOUD_INDEX_NAME) {
-            retrieverOptions.name = process.env.LLAMA_CLOUD_INDEX_NAME;
-        } else {
-
-            console.log("LLAMA_CLOUD_PIPELINE_NAME not set, attempting to use default pipeline or indexName if provided.");
-        }
-
-        // Initialize the retriever that will be used by the chat engine
-        const retriever = new LlamaCloudRetriever(retrieverOptions);
-
-        const chatEngine = new ContextChatEngine({
-            retriever,
-            systemPrompt: "Your name is Abdel.",
-        });
-
-        // 1. Retrieve source nodes using the same retriever instance
-        const nodesWithScore: NodeWithScore[] = await retriever.retrieve(query);
-        const sourceNodesData = nodesWithScore
-            .filter((n) => n.score && n.score > 0.5) // Filter nodes by score
-            .map((n) => ({
-                id: n.node.id_,
-                text: n.node.getContent(MetadataMode.NONE), // Send full text
-                score: n.score,
-            }));
-
-        // 2. Stream the chat response
-        const chatStream = await chatEngine.chat({
-            message: query,
-            stream: true,
-        });
-
-        const readableStream = new ReadableStream({
-            async start(controller) {
-                // Stream text chunks
-                for await (const chunk of chatStream) {
-                    controller.enqueue(chunk.response);
-                }
-                // After text stream, enqueue the source nodes marker and then the JSON
-                if (sourceNodesData.length > 0) {
-                    controller.enqueue("\n\n__SOURCE_NODES_SEPARATOR__\n\n");
-                    controller.enqueue(JSON.stringify(sourceNodesData));
-                }
-                controller.close();
-            },
-        });
-
-        return new Response(readableStream, {
+        return new Response(chatResponse.stream, {
             headers: {
                 "Content-Type": "text/plain; charset=utf-8",
             },
         });
 
     } catch (error) {
-        console.error("[LlamaIndex API Error]", error);
+        console.error("[Chat Engine Service Error]", error);
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
         return NextResponse.json(
             { error: "Error processing your request", details: errorMessage },
@@ -107,7 +55,20 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// Optional: Add a GET handler or other methods if needed
+// Optional: Add a GET handler to check service status
 export async function GET() {
-    return NextResponse.json({ message: "LlamaIndex RAG API is running with DeepSeek and sources" });
+    try {
+        await ensureServiceInitialized();
+        const status = chatEngineService.getStatus();
+        return NextResponse.json({
+            message: "Chat Engine Service with DeepSeek and LlamaCloud is running",
+            status: status
+        });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Service initialization failed";
+        return NextResponse.json(
+            { error: "Service not available", details: errorMessage },
+            { status: 500 }
+        );
+    }
 } 
