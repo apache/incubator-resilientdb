@@ -17,10 +17,6 @@ export default function RootLayout({
         <main className="px-4 w-full">
           {children}
         </main>
-        
-        {/* <footer className="text-center p-0 text-xs text-gray-500 mt-auto">
-          <p>© 2025 ResAI</p>
-        </footer> */}
       </body>
     </html>
   );

@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 const deepSeekModel = (process.env.MODEL || "deepseek-chat") as "deepseek-chat" | "deepseek-coder" | undefined;
 
 Settings.llm = new DeepSeekLLM({
-    apiKey: process.env.DEEPSEEK_API_KEY || "YOUR_FALLBACK_DEEPSEEK_API_KEY",
+    apiKey: process.env.DEEPSEEK_API_KEY || "",
     model: deepSeekModel,
 });
 
