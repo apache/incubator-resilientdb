@@ -34,11 +34,14 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           p: ({ children }) => (
             <p className="mb-3 text-gray-200 leading-relaxed">{children}</p>
           ),
+          hr: ({ children }) => (
+            <hr className="my-4" />
+          ),
           ul: ({ children }) => (
             <ul className="list-disc list-inside mb-3 text-gray-200 space-y-1">{children}</ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal list-inside mb-3 text-gray-200 space-y-1">{children}</ol>
+            <ol className="list-decimal mb-3 ml-6 text-gray-200 space-y-1">{children}</ol>
           ),
           li: ({ children }) => (
             <li className="text-gray-200">{children}</li>
@@ -49,23 +52,20 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             </blockquote>
           ),
           code: ({ inline, className, children, ...props }: any) => {
-            const match = /language-(\w+)/.exec(className || '');
-            return !inline ? (
-              <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto mb-3">
-                <code className={className} {...props}>
-                  {children}
-                </code>
-              </pre>
-            ) : (
+            return inline ? (
               <code className="bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200" {...props}>
+                {children}
+              </code>
+            ) : (
+              <code className={className} {...props}>
                 {children}
               </code>
             );
           },
           pre: ({ children }) => (
-            <div className="bg-gray-800 rounded-lg p-4 overflow-x-auto mb-3">
+            <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto mb-3 text-gray-200">
               {children}
-            </div>
+            </pre>
           ),
           a: ({ href, children }) => (
             <a 

@@ -130,6 +130,7 @@ class ChatEngineService {
                 const nodesWithScore: NodeWithScore[] = await this.retriever.retrieve(message);
                 sourceNodes = nodesWithScore
                     .filter((n) => n.score && n.score > 0.59) // Filter nodes by score
+                    .slice(0, 3) // Limit to maximum 3 sources
                     .map((n) => ({
                         id: n.node.id_,
                         text: n.node.getContent(MetadataMode.NONE), // Send full text
