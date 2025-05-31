@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatedAIChat } from "@/components/ui/animated-ai-chat";
+import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { useEffect, useRef, useState } from "react";
 
@@ -176,11 +177,17 @@ export default function Home() {
                       : " text-gray-200 rounded-bl-none"}`}
                 >
                   {msg.sender === "ai" ? (
-                    <MarkdownRenderer content={msg.content} />
+                    <>
+                      {msg.content ? (
+                        <MarkdownRenderer content={msg.content} />
+                      ) : msg.isStreaming ? (
+                        <Loader variant="loading-dots" text="Thinking" size="sm" className="text-gray-300" />
+                      ) : null}
+                    </>
                   ) : (
                     <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                   )}
-                  {msg.isStreaming && msg.sender === "ai" && (
+                  {msg.isStreaming && msg.sender === "ai" && msg.content && (
                     <span className="inline-block w-1.5 h-1.5 ml-1 bg-gray-400 rounded-full animate-pulse"></span>
                   )}
                   {/* Display Source Nodes */}
