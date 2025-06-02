@@ -37,12 +37,14 @@ export function MainNavBar({ className }: MainNavBarProps) {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
+  const isPlaceholder = pathname === "/placeholder"
   return (
     <div
       className={cn(
-        "fixed top-0 left-0 w-full z-50 py-4 px-4",
+        "fixed top-0 left-0 w-full py-4 px-4 z-50",
         className,
       )}
+      hidden={isPlaceholder}
     >
         {/* <div className="flex gap-3">
             <Image src="/resdb-logo.svg" alt="ResDB Logo" width={100} height={100} />
