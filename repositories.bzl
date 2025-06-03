@@ -7,9 +7,9 @@ def nexres_repositories():
     maybe(
         http_archive,
         name = "eEVM",
-        strip_prefix = "eEVM-118a9355d023748318a318bc07fc79063f015a94",
-        sha256 = "e86568aec425405fd8a48bbe487edeae4c0641be23b19411288e3b736018e1b6",
-        url = "https://github.com/microsoft/eEVM/archive/118a9355d023748318a318bc07fc79063f015a94.tar.gz",
+        strip_prefix = "eEVM-05efed8658b4e10a21253df8408b1f9bdb6f1445",
+        sha256 = "95652edde062b9be7a66cfc1ba32f3f8f08855539aac007492727dc2d9f36f7d",
+        url = "https://github.com/microsoft/eEVM/archive/05efed8658b4e10a21253df8408b1f9bdb6f1445.tar.gz",
         build_file = "@com_resdb_nexres//third_party:eEVM.BUILD",
     )
     maybe(

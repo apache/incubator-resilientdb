@@ -43,7 +43,7 @@ bool AddressManager::Exist(const Address& address) {
 }
 
 Address AddressManager::CreateContractAddress(const Address& owner) {
-  return eevm::generate_address(owner, 0u);
+  return eevm::generate_address(owner, rand());
 }
 
 std::string AddressManager::AddressToHex(const Address& address) {
