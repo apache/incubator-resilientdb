@@ -1,8 +1,8 @@
 export const PYTHON_SDK_EXAMPLE_TEMPLATES = [
-    {
-      value: 'default',
-      label: 'Welcome - Start Here',
-      code: `"""
+  {
+    value: 'default',
+    label: 'Welcome - Start Here',
+    code: `"""
 Welcome to the ResilientDB Python Playground!
 
 This interactive environment allows you to test and experiment with ResilientDB's key-value store 
@@ -18,11 +18,11 @@ Choose an example from the dropdown menu above to get started!
 
 Note: Each transaction needs a unique ID. Our examples use timestamps to ensure uniqueness.
 """`,
-    },
-    {
-      value: 'send_transaction',
-      label: 'Send Simple Transaction',
-      code: `"""
+  },
+  {
+    value: 'send_transaction',
+    label: 'Send Simple Transaction',
+    code: `"""
 Example: Create and send a simple transaction (without metadata)
 """
 from resdb_sdk import ResilientDB, Transaction
@@ -49,11 +49,11 @@ print("\\nSending transaction...")
 result = await client.transactions.create(transaction)
 print("Response:")
 print(json.dumps(result, indent=2))`,
-    },
-    {
-      value: 'send_transaction_with_metadata',
-      label: 'Send Transaction with Metadata',
-      code: `"""
+  },
+  {
+    value: 'send_transaction_with_metadata',
+    label: 'Send Transaction with Metadata',
+    code: `"""
 Example: Create and send a transaction with metadata
 """
 from resdb_sdk import ResilientDB, Transaction, TransactionMetadata
@@ -88,11 +88,11 @@ print("\\nSending transaction...")
 result = await client.transactions.create(transaction)
 print("Response:")
 print(json.dumps(result, indent=2))`,
-    },
-    {
-      value: 'get_transaction',
-      label: 'Get Transaction',
-      code: `"""
+  },
+  {
+    value: 'get_transaction',
+    label: 'Get Transaction',
+    code: `"""
 Example: Retrieve a transaction from ResilientDB
 """
 from resdb_sdk import ResilientDB
@@ -110,11 +110,11 @@ print("\\nSending GET request...")
 result = await client.transactions.retrieve(tx_id)
 print("\\nResponse:")
 print(json.dumps(result, indent=2))`,
-    },
-    {
-      value: 'complete_workflow',
-      label: 'Complete Workflow',
-      code: `"""
+  },
+  {
+    value: 'complete_workflow',
+    label: 'Complete Workflow',
+    code: `"""
 Example: Complete workflow demonstrating transaction creation and retrieval
 """
 from resdb_sdk import ResilientDB, Transaction, TransactionMetadata
@@ -160,15 +160,14 @@ print("GET Response:")
 print(json.dumps(get_result, indent=2))
 
 print("\\nWorkflow complete!")`,
-    },
-  ];
-
+  },
+];
 
 export const RESILIENTDB_GRAPHQL_EXAMPLE_TEMPLATES = [
-    {
-        value: 'rest_api_examples',
-        label: 'Rest API Examples',
-        code: `
+  {
+    value: 'rest_api_examples',
+    label: 'Rest API Examples',
+    code: `
 from pyodide.http import pyfetch
 import json
 
@@ -206,11 +205,11 @@ async def main():
 # Run the example
 await main()
 `,
-    },
-    {
-        value: 'graphql_query_example',
-        label: 'Get Transaction (Query)',
-        code: `
+  },
+  {
+    value: 'graphql_query_example',
+    label: 'Get Transaction (Query)',
+    code: `
 from pyodide.http import pyfetch
 import json
 
@@ -261,11 +260,11 @@ async def get_transaction():
 # Run the example
 await get_transaction()
 `,
-    },
-    {
-        value: 'graphql_mutation_example',
-        label: 'Create Transaction (Mutation)',
-        code: `
+  },
+  {
+    value: 'graphql_mutation_example',
+    label: 'Create Transaction (Mutation)',
+    code: `
 from pyodide.http import pyfetch
 import json
 
@@ -328,5 +327,5 @@ async def create_transaction():
 # Run the example
 await create_transaction()
 `,
-    }
-]
+  },
+];

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, Textarea, Paper, Text, Stack, Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
+import { Alert, Button, Paper, Stack, Text, Textarea } from '@mantine/core';
 import { GitHubAuth } from './GitHubAuth';
 
 interface GitHubUser {
@@ -20,13 +20,13 @@ interface CommentSectionProps {
   title?: string;
 }
 
-export function CommentSection({ 
-  pageTitle, 
-  pageUrl, 
-  repoOwner, 
-  repoName, 
+export function CommentSection({
+  pageTitle,
+  pageUrl,
+  repoOwner,
+  repoName,
   labels = ['user-feedback', 'documentation'],
-  title = 'Leave a Comment'
+  title = 'Leave a Comment',
 }: CommentSectionProps) {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +43,7 @@ export function CommentSection({
     try {
       setIsSubmitting(true);
       setError(null);
-      
+
       const response = await fetch('/api/create-github-issue', {
         method: 'POST',
         headers: {
@@ -66,7 +66,9 @@ export function CommentSection({
       setSuccess(true);
       setComment('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit comment. Please try again later.');
+      setError(
+        err instanceof Error ? err.message : 'Failed to submit comment. Please try again later.'
+      );
       console.error('Error creating GitHub issue:', err);
     } finally {
       setIsSubmitting(false);
@@ -101,11 +103,7 @@ export function CommentSection({
                 Thank you for your feedback! We've created an issue and our team will review it.
               </Alert>
             )}
-            <Button
-              onClick={handleSubmit}
-              loading={isSubmitting}
-              disabled={!comment.trim()}
-            >
+            <Button onClick={handleSubmit} loading={isSubmitting} disabled={!comment.trim()}>
               Submit Comment
             </Button>
           </>
@@ -113,4 +111,4 @@ export function CommentSection({
       </Stack>
     </Paper>
   );
-} 
+}

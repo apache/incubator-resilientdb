@@ -13,6 +13,7 @@ import { getPageMap } from 'nextra/page-map';
 import { theme } from '../theme';
 
 import './global.css';
+
 import { FloatingAssistant } from '@/components/FloatingAssistant';
 import { Providers } from './providers';
 

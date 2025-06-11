@@ -4,3 +4,5 @@ export { MantineFooter } from './MantineFooter/MantineFooter';
 export { MantineNavBar } from './MantineNavBar/MantineNavBar';
 export { MantineNextraThemeObserver } from './MantineNextraThemeObserver/MantineNextraThemeObserver';
 export { SearchBar } from './SearchBar/SearchBar';
+export { MongoQueryBuilder } from './MongoQueryBuilder';
+export { ConfigGenerator } from './ConfigGenerator';

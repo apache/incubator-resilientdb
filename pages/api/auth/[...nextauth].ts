@@ -1,6 +1,5 @@
-import NextAuth from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import GithubProvider from 'next-auth/providers/github';
-import { NextAuthOptions } from 'next-auth';
 
 // Extend the Session type to include accessToken
 declare module 'next-auth' {
@@ -48,9 +47,10 @@ export const authOptions: NextAuthOptions = {
   // Additional production security settings
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' 
-        ? '__Secure-next-auth.session-token' 
-        : 'next-auth.session-token',
+      name:
+        process.env.NODE_ENV === 'production'
+          ? '__Secure-next-auth.session-token'
+          : 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -61,4 +61,4 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export default NextAuth(authOptions); 
+export default NextAuth(authOptions);

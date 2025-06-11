@@ -1,7 +1,7 @@
-import { Button, Container, Paper, Stack, Text, Title } from '@mantine/core';
+import { useSearchParams } from 'next/navigation';
 import { IconBrandGithub } from '@tabler/icons-react';
 import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
+import { Button, Container, Paper, Stack, Text, Title } from '@mantine/core';
 import { AuthProviders } from '@/components/AuthProviders';
 
 function SignInContent() {
@@ -50,4 +50,4 @@ export default function SignIn() {
       <SignInContent />
     </AuthProviders>
   );
-} 
+}

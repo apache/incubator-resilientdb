@@ -1,13 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
 import { Octokit } from '@octokit/rest';
+import { getServerSession } from 'next-auth';
 import { authOptions } from './auth/[...nextauth]';
 
 // Rate limiting map (in production you'd want to use Redis or similar)
 const requestMap = new Map<string, { count: number; timestamp: number }>();
 
 const RATE_LIMIT = {
-  MAX_REQUESTS: process.env.NODE_ENV === 'production' ? 5 : 50,  // Stricter in production
+  MAX_REQUESTS: process.env.NODE_ENV === 'production' ? 5 : 50, // Stricter in production
   WINDOW_MS: process.env.NODE_ENV === 'production' ? 60000 : 300000, // 1 minute in prod, 5 in dev
 };
 
@@ -47,16 +47,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Rate limiting check
-    const userIdentifier = session.user?.email || 
-      (Array.isArray(req.headers['x-forwarded-for']) 
-        ? req.headers['x-forwarded-for'][0] 
-        : req.headers['x-forwarded-for']) || 
+    const userIdentifier =
+      session.user?.email ||
+      (Array.isArray(req.headers['x-forwarded-for'])
+        ? req.headers['x-forwarded-for'][0]
+        : req.headers['x-forwarded-for']) ||
       'anonymous';
-    
+
     if (isRateLimited(userIdentifier)) {
-      return res.status(429).json({ 
+      return res.status(429).json({
         error: 'Too many requests. Please try again later.',
-        retryAfter: RATE_LIMIT.WINDOW_MS / 1000
+        retryAfter: RATE_LIMIT.WINDOW_MS / 1000,
       });
     }
 
@@ -65,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Validate required fields
     if (!title || !body || !repoOwner || !repoName) {
       return res.status(400).json({
-        error: 'Title, body, repository owner, and repository name are required'
+        error: 'Title, body, repository owner, and repository name are required',
       });
     }
 
@@ -108,4 +109,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Error processing request:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-} 
+}

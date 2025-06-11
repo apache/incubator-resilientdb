@@ -22,4 +22,7 @@ export default {
   pythonsdk: {
     title: 'Python SDK',
   },
+  python_cache: {
+    title: 'Python Cache',
+  },
 };

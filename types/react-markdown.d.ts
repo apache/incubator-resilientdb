@@ -10,4 +10,4 @@ declare module 'react-markdown' {
 
   const ReactMarkdown: ComponentType<ReactMarkdownProps>;
   export default ReactMarkdown;
-} 
+}
