@@ -1,8 +1,8 @@
 import { CommentSection } from '@/components/CommentSection'
 import { Divider, Box, Space, Tabs, TabsList, TabsTab, TabsPanel, Code, Alert } from '@mantine/core'
 import { IconInfoCircle } from '@tabler/icons-react'
-import { MongoQueryBuilder } from '../components/MongoQueryBuilder'
-import { ConfigGenerator } from '../components/ConfigGenerator'
+import { PythonConfigGenerator } from '../components/cache/PythonConfigGenerator'
+import { PythonQueryBuilder } from '../components/cache/PythonQueryBuilder'
 
 # ResilientDB Python Cache
 
@@ -21,7 +21,7 @@ ResilientDB Python Cache is a library that provides real-time synchronization be
       <Alert icon={<IconInfoCircle size={16} />} title="Interactive Configuration" color="blue">
         Use this tool to generate your Python Cache configuration code. Adjust the parameters below and copy the generated code.
       </Alert>
-      <ConfigGenerator />
+      <PythonConfigGenerator />
     </Box>
   </TabsPanel>
 
@@ -30,7 +30,7 @@ ResilientDB Python Cache is a library that provides real-time synchronization be
       <Alert icon={<IconInfoCircle size={16} />} title="MongoDB Query Builder" color="blue">
         Build and test MongoDB queries for your cached blockchain data. The results will show sample data structure.
       </Alert>
-      <MongoQueryBuilder />
+      <PythonQueryBuilder />
     </Box>
   </TabsPanel>
 </Tabs>
@@ -262,6 +262,12 @@ async def get_blocks_by_time(mongo_client, start_time, end_time):
     }).to_list(length=None)
     return results
 ```
+
+## MongoDB Query Builder
+
+The Python Cache provides a MongoDB query builder to help you construct queries for your data. Here's how to use it:
+
+<PythonQueryBuilder />
 
 <Space h="xl" />
 <Divider my="xl" label="Community Feedback" labelPosition="center" />

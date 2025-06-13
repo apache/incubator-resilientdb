@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, TextInput, Switch, NumberInput, Code, Paper } from '@mantine/core';
 
-export function ConfigGenerator() {
+export function PythonConfigGenerator() {
   const [config, setConfig] = useState({
     mongoUri: 'mongodb://localhost:27017',
     dbName: 'resilientdb_cache',
@@ -133,4 +133,4 @@ cache = ResilientPythonCache(mongo_config, resilient_db_config)`;
       </Paper>
     </Box>
   );
-}
+} 

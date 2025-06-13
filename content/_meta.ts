@@ -20,9 +20,12 @@ export default {
     title: 'Apps', // Title is optional
   },
   pythonsdk: {
-    title: 'Python SDK',
+    title: 'ResilientDB Python SDK',
   },
   python_cache: {
-    title: 'Python Cache',
+    title: 'Resilient Python Cache',
+  },
+  node_cache: {
+    title: 'ResilientNode Cache',
   },
 };

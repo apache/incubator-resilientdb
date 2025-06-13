@@ -4,19 +4,40 @@ import React, { useState } from 'react';
 import { Box, Button, Code, Paper, Select, Text, TextInput } from '@mantine/core';
 
 const SAMPLE_DATA = {
-  id: 'block_123',
-  createdAt: '2024-04-27T10:00:00Z',
+  id: "block_123",
+  createdAt: new Date().toISOString(),
   transactions: [
     {
-      id: 'tx_456',
-      inputs: ['input1', 'input2'],
-      outputs: ['output1'],
-      metadata: { type: 'transfer' },
-    },
-  ],
+      id: "tx_123",
+      inputs: [
+        {
+          owner: "user1",
+          amount: 100
+        }
+      ],
+      outputs: [
+        {
+          owner: "user2",
+          amount: 100
+        }
+      ],
+      metadata: {
+        timestamp: 1746736411543,
+        type: "transfer"
+      },
+      asset: {
+        data: {
+          type: "transfer",
+          amount: 100,
+          from: "user1",
+          to: "user2"
+        }
+      }
+    }
+  ]
 };
 
-export function MongoQueryBuilder() {
+export function PythonQueryBuilder() {
   const [field, setField] = useState('id');
   const [operator, setOperator] = useState('eq');
   const [value, setValue] = useState('');
@@ -26,11 +47,31 @@ export function MongoQueryBuilder() {
   const buildQuery = () => {
     let mongoQuery = '{\n';
     if (operator === 'eq') {
-      mongoQuery += `  "${field}": "${value}"\n`;
+      const numValue = Number(value);
+      if (!isNaN(numValue) && (
+        field === 'transactions.asset.data.amount' || 
+        field === 'transactions.metadata.timestamp'
+      )) {
+        mongoQuery += `  "${field}": ${numValue}\n`;
+      } else {
+        mongoQuery += `  "${field}": "${value}"\n`;
+      }
     } else if (operator === 'gt' || operator === 'lt') {
-      mongoQuery += `  "${field}": { "$${operator}": "${value}" }\n`;
+      const numValue = Number(value);
+      if (!isNaN(numValue)) {
+        mongoQuery += `  "${field}": { "$${operator}": ${numValue} }\n`;
+      } else {
+        mongoQuery += `  "${field}": { "$${operator}": "${value}" }\n`;
+      }
     } else if (operator === 'in') {
-      mongoQuery += `  "${field}": { "$in": ${value.split(',').map((v) => `"${v.trim()}"`)} }\n`;
+      mongoQuery += `  "${field}": { "$in": ${value.split(',').map((v) => {
+        const numValue = Number(v.trim());
+        return !isNaN(numValue) ? numValue : `"${v.trim()}"`;
+      })} }\n`;
+    } else if (operator === 'regex') {
+      mongoQuery += `  "${field}": { "$regex": "${value}", "$options": "i" }\n`;
+    } else if (operator === 'exists') {
+      mongoQuery += `  "${field}": { "$exists": ${value === 'true'} }\n`;
     }
     mongoQuery += '}';
 
@@ -47,9 +88,14 @@ export function MongoQueryBuilder() {
           onChange={(val) => setField(val || 'id')}
           data={[
             { value: 'id', label: 'Block ID' },
-            { value: 'createdAt', label: 'Creation Date' },
+            { value: 'createdAt', label: 'Created At' },
             { value: 'transactions.id', label: 'Transaction ID' },
+            { value: 'transactions.inputs.owner', label: 'Input Owner' },
+            { value: 'transactions.outputs.owner', label: 'Output Owner' },
+            { value: 'transactions.metadata.timestamp', label: 'Transaction Timestamp' },
             { value: 'transactions.metadata.type', label: 'Transaction Type' },
+            { value: 'transactions.asset.data.type', label: 'Asset Type' },
+            { value: 'transactions.asset.data.amount', label: 'Asset Amount' }
           ]}
         />
         <Select
@@ -61,6 +107,8 @@ export function MongoQueryBuilder() {
             { value: 'gt', label: 'Greater Than' },
             { value: 'lt', label: 'Less Than' },
             { value: 'in', label: 'In Array' },
+            { value: 'regex', label: 'Pattern Match' },
+            { value: 'exists', label: 'Field Exists' }
           ]}
         />
         <TextInput
@@ -94,4 +142,4 @@ export function MongoQueryBuilder() {
       )}
     </Box>
   );
-}
+} 
