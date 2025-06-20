@@ -1,0 +1,226 @@
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Tabs, TabsList, TabsTab, TabsPanel, Code, Alert } from '@mantine/core'
+import { IconInfoCircle } from '@tabler/icons-react'
+import { ResContractPlayground } from '@/components/ResContractPlayground'
+
+# ResContract
+
+ResContract CLI is a command-line tool for creating, deploying, and managing smart contracts within the ResilientDB ecosystem. It provides a streamlined interface for developers and students to interact with smart contracts efficiently.
+
+## Interactive Tools
+
+Under Development!
+
+## Features
+
+* Create Smart Contracts: Generate new smart contract templates
+* Compile Contracts: Compile Solidity contracts to JSON
+* Deploy Smart Contracts: Deploy contracts to the blockchain
+* Execute Functions: Interact with and manage deployed contracts
+
+## Prerequisites
+
+Before installing and using the ResContract CLI, ensure you have the following prerequisites installed on your system:
+
+* Node.js (version >= 14)
+* npm (comes with Node.js)
+* Solidity Compiler (`solc`)
+
+### Installing `solc`
+
+<Tabs defaultValue="linux">
+  <TabsList>
+    <TabsTab value="linux">Linux</TabsTab>
+    <TabsTab value="macos">macOS</TabsTab>
+  </TabsList>
+
+  <TabsPanel value="linux">
+    <Code block>
+      {`sudo add-apt-repository ppa:ethereum/ethereum
+sudo apt-get update
+sudo apt-get install -y solc`}
+    </Code>
+  </TabsPanel>
+
+  <TabsPanel value="macos">
+    <Code block>
+      {`brew update
+brew upgrade
+brew tap ethereum/ethereum
+brew install solidity`}
+    </Code>
+  </TabsPanel>
+</Tabs>
+
+## Installation
+
+Install the ResContract CLI globally using npm:
+
+<Code block>
+  {`npm install -g rescontract-cli`}
+</Code>
+
+## Configuration
+
+<Alert icon={<IconInfoCircle size={16} />} title="Important" color="blue">
+  Before using the ResContract CLI, you must set the ResDB_Home environment variable or provide the path to your ResilientDB installation in a config.yaml file.
+</Alert>
+
+<Tabs defaultValue="env">
+  <TabsList>
+    <TabsTab value="env">Environment Variable</TabsTab>
+    <TabsTab value="config">Config File</TabsTab>
+  </TabsList>
+
+  <TabsPanel value="env">
+    Set the ResDB_Home environment variable to point to the directory where ResilientDB is installed.
+
+    <Code block>
+      {`export ResDB_Home=/path/to/resilientdb`}
+    </Code>
+
+    Add the above line to your `.bashrc` or `.zshrc` file to make it persistent.
+  </TabsPanel>
+
+  <TabsPanel value="config">
+    Update the `config.yaml` file in the same directory where you run the `rescontract` command or in your home directory.
+
+    <Code block>
+      {`ResDB_Home: /path/to/resilientdb`}
+    </Code>
+
+    Ensure the `ResDB_Home` path is correct.
+  </TabsPanel>
+</Tabs>
+
+## Usage
+
+<Tabs defaultValue="create">
+  <TabsList>
+    <TabsTab value="create">Create</TabsTab>
+    <TabsTab value="compile">Compile</TabsTab>
+    <TabsTab value="deploy">Deploy</TabsTab>
+    <TabsTab value="execute">Execute</TabsTab>
+  </TabsList>
+
+  <TabsPanel value="create">
+    The `create` command initializes a new account using ResilientDB's smart contract tools. This is typically the first step in setting up your smart contract development environment.
+
+    <Code block>
+      {`rescontract create --config <path_to_config>`}
+    </Code>
+
+    Parameters:
+    * `--config, -c`: Path to the configuration file that contains your ResilientDB service settings.
+
+    Example:
+    <Code block>
+      {`rescontract create --config ~/resilientdb/config/service.config`}
+    </Code>
+
+    This command will:
+    1. Validate your configuration file
+    2. Set up necessary account credentials
+    3. Initialize the smart contract development environment
+  </TabsPanel>
+
+  <TabsPanel value="compile">
+    The `compile` command compiles your Solidity smart contract into a JSON file that can be deployed to the blockchain. This step is necessary before deployment to ensure your contract is valid and ready for execution.
+
+    <Code block>
+      {`rescontract compile --sol <inputFile.sol> --output <outputFile.json>`}
+    </Code>
+
+    Parameters:
+    * `--sol, -s`: Path to your Solidity smart contract file
+    * `--output, -o`: Path where the compiled JSON file will be saved
+
+    Example:
+    <Code block>
+      {`rescontract compile --sol contracts/MyToken.sol --output build/MyToken.json`}
+    </Code>
+
+    The compilation process:
+    1. Validates your Solidity code
+    2. Checks for syntax errors
+    3. Generates the ABI (Application Binary Interface)
+    4. Creates a JSON file containing the contract's bytecode and ABI
+  </TabsPanel>
+
+  <TabsPanel value="deploy">
+    The `deploy` command deploys your compiled smart contract to the blockchain. This makes your contract available for interaction and execution.
+
+    <Code block>
+      {`rescontract deploy --config <service.config> --contract <contract.json> \
+--name <tokenName> --arguments "<parameters>" --owner <address>`}
+    </Code>
+
+    Parameters:
+    * `--config, -c`: Path to your client configuration file
+    * `--contract, -p`: Path to the compiled contract JSON file
+    * `--name, -n`: Name for your deployed contract
+    * `--arguments, -a`: Constructor parameters for your contract (enclosed in quotes)
+    * `--owner, -m`: Ethereum address that will own the contract
+
+    Example:
+    <Code block>
+      {`rescontract deploy --config ~/resilientdb/config/service.config \
+--contract build/MyToken.json --name MyToken \
+--arguments "1000000" --owner 0xYourAddress`}
+    </Code>
+
+    The deployment process:
+    1. Validates the contract and configuration
+    2. Submits the contract to the blockchain
+    3. Waits for transaction confirmation
+    4. Returns the deployed contract address
+  </TabsPanel>
+
+  <TabsPanel value="execute">
+    The `execute` command allows you to interact with your deployed smart contract by calling its functions. This is how you perform operations on your contract after deployment.
+
+    <Code block>
+      {`rescontract execute --config <service.config> --sender <senderAddress> \
+--contract <contractAddress> --function-name <functionName> --arguments "<parameters>"`}
+    </Code>
+
+    Parameters:
+    * `--config, -c`: Path to your client configuration file
+    * `--sender, -m`: Address of the account executing the function
+    * `--contract, -s`: Address of the deployed contract
+    * `--function-name, -f`: Name of the function to execute (include parameter types)
+    * `--arguments, -a`: Arguments to pass to the function (enclosed in quotes)
+
+    Example:
+    <Code block>
+      {`rescontract execute --config ~/resilientdb/config/service.config \
+--sender 0xYourAddress --contract 0xContractAddress \
+--function-name "transfer(address,uint256)" \
+--arguments "0xRecipientAddress,100"`}
+    </Code>
+
+    The execution process:
+    1. Validates the function call parameters
+    2. Submits the transaction to the blockchain
+    3. Waits for transaction confirmation
+    4. Returns the execution result
+
+    <Alert icon={<IconInfoCircle size={16} />} title="Note" color="blue">
+      Make sure to include the parameter types in the function name (e.g., "transfer(address,uint256)") and provide the correct number of arguments in the correct order.
+    </Alert>
+  </TabsPanel>
+</Tabs>
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResContract CLI Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-ResContract"
+    labels={['user-feedback', 'documentation', 'rescontract']}
+    title="Questions or Feedback about ResContract?"
+  />
+</Box> 

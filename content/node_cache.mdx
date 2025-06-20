@@ -206,4 +206,16 @@ new WebSocketMongoSync(mongoConfig: MongoConfig, resilientDBConfig: ResilientDBC
 - `data` - Fired when new blocks are received
 - `error` - Fired when an error occurs
 
-<CommentSection /> 
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="Python Cache Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-resilient-python-cache"
+    labels={['user-feedback', 'documentation', 'python-cache']}
+    title="Questions or Feedback about the Python Cache?"
+  />
+</Box> 

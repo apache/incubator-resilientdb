@@ -28,4 +28,13 @@ export default {
   node_cache: {
     title: 'ResilientNode Cache',
   },
+  rescontract: {
+    title: 'ResContract',
+  },
+  resdb_orm: {
+    title: 'ResDB-ORM',
+  },
+  rescli: {
+    title: 'ResCLI',
+  },
 };
