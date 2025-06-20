@@ -25,6 +25,7 @@
     "@ai-sdk/react": "^1.2.12",
     "@codemirror/lang-javascript": "^6.2.4",
     "@codemirror/lang-python": "^6.2.1",
+    "@codemirror/view": "^6.37.2",
     "@floating-ui/react-dom": "^2.0.0",
     "@gfazioli/mantine-marquee": "^2.2.7",
     "@gfazioli/mantine-text-animate": "^1.0.3",
