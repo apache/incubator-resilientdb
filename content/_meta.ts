@@ -5,19 +5,18 @@ export default {
   installation: {
     title: 'Installation',
   },
+  resilientdb: {
+    title: 'Resilient DB',
+  },
   '##': {
     type: 'separator',
     title: 'Ecosystem', // Title is optional
   },
-  resilientdb: {
-    title: 'Resilient DB',
-  },
   resilientdb_graphql: {
     title: 'Resilient DB GraphQL',
   },
-  '###': {
-    type: 'separator',
-    title: 'Apps', // Title is optional
+  resvault: {
+    title: 'ResVault',
   },
   pythonsdk: {
     title: 'ResilientDB Python SDK',
@@ -36,5 +35,9 @@ export default {
   },
   rescli: {
     title: 'ResCLI',
+  },
+  '###': {
+    type: 'separator',
+    title: 'Apps', // Title is optional
   },
 };
