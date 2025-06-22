@@ -15,6 +15,7 @@ import { theme } from '../theme';
 import './global.css';
 
 import { FloatingAssistant } from '@/components/FloatingAssistant';
+import { PocketFlowChatbot } from '@/components/PocketFlowChatbot';
 import { Providers } from './providers';
 
 export const metadata = {
@@ -90,6 +91,7 @@ export default async function RootLayout({ children }: { children: any }) {
               {children}
             </Layout>
             <FloatingAssistant />
+            <PocketFlowChatbot />
           </MantineProvider>
         </Providers>
       </body>

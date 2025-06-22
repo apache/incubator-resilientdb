@@ -8,3 +8,4 @@ export { NodeConfigGenerator } from './cache/NodeConfigGenerator';
 export { PythonConfigGenerator } from './cache/PythonConfigGenerator';
 export { NodeQueryBuilder } from './cache/NodeQueryBuilder';
 export { PythonQueryBuilder } from './cache/PythonQueryBuilder';
+export { PocketFlowChatbot } from './PocketFlowChatbot';
