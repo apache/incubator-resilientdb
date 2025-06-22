@@ -1,12 +1,11 @@
 .title {
   color: white;
-  font-size: 100px;
+  font-size: 80px;
 
   @media (max-width: 768px) {
-    font-size: 70px;
+    font-size: 60px;
   }
 }
-
 .subtitle {
-  font-size: 100px;
+  font-size: 80px;
 }
