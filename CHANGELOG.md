@@ -19,7 +19,7 @@
 
 # Change Log
 
-### Apache ResilientDB v1.11.0 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.11.0))
+### Apache ResilientDB v1.11.0 ([2025-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.11.0))
 * Support Combined Runtime for SmartContact and Key-value Service. ([Junchao Chen](https://github.com/cjcchen))
 
 
