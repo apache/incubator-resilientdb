@@ -17,7 +17,6 @@
 name = "resilientdb_rust_sdk"
 version = "0.1.2"
 edition = "2021"
-authors = ["Dhruv Sangamwar <dsangamwar@gmail.com>"]
 description = "A SDK for interacting with ResilientDB"
 license = "Apache-2.0"
 publish = true
