@@ -24,7 +24,7 @@ export function MainNavBar({ className }: MainNavBarProps) {
   const navItems = [
     { name: 'Home', url: '/', icon: Home },
     { name: 'Chat', url: '/chat', icon: MessageSquare },
-    { name: 'Placeholder', url: '/placeholder', icon: Settings }
+    { name: 'Researcher', url: '/research', icon: Settings }
   ]
 
   useEffect(() => {
@@ -37,14 +37,14 @@ export function MainNavBar({ className }: MainNavBarProps) {
     return () => window.removeEventListener("resize", handleResize)
   }, [])
 
-  const isPlaceholder = pathname === "/placeholder"
+  const isResearcher = pathname === "/research"
   return (
     <div
       className={cn(
         "fixed top-0 left-0 w-full py-4 px-4 z-50",
         className,
       )}
-      hidden={isPlaceholder}
+      hidden={isResearcher}
     >
         {/* <div className="flex gap-3">
             <Image src="/resdb-logo.svg" alt="ResDB Logo" width={100} height={100} />
