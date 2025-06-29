@@ -15,8 +15,7 @@
 #
 
 github:
-  description: Global-Scale Sustainable Blockchain Fabric
-  https://resilientdb.incubator.apache.org/
+  description: Global-Scale Sustainable Blockchain Fabric https://resilientdb.incubator.apache.org/
   labels:
     - crypto 
     - smart-contracts 
