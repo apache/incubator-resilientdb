@@ -1,4 +1,5 @@
 import { DeepSeekLLM } from '@llamaindex/deepseek';
+import { HuggingFaceEmbedding } from '@llamaindex/huggingface';
 import {
     ContextChatEngine,
     LlamaCloudRetriever,
@@ -72,6 +73,13 @@ class ChatEngineService {
                 apiKey: config.deepSeekApiKey,
                 model: config.deepSeekModel,
             });
+
+            try {
+                Settings.embedModel = new HuggingFaceEmbedding() as any;
+            } catch (error) {
+                console.warn("Failed to initialize HuggingFace embedding:", error);
+                Settings.embedModel = new HuggingFaceEmbedding() as any;
+            }
 
             if (config.llamaCloudApiKey && config.llamaCloudProjectName) {
                 try {

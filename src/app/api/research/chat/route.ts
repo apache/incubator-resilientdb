@@ -1,4 +1,5 @@
 import { DeepSeekLLM } from '@llamaindex/deepseek';
+import { HuggingFaceEmbedding } from '@llamaindex/huggingface';
 import {
     MetadataMode,
     Settings,
@@ -41,6 +42,13 @@ export async function POST(req: NextRequest) {
             apiKey: config.deepSeekApiKey,
             model: config.deepSeekModel,
         });
+
+        try {
+            Settings.embedModel = new HuggingFaceEmbedding() as any;
+        } catch (error) {
+            console.warn("Failed to initialize HuggingFace embedding:", error);
+            Settings.embedModel = new HuggingFaceEmbedding() as any;
+        }
 
         try {
             // get the pre-prepared index for this document

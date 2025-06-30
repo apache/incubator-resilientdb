@@ -1,4 +1,5 @@
 import { DeepSeekLLM } from '@llamaindex/deepseek';
+import { HuggingFaceEmbedding } from '@llamaindex/huggingface';
 import { mkdir, readFile, stat, writeFile } from "fs/promises";
 import {
     Document,
@@ -20,6 +21,20 @@ class DocumentIndexManager {
             DocumentIndexManager.instance = new DocumentIndexManager();
         }
         return DocumentIndexManager.instance;
+    }
+
+    private configureSettings(): void {
+        Settings.llm = new DeepSeekLLM({
+            apiKey: config.deepSeekApiKey,
+            model: config.deepSeekModel,
+        });
+
+        try {
+            Settings.embedModel = new HuggingFaceEmbedding() as any;
+        } catch (error) {
+            console.warn("Failed to initialize HuggingFace embedding:", error);
+            Settings.embedModel = new HuggingFaceEmbedding() as any;
+        }
     }
 
     // helper function to get parsed file paths
@@ -131,11 +146,7 @@ class DocumentIndexManager {
 
     // public method to prepare an index for a document
     async prepareIndex(documentPath: string): Promise<void> {
-        // configure DeepSeek LLM
-        Settings.llm = new DeepSeekLLM({
-            apiKey: config.deepSeekApiKey,
-            model: config.deepSeekModel,
-        });
+        this.configureSettings();
 
         // check if we already have an index for this document
         let documentIndex = this.documentIndices.get(documentPath);
@@ -180,17 +191,13 @@ class DocumentIndexManager {
 
         if (!documentIndex) {
             console.log(`Index not found in memory for ${documentPath}. Attempting to rebuild from cache.`);
-            // Attempt to load from parsed files if not in memory
             if (await this.shouldUseParsedFiles(documentPath)) {
                 console.log(`Loading pre-parsed documents for rebuilding index: ${documentPath}`);
                 try {
                     const documents = await this.loadParsedDocuments(documentPath);
                     if (documents && documents.length > 0) {
-                        // Re-initialize LLM settings as they might be needed for index creation
-                        Settings.llm = new DeepSeekLLM({
-                            apiKey: config.deepSeekApiKey,
-                            model: config.deepSeekModel,
-                        });
+                        this.configureSettings();
+
                         documentIndex = await VectorStoreIndex.fromDocuments(documents);
                         this.documentIndices.set(documentPath, documentIndex);
                         console.log(`Successfully rebuilt and cached index for ${documentPath} from parsed files.`);
@@ -199,7 +206,6 @@ class DocumentIndexManager {
                     }
                 } catch (error) {
                     console.error(`Error rebuilding index from parsed files for ${documentPath}:`, error);
-                    // If rebuilding fails, we still return undefined, or handle error as appropriate
                 }
             } else {
                 console.log(`No valid pre-parsed files found for ${documentPath}. Cannot rebuild index.`);
