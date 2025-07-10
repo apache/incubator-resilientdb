@@ -12,7 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChevronLeft, ChevronRight, FileText, Menu, MessageCircle, Send } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface Document {
   id: string;
@@ -41,6 +41,94 @@ const getDisplayTitle = (filename: string): string => {
   const lowerFilename = filename.toLowerCase();
   return titleMappings[lowerFilename] || filename.replace('.pdf', '');
 };
+
+// Document Selection Component - moved outside and memoized
+interface DocumentSelectionProps {
+  className?: string;
+  documents: Document[];
+  selectedDocument: Document | null;
+  isLoadingDocuments: boolean;
+  onDocumentSelect: (doc: Document) => void;
+  onDocumentKeyDown: (e: React.KeyboardEvent, doc: Document) => void;
+}
+
+const DocumentSelection = memo<DocumentSelectionProps>(({ 
+  className = "", 
+  documents, 
+  selectedDocument, 
+  isLoadingDocuments, 
+  onDocumentSelect, 
+  onDocumentKeyDown 
+}) => (
+  <div className={`space-y-3 ${className}`}>
+    {isLoadingDocuments ? (
+      <div className="flex justify-center py-6">
+        <Loader />
+      </div>
+    ) : documents.length === 0 ? (
+      <Card className="text-center py-6 border-dashed">
+        <CardContent className="pt-6">
+          <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">No documents found</p>
+        </CardContent>
+      </Card>
+    ) : (
+      <>
+        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Available Documents
+        </Label>
+        <ScrollArea className="h-[calc(100vh-240px)]">
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <Card
+                key={doc.id}
+                variant="message"
+                className={`cursor-pointer transition-all hover:bg-accent/50 w-full ${
+                  selectedDocument?.id === doc.id
+                    ? "bg-primary/10 border-primary/20 ring-1 ring-primary/20"
+                    : "hover:border-border/60"
+                }`}
+                onClick={() => onDocumentSelect(doc)}
+                onKeyDown={(e) => onDocumentKeyDown(e, doc)}
+                tabIndex={0}
+                role="option"
+                aria-selected={selectedDocument?.id === doc.id}
+              >
+                <CardContent variant="message-compact" className="w-full px-3">
+                  <div className="flex items-start space-x-1.5 w-full">
+                    <FileText className="h-4 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className="text-sm font-medium break-words leading-tight max-h-[2.4em] overflow-hidden text-ellipsis line-clamp-2">
+                            {doc.displayTitle || doc.name}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p className="max-w-xs break-words">{doc.displayTitle || doc.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <div className="flex flex-wrap items-center gap-1 mt-2">
+                        <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
+                          {doc.name}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          {(doc.size / 1024 / 1024).toFixed(1)} MB
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      </>
+    )}
+  </div>
+));
+
+DocumentSelection.displayName = 'DocumentSelection';
 
 export default function ResearchChatPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -258,87 +346,17 @@ export default function ResearchChatPage() {
     }
   };
 
-  const handleDocumentKeyDown = (e: React.KeyboardEvent, doc: Document) => {
+  const handleDocumentKeyDown = useCallback((e: React.KeyboardEvent, doc: Document) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handleDocumentSelect(doc);
     }
-  };
+  }, []);
 
-  const handleDocumentSelect = (doc: Document) => {
+  const handleDocumentSelect = useCallback((doc: Document) => {
     setSelectedDocument(doc);
     setIsMobileSheetOpen(false); // Close mobile sheet when document is selected
-  };
-
-  // Document Selection Component - reusable for both desktop and mobile
-  const DocumentSelection = ({ className = "" }: { className?: string }) => (
-    <div className={`space-y-3 ${className}`}>
-      {isLoadingDocuments ? (
-        <div className="flex justify-center py-6">
-          <Loader />
-        </div>
-      ) : documents.length === 0 ? (
-        <Card className="text-center py-6 border-dashed">
-          <CardContent className="pt-6">
-            <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">No documents found</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Available Documents
-          </Label>
-          <ScrollArea className="h-[calc(100vh-240px)]">
-            <div className="space-y-2">
-              {documents.map((doc) => (
-                <Card
-                  key={doc.id}
-                  variant="message"
-                  className={`cursor-pointer transition-all hover:bg-accent/50 w-full ${
-                    selectedDocument?.id === doc.id
-                      ? "bg-primary/10 border-primary/20 ring-1 ring-primary/20"
-                      : "hover:border-border/60"
-                  }`}
-                  onClick={() => handleDocumentSelect(doc)}
-                  onKeyDown={(e) => handleDocumentKeyDown(e, doc)}
-                  tabIndex={0}
-                  role="option"
-                  aria-selected={selectedDocument?.id === doc.id}
-                >
-                  <CardContent variant="message-compact" className="w-full px-3">
-                    <div className="flex items-start space-x-1.5 w-full">
-                      <FileText className="h-4 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <p className="text-sm font-medium break-words leading-tight max-h-[2.4em] overflow-hidden text-ellipsis line-clamp-2">
-                              {doc.displayTitle || doc.name}
-                            </p>
-                          </TooltipTrigger>
-                          <TooltipContent side="right">
-                            <p className="max-w-xs break-words">{doc.displayTitle || doc.name}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <div className="flex flex-wrap items-center gap-1 mt-2">
-                          <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
-                            {doc.name}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs flex-shrink-0">
-                            {(doc.size / 1024 / 1024).toFixed(1)} MB
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
-        </>
-      )}
-    </div>
-  );
+  }, []);
 
   return (
     <TooltipProvider>
@@ -363,7 +381,13 @@ export default function ResearchChatPage() {
               </p>
             </SheetHeader>
             <div className="p-4">
-              <DocumentSelection />
+              <DocumentSelection
+                documents={documents}
+                selectedDocument={selectedDocument}
+                isLoadingDocuments={isLoadingDocuments}
+                onDocumentSelect={handleDocumentSelect}
+                onDocumentKeyDown={handleDocumentKeyDown}
+              />
             </div>
           </SheetContent>
         </Sheet>
@@ -394,7 +418,13 @@ export default function ResearchChatPage() {
             
             {!isSidebarCollapsed && (
               <CardContent className="p-3 flex-1 overflow-hidden">
-                <DocumentSelection />
+                <DocumentSelection
+                  documents={documents}
+                  selectedDocument={selectedDocument}
+                  isLoadingDocuments={isLoadingDocuments}
+                  onDocumentSelect={handleDocumentSelect}
+                  onDocumentKeyDown={handleDocumentKeyDown}
+                />
               </CardContent>
             )}
             
