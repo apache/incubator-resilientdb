@@ -374,7 +374,7 @@ export default function ResearchChatPage() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0" aria-describedby="mobile-sheet-description">
-            <SheetHeader className="p-4 border-b">
+            <SheetHeader className="border-b">
               <SheetTitle>Research Library</SheetTitle>
               <p id="mobile-sheet-description" className="text-sm text-muted-foreground sr-only">
                 Select a document to start chatting with AI about its contents
@@ -397,7 +397,7 @@ export default function ResearchChatPage() {
           isSidebarCollapsed ? "w-16" : "w-72 max-w-72"
         }`}>
           <div className="flex flex-col w-full">
-            <CardHeader className="p-3 border-b flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="border-b flex flex-row items-center justify-between space-y-0 mt-[0.45rem]">
               {!isSidebarCollapsed && (
                 <CardTitle className="text-lg">Research Library</CardTitle>
               )}
