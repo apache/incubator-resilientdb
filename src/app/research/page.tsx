@@ -450,7 +450,7 @@ export default function ResearchChatPage() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Chat Interface */}
-          <Card className="flex-1 flex flex-col rounded-none border-0 min-h-0" role="main" aria-label="Chat interface">
+          <Card className="flex-1 flex flex-col rounded-none border-0 min-h-0 bg-card/60 backdrop-blur-sm" role="main" aria-label="Chat interface">
             {!selectedDocument ? (
               <CardContent className="flex-1 flex items-center justify-center p-4">
                 <Card className="text-center max-w-md">
@@ -583,7 +583,7 @@ export default function ResearchChatPage() {
           <Separator orientation="vertical" className="hidden md:block" />
 
           {/* PDF Preview - Hidden on mobile when no document selected */}
-          <Card className={`w-full md:w-2/5 bg-card/10 backdrop-blur-sm rounded-none border-0 min-h-0 ${
+          <Card className={`w-full md:w-2/5 bg-card/40 backdrop-blur-sm rounded-none border-0 min-h-0 ${
             !selectedDocument ? "hidden md:flex" : "hidden md:flex"
           }`} role="complementary" aria-label="PDF preview">
             {selectedDocument ? (
