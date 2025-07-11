@@ -1,9 +1,18 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChevronLeft, ChevronRight, FileText, Menu, MessageCircle, Send } from "lucide-react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 interface Document {
   id: string;
@@ -33,6 +42,94 @@ const getDisplayTitle = (filename: string): string => {
   return titleMappings[lowerFilename] || filename.replace('.pdf', '');
 };
 
+// Document Selection Component - moved outside and memoized
+interface DocumentSelectionProps {
+  className?: string;
+  documents: Document[];
+  selectedDocument: Document | null;
+  isLoadingDocuments: boolean;
+  onDocumentSelect: (doc: Document) => void;
+  onDocumentKeyDown: (e: React.KeyboardEvent, doc: Document) => void;
+}
+
+const DocumentSelection = memo<DocumentSelectionProps>(({ 
+  className = "", 
+  documents, 
+  selectedDocument, 
+  isLoadingDocuments, 
+  onDocumentSelect, 
+  onDocumentKeyDown 
+}) => (
+  <div className={`space-y-3 ${className}`}>
+    {isLoadingDocuments ? (
+      <div className="flex justify-center py-6">
+        <Loader />
+      </div>
+    ) : documents.length === 0 ? (
+      <Card className="text-center py-6 border-dashed">
+        <CardContent className="pt-6">
+          <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">No documents found</p>
+        </CardContent>
+      </Card>
+    ) : (
+      <>
+        <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          Available Documents
+        </Label>
+        <ScrollArea className="h-[calc(100vh-240px)]">
+          <div className="space-y-2">
+            {documents.map((doc) => (
+              <Card
+                key={doc.id}
+                variant="message"
+                className={`cursor-pointer transition-all hover:bg-accent/50 w-full ${
+                  selectedDocument?.id === doc.id
+                    ? "bg-primary/10 border-primary/20 ring-1 ring-primary/20"
+                    : "hover:border-border/60"
+                }`}
+                onClick={() => onDocumentSelect(doc)}
+                onKeyDown={(e) => onDocumentKeyDown(e, doc)}
+                tabIndex={0}
+                role="option"
+                aria-selected={selectedDocument?.id === doc.id}
+              >
+                <CardContent variant="message-compact" className="w-full px-3">
+                  <div className="flex items-start space-x-1.5 w-full">
+                    <FileText className="h-4 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className="text-sm font-medium break-words leading-tight max-h-[2.4em] overflow-hidden text-ellipsis line-clamp-2">
+                            {doc.displayTitle || doc.name}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p className="max-w-xs break-words">{doc.displayTitle || doc.name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <div className="flex flex-wrap items-center gap-1 mt-2">
+                        <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
+                          {doc.name}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          {(doc.size / 1024 / 1024).toFixed(1)} MB
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      </>
+    )}
+  </div>
+));
+
+DocumentSelection.displayName = 'DocumentSelection';
+
 export default function ResearchChatPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
@@ -42,6 +139,7 @@ export default function ResearchChatPage() {
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -248,194 +346,276 @@ export default function ResearchChatPage() {
     }
   };
 
+  const handleDocumentKeyDown = useCallback((e: React.KeyboardEvent, doc: Document) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleDocumentSelect(doc);
+    }
+  }, []);
+
+  const handleDocumentSelect = useCallback((doc: Document) => {
+    setSelectedDocument(doc);
+    setIsMobileSheetOpen(false); // Close mobile sheet when document is selected
+  }, []);
+
   return (
-    <div className="flex h-screen bg-background">
-      {/* Left Sidebar: Document Selection */}
-      <div className={`transition-all duration-300 border-r border-border bg-card/20 backdrop-blur-sm ${
-        isSidebarCollapsed ? "w-12" : "w-64"
-      }`}>
-        <div className="p-3 border-b border-border flex items-center justify-between">
-          {!isSidebarCollapsed && (
-            <h2 className="text-lg font-bold">Research Library</h2>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="p-1 h-8 w-8 hover:bg-accent/50 z-[9999]"
-            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isSidebarCollapsed ? (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            )}
-          </Button>
-        </div>
-        
-        {!isSidebarCollapsed && (
-          <div className="p-3">
-            {isLoadingDocuments ? (
-              <div className="flex justify-center py-6">
-                <Loader />
-              </div>
-            ) : documents.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <div className="text-xl mb-2">📚</div>
-                <p className="text-sm">No documents found</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Available Documents</label>
-                <div className="space-y-1.5">
-                  {documents.map((doc) => (
-                    <button
-                      key={doc.id}
-                      onClick={() => setSelectedDocument(doc)}
-                      className={`w-full p-2.5 text-left rounded-md border transition-all hover:bg-accent/50 ${
-                        selectedDocument?.id === doc.id
-                          ? "bg-primary/10 border-primary/20 ring-1 ring-primary/20"
-                          : "bg-background border-border hover:border-border/60"
-                      }`}
-                      title={doc.displayTitle || doc.name}
-                    >
-                      <div className="text-sm font-medium">{doc.displayTitle || doc.name}</div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {doc.name} • {(doc.size / 1024 / 1024).toFixed(1)} MB
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {isSidebarCollapsed && selectedDocument && (
-          <div className="p-2 flex justify-center">
-            <div
-              className="w-8 h-8 rounded bg-primary/10 border border-primary/20 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors"
-              onClick={() => setIsSidebarCollapsed(false)}
-              title={selectedDocument.displayTitle || selectedDocument.name}
+    <TooltipProvider>
+      <div className="flex h-screen bg-background">
+        {/* Mobile Sheet for Document Selection */}
+        <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="md:hidden fixed top-4 left-4 z-50"
+              aria-label="Open document library"
             >
-              <div className="text-xs font-bold text-primary">
-                {(selectedDocument.displayTitle || selectedDocument.name).charAt(0).toUpperCase()}
-              </div>
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0" aria-describedby="mobile-sheet-description">
+            <SheetHeader className="border-b">
+              <SheetTitle>Research Library</SheetTitle>
+              <p id="mobile-sheet-description" className="text-sm text-muted-foreground sr-only">
+                Select a document to start chatting with AI about its contents
+              </p>
+            </SheetHeader>
+            <div className="p-4">
+              <DocumentSelection
+                documents={documents}
+                selectedDocument={selectedDocument}
+                isLoadingDocuments={isLoadingDocuments}
+                onDocumentSelect={handleDocumentSelect}
+                onDocumentKeyDown={handleDocumentKeyDown}
+              />
             </div>
-          </div>
-        )}
-      </div>
+          </SheetContent>
+        </Sheet>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        {/* Chat Interface */}
-        <div className="flex-1 flex flex-col">
-          {!selectedDocument ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-4xl mb-4">💬</div>
-                <h3 className="text-xl font-bold mb-2">Select a Document</h3>
-                <p className="text-muted-foreground">
-                  Choose a PDF from the sidebar to start chatting.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Chat Header */}
-              <div className="border-b border-border p-4">
-                <h3 className="font-semibold">Chat with {selectedDocument.displayTitle || selectedDocument.name}</h3>
-                <p className="text-sm text-muted-foreground">Ask questions about this document</p>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] p-4 py-2.5 rounded-lg shadow-sm transition-all duration-200 ease-out ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card border border-border"
-                      }`}
-                    >
-                      {message.role === "user" ? (
-                        <div className="text-md">
-                            {message.content}
-                        </div>
-                      ) : message.isLoadingPlaceholder ? (
-                        <div className="flex items-center justify-center p-1">
-                          <Loader size="lg" variant="loading-dots" />
-                        </div>
-                      ) : (
-                        <div className="text-md font-medium">
-                          <MarkdownRenderer content={message.content} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input */}
-              <div className="border-t border-border p-4">
-                <div className="flex space-x-2">
-                  <textarea
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={isPreparingIndex ? "Preparing document..." : "Ask questions about this document..."}
-                    className="flex-1 p-3 border border-border rounded-lg bg-background resize-none"
-                    rows={2}
-                    disabled={isLoading || isPreparingIndex}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isLoading || isPreparingIndex}
-                    className="px-6"
-                  >
-                    {isLoading ? <Loader /> : isPreparingIndex ? <Loader /> : "Send"}
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* PDF Preview */}
-        <div className="w-2/5 border-l border-border bg-card/10 backdrop-blur-sm">
-          {selectedDocument ? (
-            <div className="h-full flex flex-col">
-              <div className="border-b border-border p-4">
-                <h3 className="font-semibold">{selectedDocument.displayTitle || selectedDocument.name}</h3>
-                <p className="text-sm text-muted-foreground">PDF Preview</p>
-              </div>
-              <div className="flex-1">
-                <iframe
-                  src={`/api/research/files/${selectedDocument.path}#toolbar=0&navpanes=0&scrollbar=1`}
-                  className="w-full h-full border-0"
-                  title={`Preview of ${selectedDocument.name}`}
+        {/* Desktop Sidebar: Document Selection */}
+        <Card className={`hidden md:flex transition-all duration-300 border-r bg-card/20 backdrop-blur-sm rounded-none ${
+          isSidebarCollapsed ? "w-16" : "w-72 max-w-72"
+        }`}>
+          <div className="flex flex-col w-full">
+            <CardHeader className="border-b flex flex-row items-center justify-between space-y-0 mt-[0.45rem]">
+              {!isSidebarCollapsed && (
+                <CardTitle className="text-lg">Research Library</CardTitle>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                className="p-1 h-8 w-8 hover:bg-accent/50"
+                aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {isSidebarCollapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" />
+                )}
+              </Button>
+            </CardHeader>
+            
+            {!isSidebarCollapsed && (
+              <CardContent className="p-3 flex-1 overflow-hidden">
+                <DocumentSelection
+                  documents={documents}
+                  selectedDocument={selectedDocument}
+                  isLoadingDocuments={isLoadingDocuments}
+                  onDocumentSelect={handleDocumentSelect}
+                  onDocumentKeyDown={handleDocumentKeyDown}
                 />
+              </CardContent>
+            )}
+            
+            {isSidebarCollapsed && selectedDocument && (
+              <CardContent className="p-3 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-10 h-10 p-0 rounded-full"
+                  onClick={() => setIsSidebarCollapsed(false)}
+                  aria-label={`Expand sidebar to see ${selectedDocument.displayTitle || selectedDocument.name}`}
+                  title={selectedDocument.displayTitle || selectedDocument.name}
+                >
+                  <span className="text-sm font-semibold">
+                    {(selectedDocument.displayTitle || selectedDocument.name).charAt(0).toUpperCase()}
+                  </span>
+                </Button>
+              </CardContent>
+            )}
+          </div>
+        </Card>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          {/* Chat Interface */}
+          <Card className="flex-1 flex flex-col rounded-none border-0 min-h-0 bg-card/60 backdrop-blur-sm" role="main" aria-label="Chat interface">
+            {!selectedDocument ? (
+              <CardContent className="flex-1 flex items-center justify-center p-4">
+                <Card className="text-center max-w-md">
+                  <CardContent className="pt-6">
+                    <MessageCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+                    <CardTitle className="text-xl mb-2">Select a Document</CardTitle>
+                    <CardDescription className="mb-4">
+                      Choose a PDF from the library to start chatting.
+                    </CardDescription>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsMobileSheetOpen(true)}
+                      className="md:hidden"
+                      aria-label="Browse documents to select one for chatting"
+                    >
+                      <Menu className="h-4 w-4 mr-2" aria-hidden="true" />
+                      Browse Documents
+                    </Button>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            ) : (
+              <>
+                {/* Chat Header */}
+                <CardHeader className="border-b flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-lg truncate">
+                        Chat with {selectedDocument.displayTitle || selectedDocument.name}
+                      </CardTitle>
+                      <CardDescription>Ask questions about this document</CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsMobileSheetOpen(true)}
+                      className="md:hidden ml-2"
+                      aria-label="Change document"
+                    >
+                      <Menu className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                {/* Messages */}
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <ScrollArea className="h-full p-4" role="log" aria-label="Chat messages" aria-live="polite">
+                    <div className="space-y-3">
+                      {messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                          role="article"
+                          aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
+                        >
+                          <Card
+                            variant="message"
+                            className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
+                              message.role === "user"
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card"
+                            }`}
+                          >
+                            <CardContent variant="message">
+                              {message.role === "user" ? (
+                                <p className="text-sm leading-relaxed">{message.content}</p>
+                              ) : message.isLoadingPlaceholder ? (
+                                <div className="flex items-center justify-center py-2" aria-label="AI is thinking">
+                                  <Loader size="md" variant="loading-dots" />
+                                </div>
+                              ) : (
+                                <div className="text-sm">
+                                  <MarkdownRenderer content={message.content} />
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      ))}
+                      <div ref={messagesEndRef} />
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                {/* Input */}
+                <CardContent className="border-t p-4 flex-shrink-0" role="form" aria-label="Send message">
+                  <div className="flex space-x-2">
+                    <div className="flex-1 space-y-2">
+                      <Label htmlFor="message-input" className="sr-only">
+                        Type your message about the document
+                      </Label>
+                      <Textarea
+                        id="message-input"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={
+                          isPreparingIndex 
+                            ? "Preparing document..." 
+                            : "Ask questions about this document..."
+                        }
+                        className="resize-none"
+                        rows={2}
+                        disabled={isLoading || isPreparingIndex}
+                        aria-describedby="message-input-help"
+                      />
+                      <p id="message-input-help" className="sr-only">
+                        Press Enter to send your message, or Shift+Enter for a new line
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim() || isLoading || isPreparingIndex}
+                      className="px-4"
+                      size="lg"
+                      aria-label="Send message"
+                    >
+                      {isLoading || isPreparingIndex ? (
+                        <Loader size="sm" aria-label="Sending..." />
+                      ) : (
+                        <Send className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </>
+            )}
+          </Card>
+
+          <Separator orientation="vertical" className="hidden md:block" />
+
+          {/* PDF Preview - Hidden on mobile when no document selected */}
+          <Card className={`w-full md:w-2/5 bg-card/40 backdrop-blur-sm rounded-none border-0 min-h-0 ${
+            !selectedDocument ? "hidden md:flex" : "hidden md:flex"
+          }`} role="complementary" aria-label="PDF preview">
+            {selectedDocument ? (
+              <div className="h-full flex flex-col">
+                <CardHeader className="border-b flex-shrink-0">
+                  <CardTitle className="text-lg truncate">
+                    {selectedDocument.displayTitle || selectedDocument.name}
+                  </CardTitle>
+                  <CardDescription>PDF Preview</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 p-0 min-h-0">
+                  <iframe
+                    src={`/api/research/files/${selectedDocument.path}#toolbar=0&navpanes=0&scrollbar=1`}
+                    className="w-full h-full border-0"
+                    title={`Preview of ${selectedDocument.name}`}
+                    aria-label={`PDF preview of ${selectedDocument.displayTitle || selectedDocument.name}`}
+                  />
+                </CardContent>
               </div>
-            </div>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <div className="text-4xl mb-4">📄</div>
-                <p>PDF preview will appear here</p>
-              </div>
-            </div>
-          )}
+            ) : (
+              <CardContent className="h-full flex items-center justify-center">
+                <Card className="text-center">
+                  <CardContent className="pt-6">
+                    <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+                    <CardDescription>PDF preview will appear here</CardDescription>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            )}
+          </Card>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 } 
