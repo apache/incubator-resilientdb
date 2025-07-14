@@ -209,7 +209,6 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(({
                 tabIndex={isDisabled ? -1 : 0}
                 role="checkbox"
                 aria-checked={isSelected}
-                aria-disabled={isDisabled}
                 aria-label={`${isSelected ? "Deselect" : "Select"} document: ${doc.displayTitle || doc.name}`}
               >
                 <CardContent variant="message-compact" className="w-full px-3">
