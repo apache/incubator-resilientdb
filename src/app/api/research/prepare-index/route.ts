@@ -4,10 +4,20 @@ import { documentIndexManager } from "../../../../lib/document-index-manager";
 
 export async function POST(req: NextRequest) {
     try {
-        const { documentPath } = await req.json();
+        const { documentPath, documentPaths } = await req.json();
 
-        if (!documentPath) {
-            return NextResponse.json({ error: "Document path is required" }, { status: 400 });
+        // Support both single document (backward compatibility) and multiple documents
+        if (!documentPath && !documentPaths) {
+            return NextResponse.json({ 
+                error: "Either documentPath or documentPaths is required" 
+            }, { status: 400 });
+        }
+
+        // Validate documentPaths if provided
+        if (documentPaths && (!Array.isArray(documentPaths) || documentPaths.length === 0)) {
+            return NextResponse.json({ 
+                error: "documentPaths must be a non-empty array" 
+            }, { status: 400 });
         }
 
         if (!config.deepSeekApiKey) {
@@ -25,12 +35,28 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-            await documentIndexManager.prepareIndex(documentPath);
+            // Handle both single and multiple document preparation
+            if (documentPaths) {
+                // Multi-document mode
+                await documentIndexManager.prepareMultipleIndices(documentPaths);
+                
+                return NextResponse.json({
+                    success: true,
+                    message: `Indices prepared successfully for ${documentPaths.length} documents`,
+                    documentCount: documentPaths.length,
+                    documentPaths: documentPaths
+                });
+            } else {
+                // Single document mode (backward compatibility)
+                await documentIndexManager.prepareIndex(documentPath);
 
-            return NextResponse.json({
-                success: true,
-                message: "Index prepared successfully"
-            });
+                return NextResponse.json({
+                    success: true,
+                    message: "Index prepared successfully",
+                    documentCount: 1,
+                    documentPaths: [documentPath]
+                });
+            }
 
         } catch (processingError) {
             console.error("Error preparing index:", processingError);

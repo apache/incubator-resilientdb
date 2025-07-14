@@ -20,14 +20,24 @@ If asked about something that is not in the document, give a brief answer and tr
 
 export async function POST(req: NextRequest) {
     try {
-        const { query, documentPath } = await req.json();
+        const { query, documentPath, documentPaths } = await req.json();
 
         if (!query) {
             return NextResponse.json({ error: "Query is required" }, { status: 400 });
         }
 
-        if (!documentPath) {
-            return NextResponse.json({ error: "Document path is required" }, { status: 400 });
+        // Support both single document (backward compatibility) and multiple documents
+        if (!documentPath && !documentPaths) {
+            return NextResponse.json({ 
+                error: "Either documentPath or documentPaths is required" 
+            }, { status: 400 });
+        }
+
+        // Validate documentPaths if provided
+        if (documentPaths && (!Array.isArray(documentPaths) || documentPaths.length === 0)) {
+            return NextResponse.json({ 
+                error: "documentPaths must be a non-empty array" 
+            }, { status: 400 });
         }
 
         if (!config.deepSeekApiKey) {
@@ -51,29 +61,96 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-            // get the pre-prepared index for this document
-            const documentIndex = await documentIndexManager.getIndex(documentPath);
+            let documentIndex: any;
+            let contextInfo: string;
+            let retrievedNodes: any[];
+            let enhancedPrompt: string;
 
-            if (!documentIndex) {
-                return NextResponse.json({
-                    error: "Document index not found",
-                    message: "Please select the document again to prepare the index"
-                }, { status: 400 });
-            }
+            // Handle both single and multiple document modes
+            if (documentPaths) {
+                // Multi-document mode
+                const targetPaths = documentPaths;
+                
+                // Check if all indices exist
+                const hasAllIndices = documentIndexManager.hasAllIndices(targetPaths);
+                if (!hasAllIndices) {
+                    return NextResponse.json({
+                        error: "Some document indices not found",
+                        message: "Please prepare all selected documents again"
+                    }, { status: 400 });
+                }
 
-            console.log(`Using prepared index for ${documentPath}`);
+                // Get combined index for all documents
+                documentIndex = await documentIndexManager.getCombinedIndex(targetPaths);
+                
+                if (!documentIndex) {
+                    return NextResponse.json({
+                        error: "Failed to create combined index",
+                        message: "Please try selecting documents again"
+                    }, { status: 400 });
+                }
 
-            // create retriever and manually get context
-            const retriever = documentIndex.asRetriever({ similarityTopK: 10 });
+                console.log(`Using combined index for ${targetPaths.length} documents: ${targetPaths.join(', ')}`);
+                
+                // create retriever and get context from combined index
+                const retriever = documentIndex.asRetriever({ similarityTopK: 15 }); // More context for multiple docs
+                retrievedNodes = await retriever.retrieve({ query });
+                
+                // Group context by source document for better organization
+                const contextBySource: { [key: string]: string[] } = {};
+                retrievedNodes.forEach((node: any) => {
+                    const sourceDoc = node.node.metadata?.source_document || 'Unknown';
+                    if (!contextBySource[sourceDoc]) {
+                        contextBySource[sourceDoc] = [];
+                    }
+                    contextBySource[sourceDoc].push(node.node.getContent(MetadataMode.ALL));
+                });
 
-            // retrieve relevant context for the query
-            const retrievedNodes = await retriever.retrieve({ query });
-            const context = retrievedNodes.map((node: any) => node.node.getContent(MetadataMode.ALL)).join('\n\n');
+                // Format context with source attribution
+                const contextParts = Object.entries(contextBySource).map(([source, contents]) => {
+                    const fileName = source.split('/').pop() || source;
+                    return `**From ${fileName}:**\n${contents.join('\n\n')}`;
+                });
+                
+                const context = contextParts.join('\n\n---\n\n');
+                contextInfo = `Documents: ${targetPaths.map((p: string) => p.split('/').pop()).join(', ')}`;
 
-            console.log(`Retrieved ${retrievedNodes.length} nodes for context`);
+                console.log(`Retrieved ${retrievedNodes.length} nodes from ${targetPaths.length} documents`);
 
-            // create enhanced prompt with retrieved context
-            const enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
+                // create enhanced prompt with multi-document context
+                enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
+
+Documents: ${targetPaths.map((p: string) => p.split('/').pop()).join(', ')}
+
+Retrieved Context:
+${context}
+
+Question: ${query}`;
+            } else {
+                // Single document mode (backward compatibility)
+                documentIndex = await documentIndexManager.getIndex(documentPath);
+
+                if (!documentIndex) {
+                    return NextResponse.json({
+                        error: "Document index not found",
+                        message: "Please select the document again to prepare the index"
+                    }, { status: 400 });
+                }
+
+                console.log(`Using prepared index for ${documentPath}`);
+
+                // create retriever and manually get context
+                const retriever = documentIndex.asRetriever({ similarityTopK: 10 });
+
+                // retrieve relevant context for the query
+                retrievedNodes = await retriever.retrieve({ query });
+                const context = retrievedNodes.map((node: any) => node.node.getContent(MetadataMode.ALL)).join('\n\n');
+                contextInfo = `Document: ${documentPath.split('/').pop()}`;
+
+                console.log(`Retrieved ${retrievedNodes.length} nodes for context`);
+
+                // create enhanced prompt with retrieved context
+                enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
 
 Document: ${documentPath.split('/').pop()}
 
@@ -81,6 +158,7 @@ Retrieved Context:
 ${context}
 
 Question: ${query}`;
+            }
 
             // use DeepSeek LLM directly for streaming
             const deepSeekLLM = Settings.llm as DeepSeekLLM;
@@ -89,10 +167,25 @@ Question: ${query}`;
                 stream: true
             });
 
+            // Prepare source information for client
+            const sourceInfo = {
+                sources: (documentPaths || [documentPath]).map((path: string) => ({
+                    path,
+                    name: path.split('/').pop() || path,
+                    displayTitle: path.split('/').pop()?.replace('.pdf', '') || path
+                })),
+                isMultiDocument: !!documentPaths,
+                totalDocuments: documentPaths ? documentPaths.length : 1,
+                contextNodes: retrievedNodes.length
+            };
+
             const readableStream = new ReadableStream({
                 async start(controller) {
                     try {
-                        // stream chat response chunks
+                        // First, send source information as a special message
+                        controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
+                        
+                        // Then stream chat response chunks
                         for await (const chunk of chatStream) {
                             const content = chunk.delta;
                             if (content) {

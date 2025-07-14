@@ -218,6 +218,108 @@ class DocumentIndexManager {
     hasIndex(documentPath: string): boolean {
         return this.documentIndices.has(documentPath);
     }
+
+    // Multi-document support methods
+
+    // prepare indices for multiple documents
+    async prepareMultipleIndices(documentPaths: string[]): Promise<void> {
+        console.log(`Preparing indices for ${documentPaths.length} documents`);
+        
+        // prepare indices in parallel for better performance
+        const preparePromises = documentPaths.map(documentPath => 
+            this.prepareIndex(documentPath)
+        );
+        
+        await Promise.all(preparePromises);
+        console.log(`Successfully prepared indices for all ${documentPaths.length} documents`);
+    }
+
+    // get indices for multiple documents
+    async getMultipleIndices(documentPaths: string[]): Promise<Map<string, VectorStoreIndex>> {
+        const indices = new Map<string, VectorStoreIndex>();
+        
+        for (const documentPath of documentPaths) {
+            const index = await this.getIndex(documentPath);
+            if (index) {
+                indices.set(documentPath, index);
+            }
+        }
+        
+        return indices;
+    }
+
+    // get a combined index from multiple documents
+    async getCombinedIndex(documentPaths: string[]): Promise<VectorStoreIndex | undefined> {
+        console.log(`Creating combined index from ${documentPaths.length} documents`);
+        
+        // collect all documents from all indices by loading from parsed files
+        const allDocuments: Document[] = [];
+        
+        for (const documentPath of documentPaths) {
+            try {
+                // Load documents directly from parsed files instead of trying to extract from index
+                const documents = await this.loadParsedDocuments(documentPath);
+                const documentsWithSource = documents.map(doc => new Document({
+                    id_: doc.id_,
+                    text: doc.text,
+                    metadata: {
+                        ...doc.metadata,
+                        source_document: documentPath // add source attribution
+                    }
+                }));
+                allDocuments.push(...documentsWithSource);
+                console.log(`Loaded ${documents.length} documents from ${documentPath}`);
+            } catch (error) {
+                console.error(`Failed to load documents for ${documentPath}:`, error);
+                // If we can't load from parsed files, we can't create a combined index
+                continue;
+            }
+        }
+        
+        if (allDocuments.length === 0) {
+            console.warn("No documents found for combined index");
+            return undefined;
+        }
+        
+        this.configureSettings();
+        
+        // create a new combined index
+        const combinedIndex = await VectorStoreIndex.fromDocuments(allDocuments);
+        console.log(`Successfully created combined index with ${allDocuments.length} documents`);
+        
+        return combinedIndex;
+    }
+
+    // check if all indices exist for given document paths
+    hasAllIndices(documentPaths: string[]): boolean {
+        return documentPaths.every(path => this.hasIndex(path));
+    }
+
+    // get all available indices
+    getAllAvailableIndices(): Map<string, VectorStoreIndex> {
+        return new Map(this.documentIndices);
+    }
+
+    // get all indexed document paths
+    getIndexedDocumentPaths(): string[] {
+        return Array.from(this.documentIndices.keys());
+    }
+
+    // clear specific indices (useful for memory management)
+    clearIndices(documentPaths: string[]): void {
+        documentPaths.forEach(path => {
+            if (this.documentIndices.has(path)) {
+                this.documentIndices.delete(path);
+                console.log(`Cleared index for ${path}`);
+            }
+        });
+    }
+
+    // clear all indices
+    clearAllIndices(): void {
+        this.documentIndices.clear();
+        console.log("Cleared all indices");
+    }
 }
 
 // export singleton instance
