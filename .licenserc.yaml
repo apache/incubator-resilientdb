@@ -6,9 +6,7 @@ header:
   paths-ignore:
     - '.*'
     - '.**/**'
-    - 'repositories.bzl'
     - 'CNAME'
-    - 'WORKSPACE'
     - '**/*.conf'
     - '**/*.config'
     - '**/*.json'
@@ -19,7 +17,7 @@ header:
     - 'header'
     - 'dev/.rat-excludes'
     - '**/*.md'
-    - 'DISCLAIMER-WIP'
+    - 'DISCLAIMER'
     - 'NOTICE'
     - 'LICENSE'
     - 'documents/doxygen/.gitignore'
