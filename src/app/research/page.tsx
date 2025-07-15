@@ -574,9 +574,7 @@ export default function ResearchChatPage() {
           <Separator orientation="vertical" className="hidden md:block" />
 
           {/* PDF Preview with Tabs - Hidden on mobile when no document selected */}
-          <Card className={`w-full md:w-2/5 bg-card/40 backdrop-blur-sm rounded-none border-0 min-h-0 ${
-            selectedDocuments.length === 0 ? "hidden md:flex" : "hidden md:flex"
-          }`} role="complementary" aria-label="PDF preview">
+          <Card className={`w-full md:w-2/5 bg-card/40 backdrop-blur-sm rounded-none border-0 min-h-0 hidden md:flex`} role="complementary" aria-label="PDF preview">
             {selectedDocuments.length > 0 ? (
               <div className="h-full flex flex-col">
                 <CardHeader className="border-b flex-shrink-0">

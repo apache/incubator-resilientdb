@@ -22,8 +22,9 @@ export interface QueryResult {
 
 export class MultiDocumentQueryEngine {
     private static instance: MultiDocumentQueryEngine;
-    private maxContextLength: number = 8000; // Adjust based on LLM context limits
+    private maxContextLength: number = 220000; // deepseek max context length
     private defaultSimilarityTopK: number = 10;
+    private static readonly SEPARATOR_LENGTH: number = 10;
 
     private constructor() {}
 
@@ -205,7 +206,7 @@ export class MultiDocumentQueryEngine {
         let truncated = '';
         
         for (const section of sections) {
-            if (truncated.length + section.length + 10 <= maxLength) { // +10 for separator
+            if (truncated.length + section.length + MultiDocumentQueryEngine.SEPARATOR_LENGTH <= maxLength) { // +10 for separator
                 truncated += (truncated ? '\n\n---\n\n' : '') + section;
             } else {
                 break;
