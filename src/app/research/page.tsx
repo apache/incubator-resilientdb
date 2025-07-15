@@ -324,9 +324,6 @@ export default function ResearchChatPage() {
     setSelectedDocuments([]);
   }, []);
 
-  const handleRemoveDocument = useCallback((doc: Document) => {
-    handleDocumentDeselect(doc);
-  }, [handleDocumentDeselect]);
 
   return (
     <TooltipProvider>
