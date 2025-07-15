@@ -1,13 +1,13 @@
-import { DeepSeekLLM } from '@llamaindex/deepseek';
-import { HuggingFaceEmbedding } from '@llamaindex/huggingface';
+import { DeepSeekLLM } from "@llamaindex/deepseek";
+import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import {
-    ContextChatEngine,
-    LlamaCloudRetriever,
-    MetadataMode,
-    NodeWithScore,
-    Settings,
-} from 'llamaindex';
-import { config } from '../config/environment';
+  ContextChatEngine,
+  LlamaCloudRetriever,
+  MetadataMode,
+  NodeWithScore,
+  Settings,
+} from "llamaindex";
+import { config } from "../config/environment";
 
 // Define the system prompt for the RAG assistant
 const RAG_SYSTEM_PROMPT = `
@@ -44,204 +44,224 @@ Always encourage critical thinking about the democratic and decentralized comput
 `;
 
 export interface SourceNode {
-    id: string;
-    text: string;
-    score: number;
+  id: string;
+  text: string;
+  score: number;
 }
 
 export interface ChatResponse {
-    stream: ReadableStream;
-    sourceNodes: SourceNode[];
+  stream: ReadableStream;
+  sourceNodes: SourceNode[];
 }
 
 class ChatEngineService {
-    private chatEngine: ContextChatEngine | null = null;
-    private retriever: LlamaCloudRetriever | null = null;
-    private isInitialized = false;
-    private initializationError: string | null = null;
+  private chatEngine: ContextChatEngine | null = null;
+  private retriever: LlamaCloudRetriever | null = null;
+  private isInitialized = false;
+  private initializationError: string | null = null;
 
-    async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
+    try {
+      this.initializationError = null;
+
+      if (!config.deepSeekApiKey) {
+        throw new Error(
+          "DeepSeek API key is required. Please set DEEPSEEK_API_KEY in your environment variables.",
+        );
+      }
+
+      // Configure DeepSeek LLM
+      Settings.llm = new DeepSeekLLM({
+        apiKey: config.deepSeekApiKey,
+        model: config.deepSeekModel,
+      });
+
+      try {
+        Settings.embedModel = new HuggingFaceEmbedding() as any;
+      } catch (error) {
+        console.warn("Failed to initialize HuggingFace embedding:", error);
+        Settings.embedModel = new HuggingFaceEmbedding() as any;
+      }
+
+      if (config.llamaCloudApiKey && config.llamaCloudProjectName) {
         try {
-            this.initializationError = null;
+          const retrieverOptions: any = {
+            projectName: config.llamaCloudProjectName,
+            apiKey: config.llamaCloudApiKey,
+          };
 
-            if (!config.deepSeekApiKey) {
-                throw new Error('DeepSeek API key is required. Please set DEEPSEEK_API_KEY in your environment variables.');
-            }
+          if (config.llamaCloudIndexName) {
+            retrieverOptions.name = config.llamaCloudIndexName;
+          }
 
-            // Configure DeepSeek LLM
-            Settings.llm = new DeepSeekLLM({
-                apiKey: config.deepSeekApiKey,
-                model: config.deepSeekModel,
-            });
+          if (config.llamaCloudBaseUrl) {
+            retrieverOptions.baseUrl = config.llamaCloudBaseUrl;
+          }
 
+          // Initialize the retriever
+          this.retriever = new LlamaCloudRetriever(retrieverOptions);
+
+          // Create chat engine with system prompt
+          this.chatEngine = new ContextChatEngine({
+            retriever: this.retriever,
+            systemPrompt: RAG_SYSTEM_PROMPT,
+          });
+
+          console.log("Chat engine with LlamaCloud initialized successfully");
+        } catch (llamaError) {
+          console.warn(
+            "LlamaCloud initialization failed, falling back to DeepSeek only:",
+            llamaError,
+          );
+          this.retriever = null;
+          this.chatEngine = null;
+        }
+      } else {
+        console.warn(
+          "LlamaCloud configuration incomplete, using DeepSeek only",
+        );
+      }
+
+      this.isInitialized = true;
+      console.log("Chat engine service initialized successfully");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to initialize chat engine";
+      this.initializationError = errorMessage;
+      console.error("Chat engine initialization error:", err);
+      throw err;
+    }
+  }
+
+  async sendMessageWithStream(message: string): Promise<ChatResponse> {
+    if (!this.isInitialized) {
+      throw new Error("Chat engine is not initialized");
+    }
+
+    try {
+      let sourceNodes: SourceNode[] = [];
+
+      if (this.chatEngine && this.retriever) {
+        // 1. Retrieve source nodes using the retriever instance
+        const nodesWithScore: NodeWithScore[] =
+          await this.retriever.retrieve(message);
+        sourceNodes = nodesWithScore
+          .filter((n) => n.score && n.score > 0.59) // Filter nodes by score
+          .slice(0, 3) // Limit to maximum 3 sources
+          .map((n) => ({
+            id: n.node.id_,
+            text: n.node.getContent(MetadataMode.NONE), // Send full text
+            score: n.score || 0, // Ensure score is always a number
+          }));
+
+        // 2. Stream the chat response
+        const contextualPrompt = `${RAG_SYSTEM_PROMPT}
+
+User question: ${message}`;
+
+        const chatStream = await this.chatEngine.chat({
+          message: contextualPrompt,
+          stream: true,
+        });
+
+        const readableStream = new ReadableStream({
+          async start(controller) {
             try {
-                Settings.embedModel = new HuggingFaceEmbedding() as any;
+              // Stream text chunks
+              for await (const chunk of chatStream) {
+                controller.enqueue(chunk.response);
+              }
+              // After text stream, enqueue the source nodes marker and then the JSON
+              if (sourceNodes.length > 0) {
+                controller.enqueue("\n\n__SOURCE_NODES_SEPARATOR__\n\n");
+                controller.enqueue(JSON.stringify(sourceNodes));
+              }
+              controller.close();
             } catch (error) {
-                console.warn("Failed to initialize HuggingFace embedding:", error);
-                Settings.embedModel = new HuggingFaceEmbedding() as any;
+              controller.error(error);
             }
+          },
+        });
 
-            if (config.llamaCloudApiKey && config.llamaCloudProjectName) {
-                try {
-                    const retrieverOptions: any = {
-                        projectName: config.llamaCloudProjectName,
-                        apiKey: config.llamaCloudApiKey,
-                    };
-
-                    if (config.llamaCloudIndexName) {
-                        retrieverOptions.name = config.llamaCloudIndexName;
-                    }
-
-                    if (config.llamaCloudBaseUrl) {
-                        retrieverOptions.baseUrl = config.llamaCloudBaseUrl;
-                    }
-
-                    // Initialize the retriever
-                    this.retriever = new LlamaCloudRetriever(retrieverOptions);
-
-                    // Create chat engine with system prompt
-                    this.chatEngine = new ContextChatEngine({
-                        retriever: this.retriever,
-                        systemPrompt: RAG_SYSTEM_PROMPT,
-                    });
-
-                    console.log('Chat engine with LlamaCloud initialized successfully');
-                } catch (llamaError) {
-                    console.warn('LlamaCloud initialization failed, falling back to DeepSeek only:', llamaError);
-                    this.retriever = null;
-                    this.chatEngine = null;
-                }
-            } else {
-                console.warn('LlamaCloud configuration incomplete, using DeepSeek only');
-            }
-
-            this.isInitialized = true;
-            console.log('Chat engine service initialized successfully');
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to initialize chat engine';
-            this.initializationError = errorMessage;
-            console.error('Chat engine initialization error:', err);
-            throw err;
-        }
-    }
-
-    async sendMessageWithStream(message: string): Promise<ChatResponse> {
-        if (!this.isInitialized) {
-            throw new Error('Chat engine is not initialized');
-        }
-
-        try {
-            let sourceNodes: SourceNode[] = [];
-
-            if (this.chatEngine && this.retriever) {
-                // 1. Retrieve source nodes using the retriever instance
-                const nodesWithScore: NodeWithScore[] = await this.retriever.retrieve(message);
-                sourceNodes = nodesWithScore
-                    .filter((n) => n.score && n.score > 0.59) // Filter nodes by score
-                    .slice(0, 3) // Limit to maximum 3 sources
-                    .map((n) => ({
-                        id: n.node.id_,
-                        text: n.node.getContent(MetadataMode.NONE), // Send full text
-                        score: n.score || 0, // Ensure score is always a number
-                    }));
-
-                // 2. Stream the chat response
-                const contextualPrompt = `${RAG_SYSTEM_PROMPT}
+        return { stream: readableStream, sourceNodes };
+      } else {
+        // Fallback to direct DeepSeek LLM usage
+        const deepSeekLLM = Settings.llm as DeepSeekLLM;
+        if (deepSeekLLM) {
+          const contextualPrompt = `${RAG_SYSTEM_PROMPT}
 
 User question: ${message}`;
 
-                const chatStream = await this.chatEngine.chat({
-                    message: contextualPrompt,
-                    stream: true,
-                });
+          const response = await deepSeekLLM.complete({
+            prompt: contextualPrompt,
+          });
+          const responseText =
+            response.text ||
+            "I apologize, but I could not generate a response.";
 
-                const readableStream = new ReadableStream({
-                    async start(controller) {
-                        try {
-                            // Stream text chunks
-                            for await (const chunk of chatStream) {
-                                controller.enqueue(chunk.response);
-                            }
-                            // After text stream, enqueue the source nodes marker and then the JSON
-                            if (sourceNodes.length > 0) {
-                                controller.enqueue("\n\n__SOURCE_NODES_SEPARATOR__\n\n");
-                                controller.enqueue(JSON.stringify(sourceNodes));
-                            }
-                            controller.close();
-                        } catch (error) {
-                            controller.error(error);
-                        }
-                    },
-                });
+          const readableStream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(responseText);
+              controller.close();
+            },
+          });
 
-                return { stream: readableStream, sourceNodes };
-            } else {
-                // Fallback to direct DeepSeek LLM usage
-                const deepSeekLLM = Settings.llm as DeepSeekLLM;
-                if (deepSeekLLM) {
-                    const contextualPrompt = `${RAG_SYSTEM_PROMPT}
+          return { stream: readableStream, sourceNodes: [] };
+        } else {
+          throw new Error("No chat engine or LLM available");
+        }
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw new Error("Failed to send message. Please try again.");
+    }
+  }
+
+  async sendMessage(message: string): Promise<string> {
+    if (!this.isInitialized) {
+      throw new Error("Chat engine is not initialized");
+    }
+
+    try {
+      if (this.chatEngine) {
+        // Use chat method with system prompt already configured
+        const response = await this.chatEngine.chat({ message });
+        return (
+          response.response ||
+          "I apologize, but I could not generate a response."
+        );
+      } else {
+        // Fallback to direct DeepSeek LLM usage
+        const deepSeekLLM = Settings.llm as DeepSeekLLM;
+        if (deepSeekLLM) {
+          const contextualPrompt = `${RAG_SYSTEM_PROMPT}
 
 User question: ${message}`;
 
-                    const response = await deepSeekLLM.complete({ prompt: contextualPrompt });
-                    const responseText = response.text || 'I apologize, but I could not generate a response.';
-
-                    const readableStream = new ReadableStream({
-                        start(controller) {
-                            controller.enqueue(responseText);
-                            controller.close();
-                        },
-                    });
-
-                    return { stream: readableStream, sourceNodes: [] };
-                } else {
-                    throw new Error('No chat engine or LLM available');
-                }
-            }
-        } catch (err) {
-            console.error('Error sending message:', err);
-            throw new Error('Failed to send message. Please try again.');
+          const response = await deepSeekLLM.complete({
+            prompt: contextualPrompt,
+          });
+          return (
+            response.text || "I apologize, but I could not generate a response."
+          );
+        } else {
+          throw new Error("No chat engine available");
         }
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      throw new Error("Failed to send message. Please try again.");
     }
+  }
 
-    async sendMessage(message: string): Promise<string> {
-        if (!this.isInitialized) {
-            throw new Error('Chat engine is not initialized');
-        }
-
-        try {
-            if (this.chatEngine) {
-                // Use chat method with system prompt already configured
-                const response = await this.chatEngine.chat({ message });
-                return response.response || 'I apologize, but I could not generate a response.';
-            } else {
-                // Fallback to direct DeepSeek LLM usage
-                const deepSeekLLM = Settings.llm as DeepSeekLLM;
-                if (deepSeekLLM) {
-                    const contextualPrompt = `${RAG_SYSTEM_PROMPT}
-
-User question: ${message}`;
-
-                    const response = await deepSeekLLM.complete({ prompt: contextualPrompt });
-                    return response.text || 'I apologize, but I could not generate a response.';
-                } else {
-                    throw new Error('No chat engine available');
-                }
-            }
-        } catch (err) {
-            console.error('Error sending message:', err);
-            throw new Error('Failed to send message. Please try again.');
-        }
-    }
-
-    getStatus() {
-        return {
-            isInitialized: this.isInitialized,
-            error: this.initializationError,
-            hasLlamaCloud: !!this.chatEngine,
-            hasRetriever: !!this.retriever,
-        };
-    }
+  getStatus() {
+    return {
+      isInitialized: this.isInitialized,
+      error: this.initializationError,
+      hasLlamaCloud: !!this.chatEngine,
+      hasRetriever: !!this.retriever,
+    };
+  }
 }
 
-export const chatEngineService = new ChatEngineService(); 
+export const chatEngineService = new ChatEngineService();

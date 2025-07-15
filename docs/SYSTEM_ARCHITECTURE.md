@@ -12,7 +12,7 @@ graph TB
             Chat["Chat Interface<br/>Component"]
             Preview["PDF Preview<br/>Component"]
         end
-        
+
         subgraph UIComponents["UI Components"]
             Badge["Document Source Badge"]
             MarkdownComp["Markdown Renderer"]
@@ -33,7 +33,7 @@ graph TB
     subgraph Services["Document Processing Services"]
         DIM["Document Index Manager<br/>Singleton Service"]
         MDQE["Multi-Document Query Engine<br/>Singleton Service"]
-        
+
         subgraph LlamaIndex["LlamaIndex Integration"]
             LP["LlamaParse Reader<br/>PDF Processing"]
             VSI["Vector Store Index<br/>Document Embeddings"]
@@ -104,6 +104,7 @@ graph TB
 ## Data Flow
 
 ### Document Selection Flow
+
 1. User opens research page
 2. System loads available documents from `/documents/` directory
 3. User selects one or more documents
@@ -113,6 +114,7 @@ graph TB
 7. Indices are stored in memory cache
 
 ### Chat Query Flow
+
 1. User enters a question
 2. System retrieves relevant chunks from combined index
 3. Context is organized by source document

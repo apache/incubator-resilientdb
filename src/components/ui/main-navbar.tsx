@@ -1,61 +1,56 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
-import { Home, LucideIcon, MessageSquare, Settings } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Home, LucideIcon, MessageSquare, Settings } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface NavItem {
-  name: string
-  url: string
-  icon: LucideIcon
+  name: string;
+  url: string;
+  icon: LucideIcon;
 }
 
 interface MainNavBarProps {
-  className?: string
+  className?: string;
 }
 
 export function MainNavBar({ className }: MainNavBarProps) {
-  const pathname = usePathname()
-  const [isMobile, setIsMobile] = useState(false)
+  const pathname = usePathname();
+  const [isMobile, setIsMobile] = useState(false);
 
   const navItems = [
-    { name: 'Home', url: '/', icon: Home },
-    { name: 'Chat', url: '/chat', icon: MessageSquare },
-    { name: 'Researcher', url: '/research', icon: Settings }
-  ]
+    { name: "Home", url: "/", icon: Home },
+    { name: "Chat", url: "/chat", icon: MessageSquare },
+    { name: "Researcher", url: "/research", icon: Settings },
+  ];
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    handleResize()
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const isResearcher = pathname === "/research"
+  const isResearcher = pathname === "/research";
   return (
     <div
-      className={cn(
-        "fixed top-0 left-0 w-full py-4 px-4 z-50",
-        className,
-      )}
+      className={cn("fixed top-0 left-0 w-full py-4 px-4 z-50", className)}
       hidden={isResearcher}
     >
-        {/* <div className="flex gap-3">
+      {/* <div className="flex gap-3">
             <Image src="/resdb-logo.svg" alt="ResDB Logo" width={100} height={100} />
             <Image src="/expolab-icon.png" alt="ExpoLab Icon" width={100} height={100} />
         </div> */}
       <div className="flex items-center justify-center gap-3 bg-background/5 border border-border backdrop-blur-lg py-1 px-1 rounded-full shadow-lg w-fit mx-auto">
- 
-        
         {navItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.url
+          const Icon = item.icon;
+          const isActive = pathname === item.url;
 
           return (
             <Link
@@ -90,9 +85,9 @@ export function MainNavBar({ className }: MainNavBarProps) {
                 </motion.div>
               )}
             </Link>
-          )
+          );
         })}
       </div>
     </div>
-  )
-} 
+  );
+}

@@ -1,19 +1,19 @@
 "use client";
 
-import { cn } from '@/lib/utils';
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
-import remarkGfm from 'remark-gfm';
+import { cn } from "@/lib/utils";
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
 }
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ 
-  content, 
-  className 
+export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
+  content,
+  className,
 }) => {
   return (
     <div className={cn("prose prose-invert max-w-none", className)}>
@@ -26,7 +26,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             <h1 className="text-2xl font-bold mb-4 text-white">{children}</h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-xl font-semibold mb-3 text-white">{children}</h2>
+            <h2 className="text-xl font-semibold mb-3 text-white">
+              {children}
+            </h2>
           ),
           h3: ({ children }) => (
             <h3 className="text-lg font-medium mb-2 text-white">{children}</h3>
@@ -34,18 +36,18 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           p: ({ children }) => (
             <p className="mb-3 text-gray-200 leading-relaxed">{children}</p>
           ),
-          hr: ({ children }) => (
-            <hr className="my-4" />
-          ),
+          hr: ({ children }) => <hr className="my-4" />,
           ul: ({ children }) => (
-            <ul className="list-disc list-inside mb-3 text-gray-200 space-y-1">{children}</ul>
+            <ul className="list-disc list-inside mb-3 text-gray-200 space-y-1">
+              {children}
+            </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal mb-3 ml-6 text-gray-200 space-y-1">{children}</ol>
+            <ol className="list-decimal mb-3 ml-6 text-gray-200 space-y-1">
+              {children}
+            </ol>
           ),
-          li: ({ children }) => (
-            <li className="text-gray-200">{children}</li>
-          ),
+          li: ({ children }) => <li className="text-gray-200">{children}</li>,
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-gray-500 pl-4 italic text-gray-300 mb-3">
               {children}
@@ -53,7 +55,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
           code: ({ inline, className, children, ...props }: any) => {
             return inline ? (
-              <code className="bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200" {...props}>
+              <code
+                className="bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200"
+                {...props}
+              >
                 {children}
               </code>
             ) : (
@@ -68,8 +73,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
             </pre>
           ),
           a: ({ href, children }) => (
-            <a 
-              href={href} 
+            <a
+              href={href}
               className="text-blue-400 hover:text-blue-300 underline transition-colors"
               target="_blank"
               rel="noopener noreferrer"
@@ -106,4 +111,4 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       </ReactMarkdown>
     </div>
   );
-}; 
+};
