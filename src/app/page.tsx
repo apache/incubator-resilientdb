@@ -12,19 +12,24 @@ export default function WelcomePage() {
           ResilientDB's AI-Powered Resource Hub
         </h1>
         <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          Access everything for Apache ResilientDB (Incubating) — the high-throughput distributed ledger built on scale-centric design principles.
+          Access everything for Apache ResilientDB (Incubating) — the
+          high-throughput distributed ledger built on scale-centric design
+          principles.
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           <Button
-          onClick={() => {
-            router.push('/chat');
-          }}
+            onClick={() => {
+              router.push("/chat");
+            }}
           >
             Start Chatting
           </Button>
-          <Button variant="secondary" onClick={() => {
-            window.open('https://resilientdb.apache.org/', '_blank');
-          }}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              window.open("https://resilientdb.apache.org/", "_blank");
+            }}
+          >
             Official Website
           </Button>
         </div>

@@ -9,11 +9,13 @@ This guide will help you set up the simplified PDF chat functionality that allow
 You need the following API keys:
 
 #### DeepSeek API Key
+
 - Go to [DeepSeek Platform](https://platform.deepseek.com/)
 - Sign up and create an API key
 - This is used for the AI chat responses
 
-#### LlamaCloud API Key  
+#### LlamaCloud API Key
+
 - Go to [LlamaCloud](https://cloud.llamaindex.ai)
 - Sign up and get your API key
 - This is used for document parsing with LlamaParse
@@ -70,12 +72,14 @@ DEEPSEEK_MODEL=deepseek-chat
 ## API Endpoints
 
 ### `/api/research/documents`
+
 - **Method**: GET
 - **Description**: Lists available PDF documents
 - **Returns**: Array of document metadata
 
 ### `/api/research/chat`
-- **Method**: POST  
+
+- **Method**: POST
 - **Body**: `{ query: "your question", documentPath: "documents/filename.pdf" }`
 - **Description**: Chat with a specific document using LlamaParse + DeepSeek
 - **Returns**: Streaming text response
@@ -91,22 +95,27 @@ DEEPSEEK_MODEL=deepseek-chat
 ## Troubleshooting
 
 ### "Failed to parse document" Error
+
 **Most Common Causes:**
+
 1. **Invalid LlamaCloud API Key**: Check your API key at [LlamaCloud](https://cloud.llamaindex.ai)
 2. **Insufficient Credits**: Check your LlamaCloud account balance
 3. **Unsupported PDF**: Some PDFs may not be parseable
 
 ### Documents Not Appearing
+
 - Check that PDF files are in the `/documents` folder
 - Ensure files have `.pdf` extension
 - Check browser console for errors
 
 ### Chat Not Working
+
 - Verify `DEEPSEEK_API_KEY` is set correctly
 - Ensure the document was successfully parsed
 - Check browser network tab for API errors
 
 ### PDF Not Loading
+
 - Ensure the PDF file is accessible
 - Check browser console for loading errors
 - Try a different PDF to isolate the issue
@@ -114,18 +123,22 @@ DEEPSEEK_MODEL=deepseek-chat
 ## Development Notes
 
 ### Performance
+
 - Documents are parsed on first use (lazy loading)
 - Vector indices are cached in memory during the session
 - Large PDFs may take longer to parse initially
 
 ### Limitations
+
 - No persistent caching (re-parses on server restart)
 - Single document chat only (no multi-document queries)
 - No visual highlighting or source citations
 - Relies on browser's built-in PDF viewer
 
 ### Future Enhancements
+
 If needed, you could add back:
+
 - File-based caching for persistence
 - Multi-document chat capabilities
 - Source citations (without visual highlighting)
@@ -147,4 +160,4 @@ documents/                       # Place your PDFs here
 └── ...
 ```
 
-This simplified implementation focuses on the core functionality: select a PDF, preview it, and chat with its content using reliable LlamaParse text extraction. 
+This simplified implementation focuses on the core functionality: select a PDF, preview it, and chat with its content using reliable LlamaParse text extraction.
