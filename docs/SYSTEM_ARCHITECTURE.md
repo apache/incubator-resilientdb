@@ -87,12 +87,12 @@ graph TB
     Preview -->|"Display PDF"| FileAPI
     FileAPI --> Docs
 
-    %% Styling
-    classDef frontend fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef api fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef service fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef external fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef storage fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% Dark Mode Agnostic Styling
+    classDef frontend fill:#f8f9fa,stroke:#6c757d,stroke-width:2px,color:#212529
+    classDef api fill:#e9ecef,stroke:#495057,stroke-width:2px,color:#212529
+    classDef service fill:#f1f3f4,stroke:#5f6368,stroke-width:2px,color:#212529
+    classDef external fill:#fff2cc,stroke:#d6b656,stroke-width:2px,color:#212529
+    classDef storage fill:#fce8e6,stroke:#cc4125,stroke-width:2px,color:#212529
 
     class UI,MDS,Chat,Preview,Badge,MarkdownComp,Loader,Tabs frontend
     class DocAPI,PrepAPI,ChatAPI,FileAPI api
