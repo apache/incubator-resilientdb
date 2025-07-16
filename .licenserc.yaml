@@ -4,19 +4,23 @@ header:
     copyright-owner: Apache Software Foundation
 
   paths-ignore:
+    - '.*'
+    - '.**/**'
+    - 'CNAME'
+    - '**/*.conf'
     - '**/*.config'
     - '**/*.json'
-    - '**/*.yaml'
-    - '**/*.yml'
-    - '**/*.dockerignore'
-    - 'Doxyfile'
-    - 'header'
+    - '**/*.sol'
+    - '**/*.pri'
+    - '**/*.pub'
     - 'dev/.rat-excludes'
-    - '**/*.md'
+    - 'DISCLAIMER'
     - 'NOTICE'
-    - 'DISCLAIMER-WIP'
     - 'LICENSE'
-    - '.gitignore'
+    - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
 
+
+
   comment: on-failure
+
