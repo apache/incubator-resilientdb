@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { TITLE_MAPPINGS } from "@/lib/constants";
 import {
   ChevronLeft,
   ChevronRight,
@@ -59,14 +60,8 @@ interface Message {
 
 // Filename to title mapping - you can extend this as needed
 const getDisplayTitle = (filename: string): string => {
-  const titleMappings: Record<string, string> = {
-    "resilientdb.pdf": "ResilientDB: Global Scale Resilient Blockchain Fabric",
-    "rcc.pdf":
-      "Resilient Concurrent Consensus for High-Throughput Secure Transaction Processing",
-  };
-
   const lowerFilename = filename.toLowerCase();
-  return titleMappings[lowerFilename] || filename.replace(".pdf", "");
+  return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
 };
 
 export default function ResearchChatPage() {

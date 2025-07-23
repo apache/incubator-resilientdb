@@ -1,4 +1,5 @@
 import { MetadataMode } from "llamaindex";
+import { TITLE_MAPPINGS } from "./constants";
 import { documentIndexManager } from "./document-index-manager";
 
 export interface DocumentSource {
@@ -35,28 +36,20 @@ export class MultiDocumentQueryEngine {
     return MultiDocumentQueryEngine.instance;
   }
 
-  // Set maximum context length for responses
+  // set maximum context length for responses
   setMaxContextLength(length: number): void {
     this.maxContextLength = length;
   }
 
-  // Get display name for a document path
+  // get display name for a document path
   private getDocumentDisplayName(documentPath: string): string {
     const filename = documentPath.split("/").pop() || documentPath;
 
-    // Title mappings - extend as needed
-    const titleMappings: Record<string, string> = {
-      "resilientdb.pdf":
-        "ResilientDB: Global Scale Resilient Blockchain Fabric",
-      "rcc.pdf":
-        "Resilient Concurrent Consensus for High-Throughput Secure Transaction Processing",
-    };
-
     const lowerFilename = filename.toLowerCase();
-    return titleMappings[lowerFilename] || filename.replace(".pdf", "");
+    return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
   }
 
-  // Query multiple documents and return organized results
+  // query multiple documents and return organized results
   async queryMultipleDocuments(
     query: string,
     documentPaths: string[],
@@ -72,7 +65,7 @@ export class MultiDocumentQueryEngine {
       maxContextLength = this.maxContextLength,
     } = options;
 
-    // Validate that all documents have indices
+    // validate that all documents have indices
     const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
     if (!hasAllIndices) {
       throw new Error(
@@ -80,21 +73,21 @@ export class MultiDocumentQueryEngine {
       );
     }
 
-    // Get combined index
+    // get combined index
     const combinedIndex =
       await documentIndexManager.getCombinedIndex(documentPaths);
     if (!combinedIndex) {
       throw new Error("Failed to create combined index from documents");
     }
 
-    // Retrieve relevant chunks
+    // retrieve relevant chunks
     const retriever = combinedIndex.asRetriever({
-      similarityTopK: similarityTopK * documentPaths.length, // More chunks for multiple docs
+      similarityTopK: similarityTopK * documentPaths.length, // more chunks for multiple docs
     });
 
     const retrievedNodes = await retriever.retrieve({ query });
 
-    // Organize chunks by source document
+    // organize chunks by source document
     const chunksBySource: { [key: string]: ContextChunk[] } = {};
     let totalContextLength = 0;
     const processedChunks: ContextChunk[] = [];
@@ -105,7 +98,7 @@ export class MultiDocumentQueryEngine {
         includeMetadata ? MetadataMode.ALL : MetadataMode.NONE,
       );
 
-      // Check if adding this chunk would exceed context limit
+      // check if adding this chunk would exceed context limit
       if (totalContextLength + content.length > maxContextLength) {
         console.log(
           `Context limit reached. Stopping at ${processedChunks.length} chunks.`,
@@ -127,7 +120,7 @@ export class MultiDocumentQueryEngine {
       totalContextLength += content.length;
     }
 
-    // Create formatted context with source attribution
+    // create formatted context with source attribution
     const contextParts = Object.entries(chunksBySource).map(
       ([source, chunks]) => {
         const displayName = this.getDocumentDisplayName(source);
@@ -138,7 +131,7 @@ export class MultiDocumentQueryEngine {
 
     const formattedContext = contextParts.join("\n\n---\n\n");
 
-    // Create source information
+    // create source information
     const sources: DocumentSource[] = documentPaths.map((path) => ({
       path,
       name: path.split("/").pop() || path,
@@ -153,7 +146,7 @@ export class MultiDocumentQueryEngine {
     };
   }
 
-  // Query a single document (for backward compatibility)
+  // query a single document (for backward compatibility)
   async querySingleDocument(
     query: string,
     documentPath: string,
@@ -165,7 +158,7 @@ export class MultiDocumentQueryEngine {
     return this.queryMultipleDocuments(query, [documentPath], options);
   }
 
-  // Get context summary for selected documents
+  // get context summary for selected documents
   async getDocumentsSummary(documentPaths: string[]): Promise<{
     totalDocuments: number;
     availableDocuments: number;
@@ -189,7 +182,7 @@ export class MultiDocumentQueryEngine {
     };
   }
 
-  // Extract unique sources from query result
+  // extract unique sources from query result
   getUniqueSources(chunks: ContextChunk[]): DocumentSource[] {
     const uniqueSources = new Set<string>();
     const sources: DocumentSource[] = [];
@@ -208,13 +201,13 @@ export class MultiDocumentQueryEngine {
     return sources;
   }
 
-  // Truncate context to fit within limits while preserving source attribution
+  // truncate context to fit within limits while preserving source attribution
   truncateContext(context: string, maxLength: number): string {
     if (context.length <= maxLength) {
       return context;
     }
 
-    // Try to truncate at section boundaries (---)
+    // try to truncate at section boundaries (---)
     const sections = context.split("\n\n---\n\n");
     let truncated = "";
 
@@ -233,7 +226,7 @@ export class MultiDocumentQueryEngine {
     }
 
     if (truncated.length === 0) {
-      // If no complete sections fit, truncate the first section
+      // if no complete sections fit, truncate the first section
       truncated =
         sections[0].substring(0, maxLength - 20) + "...\n\n[Context truncated]";
     } else {
@@ -244,5 +237,5 @@ export class MultiDocumentQueryEngine {
   }
 }
 
-// Export singleton instance
+// export singleton instance
 export const multiDocumentQueryEngine = MultiDocumentQueryEngine.getInstance();
