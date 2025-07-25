@@ -1,9 +1,11 @@
+import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
+import { CodeReranker } from "@/lib/code-reranker";
+import { documentIndexManager } from "@/lib/document-index-manager";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import { MetadataMode, Settings } from "llamaindex";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
-import { documentIndexManager } from "../../../../lib/document-index-manager";
 
 // simple system prompt for document q&a
 const RESEARCH_SYSTEM_PROMPT = `
@@ -17,7 +19,7 @@ If asked about something that is not in the document, give a brief answer and tr
 
 export async function POST(req: NextRequest) {
   try {
-    const { query, documentPath, documentPaths } = await req.json();
+    const { query, documentPath, documentPaths, tool, language, scope } = await req.json();
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
@@ -104,8 +106,22 @@ export async function POST(req: NextRequest) {
       );
 
       // create retriever and get context from combined index
-      const retriever = documentIndex.asRetriever({ similarityTopK: 15 }); // More context for multiple docs
-      retrievedNodes = await retriever.retrieve({ query });
+      const topK = tool === "code-composer" ? 20 : 15; // More context for code generation
+      const retriever = documentIndex.asRetriever({ similarityTopK: topK });
+      let initialNodes = await retriever.retrieve({ query });
+
+      // Apply code reranking if in code-composer mode
+      if (tool === "code-composer") {
+        const codeReranker = new CodeReranker({
+          maxTokens: 3000, // Token budget limit
+          boostFactor: 1.5
+        });
+        retrievedNodes = codeReranker.rerank(initialNodes);
+        
+        console.log("Code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
+      } else {
+        retrievedNodes = initialNodes;
+      }
 
       // Group context by source document for better organization
       const contextBySource: { [key: string]: string[] } = {};
@@ -132,8 +148,19 @@ export async function POST(req: NextRequest) {
         `Retrieved ${retrievedNodes.length} nodes from ${targetPaths.length} documents`,
       );
 
-      // create enhanced prompt with multi-document context
-      enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
+      // create enhanced prompt based on tool mode
+      if (tool === "code-composer") {
+        const codeComposerContext: CodeComposerContext = {
+          language: language || "ts",
+          scope: scope || [],
+          chunks: context,
+          query,
+          documentTitles: targetPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
+        };
+        enhancedPrompt = generateCodeComposerPrompt(codeComposerContext);
+      } else {
+        // Standard research prompt
+        enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
 
 Documents: ${targetPaths.map((p: string) => p.split("/").pop()).join(", ")}
 
@@ -141,6 +168,7 @@ Retrieved Context:
 ${context}
 
 Question: ${query}`;
+      }
 
       // use DeepSeek LLM directly for streaming
       const deepSeekLLM = Settings.llm as DeepSeekLLM;
@@ -159,6 +187,9 @@ Question: ${query}`;
         isMultiDocument: !!documentPaths,
         totalDocuments: documentPaths ? documentPaths.length : 1,
         contextNodes: retrievedNodes.length,
+        tool: tool || "default",
+        language: language || "ts",
+        scope: scope || []
       };
 
       const readableStream = new ReadableStream({
@@ -169,13 +200,40 @@ Question: ${query}`;
               `__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`,
             );
 
-            // Then stream chat response chunks
-            for await (const chunk of chatStream) {
-              const content = chunk.delta;
-              if (content) {
-                controller.enqueue(content);
+            // Handle different streaming based on tool mode
+            if (tool === "code-composer") {
+              // For code composer, collect full response first to parse chain-of-thought
+              let fullResponse = "";
+              for await (const chunk of chatStream) {
+                const content = chunk.delta;
+                if (content) {
+                  fullResponse += content;
+                  controller.enqueue(content); // Still stream for real-time feedback
+                }
+              }
+
+              // Parse chain-of-thought structure
+              const parsed = parseChainOfThoughtResponse(fullResponse);
+              
+              // Send structured metadata for UI processing
+              controller.enqueue(
+                `\n\n__CODE_COMPOSER_META__${JSON.stringify({
+                  hasStructuredResponse: parsed.hasStructuredResponse,
+                  planLength: parsed.plan.length,
+                  pseudocodeLength: parsed.pseudocode.length,
+                  implementationLength: parsed.implementation.length
+                })}\n\n`
+              );
+            } else {
+              // Standard streaming for research mode
+              for await (const chunk of chatStream) {
+                const content = chunk.delta;
+                if (content) {
+                  controller.enqueue(content);
+                }
               }
             }
+            
             controller.close();
           } catch (error) {
             controller.error(error);
