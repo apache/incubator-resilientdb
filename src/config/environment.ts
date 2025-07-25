@@ -1,4 +1,7 @@
 export const config = {
+  // Database configuration
+  databaseUrl: process.env.DATABASE_URL || "",
+
   // DeepSeek LLM configuration
   deepSeekApiKey: process.env.DEEPSEEK_API_KEY || "",
   deepSeekModel: (process.env.DEEPSEEK_MODEL || "deepseek-chat") as

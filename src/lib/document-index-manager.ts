@@ -1,6 +1,6 @@
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
-import { mkdir, readFile, stat, writeFile } from "fs/promises";
+import { stat } from "fs/promises";
 import {
   Document,
   LlamaParseReader,
@@ -9,10 +9,12 @@ import {
 } from "llamaindex";
 import { join } from "path";
 import { config } from "../config/environment";
+import { databaseService, DocumentData } from "./database";
 
 class DocumentIndexManager {
   private static instance: DocumentIndexManager;
   private documentIndices: Map<string, VectorStoreIndex> = new Map();
+  private databaseInitialized: boolean = false;
 
   private constructor() {}
 
@@ -37,56 +39,43 @@ class DocumentIndexManager {
     }
   }
 
-  // helper function to get parsed file paths
-  private getParsedPaths(documentPath: string) {
-    const fileName =
-      documentPath
-        .split("/")
-        .pop()
-        ?.replace(/\.[^/.]+$/, "") || "document";
-    const parsedDir = join(process.cwd(), "documents", "parsed", fileName);
-    return {
-      documentsPath: join(parsedDir, "documents.json"),
-      metadataPath: join(parsedDir, "metadata.json"),
-      parsedDir,
-    };
+  // Initialize database if not already done
+  private async initializeDatabase(): Promise<void> {
+    if (!this.databaseInitialized) {
+      await databaseService.initializeSchema();
+      this.databaseInitialized = true;
+    }
   }
 
-  // helper function to check if parsed files exist and are newer than source
-  private async shouldUseParsedFiles(documentPath: string): Promise<boolean> {
+  // helper function to check if parsed documents exist and are newer than source
+  private async shouldUseParsedDocuments(documentPath: string): Promise<boolean> {
     try {
+      await this.initializeDatabase();
+
       const sourcePath = join(process.cwd(), documentPath);
-      const { documentsPath, metadataPath } = this.getParsedPaths(documentPath);
+      
+      // get source file stats
+      const sourceStats = await stat(sourcePath);
 
-      // check if parsed files exist
-      const [sourceStats, documentsStats, metadataStats] = await Promise.all([
-        stat(sourcePath),
-        stat(documentsPath),
-        stat(metadataPath),
-      ]);
-
-      // check if parsed files are newer than source
-      return (
-        documentsStats.mtime >= sourceStats.mtime &&
-        metadataStats.mtime >= sourceStats.mtime
-      );
+      // check if we have cached data that's newer than source
+      return await databaseService.shouldUseParsedDocuments(documentPath, sourceStats.mtime);
     } catch (error) {
-      // if any file doesn't exist or we can't stat it, we should parse
+      // if any error occurs, we should re-parse
+      console.error("Error checking parsed documents validity:", error);
       return false;
     }
   }
 
-  // helper function to load documents from parsed files
+  // helper function to load documents from database
   private async loadParsedDocuments(documentPath: string): Promise<Document[]> {
-    const { documentsPath } = this.getParsedPaths(documentPath);
-
     try {
-      const documentsData = await readFile(documentsPath, "utf-8");
-      const parsedDocuments = JSON.parse(documentsData);
+      await this.initializeDatabase();
+
+      const documentsData = await databaseService.loadParsedDocuments(documentPath);
 
       // convert to LlamaIndex Document format
-      return parsedDocuments.map(
-        (doc: any) =>
+      return documentsData.map(
+        (doc: DocumentData) =>
           new Document({
             id_: doc.id_,
             text: doc.text,
@@ -99,45 +88,36 @@ class DocumentIndexManager {
     }
   }
 
-  // helper function to save parsed documents
+  // helper function to save parsed documents to database
   private async saveParsedDocuments(
     documentPath: string,
     documents: Document[],
   ): Promise<void> {
     try {
-      const { parsedDir, documentsPath, metadataPath } =
-        this.getParsedPaths(documentPath);
-
-      // create directory if it doesn't exist
-      await mkdir(parsedDir, { recursive: true });
+      await this.initializeDatabase();
 
       // prepare documents data
-      const documentsData = documents.map((doc) => ({
+      const documentsData: DocumentData[] = documents.map((doc) => ({
         id_: doc.id_,
         text: doc.text,
         metadata: doc.metadata,
       }));
 
       // get source file stats for metadata
-      const sourceStats = await stat(join(process.cwd(), documentPath));
-      const metadata = {
+      const sourcePath = join(process.cwd(), documentPath);
+      const sourceStats = await stat(sourcePath);
+
+      await databaseService.saveParsedDocuments(
         documentPath,
-        originalFileSize: sourceStats.size,
-        originalModifiedTime: sourceStats.mtime.toISOString(),
-        cachedAt: new Date().toISOString(),
-        documentsCount: documents.length,
-      };
+        documentsData,
+        sourceStats.size,
+        sourceStats.mtime
+      );
 
-      // save both files
-      await Promise.all([
-        writeFile(documentsPath, JSON.stringify(documentsData, null, 2)),
-        writeFile(metadataPath, JSON.stringify(metadata, null, 2)),
-      ]);
-
-      console.log(`Saved parsed documents to ${parsedDir}`);
+      console.log(`Saved parsed documents to database for: ${documentPath}`);
     } catch (error) {
       console.error("Error saving parsed documents:", error);
-      // don't throw here as this is a optimization, not critical
+      // don't throw here as this is an optimization, not critical
     }
   }
 
@@ -163,6 +143,7 @@ class DocumentIndexManager {
   // public method to prepare an index for a document
   async prepareIndex(documentPath: string): Promise<void> {
     this.configureSettings();
+    await this.initializeDatabase();
 
     // check if we already have an index for this document
     let documentIndex = this.documentIndices.get(documentPath);
@@ -172,8 +153,8 @@ class DocumentIndexManager {
 
       let documents: Document[];
 
-      // check if we can use pre-parsed files
-      if (await this.shouldUseParsedFiles(documentPath)) {
+      // check if we can use pre-parsed documents
+      if (await this.shouldUseParsedDocuments(documentPath)) {
         console.log(`Loading pre-parsed documents for: ${documentPath}`);
         try {
           documents = await this.loadParsedDocuments(documentPath);
@@ -189,7 +170,7 @@ class DocumentIndexManager {
         }
       } else {
         console.log(
-          `No valid pre-parsed files found, parsing document: ${documentPath}`,
+          `No valid pre-parsed documents found, parsing document: ${documentPath}`,
         );
         documents = await this.parseAndSaveDocuments(documentPath);
       }
@@ -216,7 +197,7 @@ class DocumentIndexManager {
       console.log(
         `Index not found in memory for ${documentPath}. Attempting to rebuild from cache.`,
       );
-      if (await this.shouldUseParsedFiles(documentPath)) {
+      if (await this.shouldUseParsedDocuments(documentPath)) {
         console.log(
           `Loading pre-parsed documents for rebuilding index: ${documentPath}`,
         );
@@ -228,22 +209,22 @@ class DocumentIndexManager {
             documentIndex = await VectorStoreIndex.fromDocuments(documents);
             this.documentIndices.set(documentPath, documentIndex);
             console.log(
-              `Successfully rebuilt and cached index for ${documentPath} from parsed files.`,
+              `Successfully rebuilt and cached index for ${documentPath} from parsed documents.`,
             );
           } else {
             console.log(
-              `No documents found in parsed files for ${documentPath}. Cannot rebuild index.`,
+              `No documents found in parsed data for ${documentPath}. Cannot rebuild index.`,
             );
           }
         } catch (error) {
           console.error(
-            `Error rebuilding index from parsed files for ${documentPath}:`,
+            `Error rebuilding index from parsed documents for ${documentPath}:`,
             error,
           );
         }
       } else {
         console.log(
-          `No valid pre-parsed files found for ${documentPath}. Cannot rebuild index.`,
+          `No valid pre-parsed documents found for ${documentPath}. Cannot rebuild index.`,
         );
       }
     }
@@ -296,12 +277,12 @@ class DocumentIndexManager {
       `Creating combined index from ${documentPaths.length} documents`,
     );
 
-    // collect all documents from all indices by loading from parsed files
+    // collect all documents from all indices by loading from database
     const allDocuments: Document[] = [];
 
     for (const documentPath of documentPaths) {
       try {
-        // Load documents directly from parsed files instead of trying to extract from index
+        // Load documents directly from database instead of trying to extract from index
         const documents = await this.loadParsedDocuments(documentPath);
         const documentsWithSource = documents.map(
           (doc) =>
@@ -320,7 +301,7 @@ class DocumentIndexManager {
         );
       } catch (error) {
         console.error(`Failed to load documents for ${documentPath}:`, error);
-        // If we can't load from parsed files, we can't create a combined index
+        // If we can't load from database, we can't create a combined index
         continue;
       }
     }
@@ -356,6 +337,17 @@ class DocumentIndexManager {
     return Array.from(this.documentIndices.keys());
   }
 
+  // get all document paths stored in database
+  async getAllStoredDocumentPaths(): Promise<string[]> {
+    try {
+      await this.initializeDatabase();
+      return await databaseService.getAllStoredDocumentPaths();
+    } catch (error) {
+      console.error("Error getting all stored document paths:", error);
+      return [];
+    }
+  }
+
   // clear specific indices (useful for memory management)
   clearIndices(documentPaths: string[]): void {
     documentPaths.forEach((path) => {
@@ -370,6 +362,19 @@ class DocumentIndexManager {
   clearAllIndices(): void {
     this.documentIndices.clear();
     console.log("Cleared all indices");
+  }
+
+  // remove stored document index from database
+  async removeStoredDocumentIndex(documentPath: string): Promise<void> {
+    try {
+      await this.initializeDatabase();
+      await databaseService.deleteStoredDocumentIndex(documentPath);
+      this.clearIndices([documentPath]);
+      console.log(`Removed stored document index for ${documentPath}`);
+    } catch (error) {
+      console.error(`Error removing stored document index for ${documentPath}:`, error);
+      throw error;
+    }
   }
 }
 
