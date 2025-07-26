@@ -235,9 +235,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     Code Composer
                   </Label>
                 </div>
-                <Separator orientation="vertical" className="!h-4 bg-gray-400" />
                 {activeTool === "code-composer" && (
                   <>
+                  <Separator orientation="vertical" className="!h-4 bg-gray-400" />
                     <Label htmlFor="language-select" className="text-sm text-gray-400">
                       Language:
                     </Label>

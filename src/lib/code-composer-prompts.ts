@@ -118,7 +118,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   - Abstracts away language-specific details
   - Includes complexity analysis where relevant
   
-  **CRITICAL**: Pseudocode section must contain ONLY algorithmic logic in plain code format. 
+  **CRITICAL**: Pseudocode section must be wrapped in triple backticks (\`\`\`) and contain ONLY algorithmic logic in plain code format. 
   NO prose, NO explanatory text, NO markdown formatting. Use comments for clarification only.
   
   ### 3. IMPLEMENTATION PHASE
@@ -128,7 +128,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   - Error handling and edge cases
   - TODO stubs for non-deterministic or out-of-scope parts
   
-  **CRITICAL**: Implementation section must contain ONLY executable code in the target language.
+  **CRITICAL**: Implementation section must be wrapped in triple backticks (\`\`\`) with language identifier and contain ONLY executable code in the target language.
   NO prose, NO explanatory paragraphs, NO markdown formatting. Use code comments for documentation only.
   
   ## Style Guide Adherence:
@@ -152,20 +152,24 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   ## Output Format Requirements:
   
   **PLAN Section**: Natural language explanation and planning
-  **PSEUDOCODE Section**: Pure algorithmic pseudocode only - no prose, no explanations
-  **IMPLEMENTATION Section**: Pure target language code only - no prose, no explanations
+  **PSEUDOCODE Section**: Must be wrapped in \`\`\` - pure algorithmic pseudocode only, no prose, no explanations
+  **IMPLEMENTATION Section**: Must be wrapped in \`\`\`language - pure target language code only, no prose, no explanations
   
   \`\`\`
   ## PLAN
   [Natural language planning and explanation here]
   
   ## PSEUDOCODE  
+  \`\`\`
   [PURE PSEUDOCODE ONLY - no prose, no explanations, just algorithmic logic]
-  
-  ## IMPLEMENTATION
-  [PURE CODE ONLY - no prose, no explanations, just executable code with comments]
   \`\`\`
   
+  ## IMPLEMENTATION
+  \`\`\`[language]
+  [PURE CODE ONLY - no prose, no explanations, just executable code with comments]
+  \`\`\` 
+  \`\`\`
+
   Remember: Academic papers contain theoretical insights - your job is to make them practically actionable while maintaining scientific rigor.`;
   
   export const generateCodeComposerPrompt = (context: CodeComposerContext): string => {
@@ -226,9 +230,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     hasStructuredResponse: boolean;
   }
   
-  /**
-   * Parse chain-of-thought response into structured components
-   */
+
   export const parseChainOfThoughtResponse = (response: string): ParsedResponse => {
     const markers = CHAIN_OF_THOUGHT_MARKERS;
     
@@ -237,7 +239,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     const implementationStart = response.indexOf(markers.IMPLEMENTATION_START);
     
     if (planStart === -1 || pseudocodeStart === -1 || implementationStart === -1) {
-      // Fallback if structure is not followed
+      // fallback if structure is not followed
       return {
         plan: "Planning phase not found in response",
         pseudocode: "Pseudocode phase not found in response", 
@@ -261,21 +263,37 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     ).trim();
   
     return {
-      plan,
-      pseudocode,
-      implementation,
+      plan: plan,
+      pseudocode: ensureCodeBlock(pseudocode),
+      implementation: ensureCodeBlock(implementation),
       hasStructuredResponse: true
     };
   };
   
-  /**
-   * Extract just the implementation code for file output
-   */
+
+  const ensureCodeBlock = (content: string): string => {
+    const trimmed = content.trim();
+    
+    if (trimmed.startsWith('```') && trimmed.endsWith('```')) {
+      return trimmed;
+    }
+    
+    if (trimmed.startsWith('```') && !trimmed.endsWith('```')) {
+      return `${trimmed}\n\`\`\``;
+    }
+    
+    if (!trimmed.includes('```')) {
+      return `\`\`\`\n${trimmed}\n\`\`\``;
+    }
+    
+    return trimmed;
+  };
+  
+
   export const extractImplementationCode = (response: string): string => {
     const parsed = parseChainOfThoughtResponse(response);
     
     if (!parsed.hasStructuredResponse) {
-      // Try to extract code blocks from unstructured response
       const codeBlockRegex = /```[\w]*\n([\s\S]*?)\n```/g;
       const matches = [...response.matchAll(codeBlockRegex)];
       if (matches && matches.length > 0) {
@@ -284,7 +302,6 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
       return response;
     }
   
-    // Clean up implementation code
     return parsed.implementation
       .replace(/^```[\w]*\n?/, '')
       .replace(/\n?```$/, '')
