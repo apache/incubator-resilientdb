@@ -186,10 +186,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleClearTool = () => {
-    setTool("default");
-    setLanguage("ts");
-  };
 
   const getPlaceholder = () => {
     if (isPreparingIndex) return "Preparing documents...";
