@@ -289,21 +289,3 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     return trimmed;
   };
   
-
-  export const extractImplementationCode = (response: string): string => {
-    const parsed = parseChainOfThoughtResponse(response);
-    
-    if (!parsed.hasStructuredResponse) {
-      const codeBlockRegex = /```[\w]*\n([\s\S]*?)\n```/g;
-      const matches = [...response.matchAll(codeBlockRegex)];
-      if (matches && matches.length > 0) {
-        return matches[matches.length - 1][1].trim();
-      }
-      return response;
-    }
-  
-    return parsed.implementation
-      .replace(/^```[\w]*\n?/, '')
-      .replace(/\n?```$/, '')
-      .trim();
-  };
