@@ -76,6 +76,8 @@ export class CodeReranker {
       
       return {
         ...node,
+        // boost the original score by a factor based on code relevance and the boost factor.
+        // formula: enhanced_score = base_score * (1 + code_relevance * boost_factor)
         score: node.score * (1 + codeScore * this.options.boostFactor),
         codeRelevance: codeScore
       };
