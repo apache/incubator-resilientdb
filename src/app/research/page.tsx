@@ -1,8 +1,8 @@
 "use client";
 
-import { PreviewPanel, type CodeGeneration } from "@/app/research/components/preview-panel";
+import { PreviewPanel } from "@/app/research/components/preview-panel";
+import { type CodeGeneration, type Document } from "@/app/research/types";
 import { ToolProvider, useTool } from "@/components/context/ToolContext";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,11 +17,6 @@ import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { MultiDocumentSelector } from "@/components/ui/multi-document-selector";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -34,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -41,6 +37,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
@@ -50,20 +47,11 @@ import {
   ChevronRight,
   Menu,
   MessageCircle,
-  Send,
-  Wrench,
-  X
+  Send
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-interface Document {
-  id: string;
-  name: string;
-  path: string;
-  size: number;
-  uploadedAt: string;
-  displayTitle?: string;
-}
+
 
 interface Message {
   id: string;
@@ -84,7 +72,65 @@ const getDisplayTitle = (filename: string): string => {
   return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
 };
 
-type Language = "ts" | "go" | "rust" | "cpp";
+// Helper functions for code composer streaming
+const getCurrentSection = (fullResponse: string): 'plan' | 'pseudocode' | 'implementation' => {
+  const planIndex = fullResponse.indexOf('## PLAN');
+  const pseudocodeIndex = fullResponse.indexOf('## PSEUDOCODE');
+  const implementationIndex = fullResponse.indexOf('## IMPLEMENTATION');
+  
+  if (implementationIndex !== -1 && fullResponse.length > implementationIndex + 18) {
+    return 'implementation';
+  }
+  if (pseudocodeIndex !== -1 && fullResponse.length > pseudocodeIndex + 15) {
+    return 'pseudocode';
+  }
+  return 'plan';
+};
+
+const extractSectionsFromStream = (fullResponse: string) => {
+  const planStart = fullResponse.indexOf('## PLAN');
+  const pseudocodeStart = fullResponse.indexOf('## PSEUDOCODE');
+  const implementationStart = fullResponse.indexOf('## IMPLEMENTATION');
+  
+  let plan = '';
+  let pseudocode = '';
+  let implementation = '';
+  
+  if (planStart !== -1) {
+    const planEnd = pseudocodeStart !== -1 ? pseudocodeStart : fullResponse.length;
+    plan = fullResponse.substring(planStart + 7, planEnd).trim();
+  }
+  
+  if (pseudocodeStart !== -1) {
+    const pseudocodeEnd = implementationStart !== -1 ? implementationStart : fullResponse.length;
+    pseudocode = fullResponse.substring(pseudocodeStart + 15, pseudocodeEnd).trim();
+  }
+  
+  if (implementationStart !== -1) {
+    implementation = fullResponse.substring(implementationStart + 18).trim();
+    
+    // Clean up implementation content
+    // Remove metadata section
+    implementation = implementation.replace(/__CODE_COMPOSER_META__[\s\S]*$/, '').trim();
+    
+    // Remove closing explanation after code blocks (starts after final ``` and contains explanatory text)
+    const lastCodeBlockEnd = implementation.lastIndexOf('```');
+    if (lastCodeBlockEnd !== -1) {
+      const afterCodeBlock = implementation.substring(lastCodeBlockEnd + 3).trim();
+      // If there's substantial explanatory text after the code block, remove it
+      if (afterCodeBlock.length > 50 && afterCodeBlock.includes('This implementation')) {
+        implementation = implementation.substring(0, lastCodeBlockEnd + 3).trim();
+      }
+    }
+    
+    // Remove any trailing markdown code block markers
+    implementation = implementation.replace(/```\s*$/, '').trim();
+  }
+  
+  return { plan, pseudocode, implementation };
+};
+
+type Language = "ts" | "python" | "cpp";
 
 interface ChatInputProps {
   inputValue: string;
@@ -183,72 +229,35 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </p>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Wrench className="h-4 w-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent 
-                    className="w-48" 
-                    side="top" 
-                    align="start"
-                  >
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Tools</h4>
-                      <Button
-                        variant={activeTool === "default" ? "default" : "ghost"}
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => handleToolChange("default")}
-                      >
-                        Default Chat
-                      </Button>
-                      <Button
-                        variant={activeTool === "code-composer" ? "default" : "ghost"}
-                        size="sm"
-                        className="w-full justify-start"
-                        onClick={() => handleToolChange("code-composer")}
-                      >
-                        <Wrench className="h-4 w-4 mr-2" />
-                        Code Composer
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={activeTool === "code-composer"}
+                    onCheckedChange={(checked) => handleToolChange(checked ? "code-composer" : "default")}
+                    aria-label="Toggle code composer"
+                  />
+                  <Label htmlFor="code-composer-switch" className="text-sm flex items-center gap-2">
+                    Code Composer
+                  </Label>
+                </div>
+                <Separator orientation="vertical" className="!h-4 bg-gray-400" />
                 {activeTool === "code-composer" && (
                   <>
-                    <Label htmlFor="language-select" className="text-sm">
+                    <Label htmlFor="language-select" className="text-sm text-gray-400">
                       Language:
                     </Label>
                     <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
-                      <SelectTrigger className="w-32" size="sm">
+                      <SelectTrigger className="w-32 !h-8 text-sm" size="sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ts">TypeScript</SelectItem>
-                        <SelectItem value="go">Go</SelectItem>
-                        <SelectItem value="rust">Rust</SelectItem>
+                        <SelectItem value="python">Python</SelectItem>
                         <SelectItem value="cpp">C++</SelectItem>
                       </SelectContent>
                     </Select>
                   </>
                 )}
               </div>
-              {activeTool === "code-composer" && (
-                <Badge variant="secondary" className="flex items-center space-x-1">
-                  <span>Code Composer</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-4 w-4 p-0 hover:bg-transparent"
-                    onClick={handleClearTool}
-                    aria-label="Clear tool selection"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              )}
             </div>
           </div>
           <Button
@@ -480,6 +489,7 @@ function ResearchChatPageContent() {
       let buffer = "";
       let sourceInfo: any = null;
       let fullResponse = "";
+      let currentCodeGeneration: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -498,10 +508,68 @@ function ResearchChatPageContent() {
             try {
               sourceInfo = JSON.parse(sourceInfoMatch[1]);
               buffer = buffer.replace(/__SOURCE_INFO__[\s\S]*?\n\n/, "");
+              
+              // If this is a code composer request, create the streaming code generation
+              if (sourceInfo.tool === "code-composer") {
+                const codeGenId = Date.now().toString();
+                currentCodeGeneration = codeGenId;
+                
+                const newCodeGeneration: CodeGeneration = {
+                  id: codeGenId,
+                  language: sourceInfo.language || "ts",
+                  query: payload.query,
+                  plan: "",
+                  pseudocode: "",
+                  implementation: "",
+                  hasStructuredResponse: false,
+                  timestamp: new Date().toISOString(),
+                  isStreaming: true,
+                  currentSection: 'plan',
+                };
+
+                setCodeGenerations((prev) => [...prev, newCodeGeneration]);
+                
+                // Don't show code composer responses in chat, only in preview panel
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === assistantPlaceholderMessage.id
+                      ? {
+                          ...msg,
+                          content: "Code generation started. Check the preview panel to see live progress.",
+                          isLoadingPlaceholder: false,
+                          sources: sourceInfo?.sources || [],
+                        }
+                      : msg,
+                  ),
+                );
+                continue; // Skip regular message update for code composer
+              }
             } catch (error) {
               console.error("Failed to parse source info:", error);
             }
           }
+        }
+
+        // Handle code composer live streaming
+        if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
+          // Detect current section and update streaming content
+          const currentSection = getCurrentSection(fullResponse);
+          const { plan, pseudocode, implementation } = extractSectionsFromStream(fullResponse);
+          
+          setCodeGenerations((prev) =>
+            prev.map((gen) =>
+              gen.id === currentCodeGeneration
+                ? {
+                    ...gen,
+                    plan,
+                    pseudocode,
+                    implementation,
+                    currentSection,
+                  }
+                : gen
+            )
+          );
+          continue; // Skip regular message update for code composer
         }
 
         // Check for code composer metadata
@@ -520,36 +588,58 @@ function ResearchChatPageContent() {
           }
         }
 
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === assistantPlaceholderMessage.id
-              ? {
-                  ...msg,
-                  content: buffer,
-                  isLoadingPlaceholder: false,
-                  sources: sourceInfo?.sources || [],
-                }
-              : msg,
-          ),
-        );
+        // Regular message update (for non-code-composer responses)
+        if (sourceInfo?.tool !== "code-composer") {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantPlaceholderMessage.id
+                ? {
+                    ...msg,
+                    content: buffer,
+                    isLoadingPlaceholder: false,
+                    sources: sourceInfo?.sources || [],
+                  }
+                : msg,
+            ),
+          );
+        }
       }
 
-      // If this was a code composer request, parse and store the code generation
-      if (sourceInfo?.tool === "code-composer") {
-        try {
-          const parsed = parseChainOfThoughtResponse(fullResponse);
-          const codeGeneration: CodeGeneration = {
-            id: Date.now().toString(),
-            language: sourceInfo.language || "ts",
-            query: payload.query,
-            plan: parsed.plan,
-            pseudocode: parsed.pseudocode,
-            implementation: parsed.implementation,
-            hasStructuredResponse: parsed.hasStructuredResponse,
-            timestamp: new Date().toISOString(),
-          };
-
-          setCodeGenerations((prev) => [...prev, codeGeneration]);
+             // If this was a code composer request, finalize the code generation
+       if (sourceInfo?.tool === "code-composer") {
+         try {
+           const parsed = parseChainOfThoughtResponse(fullResponse);
+           
+           // Clean up the implementation content
+           let cleanImplementation = parsed.implementation;
+           if (cleanImplementation) {
+             // Remove metadata section
+             cleanImplementation = cleanImplementation.replace(/__CODE_COMPOSER_META__[\s\S]*$/, '').trim();
+             
+             // Remove closing explanation after code blocks
+             const lastCodeBlockEnd = cleanImplementation.lastIndexOf('```');
+             if (lastCodeBlockEnd !== -1) {
+               const afterCodeBlock = cleanImplementation.substring(lastCodeBlockEnd + 3).trim();
+               if (afterCodeBlock.length > 50 && afterCodeBlock.includes('This implementation')) {
+                 cleanImplementation = cleanImplementation.substring(0, lastCodeBlockEnd + 3).trim();
+               }
+             }
+           }
+           
+           // Update the existing streaming code generation to final state
+           setCodeGenerations((prev) => 
+             prev.map((gen) => 
+               gen.isStreaming ? {
+                 ...gen,
+                 plan: parsed.plan,
+                 pseudocode: parsed.pseudocode,
+                 implementation: cleanImplementation,
+                 hasStructuredResponse: parsed.hasStructuredResponse,
+                 isStreaming: false,
+                 currentSection: undefined,
+               } : gen
+             )
+           );
         } catch (error) {
           console.error("Failed to parse code generation:", error);
         }
@@ -870,7 +960,7 @@ function ResearchChatPageContent() {
             <ResizableHandle withHandle />
 
             {/* PDF Preview Panel */}
-            <ResizablePanel defaultSize={40} minSize={25}>
+            <ResizablePanel defaultSize={40} minSize={40}>
               <PreviewPanel selectedDocuments={selectedDocuments} codeGenerations={codeGenerations} />
             </ResizablePanel>
           </ResizablePanelGroup>

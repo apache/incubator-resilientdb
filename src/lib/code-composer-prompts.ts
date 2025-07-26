@@ -23,72 +23,80 @@ export interface CodeComposerContext {
     patterns: string[];
   }
   
-  const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
+// styleGuide.ts
+export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     ts: {
       language: "TypeScript",
       conventions: {
-        naming: "camelCase for variables/functions, PascalCase for classes/interfaces",
-        indentation: "2 spaces",
-        comments: "JSDoc for functions, inline // for complex logic",
-        errorHandling: "Use Result<T, E> pattern or throw specific Error types",
-        imports: "Use ES6 imports, group by: external libs, internal modules, relative imports"
+        // ✨ NEW
+        naming:
+          "camelCase for vars & functions; PascalCase for classes, types, enums; ALL_CAPS for env constants",
+        indentation: "2 spaces (enforced by prettier)",
+        comments:
+          "JSDoc for public symbols; inline // only when the intent is non-obvious; keep ≤80 chars",
+        errorHandling:
+          "Never swallow errors; prefer Result<T, E> or throw typed error classes; avoid `async void` fire-and-forget",
+        imports:
+          "Use absolute paths (ts-config baseUrl=src). Order: node built-ins, 3rd-party, internal; one empty line between groups"
       },
       patterns: [
-        "Use interfaces for data contracts",
-        "Prefer const assertions for immutable data",
-        "Use async/await over Promises.then()",
-        "Implement proper error boundaries"
+        "Prefer readonly and const assertions for immutability",
+        "Use async/await over .then/.catch",
+        "Functional utils: map/filter/reduce instead of imperative loops where readable",
+        "All new modules need accompanying *.spec.ts tests (jest)",
+        "Enable TS strict mode (noImplicitAny, exactOptionalPropertyTypes)",
+        "Use eslint-plugin-@typescript-eslint + prettier via pre-commit hook"
       ]
     },
-    go: {
-      language: "Go",
+  
+    python: {
+      language: "Python",
       conventions: {
-        naming: "camelCase for private, PascalCase for public, use descriptive names",
-        indentation: "tabs",
-        comments: "Package comments above package declaration, function comments above func",
-        errorHandling: "Return error as last return value, check errors explicitly",
-        imports: "Standard library first, then external, then internal packages"
+        naming:
+          "snake_case for vars & functions; PascalCase for classes & exceptions; CAPS for module-level constants",
+        indentation: "4 spaces (black auto-formats)",
+        comments:
+          'PEP 257 docstrings: """Summary line.""", blank line, details; inline # only when needed',
+        errorHandling:
+          "Specific exceptions; never bare except; use contextlib.suppress only for targeted errors",
+        imports:
+          "PEP 8 order (stdlib, 3rd-party, local) separated by blank lines; absolute imports preferred"
       },
       patterns: [
-        "Use struct embedding for composition",
-        "Implement String() method for custom types",
-        "Use channels for goroutine communication",
-        "Follow effective Go guidelines"
+        "Type hints everywhere; run mypy in CI with --strict",
+        "Use dataclasses or attrs for simple payload objects",
+        "Favor list/dict comprehensions; guard against large in-memory builds by using generators",
+        "Implement __str__/__repr__; make classes hashable if they’ll be dict keys",
+        "Log via structlog (already present in /scripts) – never print() in library code",
+        "pytest-style fixtures; 90 % line coverage gate in CI"
       ]
     },
-    rust: {
-      language: "Rust",
-      conventions: {
-        naming: "snake_case for variables/functions, PascalCase for types/traits",
-        indentation: "4 spaces",
-        comments: "/// for doc comments, // for inline comments",
-        errorHandling: "Use Result<T, E> and Option<T>, avoid unwrap() in production",
-        imports: "Use 'use' statements, group by: std, external crates, internal modules"
-      },
-      patterns: [
-        "Prefer owned types over references when possible",
-        "Use pattern matching extensively",
-        "Implement Display and Debug traits",
-        "Follow Rust API guidelines"
-      ]
-    },
+  
     cpp: {
-      language: "C++",
+      language: "C++17",
       conventions: {
-        naming: "snake_case or camelCase consistently, PascalCase for classes",
-        indentation: "2 or 4 spaces consistently",
-        comments: "Doxygen-style /** */ for documentation, // for inline",
-        errorHandling: "Use exceptions for exceptional cases, error codes for expected failures",
-        imports: "#include system headers first, then project headers"
+        naming:
+          "snake_case for functions & variables; PascalCase for classes, enums; UPPER_SNAKE for macros & constants",
+        indentation: "2 spaces (clang-format, Google style)",
+        comments:
+          "Doxygen /** … */ for public API; // for local logic; keep comments in header, not impl, when possible",
+        errorHandling:
+          "Use std::optional / std::expected (folly::Expected in current code) for recoverable paths; throw only for truly exceptional cases",
+        imports:
+          "#include <system> first, then 3rd-party, then project; always include what you use; use forward decls in headers when practical"
       },
       patterns: [
-        "Use RAII for resource management",
-        "Prefer smart pointers over raw pointers",
-        "Use const correctness throughout",
-        "Follow Core Guidelines"
+        "RAII for every resource (no naked new/delete)",
+        "Prefer std::unique_ptr / std::shared_ptr; use gsl::not_null for raw pointer params",
+        "Mark everything that can be constexpr as constexpr",
+        "Pass small POD by value, larger objects by const&",
+        "Use enum class not plain enums",
+        "Run clang-tidy with google-readability* and cppcoreguidelines* checks in CI",
+        "All headers need #pragma once and the Apache license banner"
       ]
-    }
+    },
   };
+  
   
   export const CODE_COMPOSER_SYSTEM_PROMPT = `You are CodeComposer-v0, an AI that transforms academic research into production-ready code.
   
@@ -110,12 +118,18 @@ export interface CodeComposerContext {
   - Abstracts away language-specific details
   - Includes complexity analysis where relevant
   
+  **CRITICAL**: Pseudocode section must contain ONLY algorithmic logic in plain code format. 
+  NO prose, NO explanatory text, NO markdown formatting. Use comments for clarification only.
+  
   ### 3. IMPLEMENTATION PHASE
   Translate pseudocode to target language with:
   - Clear function signatures and type annotations
   - Comprehensive documentation
   - Error handling and edge cases
   - TODO stubs for non-deterministic or out-of-scope parts
+  
+  **CRITICAL**: Implementation section must contain ONLY executable code in the target language.
+  NO prose, NO explanatory paragraphs, NO markdown formatting. Use code comments for documentation only.
   
   ## Style Guide Adherence:
   Follow the target language's conventions strictly:
@@ -135,16 +149,21 @@ export interface CodeComposerContext {
   - For mathematical proofs: Implement verifiable computation steps
   - For experimental results: Create reproducible test frameworks
   
-  ## Output Format:
+  ## Output Format Requirements:
+  
+  **PLAN Section**: Natural language explanation and planning
+  **PSEUDOCODE Section**: Pure algorithmic pseudocode only - no prose, no explanations
+  **IMPLEMENTATION Section**: Pure target language code only - no prose, no explanations
+  
   \`\`\`
   ## PLAN
-  [Your planning phase here]
+  [Natural language planning and explanation here]
   
   ## PSEUDOCODE  
-  [Language-agnostic pseudocode here]
+  [PURE PSEUDOCODE ONLY - no prose, no explanations, just algorithmic logic]
   
   ## IMPLEMENTATION
-  [Target language implementation here]
+  [PURE CODE ONLY - no prose, no explanations, just executable code with comments]
   \`\`\`
   
   Remember: Academic papers contain theoretical insights - your job is to make them practically actionable while maintaining scientific rigor.`;

@@ -16,7 +16,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   className,
 }) => {
   return (
-    <div className={cn("prose prose-invert max-w-none", className)}>
+    <div className={cn("prose prose-invert w-full", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
@@ -56,19 +56,19 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           code: ({ inline, className, children, ...props }: any) => {
             return inline ? (
               <code
-                className="bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200"
+                className="bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-gray-200 break-words"
                 {...props}
               >
                 {children}
               </code>
             ) : (
-              <code className={className} {...props}>
+              <code className={cn("break-words whitespace-pre-wrap", className)} {...props}>
                 {children}
               </code>
             );
           },
           pre: ({ children }) => (
-            <pre className="bg-gray-800 rounded-lg p-4 overflow-x-auto mb-3 text-gray-200">
+            <pre className="bg-gray-800 rounded-lg p-4 mb-3 text-gray-200 w-full max-w-full overflow-hidden whitespace-pre-wrap break-words">
               {children}
             </pre>
           ),
