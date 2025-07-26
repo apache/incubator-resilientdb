@@ -11,17 +11,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { type Document } from "@/hooks/useDocuments";
 import { Check, FileText, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
-
-interface Document {
-  id: string;
-  name: string;
-  path: string;
-  size: number;
-  uploadedAt: string;
-  displayTitle?: string;
-}
 
 interface MultiDocumentSelectorProps {
   className?: string;
@@ -340,4 +332,4 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
 MultiDocumentSelector.displayName = "MultiDocumentSelector";
 
 export { MultiDocumentSelector };
-export type { Document, MultiDocumentSelectorProps };
+export type { MultiDocumentSelectorProps };

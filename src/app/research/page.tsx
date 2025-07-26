@@ -1,7 +1,7 @@
 "use client";
 
 import { PreviewPanel } from "@/app/research/components/preview-panel";
-import { type CodeGeneration, type Document } from "@/app/research/types";
+import { type CodeGeneration } from "@/app/research/types";
 import { ToolProvider, useTool } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,8 +40,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useDocuments, type Document } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
-import { TITLE_MAPPINGS } from "@/lib/constants";
 import {
   ChevronLeft,
   ChevronRight,
@@ -66,11 +66,7 @@ interface Message {
   }[];
 }
 
-// Filename to title mapping - you can extend this as needed
-const getDisplayTitle = (filename: string): string => {
-  const lowerFilename = filename.toLowerCase();
-  return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
-};
+
 
 // Helper functions for code composer streaming
 const getCurrentSection = (fullResponse: string): 'plan' | 'pseudocode' | 'implementation' => {
@@ -281,12 +277,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 };
 
 function ResearchChatPageContent() {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const { data: documents = [], isLoading: isLoadingDocuments, error } = useDocuments();
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
@@ -303,29 +298,12 @@ function ResearchChatPageContent() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Load available documents
+  // Handle document loading errors
   useEffect(() => {
-    const loadDocuments = async () => {
-      try {
-        const response = await fetch("/api/research/documents");
-        if (response.ok) {
-          const docs = await response.json();
-          // Add display titles to documents
-          const docsWithTitles = docs.map((doc: Document) => ({
-            ...doc,
-            displayTitle: getDisplayTitle(doc.name),
-          }));
-          setDocuments(docsWithTitles);
-        }
-      } catch (error) {
-        console.error("Failed to load documents:", error);
-      } finally {
-        setIsLoadingDocuments(false);
-      }
-    };
-
-    loadDocuments();
-  }, []);
+    if (error) {
+      console.error("Failed to load documents:", error);
+    }
+  }, [error]);
 
   // Prepare index when document changes
   useEffect(() => {

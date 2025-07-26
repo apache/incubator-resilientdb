@@ -1,8 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList } from "@/components/ui/tabs";
+import { type Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { CodeGeneration, Document } from "../types";
+import { CodeGeneration } from "../types";
 import { CodeGenerationContent, CodeGenerationTabs } from "./code-generation-tab";
 import { PDFPreviewContent, PDFPreviewTabs } from "./pdf-preview-tab";
 

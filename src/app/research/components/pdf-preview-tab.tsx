@@ -1,6 +1,6 @@
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { type Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
-import { Document } from "../types";
 
 interface PDFPreviewTabProps {
   selectedDocuments: Document[];
@@ -40,12 +40,14 @@ export const PDFPreviewContent: React.FC<PDFPreviewTabProps> = ({
           key={doc.id}
           value={doc.id}
           className="h-full m-0 p-0 data-[state=active]:flex data-[state=inactive]:hidden"
+          forceMount
         >
           <iframe
             src={`/api/research/files/${doc.path}#toolbar=0&navpanes=0&scrollbar=1`}
             className="w-full h-full border-0"
             title={`Preview of ${doc.name}`}
             aria-label={`PDF preview of ${doc.displayTitle || doc.name}`}
+            loading="lazy"
           />
         </TabsContent>
       ))}
