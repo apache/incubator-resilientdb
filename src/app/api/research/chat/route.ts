@@ -9,7 +9,7 @@ import { config } from "../../../../config/environment";
 
 // simple system prompt for document q&a
 const RESEARCH_SYSTEM_PROMPT = `
-You are ResAI, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
+You are Nexus, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
 You have access to the content of a document and can provide accurate, detailed answers based on that content.
 When asked about the document, always base your responses on the information provided in the document. When possible, cite sections, pages, or other specific information from the document.
 If you cannot find specific information in the document, say so clearly.
@@ -17,150 +17,141 @@ Please favor referring to the document by its title, instead of the file name.
 If asked about something that is not in the document, give a brief answer and try to guide the user to ask about something that is in the document.
 `;
 
-export async function POST(req: NextRequest) {
+interface RequestData {
+  query: string;
+  documentPath?: string;
+  documentPaths?: string[];
+  tool?: string;
+  language?: string;
+  scope?: string[];
+}
+
+interface SourceInfo {
+  sources: Array<{
+    path: string;
+    name: string;
+    displayTitle: string;
+  }>;
+  isMultiDocument: boolean;
+  totalDocuments: number;
+  contextNodes: number;
+  tool: string;
+  language: string;
+  scope: string[];
+}
+
+const validateRequest = (data: RequestData): string | null => {
+  const { query, documentPath, documentPaths } = data;
+
+  if (!query) {
+    return "Query is required";
+  }
+
+  if (!documentPath && !documentPaths) {
+    return "Either documentPath or documentPaths is required";
+  }
+
+  if (documentPaths && (!Array.isArray(documentPaths) || documentPaths.length === 0)) {
+    return "documentPaths must be a non-empty array";
+  }
+
+  if (!config.deepSeekApiKey) {
+    return "DeepSeek API key is required";
+  }
+
+  return null;
+};
+
+const configureSettings = (): void => {
+  Settings.llm = new DeepSeekLLM({
+    apiKey: config.deepSeekApiKey,
+    model: config.deepSeekModel,
+  });
+
   try {
-    const { query, documentPath, documentPaths, tool, language, scope } = await req.json();
+    Settings.embedModel = new HuggingFaceEmbedding() as any;
+  } catch (error) {
+    console.warn("Failed to initialize HuggingFace embedding:", error);
+    Settings.embedModel = new HuggingFaceEmbedding() as any;
+  }
+};
 
-    if (!query) {
-      return NextResponse.json({ error: "Query is required" }, { status: 400 });
-    }
+const getDocumentIndex = async (targetPaths: string[]) => {
+  const hasAllIndices = documentIndexManager.hasAllIndices(targetPaths);
+  if (!hasAllIndices) {
+    throw new Error("Some document indices not found. Please prepare all selected documents again");
+  }
 
-    // Support both single document (backward compatibility) and multiple documents
-    if (!documentPath && !documentPaths) {
-      return NextResponse.json(
-        {
-          error: "Either documentPath or documentPaths is required",
-        },
-        { status: 400 },
-      );
-    }
+  const documentIndex = await documentIndexManager.getCombinedIndex(targetPaths);
+  if (!documentIndex) {
+    throw new Error("Failed to create combined index. Please try selecting documents again");
+  }
 
-    // Validate documentPaths if provided
-    if (
-      documentPaths &&
-      (!Array.isArray(documentPaths) || documentPaths.length === 0)
-    ) {
-      return NextResponse.json(
-        {
-          error: "documentPaths must be a non-empty array",
-        },
-        { status: 400 },
-      );
-    }
+  console.log(`Using combined index for ${targetPaths.length} documents: ${targetPaths.join(", ")}`);
+  return documentIndex;
+};
 
-    if (!config.deepSeekApiKey) {
-      return NextResponse.json(
-        { error: "DeepSeek API key is required" },
-        { status: 500 },
-      );
-    }
+const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: string) => {
+  const topK = tool === "code-composer" ? 20 : 15;
+  const retriever = documentIndex.asRetriever({ similarityTopK: topK });
+  const initialNodes = await retriever.retrieve({ query });
 
-    // configure DeepSeek LLM
-    Settings.llm = new DeepSeekLLM({
-      apiKey: config.deepSeekApiKey,
-      model: config.deepSeekModel,
+  let retrievedNodes;
+  if (tool === "code-composer") {
+    const codeReranker = new CodeReranker({
+      maxTokens: 3000,
+      boostFactor: 1.5
     });
+    retrievedNodes = codeReranker.rerank(initialNodes);
+    console.log("Code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
+  } else {
+    retrievedNodes = initialNodes;
+  }
 
-    try {
-      Settings.embedModel = new HuggingFaceEmbedding() as any;
-    } catch (error) {
-      console.warn("Failed to initialize HuggingFace embedding:", error);
-      Settings.embedModel = new HuggingFaceEmbedding() as any;
+  return retrievedNodes;
+};
+
+const formatContext = (retrievedNodes: any[]): string => {
+  const contextBySource: { [key: string]: string[] } = {};
+  
+  retrievedNodes.forEach((node: any) => {
+    const sourceDoc = node.node.metadata?.source_document || "Unknown";
+    if (!contextBySource[sourceDoc]) {
+      contextBySource[sourceDoc] = [];
     }
+    contextBySource[sourceDoc].push(node.node.getContent(MetadataMode.ALL));
+  });
 
-    try {
-      let documentIndex: any;
-      let contextInfo: string;
-      let retrievedNodes: any[];
-      let enhancedPrompt: string;
+  const contextParts = Object.entries(contextBySource).map(
+    ([source, contents]) => {
+      const fileName = source.split("/").pop() || source;
+      return `**From ${fileName}:**\n${contents.join("\n\n")}`;
+    },
+  );
 
-      const targetPaths = documentPaths;
+  return contextParts.join("\n\n---\n\n");
+};
 
-      // Check if all indices exist
-      const hasAllIndices = documentIndexManager.hasAllIndices(targetPaths);
-      if (!hasAllIndices) {
-        return NextResponse.json(
-          {
-            error: "Some document indices not found",
-            message: "Please prepare all selected documents again",
-          },
-          { status: 400 },
-        );
-      }
+const generatePrompt = (
+  tool: string | undefined,
+  context: string,
+  query: string,
+  targetPaths: string[],
+  language?: string,
+  scope?: string[]
+): string => {
+  if (tool === "code-composer") {
+    const codeComposerContext: CodeComposerContext = {
+      language: language || "ts",
+      scope: scope || [],
+      chunks: context,
+      query,
+      documentTitles: targetPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
+    };
+    return generateCodeComposerPrompt(codeComposerContext);
+  }
 
-      // Get combined index for all documents
-      documentIndex = await documentIndexManager.getCombinedIndex(targetPaths);
-
-      if (!documentIndex) {
-        return NextResponse.json(
-          {
-            error: "Failed to create combined index",
-            message: "Please try selecting documents again",
-          },
-          { status: 400 },
-        );
-      }
-
-      console.log(
-        `Using combined index for ${targetPaths.length} documents: ${targetPaths.join(", ")}`,
-      );
-
-      // create retriever and get context from combined index
-      const topK = tool === "code-composer" ? 20 : 15; // More context for code generation
-      const retriever = documentIndex.asRetriever({ similarityTopK: topK });
-      let initialNodes = await retriever.retrieve({ query });
-
-      // Apply code reranking if in code-composer mode
-      if (tool === "code-composer") {
-        const codeReranker = new CodeReranker({
-          maxTokens: 3000, // Token budget limit
-          boostFactor: 1.5
-        });
-        retrievedNodes = codeReranker.rerank(initialNodes);
-        
-        console.log("Code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
-      } else {
-        retrievedNodes = initialNodes;
-      }
-
-      // Group context by source document for better organization
-      const contextBySource: { [key: string]: string[] } = {};
-      retrievedNodes.forEach((node: any) => {
-        const sourceDoc = node.node.metadata?.source_document || "Unknown";
-        if (!contextBySource[sourceDoc]) {
-          contextBySource[sourceDoc] = [];
-        }
-        contextBySource[sourceDoc].push(node.node.getContent(MetadataMode.ALL));
-      });
-
-      // Format context with source attribution
-      const contextParts = Object.entries(contextBySource).map(
-        ([source, contents]) => {
-          const fileName = source.split("/").pop() || source;
-          return `**From ${fileName}:**\n${contents.join("\n\n")}`;
-        },
-      );
-
-      const context = contextParts.join("\n\n---\n\n");
-      contextInfo = `Documents: ${targetPaths.map((p: string) => p.split("/").pop()).join(", ")}`;
-
-      console.log(
-        `Retrieved ${retrievedNodes.length} nodes from ${targetPaths.length} documents`,
-      );
-
-      // create enhanced prompt based on tool mode
-      if (tool === "code-composer") {
-        const codeComposerContext: CodeComposerContext = {
-          language: language || "ts",
-          scope: scope || [],
-          chunks: context,
-          query,
-          documentTitles: targetPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
-        };
-        enhancedPrompt = generateCodeComposerPrompt(codeComposerContext);
-      } else {
-        // Standard research prompt
-        enhancedPrompt = `${RESEARCH_SYSTEM_PROMPT}
+  return `${RESEARCH_SYSTEM_PROMPT}
 
 Documents: ${targetPaths.map((p: string) => p.split("/").pop()).join(", ")}
 
@@ -168,115 +159,166 @@ Retrieved Context:
 ${context}
 
 Question: ${query}`;
-      }
+};
 
-      // use DeepSeek LLM directly for streaming
+const createSourceInfo = (
+  data: RequestData,
+  retrievedNodes: any[],
+  targetPaths: string[]
+): SourceInfo => {
+  const { documentPath, documentPaths, tool, language, scope } = data;
+  
+  const sourcePaths = documentPaths || (documentPath ? [documentPath] : []);
+  
+  return {
+    sources: sourcePaths.map((path: string) => ({
+      path,
+      name: path.split("/").pop() || path,
+      displayTitle: path.split("/").pop()?.replace(".pdf", "") || path,
+    })),
+    isMultiDocument: !!documentPaths,
+    totalDocuments: documentPaths ? documentPaths.length : 1,
+    contextNodes: retrievedNodes.length,
+    tool: tool || "default",
+    language: language || "ts",
+    scope: scope || []
+  };
+};
+
+const handleStreamingResponse = async (
+  chatStream: any,
+  sourceInfo: SourceInfo,
+  tool?: string
+): Promise<ReadableStream> => {
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
+
+        if (tool === "code-composer") {
+          let fullResponse = "";
+          for await (const chunk of chatStream) {
+            const content = chunk.delta;
+            if (content) {
+              fullResponse += content;
+              controller.enqueue(content);
+            }
+          }
+
+          const parsed = parseChainOfThoughtResponse(fullResponse);
+          controller.enqueue(
+            `\n\n__CODE_COMPOSER_META__${JSON.stringify({
+              hasStructuredResponse: parsed.hasStructuredResponse,
+              planLength: parsed.plan.length,
+              pseudocodeLength: parsed.pseudocode.length,
+              implementationLength: parsed.implementation.length
+            })}\n\n`
+          );
+        } else {
+          for await (const chunk of chatStream) {
+            const content = chunk.delta;
+            if (content) {
+              controller.enqueue(content);
+            }
+          }
+        }
+        
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+  });
+};
+
+const getErrorMessage = (error: any): string => {
+  if (!(error instanceof Error)) {
+    return "Failed to process your question";
+  }
+
+  if (error.message.includes("401") || error.message.includes("unauthorized")) {
+    return "Invalid API key. Please check your DeepSeek API key.";
+  }
+  
+  if (error.message.includes("402") || error.message.includes("payment")) {
+    return "Insufficient credits. Please check your DeepSeek account balance.";
+  }
+
+  return "Failed to process your question";
+};
+
+export async function POST(req: NextRequest) {
+  try {
+    const requestData: RequestData = await req.json();
+    
+    const validationError = validateRequest(requestData);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
+    configureSettings();
+
+    try {
+      const targetPaths = requestData.documentPaths!;
+
+      const documentIndex = await getDocumentIndex(targetPaths);
+
+      const retrievedNodes = await retrieveAndRankContext(
+        documentIndex, 
+        requestData.query, 
+        requestData.tool
+      );
+
+      // format context
+      const context = formatContext(retrievedNodes);
+
+      console.log(`Retrieved ${retrievedNodes.length} nodes from ${targetPaths.length} documents`);
+
+      const enhancedPrompt = generatePrompt(
+        requestData.tool,
+        context,
+        requestData.query,
+        targetPaths,
+        requestData.language,
+        requestData.scope
+      );
+
+      // create chat stream
       const deepSeekLLM = Settings.llm as DeepSeekLLM;
       const chatStream = await deepSeekLLM.chat({
         messages: [{ role: "user", content: enhancedPrompt }],
         stream: true,
       });
 
-      // Prepare source information for client
-      const sourceInfo = {
-        sources: (documentPaths || [documentPath]).map((path: string) => ({
-          path,
-          name: path.split("/").pop() || path,
-          displayTitle: path.split("/").pop()?.replace(".pdf", "") || path,
-        })),
-        isMultiDocument: !!documentPaths,
-        totalDocuments: documentPaths ? documentPaths.length : 1,
-        contextNodes: retrievedNodes.length,
-        tool: tool || "default",
-        language: language || "ts",
-        scope: scope || []
-      };
+      // create source info
+      const sourceInfo = createSourceInfo(requestData, retrievedNodes, targetPaths);
 
-      const readableStream = new ReadableStream({
-        async start(controller) {
-          try {
-            // First, send source information as a special message
-            controller.enqueue(
-              `__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`,
-            );
-
-            // Handle different streaming based on tool mode
-            if (tool === "code-composer") {
-              // For code composer, collect full response first to parse chain-of-thought
-              let fullResponse = "";
-              for await (const chunk of chatStream) {
-                const content = chunk.delta;
-                if (content) {
-                  fullResponse += content;
-                  controller.enqueue(content); // Still stream for real-time feedback
-                }
-              }
-
-              // Parse chain-of-thought structure
-              const parsed = parseChainOfThoughtResponse(fullResponse);
-              
-              // Send structured metadata for UI processing
-              controller.enqueue(
-                `\n\n__CODE_COMPOSER_META__${JSON.stringify({
-                  hasStructuredResponse: parsed.hasStructuredResponse,
-                  planLength: parsed.plan.length,
-                  pseudocodeLength: parsed.pseudocode.length,
-                  implementationLength: parsed.implementation.length
-                })}\n\n`
-              );
-            } else {
-              // Standard streaming for research mode
-              for await (const chunk of chatStream) {
-                const content = chunk.delta;
-                if (content) {
-                  controller.enqueue(content);
-                }
-              }
-            }
-            
-            controller.close();
-          } catch (error) {
-            controller.error(error);
-          }
-        },
-      });
+      // handle streaming response
+      const readableStream = await handleStreamingResponse(
+        chatStream, 
+        sourceInfo, 
+        requestData.tool
+      );
 
       return new Response(readableStream, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
         },
       });
+
     } catch (processingError) {
       console.error("Error processing chat:", processingError);
 
-      // provide helpful error messages
-      let errorMessage = "Failed to process your question";
-      if (processingError instanceof Error) {
-        if (
-          processingError.message.includes("401") ||
-          processingError.message.includes("unauthorized")
-        ) {
-          errorMessage = "Invalid API key. Please check your DeepSeek API key.";
-        } else if (
-          processingError.message.includes("402") ||
-          processingError.message.includes("payment")
-        ) {
-          errorMessage =
-            "Insufficient credits. Please check your DeepSeek account balance.";
-        }
-      }
-
+      const errorMessage = getErrorMessage(processingError);
       return NextResponse.json(
         {
           error: errorMessage,
-          details:
-            processingError instanceof Error
-              ? processingError.message
-              : String(processingError),
+          details: processingError instanceof Error ? processingError.message : String(processingError),
         },
         { status: 500 },
       );
     }
+
   } catch (error) {
     console.error("Error in chat API:", error);
     return NextResponse.json(
