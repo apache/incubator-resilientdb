@@ -6,11 +6,11 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MultiDocumentSourceBadge } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { MultiDocumentSourceBadge } from "@/components/ui/document-source-badge";
 import { Check, Clock, Code2, Copy, Zap } from "lucide-react";
 import { useState } from "react";
 import { CodeGeneration } from "../types";
@@ -21,7 +21,7 @@ interface CodeSectionProps {
 
 const stripMarkdownFormatting = (content: string): string => {
   if (!content) return '';
-  
+
   return content
     .replace(/```[\w]*\n?/g, '')
     .replace(/\n?```/g, '')

@@ -97,13 +97,18 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
   const initialNodes = await retriever.retrieve({ query });
 
   let retrievedNodes;
+  console.log("Initial nodes:", initialNodes);
   if (tool === "code-composer") {
     const codeReranker = new CodeReranker({
-      maxTokens: 3000,
-      boostFactor: 1.5
+      maxTokens: 32000,
+      implementationWeight: 2.5,      // Higher weight for implementation content
+      theoreticalWeight: 1.0,         // Standard weight for theoretical content
+      qualityWeight: 2.0,             // High weight for quality indicators
+      codeBlockBonus: 1.5             // Bonus for actual code blocks
     });
+
     retrievedNodes = codeReranker.rerank(initialNodes);
-    console.log("Code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
+    console.log("Enhanced code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
   } else {
     retrievedNodes = initialNodes;
   }
@@ -113,7 +118,7 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
 
 const formatContext = (retrievedNodes: any[]): string => {
   const contextBySource: { [key: string]: string[] } = {};
-  
+
   retrievedNodes.forEach((node: any) => {
     const sourceDoc = node.node.metadata?.source_document || "Unknown";
     if (!contextBySource[sourceDoc]) {
@@ -167,9 +172,8 @@ const createSourceInfo = (
   targetPaths: string[]
 ): SourceInfo => {
   const { documentPath, documentPaths, tool, language, scope } = data;
-  
   const sourcePaths = documentPaths || (documentPath ? [documentPath] : []);
-  
+
   return {
     sources: sourcePaths.map((path: string) => ({
       path,
@@ -222,7 +226,7 @@ const handleStreamingResponse = async (
             }
           }
         }
-        
+
         controller.close();
       } catch (error) {
         controller.error(error);
@@ -239,7 +243,7 @@ const getErrorMessage = (error: any): string => {
   if (error.message.includes("401") || error.message.includes("unauthorized")) {
     return "Invalid API key. Please check your DeepSeek API key.";
   }
-  
+
   if (error.message.includes("402") || error.message.includes("payment")) {
     return "Insufficient credits. Please check your DeepSeek account balance.";
   }
@@ -250,7 +254,7 @@ const getErrorMessage = (error: any): string => {
 export async function POST(req: NextRequest) {
   try {
     const requestData: RequestData = await req.json();
-    
+
     const validationError = validateRequest(requestData);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
@@ -264,8 +268,8 @@ export async function POST(req: NextRequest) {
       const documentIndex = await getDocumentIndex(targetPaths);
 
       const retrievedNodes = await retrieveAndRankContext(
-        documentIndex, 
-        requestData.query, 
+        documentIndex,
+        requestData.query,
         requestData.tool
       );
 
@@ -295,8 +299,8 @@ export async function POST(req: NextRequest) {
 
       // handle streaming response
       const readableStream = await handleStreamingResponse(
-        chatStream, 
-        sourceInfo, 
+        chatStream,
+        sourceInfo,
         requestData.tool
       );
 

@@ -1,7 +1,13 @@
-/**
- * Code-weighting reranker for academic chunks
- * Boosts chunks that contain code-related keywords for better code generation
+/*
+ * inspired by https://www.staff.city.ac.uk/~sbrp622/papers/foundations_bm25_review.pdf
+ * treats implementation/theoretical/quality signals as independent evidence sources,
+ * combined additively like BM25 term weights. includes saturation functions (Math.min caps)
+ * and density normalization to handle document length bias, plus non-textual code structure
+ * detection as query-independent relevance signals.
  */
+
+
+import { DEFAULT_IMPLEMENTATION_KEYWORDS, DEFAULT_QUALITY_INDICATORS, DEFAULT_THEORETICAL_KEYWORDS } from "./constants";
 
 interface RetrievedNode {
   node: {
@@ -12,123 +18,195 @@ interface RetrievedNode {
 }
 
 interface CodeRerankerOptions {
-  codeKeywords: string[];
-  boostFactor: number;
+  implementationKeywords: string[];
+  theoreticalKeywords: string[];
+  qualityIndicators: string[];
+  implementationWeight: number;
+  theoreticalWeight: number;
+  qualityWeight: number;
+  codeBlockBonus: number;
   maxTokens: number;
 }
-
-const DEFAULT_CODE_KEYWORDS = [
-  "algorithm",
-  "proof",
-  "pseudocode",
-  "figure",
-  "implementation",
-  "function",
-  "method",
-  "class",
-  "struct",
-  "procedure",
-  "protocol",
-  "schema",
-  "data structure",
-  "complexity",
-  "time complexity",
-  "space complexity",
-  "big o",
-  "optimization",
-  "performance",
-  "benchmark",
-  "evaluation",
-  "experiment",
-  "simulation",
-  "model",
-  "framework",
-  "architecture",
-  "design pattern",
-  "api",
-  "interface",
-  "specification",
-  "formal verification",
-  "correctness",
-  "invariant",
-  "precondition",
-  "postcondition"
-];
 
 export class CodeReranker {
   private options: CodeRerankerOptions;
 
   constructor(options: Partial<CodeRerankerOptions> = {}) {
     this.options = {
-      codeKeywords: options.codeKeywords || DEFAULT_CODE_KEYWORDS,
-      boostFactor: options.boostFactor || 1.5,
+      implementationKeywords: options.implementationKeywords || DEFAULT_IMPLEMENTATION_KEYWORDS,
+      theoreticalKeywords: options.theoreticalKeywords || DEFAULT_THEORETICAL_KEYWORDS,
+      qualityIndicators: options.qualityIndicators || DEFAULT_QUALITY_INDICATORS,
+      implementationWeight: options.implementationWeight || 2.0,
+      theoreticalWeight: options.theoreticalWeight || 1.0,
+      qualityWeight: options.qualityWeight || 1.5,
+      codeBlockBonus: options.codeBlockBonus || 1.0,
       maxTokens: options.maxTokens || 3000,
     };
   }
 
-  /**
-   * Rerank nodes by boosting those with code-related content
-   */
+ 
   rerank(nodes: RetrievedNode[]): RetrievedNode[] {
     const rankedNodes = nodes.map(node => {
       const content = node.node.getContent().toLowerCase();
-      const codeScore = this.calculateCodeScore(content);
+      const enhancedScore = this.calculateEnhancedScore(content, node.score);
       
       return {
         ...node,
-        // boost the original score by a factor based on code relevance and the boost factor.
-        // formula: enhanced_score = base_score * (1 + code_relevance * boost_factor)
-        score: node.score * (1 + codeScore * this.options.boostFactor),
-        codeRelevance: codeScore
+        score: enhancedScore.finalScore,
+        implementationScore: enhancedScore.implementationScore,
+        theoreticalScore: enhancedScore.theoreticalScore,
+        qualityScore: enhancedScore.qualityScore,
+        codeBlockScore: enhancedScore.codeBlockScore,
+        originalScore: node.score
       };
     });
 
-    // Sort by enhanced score
     rankedNodes.sort((a, b) => b.score - a.score);
 
-    // Apply token budget limit
-    return this.applyTokenBudget(rankedNodes);
+    return this.applyTokenBudgetWithDiversity(rankedNodes);
   }
 
-  /**
-   * Calculate code relevance score based on keyword presence
-   */
-  private calculateCodeScore(content: string): number {
+
+  private calculateEnhancedScore(content: string, originalScore: number): {
+    finalScore: number;
+    implementationScore: number;
+    theoreticalScore: number;
+    qualityScore: number;
+    codeBlockScore: number;
+  } {
     const words = content.split(/\s+/);
     const totalWords = words.length;
     
-    if (totalWords === 0) return 0;
+    if (totalWords === 0) {
+      return {
+        finalScore: originalScore,
+        implementationScore: 0,
+        theoreticalScore: 0,
+        qualityScore: 0,
+        codeBlockScore: 0
+      };
+    }
 
-    let codeKeywordCount = 0;
+    // calculate individual scores
+    const implementationScore = this.calculateKeywordScore(content, this.options.implementationKeywords, totalWords);
+    const theoreticalScore = this.calculateKeywordScore(content, this.options.theoreticalKeywords, totalWords);
+    const qualityScore = this.calculateKeywordScore(content, this.options.qualityIndicators, totalWords);
+    const codeBlockScore = this.detectCodeBlocks(content);
+
+    // calculate weighted enhancement factor (additive approach)
+    const enhancementFactor = 
+      (implementationScore * this.options.implementationWeight) +
+      (theoreticalScore * this.options.theoreticalWeight) +
+      (qualityScore * this.options.qualityWeight) +
+      (codeBlockScore * this.options.codeBlockBonus);
+
+    // apply enhancement as additive boost to avoid over-amplification
+    const finalScore = originalScore + (enhancementFactor * 0.1); 
+    return {
+      finalScore: Math.max(finalScore, originalScore * 0.1),
+      implementationScore,
+      theoreticalScore,
+      qualityScore,
+      codeBlockScore
+    };
+  }
+
+  /**
+   * Calculate keyword-based score with frequency and diversity consideration
+   */
+  private calculateKeywordScore(content: string, keywords: string[], totalWords: number): number {
+    let keywordCount = 0;
     const foundKeywords = new Set<string>();
 
-    // Count unique code keywords
-    for (const keyword of this.options.codeKeywords) {
-      if (content.includes(keyword.toLowerCase())) {
+    for (const keyword of keywords) {
+      const regex = new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      const matches = content.match(regex);
+      if (matches) {
         foundKeywords.add(keyword);
-        // Count occurrences for frequency weighting
-        const regex = new RegExp(keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-        const matches = content.match(regex);
-        codeKeywordCount += matches ? matches.length : 0;
+        keywordCount += matches.length;
       }
     }
 
-    // Normalize by content length and add diversity bonus
-    const densityScore = Math.min(codeKeywordCount / totalWords * 100, 1.0);
-    const diversityBonus = Math.min(foundKeywords.size / 10, 0.5); // Bonus for keyword diversity
+    // normalize by content length and add diversity bonus
+    const densityScore = Math.min(keywordCount / totalWords * 100, 1.0);
+    const diversityBonus = Math.min(foundKeywords.size / keywords.length, 0.3);
     
     return densityScore + diversityBonus;
   }
 
-  /**
-   * Apply token budget by truncating context to stay within limits
-   */
-  private applyTokenBudget(nodes: RetrievedNode[]): RetrievedNode[] {
+
+  private detectCodeBlocks(content: string): number {
+    let codeBlockScore = 0;
+    
+    // indented code blocks (4+ spaces or tab)
+    const indentedLines = content.split('\n').filter(line => 
+      /^[\s]{4,}/.test(line) || /^\t/.test(line)
+    );
+    codeBlockScore += Math.min(indentedLines.length / 10, 0.5);
+
+    // code fence markers
+    const codeFences = content.match(/```[\s\S]*?```/g);
+    if (codeFences) {
+      codeBlockScore += Math.min(codeFences.length * 0.3, 0.8);
+    }
+
+    // function signatures and implementations
+    const functionPatterns = [
+      /function\s+\w+\s*\(/g,
+      /event\s+\w+\s*\(/g,
+      /def\s+\w+\s*\(/g,
+      /class\s+\w+/g,
+      /\w+\s*=\s*function/g,
+      /const\s+\w+\s*=\s*\(/g,
+      /\w+\s*\(\s*\w*\s*\)\s*{/g
+    ];
+
+    functionPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        codeBlockScore += Math.min(matches.length * 0.2, 0.4);
+      }
+    });
+
+    // variable declarations and assignments
+    const variablePatterns = [
+      /\w+\s*=\s*[^=]/g,
+      /var\s+\w+/g,
+      /let\s+\w+/g,
+      /const\s+\w+/g
+    ];
+
+    variablePatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        codeBlockScore += Math.min(matches.length * 0.1, 0.3);
+      }
+    });
+
+    return Math.min(codeBlockScore, 2.0); // cap the code block score
+  }
+
+
+  private applyTokenBudgetWithDiversity(nodes: RetrievedNode[]): RetrievedNode[] {
     const maxTokens = this.options.maxTokens;
     let currentTokens = 0;
     const selectedNodes: RetrievedNode[] = [];
+    
+    // ensure we get a good mix of implementation and theoretical content
+    const implementationNodes = nodes.filter((node: any) => 
+      node.implementationScore > node.theoreticalScore
+    );
+    const theoreticalNodes = nodes.filter((node: any) => 
+      node.theoreticalScore >= node.implementationScore
+    );
 
-    for (const node of nodes) {
+    // prioritize implementation nodes
+    const prioritizedNodes = [
+      ...implementationNodes.slice(0, Math.ceil(nodes.length * 0.7)),
+      ...theoreticalNodes.slice(0, Math.ceil(nodes.length * 0.3))
+    ].sort((a, b) => b.score - a.score);
+
+    for (const node of prioritizedNodes) {
       const content = node.node.getContent();
       const estimatedTokens = this.estimateTokens(content);
       
@@ -136,9 +214,9 @@ export class CodeReranker {
         selectedNodes.push(node);
         currentTokens += estimatedTokens;
       } else {
-        // Try to fit a truncated version
+        // try to fit a truncated version
         const remainingTokens = maxTokens - currentTokens;
-        if (remainingTokens > 100) { // Only if we have meaningful space left
+        if (remainingTokens > 100) {
           const truncatedContent = this.truncateToTokens(content, remainingTokens);
           if (truncatedContent.length > 0) {
             selectedNodes.push({
@@ -157,21 +235,17 @@ export class CodeReranker {
     return selectedNodes;
   }
 
-  /**
-   * Rough token estimation (1 token ≈ 4 characters for English)
-   */
+  // 1 token ≈ 4 characters for English
   private estimateTokens(text: string): number {
     return Math.ceil(text.length / 4);
   }
 
-  /**
-   * Truncate text to approximate token limit
-   */
+
   private truncateToTokens(text: string, maxTokens: number): string {
     const maxChars = maxTokens * 4;
     if (text.length <= maxChars) return text;
     
-    // Try to truncate at sentence boundary
+    // try to truncate at sentence boundary
     const truncated = text.substring(0, maxChars);
     const lastSentence = truncated.lastIndexOf('.');
     
@@ -182,21 +256,38 @@ export class CodeReranker {
     return truncated + "...";
   }
 
-  /**
-   * Get reranking statistics for debugging
-   */
+ 
   getStats(originalNodes: RetrievedNode[], rerankedNodes: RetrievedNode[]): any {
+    const enhancedNodes = rerankedNodes as any[];
+    
     return {
       originalCount: originalNodes.length,
       rerankedCount: rerankedNodes.length,
       totalTokens: rerankedNodes.reduce((sum, node) => 
         sum + this.estimateTokens(node.node.getContent()), 0),
-      averageCodeRelevance: rerankedNodes.reduce((sum, node: any) => 
-        sum + (node.codeRelevance || 0), 0) / rerankedNodes.length,
-      topCodeScores: rerankedNodes.slice(0, 5).map((node: any) => ({
-        score: node.score,
-        codeRelevance: node.codeRelevance || 0
-      }))
+      
+      // scoring statistics 
+      averageImplementationScore: enhancedNodes.reduce((sum, node) => 
+        sum + (node.implementationScore || 0), 0) / enhancedNodes.length,
+      averageTheoreticalScore: enhancedNodes.reduce((sum, node) => 
+        sum + (node.theoreticalScore || 0), 0) / enhancedNodes.length,
+      averageQualityScore: enhancedNodes.reduce((sum, node) => 
+        sum + (node.qualityScore || 0), 0) / enhancedNodes.length,
+      averageCodeBlockScore: enhancedNodes.reduce((sum, node) => 
+        sum + (node.codeBlockScore || 0), 0) / enhancedNodes.length,
+      
+      nodesWithCodeBlocks: enhancedNodes.filter(node => 
+        node.codeBlockScore > 0.1).length,
+      
+      // top scoring nodes breakdown
+      topNodes: enhancedNodes.slice(0, 5).map(node => ({
+        finalScore: node.score,
+        implementationScore: node.implementationScore || 0,
+        theoreticalScore: node.theoreticalScore || 0,
+        qualityScore: node.qualityScore || 0,
+        codeBlockScore: node.codeBlockScore || 0,
+      })),
+      
     };
   }
 } 
