@@ -47,6 +47,27 @@ const useCopyToClipboard = () => {
   return { copyToClipboard, copiedStates };
 };
 
+const TopicSection: React.FC<CodeSectionProps> = ({ generation }) => (
+  <div className="w-full min-w-0 mb-2">
+    <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+      <Zap className="h-3 w-3" />
+      Topic
+      {generation.isStreaming && generation.currentSection === 'topic' && (
+        <Loader size="sm" className="text-yellow-500 w-3 h-3 ml-1" />
+      )}
+    </h3>
+    <div >
+      {generation.topic ? (
+        <span className="font-medium text-foreground">{generation.topic}</span>
+      ) : (generation.isStreaming && generation.currentSection === 'topic' ? (
+        <span className="text-muted-foreground italic">Generating topic...</span>
+      ) : (
+        <span className="text-muted-foreground italic">Topic will appear here</span>
+      ))}
+    </div>
+  </div>
+);
+
 const QuerySection: React.FC<CodeSectionProps> = ({ generation }) => (
   <div className="w-full min-w-0">
     <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
@@ -54,7 +75,7 @@ const QuerySection: React.FC<CodeSectionProps> = ({ generation }) => (
       Query
     </h3>
     <div className="text-sm bg-muted/30 rounded-md p-3 border break-words w-full min-w-0 overflow-hidden">
-      <MarkdownRenderer content={generation.query} />
+      <span className="font-medium text-foreground">{generation.query}</span>
     </div>
   </div>
 );
@@ -238,6 +259,7 @@ export const CodeGenerationContent: React.FC<CodeGenerationTabProps> = ({
           <ScrollArea className="w-full h-full min-w-0">
             <div className="p-4 space-y-6 w-full min-w-0">
               <QuerySection generation={generation} />
+              <TopicSection generation={generation} />
               <AccordionSections generation={generation} getLanguageLabel={getLanguageLabel} />
             </div>
           </ScrollArea>

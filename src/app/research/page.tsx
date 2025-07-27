@@ -54,7 +54,8 @@ interface Message {
 }
 
 // Helper functions for code composer streaming
-const getCurrentSection = (fullResponse: string): 'plan' | 'pseudocode' | 'implementation' => {
+const getCurrentSection = (fullResponse: string): 'topic' | 'plan' | 'pseudocode' | 'implementation' => {
+  const topicIndex = fullResponse.indexOf('## TOPIC');
   const planIndex = fullResponse.indexOf('## PLAN');
   const pseudocodeIndex = fullResponse.indexOf('## PSEUDOCODE');
   const implementationIndex = fullResponse.indexOf('## IMPLEMENTATION');
@@ -65,21 +66,31 @@ const getCurrentSection = (fullResponse: string): 'plan' | 'pseudocode' | 'imple
   if (pseudocodeIndex !== -1 && fullResponse.length > pseudocodeIndex + 15) {
     return 'pseudocode';
   }
-  return 'plan';
+  if (planIndex !== -1 && fullResponse.length > planIndex + 8) {
+    return 'plan';
+  }
+  return 'topic';
 };
 
 const extractSectionsFromStream = (fullResponse: string) => {
+  const topicStart = fullResponse.indexOf('## TOPIC');
   const planStart = fullResponse.indexOf('## PLAN');
   const pseudocodeStart = fullResponse.indexOf('## PSEUDOCODE');
   const implementationStart = fullResponse.indexOf('## IMPLEMENTATION');
   
+  let topic = '';
   let plan = '';
   let pseudocode = '';
   let implementation = '';
   
+  if (topicStart !== -1) {
+    const topicEnd = planStart !== -1 ? planStart : fullResponse.length;
+    topic = fullResponse.substring(topicStart + 9, topicEnd).trim();
+  }
+  
   if (planStart !== -1) {
     const planEnd = pseudocodeStart !== -1 ? pseudocodeStart : fullResponse.length;
-    plan = fullResponse.substring(planStart + 7, planEnd).trim();
+    plan = fullResponse.substring(planStart + 8, planEnd).trim();
   }
   
   if (pseudocodeStart !== -1) {
@@ -108,7 +119,7 @@ const extractSectionsFromStream = (fullResponse: string) => {
     implementation = implementation.replace(/```\s*$/, '').trim();
   }
   
-  return { plan, pseudocode, implementation };
+  return { topic, plan, pseudocode, implementation };
 };
 
 function ResearchChatPageContent() {
@@ -279,13 +290,14 @@ function ResearchChatPageContent() {
                 id: codeGenId,
                 language: sourceInfo.language || "ts",
                 query: payload.query,
+                topic: "",
                 plan: "",
                 pseudocode: "",
                 implementation: "",
                 hasStructuredResponse: false,
                 timestamp: new Date().toISOString(),
                 isStreaming: true,
-                currentSection: 'plan',
+                currentSection: 'topic',
               };
 
               setCodeGenerations((prev) => [...prev, newCodeGeneration]);
@@ -315,13 +327,14 @@ function ResearchChatPageContent() {
       if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
         // Detect current section and update streaming content
         const currentSection = getCurrentSection(fullResponse);
-        const { plan, pseudocode, implementation } = extractSectionsFromStream(fullResponse);
+        const { topic, plan, pseudocode, implementation } = extractSectionsFromStream(fullResponse);
         
         setCodeGenerations((prev) =>
           prev.map((gen) =>
             gen.id === currentCodeGeneration
               ? {
                   ...gen,
+                  topic,
                   plan,
                   pseudocode,
                   implementation,
@@ -392,6 +405,7 @@ function ResearchChatPageContent() {
           prev.map((gen) => 
             gen.isStreaming ? {
               ...gen,
+              topic: parsed.topic,
               plan: parsed.plan,
               pseudocode: parsed.pseudocode,
               implementation: cleanImplementation,

@@ -104,8 +104,11 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   
   ## Process (MANDATORY - Follow this exact structure):
   
+  ### 0. TOPIC PHASE
+  Start with a concise topic header (2-4 words) that captures the high-level subject matter you'll be implementing.
+  
   ### 1. PLANNING PHASE
-  First, create an explicit plan with these sections:
+  Create an explicit plan with these sections:
   - **Key Abstractions**: List the main concepts, algorithms, or data structures from the papers
   - **Architecture Overview**: High-level system design and component relationships  
   - **Implementation Strategy**: Step-by-step approach to translate theory to code
@@ -151,11 +154,15 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   
   ## Output Format Requirements:
   
+  **TOPIC Section**: Short, high-level subject matter (2-4 words)
   **PLAN Section**: Natural language explanation and planning
   **PSEUDOCODE Section**: Must be wrapped in \`\`\` - pure algorithmic pseudocode only, no prose, no explanations
   **IMPLEMENTATION Section**: Must be wrapped in \`\`\`language - pure target language code only, no prose, no explanations
   
   \`\`\`
+  ## TOPIC
+  [2-4 word topic description]
+  
   ## PLAN
   [Natural language planning and explanation here]
   
@@ -206,6 +213,8 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   };
   
   export interface ChainOfThoughtMarkers {
+    TOPIC_START: string;
+    TOPIC_END: string;
     PLAN_START: string;
     PLAN_END: string;
     PSEUDOCODE_START: string;
@@ -215,6 +224,8 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   }
   
   export const CHAIN_OF_THOUGHT_MARKERS: ChainOfThoughtMarkers = {
+    TOPIC_START: '## TOPIC',
+    TOPIC_END: '## PLAN',
     PLAN_START: '## PLAN',
     PLAN_END: '## PSEUDOCODE',
     PSEUDOCODE_START: '## PSEUDOCODE', 
@@ -224,6 +235,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   };
   
   export interface ParsedResponse {
+    topic: string;
     plan: string;
     pseudocode: string;
     implementation: string;
@@ -234,19 +246,26 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
   export const parseChainOfThoughtResponse = (response: string): ParsedResponse => {
     const markers = CHAIN_OF_THOUGHT_MARKERS;
     
+    const topicStart = response.indexOf(markers.TOPIC_START);
     const planStart = response.indexOf(markers.PLAN_START);
     const pseudocodeStart = response.indexOf(markers.PSEUDOCODE_START);
     const implementationStart = response.indexOf(markers.IMPLEMENTATION_START);
     
-    if (planStart === -1 || pseudocodeStart === -1 || implementationStart === -1) {
+    if (topicStart === -1 || planStart === -1 || pseudocodeStart === -1 || implementationStart === -1) {
       // fallback if structure is not followed
       return {
+        topic: "Implementation",
         plan: "Planning phase not found in response",
         pseudocode: "Pseudocode phase not found in response", 
         implementation: response,
         hasStructuredResponse: false
       };
     }
+
+    const topic = response.substring(
+      topicStart + markers.TOPIC_START.length,
+      planStart
+    ).trim();
   
     const plan = response.substring(
       planStart + markers.PLAN_START.length,
@@ -263,6 +282,7 @@ export const LANGUAGE_STYLE_GUIDES: Record<string, ProjectStyleGuide> = {
     ).trim();
   
     return {
+      topic: topic || "Implementation",
       plan: plan,
       pseudocode: ensureCodeBlock(pseudocode),
       implementation: ensureCodeBlock(implementation),
