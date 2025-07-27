@@ -8,6 +8,7 @@
 
 
 import { DEFAULT_IMPLEMENTATION_KEYWORDS, DEFAULT_QUALITY_INDICATORS, DEFAULT_THEORETICAL_KEYWORDS } from "./constants";
+import { TikTokenEstimator, TokenEstimator } from "./token-estimator";
 
 interface RetrievedNode {
   node: {
@@ -30,17 +31,22 @@ interface CodeRerankerOptions {
 
 export class CodeReranker {
   private options: CodeRerankerOptions;
+  private maxTokens: number;
+  private tokenEstimator: TokenEstimator;
 
   constructor(options: Partial<CodeRerankerOptions> = {}) {
+    this.maxTokens = options.maxTokens || 4000; 
+    this.tokenEstimator = new TikTokenEstimator();
+
     this.options = {
       implementationKeywords: options.implementationKeywords || DEFAULT_IMPLEMENTATION_KEYWORDS,
       theoreticalKeywords: options.theoreticalKeywords || DEFAULT_THEORETICAL_KEYWORDS,
       qualityIndicators: options.qualityIndicators || DEFAULT_QUALITY_INDICATORS,
-      implementationWeight: options.implementationWeight || 2.0,
+      implementationWeight: options.implementationWeight || 1.0,
       theoreticalWeight: options.theoreticalWeight || 1.0,
-      qualityWeight: options.qualityWeight || 1.5,
+      qualityWeight: options.qualityWeight || 1.0,
       codeBlockBonus: options.codeBlockBonus || 1.0,
-      maxTokens: options.maxTokens || 3000,
+      maxTokens: this.maxTokens,
     };
   }
 
@@ -188,7 +194,7 @@ export class CodeReranker {
 
 
   private applyTokenBudgetWithDiversity(nodes: RetrievedNode[]): RetrievedNode[] {
-    const maxTokens = this.options.maxTokens;
+    const maxTokens = this.maxTokens;
     let currentTokens = 0;
     const selectedNodes: RetrievedNode[] = [];
     
@@ -208,7 +214,7 @@ export class CodeReranker {
 
     for (const node of prioritizedNodes) {
       const content = node.node.getContent();
-      const estimatedTokens = this.estimateTokens(content);
+      const estimatedTokens = this.tokenEstimator.estimate(content);
       
       if (currentTokens + estimatedTokens <= maxTokens) {
         selectedNodes.push(node);
@@ -235,10 +241,6 @@ export class CodeReranker {
     return selectedNodes;
   }
 
-  // 1 token ≈ 4 characters for English
-  private estimateTokens(text: string): number {
-    return Math.ceil(text.length / 4);
-  }
 
 
   private truncateToTokens(text: string, maxTokens: number): string {
@@ -264,7 +266,7 @@ export class CodeReranker {
       originalCount: originalNodes.length,
       rerankedCount: rerankedNodes.length,
       totalTokens: rerankedNodes.reduce((sum, node) => 
-        sum + this.estimateTokens(node.node.getContent()), 0),
+        sum + this.tokenEstimator.estimate(node.node.getContent()), 0),
       
       // scoring statistics 
       averageImplementationScore: enhancedNodes.reduce((sum, node) => 

@@ -31,6 +31,7 @@
     "framer-motion": "^12.11.3",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
+    "js-tiktoken": "^1.0.20",
     "llamaindex": "^0.10.6",
     "lucide-react": "^0.510.0",
     "next": "15.3.2",

@@ -97,18 +97,18 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
   const initialNodes = await retriever.retrieve({ query });
 
   let retrievedNodes;
-  console.log("Initial nodes:", initialNodes);
   if (tool === "code-composer") {
     const codeReranker = new CodeReranker({
       maxTokens: 32000,
-      implementationWeight: 2.5,      // Higher weight for implementation content
-      theoreticalWeight: 1.0,         // Standard weight for theoretical content
-      qualityWeight: 2.0,             // High weight for quality indicators
-      codeBlockBonus: 1.5             // Bonus for actual code blocks
+      implementationWeight: 1.5,
+      theoreticalWeight: 1.0,
+      qualityWeight: 2.0,
+      codeBlockBonus: 1.5
     });
 
+    // retrievedNodes = initialNodes;
     retrievedNodes = codeReranker.rerank(initialNodes);
-    console.log("Enhanced code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
+    console.log("code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
   } else {
     retrievedNodes = initialNodes;
   }
