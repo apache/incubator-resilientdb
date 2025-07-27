@@ -133,7 +133,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({ generation, getLa
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div className="text-sm bg-muted/30 rounded-md p-3 border whitespace-pre-wrap break-words w-full min-w-0 overflow-hidden min-h-[60px] flex items-start">
+          <div className="text-sm bg-muted/30 rounded-md p-3 border break-words w-full min-w-0 overflow-hidden min-h-[60px] flex items-start">
             {generation.plan ? (
               <MarkdownRenderer content={generation.plan} />
             ) : (generation.isStreaming && generation.currentSection === 'plan' ? (
