@@ -10,6 +10,7 @@ import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
+import { MultiDocumentSourceBadge } from "@/components/ui/document-source-badge";
 import { Check, Clock, Code2, Copy, Zap } from "lucide-react";
 import { useState } from "react";
 import { CodeGeneration } from "../types";
@@ -52,6 +53,14 @@ const TopicSection: React.FC<CodeSectionProps> = ({ generation }) => (
     <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
       <Zap className="h-3 w-3" />
       Topic
+      <MultiDocumentSourceBadge 
+          sources={generation.sources || []}
+          maxVisible={3}
+          variant="outline"
+          size="sm"
+          showIcon={true}
+          className="gap-1"
+        />
       {generation.isStreaming && generation.currentSection === 'topic' && (
         <Loader size="sm" className="text-yellow-500 w-3 h-3 ml-1" />
       )}

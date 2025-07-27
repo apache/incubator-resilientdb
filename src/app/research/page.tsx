@@ -298,6 +298,7 @@ function ResearchChatPageContent() {
                 timestamp: new Date().toISOString(),
                 isStreaming: true,
                 currentSection: 'topic',
+                sources: sourceInfo?.sources || [],
               };
 
               setCodeGenerations((prev) => [...prev, newCodeGeneration]);

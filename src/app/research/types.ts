@@ -10,4 +10,9 @@ export interface CodeGeneration {
   timestamp: string;
   isStreaming?: boolean;
   currentSection?: 'topic' | 'plan' | 'pseudocode' | 'implementation';
+  sources?: {
+    path: string;
+    name: string;
+    displayTitle?: string;
+  }[];
 } 
