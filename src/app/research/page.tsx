@@ -295,13 +295,10 @@ function ResearchChatPageContent() {
             sourceInfo = JSON.parse(sourceInfoMatch[1]);
             buffer = buffer.replace(/__SOURCE_INFO__[\s\S]*?\n\n/, "");
             
-            // If this is a code composer request, create the streaming code generation
             if (sourceInfo.tool === "code-composer") {
-              // Use the early code generation if it was created, otherwise create a new one
               if (earlyCodeGenerationId) {
                 currentCodeGeneration = earlyCodeGenerationId;
                 
-                // Update the existing code generation with source info
                 setCodeGenerations((prev) =>
                   prev.map((gen) =>
                     gen.id === earlyCodeGenerationId
@@ -314,7 +311,6 @@ function ResearchChatPageContent() {
                   )
                 );
               } else {
-                // Fallback: create new code generation if early one wasn't created
                 const codeGenId = Date.now().toString();
                 currentCodeGeneration = codeGenId;
                 
@@ -336,7 +332,6 @@ function ResearchChatPageContent() {
                 setCodeGenerations((prev) => [...prev, newCodeGeneration]);
               }
               
-              // Don't show code composer responses in chat, only in preview panel
               setMessages((prev) =>
                 prev.map((msg) =>
                   msg.id === assistantPlaceholderMessage.id
@@ -349,7 +344,7 @@ function ResearchChatPageContent() {
                     : msg,
                 ),
               );
-              continue; // Skip regular message update for code composer
+              continue;
             }
           } catch (error) {
             console.error("Failed to parse source info:", error);
@@ -359,7 +354,6 @@ function ResearchChatPageContent() {
 
       // Handle code composer live streaming
       if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
-        // Detect current section and update streaming content
         const currentSection = getCurrentSection(fullResponse);
         const { topic, plan, pseudocode, implementation } = extractSectionsFromStream(fullResponse);
         
@@ -377,10 +371,9 @@ function ResearchChatPageContent() {
               : gen
           )
         );
-        continue; // Skip regular message update for code composer
+        continue;
       }
 
-      // Check for code composer metadata
       if (buffer.includes("__CODE_COMPOSER_META__")) {
         const metaMatch = buffer.match(
           /__CODE_COMPOSER_META__({[\s\S]*?})\n\n/,
@@ -388,7 +381,6 @@ function ResearchChatPageContent() {
         if (metaMatch) {
           try {
             const metadata = JSON.parse(metaMatch[1]);
-            // Remove metadata from display buffer
             buffer = buffer.replace(/__CODE_COMPOSER_META__[\s\S]*?\n\n/, "");
           } catch (error) {
             console.error("Failed to parse code composer metadata:", error);
@@ -396,7 +388,6 @@ function ResearchChatPageContent() {
         }
       }
 
-      // Regular message update (for non-code-composer responses)
       if (sourceInfo?.tool !== "code-composer") {
         setMessages((prev) =>
           prev.map((msg) =>
@@ -413,18 +404,14 @@ function ResearchChatPageContent() {
       }
     }
 
-    // If this was a code composer request, finalize the code generation
     if (sourceInfo?.tool === "code-composer") {
       try {
         const parsed = parseChainOfThoughtResponse(fullResponse);
         
-        // Clean up the implementation content
         let cleanImplementation = parsed.implementation;
         if (cleanImplementation) {
-          // Remove metadata section
           cleanImplementation = cleanImplementation.replace(/__CODE_COMPOSER_META__[\s\S]*$/, '').trim();
           
-          // Remove closing explanation after code blocks
           const lastCodeBlockEnd = cleanImplementation.lastIndexOf('```');
           if (lastCodeBlockEnd !== -1) {
             const afterCodeBlock = cleanImplementation.substring(lastCodeBlockEnd + 3).trim();
@@ -434,7 +421,6 @@ function ResearchChatPageContent() {
           }
         }
         
-        // Update the existing streaming code generation to final state
         setCodeGenerations((prev) => 
           prev.map((gen) => 
             gen.isStreaming ? {
@@ -472,10 +458,12 @@ function ResearchChatPageContent() {
     // Create a placeholder for the assistant's response
     const assistantPlaceholderMessage: Message = {
       id: (Date.now() + 1).toString(), // Ensure unique ID
-      content: "",
+      content: payload.tool === "code-composer" 
+        ? "Reading and analyzing documents to generate code. Check the preview panel to see live progress."
+        : "",
       role: "assistant",
       timestamp: new Date().toISOString(),
-      isLoadingPlaceholder: true,
+      isLoadingPlaceholder: payload.tool !== "code-composer",
     };
 
     setMessages((prev) => [...prev, userMessage, assistantPlaceholderMessage]);
@@ -512,7 +500,6 @@ function ResearchChatPageContent() {
       });
 
       if (!response.ok) {
-        // If the response is not OK, update the placeholder to show an error
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantPlaceholderMessage.id
@@ -525,7 +512,6 @@ function ResearchChatPageContent() {
           ),
         );
         
-        // Remove the early code generation if it was created
         if (earlyCodeGenerationId) {
           setCodeGenerations((prev) => 
             prev.filter(gen => gen.id !== earlyCodeGenerationId)
@@ -538,8 +524,6 @@ function ResearchChatPageContent() {
       await handleCodeComposerStream(response, assistantPlaceholderMessage, payload, earlyCodeGenerationId);
     } catch (error) {
       console.error("Chat error:", error);
-      // If an error occurred and it wasn't handled by updating the placeholder already,
-      // ensure the placeholder is removed or updated to an error message.
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantPlaceholderMessage.id && msg.isLoadingPlaceholder
@@ -552,7 +536,6 @@ function ResearchChatPageContent() {
         ),
       );
       
-      // Remove the early code generation if it was created
       if (earlyCodeGenerationId) {
         setCodeGenerations((prev) => 
           prev.filter(gen => gen.id !== earlyCodeGenerationId)
@@ -583,9 +566,9 @@ function ResearchChatPageContent() {
       if (index === -1) {
         return [...prev, doc];
       }
-      return prev; // Don't add duplicates
+      return prev;
     });
-    setIsMobileSheetOpen(false); // Close mobile sheet when document is selected
+    setIsMobileSheetOpen(false);
   }, []);
 
   const handleDocumentDeselect = useCallback((doc: Document) => {
