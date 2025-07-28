@@ -137,11 +137,11 @@ For each chunk, respond in this JSON format:
   "analyses": [
     {
       "chunkIndex": 0,
-      "implementationRelevance": 8,
+      "implementRel": 8,
       "codeQuality": 7,
       "queryAlignment": 9,
       "hasCodeExamples": true,
-      "reasoning": "Brief explanation of scores"
+      "reasoning": "Brief explanation of scores (~10 words)"
     }
   ]
 }`;
@@ -162,7 +162,7 @@ For each chunk, respond in this JSON format:
 
       return batch.map((node, idx) => {
         const nodeAnalysis = analysis.analyses.find((a: any) => a.chunkIndex === idx) || {
-          implementationRelevance: 5,
+          implementRel: 5,
           codeQuality: 5,
           queryAlignment: 5,
           hasCodeExamples: false,
@@ -174,7 +174,7 @@ For each chunk, respond in this JSON format:
         const analyzedChunk = {
           content: node.node.getContent(),
           originalScore: node.score,
-          implementationRelevance: nodeAnalysis.implementationRelevance,
+          implementRel: nodeAnalysis.implementRel,
           codeQuality: nodeAnalysis.codeQuality,
           queryAlignment: nodeAnalysis.queryAlignment,
           hasCodeExamples: nodeAnalysis.hasCodeExamples,
@@ -192,7 +192,7 @@ For each chunk, respond in this JSON format:
       return batch.map(node => ({
         content: node.node.getContent(),
         originalScore: node.score,
-        implementationRelevance: 5,
+        implementRel: 5,
         codeQuality: 5,
         queryAlignment: 5,
         hasCodeExamples: false,
@@ -263,7 +263,7 @@ For each chunk, respond in this JSON format:
     };
 
     const normalizedScores = {
-      implementation: analysis.implementationRelevance / 10,
+      implementation: analysis.implementRel / 10,
       quality: analysis.codeQuality / 10,
       alignment: analysis.queryAlignment / 10
     };
@@ -294,7 +294,7 @@ For each chunk, respond in this JSON format:
         rank: idx + 1,
         finalScore: chunk.finalScore,
         originalScore: chunk.originalScore,
-        implementationRelevance: chunk.implementationRelevance,
+        implementRel: chunk.implementRel,
         codeQuality: chunk.codeQuality,
         reasoning: chunk.reasoning.substring(0, 100) + '...'
       }))
@@ -305,7 +305,7 @@ For each chunk, respond in this JSON format:
         getContent: () => chunk.content,
         metadata: {
           agentAnalysis: {
-            implementationRelevance: chunk.implementationRelevance,
+            implementRel: chunk.implementRel,
             codeQuality: chunk.codeQuality,
             queryAlignment: chunk.queryAlignment,
             reasoning: chunk.reasoning
