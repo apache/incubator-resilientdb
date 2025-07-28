@@ -217,7 +217,7 @@ For each chunk, respond in this JSON format:
     const tokensPerChunkInBatch = avgChunkTokens + responseTokensPerChunk;
     const maxChunksInBatch = Math.floor(availableTokens / tokensPerChunkInBatch);
 
-    const optimalBatchSize = Math.max(1, Math.min(maxChunksInBatch, 15));
+    const optimalBatchSize = Math.max(1, Math.min(maxChunksInBatch, 8));
 
     console.log(`[CodeComposerAgent] Batch size calculation:`, {
       maxTokens: this.maxTokens,

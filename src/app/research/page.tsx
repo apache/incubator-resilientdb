@@ -54,11 +54,16 @@ interface Message {
 }
 
 // Helper functions for code composer streaming
-const getCurrentSection = (fullResponse: string): 'topic' | 'plan' | 'pseudocode' | 'implementation' => {
+const getCurrentSection = (fullResponse: string): 'reading-documents' | 'topic' | 'plan' | 'pseudocode' | 'implementation' => {
   const topicIndex = fullResponse.indexOf('## TOPIC');
   const planIndex = fullResponse.indexOf('## PLAN');
   const pseudocodeIndex = fullResponse.indexOf('## PSEUDOCODE');
   const implementationIndex = fullResponse.indexOf('## IMPLEMENTATION');
+  
+  // If we haven't received any structured content yet, we're still reading documents
+  if (topicIndex === -1 && planIndex === -1 && pseudocodeIndex === -1 && implementationIndex === -1) {
+    return 'reading-documents';
+  }
   
   if (implementationIndex !== -1 && fullResponse.length > implementationIndex + 18) {
     return 'implementation';
@@ -228,7 +233,8 @@ function ResearchChatPageContent() {
   const handleCodeComposerStream = async (
     response: Response,
     assistantPlaceholderMessage: Message,
-    payload: { query: string; documentPaths: string[]; tool?: string; language?: Language; scope?: string[] }
+    payload: { query: string; documentPaths: string[]; tool?: string; language?: Language; scope?: string[] },
+    earlyCodeGenerationId: string | null
   ) => {
     const reader = response.body?.getReader();
     if (!reader) {
@@ -244,6 +250,14 @@ function ResearchChatPageContent() {
             : msg,
         ),
       );
+      
+      // Remove the early code generation if it was created
+      if (earlyCodeGenerationId) {
+        setCodeGenerations((prev) => 
+          prev.filter(gen => gen.id !== earlyCodeGenerationId)
+        );
+      }
+      
       throw new Error("No response reader available");
     }
     
@@ -283,25 +297,44 @@ function ResearchChatPageContent() {
             
             // If this is a code composer request, create the streaming code generation
             if (sourceInfo.tool === "code-composer") {
-              const codeGenId = Date.now().toString();
-              currentCodeGeneration = codeGenId;
-              
-              const newCodeGeneration: CodeGeneration = {
-                id: codeGenId,
-                language: sourceInfo.language || "ts",
-                query: payload.query,
-                topic: "",
-                plan: "",
-                pseudocode: "",
-                implementation: "",
-                hasStructuredResponse: false,
-                timestamp: new Date().toISOString(),
-                isStreaming: true,
-                currentSection: 'topic',
-                sources: sourceInfo?.sources || [],
-              };
+              // Use the early code generation if it was created, otherwise create a new one
+              if (earlyCodeGenerationId) {
+                currentCodeGeneration = earlyCodeGenerationId;
+                
+                // Update the existing code generation with source info
+                setCodeGenerations((prev) =>
+                  prev.map((gen) =>
+                    gen.id === earlyCodeGenerationId
+                      ? {
+                          ...gen,
+                          language: sourceInfo.language || gen.language,
+                          sources: sourceInfo?.sources || [],
+                        }
+                      : gen
+                  )
+                );
+              } else {
+                // Fallback: create new code generation if early one wasn't created
+                const codeGenId = Date.now().toString();
+                currentCodeGeneration = codeGenId;
+                
+                const newCodeGeneration: CodeGeneration = {
+                  id: codeGenId,
+                  language: sourceInfo.language || "ts",
+                  query: payload.query,
+                  topic: "",
+                  plan: "",
+                  pseudocode: "",
+                  implementation: "",
+                  hasStructuredResponse: false,
+                  timestamp: new Date().toISOString(),
+                  isStreaming: true,
+                  currentSection: 'reading-documents',
+                  sources: sourceInfo?.sources || [],
+                };
 
-              setCodeGenerations((prev) => [...prev, newCodeGeneration]);
+                setCodeGenerations((prev) => [...prev, newCodeGeneration]);
+              }
               
               // Don't show code composer responses in chat, only in preview panel
               setMessages((prev) =>
@@ -449,6 +482,28 @@ function ResearchChatPageContent() {
     setInputValue("");
     setIsLoading(true);
 
+    let earlyCodeGenerationId: string | null = null;
+    if (payload.tool === "code-composer") {
+      earlyCodeGenerationId = Date.now().toString();
+      
+      const newCodeGeneration: CodeGeneration = {
+        id: earlyCodeGenerationId,
+        language: payload.language || "ts",
+        query: payload.query,
+        topic: "",
+        plan: "",
+        pseudocode: "",
+        implementation: "",
+        hasStructuredResponse: false,
+        timestamp: new Date().toISOString(),
+        isStreaming: true,
+        currentSection: 'reading-documents',
+        sources: [],
+      };
+
+      setCodeGenerations((prev) => [...prev, newCodeGeneration]);
+    }
+
     try {
       const response = await fetch("/api/research/chat", {
         method: "POST",
@@ -469,10 +524,18 @@ function ResearchChatPageContent() {
               : msg,
           ),
         );
+        
+        // Remove the early code generation if it was created
+        if (earlyCodeGenerationId) {
+          setCodeGenerations((prev) => 
+            prev.filter(gen => gen.id !== earlyCodeGenerationId)
+          );
+        }
+        
         throw new Error(`Failed to send message. Status: ${response.status}`);
       }
 
-      await handleCodeComposerStream(response, assistantPlaceholderMessage, payload);
+      await handleCodeComposerStream(response, assistantPlaceholderMessage, payload, earlyCodeGenerationId);
     } catch (error) {
       console.error("Chat error:", error);
       // If an error occurred and it wasn't handled by updating the placeholder already,
@@ -488,6 +551,13 @@ function ResearchChatPageContent() {
             : msg,
         ),
       );
+      
+      // Remove the early code generation if it was created
+      if (earlyCodeGenerationId) {
+        setCodeGenerations((prev) => 
+          prev.filter(gen => gen.id !== earlyCodeGenerationId)
+        );
+      }
     } finally {
       setIsLoading(false);
     }

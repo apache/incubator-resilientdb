@@ -92,7 +92,7 @@ const getDocumentIndex = async (targetPaths: string[]) => {
 };
 
 const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: string, requestData?: RequestData) => {
-  const topK = tool === "code-composer" ? 15 : 15;
+  const topK = tool === "code-composer" ? 8 : 8;
   const retriever = documentIndex.asRetriever({ similarityTopK: topK });
   const initialNodes = await retriever.retrieve({ query });
 

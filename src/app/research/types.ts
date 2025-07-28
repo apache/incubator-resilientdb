@@ -9,13 +9,13 @@ export interface CodeGeneration {
   hasStructuredResponse: boolean;
   timestamp: string;
   isStreaming?: boolean;
-  currentSection?: 'topic' | 'plan' | 'pseudocode' | 'implementation';
+  currentSection?: 'reading-documents' | 'topic' | 'plan' | 'pseudocode' | 'implementation';
   sources?: {
     path: string;
     name: string;
     displayTitle?: string;
   }[];
-} 
+}
 
 export interface RetrievedNode {
   node: {
