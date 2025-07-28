@@ -1,5 +1,5 @@
+import { CodeComposerAgent } from "@/lib/code-composer-agent";
 import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
-import { CodeReranker } from "@/lib/code-reranker";
 import { documentIndexManager } from "@/lib/document-index-manager";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
@@ -91,24 +91,44 @@ const getDocumentIndex = async (targetPaths: string[]) => {
   return documentIndex;
 };
 
-const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: string) => {
-  const topK = tool === "code-composer" ? 20 : 15;
+const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: string, requestData?: RequestData) => {
+  const topK = tool === "code-composer" ? 15 : 15;
   const retriever = documentIndex.asRetriever({ similarityTopK: topK });
   const initialNodes = await retriever.retrieve({ query });
 
   let retrievedNodes;
   if (tool === "code-composer") {
-    const codeReranker = new CodeReranker({
-      maxTokens: 32000,
-      implementationWeight: 1.5,
-      theoreticalWeight: 1.0,
-      qualityWeight: 2.0,
-      codeBlockBonus: 1.5
-    });
+    try {
+      // Use AI SDK agent for intelligent context ranking
+      const deepSeekLLM = Settings.llm as DeepSeekLLM;
+      const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
+        maxTokens: 32000,
+        implementationWeight: 1.5,
+        theoreticalWeight: 1.0,
+        qualityWeight: 2.0
+      });
 
-    // retrievedNodes = initialNodes;
-    retrievedNodes = codeReranker.rerank(initialNodes);
-    console.log("code reranker stats:", codeReranker.getStats(initialNodes, retrievedNodes));
+      retrievedNodes = await codeComposerAgent.rerank(initialNodes, query, {
+        language: requestData?.language || 'ts',
+        scope: requestData?.scope || [],
+      });
+
+      console.log("code composer agent stats:", codeComposerAgent.getStats());
+    } catch (error) {
+      console.error("CodeComposerAgent failed, falling back to CodeReranker:", error);
+
+      // // Fallback to original reranker
+      // const codeReranker = new CodeReranker({
+      //   maxTokens: 32000,
+      //   implementationWeight: 1.5,
+      //   theoreticalWeight: 1.0,
+      //   qualityWeight: 2.0,
+      //   codeBlockBonus: 1.5
+      // });
+
+      // retrievedNodes = codeReranker.rerank(initialNodes);
+      // console.log("code reranker stats (fallback):", codeReranker.getStats(initialNodes, retrievedNodes));
+    }
   } else {
     retrievedNodes = initialNodes;
   }
@@ -270,7 +290,8 @@ export async function POST(req: NextRequest) {
       const retrievedNodes = await retrieveAndRankContext(
         documentIndex,
         requestData.query,
-        requestData.tool
+        requestData.tool,
+        requestData
       );
 
       // format context
