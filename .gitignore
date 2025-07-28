@@ -49,4 +49,4 @@ next-env.d.ts
 
 
 # archive
-/archive
+/src/archive

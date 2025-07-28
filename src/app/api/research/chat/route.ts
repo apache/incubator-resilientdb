@@ -99,7 +99,6 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
   let retrievedNodes;
   if (tool === "code-composer") {
     try {
-      // Use AI SDK agent for intelligent context ranking
       const deepSeekLLM = Settings.llm as DeepSeekLLM;
       const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
         maxTokens: 32000,
@@ -115,19 +114,7 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
 
       console.log("code composer agent stats:", codeComposerAgent.getStats());
     } catch (error) {
-      console.error("CodeComposerAgent failed, falling back to CodeReranker:", error);
-
-      // // Fallback to original reranker
-      // const codeReranker = new CodeReranker({
-      //   maxTokens: 32000,
-      //   implementationWeight: 1.5,
-      //   theoreticalWeight: 1.0,
-      //   qualityWeight: 2.0,
-      //   codeBlockBonus: 1.5
-      // });
-
-      // retrievedNodes = codeReranker.rerank(initialNodes);
-      // console.log("code reranker stats (fallback):", codeReranker.getStats(initialNodes, retrievedNodes));
+      console.error("CodeComposerAgent failed, falling back to regular node retrieval:", error);
     }
   } else {
     retrievedNodes = initialNodes;
