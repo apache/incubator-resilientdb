@@ -37,7 +37,7 @@ export interface AgentOptions {
 export interface AnalyzedChunk {
   content: string;
   originalScore: number;
-  implementationRelevance: number;
+  implementRel: number;
   codeQuality: number;
   queryAlignment: number;
   hasCodeExamples: boolean;
