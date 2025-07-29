@@ -30,7 +30,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useDocuments, Document } from "@/hooks/useDocuments";
+import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { cleanUpImplementation } from "@/lib/utils";
 import {
@@ -571,6 +571,10 @@ function ResearchChatPageContent() {
     setSelectedDocuments([]);
   }, []);
 
+  const handleCloseCodeGeneration = (generationId: string) => {
+    setCodeGenerations((prev) => prev.filter(gen => gen.id !== generationId));
+  };
+
   return (
     <TooltipProvider>
       <div className="flex h-screen bg-background">
@@ -831,7 +835,11 @@ function ResearchChatPageContent() {
 
             {/* PDF Preview Panel */}
             <ResizablePanel defaultSize={40} minSize={40}>
-              <PreviewPanel selectedDocuments={selectedDocuments} codeGenerations={codeGenerations} />
+              <PreviewPanel 
+                selectedDocuments={selectedDocuments} 
+                codeGenerations={codeGenerations}
+                onCloseCodeGeneration={handleCloseCodeGeneration}
+              />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>

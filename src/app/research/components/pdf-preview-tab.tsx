@@ -16,7 +16,7 @@ export const PDFPreviewTabs: React.FC<PDFPreviewTabProps> = ({
         <TabsTrigger
           key={doc.id}
           value={doc.id}
-          className="flex items-center gap-2 text-xs max-w-[150px] relative group"
+          className="flex items-center gap-2 text-xs max-w-[175px] relative group"
           title={doc.displayTitle || doc.name}
         >
           <FileText className="h-3 w-3 flex-shrink-0" />

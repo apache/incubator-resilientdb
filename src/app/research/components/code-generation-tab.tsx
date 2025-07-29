@@ -11,8 +11,8 @@ import { Loader } from "@/components/ui/loader";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, Check, Clock, Code2, Copy, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BookOpen, Check, Clock, Code2, Copy, X, Zap } from "lucide-react";
+import { useState } from "react";
 import { CodeGeneration } from "../types";
 
 interface CodeSectionProps {
@@ -241,43 +241,62 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({ generation, getLa
 interface CodeGenerationTabProps {
   codeGenerations: CodeGeneration[];
   getLanguageLabel: (language: string) => string;
-  formatTimestamp: (timestamp: string) => string;
+  onCloseTab?: (generationId: string) => void;
 }
 
 export const CodeGenerationTabs: React.FC<CodeGenerationTabProps> = ({
   codeGenerations,
   getLanguageLabel,
-  formatTimestamp,
+  onCloseTab,
 }) => {
+  const handleCloseTab = (generationId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    onCloseTab?.(generationId);
+  };
+
   return (
     <>
       {/* Code Generation Tab Triggers */}
-      {codeGenerations.map((generation) => (
-        <TabsTrigger
-          key={`code-${generation.id}`}
-          value={`code-${generation.id}`}
-          className="flex items-center gap-2 text-xs max-w-[180px] relative group"
-          title={`${getLanguageLabel(generation.language)} - ${generation.query}`}
-        >
-          {generation.isStreaming ? (
-            <Zap className="h-3 w-3 flex-shrink-0 text-yellow-500 animate-pulse" />
-          ) : (
-            <Code2 className="h-3 w-3 flex-shrink-0" />
-          )}
-          <span className="truncate">
-            {getLanguageLabel(generation.language)}
-          </span>
-          {generation.isStreaming ? (
-            <Badge variant="default" className="text-[10px] px-1 py-0 h-4 ml-1 bg-yellow-500/20 text-yellow-700 border-yellow-500/30">
-              Live
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4 ml-1">
-              {formatTimestamp(generation.timestamp)}
-            </Badge>
-          )}
-        </TabsTrigger>
-      ))}
+      {codeGenerations.map((generation) => {
+        const displayText = generation.topic || getLanguageLabel(generation.language);
+        
+        return (
+          <TabsTrigger
+            key={`code-${generation.id}`}
+            value={`code-${generation.id}`}
+            className="flex items-center text-xs max-w-[175px] relative group pr-4"
+            title={`${getLanguageLabel(generation.language)} - ${generation.query}`}
+          >
+            {generation.isStreaming ? (
+              <Zap className="h-3 w-3 flex-shrink-0 text-yellow-500 animate-pulse" />
+            ) : (
+              <Code2 className="h-3 w-3 flex-shrink-0" />
+                          )}
+            <span className="truncate flex-1">
+              {displayText}
+            </span>
+            {generation.isStreaming ? (
+              <Badge variant="default" className="text-[10px] px-1 py-0 h-4 ml-1 bg-yellow-500/20 text-yellow-700 border-yellow-500/30">
+                Live
+              </Badge>
+            ) : (
+<></>
+            )}
+            {onCloseTab && !generation.isStreaming && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground"
+                onClick={(e) => handleCloseTab(generation.id, e)}
+                title="Close tab"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </TabsTrigger>
+        );
+      })}
     </>
   );
 };

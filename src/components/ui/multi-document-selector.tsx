@@ -270,12 +270,21 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
                             </TooltipContent>
                           </Tooltip>
                           <div className="flex flex-wrap items-center gap-1 mt-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                             <Badge
                               variant="secondary"
-                              className="text-xs truncate max-w-[120px]"
-                            >
-                              {doc.name}
-                            </Badge>
+                              className="items-start justify-start text-xs"
+                                >
+                                <span className="truncate text-ellipsis max-w-[100px]">{doc.name}</span>
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              <p className="max-w-xs break-words">
+                                {doc.name}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
                             <Badge
                               variant="outline"
                               className="text-xs flex-shrink-0"

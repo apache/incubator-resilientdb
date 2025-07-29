@@ -11,12 +11,14 @@ interface PreviewPanelProps {
   selectedDocuments: Document[];
   codeGenerations?: CodeGeneration[];
   className?: string;
+  onCloseCodeGeneration?: (generationId: string) => void;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({ 
   selectedDocuments, 
   codeGenerations = [], 
-  className = "" 
+  className = "",
+  onCloseCodeGeneration
 }) => {
   const hasCodeGenerations = codeGenerations.length > 0;
   const hasPdfs = selectedDocuments.length > 0;
@@ -38,6 +40,23 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const handleTabChange = (value: string) => {
     userHasInteractedRef.current = true;
     setActiveTab(value);
+  };
+
+  const handleCloseCodeGeneration = (generationId: string) => {
+    // If we're closing the currently active tab, switch to another tab
+    if (activeTab === `code-${generationId}`) {
+      const remainingGenerations = codeGenerations.filter(gen => gen.id !== generationId);
+      if (remainingGenerations.length > 0) {
+        // Switch to the most recent remaining generation
+        setActiveTab(`code-${remainingGenerations[remainingGenerations.length - 1].id}`);
+      } else if (selectedDocuments.length > 0) {
+        // Switch to first PDF document if available
+        setActiveTab(selectedDocuments[0].id);
+      }
+    }
+    
+    // Call the parent handler to actually remove the generation
+    onCloseCodeGeneration?.(generationId);
   };
 
   useEffect(() => {
@@ -68,12 +87,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     userHasInteractedRef.current = false;
   }, [selectedDocuments]);
 
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
 
   const getLanguageLabel = (language: string) => {
     const labels: Record<string, string> = {
@@ -126,7 +139,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                   <CodeGenerationTabs
                     codeGenerations={codeGenerations}
                     getLanguageLabel={getLanguageLabel}
-                    formatTimestamp={formatTimestamp}
+                    onCloseTab={handleCloseCodeGeneration}
                   />
                   
                   {/* PDF Document Tabs */}
@@ -141,7 +154,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 <CodeGenerationContent
                   codeGenerations={codeGenerations}
                   getLanguageLabel={getLanguageLabel}
-                  formatTimestamp={formatTimestamp}
                 />
 
                 {/* PDF Document Content */}

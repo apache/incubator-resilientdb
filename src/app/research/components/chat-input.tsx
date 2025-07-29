@@ -60,7 +60,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       ...(activeTool === "code-composer" && {
         tool: "code-composer",
         language,
-        scope: [], // TODO: Implement scope collection in next instruction
+        scope: [], // TODO: Implement scope collection 
       }),
     };
 
