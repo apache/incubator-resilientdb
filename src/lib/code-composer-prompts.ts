@@ -1,6 +1,15 @@
 /**
- * CodeComposer system prompts and templates
- * Implements plan-first chain-of-thought for academic paper to code synthesis
+ * https://arxiv.org/pdf/2201.11903
+ * 
+ * the core methodology is a "plan-first" or "chain-of-thought  approach.
+ * This is implemented through a mandatory, multi-stage generation process:
+ * plan → pseudocode → implementation.
+ * 
+ * this structured process significantly improves the accuracy, quality, and
+ * reliability of the generated code by breaking down a complex synthesis task
+ * into a series of more manageable steps. the system includes the prompt
+ * templates, language-specific style guides, and response parsers needed to
+ * orchestrate this workflow.
  */
 
 export interface CodeComposerContext {
