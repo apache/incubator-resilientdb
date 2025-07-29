@@ -29,20 +29,17 @@ export interface AgentOptions {
   language?: string;
   scope?: string[];
   maxTokens?: number;
-  implementationWeight?: number;
-  theoreticalWeight?: number;
-  qualityWeight?: number;
 }
 
 export interface AnalyzedChunk {
   content: string;
   originalScore: number;
-  implementRel: number;
-  codeQuality: number;
-  queryAlignment: number;
-  hasCodeExamples: boolean;
+  ir: number; // implementRel -> ir
+  cq: number; // codeQuality -> cq  
+  qa: number; // queryAlignment -> qa
+  ce: boolean; // hasCodeExamples -> ce
   finalScore: number;
-  reasoning: string;
+  r: string; // reasoning -> r
 }
 
 export interface AgentStats {

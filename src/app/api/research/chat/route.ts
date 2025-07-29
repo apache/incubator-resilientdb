@@ -1,5 +1,6 @@
 import { CodeComposerAgent } from "@/lib/code-composer-agent";
 import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
+import { MAX_TOKENS } from "@/lib/constants";
 import { documentIndexManager } from "@/lib/document-index-manager";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
@@ -101,15 +102,12 @@ const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: 
     try {
       const deepSeekLLM = Settings.llm as DeepSeekLLM;
       const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
-        maxTokens: 32000,
-        implementationWeight: 1.5,
-        theoreticalWeight: 1.0,
-        qualityWeight: 2.0
+        maxTokens: MAX_TOKENS
       });
 
       retrievedNodes = await codeComposerAgent.rerank(initialNodes, query, {
         language: requestData?.language || 'ts',
-        scope: requestData?.scope || [],
+        scope: requestData?.scope || [], //tbd
       });
 
       console.log("code composer agent stats:", codeComposerAgent.getStats());

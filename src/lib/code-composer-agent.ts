@@ -1,13 +1,14 @@
-/**
- * CodeComposerAgent - AI-powered context analysis and ranking for code generation
- * Replaces keyword-based CodeReranker with semantic understanding using AI SDK
- */
-
 import { AgentOptions, AgentStats, AnalyzedChunk, RetrievedNode } from '@/app/research/types';
+import { MAX_TOKENS } from '@/lib/constants';
 import { DeepSeekLLM } from '@llamaindex/deepseek';
 import { TikTokenEstimator, TokenEstimator } from './token-estimator';
 
 const CHUNK_TRUNCATION_LIMIT = 1500;
+
+const IMPLEMENTATION_WEIGHT = 1.5;
+const QUALITY_WEIGHT = 2.0;
+const ALIGNMENT_WEIGHT = 1.8;
+const CODE_BONUS_WEIGHT = 1.3;
 
 export class CodeComposerAgent {
   private llm: DeepSeekLLM;
@@ -18,7 +19,7 @@ export class CodeComposerAgent {
   constructor(llm: DeepSeekLLM, options: AgentOptions = {}) {
     this.llm = llm;
     this.tokenEstimator = new TikTokenEstimator();
-    this.maxTokens = options.maxTokens || 32000;
+    this.maxTokens = options.maxTokens || MAX_TOKENS;
     this.stats = {
       totalChunks: 0,
       analyzedChunks: 0,
@@ -80,16 +81,16 @@ export class CodeComposerAgent {
     const analysisPrompt = `You are an expert code analysis agent. Analyze document chunks for their relevance to implementing code based on a user query.
 
 For each chunk, evaluate:
-1. Implementation Relevance (0-10): How useful is this for actual code implementation?
-2. Code Quality (0-10): Does it contain high-quality, complete code examples?
-3. Query Alignment (0-10): How well does it match the specific user request?
-4. Has Code Examples (true/false): Contains actual code snippets or implementations?
+1. Implementation Relevance [ir] (0-10): How useful is this for actual code implementation?
+2. Code Quality [cq] (0-10): Does it contain high-quality, complete code examples?
+3. Query Alignment [qa] (0-10): How well does it match the specific user request?
+4. Has Code Examples [ce] (true/false): Contains actual code snippets or implementations?
 
 User Query: "${query}"
 Target Language: ${language}
 ${scope.length > 0 ? `Scope Focus: ${scope.join(', ')}` : ''}
 
-Analyze each chunk and provide scores with brief reasoning.`;
+Analyze each chunk and provide scores with brief reasoning. Do not include any other text in your response besides the expected JSON format.`;
 
     const chunksToAnalyze = nodes;
     console.log(`[CodeComposerAgent] Processing ${chunksToAnalyze.length} chunks`);
@@ -138,14 +139,15 @@ For each chunk, respond in this JSON format:
   "analyses": [
     {
       "chunkIndex": 0,
-      "implementRel": 8,
-      "codeQuality": 7,
-      "queryAlignment": 9,
-      "hasCodeExamples": true,
-      "reasoning": "Brief explanation of scores (~10 words)"
+      "ir": 8,
+      "cq": 7,
+      "qa": 9,
+      "ce": true,
+      "r": "Brief explanation of scores (~10 words)"
     }
   ]
-}`;
+}
+`;
 
     try {
       console.log(`[CodeComposerAgent] Sending batch to LLM for analysis...`);
@@ -163,11 +165,11 @@ For each chunk, respond in this JSON format:
 
       return batch.map((node, idx) => {
         const nodeAnalysis = analysis.analyses.find((a: any) => a.chunkIndex === idx) || {
-          implementRel: 5,
-          codeQuality: 5,
-          queryAlignment: 5,
-          hasCodeExamples: false,
-          reasoning: "Analysis failed, using default scores"
+          ir: 5,
+          cq: 5,
+          qa: 5,
+          ce: false,
+          r: "Analysis failed, using default scores"
         };
 
         const finalScore = this.calculateFinalScore(node.score, nodeAnalysis, options);
@@ -175,12 +177,12 @@ For each chunk, respond in this JSON format:
         const analyzedChunk = {
           content: node.node.getContent(),
           originalScore: node.score,
-          implementRel: nodeAnalysis.implementRel,
-          codeQuality: nodeAnalysis.codeQuality,
-          queryAlignment: nodeAnalysis.queryAlignment,
-          hasCodeExamples: nodeAnalysis.hasCodeExamples,
+          ir: nodeAnalysis.ir,
+          cq: nodeAnalysis.cq,
+          qa: nodeAnalysis.qa,
+          ce: nodeAnalysis.ce,
           finalScore,
-          reasoning: nodeAnalysis.reasoning
+          r: nodeAnalysis.r
         };
 
         console.log(`[CodeComposerAgent] Chunk ${idx} analysis:`, analyzedChunk);
@@ -193,12 +195,12 @@ For each chunk, respond in this JSON format:
       return batch.map(node => ({
         content: node.node.getContent(),
         originalScore: node.score,
-        implementRel: 5,
-        codeQuality: 5,
-        queryAlignment: 5,
-        hasCodeExamples: false,
+        ir: 5,
+        cq: 5,
+        qa: 5,
+        ce: false,
         finalScore: node.score,
-        reasoning: "Analysis failed, using original score"
+        r: "Analysis failed, using original score"
       }));
     }
   }
@@ -257,16 +259,16 @@ For each chunk, respond in this JSON format:
     options: AgentOptions
   ): number {
     const weights = {
-      implementation: options.implementationWeight || 1.5,
-      quality: options.qualityWeight || 2.0,
-      alignment: 1.8,
-      codeBonus: 1.3
+      implementation: IMPLEMENTATION_WEIGHT,
+      quality: QUALITY_WEIGHT,
+      alignment: ALIGNMENT_WEIGHT,
+      codeBonus: CODE_BONUS_WEIGHT
     };
 
     const normalizedScores = {
-      implementation: analysis.implementRel / 10,
-      quality: analysis.codeQuality / 10,
-      alignment: analysis.queryAlignment / 10
+      implementation: analysis.ir / 10,
+      quality: analysis.cq / 10,
+      alignment: analysis.qa / 10
     };
 
     const weightedScore =
@@ -274,7 +276,7 @@ For each chunk, respond in this JSON format:
       (normalizedScores.quality * weights.quality) +
       (normalizedScores.alignment * weights.alignment);
 
-    const codeBonus = analysis.hasCodeExamples ? weights.codeBonus : 1.0;
+    const codeBonus = analysis.ce ? weights.codeBonus : 1.0;
 
     // Combine with original score
     const enhancedScore = (originalScore * 0.3) + (weightedScore * 0.7 * codeBonus);
@@ -295,9 +297,9 @@ For each chunk, respond in this JSON format:
         rank: idx + 1,
         finalScore: chunk.finalScore,
         originalScore: chunk.originalScore,
-        implementRel: chunk.implementRel,
-        codeQuality: chunk.codeQuality,
-        reasoning: chunk.reasoning.substring(0, 100) + '...'
+        ir: chunk.ir,
+        cq: chunk.cq,
+        r: chunk.r.substring(0, 100) + '...'
       }))
     );
 
@@ -306,10 +308,10 @@ For each chunk, respond in this JSON format:
         getContent: () => chunk.content,
         metadata: {
           agentAnalysis: {
-            implementRel: chunk.implementRel,
-            codeQuality: chunk.codeQuality,
-            queryAlignment: chunk.queryAlignment,
-            reasoning: chunk.reasoning
+            ir: chunk.ir,
+            cq: chunk.cq,
+            qa: chunk.qa,
+            r: chunk.r
           }
         }
       },
