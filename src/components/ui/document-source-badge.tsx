@@ -91,7 +91,7 @@ const DocumentSourceBadge = memo<DocumentSourceBadgeProps>(
       return (
         <Tooltip>
           <TooltipTrigger asChild>{badgeContent}</TooltipTrigger>
-          <TooltipContent>
+          <TooltipContent className="w-64">
             <div className="text-center">
               <p className="font-medium">{displayName}</p>
               <p className="text-xs text-muted-foreground mt-1">

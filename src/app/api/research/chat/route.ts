@@ -1,6 +1,6 @@
 import { CodeComposerAgent } from "@/lib/code-composer-agent";
 import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
-import { MAX_TOKENS } from "@/lib/constants";
+import { MAX_TOKENS, TITLE_MAPPINGS } from "@/lib/constants";
 import { documentIndexManager } from "@/lib/document-index-manager";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
@@ -183,7 +183,7 @@ const createSourceInfo = (
     sources: sourcePaths.map((path: string) => ({
       path,
       name: path.split("/").pop() || path,
-      displayTitle: path.split("/").pop()?.replace(".pdf", "") || path,
+      displayTitle: TITLE_MAPPINGS[path.split("/").pop() || path] || path,
     })),
     isMultiDocument: !!documentPaths,
     totalDocuments: documentPaths ? documentPaths.length : 1,
