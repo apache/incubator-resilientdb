@@ -10,8 +10,9 @@
     "db:migrate": "tsx scripts/migrate-to-postgresql.ts"
   },
   "dependencies": {
-    "@llamaindex/deepseek": "^0.0.15",
-    "@llamaindex/huggingface": "^0.1.16",
+    "@llamaindex/core": "^0.6.18",
+    "@llamaindex/deepseek": "^0.0.30",
+    "@llamaindex/huggingface": "^0.1.23",
     "@next/mdx": "^15.3.3",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -32,7 +33,7 @@
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
     "js-tiktoken": "^1.0.20",
-    "llamaindex": "^0.10.6",
+    "llamaindex": "^0.11.23",
     "lucide-react": "^0.510.0",
     "next": "15.3.2",
     "pg": "^8.16.3",
