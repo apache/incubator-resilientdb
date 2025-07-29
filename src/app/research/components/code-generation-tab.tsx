@@ -12,7 +12,7 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Check, Clock, Code2, Copy, Zap } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CodeGeneration } from "../types";
 
 interface CodeSectionProps {
@@ -94,21 +94,26 @@ const QuerySection: React.FC<CodeSectionProps> = ({ generation }) => (
   </div>
 );
 
+
 const ReadingDocumentsSection: React.FC<CodeSectionProps> = ({ generation }) => (
   <div className="w-full min-w-0 mb-4">
     <h3 className="text-sm font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
       <BookOpen className="h-3 w-3" />
       Reading Documents
-      {generation.isStreaming && generation.currentSection === 'reading-documents' && (
+      {generation.sources && generation.sources.length ==0 && (
         <Loader size="sm" className="text-yellow-500 w-3 h-3 ml-1" />
       )}
-      {generation.currentSection !== 'reading-documents' && (generation.topic || generation.plan || generation.pseudocode || generation.implementation) && (
+      {generation.sources && generation.sources.length > 0 && (
         <span className="text-green-600 text-xs font-medium">✓ Documents processed</span>
       )}
     </h3>
     <div>
-      {generation.isStreaming && generation.currentSection === 'reading-documents' && (
+      {generation.sources && generation.sources.length === 0 ? (
         <Loader variant="text-shimmer" text="Analyzing and ranking document content..." size="sm" className="italic" />
+      ) :  generation.currentSection === 'reading-documents' ? (
+        <Loader variant="text-shimmer" text="Preparing implementation plan..." size="sm" className="italic" />
+      ) : (
+        <></>
       )}
     </div>
   </div>

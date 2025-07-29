@@ -297,11 +297,11 @@ const ensureCodeBlock = (content: string): string => {
   }
 
   if (trimmed.startsWith('```') && !trimmed.endsWith('```')) {
-    return `${trimmed}\n\`\`\``;
+    return trimmed + '\n```';
   }
 
   if (!trimmed.includes('```')) {
-    return `\`\`\`\n${trimmed}\n\`\`\``;
+    return '```\n' + trimmed + '\n```';
   }
 
   return trimmed;
