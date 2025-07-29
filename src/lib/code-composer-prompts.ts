@@ -175,7 +175,8 @@ export const CODE_COMPOSER_SYSTEM_PROMPT = `You are CodeComposer-v0, an AI that 
   \`\`\` 
   \`\`\`
 
-  Remember: Academic papers contain theoretical insights - your job is to make them practically actionable while maintaining scientific rigor.`;
+  - Remember: Academic papers contain theoretical insights - your job is to make them practically actionable while maintaining scientific rigor.
+  - Do NOT include any additional text before, in between, or after the sections defined above.`;
 
 export const generateCodeComposerPrompt = (context: CodeComposerContext): string => {
   const styleGuide = LANGUAGE_STYLE_GUIDES[context.language] || LANGUAGE_STYLE_GUIDES.ts;

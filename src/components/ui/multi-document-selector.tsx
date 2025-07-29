@@ -11,7 +11,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { type Document } from "@/hooks/useDocuments";
+import { Document } from "@/hooks/useDocuments";
 import { Check, FileText, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 

@@ -1,5 +1,5 @@
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
-import { type Document } from "@/hooks/useDocuments";
+import { Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
 
 interface PDFPreviewTabProps {

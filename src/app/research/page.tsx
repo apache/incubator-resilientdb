@@ -2,7 +2,7 @@
 
 import { ChatInput, type Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
-import { type CodeGeneration } from "@/app/research/types";
+import { CodeGeneration } from "@/app/research/types";
 import { ToolProvider } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,8 +30,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useDocuments, type Document } from "@/hooks/useDocuments";
+import { useDocuments, Document } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
+import { cleanUpImplementation } from "@/lib/utils";
 import {
   ChevronLeft,
   ChevronRight,
@@ -106,22 +107,9 @@ const extractSectionsFromStream = (fullResponse: string) => {
   if (implementationStart !== -1) {
     implementation = fullResponse.substring(implementationStart + 18).trim();
     
-    // Clean up implementation content
-    // Remove metadata section
-    implementation = implementation.replace(/__CODE_COMPOSER_META__[\s\S]*$/, '').trim();
+  
+    implementation = cleanUpImplementation(implementation);
     
-    // Remove closing explanation after code blocks (starts after final ``` and contains explanatory text)
-    const lastCodeBlockEnd = implementation.lastIndexOf('```');
-    if (lastCodeBlockEnd !== -1) {
-      const afterCodeBlock = implementation.substring(lastCodeBlockEnd + 3).trim();
-      // If there's substantial explanatory text after the code block, remove it
-      if (afterCodeBlock.length > 50 && afterCodeBlock.includes('This implementation')) {
-        implementation = implementation.substring(0, lastCodeBlockEnd + 3).trim();
-      }
-    }
-    
-    // Remove any trailing markdown code block markers
-    implementation = implementation.replace(/```\s*$/, '').trim();
   }
   
   return { topic, plan, pseudocode, implementation };

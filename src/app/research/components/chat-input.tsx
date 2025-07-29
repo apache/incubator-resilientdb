@@ -15,7 +15,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { type Document } from "@/hooks/useDocuments";
+import { Document } from "@/hooks/useDocuments";
 import { Send } from "lucide-react";
 import { useState } from "react";
 

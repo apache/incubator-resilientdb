@@ -7,6 +7,7 @@ import { AgentOptions, AgentStats, AnalyzedChunk, RetrievedNode } from '@/app/re
 import { DeepSeekLLM } from '@llamaindex/deepseek';
 import { TikTokenEstimator, TokenEstimator } from './token-estimator';
 
+const CHUNK_TRUNCATION_LIMIT = 1500;
 
 export class CodeComposerAgent {
   private llm: DeepSeekLLM;
@@ -125,7 +126,7 @@ Analyze each chunk and provide scores with brief reasoning.`;
     options: AgentOptions
   ): Promise<AnalyzedChunk[]> {
     const batchContent = batch.map((node, idx) =>
-      `CHUNK ${idx + 1}:\n${node.node.getContent().substring(0, 1500)}...\n---`
+      `CHUNK ${idx + 1}:\n${node.node.getContent().substring(0, CHUNK_TRUNCATION_LIMIT)}...\n---`
     ).join('\n\n');
 
     const fullPrompt = `${basePrompt}
