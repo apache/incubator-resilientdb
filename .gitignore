@@ -46,3 +46,7 @@ next-env.d.ts
 
 # Parsed documents cache
 /documents/parsed/
+
+
+# archive
+/src/archive
