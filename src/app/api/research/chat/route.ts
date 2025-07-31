@@ -1,7 +1,7 @@
 import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { configureLlamaSettings } from "@/lib/config/llama-settings";
 import { TITLE_MAPPINGS } from "@/lib/constants";
-import { multiDocumentQueryEngine } from "@/lib/multi-document-query-engine";
+import { queryEngine } from "@/lib/query-engine";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { Settings } from "llamaindex";
 import { NextRequest, NextResponse } from "next/server";
@@ -64,15 +64,15 @@ const validateRequest = (data: RequestData): string | null => {
 
 // Configuration is now handled centrally via configureLlamaSettings()
 
-// Get context and sources from multiDocumentQueryEngine
-const getContextFromQueryEngine = async (query: string, targetPaths: string[], tool?: string) => {
-  // Use multiDocumentQueryEngine for context retrieval (no streaming)
-  const queryResult = await multiDocumentQueryEngine.queryMultipleDocuments(
+// Get context and sources from queryEngine
+const getContextFromQueryEngine = async (query: string, targetPaths: string[]) => {
+  // Use queryEngine for context retrieval (reduced topK for performance)
+  const queryResult = await queryEngine.queryMultipleDocuments(
     query,
     targetPaths,
     {
-      useReranking: true,
-      enableStreaming: true
+      enableStreaming: true,
+      topK: 3
     }
   );
 
@@ -111,7 +111,7 @@ const generatePrompt = (
   tool: string | undefined,
   context: string,
   query: string,
-  targetPaths: string[],
+  documentPaths: string[],
   language?: string,
   scope?: string[]
 ): string => {
@@ -121,14 +121,14 @@ const generatePrompt = (
       scope: scope || [],
       chunks: context,
       query,
-      documentTitles: targetPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
+      documentTitles: documentPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
     };
     return generateCodeComposerPrompt(codeComposerContext);
   }
 
   return `${RESEARCH_SYSTEM_PROMPT}
 
-Documents: ${targetPaths.map((p: string) => p.split("/").pop()).join(", ")}
+Documents: ${documentPaths.map((p: string) => p.split("/").pop()).join(", ")}
 
 Retrieved Context:
 ${context}
@@ -140,19 +140,18 @@ Question: ${query}`;
 const createSourceInfo = (
   data: RequestData,
   retrievedChunks: any[],
-  targetPaths: string[]
+  documentPaths: string[]
 ): SourceInfo => {
-  const { documentPath, documentPaths, tool, language, scope } = data;
-  const sourcePaths = documentPaths || (documentPath ? [documentPath] : []);
+  const { tool, language, scope } = data;
 
   return {
-    sources: sourcePaths.map((path: string) => ({
+    sources: documentPaths.map((path: string) => ({
       path,
       name: path.split("/").pop() || path,
       displayTitle: TITLE_MAPPINGS[path.split("/").pop() || path] || path,
     })),
-    isMultiDocument: !!documentPaths,
-    totalDocuments: documentPaths ? documentPaths.length : 1,
+    isMultiDocument: documentPaths.length > 1,
+    totalDocuments: documentPaths.length,
     contextNodes: retrievedChunks.length,
     tool: tool || "default",
     language: language || "ts",
@@ -169,8 +168,6 @@ const handleStreamingResponse = async (
   return new ReadableStream({
     async start(controller) {
       try {
-        controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
-
         if (tool === "code-composer") {
           let fullResponse = "";
           for await (const chunk of chatStream) {
@@ -198,6 +195,8 @@ const handleStreamingResponse = async (
             }
           }
         }
+
+        controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
 
         controller.close();
       } catch (error) {
@@ -237,26 +236,25 @@ export async function POST(req: NextRequest) {
     configureLlamaSettings();
 
     try {
-      const targetPaths = requestData.documentPaths!;
+      const documentPaths = requestData.documentPaths!;
 
-      // Use multiDocumentQueryEngine to get context and sources
-      const { context, sources, chunks } = await getContextFromQueryEngine(
+      // Use queryEngine to get context and sources
+      const { chunks } = await getContextFromQueryEngine(
         requestData.query,
-        targetPaths,
-        requestData.tool
+        documentPaths
       );
 
       // Format context for the prompt
       const formattedContext = formatContext(chunks);
 
-      console.log(`Retrieved ${chunks.length} chunks from ${targetPaths.length} documents`);
+      console.log(`Retrieved ${chunks.length} chunks from ${documentPaths.length} documents`);
 
       // Generate enhanced prompt
       const enhancedPrompt = generatePrompt(
         requestData.tool,
         formattedContext,
         requestData.query,
-        targetPaths,
+        documentPaths,
         requestData.language,
         requestData.scope
       );
@@ -269,7 +267,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Create source info for the UI
-      const sourceInfo = createSourceInfo(requestData, chunks, targetPaths);
+      const sourceInfo = createSourceInfo(requestData, chunks, documentPaths);
 
       // Handle streaming response using native LlamaIndex streaming
       const readableStream = await handleStreamingResponse(

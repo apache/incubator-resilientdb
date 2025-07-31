@@ -16,7 +16,7 @@ export const configureLlamaSettings = (): void => {
   if (isConfigured) {
     return;
   }
-  
+
   console.log(chalk.bold("[LlamaSettings] Configuring LlamaIndex with DeepSeek + HuggingFace"));
 
   // Configure DeepSeek LLM with aggressive timeout and retry settings
@@ -31,14 +31,6 @@ export const configureLlamaSettings = (): void => {
   // Using default model for faster setup (can upgrade later)
   Settings.embedModel = new HuggingFaceEmbedding();
 
-  // Configure callback manager for essential monitoring
-  Settings.callbackManager.on("llm-start", (event) => {
-    console.log(chalk.bold("[LlamaSettings] DeepSeek LLM call started"));
-  });
-
-  Settings.callbackManager.on("llm-end", (event) => {
-    console.log(chalk.bold("[LlamaSettings] DeepSeek LLM call completed"));
-  });
 
   // Mark as configured
   isConfigured = true;
@@ -74,10 +66,10 @@ export const resetLlamaSettings = (): void => {
   // Clear existing settings
   Settings.llm = undefined as any;
   Settings.embedModel = undefined as any;
-  
+
   // Reset configuration flag
   isConfigured = false;
-  
+
   // Reconfigure
   configureLlamaSettings();
 };
