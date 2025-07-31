@@ -72,7 +72,7 @@ const getContextFromQueryEngine = async (query: string, targetPaths: string[]) =
     targetPaths,
     {
       enableStreaming: true,
-      topK: 3
+      topK: 5
     }
   );
 
@@ -168,7 +168,9 @@ const handleStreamingResponse = async (
   return new ReadableStream({
     async start(controller) {
       try {
+
         if (tool === "code-composer") {
+          controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
           let fullResponse = "";
           for await (const chunk of chatStream) {
             const content = chunk.delta;
@@ -196,8 +198,9 @@ const handleStreamingResponse = async (
           }
         }
 
-        controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
-
+        if (tool != "code-composer") {
+          controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
+        }
         controller.close();
       } catch (error) {
         controller.error(error);
