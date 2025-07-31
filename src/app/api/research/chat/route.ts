@@ -65,14 +65,23 @@ const validateRequest = (data: RequestData): string | null => {
 // Configuration is now handled centrally via configureLlamaSettings()
 
 // Get context and sources from queryEngine
-const getContextFromQueryEngine = async (query: string, targetPaths: string[]) => {
-  // Use queryEngine for context retrieval (reduced topK for performance)
+const getContextFromQueryEngine = async (
+  query: string, 
+  targetPaths: string[], 
+  tool?: string,
+  language?: string,
+  scope?: string[]
+) => {
+  // Use queryEngine for context retrieval with tool-specific options
   const queryResult = await queryEngine.queryMultipleDocuments(
     query,
     targetPaths,
     {
       enableStreaming: true,
-      topK: 5
+      topK: tool === "code-composer" ? 8 : 5,
+      tool,
+      language,
+      scope
     }
   );
 
@@ -139,7 +148,7 @@ Question: ${query}`;
 // Create source info for the UI
 const createSourceInfo = (
   data: RequestData,
-  retrievedChunks: any[],
+  retrievedData: any[],
   documentPaths: string[]
 ): SourceInfo => {
   const { tool, language, scope } = data;
@@ -152,7 +161,7 @@ const createSourceInfo = (
     })),
     isMultiDocument: documentPaths.length > 1,
     totalDocuments: documentPaths.length,
-    contextNodes: retrievedChunks.length,
+    contextNodes: retrievedData.length,
     tool: tool || "default",
     language: language || "ts",
     scope: scope || []
@@ -241,21 +250,21 @@ export async function POST(req: NextRequest) {
     try {
       const documentPaths = requestData.documentPaths!;
 
-      // Use queryEngine to get context and sources
-      const { chunks } = await getContextFromQueryEngine(
+      // Use queryEngine with tool-specific options - now handles code-composer internally
+      const { context, chunks } = await getContextFromQueryEngine(
         requestData.query,
-        documentPaths
+        documentPaths,
+        requestData.tool,
+        requestData.language,
+        requestData.scope
       );
 
-      // Format context for the prompt
-      const formattedContext = formatContext(chunks);
-
-      console.log(`Retrieved ${chunks.length} chunks from ${documentPaths.length} documents`);
+      console.log(`Retrieved ${chunks.length} chunks from ${documentPaths.length} documents${requestData.tool ? ` (${requestData.tool})` : ''}`);
 
       // Generate enhanced prompt
       const enhancedPrompt = generatePrompt(
         requestData.tool,
-        formattedContext,
+        context,
         requestData.query,
         documentPaths,
         requestData.language,

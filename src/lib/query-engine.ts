@@ -1,6 +1,8 @@
+import { DeepSeekLLM } from "@llamaindex/deepseek";
 import chalk from "chalk";
-import { MetadataMode } from "llamaindex";
-import { TITLE_MAPPINGS } from "./constants";
+import { MetadataMode, Settings } from "llamaindex";
+import { CodeComposerAgent } from "./code-composer-agent";
+import { MAX_TOKENS, TITLE_MAPPINGS } from "./constants";
 import { documentIndexManager } from "./document-index-manager";
 
 // Re-export interfaces from existing implementation for compatibility
@@ -26,6 +28,9 @@ export interface QueryResult {
 export interface StreamingQueryOptions {
   enableStreaming?: boolean;
   topK?: number;
+  tool?: string;
+  language?: string;
+  scope?: string[];
 }
 
 export class WorkflowAgentError extends Error {
@@ -128,8 +133,45 @@ export class QueryEngine {
       });
 
       // Retrieve relevant chunks
-      const retrievedNodes = await retriever.retrieve({ query });
+      let retrievedNodes = await retriever.retrieve({ query });
       console.log(chalk.green(`[QueryEngine] Retrieved ${retrievedNodes.length} chunks`));
+
+      // Apply CodeComposerAgent reranking if tool is code-composer
+      if (options.tool === "code-composer") {
+        try {
+          console.log(chalk.blue(`[QueryEngine] Applying CodeComposerAgent reranking...`));
+          const deepSeekLLM = Settings.llm as DeepSeekLLM;
+          const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
+            maxTokens: MAX_TOKENS
+          });
+
+          // Convert NodeWithScore[] to RetrievedNode[] for CodeComposerAgent
+          const convertedNodes = retrievedNodes.map(node => ({
+            node: {
+              getContent: (mode?: any) => node.node.getContent(mode),
+              metadata: node.node.metadata
+            },
+            score: node.score || 0
+          }));
+
+          const rerankedNodes = await codeComposerAgent.rerank(convertedNodes, query, {
+            language: options.language || 'ts',
+            scope: options.scope || [],
+          });
+
+          // Convert back to NodeWithScore[] format
+          retrievedNodes = rerankedNodes.map(rNode => ({
+            node: retrievedNodes.find(oNode => 
+              oNode.node.getContent(MetadataMode.NONE) === rNode.node.getContent()
+            )?.node || retrievedNodes[0].node,
+            score: rNode.score
+          }));
+
+          console.log(chalk.green(`[QueryEngine] CodeComposerAgent reranking complete. Stats:`, codeComposerAgent.getStats()));
+        } catch (error) {
+          console.error(chalk.red(`[QueryEngine] CodeComposerAgent failed, falling back to regular retrieval:`, error));
+        }
+      }
 
       // Organize chunks by source document (like the old implementation)
       const chunksBySource: { [key: string]: ContextChunk[] } = {};
@@ -138,7 +180,9 @@ export class QueryEngine {
 
       for (const node of retrievedNodes) {
         const sourceDoc = node.node.metadata?.source_document || "Unknown";
-        const content = node.node.getContent(MetadataMode.NONE);
+        const content = node.node.getContent(
+          options.tool === "code-composer" ? MetadataMode.ALL : MetadataMode.NONE
+        );
 
         // Check if adding this chunk would exceed context limit
         if (totalContextLength + content.length > this.maxContextLength) {
@@ -153,7 +197,8 @@ export class QueryEngine {
           source: sourceDoc,
           metadata: {
             score: node.score,
-            retrievalMethod: "direct",
+            retrievalMethod: options.tool === "code-composer" ? "code-composer-reranked" : "direct",
+            tool: options.tool,
             ...node.node.metadata
           }
         };
