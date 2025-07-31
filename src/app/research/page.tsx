@@ -481,10 +481,16 @@ function ResearchChatPageContent() {
     }
 
     try {
+      // Enable streaming for all research queries
+      const streamingPayload = {
+        ...payload,
+        enableStreaming: true, // Enable streaming for real-time responses
+      };
+      
       const response = await fetch("/api/research/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(streamingPayload),
       });
 
       if (!response.ok) {

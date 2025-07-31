@@ -1,14 +1,13 @@
-import { DeepSeekLLM } from "@llamaindex/deepseek";
-import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import { stat } from "fs/promises";
 import {
   Document,
   LlamaParseReader,
-  Settings,
-  VectorStoreIndex,
+  VectorStoreIndex
 } from "llamaindex";
 import { join } from "path";
 import { config } from "../config/environment";
+
+import chalk from "chalk";
 import { databaseService, DocumentData } from "./database";
 
 class DocumentIndexManager {
@@ -26,17 +25,8 @@ class DocumentIndexManager {
   }
 
   private configureSettings(): void {
-    Settings.llm = new DeepSeekLLM({
-      apiKey: config.deepSeekApiKey,
-      model: config.deepSeekModel,
-    });
-
-    try {
-      Settings.embedModel = new HuggingFaceEmbedding() as any;
-    } catch (error) {
-      console.warn("Failed to initialize HuggingFace embedding:", error);
-      Settings.embedModel = new HuggingFaceEmbedding() as any;
-    }
+    // Settings should be configured at application startup
+    // No need to configure here as it's already done globally
   }
 
   // Initialize database if not already done
@@ -61,7 +51,7 @@ class DocumentIndexManager {
       return await databaseService.shouldUseParsedDocuments(documentPath, sourceStats.mtime);
     } catch (error) {
       // if any error occurs, we should re-parse
-      console.error("Error checking parsed documents validity:", error);
+      console.error(chalk.red(`[DocumentIndexManager] Error checking parsed documents validity: ${error}`));
       return false;
     }
   }
@@ -83,7 +73,7 @@ class DocumentIndexManager {
           }),
       );
     } catch (error) {
-      console.error("Error loading parsed documents:", error);
+      console.error(chalk.red(`[DocumentIndexManager] Error loading parsed documents: ${error}`));
       throw new Error("Failed to load pre-parsed documents");
     }
   }
@@ -114,9 +104,9 @@ class DocumentIndexManager {
         sourceStats.mtime
       );
 
-      console.log(`Saved parsed documents to database for: ${documentPath}`);
+      console.log(chalk.gray(`[DocumentIndexManager] Saved parsed documents to database for: ${documentPath}`));
     } catch (error) {
-      console.error("Error saving parsed documents:", error);
+      console.error(chalk.red(`[DocumentIndexManager] Error saving parsed documents: ${error}`));
       // don't throw here as this is an optimization, not critical
     }
   }
@@ -149,43 +139,43 @@ class DocumentIndexManager {
     let documentIndex = this.documentIndices.get(documentPath);
 
     if (!documentIndex) {
-      console.log(`Creating new index for document: ${documentPath}`);
+      console.log(chalk.gray(`[DocumentIndexManager] Creating new index for document: ${documentPath}`));
 
       let documents: Document[];
 
       // check if we can use pre-parsed documents
       if (await this.shouldUseParsedDocuments(documentPath)) {
-        console.log(`Loading pre-parsed documents for: ${documentPath}`);
+        console.log(chalk.gray(`[DocumentIndexManager] Loading pre-parsed documents for: ${documentPath}`));
         try {
           documents = await this.loadParsedDocuments(documentPath);
           console.log(
-            `Successfully loaded ${documents.length} pre-parsed documents`,
+            chalk.gray(`[DocumentIndexManager] Successfully loaded ${documents.length} pre-parsed documents`),
           );
         } catch (error) {
           console.error(
-            "Failed to load pre-parsed documents, falling back to parsing:",
+            chalk.red(`[DocumentIndexManager] Failed to load pre-parsed documents, falling back to parsing: ${error}`),
             error,
           );
           documents = await this.parseAndSaveDocuments(documentPath);
         }
       } else {
         console.log(
-          `No valid pre-parsed documents found, parsing document: ${documentPath}`,
+          chalk.gray(`[DocumentIndexManager] No valid pre-parsed documents found, parsing document: ${documentPath}`),
         );
         documents = await this.parseAndSaveDocuments(documentPath);
       }
 
       if (!documents || documents.length === 0) {
-        throw new Error("No content could be extracted from the document");
+        throw new Error(chalk.red("[DocumentIndexManager] No content could be extracted from the document"));
       }
 
       // create vector index from documents
       documentIndex = await VectorStoreIndex.fromDocuments(documents);
       this.documentIndices.set(documentPath, documentIndex);
 
-      console.log(`Successfully created index for ${documentPath}`);
+      console.log(chalk.gray(`[DocumentIndexManager] Successfully created index for ${documentPath}`));
     } else {
-      console.log(`Index already exists for ${documentPath}`);
+      console.log(chalk.gray(`[DocumentIndexManager] Index already exists for ${documentPath}`));
     }
   }
 
@@ -195,11 +185,11 @@ class DocumentIndexManager {
 
     if (!documentIndex) {
       console.log(
-        `Index not found in memory for ${documentPath}. Attempting to rebuild from cache.`,
+        chalk.gray(`[DocumentIndexManager] Index not found in memory for ${documentPath}. Attempting to rebuild from cache.`),
       );
       if (await this.shouldUseParsedDocuments(documentPath)) {
         console.log(
-          `Loading pre-parsed documents for rebuilding index: ${documentPath}`,
+          chalk.gray(`[DocumentIndexManager] Loading pre-parsed documents for rebuilding index: ${documentPath}`),
         );
         try {
           const documents = await this.loadParsedDocuments(documentPath);
@@ -209,22 +199,22 @@ class DocumentIndexManager {
             documentIndex = await VectorStoreIndex.fromDocuments(documents);
             this.documentIndices.set(documentPath, documentIndex);
             console.log(
-              `Successfully rebuilt and cached index for ${documentPath} from parsed documents.`,
+              chalk.gray(`[DocumentIndexManager] Successfully rebuilt and cached index for ${documentPath} from parsed documents.`),
             );
           } else {
             console.log(
-              `No documents found in parsed data for ${documentPath}. Cannot rebuild index.`,
+              chalk.gray(`[DocumentIndexManager] No documents found in parsed data for ${documentPath}. Cannot rebuild index.`),
             );
           }
         } catch (error) {
           console.error(
-            `Error rebuilding index from parsed documents for ${documentPath}:`,
+            chalk.red(`[DocumentIndexManager] Error rebuilding index from parsed documents for ${documentPath}:`),
             error,
           );
         }
       } else {
         console.log(
-          `No valid pre-parsed documents found for ${documentPath}. Cannot rebuild index.`,
+          chalk.gray(`[DocumentIndexManager] No valid pre-parsed documents found for ${documentPath}. Cannot rebuild index.`),
         );
       }
     }
@@ -240,7 +230,7 @@ class DocumentIndexManager {
 
   // prepare indices for multiple documents
   async prepareMultipleIndices(documentPaths: string[]): Promise<void> {
-    console.log(`Preparing indices for ${documentPaths.length} documents`);
+    console.log(chalk.gray(`[DocumentIndexManager] Preparing indices for ${documentPaths.length} documents`));
 
     // prepare indices in parallel for better performance
     const preparePromises = documentPaths.map((documentPath) =>
@@ -249,7 +239,7 @@ class DocumentIndexManager {
 
     await Promise.all(preparePromises);
     console.log(
-      `Successfully prepared indices for all ${documentPaths.length} documents`,
+      chalk.gray(`[DocumentIndexManager] Successfully prepared indices for all ${documentPaths.length} documents`),
     );
   }
 
@@ -274,7 +264,7 @@ class DocumentIndexManager {
     documentPaths: string[],
   ): Promise<VectorStoreIndex | undefined> {
     console.log(
-      `Creating combined index from ${documentPaths.length} documents`,
+      chalk.gray(`[DocumentIndexManager] Creating combined index from ${documentPaths.length} documents`),
     );
 
     // collect all documents from all indices by loading from database
@@ -297,10 +287,10 @@ class DocumentIndexManager {
         );
         allDocuments.push(...documentsWithSource);
         console.log(
-          `Loaded ${documents.length} documents from ${documentPath}`,
+          chalk.gray(`[DocumentIndexManager] Loaded ${documents.length} documents from ${documentPath}`),
         );
       } catch (error) {
-        console.error(`Failed to load documents for ${documentPath}:`, error);
+        console.error(chalk.red(`[DocumentIndexManager] Failed to load documents for ${documentPath}:`), error);
         // If we can't load from database, we can't create a combined index
         continue;
       }
@@ -316,7 +306,7 @@ class DocumentIndexManager {
     // create a new combined index
     const combinedIndex = await VectorStoreIndex.fromDocuments(allDocuments);
     console.log(
-      `Successfully created combined index with ${allDocuments.length} documents`,
+      chalk.gray(`[DocumentIndexManager] Successfully created combined index with ${allDocuments.length} documents`),
     );
 
     return combinedIndex;
@@ -353,7 +343,7 @@ class DocumentIndexManager {
     documentPaths.forEach((path) => {
       if (this.documentIndices.has(path)) {
         this.documentIndices.delete(path);
-        console.log(`Cleared index for ${path}`);
+        console.log(chalk.gray(`[DocumentIndexManager] Cleared index for ${path}`));
       }
     });
   }
@@ -361,7 +351,7 @@ class DocumentIndexManager {
   // clear all indices
   clearAllIndices(): void {
     this.documentIndices.clear();
-    console.log("Cleared all indices");
+    console.log(chalk.gray("[DocumentIndexManager] Cleared all indices"));
   }
 
   // remove stored document index from database
@@ -370,9 +360,9 @@ class DocumentIndexManager {
       await this.initializeDatabase();
       await databaseService.deleteStoredDocumentIndex(documentPath);
       this.clearIndices([documentPath]);
-      console.log(`Removed stored document index for ${documentPath}`);
+      console.log(chalk.gray(`[DocumentIndexManager] Removed stored document index for ${documentPath}`));
     } catch (error) {
-      console.error(`Error removing stored document index for ${documentPath}:`, error);
+      console.error(chalk.red(`[DocumentIndexManager] Error removing stored document index for ${documentPath}:`), error);
       throw error;
     }
   }

@@ -1,4 +1,6 @@
-import { MetadataMode } from "llamaindex";
+import chalk from "chalk";
+import { DocumentAgent, createDocumentAgent } from "./agents/document-agent";
+import { OrchestratorAgent } from "./agents/orchestrator-agent";
 import { TITLE_MAPPINGS } from "./constants";
 import { documentIndexManager } from "./document-index-manager";
 
@@ -21,13 +23,28 @@ export interface QueryResult {
   totalChunks: number;
 }
 
+export interface StreamingQueryOptions {
+  useReranking?: boolean;
+  rerankingConfig?: {
+    topK?: number;
+    minScore?: number;
+    verbose?: boolean;
+  };
+  enableStreaming?: boolean;
+}
+
 export class MultiDocumentQueryEngine {
   private static instance: MultiDocumentQueryEngine;
-  private maxContextLength: number = 220000; // deepseek max context length
-  private defaultSimilarityTopK: number = 10;
-  private static readonly SEPARATOR_LENGTH: number = 10;
+  private orchestratorAgent: OrchestratorAgent;
+  private documentAgents: Map<string, DocumentAgent> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    // Initialize orchestrator agent
+    this.orchestratorAgent = new OrchestratorAgent({
+      systemPrompt: "You are a research assistant that helps users find information across multiple documents. Use the available document tools to answer questions accurately.",
+      verbose: true
+    });
+  }
 
   static getInstance(): MultiDocumentQueryEngine {
     if (!MultiDocumentQueryEngine.instance) {
@@ -36,204 +53,206 @@ export class MultiDocumentQueryEngine {
     return MultiDocumentQueryEngine.instance;
   }
 
-  // set maximum context length for responses
-  setMaxContextLength(length: number): void {
-    this.maxContextLength = length;
-  }
-
   // get display name for a document path
   private getDocumentDisplayName(documentPath: string): string {
     const filename = documentPath.split("/").pop() || documentPath;
-
     const lowerFilename = filename.toLowerCase();
     return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
   }
 
-  // query multiple documents and return organized results
+  // query multiple documents using agent architecture
   async queryMultipleDocuments(
     query: string,
     documentPaths: string[],
-    options: {
-      similarityTopK?: number;
-      includeMetadata?: boolean;
-      maxContextLength?: number;
-    } = {},
+    options: StreamingQueryOptions = {},
   ): Promise<QueryResult> {
     const {
-      similarityTopK = this.defaultSimilarityTopK,
-      includeMetadata = true,
-      maxContextLength = this.maxContextLength,
+      useReranking = false,
+      rerankingConfig = {
+        topK: 5,
+        minScore: 0.1,
+        verbose: false
+      }
     } = options;
 
-    // validate that all documents have indices
-    const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
-    if (!hasAllIndices) {
-      throw new Error(
-        "Some document indices are not prepared. Please prepare all documents first.",
-      );
-    }
-
-    // get combined index
-    const combinedIndex =
-      await documentIndexManager.getCombinedIndex(documentPaths);
-    if (!combinedIndex) {
-      throw new Error("Failed to create combined index from documents");
-    }
-
-    // retrieve relevant chunks
-    const retriever = combinedIndex.asRetriever({
-      similarityTopK: similarityTopK * documentPaths.length, // more chunks for multiple docs
-    });
-
-    const retrievedNodes = await retriever.retrieve({ query });
-
-    // organize chunks by source document
-    const chunksBySource: { [key: string]: ContextChunk[] } = {};
-    let totalContextLength = 0;
-    const processedChunks: ContextChunk[] = [];
-
-    for (const node of retrievedNodes) {
-      const sourceDoc = node.node.metadata?.source_document || "Unknown";
-      const content = node.node.getContent(
-        includeMetadata ? MetadataMode.ALL : MetadataMode.NONE,
-      );
-
-      // check if adding this chunk would exceed context limit
-      if (totalContextLength + content.length > maxContextLength) {
-        console.log(
-          `Context limit reached. Stopping at ${processedChunks.length} chunks.`,
+    try {
+      // validate that all documents have indices
+      const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
+      if (!hasAllIndices) {
+        throw new Error(
+          "Some document indices are not prepared. Please prepare all documents first.",
         );
-        break;
       }
 
-      const chunk: ContextChunk = {
-        content,
-        source: sourceDoc,
-        metadata: includeMetadata ? node.node.metadata : undefined,
-      };
+      // Ensure document agents exist for all paths
+      await this.ensureDocumentAgents(documentPaths, useReranking, rerankingConfig);
 
-      if (!chunksBySource[sourceDoc]) {
-        chunksBySource[sourceDoc] = [];
+      // For single document, use DocumentAgent directly
+      if (documentPaths.length === 1) {
+        console.log(chalk.yellow(`🎯 [MultiDocumentQueryEngine] SINGLE DOCUMENT ROUTE: ${this.getDocumentDisplayName(documentPaths[0])}`));
+        console.log(chalk.yellow(`📄 [MultiDocumentQueryEngine] File: ${documentPaths[0].split("/").pop()}`));
+        console.log(chalk.yellow(`⚡ [MultiDocumentQueryEngine] Bypassing orchestrator for efficiency`));
+        
+        const documentPath = documentPaths[0];
+        const agent = this.documentAgents.get(documentPath);
+        if (!agent) {
+          throw new Error(`DocumentAgent not found for ${documentPath}`);
+        }
+
+        // Call DocumentAgent tool directly - bypasses orchestrator for efficiency
+        const tool = agent.getTool();
+        const response = await tool.call({ query });
+        
+        // Format response as string
+        const responseText = typeof response === 'string' ? response : 
+          (response && typeof response === 'object' && 'content' in response) ? (response as any).content :
+          JSON.stringify(response) || "No response generated";
+        
+        return this.formatAgentResponse(responseText, documentPaths, [documentPath]);
       }
-      chunksBySource[sourceDoc].push(chunk);
-      processedChunks.push(chunk);
-      totalContextLength += content.length;
+
+      // For multiple documents, use OrchestratorAgent
+      console.log(chalk.yellow(`🎭 [MultiDocumentQueryEngine] MULTI-DOCUMENT ROUTE: ${documentPaths.length} documents`));
+      console.log(chalk.yellow(`📚 [MultiDocumentQueryEngine] Documents: ${documentPaths.map(p => p.split("/").pop()).join(", ")}`));
+      console.log(chalk.yellow(`🧠 [MultiDocumentQueryEngine] Using OrchestratorAgent for intelligent routing`));
+      
+      const result = await this.queryWithOrchestrator(query, documentPaths);
+      return this.formatAgentResponse(result.response, documentPaths, result.sources);
+
+    } catch (error) {
+      throw error;
     }
-
-    // create formatted context with source attribution
-    const contextParts = Object.entries(chunksBySource).map(
-      ([source, chunks]) => {
-        const displayName = this.getDocumentDisplayName(source);
-        const chunkContents = chunks.map((chunk) => chunk.content).join("\n\n");
-        return `**From ${displayName}:**\n${chunkContents}`;
-      },
-    );
-
-    const formattedContext = contextParts.join("\n\n---\n\n");
-
-    // create source information
-    const sources: DocumentSource[] = documentPaths.map((path) => ({
-      path,
-      name: path.split("/").pop() || path,
-      displayTitle: this.getDocumentDisplayName(path),
-    }));
-
-    return {
-      context: formattedContext,
-      sources,
-      chunks: processedChunks,
-      totalChunks: retrievedNodes.length,
-    };
   }
 
-  // query a single document (for backward compatibility)
+  // query a single document (convenience method)
   async querySingleDocument(
     query: string,
     documentPath: string,
     options: {
-      similarityTopK?: number;
-      includeMetadata?: boolean;
+      useReranking?: boolean;
+      rerankingConfig?: {
+        topK?: number;
+        minScore?: number;
+        verbose?: boolean;
+      };
     } = {},
   ): Promise<QueryResult> {
     return this.queryMultipleDocuments(query, [documentPath], options);
   }
 
-  // get context summary for selected documents
+  // get summary of available documents
   async getDocumentsSummary(documentPaths: string[]): Promise<{
-    totalDocuments: number;
     availableDocuments: number;
-    sources: DocumentSource[];
-    hasAllIndices: boolean;
+    totalDocuments: number;
+    documentTitles: string[];
   }> {
     const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
-    const sources: DocumentSource[] = documentPaths.map((path) => ({
-      path,
-      name: path.split("/").pop() || path,
-      displayTitle: this.getDocumentDisplayName(path),
-    }));
-
+    const availableCount = hasAllIndices ? documentPaths.length : 0;
+    
     return {
+      availableDocuments: availableCount,
       totalDocuments: documentPaths.length,
-      availableDocuments: documentPaths.filter((path) =>
-        documentIndexManager.hasIndex(path),
-      ).length,
-      sources,
-      hasAllIndices,
+      documentTitles: documentPaths.map(path => this.getDocumentDisplayName(path))
     };
   }
 
-  // extract unique sources from query result
-  getUniqueSources(chunks: ContextChunk[]): DocumentSource[] {
-    const uniqueSources = new Set<string>();
-    const sources: DocumentSource[] = [];
+  // Ensure DocumentAgents exist for all document paths
+  private async ensureDocumentAgents(
+    documentPaths: string[], 
+    useReranking: boolean = true,
+    rerankingConfig: {
+      topK?: number;
+      minScore?: number;
+      verbose?: boolean;
+    } = {}
+  ): Promise<void> {
+    for (const documentPath of documentPaths) {
+      if (!this.documentAgents.has(documentPath)) {
+        const index = await documentIndexManager.getIndex(documentPath);
+        if (!index) {
+          throw new Error(`Index not found for document: ${documentPath}`);
+        }
 
-    chunks.forEach((chunk) => {
-      if (!uniqueSources.has(chunk.source)) {
-        uniqueSources.add(chunk.source);
-        sources.push({
-          path: chunk.source,
-          name: chunk.source.split("/").pop() || chunk.source,
-          displayTitle: this.getDocumentDisplayName(chunk.source),
+        const agent = await createDocumentAgent(documentPath, index, {
+          displayName: this.getDocumentDisplayName(documentPath),
+          useReranking,
+          rerankingConfig: {
+            topK: 10, // Increase to get more results
+            minScore: 0.0, // Lower threshold to prevent filtering out everything
+            verbose: true, // Enable for debugging
+            ...rerankingConfig
+          }
         });
-      }
-    });
 
-    return sources;
+        this.documentAgents.set(documentPath, agent);
+
+        // Add existing agent to orchestrator (no duplication)
+        this.orchestratorAgent.addDocumentAgent(agent);
+      }
+    }
   }
 
-  // truncate context to fit within limits while preserving source attribution
-  truncateContext(context: string, maxLength: number): string {
-    if (context.length <= maxLength) {
-      return context;
-    }
+  // Query with OrchestratorAgent
+  private async queryWithOrchestrator(
+    query: string,
+    documentPaths: string[]
+  ): Promise<{ response: string; sources: string[] }> {
+    const result = await this.orchestratorAgent.query(query);
+    return result;
+  }
 
-    // try to truncate at section boundaries (---)
-    const sections = context.split("\n\n---\n\n");
-    let truncated = "";
+  // Format agent response to match QueryResult interface
+  private formatAgentResponse(
+    response: string, 
+    documentPaths: string[], 
+    sourcePaths?: string[]
+  ): QueryResult {
+    const sources: DocumentSource[] = (sourcePaths || documentPaths).map(path => ({
+      path,
+      name: path.split("/").pop() || path,
+      displayTitle: this.getDocumentDisplayName(path)
+    }));
 
-    for (const section of sections) {
-      if (
-        truncated.length +
-          section.length +
-          MultiDocumentQueryEngine.SEPARATOR_LENGTH <=
-        maxLength
-      ) {
-        // +10 for separator
-        truncated += (truncated ? "\n\n---\n\n" : "") + section;
-      } else {
-        break;
+    // Create chunks from the response (simplified for agent responses)
+    const chunks: ContextChunk[] = [{
+      content: response,
+      source: documentPaths[0] || "agent-response",
+      metadata: { 
+        generatedBy: "agent",
+        timestamp: new Date().toISOString(),
+        queryType: documentPaths.length === 1 ? "single-document" : "multi-document"
       }
-    }
+    }];
 
-    if (truncated.length === 0) {
-      // if no complete sections fit, truncate the first section
-      truncated =
-        sections[0].substring(0, maxLength - 20) + "...\n\n[Context truncated]";
-    } else {
-      truncated += "\n\n[Additional context truncated]";
-    }
+    return {
+      context: response,
+      sources,
+      chunks,
+      totalChunks: chunks.length
+    };
+  }
 
-    return truncated;
+  // Get information about loaded agents
+  getAgentInfo(): {
+    totalAgents: number;
+    documentPaths: string[];
+    orchestratorInitialized: boolean;
+  } {
+    return {
+      totalAgents: this.documentAgents.size,
+      documentPaths: Array.from(this.documentAgents.keys()),
+      orchestratorInitialized: !!this.orchestratorAgent
+    };
+  }
+
+  // Clear all agents (useful for testing or reset)
+  clearAllAgents(): void {
+    this.documentAgents.clear();
+    // Reinitialize orchestrator with no documents
+    this.orchestratorAgent = new OrchestratorAgent({
+      systemPrompt: "You are a research assistant that helps users find information across multiple documents. Use the available document tools to answer questions accurately.",
+      verbose: false
+    });
   }
 }
 

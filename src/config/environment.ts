@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const config = {
   // Database configuration
   databaseUrl: process.env.DATABASE_URL || "",

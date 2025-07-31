@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
+import { configureLlamaSettings } from "../../../../lib/config/llama-settings";
 import { documentIndexManager } from "../../../../lib/document-index-manager";
 
 export async function POST(req: NextRequest) {
   try {
+    // Ensure LLM settings are configured before using DocumentIndexManager
+    configureLlamaSettings();
+    
     const { documentPath, documentPaths } = await req.json();
 
     // Support both single document (backward compatibility) and multiple documents

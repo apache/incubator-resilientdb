@@ -7,12 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:migrate": "tsx scripts/migrate-to-postgresql.ts"
+    "db:migrate": "tsx scripts/migrate-to-postgresql.ts",
+    "test:agents": "tsx tests/run-agent-tests.ts",
+    "test:document-agent": "tsx tests/document-agent.test.ts",
+    "test:orchestrator": "tsx tests/orchestrator-agent.test.ts",
+    "test:orchestrator-integration": "tsx tests/orchestrator-integration.test.ts"
   },
   "dependencies": {
-    "@llamaindex/core": "^0.6.18",
-    "@llamaindex/deepseek": "^0.0.30",
-    "@llamaindex/huggingface": "^0.1.23",
+    "@llamaindex/core": "^0.6.19",
+    "@llamaindex/deepseek": "^0.0.31",
+    "@llamaindex/huggingface": "^0.1.24",
+    "@llamaindex/workflow-core": "^1.2.0",
     "@next/mdx": "^15.3.3",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -27,13 +32,15 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@tanstack/react-query": "^5.83.0",
     "@types/pg": "^8.15.4",
+    "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.1",
     "framer-motion": "^12.11.3",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.1.0",
     "js-tiktoken": "^1.0.20",
-    "llamaindex": "^0.11.23",
+    "llamaindex": "^0.11.24",
     "lucide-react": "^0.510.0",
     "next": "15.3.2",
     "pg": "^8.16.3",
@@ -44,7 +51,8 @@
     "react-resizable-panels": "^3.0.3",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

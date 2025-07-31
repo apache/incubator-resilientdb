@@ -1,13 +1,14 @@
+import { CodeComposerAgent } from "@/lib/code-composer-agent";
 import { CodeComposerContext, generateCodeComposerPrompt, parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
-import { configureLlamaSettings } from "@/lib/config/llama-settings";
-import { TITLE_MAPPINGS } from "@/lib/constants";
-import { multiDocumentQueryEngine } from "@/lib/multi-document-query-engine";
+import { MAX_TOKENS, TITLE_MAPPINGS } from "@/lib/constants";
+import { documentIndexManager } from "@/lib/document-index-manager";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
-import { Settings } from "llamaindex";
+import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
+import { MetadataMode, Settings } from "llamaindex";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
-// Simple system prompt for document Q&A
+// simple system prompt for document q&a
 const RESEARCH_SYSTEM_PROMPT = `
 You are Nexus, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
 You have access to the content of a document and can provide accurate, detailed answers based on that content.
@@ -62,38 +63,73 @@ const validateRequest = (data: RequestData): string | null => {
   return null;
 };
 
-// Configuration is now handled centrally via configureLlamaSettings()
+const configureSettings = (): void => {
+  Settings.llm = new DeepSeekLLM({
+    apiKey: config.deepSeekApiKey,
+    model: config.deepSeekModel,
+  });
 
-// Get context and sources from multiDocumentQueryEngine
-const getContextFromQueryEngine = async (query: string, targetPaths: string[], tool?: string) => {
-  // Use multiDocumentQueryEngine for context retrieval (no streaming)
-  const queryResult = await multiDocumentQueryEngine.queryMultipleDocuments(
-    query,
-    targetPaths,
-    {
-      useReranking: true,
-      enableStreaming: true
-    }
-  );
-
-  return {
-    context: queryResult.context,
-    sources: queryResult.sources,
-    chunks: queryResult.chunks || [],
-    totalChunks: queryResult.totalChunks || 0
-  };
+  try {
+    Settings.embedModel = new HuggingFaceEmbedding() as any;
+  } catch (error) {
+    console.warn("Failed to initialize HuggingFace embedding:", error);
+    Settings.embedModel = new HuggingFaceEmbedding() as any;
+  }
 };
 
-// Format context from retrieved chunks similar to route-old.ts
-const formatContext = (retrievedChunks: any[]): string => {
+const getDocumentIndex = async (targetPaths: string[]) => {
+  const hasAllIndices = documentIndexManager.hasAllIndices(targetPaths);
+  if (!hasAllIndices) {
+    throw new Error("Some document indices not found. Please prepare all selected documents again");
+  }
+
+  const documentIndex = await documentIndexManager.getCombinedIndex(targetPaths);
+  if (!documentIndex) {
+    throw new Error("Failed to create combined index. Please try selecting documents again");
+  }
+
+  console.log(`Using combined index for ${targetPaths.length} documents: ${targetPaths.join(", ")}`);
+  return documentIndex;
+};
+
+const retrieveAndRankContext = async (documentIndex: any, query: string, tool?: string, requestData?: RequestData) => {
+  const topK = tool === "code-composer" ? 8 : 8;
+  const retriever = documentIndex.asRetriever({ similarityTopK: topK });
+  const initialNodes = await retriever.retrieve({ query });
+
+  let retrievedNodes;
+  if (tool === "code-composer") {
+    try {
+      const deepSeekLLM = Settings.llm as DeepSeekLLM;
+      const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
+        maxTokens: MAX_TOKENS
+      });
+
+      retrievedNodes = await codeComposerAgent.rerank(initialNodes, query, {
+        language: requestData?.language || 'ts',
+        scope: requestData?.scope || [], //tbd
+      });
+
+      console.log("code composer agent stats:", codeComposerAgent.getStats());
+    } catch (error) {
+      console.error("CodeComposerAgent failed, falling back to regular node retrieval:", error);
+    }
+  } else {
+    retrievedNodes = initialNodes;
+  }
+
+  return retrievedNodes;
+};
+
+const formatContext = (retrievedNodes: any[]): string => {
   const contextBySource: { [key: string]: string[] } = {};
 
-  retrievedChunks.forEach((chunk: any) => {
-    const sourceDoc = chunk.source || "Unknown";
+  retrievedNodes.forEach((node: any) => {
+    const sourceDoc = node.node.metadata?.source_document || "Unknown";
     if (!contextBySource[sourceDoc]) {
       contextBySource[sourceDoc] = [];
     }
-    contextBySource[sourceDoc].push(chunk.content);
+    contextBySource[sourceDoc].push(node.node.getContent(MetadataMode.ALL));
   });
 
   const contextParts = Object.entries(contextBySource).map(
@@ -106,7 +142,6 @@ const formatContext = (retrievedChunks: any[]): string => {
   return contextParts.join("\n\n---\n\n");
 };
 
-// Generate prompt for different tools
 const generatePrompt = (
   tool: string | undefined,
   context: string,
@@ -136,10 +171,9 @@ ${context}
 Question: ${query}`;
 };
 
-// Create source info for the UI
 const createSourceInfo = (
   data: RequestData,
-  retrievedChunks: any[],
+  retrievedNodes: any[],
   targetPaths: string[]
 ): SourceInfo => {
   const { documentPath, documentPaths, tool, language, scope } = data;
@@ -153,14 +187,13 @@ const createSourceInfo = (
     })),
     isMultiDocument: !!documentPaths,
     totalDocuments: documentPaths ? documentPaths.length : 1,
-    contextNodes: retrievedChunks.length,
+    contextNodes: retrievedNodes.length,
     tool: tool || "default",
     language: language || "ts",
     scope: scope || []
   };
 };
 
-// Handle streaming response using LlamaIndex native streaming
 const handleStreamingResponse = async (
   chatStream: any,
   sourceInfo: SourceInfo,
@@ -207,7 +240,6 @@ const handleStreamingResponse = async (
   });
 };
 
-// Get error message for API errors
 const getErrorMessage = (error: any): string => {
   if (!(error instanceof Error)) {
     return "Failed to process your question";
@@ -233,45 +265,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    // Ensure settings are configured
-    configureLlamaSettings();
+    configureSettings();
 
     try {
       const targetPaths = requestData.documentPaths!;
 
-      // Use multiDocumentQueryEngine to get context and sources
-      const { context, sources, chunks } = await getContextFromQueryEngine(
+      const documentIndex = await getDocumentIndex(targetPaths);
+
+      const retrievedNodes = await retrieveAndRankContext(
+        documentIndex,
         requestData.query,
-        targetPaths,
-        requestData.tool
+        requestData.tool,
+        requestData
       );
 
-      // Format context for the prompt
-      const formattedContext = formatContext(chunks);
+      // format context
+      const context = formatContext(retrievedNodes);
 
-      console.log(`Retrieved ${chunks.length} chunks from ${targetPaths.length} documents`);
+      console.log(`Retrieved ${retrievedNodes.length} nodes from ${targetPaths.length} documents`);
 
-      // Generate enhanced prompt
       const enhancedPrompt = generatePrompt(
         requestData.tool,
-        formattedContext,
+        context,
         requestData.query,
         targetPaths,
         requestData.language,
         requestData.scope
       );
 
-      // Create chat stream using native LlamaIndex streaming
+      // create chat stream
       const deepSeekLLM = Settings.llm as DeepSeekLLM;
       const chatStream = await deepSeekLLM.chat({
         messages: [{ role: "user", content: enhancedPrompt }],
         stream: true,
       });
 
-      // Create source info for the UI
-      const sourceInfo = createSourceInfo(requestData, chunks, targetPaths);
+      // create source info
+      const sourceInfo = createSourceInfo(requestData, retrievedNodes, targetPaths);
 
-      // Handle streaming response using native LlamaIndex streaming
+      // handle streaming response
       const readableStream = await handleStreamingResponse(
         chatStream,
         sourceInfo,
