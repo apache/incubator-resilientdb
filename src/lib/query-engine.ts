@@ -30,14 +30,14 @@ export interface StreamingQueryOptions {
   scope?: string[];
 }
 
-export class WorkflowAgentError extends Error {
+export class QueryError extends Error {
   constructor(
     message: string,
     public documentPaths: string[],
     public originalError?: Error
   ) {
     super(message);
-    this.name = 'WorkflowAgentError';
+    this.name = 'QueryError';
   }
 }
 
@@ -81,12 +81,12 @@ export class QueryEngine {
       return await this.query(query, documentPaths, options);
 
     } catch (error) {
-      if (error instanceof WorkflowAgentError) {
+      if (error instanceof QueryError) {
         throw error;
       }
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`[QueryEngine] Query failed: ${errorMessage}`));
-      throw new WorkflowAgentError(
+      throw new QueryError(
         `Query execution failed: ${errorMessage}`,
         documentPaths,
         error instanceof Error ? error : undefined
@@ -122,7 +122,7 @@ export class QueryEngine {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(chalk.red(`[QueryEngine] Query failed: ${errorMessage}`));
-      throw new WorkflowAgentError(
+      throw new QueryError(
         `Query failed: ${errorMessage}`,
         documentPaths,
         error instanceof Error ? error : undefined
