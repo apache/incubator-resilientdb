@@ -1,51 +1,22 @@
-# PostgreSQL Setup & Migration Guide
+# PostgreSQL + Vector Storage Setup
 
-## Environment Variables
-```env
-DATABASE_URL=postgresql://user@localhost:5432/nexus_db
-```
+## Prerequisites
+- PostgreSQL with pgvector extension
+- Node.js packages: pg, pgvector, @llamaindex/postgres
 
-## macOS Setup
+## Setup
 ```bash
-# Install PostgreSQL
-brew install postgresql
+# Install PostgreSQL & pgvector
+brew install postgresql pgvector
 brew services start postgresql
 
-# Create database
+# Create database  
 createdb nexus_db
 
-# Test connection
-psql nexus_db
+# Setup vector storage
+npm run db:setup-vector
 ```
 
-## Vercel Setup
-```bash
-# Add PostgreSQL addon
-vercel postgres create
-```
-
-## Migration
-```bash
-# Install
-npm install
-
-# Run migration
-npm run db:migrate
-```
-
-## Verification
-```bash
-# Test connection
-psql postgresql://aibrahi@localhost:5432/nexus_db
-```
-
-## Cleanup
-```bash
-rm -rf documents/parsed/
-```
-
-## Troubleshooting
-```bash
-# Connection issues
-brew services restart postgresql
-``` 
+## Architecture
+- `document_indices`: Document parsing cache
+- `document_embeddings`: Vector embeddings for AI search

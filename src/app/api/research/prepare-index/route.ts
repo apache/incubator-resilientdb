@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 import { configureLlamaSettings } from "../../../../lib/config/llama-settings";
-import { documentIndexManager } from "../../../../lib/document-index-manager";
+import { queryEngine } from "../../../../lib/query-engine";
 
 export async function POST(req: NextRequest) {
   try {
-    // Ensure LLM settings are configured before using DocumentIndexManager
+    // Ensure LLM settings are configured
     configureLlamaSettings();
     
     const { documentPath, documentPaths } = await req.json();
@@ -49,27 +49,17 @@ export async function POST(req: NextRequest) {
 
     try {
       // Handle both single and multiple document preparation
-      if (documentPaths) {
-        // Multi-document mode
-        await documentIndexManager.prepareMultipleIndices(documentPaths);
+      const pathsToProcess = documentPaths || [documentPath];
+      
+      // Prepare documents using simplified approach
+      await queryEngine.prepareDocuments(pathsToProcess);
 
-        return NextResponse.json({
-          success: true,
-          message: `Indices prepared successfully for ${documentPaths.length} documents`,
-          documentCount: documentPaths.length,
-          documentPaths: documentPaths,
-        });
-      } else {
-        // Single document mode (backward compatibility)
-        await documentIndexManager.prepareIndex(documentPath);
-
-        return NextResponse.json({
-          success: true,
-          message: "Index prepared successfully",
-          documentCount: 1,
-          documentPaths: [documentPath],
-        });
-      }
+      return NextResponse.json({
+        success: true,
+        message: `Documents prepared successfully`,
+        documentCount: pathsToProcess.length,
+        documentPaths: pathsToProcess
+      });
     } catch (processingError) {
       console.error("Error preparing index:", processingError);
 

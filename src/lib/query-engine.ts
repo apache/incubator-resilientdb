@@ -1,9 +1,6 @@
-import { DeepSeekLLM } from "@llamaindex/deepseek";
 import chalk from "chalk";
-import { MetadataMode, NodeWithScore, Settings } from "llamaindex";
-import { CodeComposerAgent } from "./code-composer-agent";
-import { MAX_TOKENS, TITLE_MAPPINGS } from "./constants";
-import { documentIndexManager } from "./document-index-manager";
+import { TITLE_MAPPINGS } from "./constants";
+import { simpleDocumentService } from "./simple-document-service";
 
 // Re-export interfaces from existing implementation for compatibility
 export interface DocumentSource {
@@ -73,26 +70,17 @@ export class QueryEngine {
     return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
   }
 
-  // Main unified query processing method - using direct retrieval for all cases
+  // Main query processing method using simplified approach
   async queryDocuments(
     query: string,
     documentPaths: string[],
     options: StreamingQueryOptions = {}
   ): Promise<QueryResult> {
     try {
-      // Validate that all documents have indices
-      const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
-      if (!hasAllIndices) {
-        throw new Error(
-          "Some document indices are not prepared. Please prepare all documents first."
-        );
-      }
-
       console.log(chalk.yellow(`[QueryEngine] Processing query for ${documentPaths.length} documents`));
       console.log(chalk.yellow(`[QueryEngine] Documents: ${documentPaths.map(p => p.split("/").pop()).join(", ")}`));
 
-      // Use direct retrieval for all cases - much faster and more reliable
-      return await this.queryDirectRetrieval(query, documentPaths, options);
+      return await this.querySimplified(query, documentPaths, options);
 
     } catch (error) {
       if (error instanceof WorkflowAgentError) {
@@ -108,151 +96,38 @@ export class QueryEngine {
     }
   }
 
-  private async codeComposerAgentRerank(
-    retrievedNodes: NodeWithScore[],  
-    query: string,
-    options: StreamingQueryOptions
-  ): Promise<NodeWithScore[]> {
-    try {
-      console.log(chalk.blue(`[QueryEngine] Applying CodeComposerAgent reranking...`));
-      const deepSeekLLM = Settings.llm as DeepSeekLLM;
-      const codeComposerAgent = new CodeComposerAgent(deepSeekLLM, {
-        maxTokens: MAX_TOKENS
-      });
-
-      // Convert NodeWithScore[] to Retriev edNode[] for CodeComposerAgent
-      const convertedNodes = retrievedNodes.map(node => ({
-        node: {
-          getContent: (mode?: any) => node.node.getContent(mode),
-          metadata: node.node.metadata
-        },
-        score: node.score || 0
-      }));
-
-      const rerankedNodes = await codeComposerAgent.rerank(convertedNodes, query, {
-        language: options.language || 'ts',
-        scope: options.scope || [],
-      });
-
-      // Convert back to NodeWithScore[] format
-      retrievedNodes = rerankedNodes.map(rNode => ({
-        node: retrievedNodes.find(oNode => 
-          oNode.node.getContent(MetadataMode.NONE) === rNode.node.getContent()
-        )?.node || retrievedNodes[0].node,
-        score: rNode.score
-      }));
-
-      console.log(chalk.green(`[QueryEngine] CodeComposerAgent reranking complete. Stats:`, codeComposerAgent.getStats()));
-      return retrievedNodes;
-    } catch (error) {
-      console.error(chalk.red(`[QueryEngine] CodeComposerAgent failed, falling back to regular retrieval:`, error));
-      return retrievedNodes;
-    }
-  }
-
-  // Direct retrieval method for better performance - based on the old implementation
-  private async queryDirectRetrieval(
+  // Simplified query method using best practices
+  private async querySimplified(
     query: string,
     documentPaths: string[],
     options: StreamingQueryOptions
   ): Promise<QueryResult> {
-    console.log(chalk.blue(`[QueryEngine] Using direct retrieval for ${documentPaths.length} documents`));
+    console.log(chalk.blue(`[QueryEngine] Using simplified approach for ${documentPaths.length} documents`));
 
     try {
-      const {
-        topK = this.defaultSimilarityTopK,
-      } = options;
+      const { topK = this.defaultSimilarityTopK } = options;
 
-      // Get combined index for efficient retrieval
-      const combinedIndex = await documentIndexManager.getCombinedIndex(documentPaths);
-      if (!combinedIndex) {
-        throw new Error("Failed to create combined index from documents");
+      // Check if documents are indexed, if not index them
+      const areIndexed = await simpleDocumentService.areDocumentsIndexed(documentPaths);
+      if (!areIndexed) {
+        console.log(chalk.yellow(`[QueryEngine] Documents not indexed, indexing now...`));
+        await simpleDocumentService.indexDocuments(documentPaths);
       }
 
-      // Configure retriever with topK scaled by document count
-      const retriever = combinedIndex.asRetriever({
-        similarityTopK: topK * documentPaths.length, // Scale with document count like the old implementation
+      // Query using simplified service
+      const result = await simpleDocumentService.queryDocuments(query, {
+        topK,
+        documentPaths
       });
 
-      // Retrieve relevant chunks
-      let retrievedNodes = await retriever.retrieve({ query });
-      console.log(chalk.green(`[QueryEngine] Retrieved ${retrievedNodes.length} chunks`));
-
-      // Apply CodeComposerAgent reranking if tool is code-composer
-      if (options.tool === "code-composer") {
-        retrievedNodes = await this.codeComposerAgentRerank(retrievedNodes, query, options);
-      }
-
-      // Organize chunks by source document (like the old implementation)
-      const chunksBySource: { [key: string]: ContextChunk[] } = {};
-      let totalContextLength = 0;
-      const processedChunks: ContextChunk[] = [];
-
-      for (const node of retrievedNodes) {
-        const sourceDoc = node.node.metadata?.source_document || "Unknown";
-        const content = node.node.getContent(
-          options.tool === "code-composer" ? MetadataMode.ALL : MetadataMode.NONE
-        );
-
-        // Check if adding this chunk would exceed context limit
-        if (totalContextLength + content.length > this.maxContextLength) {
-          console.log(
-            chalk.yellow(`[QueryEngine] Context limit reached. Stopping at ${processedChunks.length} chunks.`)
-          );
-          break;
-        }
-
-        const chunk: ContextChunk = {
-          content,
-          source: sourceDoc,
-          metadata: {
-            score: node.score,
-            retrievalMethod: options.tool === "code-composer" ? "code-composer-reranked" : "direct",
-            tool: options.tool,
-            ...node.node.metadata
-          }
-        };
-
-        if (!chunksBySource[sourceDoc]) {
-          chunksBySource[sourceDoc] = [];
-        }
-        chunksBySource[sourceDoc].push(chunk);
-        processedChunks.push(chunk);
-        totalContextLength += content.length;
-      }
-
-      // Create formatted context with source attribution (like the old implementation)
-      const contextParts = Object.entries(chunksBySource).map(
-        ([source, chunks]) => {
-          const displayName = this.getDocumentDisplayName(source);
-          const chunkContents = chunks.map((chunk) => chunk.content).join("\n\n");
-          return `**From ${displayName}:**\n${chunkContents}`;
-        }
-      );
-
-      const formattedContext = contextParts.join("\n\n---\n\n");
-
-      // Create source information
-      const sources: DocumentSource[] = documentPaths.map(path => ({
-        path,
-        name: path.split("/").pop() || path,
-        displayTitle: this.getDocumentDisplayName(path)
-      }));
-
-      console.log(chalk.green(`[QueryEngine] Successfully processed ${processedChunks.length} chunks from ${Object.keys(chunksBySource).length} sources`));
-
-      return {
-        context: formattedContext,
-        sources,
-        chunks: processedChunks,
-        totalChunks: retrievedNodes.length
-      };
+      console.log(chalk.green(`[QueryEngine] Simplified query completed with ${result.totalChunks} chunks`));
+      return result;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`[QueryEngine] Direct retrieval failed: ${errorMessage}`));
+      console.error(chalk.red(`[QueryEngine] Simplified query failed: ${errorMessage}`));
       throw new WorkflowAgentError(
-        `Direct retrieval failed: ${errorMessage}`,
+        `Simplified query failed: ${errorMessage}`,
         documentPaths,
         error instanceof Error ? error : undefined
       );
@@ -278,15 +153,21 @@ export class QueryEngine {
     return this.queryDocuments(query, [documentPath], options);
   }
 
+  // Prepare documents for querying using simplified approach
+  async prepareDocuments(documentPaths: string[]): Promise<void> {
+    console.log(chalk.blue(`[QueryEngine] Preparing documents using simplified approach`));
+    await simpleDocumentService.indexDocuments(documentPaths);
+  }
+
   // Get summary of available documents
   async getDocumentsSummary(documentPaths: string[]): Promise<{
     availableDocuments: number;
     totalDocuments: number;
     documentTitles: string[];
   }> {
-    const hasAllIndices = documentIndexManager.hasAllIndices(documentPaths);
-    const availableCount = hasAllIndices ? documentPaths.length : 0;
-
+    const areIndexed = await simpleDocumentService.areDocumentsIndexed(documentPaths);
+    const availableCount = areIndexed ? documentPaths.length : 0;
+    
     return {
       availableDocuments: availableCount,
       totalDocuments: documentPaths.length,
@@ -294,20 +175,15 @@ export class QueryEngine {
     };
   }
 
-  // Get information about loaded agents (simplified for compatibility)
-  getAgentInfo(): {
-    totalAgents: number;
+  // Get information about available documents
+  getDocumentInfo(): {
+    totalDocuments: number;
     documentPaths: string[];
   } {
     return {
-      totalAgents: 0, // No agents in direct retrieval mode
+      totalDocuments: 0, // Would need to query vector store for actual count
       documentPaths: []
     };
-  }
-
-  // Clear all agents (no-op for compatibility)
-  clearAllAgents(): void {
-    console.log(chalk.yellow(`[QueryEngine] No agents to clear in direct retrieval mode`));
   }
 
   // Truncate context to fit within limits while preserving source attribution (from old implementation)
