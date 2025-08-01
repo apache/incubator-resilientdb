@@ -315,16 +315,39 @@ export class DocumentService {
   }
 
   /**
-   * Parse a single document using LlamaParse
+   * Parse a single document using LlamaParse with page metadata
    */
   private async parseDocument(documentPath: string): Promise<Document[]> {
     const parser = new LlamaParseReader({
       apiKey: config.llamaCloudApiKey,
-      resultType: "markdown",
+      resultType: "json",
     });
 
     const filePath = join(process.cwd(), documentPath);
-    return await parser.loadData(filePath);
+    
+    // Use loadJson to get page information
+    const jsonObjs = await parser.loadJson(filePath);
+    
+    let documents: Document[] = [];
+    jsonObjs.forEach((jsonObj) => {
+      // Process each parsed file's pages
+      if (Array.isArray(jsonObj.pages)) {
+        const docs = jsonObj.pages.map(
+          (page: { text: string; page: number }) =>
+            new Document({ 
+              text: page.text, 
+              metadata: { 
+                page: page.page,
+                // Include any other metadata from the original parsing
+                ...(page as any).metadata || {}
+              } 
+            }),
+        );
+        documents = documents.concat(docs);
+      }
+    });
+    
+    return documents;
   }
 
   /**

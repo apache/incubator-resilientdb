@@ -12,7 +12,9 @@
     "test:agents": "tsx tests/run-agent-tests.ts",
     "test:document-agent": "tsx tests/document-agent.test.ts",
     "test:orchestrator": "tsx tests/orchestrator-agent.test.ts",
-    "test:orchestrator-integration": "tsx tests/orchestrator-integration.test.ts"
+    "test:orchestrator-integration": "tsx tests/orchestrator-integration.test.ts",
+    "test:embedding": "tsx scripts/test-document-embedding.ts",
+    "parse:documents": "tsx scripts/parse-all-documents.ts"
   },
   "dependencies": {
     "@llamaindex/core": "^0.6.19",
