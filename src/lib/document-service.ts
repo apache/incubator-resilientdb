@@ -30,14 +30,14 @@ export interface QueryOptions {
   documentPaths?: string[];
 }
 
-export class SimpleDocumentServiceError extends Error {
+export class DocumentServiceError extends Error {
   constructor(
     message: string,
     public documentPaths: string[],
     public originalError?: Error
   ) {
     super(message);
-    this.name = 'SimpleDocumentServiceError';
+    this.name = 'DocumentServiceError';
   }
 }
 
@@ -45,17 +45,17 @@ export class SimpleDocumentServiceError extends Error {
  * Simplified document service following LlamaIndex TypeScript best practices
  * Uses PGVectorStore as single source of truth, eliminating complex caching layers
  */
-export class SimpleDocumentService {
-  private static instance: SimpleDocumentService;
+export class DocumentService {
+  private static instance: DocumentService;
   private defaultTopK: number = 10;
 
   private constructor() {}
 
-  static getInstance(): SimpleDocumentService {
-    if (!SimpleDocumentService.instance) {
-      SimpleDocumentService.instance = new SimpleDocumentService();
+  static getInstance(): DocumentService {
+    if (!DocumentService.instance) {
+      DocumentService.instance = new DocumentService();
     }
-    return SimpleDocumentService.instance;
+    return DocumentService.instance;
   }
 
   /**
@@ -64,7 +64,7 @@ export class SimpleDocumentService {
    */
   async indexDocuments(documentPaths: string[]): Promise<VectorStoreIndex> {
     try {
-      console.log(chalk.blue(`[SimpleDocumentService] Indexing ${documentPaths.length} documents`));
+      console.log(chalk.blue(`[DocumentService] Indexing ${documentPaths.length} documents`));
       
       // Parse all documents with source metadata
       const allDocuments = await this.parseDocumentsWithMetadata(documentPaths);
@@ -79,13 +79,13 @@ export class SimpleDocumentService {
         storageContext
       });
 
-      console.log(chalk.green(`[SimpleDocumentService] Successfully indexed ${allDocuments.length} document chunks`));
+      console.log(chalk.green(`[DocumentService] Successfully indexed ${allDocuments.length} document chunks`));
       return index;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`[SimpleDocumentService] Indexing failed: ${errorMessage}`));
-      throw new SimpleDocumentServiceError(
+      console.error(chalk.red(`[DocumentService] Indexing failed: ${errorMessage}`));
+      throw new DocumentServiceError(
         `Document indexing failed: ${errorMessage}`,
         documentPaths,
         error instanceof Error ? error : undefined
@@ -101,7 +101,7 @@ export class SimpleDocumentService {
     try {
       const { topK = this.defaultTopK, documentPaths } = options;
 
-      console.log(chalk.blue(`[SimpleDocumentService] Querying with topK=${topK}${documentPaths ? `, filtered to ${documentPaths.length} documents` : ''}`));
+      console.log(chalk.blue(`[DocumentService] Querying with topK=${topK}${documentPaths ? `, filtered to ${documentPaths.length} documents` : ''}`));
 
       // Load existing index from vector store
       const vectorStore = await vectorStoreService.getVectorStore();
@@ -124,14 +124,14 @@ export class SimpleDocumentService {
       const retriever = index.asRetriever(retrieverOptions);
       const nodes = await retriever.retrieve({ query });
 
-      console.log(chalk.green(`[SimpleDocumentService] Retrieved ${nodes.length} relevant chunks`));
+      console.log(chalk.green(`[DocumentService] Retrieved ${nodes.length} relevant chunks`));
 
       return this.formatQueryResult(nodes, documentPaths || []);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`[SimpleDocumentService] Query failed: ${errorMessage}`));
-      throw new SimpleDocumentServiceError(
+      console.error(chalk.red(`[DocumentService] Query failed: ${errorMessage}`));
+      throw new DocumentServiceError(
         `Document query failed: ${errorMessage}`,
         options.documentPaths || [],
         error instanceof Error ? error : undefined
@@ -163,7 +163,7 @@ export class SimpleDocumentService {
       return nodes.length > 0;
 
     } catch (error) {
-      console.warn(chalk.yellow(`[SimpleDocumentService] Could not check if documents are indexed: ${error}`));
+      console.warn(chalk.yellow(`[DocumentService] Could not check if documents are indexed: ${error}`));
       return false;
     }
   }
@@ -175,10 +175,10 @@ export class SimpleDocumentService {
     try {
       // This would require a custom query to get unique source_document values
       // For now, return empty array - this could be enhanced with a direct DB query
-      console.warn(chalk.yellow(`[SimpleDocumentService] getAvailableDocuments not yet implemented`));
+      console.warn(chalk.yellow(`[DocumentService] getAvailableDocuments not yet implemented`));
       return [];
     } catch (error) {
-      console.error(chalk.red(`[SimpleDocumentService] Failed to get available documents: ${error}`));
+      console.error(chalk.red(`[DocumentService] Failed to get available documents: ${error}`));
       return [];
     }
   }
@@ -195,7 +195,7 @@ export class SimpleDocumentService {
     try {
       return await parsedDocumentStorage.getStorageStats();
     } catch (error) {
-      console.error(chalk.red(`[SimpleDocumentService] Failed to get cache stats: ${error}`));
+      console.error(chalk.red(`[DocumentService] Failed to get cache stats: ${error}`));
       return {
         documentCount: 0,
         totalChunks: 0,
@@ -211,9 +211,9 @@ export class SimpleDocumentService {
   async clearCache(): Promise<void> {
     try {
       await parsedDocumentStorage.clearAll();
-      console.log(chalk.green("[SimpleDocumentService] Document cache cleared"));
+      console.log(chalk.green("[DocumentService] Document cache cleared"));
     } catch (error) {
-      console.error(chalk.red(`[SimpleDocumentService] Failed to clear cache: ${error}`));
+      console.error(chalk.red(`[DocumentService] Failed to clear cache: ${error}`));
       throw error;
     }
   }
@@ -224,9 +224,9 @@ export class SimpleDocumentService {
   async removeCachedDocument(documentPath: string): Promise<void> {
     try {
       await parsedDocumentStorage.removeDocument(documentPath);
-      console.log(chalk.green(`[SimpleDocumentService] Removed cached document: ${documentPath}`));
+      console.log(chalk.green(`[DocumentService] Removed cached document: ${documentPath}`));
     } catch (error) {
-      console.error(chalk.red(`[SimpleDocumentService] Failed to remove cached document ${documentPath}: ${error}`));
+      console.error(chalk.red(`[DocumentService] Failed to remove cached document ${documentPath}: ${error}`));
       throw error;
     }
   }
@@ -246,7 +246,7 @@ export class SimpleDocumentService {
         const hasStored = await parsedDocumentStorage.hasDocument(documentPath);
         
         if (hasStored) {
-          console.log(chalk.green(`[SimpleDocumentService] Using cached parsed content for ${documentPath}`));
+          console.log(chalk.green(`[DocumentService] Using cached parsed content for ${documentPath}`));
           const storedDocuments = await parsedDocumentStorage.getDocument(documentPath);
           
           if (storedDocuments && storedDocuments.length > 0) {
@@ -265,21 +265,21 @@ export class SimpleDocumentService {
 
             allDocuments.push(...documentsWithMetadata);
             cacheHits++;
-            console.log(chalk.gray(`[SimpleDocumentService] Retrieved ${documentsWithMetadata.length} cached chunks from ${documentPath}`));
+            console.log(chalk.gray(`[DocumentService] Retrieved ${documentsWithMetadata.length} cached chunks from ${documentPath}`));
             continue;
           }
         }
 
         // Document not in cache, parse it
-        console.log(chalk.blue(`[SimpleDocumentService] Parsing document ${documentPath} (not in cache)`));
+        console.log(chalk.blue(`[DocumentService] Parsing document ${documentPath} (not in cache)`));
         const documents = await this.parseDocument(documentPath);
         
         // Store the parsed results in database for future use
         try {
           await parsedDocumentStorage.storeDocument(documentPath, documents);
-          console.log(chalk.green(`[SimpleDocumentService] Cached parsed content for future use: ${documentPath}`));
+          console.log(chalk.green(`[DocumentService] Cached parsed content for future use: ${documentPath}`));
         } catch (storageError) {
-          console.warn(chalk.yellow(`[SimpleDocumentService] Failed to cache parsed content for ${documentPath}:`), storageError);
+          console.warn(chalk.yellow(`[DocumentService] Failed to cache parsed content for ${documentPath}:`), storageError);
           // Continue processing even if caching fails
         }
         
@@ -298,10 +298,10 @@ export class SimpleDocumentService {
 
         allDocuments.push(...documentsWithMetadata);
         cacheMisses++;
-        console.log(chalk.gray(`[SimpleDocumentService] Parsed ${documentsWithMetadata.length} chunks from ${documentPath}`));
+        console.log(chalk.gray(`[DocumentService] Parsed ${documentsWithMetadata.length} chunks from ${documentPath}`));
 
       } catch (error) {
-        console.error(chalk.red(`[SimpleDocumentService] Failed to parse ${documentPath}: ${error}`));
+        console.error(chalk.red(`[DocumentService] Failed to parse ${documentPath}: ${error}`));
         throw error;
       }
     }
@@ -309,7 +309,7 @@ export class SimpleDocumentService {
     // Log cache performance
     const totalDocuments = documentPaths.length;
     const cacheHitRate = totalDocuments > 0 ? ((cacheHits / totalDocuments) * 100).toFixed(1) : '0.0';
-    console.log(chalk.blue(`[SimpleDocumentService] Cache performance: ${cacheHits} hits, ${cacheMisses} misses (${cacheHitRate}% hit rate)`));
+    console.log(chalk.blue(`[DocumentService] Cache performance: ${cacheHits} hits, ${cacheMisses} misses (${cacheHitRate}% hit rate)`));
 
     return allDocuments;
   }
@@ -392,4 +392,4 @@ export class SimpleDocumentService {
 }
 
 // Export singleton instance
-export const simpleDocumentService = SimpleDocumentService.getInstance();
+export const documentService = DocumentService.getInstance();

@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { TITLE_MAPPINGS } from "./constants";
-import { simpleDocumentService } from "./simple-document-service";
+import { documentService } from "./document-service";
 
 // Re-export interfaces from existing implementation for compatibility
 export interface DocumentSource {
@@ -108,14 +108,14 @@ export class QueryEngine {
       const { topK = this.defaultSimilarityTopK } = options;
 
       // Check if documents are indexed, if not index them
-      const areIndexed = await simpleDocumentService.areDocumentsIndexed(documentPaths);
+      const areIndexed = await documentService.areDocumentsIndexed(documentPaths);
       if (!areIndexed) {
         console.log(chalk.yellow(`[QueryEngine] Documents not indexed, indexing now...`));
-        await simpleDocumentService.indexDocuments(documentPaths);
+        await documentService.indexDocuments(documentPaths);
       }
 
       // Query using simplified service
-      const result = await simpleDocumentService.queryDocuments(query, {
+      const result = await documentService.queryDocuments(query, {
         topK,
         documentPaths
       });
@@ -156,7 +156,7 @@ export class QueryEngine {
   // Prepare documents for querying using simplified approach
   async prepareDocuments(documentPaths: string[]): Promise<void> {
     console.log(chalk.blue(`[QueryEngine] Preparing documents using simplified approach`));
-    await simpleDocumentService.indexDocuments(documentPaths);
+    await documentService.indexDocuments(documentPaths);
   }
 
   // Get summary of available documents
@@ -165,7 +165,7 @@ export class QueryEngine {
     totalDocuments: number;
     documentTitles: string[];
   }> {
-    const areIndexed = await simpleDocumentService.areDocumentsIndexed(documentPaths);
+    const areIndexed = await documentService.areDocumentsIndexed(documentPaths);
     const availableCount = areIndexed ? documentPaths.length : 0;
     
     return {

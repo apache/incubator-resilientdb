@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { simpleDocumentService } from "../../../../lib/simple-document-service";
+import { documentService } from "../../../../lib/document-service";
 
 /**
  * Cache management API endpoints
@@ -9,7 +9,7 @@ import { simpleDocumentService } from "../../../../lib/simple-document-service";
 
 export async function GET() {
   try {
-    const stats = await simpleDocumentService.getCacheStats();
+    const stats = await documentService.getCacheStats();
     
     return NextResponse.json({
       success: true,
@@ -41,14 +41,14 @@ export async function DELETE(request: NextRequest) {
 
     if (documentPath) {
       // Remove specific document from cache
-      await simpleDocumentService.removeCachedDocument(documentPath);
+      await documentService.removeCachedDocument(documentPath);
       return NextResponse.json({
         success: true,
         message: `Removed cached document: ${documentPath}`
       });
     } else {
       // Clear entire cache
-      await simpleDocumentService.clearCache();
+      await documentService.clearCache();
       return NextResponse.json({
         success: true,
         message: "Cache cleared successfully"

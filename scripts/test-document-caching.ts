@@ -2,7 +2,7 @@
 
 import { configureLlamaSettings } from "@/lib/config/llama-settings";
 import chalk from "chalk";
-import { simpleDocumentService } from "../src/lib/simple-document-service";
+import { documentService } from "../src/lib/document-service";
 
 /**
  * Test script to verify document caching functionality
@@ -24,22 +24,22 @@ async function testDocumentCaching() {
     ];
 
     console.log(chalk.yellow("\n1. Getting initial cache stats..."));
-    const initialStats = await simpleDocumentService.getCacheStats();
+    const initialStats = await documentService.getCacheStats();
     console.log(chalk.gray(`Initial cache: ${initialStats.documentCount} documents, ${initialStats.totalChunks} chunks`));
 
     console.log(chalk.yellow("\n2. First indexing run (should parse documents)..."));
     const startTime1 = Date.now();
-    const index1 = await simpleDocumentService.indexDocuments(testDocuments);
+    const index1 = await documentService.indexDocuments(testDocuments);
     const duration1 = Date.now() - startTime1;
     console.log(chalk.green(`✓ First run completed in ${duration1}ms`));
 
     console.log(chalk.yellow("\n3. Getting cache stats after first run..."));
-    const afterFirstStats = await simpleDocumentService.getCacheStats();
+    const afterFirstStats = await documentService.getCacheStats();
     console.log(chalk.gray(`After first run: ${afterFirstStats.documentCount} documents, ${afterFirstStats.totalChunks} chunks`));
 
     console.log(chalk.yellow("\n4. Second indexing run (should use cache)..."));
     const startTime2 = Date.now();
-    const index2 = await simpleDocumentService.indexDocuments(testDocuments);
+    const index2 = await documentService.indexDocuments(testDocuments);
     const duration2 = Date.now() - startTime2;
     console.log(chalk.green(`✓ Second run completed in ${duration2}ms`));
 
@@ -48,7 +48,7 @@ async function testDocumentCaching() {
     console.log(chalk.blue(`\n📊 Performance Improvement: ${improvement}% faster (${duration1}ms → ${duration2}ms)`));
 
     console.log(chalk.yellow("\n5. Testing query functionality..."));
-    const queryResult = await simpleDocumentService.queryDocuments(
+    const queryResult = await documentService.queryDocuments(
       "What is ResilientDB?",
       { topK: 3, documentPaths: testDocuments }
     );
@@ -56,14 +56,14 @@ async function testDocumentCaching() {
 
     console.log(chalk.yellow("\n6. Testing cache management..."));
     console.log(chalk.gray("Testing document removal from cache..."));
-    await simpleDocumentService.removeCachedDocument(testDocuments[0]);
+    await documentService.removeCachedDocument(testDocuments[0]);
     
-    const afterRemovalStats = await simpleDocumentService.getCacheStats();
+    const afterRemovalStats = await documentService.getCacheStats();
     console.log(chalk.gray(`After removal: ${afterRemovalStats.documentCount} documents, ${afterRemovalStats.totalChunks} chunks`));
 
     console.log(chalk.yellow("\n7. Third indexing run (should parse again after cache removal)..."));
     const startTime3 = Date.now();
-    const index3 = await simpleDocumentService.indexDocuments(testDocuments);
+    const index3 = await documentService.indexDocuments(testDocuments);
     const duration3 = Date.now() - startTime3;
     console.log(chalk.green(`✓ Third run completed in ${duration3}ms`));
 
@@ -74,7 +74,7 @@ async function testDocumentCaching() {
     console.log(chalk.gray(`- Third run (after cache removal): ${duration3}ms`));
     console.log(chalk.gray(`- Performance improvement: ${improvement}%`));
 
-    const finalStats = await simpleDocumentService.getCacheStats();
+    const finalStats = await documentService.getCacheStats();
     console.log(chalk.gray(`- Final cache state: ${finalStats.documentCount} documents, ${finalStats.totalChunks} chunks`));
 
   } catch (error) {
