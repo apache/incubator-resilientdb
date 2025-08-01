@@ -2,6 +2,7 @@ import { PGVectorStore } from "@llamaindex/postgres";
 import chalk from "chalk";
 import { StorageContext, storageContextFromDefaults } from "llamaindex";
 import { config } from "../config/environment";
+import "./pg-client-leak-fix";
 
 class VectorStoreService {
   private static instance: VectorStoreService;

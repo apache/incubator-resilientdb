@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { Pool, PoolClient } from "pg";
 import { config } from "../config/environment";
+import "./pg-client-leak-fix";
 
 class DatabaseConnection {
   private static instance: DatabaseConnection;
