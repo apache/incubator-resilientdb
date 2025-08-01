@@ -48,10 +48,8 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Handle both single and multiple document preparation
       const pathsToProcess = documentPaths || [documentPath];
       
-      // Prepare documents using simplified approach
       await queryEngine.prepareDocuments(pathsToProcess);
 
       return NextResponse.json({

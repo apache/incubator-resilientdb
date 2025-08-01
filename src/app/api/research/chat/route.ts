@@ -73,7 +73,7 @@ const getContextFromQueryEngine = async (
   scope?: string[]
 ) => {
   // Use queryEngine for context retrieval with tool-specific options
-  const queryResult = await queryEngine.queryMultipleDocuments(
+  const queryResult = await queryEngine.queryDocuments(
     query,
     targetPaths,
     {

@@ -42,7 +42,6 @@ export class DocumentServiceError extends Error {
 }
 
 /**
- * Simplified document service following LlamaIndex TypeScript best practices
  * Uses PGVectorStore as single source of truth, eliminating complex caching layers
  */
 export class DocumentService {
@@ -59,23 +58,63 @@ export class DocumentService {
   }
 
   /**
-   * Parse and index documents directly to PGVectorStore
-   * Following best practice: single index with metadata for multi-document support
+   * Parse and index documents with smart caching to avoid re-embedding
+   * Checks for existing embeddings and only processes new/missing documents
    */
   async indexDocuments(documentPaths: string[]): Promise<VectorStoreIndex> {
     try {
-      console.log(chalk.blue(`[DocumentService] Indexing ${documentPaths.length} documents`));
+      console.log(chalk.blue(`[DocumentService] Indexing ${documentPaths.length} documents with smart caching`));
       
-      // Parse all documents with source metadata
-      const allDocuments = await this.parseDocumentsWithMetadata(documentPaths);
+      // Try to load existing index first
+      const vectorStore = await vectorStoreService.getVectorStore();
+      let index: VectorStoreIndex;
       
-      if (!allDocuments || allDocuments.length === 0) {
-        throw new Error("No documents could be parsed");
+      try {
+        index = await VectorStoreIndex.fromVectorStore(vectorStore);
+        console.log(chalk.green(`[DocumentService] Loaded existing index from vector store`));
+      } catch (indexError) {
+        console.log(chalk.yellow(`[DocumentService] No existing index found, will create new one`));
+        index = null as any; // Will create new index below
       }
 
-      // Create single index with all documents using PGVectorStore
+      // Check which documents are already indexed
+      const missingDocuments = await this.getMissingDocuments(documentPaths);
+      
+      if (missingDocuments.length === 0) {
+        console.log(chalk.green(`[DocumentService] All ${documentPaths.length} documents already indexed, returning existing index`));
+        return index || await this.createNewIndex([]);
+      }
+
+      console.log(chalk.blue(`[DocumentService] Found ${missingDocuments.length} new documents to index (${documentPaths.length - missingDocuments.length} already cached)`));
+      
+      // Parse only missing documents
+      const newDocuments = await this.parseDocumentsWithMetadata(missingDocuments);
+      
+      if (!newDocuments || newDocuments.length === 0) {
+        console.log(chalk.yellow(`[DocumentService] No new documents could be parsed`));
+        return index || await this.createNewIndex([]);
+      }
+
+      // If we have an existing index, try to add documents to it
+      if (index) {
+        try {
+          // Insert new documents into existing index
+          for (const doc of newDocuments) {
+            await index.insert(doc);
+          }
+          console.log(chalk.green(`[DocumentService] Added ${newDocuments.length} new document chunks to existing index`));
+          return index;
+        } catch (insertError) {
+          console.log(chalk.yellow(`[DocumentService] Failed to insert into existing index, creating new one: ${insertError}`));
+          // Fall back to creating new index with all documents
+        }
+      }
+
+      // Create new index with all documents (fallback)
+      console.log(chalk.blue(`[DocumentService] Creating new index with all documents`));
+      const allDocuments = await this.parseDocumentsWithMetadata(documentPaths);
       const storageContext = await vectorStoreService.getStorageContext();
-      const index = await VectorStoreIndex.fromDocuments(allDocuments, { 
+      index = await VectorStoreIndex.fromDocuments(allDocuments, { 
         storageContext
       });
 
@@ -94,7 +133,6 @@ export class DocumentService {
   }
 
   /**
-   * Query documents using simplified approach with optional document filtering
    * Uses PGVectorStore's native metadata filtering for efficiency
    */
   async queryDocuments(query: string, options: QueryOptions = {}): Promise<QueryResult> {
@@ -184,6 +222,69 @@ export class DocumentService {
   }
 
   /**
+   * Check which documents from the list are missing from the vector store
+   */
+  private async getMissingDocuments(documentPaths: string[]): Promise<string[]> {
+    const missingDocuments: string[] = [];
+    
+    try {
+      const vectorStore = await vectorStoreService.getVectorStore();
+      const index = await VectorStoreIndex.fromVectorStore(vectorStore);
+      
+      // Check each document individually
+      for (const docPath of documentPaths) {
+        try {
+          const retriever = index.asRetriever({
+            similarityTopK: 1,
+            filters: {
+              filters: [{
+                key: "source_document",
+                value: [docPath],
+                operator: "in"
+              }]
+            }
+          });
+
+          const nodes = await retriever.retrieve({ query: "test" });
+          if (nodes.length === 0) {
+            missingDocuments.push(docPath);
+          }
+        } catch (docError) {
+          // If we can't check, assume it's missing
+          console.log(chalk.yellow(`[DocumentService] Could not check ${docPath}, assuming missing: ${docError}`));
+          missingDocuments.push(docPath);
+        }
+      }
+      
+    } catch (error) {
+      console.warn(chalk.yellow(`[DocumentService] Could not check for missing documents, assuming all are missing: ${error}`));
+      return documentPaths; // Return all as missing if we can't check
+    }
+    
+    return missingDocuments;
+  }
+
+  /**
+   * Create a new empty index (helper method)
+   */
+  private async createNewIndex(documents: Document[]): Promise<VectorStoreIndex> {
+    const storageContext = await vectorStoreService.getStorageContext();
+    
+    if (documents.length === 0) {
+      // Create empty index - this might not be supported by all vector stores
+      // For now, we'll try to load existing or throw an error
+      try {
+        const vectorStore = await vectorStoreService.getVectorStore();
+        return await VectorStoreIndex.fromVectorStore(vectorStore);
+      } catch (error) {
+        throw new Error("No documents to index and no existing index found");
+      }
+    }
+    
+    return await VectorStoreIndex.fromDocuments(documents, { storageContext });
+  }
+
+  /**
    * Get cache statistics for monitoring
    */
   async getCacheStats(): Promise<{
@@ -205,9 +306,6 @@ export class DocumentService {
     }
   }
 
-  /**
-   * Clear document cache (useful for testing or cleanup)
-   */
   async clearCache(): Promise<void> {
     try {
       await parsedDocumentStorage.clearAll();

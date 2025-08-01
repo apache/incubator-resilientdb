@@ -29,8 +29,12 @@ export const configureLlamaSettings = (): void => {
 
   // Configure HuggingFace embedding model
   // Using default model for faster setup (can upgrade later)
-  Settings.embedModel = new HuggingFaceEmbedding();
-
+  Settings.embedModel = new HuggingFaceEmbedding({
+    modelType: "BAAI/bge-large-en-v1.5", 
+    modelOptions: {
+      dtype: "auto",
+    },
+  });
 
   // Mark as configured
   isConfigured = true;

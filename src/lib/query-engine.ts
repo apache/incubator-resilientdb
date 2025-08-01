@@ -63,14 +63,12 @@ export class QueryEngine {
     this.maxContextLength = length;
   }
 
-  // Get display name for a document path
   private getDocumentDisplayName(documentPath: string): string {
     const filename = documentPath.split("/").pop() || documentPath;
     const lowerFilename = filename.toLowerCase();
     return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
   }
 
-  // Main query processing method using simplified approach
   async queryDocuments(
     query: string,
     documentPaths: string[],
@@ -80,7 +78,7 @@ export class QueryEngine {
       console.log(chalk.yellow(`[QueryEngine] Processing query for ${documentPaths.length} documents`));
       console.log(chalk.yellow(`[QueryEngine] Documents: ${documentPaths.map(p => p.split("/").pop()).join(", ")}`));
 
-      return await this.querySimplified(query, documentPaths, options);
+      return await this.query(query, documentPaths, options);
 
     } catch (error) {
       if (error instanceof WorkflowAgentError) {
@@ -96,13 +94,12 @@ export class QueryEngine {
     }
   }
 
-  // Simplified query method using best practices
-  private async querySimplified(
+  private async query(
     query: string,
     documentPaths: string[],
     options: StreamingQueryOptions
   ): Promise<QueryResult> {
-    console.log(chalk.blue(`[QueryEngine] Using simplified approach for ${documentPaths.length} documents`));
+    console.log(chalk.blue(`[QueryEngine] Performing query for ${documentPaths.length} documents`));
 
     try {
       const { topK = this.defaultSimilarityTopK } = options;
@@ -114,48 +111,27 @@ export class QueryEngine {
         await documentService.indexDocuments(documentPaths);
       }
 
-      // Query using simplified service
       const result = await documentService.queryDocuments(query, {
         topK,
         documentPaths
       });
 
-      console.log(chalk.green(`[QueryEngine] Simplified query completed with ${result.totalChunks} chunks`));
+      console.log(chalk.green(`[QueryEngine] Query completed with ${result.totalChunks} chunks`));
       return result;
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`[QueryEngine] Simplified query failed: ${errorMessage}`));
+      console.error(chalk.red(`[QueryEngine] Query failed: ${errorMessage}`));
       throw new WorkflowAgentError(
-        `Simplified query failed: ${errorMessage}`,
+        `Query failed: ${errorMessage}`,
         documentPaths,
         error instanceof Error ? error : undefined
       );
     }
   }
 
-  // Backward compatibility methods
-  async queryMultipleDocuments(
-    query: string,
-    documentPaths: string[],
-    options: StreamingQueryOptions = {}
-  ): Promise<QueryResult> {
-    return this.queryDocuments(query, documentPaths, options);
-  }
-
-  async querySingleDocument(
-    query: string,
-    documentPath: string,
-    options: {
-      topK?: number;
-    } = {}
-  ): Promise<QueryResult> {
-    return this.queryDocuments(query, [documentPath], options);
-  }
-
-  // Prepare documents for querying using simplified approach
   async prepareDocuments(documentPaths: string[]): Promise<void> {
-    console.log(chalk.blue(`[QueryEngine] Preparing documents using simplified approach`));
+    console.log(chalk.blue(`[QueryEngine] Preparing ${documentPaths.length} documents for indexing`));
     await documentService.indexDocuments(documentPaths);
   }
 
@@ -218,25 +194,6 @@ export class QueryEngine {
     }
 
     return truncated;
-  }
-
-  // Extract unique sources from query result (from old implementation)
-  getUniqueSources(chunks: ContextChunk[]): DocumentSource[] {
-    const uniqueSources = new Set<string>();
-    const sources: DocumentSource[] = [];
-
-    chunks.forEach((chunk) => {
-      if (!uniqueSources.has(chunk.source)) {
-        uniqueSources.add(chunk.source);
-        sources.push({
-          path: chunk.source,
-          name: chunk.source.split("/").pop() || chunk.source,
-          displayTitle: this.getDocumentDisplayName(chunk.source),
-        });
-      }
-    });
-
-    return sources;
   }
 }
 
