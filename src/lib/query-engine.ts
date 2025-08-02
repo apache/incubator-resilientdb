@@ -69,32 +69,7 @@ export class QueryEngine {
     return TITLE_MAPPINGS[lowerFilename] || filename.replace(".pdf", "");
   }
 
-  async queryDocuments(
-    query: string,
-    documentPaths: string[],
-    options: StreamingQueryOptions = {}
-  ): Promise<QueryResult> {
-    try {
-      console.log(chalk.yellow(`[QueryEngine] Processing query for ${documentPaths.length} documents`));
-      console.log(chalk.yellow(`[QueryEngine] Documents: ${documentPaths.map(p => p.split("/").pop()).join(", ")}`));
-
-      return await this.query(query, documentPaths, options);
-
-    } catch (error) {
-      if (error instanceof QueryError) {
-        throw error;
-      }
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(chalk.red(`[QueryEngine] Query failed: ${errorMessage}`));
-      throw new QueryError(
-        `Query execution failed: ${errorMessage}`,
-        documentPaths,
-        error instanceof Error ? error : undefined
-      );
-    }
-  }
-
-  private async query(
+   async query(
     query: string,
     documentPaths: string[],
     options: StreamingQueryOptions

@@ -17,7 +17,7 @@ const originalConnect: (this: Pool, ...args: any[]) => Promise<Client> = (Pool a
 
   // Only touch EventEmitter listeners if we are dealing with a pg Client
   // and there is more than one 'end' listener attached.
-  const endListeners = (client as unknown as EventEmitter).listeners("end");
+  const endListeners = (client as unknown as EventEmitter)?.listeners("end") || [];
   if (endListeners.length > 1) {
     // Keep the most recently attached listener (the last in the array) and
     // remove the earlier ones. This preserves pool's current release handler

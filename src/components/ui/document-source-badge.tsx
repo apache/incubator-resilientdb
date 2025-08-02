@@ -13,6 +13,7 @@ interface DocumentSource {
   path: string;
   name: string;
   displayTitle?: string;
+  pages?: number[];
 }
 
 interface DocumentSourceBadgeProps {
@@ -97,6 +98,11 @@ const DocumentSourceBadge = memo<DocumentSourceBadgeProps>(
               <p className="text-xs text-muted-foreground mt-1">
                 {source.name}
               </p>
+              {source.pages && source.pages.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {source.pages.length} pages ({source.pages.sort((a, b) => a - b).join(", ")})
+                </p>
+              )}
               {clickable && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Click to view document
@@ -172,9 +178,11 @@ const MultiDocumentSourceBadge = memo<MultiDocumentSourceBadgeProps>(
               <div className="space-y-1">
                 <p className="font-medium">Additional sources:</p>
                 {sources.slice(maxVisible).map((source, index) => (
+                 <>
                   <p key={index} className="text-xs text-muted-foreground">
                     {source.displayTitle || source.name}
                   </p>
+                  </>
                 ))}
               </div>
             </TooltipContent>
@@ -238,5 +246,6 @@ export type {
   DocumentSource,
   DocumentSourceBadgeProps,
   MultiDocumentSourceBadgeProps,
-  SourceAttributionProps,
+  SourceAttributionProps
 };
+

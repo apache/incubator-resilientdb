@@ -26,11 +26,20 @@ interface RequestData {
   scope?: string[];
 }
 
+interface CitationInfo {
+  id: number;
+  page: number;
+  path: string;
+  name: string;
+  displayTitle: string;
+}
+
 interface SourceInfo {
   sources: Array<{
     path: string;
     name: string;
     displayTitle: string;
+    pages: number[];
   }>;
   isMultiDocument: boolean;
   totalDocuments: number;
@@ -38,6 +47,7 @@ interface SourceInfo {
   tool: string;
   language: string;
   scope: string[];
+  citations: CitationInfo[];
 }
 
 const validateRequest = (data: RequestData): string | null => {
@@ -73,7 +83,7 @@ const getContextFromQueryEngine = async (
   scope?: string[]
 ) => {
   // Use queryEngine for context retrieval with tool-specific options
-  const queryResult = await queryEngine.queryDocuments(
+  const queryResult = await queryEngine.query(
     query,
     targetPaths,
     {
@@ -122,8 +132,10 @@ const generatePrompt = (
   query: string,
   documentPaths: string[],
   language?: string,
-  scope?: string[]
+  scope?: string[],
+  sourceInfo?: SourceInfo
 ): string => {
+  let citationSection = "";
   if (tool === "code-composer") {
     const codeComposerContext: CodeComposerContext = {
       language: language || "ts",
@@ -133,9 +145,17 @@ const generatePrompt = (
       documentTitles: documentPaths.map((p: string) => p.split("/").pop()?.replace(".pdf", "") || p)
     };
     return generateCodeComposerPrompt(codeComposerContext);
+  }else{
+  let citationSection = "";
+  if (sourceInfo && sourceInfo.citations.length) {
+    const citationLines = sourceInfo.citations.map((c) => `[^${c.id}]" (Page ${c.page} of ${c.displayTitle})`).join("\n");
+    citationSection = `\nWhen you use information from the documents, append a citation like [^id] right after the statement.\n\nCitations:\n${citationLines}\n
+    \n Multiple of the same citation in a response is fine, but if multiple statements/paragraphs reference the same citation in a row, only append the citation once before digging into those paragraphs so that the citation is only shown once.
+    `;
+  }
   }
 
-  return `${RESEARCH_SYSTEM_PROMPT}
+  return `${RESEARCH_SYSTEM_PROMPT}${citationSection}
 
 Documents: ${documentPaths.map((p: string) => p.split("/").pop()).join(", ")}
 
@@ -153,18 +173,46 @@ const createSourceInfo = (
 ): SourceInfo => {
   const { tool, language, scope } = data;
 
+  // Build pages map and citations list
+  const pagesByDoc: Record<string, number[]> = {};
+
+  const citations: CitationInfo[] = [];
+  let citationId = 1;
+
+  retrievedData.forEach((chunk: any) => {
+    const docPath = chunk.source;
+    const pageNumber = chunk.metadata?.page;
+    if (pageNumber === undefined) return;
+
+    const citationKey = `${docPath}|${pageNumber}`;
+    if (!citations.some(c => `${c.path}|${c.page}` === citationKey)) {
+      citations.push({ id: citationId++, page: pageNumber, path: docPath, name: docPath.split("/").pop() || docPath, displayTitle: TITLE_MAPPINGS[docPath.split("/").pop() || docPath] || docPath });
+    }
+
+    if (!pagesByDoc[docPath]) {
+      pagesByDoc[docPath] = [];
+    }
+
+    // Avoid duplicate page entries
+    if (!pagesByDoc[docPath].includes(pageNumber)) {
+      pagesByDoc[docPath].push(pageNumber);
+    }
+  });
+
   return {
     sources: documentPaths.map((path: string) => ({
       path,
       name: path.split("/").pop() || path,
       displayTitle: TITLE_MAPPINGS[path.split("/").pop() || path] || path,
+      pages: pagesByDoc[path] || [],
     })),
     isMultiDocument: documentPaths.length > 1,
     totalDocuments: documentPaths.length,
     contextNodes: retrievedData.length,
     tool: tool || "default",
     language: language || "ts",
-    scope: scope || []
+    scope: scope || [],
+    citations,
   };
 };
 
@@ -205,9 +253,6 @@ const handleStreamingResponse = async (
               controller.enqueue(content);
             }
           }
-        }
-
-        if (tool != "code-composer") {
           controller.enqueue(`__SOURCE_INFO__${JSON.stringify(sourceInfo)}\n\n`);
         }
         controller.close();
@@ -261,14 +306,18 @@ export async function POST(req: NextRequest) {
 
       console.log(`Retrieved ${chunks.length} chunks from ${documentPaths.length} documents${requestData.tool ? ` (${requestData.tool})` : ''}`);
 
-      // Generate enhanced prompt
+      const sourceInfo = createSourceInfo(requestData, chunks, documentPaths);
+
+
+      // Generate enhanced prompt (includes citation instructions)
       const enhancedPrompt = generatePrompt(
         requestData.tool,
         context,
         requestData.query,
         documentPaths,
         requestData.language,
-        requestData.scope
+        requestData.scope,
+        sourceInfo
       );
 
       // Create chat stream using native LlamaIndex streaming
@@ -278,8 +327,6 @@ export async function POST(req: NextRequest) {
         stream: true,
       });
 
-      // Create source info for the UI
-      const sourceInfo = createSourceInfo(requestData, chunks, documentPaths);
 
       // Handle streaming response using native LlamaIndex streaming
       const readableStream = await handleStreamingResponse(

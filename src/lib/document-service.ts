@@ -77,8 +77,8 @@ export class DocumentService {
         index = null as any; // Will create new index below
       }
 
-      // Check which documents are already indexed
-      const missingDocuments = await this.getMissingDocuments(documentPaths);
+      // Check which documents are already indexed using improved detection
+      const missingDocuments = await this.getMissingDocumentsImproved(documentPaths);
       
       if (missingDocuments.length === 0) {
         console.log(chalk.green(`[DocumentService] All ${documentPaths.length} documents already indexed, returning existing index`));
@@ -98,6 +98,9 @@ export class DocumentService {
       // If we have an existing index, try to add documents to it
       if (index) {
         try {
+          // Remove any existing documents with same source_document to prevent duplicates
+          await this.removeExistingDocuments(missingDocuments);
+          
           // Insert new documents into existing index
           for (const doc of newDocuments) {
             await index.insert(doc);
@@ -105,20 +108,24 @@ export class DocumentService {
           console.log(chalk.green(`[DocumentService] Added ${newDocuments.length} new document chunks to existing index`));
           return index;
         } catch (insertError) {
-          console.log(chalk.yellow(`[DocumentService] Failed to insert into existing index, creating new one: ${insertError}`));
-          // Fall back to creating new index with all documents
+          console.error(chalk.red(`[DocumentService] Failed to insert into existing index: ${insertError}`));
+          // Instead of re-indexing everything, try to recover
+          throw new DocumentServiceError(
+            `Failed to insert documents into existing index: ${insertError}`,
+            documentPaths,
+            insertError instanceof Error ? insertError : undefined
+          );
         }
       }
 
-      // Create new index with all documents (fallback)
-      console.log(chalk.blue(`[DocumentService] Creating new index with all documents`));
-      const allDocuments = await this.parseDocumentsWithMetadata(documentPaths);
+      // Create new index only with missing documents (
+      console.log(chalk.blue(`[DocumentService] Creating new index with ${newDocuments.length} document chunks`));
       const storageContext = await vectorStoreService.getStorageContext();
-      index = await VectorStoreIndex.fromDocuments(allDocuments, { 
+      index = await VectorStoreIndex.fromDocuments(newDocuments, { 
         storageContext
       });
 
-      console.log(chalk.green(`[DocumentService] Successfully indexed ${allDocuments.length} document chunks`));
+      console.log(chalk.green(`[DocumentService] Successfully indexed ${newDocuments.length} document chunks`));
       return index;
 
     } catch (error) {
@@ -145,6 +152,7 @@ export class DocumentService {
       const vectorStore = await vectorStoreService.getVectorStore();
       const index = await VectorStoreIndex.fromVectorStore(vectorStore);
 
+
       // Create retriever with optional document filtering
       const retrieverOptions: any = { similarityTopK: topK };
       
@@ -161,6 +169,11 @@ export class DocumentService {
 
       const retriever = index.asRetriever(retrieverOptions);
       const nodes = await retriever.retrieve({ query });
+
+      console.log(nodes);
+
+      // Debug: Show query results count
+      console.log(chalk.gray(`[DocumentService] Query returned ${nodes.length} nodes from retrieval`));
 
       console.log(chalk.green(`[DocumentService] Retrieved ${nodes.length} relevant chunks`));
 
@@ -206,23 +219,49 @@ export class DocumentService {
     }
   }
 
+
   /**
-   * Get available documents from vector store metadata
+   * Check which documents from the list are missing from the vector store using direct DB query
    */
-  async getAvailableDocuments(): Promise<DocumentSource[]> {
+  private async getMissingDocumentsImproved(documentPaths: string[]): Promise<string[]> {
+    const missingDocuments: string[] = [];
+    
     try {
-      // This would require a custom query to get unique source_document values
-      // For now, return empty array - this could be enhanced with a direct DB query
-      console.warn(chalk.yellow(`[DocumentService] getAvailableDocuments not yet implemented`));
-      return [];
+      // Use direct database query to check for existing documents
+      const databaseConnection = await import('./database-connection');
+      const db = databaseConnection.databaseConnection;
+      
+      for (const docPath of documentPaths) {
+        try {
+          const tableName = process.env.VECTOR_TABLE_NAME || config.vectorStore.tableName;
+          const result = await db.query(
+            `SELECT COUNT(*) as count FROM ${tableName} 
+             WHERE metadata->>'source_document' = $1`,
+            [docPath]
+          );
+          
+          const count = parseInt(result.rows[0].count) || 0;
+          if (count === 0) {
+            missingDocuments.push(docPath);
+          } else {
+            console.log(chalk.gray(`[DocumentService] Found ${count} existing chunks for ${docPath}`));
+          }
+        } catch (docError) {
+          console.log(chalk.yellow(`[DocumentService] Could not check ${docPath}, assuming missing: ${docError}`));
+          missingDocuments.push(docPath);
+        }
+      }
+      
     } catch (error) {
-      console.error(chalk.red(`[DocumentService] Failed to get available documents: ${error}`));
-      return [];
+      console.warn(chalk.yellow(`[DocumentService] Could not check for missing documents, falling back to retriever method: ${error}`));
+      return this.getMissingDocuments(documentPaths);
     }
+    
+    return missingDocuments;
   }
 
   /**
-   * Check which documents from the list are missing from the vector store
+   * Check which documents from the list are missing from the vector store (fallback method)
    */
   private async getMissingDocuments(documentPaths: string[]): Promise<string[]> {
     const missingDocuments: string[] = [];
@@ -250,7 +289,6 @@ export class DocumentService {
             missingDocuments.push(docPath);
           }
         } catch (docError) {
-          // If we can't check, assume it's missing
           console.log(chalk.yellow(`[DocumentService] Could not check ${docPath}, assuming missing: ${docError}`));
           missingDocuments.push(docPath);
         }
@@ -258,10 +296,36 @@ export class DocumentService {
       
     } catch (error) {
       console.warn(chalk.yellow(`[DocumentService] Could not check for missing documents, assuming all are missing: ${error}`));
-      return documentPaths; // Return all as missing if we can't check
+      return documentPaths;
     }
     
     return missingDocuments;
+  }
+
+  /**
+   * Remove existing documents from vector store to prevent duplicates
+   */
+  private async removeExistingDocuments(documentPaths: string[]): Promise<void> {
+    try {
+      const databaseConnection = await import('./database-connection');
+      const db = databaseConnection.databaseConnection;
+      
+      for (const docPath of documentPaths) {
+        const tableName = process.env.VECTOR_TABLE_NAME || config.vectorStore.tableName;
+        const result = await db.query(
+          `DELETE FROM ${tableName} 
+           WHERE metadata->>'source_document' = $1`,
+          [docPath]
+        );
+        
+        const deletedCount = result.rowCount || 0;
+        if (deletedCount > 0) {
+          console.log(chalk.yellow(`[DocumentService] Removed ${deletedCount} existing chunks for ${docPath}`));
+        }
+      }
+    } catch (error) {
+      console.warn(chalk.yellow(`[DocumentService] Could not remove existing documents: ${error}`));
+    }
   }
 
   /**
@@ -313,6 +377,105 @@ export class DocumentService {
     } catch (error) {
       console.error(chalk.red(`[DocumentService] Failed to clear cache: ${error}`));
       throw error;
+    }
+  }
+
+  /**
+   * Remove duplicate documents from vector store
+   */
+  async removeDuplicateDocuments(): Promise<void> {
+    try {
+      const databaseConnection = await import('./database-connection');
+      const db = databaseConnection.databaseConnection;
+      
+      console.log(chalk.blue("[DocumentService] Removing duplicate documents from vector store..."));
+      
+      const tableName = process.env.VECTOR_TABLE_NAME || config.vectorStore.tableName;
+      
+      // Keep only the most recent document for each source_document + text combination
+      const result = await db.query(`
+        DELETE FROM ${tableName} 
+        WHERE id IN (
+          SELECT id FROM (
+            SELECT id, 
+                   ROW_NUMBER() OVER (
+                     PARTITION BY metadata->>'source_document', document 
+                     ORDER BY created_at DESC
+                   ) as rn
+            FROM ${tableName}
+          ) t 
+          WHERE rn > 1
+        )
+      `);
+      
+      const removedCount = result.rowCount || 0;
+      console.log(chalk.green(`[DocumentService] Removed ${removedCount} duplicate document chunks`));
+      
+    } catch (error) {
+      console.error(chalk.red(`[DocumentService] Failed to remove duplicates: ${error}`));
+      throw error;
+    }
+  }
+
+  /**
+   * Get duplicate document statistics
+   */
+  async getDuplicateStats(): Promise<{
+    totalDocuments: number;
+    uniqueDocuments: number;
+    duplicateDocuments: number;
+    documentGroups: Array<{ source_document: string; count: number; content_preview: string }>;
+  }> {
+    try {
+      const databaseConnection = await import('./database-connection');
+      const db = databaseConnection.databaseConnection;
+      
+      const tableName = process.env.VECTOR_TABLE_NAME || config.vectorStore.tableName;
+      
+      // Get total and unique counts
+      const statsResult = await db.query(`
+        SELECT 
+          COUNT(*) as total_documents,
+          COUNT(DISTINCT (metadata->>'source_document', document)) as unique_documents
+        FROM ${tableName}
+      `);
+      
+      const totalDocuments = parseInt(statsResult.rows[0].total_documents) || 0;
+      const uniqueDocuments = parseInt(statsResult.rows[0].unique_documents) || 0;
+      const duplicateDocuments = totalDocuments - uniqueDocuments;
+      
+      // Get document groups with duplicates
+      const groupsResult = await db.query(`
+        SELECT 
+          metadata->>'source_document' as source_document,
+          COUNT(*) as count,
+          LEFT(document, 100) as content_preview
+        FROM ${tableName}
+        GROUP BY metadata->>'source_document', document
+        HAVING COUNT(*) > 1
+        ORDER BY count DESC
+        LIMIT 10
+      `);
+      
+      return {
+        totalDocuments,
+        uniqueDocuments,
+        duplicateDocuments,
+        documentGroups: groupsResult.rows.map((row: any) => ({
+          source_document: row.source_document || 'Unknown',
+          count: parseInt(row.count) || 0,
+          content_preview: row.content_preview || ''
+        }))
+      };
+      
+    } catch (error) {
+      console.error(chalk.red(`[DocumentService] Failed to get duplicate stats: ${error}`));
+      return {
+        totalDocuments: 0,
+        uniqueDocuments: 0,
+        duplicateDocuments: 0,
+        documentGroups: []
+      };
     }
   }
 
@@ -436,7 +599,8 @@ export class DocumentService {
               text: page.text, 
               metadata: { 
                 page: page.page,
-                // Include any other metadata from the original parsing
+                // Include any other metadata from the original parsing 
+                // TODO: Add more metadata from the original parsing LIKE FIGURES!!!!!!!!!
                 ...(page as any).metadata || {}
               } 
             }),
@@ -466,7 +630,7 @@ export class DocumentService {
 
     for (const nodeWithScore of nodes) {
       const sourceDoc = nodeWithScore.node.metadata?.source_document || "Unknown";
-      const content = nodeWithScore.node.getContent();
+      const content = (nodeWithScore.node as any).text || 'No content';
 
       const chunk: ContextChunk = {
         content,

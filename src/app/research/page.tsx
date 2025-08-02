@@ -52,6 +52,7 @@ interface Message {
     name: string;
     displayTitle?: string;
   }[];
+  citations?: Record<number, import("@/components/ui/citation-badge").CitationData>;
 }
 
 // Helper functions for code composer streaming
@@ -328,6 +329,15 @@ function ResearchChatPageContent() {
                         content: "Code generation started. Check the preview panel to see live progress.",
                         isLoadingPlaceholder: false,
                         sources: sourceInfo?.sources || [],
+                        citations: (() => {
+                          const cit: Record<number, import("@/components/ui/citation-badge").CitationData> = {};
+                          if (sourceInfo?.citations) {
+                            Object.values(sourceInfo.citations).forEach((c: any) => {
+                              cit[c.id] = c;
+                            });
+                          }
+                          return Object.keys(cit).length ? cit : undefined;
+                        })(),
                       }
                     : msg,
                 ),
@@ -385,6 +395,15 @@ function ResearchChatPageContent() {
                   content: buffer,
                   isLoadingPlaceholder: false,
                   sources: sourceInfo?.sources || [],
+                  citations: (() => {
+                    const cit: Record<number, import("@/components/ui/citation-badge").CitationData> = {};
+                    if (sourceInfo?.citations) {
+                      Object.values(sourceInfo.citations).forEach((c: any) => {
+                        cit[c.id] = c;
+                      });
+                    }
+                    return Object.keys(cit).length ? cit : undefined;
+                  })(),
                 }
               : msg,
           ),
@@ -801,7 +820,7 @@ function ResearchChatPageContent() {
                                 </div>
                               ) : (
                                 <div className="text-sm">
-                                  <MarkdownRenderer content={message.content} />
+                                  <MarkdownRenderer content={message.content} citations={message.citations} />
                                   {message.sources &&
                                     message.sources.length > 0 && (
                                       <SourceAttribution
