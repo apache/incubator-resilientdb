@@ -1,25 +1,24 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { LavaLamp } from "@/components/ui/fluid-blob";
 import { useRouter } from "next/navigation";
 
 export default function WelcomePage() {
   const router = useRouter();
   return (
-    <div className="flex flex-col justify-center items-center flex-1 h-screen max-w-5xl mx-auto">
-      <div className="text-center px-4">
-        <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-500 to-indigo-600 text-transparent bg-clip-text">
-          ResilientDB's AI-Powered Resource Hub
+    <div className="h-screen w-screen flex flex-col justify-center items-center relative">
+        <LavaLamp />
+        <h1 className="text-6xl md:text-8xl font-bold tracking-tight mix-blend-exclusion text-white whitespace-nowrap">
+        Welcome to Nexus
         </h1>
-        <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-          Access everything for Apache ResilientDB (Incubating) — the
-          high-throughput distributed ledger built on scale-centric design
-          principles.
+        <p className="text-lg md:text-xl text-center text-white mix-blend-exclusion max-w-2xl leading-relaxed">
+          Explore ResilientDB’s research, consensus protocols, and innovations. Instantly turn new ideas into working code.
         </p>
-        <div className="flex flex-wrap justify-center gap-4 mt-8">
+        <div className="flex flex-wrap justify-center gap-4 mt-8 z-10">
           <Button
             onClick={() => {
-              router.push("/chat");
+              router.push("/research");
             }}
           >
             Start Chatting
@@ -33,8 +32,6 @@ export default function WelcomePage() {
             Official Website
           </Button>
         </div>
-      </div>
-
       {/* Feature Cards */}
       {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16 w-full">
         <div className="bg-card/10 backdrop-blur-sm p-6 rounded-lg border border-border">

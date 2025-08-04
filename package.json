@@ -27,6 +27,7 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@react-three/fiber": "^9.3.0",
     "@tanstack/react-query": "^5.83.0",
     "@types/pg": "^8.15.4",
     "chalk": "^5.4.1",
@@ -51,6 +52,7 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.3.0",
+    "three": "^0.179.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

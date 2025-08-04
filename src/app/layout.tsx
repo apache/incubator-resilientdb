@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="p-0 dark bg-background text-white font-sans overflow-x-hidden">
         <QueryProvider>
-          <MainNavBar />
+          {/* <MainNavBar /> */}
           <main className="w-full">{children}</main>
         </QueryProvider>
       </body>
