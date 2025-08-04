@@ -32,22 +32,6 @@ export default function WelcomePage() {
             Official Website
           </Button>
         </div>
-      {/* Feature Cards */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-16 w-full">
-        <div className="bg-card/10 backdrop-blur-sm p-6 rounded-lg border border-border">
-          <h3 className="text-xl font-semibold mb-3">Development SDK</h3>
-          <p className="text-muted-foreground">Access Python, Rust and TypeScript SDKs to build applications on ResilientDB's blockchain fabric.</p>
-        </div>
-        <div className="bg-card/10 backdrop-blur-sm p-6 rounded-lg border border-border">
-          <h3 className="text-xl font-semibold mb-3">Smart Contracts</h3>
-          <p className="text-muted-foreground">Implement Solidity-based smart contracts with ResContract CLI for deployment and execution.</p>
-        </div>
-        <div className="bg-card/10 backdrop-blur-sm p-6 rounded-lg border border-border">
-          <h3 className="text-xl font-semibold mb-3">Key-Value Store</h3>
-          <p className="text-muted-foreground">Utilize version-based and non-version-based key-value storage for blockchain applications.</p>
-        </div>
-     
-      </div> */}
     </div>
   );
 }

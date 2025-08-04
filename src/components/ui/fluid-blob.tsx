@@ -1,5 +1,5 @@
-import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 const vertexShader = `
@@ -109,7 +109,7 @@ void main() {
 `;
 
 function LavaLampShader() {
-  const meshRef = useRef();
+  const meshRef = useRef<THREE.Mesh>(null);
   const { size } = useThree();
   
   const uniforms = useMemo(() => ({
