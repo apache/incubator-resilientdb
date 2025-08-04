@@ -1,7 +1,8 @@
+import chalk from "chalk";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 import { configureLlamaSettings } from "../../../../lib/config/llama-settings";
-import { queryEngine } from "../../../../lib/query-engine";
+import { llamaService } from "../../../../lib/llama-service";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,13 +51,20 @@ export async function POST(req: NextRequest) {
     try {
       const pathsToProcess = documentPaths || [documentPath];
       
-      await queryEngine.prepareDocuments(pathsToProcess);
+      console.log(chalk.blue(`[API] Prepare-Index: Starting ingestion for ${pathsToProcess.length} documents`));
+      const startTime = Date.now();
+      
+      await llamaService.ingestDocs(pathsToProcess);
+      
+      const totalTime = Date.now() - startTime;
+      console.log(chalk.green(`[API] Prepare-Index: Ingestion completed in ${totalTime}ms`));
 
       return NextResponse.json({
         success: true,
         message: `Documents prepared successfully`,
         documentCount: pathsToProcess.length,
-        documentPaths: pathsToProcess
+        documentPaths: pathsToProcess,
+        processingTimeMs: totalTime
       });
     } catch (processingError) {
       console.error("Error preparing index:", processingError);

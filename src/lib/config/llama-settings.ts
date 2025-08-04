@@ -2,7 +2,7 @@ import { config } from "@/config/environment";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import chalk from "chalk";
-import { Settings } from "llamaindex";
+import { LLMMetadata, Settings } from "llamaindex";
 
 // Track if settings have been configured to prevent duplicate setup
 let isConfigured = false;
@@ -19,16 +19,31 @@ export const configureLlamaSettings = (): void => {
 
   console.log(chalk.bold("[LlamaSettings] Configuring LlamaIndex with DeepSeek + HuggingFace"));
 
-  // Configure DeepSeek LLM with aggressive timeout and retry settings
-  Settings.llm = new DeepSeekLLM({
+  /**
+   * Custom DeepSeek LLM with corrected metadata
+   */
+  class DeepSeekLLMWithMetadata extends DeepSeekLLM {
+    get metadata(): LLMMetadata {
+      return {
+        contextWindow: 64_000,
+        model: this.model,
+        temperature: this.temperature,
+        topP: this.topP,
+        tokenizer: 'cl100k_base' as any,
+        structuredOutput: true,
+      };
+    }
+  }
+  Settings.llm = new DeepSeekLLMWithMetadata({
     apiKey: config.deepSeekApiKey,
-    model: config.deepSeekModel,
-    timeout: 30000, // 30 second timeout
+    model: "deepseek-chat",
+    timeout: 30000,
     maxRetries: 2,
+    temperature: 0.1,
   });
+  
 
-  // Configure HuggingFace embedding model
-  // Using default model for faster setup (can upgrade later)
+
   Settings.embedModel = new HuggingFaceEmbedding({
     modelType: "BAAI/bge-large-en-v1.5", 
     modelOptions: {
