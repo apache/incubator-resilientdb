@@ -12,11 +12,8 @@ brew services start postgresql
 
 # Create database  
 createdb nexus_db
-
-# Setup vector storage
-npm run db:setup-vector
 ```
 
-## Architecture
-- `document_indices`: Document parsing cache
-- `document_embeddings`: Vector embeddings for AI search
+## Add env variables:
+DATABASE_URL=postgresql://{username}@localhost:5432/nexus_db
+
