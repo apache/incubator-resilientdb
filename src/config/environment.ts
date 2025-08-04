@@ -1,6 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 export const config = {
   // Database configuration
   databaseUrl: process.env.DATABASE_URL || "",
+  embedDim: parseInt(process.env.EMBEDDING_DIM || "1536"),
 
   // DeepSeek LLM configuration
   deepSeekApiKey: process.env.DEEPSEEK_API_KEY || "",
@@ -13,4 +17,5 @@ export const config = {
   llamaCloudProjectName: process.env.LLAMA_CLOUD_PROJECT_NAME || "",
   llamaCloudIndexName: process.env.LLAMA_CLOUD_INDEX_NAME || "",
   llamaCloudBaseUrl: process.env.LLAMA_CLOUD_BASE_URL || "",
+
 };

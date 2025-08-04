@@ -32,13 +32,9 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
+import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation } from "@/lib/utils";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  MessageCircle
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, MessageCircle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
@@ -52,71 +48,91 @@ interface Message {
     name: string;
     displayTitle?: string;
   }[];
+  citations?: Record<
+    number,
+    import("@/components/ui/citation-badge").CitationData
+  >;
 }
 
 // Helper functions for code composer streaming
-const getCurrentSection = (fullResponse: string): 'reading-documents' | 'topic' | 'plan' | 'pseudocode' | 'implementation' => {
-  const topicIndex = fullResponse.indexOf('## TOPIC');
-  const planIndex = fullResponse.indexOf('## PLAN');
-  const pseudocodeIndex = fullResponse.indexOf('## PSEUDOCODE');
-  const implementationIndex = fullResponse.indexOf('## IMPLEMENTATION');
-  
+const getCurrentSection = (
+  fullResponse: string,
+): "reading-documents" | "topic" | "plan" | "pseudocode" | "implementation" => {
+  const topicIndex = fullResponse.indexOf("## TOPIC");
+  const planIndex = fullResponse.indexOf("## PLAN");
+  const pseudocodeIndex = fullResponse.indexOf("## PSEUDOCODE");
+  const implementationIndex = fullResponse.indexOf("## IMPLEMENTATION");
+
   // If we haven't received any structured content yet, we're still reading documents
-  if (topicIndex === -1 && planIndex === -1 && pseudocodeIndex === -1 && implementationIndex === -1) {
-    return 'reading-documents';
+  if (
+    topicIndex === -1 &&
+    planIndex === -1 &&
+    pseudocodeIndex === -1 &&
+    implementationIndex === -1
+  ) {
+    return "reading-documents";
   }
-  
-  if (implementationIndex !== -1 && fullResponse.length > implementationIndex + 18) {
-    return 'implementation';
+
+  if (
+    implementationIndex !== -1 &&
+    fullResponse.length > implementationIndex + 18
+  ) {
+    return "implementation";
   }
   if (pseudocodeIndex !== -1 && fullResponse.length > pseudocodeIndex + 15) {
-    return 'pseudocode';
+    return "pseudocode";
   }
   if (planIndex !== -1 && fullResponse.length > planIndex + 8) {
-    return 'plan';
+    return "plan";
   }
-  return 'topic';
+  return "topic";
 };
 
 const extractSectionsFromStream = (fullResponse: string) => {
-  const topicStart = fullResponse.indexOf('## TOPIC');
-  const planStart = fullResponse.indexOf('## PLAN');
-  const pseudocodeStart = fullResponse.indexOf('## PSEUDOCODE');
-  const implementationStart = fullResponse.indexOf('## IMPLEMENTATION');
-  
-  let topic = '';
-  let plan = '';
-  let pseudocode = '';
-  let implementation = '';
-  
+  const topicStart = fullResponse.indexOf("## TOPIC");
+  const planStart = fullResponse.indexOf("## PLAN");
+  const pseudocodeStart = fullResponse.indexOf("## PSEUDOCODE");
+  const implementationStart = fullResponse.indexOf("## IMPLEMENTATION");
+
+  let topic = "";
+  let plan = "";
+  let pseudocode = "";
+  let implementation = "";
+
   if (topicStart !== -1) {
     const topicEnd = planStart !== -1 ? planStart : fullResponse.length;
     topic = fullResponse.substring(topicStart + 9, topicEnd).trim();
   }
-  
+
   if (planStart !== -1) {
-    const planEnd = pseudocodeStart !== -1 ? pseudocodeStart : fullResponse.length;
+    const planEnd =
+      pseudocodeStart !== -1 ? pseudocodeStart : fullResponse.length;
     plan = fullResponse.substring(planStart + 8, planEnd).trim();
   }
-  
+
   if (pseudocodeStart !== -1) {
-    const pseudocodeEnd = implementationStart !== -1 ? implementationStart : fullResponse.length;
-    pseudocode = fullResponse.substring(pseudocodeStart + 15, pseudocodeEnd).trim();
+    const pseudocodeEnd =
+      implementationStart !== -1 ? implementationStart : fullResponse.length;
+    pseudocode = fullResponse
+      .substring(pseudocodeStart + 15, pseudocodeEnd)
+      .trim();
   }
-  
+
   if (implementationStart !== -1) {
     implementation = fullResponse.substring(implementationStart + 18).trim();
-    
-  
+
     implementation = cleanUpImplementation(implementation);
-    
   }
-  
+
   return { topic, plan, pseudocode, implementation };
 };
 
 function ResearchChatPageContent() {
-  const { data: documents = [], isLoading: isLoadingDocuments, error } = useDocuments();
+  const {
+    data: documents = [],
+    isLoading: isLoadingDocuments,
+    error,
+  } = useDocuments();
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -218,11 +234,68 @@ function ResearchChatPageContent() {
     prepareDocumentIndex();
   }, [selectedDocuments]);
 
+  function parseSourceInfo(sourceInfoJson: any) {
+    // Check if it's already formatted (object with sources/citations) or raw array
+    if (Array.isArray(sourceInfoJson)) {
+      const sourceMap = new Map<
+        string,
+        { path: string; name: string; displayTitle: string }
+      >();
+      const citationMap: Record<
+        number,
+        import("@/components/ui/citation-badge").CitationData
+      > = {};
+      let citationId = 1;
+
+      sourceInfoJson.forEach((metadata: any) => {
+        if (!metadata?.source_document) {
+          console.warn("Missing source_document in metadata:", metadata);
+          return;
+        }
+
+        const sourceDocument = metadata.source_document.replace(
+          "documents/",
+          "",
+        );
+        const displayTitle = TITLE_MAPPINGS[sourceDocument] || sourceDocument;
+
+        if (!sourceMap.has(sourceDocument)) {
+          sourceMap.set(sourceDocument, {
+            path: sourceDocument,
+            name: sourceDocument,
+            displayTitle,
+          });
+        }
+
+        citationMap[citationId] = {
+          id: citationId,
+          displayTitle,
+          page: metadata.page_label || metadata.page || 0,
+        };
+        citationId++;
+      });
+
+      return {
+        sources: Array.from(sourceMap.values()),
+        citations: citationMap,
+      };
+    } else {
+      // Already formatted object
+      return sourceInfoJson;
+    }
+  }
+
   const handleCodeComposerStream = async (
     response: Response,
     assistantPlaceholderMessage: Message,
-    payload: { query: string; documentPaths: string[]; tool?: string; language?: Language; scope?: string[] },
-    earlyCodeGenerationId: string | null
+    payload: {
+      query: string;
+      documentPaths: string[];
+      tool?: string;
+      language?: Language;
+      scope?: string[];
+    },
+    earlyCodeGenerationId: string | null,
   ) => {
     const reader = response.body?.getReader();
     if (!reader) {
@@ -238,17 +311,16 @@ function ResearchChatPageContent() {
             : msg,
         ),
       );
-      
+
       // Remove the early code generation if it was created
       if (earlyCodeGenerationId) {
-        setCodeGenerations((prev) => 
-          prev.filter(gen => gen.id !== earlyCodeGenerationId)
+        setCodeGenerations((prev) =>
+          prev.filter((gen) => gen.id !== earlyCodeGenerationId),
         );
       }
-      
+
       throw new Error("No response reader available");
     }
-    
 
     // Remove the isLoading flag from the placeholder once we start receiving data
     setMessages((prevMessages) =>
@@ -275,18 +347,19 @@ function ResearchChatPageContent() {
 
       // Check if we have source information at the beginning
       if (buffer.includes("__SOURCE_INFO__") && !sourceInfo) {
-        const sourceInfoMatch = buffer.match(
-          /__SOURCE_INFO__({[\s\S]*?})\n\n/,
-        );
+        const sourceInfoMatch = buffer.match(/__SOURCE_INFO__([\s\S]*?)\n\n/);
         if (sourceInfoMatch) {
           try {
-            sourceInfo = JSON.parse(sourceInfoMatch[1]);
+            const rawSourceInfo = JSON.parse(sourceInfoMatch[1]);
+
+            sourceInfo = parseSourceInfo(rawSourceInfo);
+
             buffer = buffer.replace(/__SOURCE_INFO__[\s\S]*?\n\n/, "");
-            
+
             if (sourceInfo.tool === "code-composer") {
               if (earlyCodeGenerationId) {
                 currentCodeGeneration = earlyCodeGenerationId;
-                
+
                 setCodeGenerations((prev) =>
                   prev.map((gen) =>
                     gen.id === earlyCodeGenerationId
@@ -295,13 +368,13 @@ function ResearchChatPageContent() {
                           language: sourceInfo.language || gen.language,
                           sources: sourceInfo?.sources || [],
                         }
-                      : gen
-                  )
+                      : gen,
+                  ),
                 );
               } else {
                 const codeGenId = Date.now().toString();
                 currentCodeGeneration = codeGenId;
-                
+
                 const newCodeGeneration: CodeGeneration = {
                   id: codeGenId,
                   language: sourceInfo.language || "ts",
@@ -313,21 +386,36 @@ function ResearchChatPageContent() {
                   hasStructuredResponse: false,
                   timestamp: new Date().toISOString(),
                   isStreaming: true,
-                  currentSection: 'reading-documents',
+                  currentSection: "reading-documents",
                   sources: sourceInfo?.sources || [],
                 };
 
                 setCodeGenerations((prev) => [...prev, newCodeGeneration]);
               }
-              
+
               setMessages((prev) =>
                 prev.map((msg) =>
                   msg.id === assistantPlaceholderMessage.id
                     ? {
                         ...msg,
-                        content: "Code generation started. Check the preview panel to see live progress.",
+                        content:
+                          "Code generation started. Check the preview panel to see live progress.",
                         isLoadingPlaceholder: false,
                         sources: sourceInfo?.sources || [],
+                        citations: (() => {
+                          const cit: Record<
+                            number,
+                            import("@/components/ui/citation-badge").CitationData
+                          > = {};
+                          if (sourceInfo?.citations) {
+                            Object.values(sourceInfo.citations).forEach(
+                              (c: any) => {
+                                cit[c.id] = c;
+                              },
+                            );
+                          }
+                          return Object.keys(cit).length ? cit : undefined;
+                        })(),
                       }
                     : msg,
                 ),
@@ -343,8 +431,9 @@ function ResearchChatPageContent() {
       // Handle code composer live streaming
       if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
         const currentSection = getCurrentSection(fullResponse);
-        const { topic, plan, pseudocode, implementation } = extractSectionsFromStream(fullResponse);
-        
+        const { topic, plan, pseudocode, implementation } =
+          extractSectionsFromStream(fullResponse);
+
         setCodeGenerations((prev) =>
           prev.map((gen) =>
             gen.id === currentCodeGeneration
@@ -356,8 +445,8 @@ function ResearchChatPageContent() {
                   implementation,
                   currentSection,
                 }
-              : gen
-          )
+              : gen,
+          ),
         );
         continue;
       }
@@ -376,7 +465,8 @@ function ResearchChatPageContent() {
         }
       }
 
-      if (sourceInfo?.tool !== "code-composer") {
+      // Update message content for non-code-composer tools (regular chat)
+      if (!sourceInfo || sourceInfo?.tool !== "code-composer") {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === assistantPlaceholderMessage.id
@@ -385,6 +475,18 @@ function ResearchChatPageContent() {
                   content: buffer,
                   isLoadingPlaceholder: false,
                   sources: sourceInfo?.sources || [],
+                  citations: (() => {
+                    const cit: Record<
+                      number,
+                      import("@/components/ui/citation-badge").CitationData
+                    > = {};
+                    if (sourceInfo?.citations) {
+                      Object.values(sourceInfo.citations).forEach((c: any) => {
+                        cit[c.id] = c;
+                      });
+                    }
+                    return Object.keys(cit).length ? cit : undefined;
+                  })(),
                 }
               : msg,
           ),
@@ -395,33 +497,44 @@ function ResearchChatPageContent() {
     if (sourceInfo?.tool === "code-composer") {
       try {
         const parsed = parseChainOfThoughtResponse(fullResponse);
-        
+
         let cleanImplementation = parsed.implementation;
         if (cleanImplementation) {
-          cleanImplementation = cleanImplementation.replace(/__CODE_COMPOSER_META__[\s\S]*$/, '').trim();
-          
-          const lastCodeBlockEnd = cleanImplementation.lastIndexOf('```');
+          cleanImplementation = cleanImplementation
+            .replace(/__CODE_COMPOSER_META__[\s\S]*$/, "")
+            .trim();
+
+          const lastCodeBlockEnd = cleanImplementation.lastIndexOf("```");
           if (lastCodeBlockEnd !== -1) {
-            const afterCodeBlock = cleanImplementation.substring(lastCodeBlockEnd + 3).trim();
-            if (afterCodeBlock.length > 50 && afterCodeBlock.includes('This implementation')) {
-              cleanImplementation = cleanImplementation.substring(0, lastCodeBlockEnd + 3).trim();
+            const afterCodeBlock = cleanImplementation
+              .substring(lastCodeBlockEnd + 3)
+              .trim();
+            if (
+              afterCodeBlock.length > 50 &&
+              afterCodeBlock.includes("This implementation")
+            ) {
+              cleanImplementation = cleanImplementation
+                .substring(0, lastCodeBlockEnd + 3)
+                .trim();
             }
           }
         }
-        
-        setCodeGenerations((prev) => 
-          prev.map((gen) => 
-            gen.isStreaming ? {
-              ...gen,
-              topic: parsed.topic,
-              plan: parsed.plan,
-              pseudocode: parsed.pseudocode,
-              implementation: cleanImplementation,
-              hasStructuredResponse: parsed.hasStructuredResponse,
-              isStreaming: false,
-              currentSection: undefined,
-            } : gen
-          )
+
+        setCodeGenerations((prev) =>
+          prev.map((gen) =>
+            gen.isStreaming
+              ? {
+                  ...gen,
+                  topic: parsed.topic,
+                  plan: parsed.plan,
+                  pseudocode: parsed.pseudocode,
+                  implementation: cleanImplementation,
+                  hasStructuredResponse: parsed.hasStructuredResponse,
+                  isStreaming: false,
+                  currentSection: undefined,
+                }
+              : gen,
+          ),
         );
       } catch (error) {
         console.error("Failed to parse code generation:", error);
@@ -429,12 +542,12 @@ function ResearchChatPageContent() {
     }
   };
 
-  const handleSendMessage = async (payload: { 
-    query: string; 
-    documentPaths: string[]; 
-    tool?: string; 
-    language?: Language; 
-    scope?: string[] 
+  const handleSendMessage = async (payload: {
+    query: string;
+    documentPaths: string[];
+    tool?: string;
+    language?: Language;
+    scope?: string[];
   }) => {
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -446,9 +559,10 @@ function ResearchChatPageContent() {
     // Create a placeholder for the assistant's response
     const assistantPlaceholderMessage: Message = {
       id: (Date.now() + 1).toString(), // Ensure unique ID
-      content: payload.tool === "code-composer" 
-        ? "Reading and analyzing documents to generate code. Check the preview panel to see live progress."
-        : "",
+      content:
+        payload.tool === "code-composer"
+          ? "Reading and analyzing documents to generate code. Check the preview panel to see live progress."
+          : "",
       role: "assistant",
       timestamp: new Date().toISOString(),
       isLoadingPlaceholder: payload.tool !== "code-composer",
@@ -461,7 +575,7 @@ function ResearchChatPageContent() {
     let earlyCodeGenerationId: string | null = null;
     if (payload.tool === "code-composer") {
       earlyCodeGenerationId = Date.now().toString();
-      
+
       const newCodeGeneration: CodeGeneration = {
         id: earlyCodeGenerationId,
         language: payload.language || "ts",
@@ -473,7 +587,7 @@ function ResearchChatPageContent() {
         hasStructuredResponse: false,
         timestamp: new Date().toISOString(),
         isStreaming: true,
-        currentSection: 'reading-documents',
+        currentSection: "reading-documents",
         sources: [],
       };
 
@@ -481,10 +595,16 @@ function ResearchChatPageContent() {
     }
 
     try {
+      // Enable streaming for all research queries
+      const streamingPayload = {
+        ...payload,
+        enableStreaming: true, // Enable streaming for real-time responses
+      };
+
       const response = await fetch("/api/research/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(streamingPayload),
       });
 
       if (!response.ok) {
@@ -493,23 +613,29 @@ function ResearchChatPageContent() {
             msg.id === assistantPlaceholderMessage.id
               ? {
                   ...msg,
-                  content: "Sorry, I couldn't get a response. Please try again.",
+                  content:
+                    "Sorry, I couldn't get a response. Please try again.",
                   isLoadingPlaceholder: false,
                 }
               : msg,
           ),
         );
-        
+
         if (earlyCodeGenerationId) {
-          setCodeGenerations((prev) => 
-            prev.filter(gen => gen.id !== earlyCodeGenerationId)
+          setCodeGenerations((prev) =>
+            prev.filter((gen) => gen.id !== earlyCodeGenerationId),
           );
         }
-        
+
         throw new Error(`Failed to send message. Status: ${response.status}`);
       }
 
-      await handleCodeComposerStream(response, assistantPlaceholderMessage, payload, earlyCodeGenerationId);
+      await handleCodeComposerStream(
+        response,
+        assistantPlaceholderMessage,
+        payload,
+        earlyCodeGenerationId,
+      );
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) =>
@@ -523,10 +649,10 @@ function ResearchChatPageContent() {
             : msg,
         ),
       );
-      
+
       if (earlyCodeGenerationId) {
-        setCodeGenerations((prev) => 
-          prev.filter(gen => gen.id !== earlyCodeGenerationId)
+        setCodeGenerations((prev) =>
+          prev.filter((gen) => gen.id !== earlyCodeGenerationId),
         );
       }
     } finally {
@@ -572,7 +698,7 @@ function ResearchChatPageContent() {
   }, []);
 
   const handleCloseCodeGeneration = (generationId: string) => {
-    setCodeGenerations((prev) => prev.filter(gen => gen.id !== generationId));
+    setCodeGenerations((prev) => prev.filter((gen) => gen.id !== generationId));
   };
 
   return (
@@ -697,137 +823,143 @@ function ResearchChatPageContent() {
                 role="main"
                 aria-label="Chat interface"
               >
-            {selectedDocuments.length === 0 ? (
-              <CardContent className="flex-1 flex items-center justify-center p-4">
-                <Card className="text-center max-w-md">
-                  <CardContent className="pt-6">
-                    <MessageCircle
-                      className="h-16 w-16 mx-auto mb-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <CardTitle className="text-xl mb-2">
-                      Select Documents
-                    </CardTitle>
-                    <CardDescription className="mb-4">
-                      Choose documents from the library to start chatting.
-                    </CardDescription>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsMobileSheetOpen(true)}
-                      className="md:hidden"
-                      aria-label="Browse documents to select for chatting"
-                    >
-                      <Menu className="h-4 w-4 mr-2" aria-hidden="true" />
-                      Browse Documents
-                    </Button>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            ) : (
-              <>
-                {/* Chat Header */}
-                <CardHeader className="border-b flex-shrink-0">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg truncate">
-                        Chat with{" "}
-                        {selectedDocuments.length === 1
-                          ? selectedDocuments[0].displayTitle ||
-                            selectedDocuments[0].name
-                          : `${selectedDocuments.length} Documents`}
-                      </CardTitle>
-                      <CardDescription>
-                        Ask questions about{" "}
-                        {selectedDocuments.length === 1
-                          ? "this document"
-                          : "these documents"}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsMobileSheetOpen(true)}
-                        className="md:hidden"
-                        aria-label="Change document"
-                      >
-                        <Menu className="h-4 w-4" aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                {/* Messages */}
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  <ScrollArea
-                    className="h-full p-4"
-                    role="log"
-                    aria-label="Chat messages"
-                    aria-live="polite"
-                  >
-                    <div className="space-y-3">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                          role="article"
-                          aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
+                {selectedDocuments.length === 0 ? (
+                  <CardContent className="flex-1 flex items-center justify-center p-4">
+                    <Card className="text-center max-w-md">
+                      <CardContent className="pt-6">
+                        <MessageCircle
+                          className="h-16 w-16 mx-auto mb-4 text-muted-foreground"
+                          aria-hidden="true"
+                        />
+                        <CardTitle className="text-xl mb-2">
+                          Select Documents
+                        </CardTitle>
+                        <CardDescription className="mb-4">
+                          Choose documents from the library to start chatting.
+                        </CardDescription>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsMobileSheetOpen(true)}
+                          className="md:hidden"
+                          aria-label="Browse documents to select for chatting"
                         >
-                          <Card
-                            variant="message"
-                            className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
-                              message.role === "user"
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "bg-card"
-                            }`}
-                          >
-                            <CardContent variant="message">
-                              {message.role === "user" ? (
-                                <p className="text-sm leading-relaxed">
-                                  {message.content}
-                                </p>
-                              ) : message.isLoadingPlaceholder ? (
-                                <div
-                                  className="flex items-center justify-center py-2"
-                                  aria-label="AI is thinking"
-                                >
-                                  <Loader size="md" variant="loading-dots" />
-                                </div>
-                              ) : (
-                                <div className="text-sm">
-                                  <MarkdownRenderer content={message.content} />
-                                  {message.sources &&
-                                    message.sources.length > 0 && (
-                                      <SourceAttribution
-                                        sources={message.sources}
-                                        className="mt-2 pt-2 border-t border-border/20"
-                                        showLabel={true}
-                                        clickable={false}
-                                      />
-                                    )}
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
+                          <Menu className="h-4 w-4 mr-2" aria-hidden="true" />
+                          Browse Documents
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </CardContent>
+                ) : (
+                  <>
+                    {/* Chat Header */}
+                    <CardHeader className="border-b flex-shrink-0">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg truncate">
+                            Chat with{" "}
+                            {selectedDocuments.length === 1
+                              ? selectedDocuments[0].displayTitle ||
+                                selectedDocuments[0].name
+                              : `${selectedDocuments.length} Documents`}
+                          </CardTitle>
+                          <CardDescription>
+                            Ask questions about{" "}
+                            {selectedDocuments.length === 1
+                              ? "this document"
+                              : "these documents"}
+                          </CardDescription>
                         </div>
-                      ))}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  </ScrollArea>
-                </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsMobileSheetOpen(true)}
+                            className="md:hidden"
+                            aria-label="Change document"
+                          >
+                            <Menu className="h-4 w-4" aria-hidden="true" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
 
-                {/* Input */}
-                <ChatInput
-                  inputValue={inputValue}
-                  setInputValue={setInputValue}
-                  onSendMessage={handleSendMessage}
-                  isLoading={isLoading}
-                  isPreparingIndex={isPreparingIndex}
-                  selectedDocuments={selectedDocuments}
-                  onKeyDown={handleKeyDown}
-                />
-              </>
-            )}
+                    {/* Messages */}
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                      <ScrollArea
+                        className="h-full p-4"
+                        role="log"
+                        aria-label="Chat messages"
+                        aria-live="polite"
+                      >
+                        <div className="space-y-3">
+                          {messages.map((message) => (
+                            <div
+                              key={message.id}
+                              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                              role="article"
+                              aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
+                            >
+                              <Card
+                                variant="message"
+                                className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
+                                  message.role === "user"
+                                    ? "bg-primary text-primary-foreground border-primary"
+                                    : "bg-card"
+                                }`}
+                              >
+                                <CardContent variant="message">
+                                  {message.role === "user" ? (
+                                    <p className="text-sm leading-relaxed">
+                                      {message.content}
+                                    </p>
+                                  ) : message.isLoadingPlaceholder ? (
+                                    <div
+                                      className="flex items-center justify-center py-2"
+                                      aria-label="AI is thinking"
+                                    >
+                                      <Loader
+                                        size="md"
+                                        variant="loading-dots"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="text-sm">
+                                      <MarkdownRenderer
+                                        content={message.content}
+                                        citations={message.citations}
+                                      />
+                                      {message.sources &&
+                                        message.sources.length > 0 && (
+                                          <SourceAttribution
+                                            sources={message.sources}
+                                            className="mt-2 pt-2 border-t border-border/20"
+                                            showLabel={true}
+                                            clickable={false}
+                                          />
+                                        )}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </div>
+                          ))}
+                          <div ref={messagesEndRef} />
+                        </div>
+                      </ScrollArea>
+                    </div>
+
+                    {/* Input */}
+                    <ChatInput
+                      inputValue={inputValue}
+                      setInputValue={setInputValue}
+                      onSendMessage={handleSendMessage}
+                      isLoading={isLoading}
+                      isPreparingIndex={isPreparingIndex}
+                      selectedDocuments={selectedDocuments}
+                      onKeyDown={handleKeyDown}
+                    />
+                  </>
+                )}
               </Card>
             </ResizablePanel>
 
@@ -835,8 +967,8 @@ function ResearchChatPageContent() {
 
             {/* PDF Preview Panel */}
             <ResizablePanel defaultSize={40} minSize={40}>
-              <PreviewPanel 
-                selectedDocuments={selectedDocuments} 
+              <PreviewPanel
+                selectedDocuments={selectedDocuments}
                 codeGenerations={codeGenerations}
                 onCloseCodeGeneration={handleCloseCodeGeneration}
               />

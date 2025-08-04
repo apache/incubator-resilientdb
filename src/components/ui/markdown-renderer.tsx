@@ -4,23 +4,43 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+
+import { CitationBadge, CitationData } from "@/components/ui/citation-badge";
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
+  citations?: Record<number, CitationData>;
 }
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   className,
+  citations,
 }) => {
+  // Preprocess content to convert [^id] to citation badges
+  console.log(citations);
+  const processedContent = React.useMemo(() => {
+    return content.replace(/\[\^(\d+)\]/g, (match, id) => {
+      const citationId = Number(id);
+      return `<cite data-citation-id="${citationId}">${citationId}</cite>`;
+    });
+  }, [content]);
+
   return (
     <div className={cn("prose prose-invert w-full", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeRaw, rehypeHighlight]}
         components={{
+          cite: ({ children, ...props }) => {
+            const citationId = Number((props as any)['data-citation-id']);
+            const data = citations?.[citationId];
+            // Always render CitationBadge, even without data
+            return <CitationBadge id={citationId} data={data} />;
+          },
           // Custom styling for different markdown elements
           h1: ({ children }) => (
             <h1 className="text-2xl font-bold mb-4 text-white">{children}</h1>
@@ -53,6 +73,25 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               {children}
             </blockquote>
           ),
+          sup: ({ children }) => {
+            let id: number | undefined;
+            const firstChild: any = Array.isArray(children) ? children[0] : children;
+
+            if (typeof firstChild === "string") {
+              const match = firstChild.match(/\[\^(\d+)\]/);
+              if (match) id = Number(match[1]);
+            } else if (React.isValidElement(firstChild)) {
+              const inner = (firstChild as any).props?.children;
+              if (typeof inner === "string" || typeof inner === "number") {
+                id = Number(inner);
+              }
+            }
+
+            if (id) {
+              return <CitationBadge id={id} data={citations?.[id]} />;
+            }
+            return <sup>{children}</sup>;
+          },
           code: ({ inline, className, children, ...props }: any) => {
             return inline ? (
               <code
@@ -107,7 +146,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );

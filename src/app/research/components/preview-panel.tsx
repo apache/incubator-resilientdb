@@ -1,10 +1,19 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CodeGeneration } from "../types";
-import { CodeGenerationContent, CodeGenerationTabs } from "./code-generation-tab";
+import {
+  CodeGenerationContent,
+  CodeGenerationTabs,
+} from "./code-generation-tab";
 import { PDFPreviewContent, PDFPreviewTabs } from "./pdf-preview-tab";
 
 interface PreviewPanelProps {
@@ -14,24 +23,24 @@ interface PreviewPanelProps {
   onCloseCodeGeneration?: (generationId: string) => void;
 }
 
-const PreviewPanel: React.FC<PreviewPanelProps> = ({ 
-  selectedDocuments, 
-  codeGenerations = [], 
+const PreviewPanel: React.FC<PreviewPanelProps> = ({
+  selectedDocuments,
+  codeGenerations = [],
   className = "",
-  onCloseCodeGeneration
+  onCloseCodeGeneration,
 }) => {
   const hasCodeGenerations = codeGenerations.length > 0;
   const hasPdfs = selectedDocuments.length > 0;
-  
+
   const [activeTab, setActiveTab] = useState<string>("");
   const previousCodeGenerationsRef = useRef<CodeGeneration[]>([]);
   const userHasInteractedRef = useRef(false);
 
   const getDefaultTabValue = () => {
     if (hasCodeGenerations) {
-      const streamingGen = codeGenerations.find(gen => gen.isStreaming);
+      const streamingGen = codeGenerations.find((gen) => gen.isStreaming);
       if (streamingGen) return `code-${streamingGen.id}`;
-      
+
       return `code-${codeGenerations[codeGenerations.length - 1].id}`;
     }
     return selectedDocuments[0]?.id;
@@ -45,16 +54,20 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const handleCloseCodeGeneration = (generationId: string) => {
     // If we're closing the currently active tab, switch to another tab
     if (activeTab === `code-${generationId}`) {
-      const remainingGenerations = codeGenerations.filter(gen => gen.id !== generationId);
+      const remainingGenerations = codeGenerations.filter(
+        (gen) => gen.id !== generationId,
+      );
       if (remainingGenerations.length > 0) {
         // Switch to the most recent remaining generation
-        setActiveTab(`code-${remainingGenerations[remainingGenerations.length - 1].id}`);
+        setActiveTab(
+          `code-${remainingGenerations[remainingGenerations.length - 1].id}`,
+        );
       } else if (selectedDocuments.length > 0) {
         // Switch to first PDF document if available
         setActiveTab(selectedDocuments[0].id);
       }
     }
-    
+
     // Call the parent handler to actually remove the generation
     onCloseCodeGeneration?.(generationId);
   };
@@ -72,7 +85,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   useEffect(() => {
     const previousGenerations = previousCodeGenerationsRef.current;
     const newGenerations = codeGenerations.filter(
-      gen => !previousGenerations.find(prev => prev.id === gen.id)
+      (gen) => !previousGenerations.find((prev) => prev.id === gen.id),
     );
 
     if (newGenerations.length > 0 && !userHasInteractedRef.current) {
@@ -87,12 +100,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     userHasInteractedRef.current = false;
   }, [selectedDocuments]);
 
-
   const getLanguageLabel = (language: string) => {
     const labels: Record<string, string> = {
       ts: "TypeScript",
       cpp: "C++",
-      python: "Python"
+      python: "Python",
     };
     return labels[language] || language.toUpperCase();
   };
@@ -107,7 +119,11 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         <div className="h-full flex flex-col w-full min-w-0">
           <CardHeader className="border-b flex-shrink-0">
             <CardTitle className="text-lg truncate">
-              {hasCodeGenerations && hasPdfs ? "Preview & Code" : hasCodeGenerations ? "Code Generations" : "PDF Preview"}
+              {hasCodeGenerations && hasPdfs
+                ? "Preview & Code"
+                : hasCodeGenerations
+                  ? "Code Generations"
+                  : "PDF Preview"}
             </CardTitle>
             <CardDescription>
               {hasPdfs && (
@@ -141,14 +157,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     getLanguageLabel={getLanguageLabel}
                     onCloseTab={handleCloseCodeGeneration}
                   />
-                  
+
                   {/* PDF Document Tabs */}
-                  <PDFPreviewTabs
-                    selectedDocuments={selectedDocuments}
-                  />
+                  <PDFPreviewTabs selectedDocuments={selectedDocuments} />
                 </TabsList>
               </div>
-              
+
               <div className="flex-1 min-h-0 w-full min-w-0">
                 {/* Code Generation Content */}
                 <CodeGenerationContent
@@ -157,9 +171,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                 />
 
                 {/* PDF Document Content */}
-                <PDFPreviewContent
-                  selectedDocuments={selectedDocuments}
-                />
+                <PDFPreviewContent selectedDocuments={selectedDocuments} />
               </div>
             </Tabs>
           </CardContent>

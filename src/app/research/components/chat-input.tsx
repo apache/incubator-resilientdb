@@ -24,12 +24,12 @@ export type Language = "ts" | "python" | "cpp";
 interface ChatInputProps {
   inputValue: string;
   setInputValue: (value: string) => void;
-  onSendMessage: (payload: { 
-    query: string; 
-    documentPaths: string[]; 
-    tool?: string; 
-    language?: Language; 
-    scope?: string[] 
+  onSendMessage: (payload: {
+    query: string;
+    documentPaths: string[];
+    tool?: string;
+    language?: Language;
+    scope?: string[];
   }) => void;
   isLoading: boolean;
   isPreparingIndex: boolean;
@@ -50,7 +50,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [language, setLanguage] = useState<Language>("ts");
 
   const handleSendMessage = () => {
-    if (!inputValue.trim() || selectedDocuments.length === 0 || isLoading || isPreparingIndex) {
+    if (
+      !inputValue.trim() ||
+      selectedDocuments.length === 0 ||
+      isLoading ||
+      isPreparingIndex
+    ) {
       return;
     }
 
@@ -60,7 +65,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       ...(activeTool === "code-composer" && {
         tool: "code-composer",
         language,
-        scope: [], // TODO: Implement scope collection 
+        scope: [], // TODO: Implement scope collection
       }),
     };
 
@@ -77,8 +82,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   const getPlaceholder = () => {
     if (isPreparingIndex) return "Preparing documents...";
-    if (selectedDocuments.length === 0) return "Select documents to start chatting...";
-    if (activeTool === "code-composer") return "Draft code from selected papers...";
+    if (selectedDocuments.length === 0)
+      return "Select documents to start chatting...";
+    if (activeTool === "code-composer")
+      return "Draft code from selected papers...";
     if (selectedDocuments.length === 1) {
       return `Ask questions about ${selectedDocuments[0].displayTitle || selectedDocuments[0].name}...`;
     }
@@ -102,9 +109,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               className="resize-none"
               rows={2}
               disabled={
-                isLoading ||
-                isPreparingIndex ||
-                selectedDocuments.length === 0
+                isLoading || isPreparingIndex || selectedDocuments.length === 0
               }
               aria-describedby="message-input-help"
             />
@@ -116,20 +121,34 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={activeTool === "code-composer"}
-                    onCheckedChange={(checked) => handleToolChange(checked ? "code-composer" : "default")}
+                    onCheckedChange={(checked) =>
+                      handleToolChange(checked ? "code-composer" : "default")
+                    }
                     aria-label="Toggle code composer"
                   />
-                  <Label htmlFor="code-composer-switch" className="text-sm flex items-center gap-2">
+                  <Label
+                    htmlFor="code-composer-switch"
+                    className="text-sm flex items-center gap-2"
+                  >
                     Code Composer
                   </Label>
                 </div>
                 {activeTool === "code-composer" && (
                   <>
-                  <Separator orientation="vertical" className="!h-4 bg-gray-400" />
-                    <Label htmlFor="language-select" className="text-sm text-gray-400">
+                    <Separator
+                      orientation="vertical"
+                      className="!h-4 bg-gray-400"
+                    />
+                    <Label
+                      htmlFor="language-select"
+                      className="text-sm text-gray-400"
+                    >
                       Language:
                     </Label>
-                    <Select value={language} onValueChange={(value: Language) => setLanguage(value)}>
+                    <Select
+                      value={language}
+                      onValueChange={(value: Language) => setLanguage(value)}
+                    >
                       <SelectTrigger className="w-32 !h-8 text-sm" size="sm">
                         <SelectValue />
                       </SelectTrigger>
