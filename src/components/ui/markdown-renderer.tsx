@@ -21,6 +21,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   citations,
 }) => {
   // Preprocess content to convert [^id] to citation badges
+  console.log(citations);
   const processedContent = React.useMemo(() => {
     return content.replace(/\[\^(\d+)\]/g, (match, id) => {
       const citationId = Number(id);

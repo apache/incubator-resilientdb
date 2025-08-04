@@ -4,9 +4,6 @@ import { llamaService } from "../src/lib/llama-service";
 const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
   console.log("\n🧪 Testing Chat Engine...");
   const chatEngine = await llamaService.createChatEngine(documentPaths);
-  const contextGenerator = chatEngine.contextGenerator;
-  const context = await contextGenerator.generate(testQuery);
-  console.log(context.nodes[0].node);
   const chatResponse = await chatEngine.chat({
     message: testQuery,
     stream: true,
@@ -14,10 +11,26 @@ const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
 
   console.log("📺 Chat response:");
   console.log("─".repeat(50));
+  let lastChunk;
+  
   for await (const chunk of chatResponse) {
+    lastChunk = chunk; // Store the current chunk as the last one
+    
     const content = chunk.response || chunk.delta || "";
     if (content) {
       process.stdout.write(content);
+    }
+  }
+  
+  // After the loop, process the last chunk's source nodes
+  if (lastChunk?.sourceNodes) {
+    process.stdout.write("\n📚 Source Node Metadata:\n");
+    process.stdout.write("─".repeat(30) + "\n");
+    
+    for (const sourceNode of lastChunk.sourceNodes) {
+      if (sourceNode.node.metadata) {
+        process.stdout.write(JSON.stringify(sourceNode.node.metadata, null, 2) + "\n");
+      }
     }
   }
 };
@@ -48,7 +61,7 @@ async function testRouterBehavior() {
   console.log("🧪 Testing router behavior with rcc.pdf...");
   try {
     configureLlamaSettings();
-    const testQuery = "Explain the replica failure algoirthm (answer in 50 words)";
+    const testQuery = "Explain the replica failure algoirthm in 50 words. \nWhen you use information from the documents, append a citation like [^id], where id is the index of the source node in the source node array.";
     const documentPaths = ["documents/rcc.pdf"];
     const options = {
       topK: 5,
@@ -79,6 +92,8 @@ async function main() {
   
   console.log("\n\n🔄 Running multiple test queries...");
 //   await runMultipleTests();
+
+  // await testSourceNodes();
   
   console.log("\n✅ All tests completed!");
 }

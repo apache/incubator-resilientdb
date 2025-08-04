@@ -9,7 +9,12 @@ export interface CodeGeneration {
   hasStructuredResponse: boolean;
   timestamp: string;
   isStreaming?: boolean;
-  currentSection?: 'reading-documents' | 'topic' | 'plan' | 'pseudocode' | 'implementation';
+  currentSection?:
+    | "reading-documents"
+    | "topic"
+    | "plan"
+    | "pseudocode"
+    | "implementation";
   sources?: {
     path: string;
     name: string;
@@ -35,7 +40,7 @@ export interface AnalyzedChunk {
   content: string;
   originalScore: number;
   ir: number; // implementRel -> ir
-  cq: number; // codeQuality -> cq  
+  cq: number; // codeQuality -> cq
   qa: number; // queryAlignment -> qa
   ce: boolean; // hasCodeExamples -> ce
   finalScore: number;

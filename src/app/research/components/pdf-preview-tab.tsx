@@ -20,9 +20,7 @@ export const PDFPreviewTabs: React.FC<PDFPreviewTabProps> = ({
           title={doc.displayTitle || doc.name}
         >
           <FileText className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">
-            {doc.displayTitle || doc.name}
-          </span>
+          <span className="truncate">{doc.displayTitle || doc.name}</span>
         </TabsTrigger>
       ))}
     </>
@@ -53,4 +51,4 @@ export const PDFPreviewContent: React.FC<PDFPreviewTabProps> = ({
       ))}
     </>
   );
-}; 
+};
