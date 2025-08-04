@@ -17,7 +17,7 @@ import {
   StorageContext,
   storageContextFromDefaults,
   SummaryExtractor,
-  VectorStoreIndex,
+  VectorStoreIndex
 } from "llamaindex";
 import { ClientConfig } from "pg";
 import { config } from "../config/environment";
@@ -175,7 +175,7 @@ export class LlamaService {
                           source_document: file,
                           page: page.page,
                         },
-                      }),
+                      })
                     );
                   }
                 }
@@ -198,7 +198,9 @@ export class LlamaService {
 
       await fs.writeFile(PARSING_CACHE, JSON.stringify(cache));
       console.info(
-        `[LlamaService] Successfully loaded ${documents.length} document chunks from ${filePaths.join(", ")}`,
+        `[LlamaService] Successfully loaded ${
+          documents.length
+        } document chunks from ${filePaths.join(", ")}`
       );
 
       if (documents.length > 0) {
@@ -214,7 +216,7 @@ export class LlamaService {
       }
 
       console.info(
-        `[LlamaService] Ingestion complete for ${filePaths.join(", ")}.`,
+        `[LlamaService] Ingestion complete for ${filePaths.join(", ")}.`
       );
     } catch (error) {
       console.error(`Error ingesting docs for ${filePaths.join(", ")}:`, error);
@@ -249,28 +251,6 @@ export class LlamaService {
     });
     return chatEngine;
   }
-
-  // async createQueryEngine(documents: string[]): Promise<any> {
-  //     const storageContext = await this.getStorageContext();
-  //     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
-
-  //     const retriever = index.asRetriever({
-  //         similarityTopK: 5,
-  //         filters: {
-  //             filters: [{
-  //                 key: "source_document",
-  //                 operator: "in",
-  //                 value: documents,
-  //             }]
-  //         }
-  //     });
-
-  //     const queryEngine = index.asQueryEngine({
-  //         retriever: retriever,
-  //     });
-
-  //     return queryEngine;
-  //   }
 }
 
 export const llamaService = LlamaService.getInstance();
