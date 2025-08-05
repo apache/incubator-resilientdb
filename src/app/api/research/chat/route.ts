@@ -1,5 +1,5 @@
 import { llamaService } from "@/lib/llama-service";
-import { createMemory } from "llamaindex";
+import { sessionManager } from "@/lib/session-manager";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
@@ -10,7 +10,7 @@ interface RequestData {
   tool?: string;
   language?: string;
   scope?: string[];
-  sessionId?: string; // Add sessionId to the interface
+  sessionId?: string; 
 }
 
 const validateRequest = (data: RequestData): string | null => {
@@ -38,32 +38,6 @@ const validateRequest = (data: RequestData): string | null => {
   return null;
 };
 
-const sessionMemories = new Map();
-
-function getSessionMemory(sessionId: string) {
-  if (!sessionMemories.has(sessionId)) {
-    const memory = createMemory({
-      tokenLimit: 4000, 
-      shortTermTokenLimitRatio: 0.7,
-    });
-    sessionMemories.set(sessionId, memory);
-  }
-  return sessionMemories.get(sessionId);
-}
-
-// function clearSession(sessionId: string) {
-//   sessionMemories.delete(sessionId);
-// }
-
-// function cleanupOldSessions(maxAgeMs: number = 24 * 60 * 60 * 1000) { // 24 hours default
-//   // This is a simple cleanup - in production you'd want to track session timestamps
-//   if (sessionMemories.size > 100) { // Keep only 100 most recent sessions
-//     const entries = Array.from(sessionMemories.entries());
-//     const toDelete = entries.slice(0, entries.length - 100);
-//     toDelete.forEach(([sessionId]) => sessionMemories.delete(sessionId));
-//   }
-// }
-
 const handleStreamingResponse = async (
   chatEngine: any,
   query: string,
@@ -90,7 +64,7 @@ const handleStreamingResponse = async (
           }
         }
 
-        const memory = getSessionMemory(sessionId);
+        const memory = sessionManager.getSessionMemory(sessionId);
         await memory.add({ role: "assistant", content: response });
         
         const messages = await memory.get();
@@ -149,7 +123,7 @@ export async function POST(req: NextRequest) {
       );
       
       const sessionId = requestData.sessionId || Date.now().toString();
-      const memory = getSessionMemory(sessionId);
+      const memory = sessionManager.getSessionMemory(sessionId);
       
       await memory.add({ role: "user", content: requestData.query });
       
