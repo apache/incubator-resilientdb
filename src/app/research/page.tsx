@@ -34,7 +34,6 @@ import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation } from "@/lib/utils";
-import { Tooltip } from "@radix-ui/react-tooltip";
 import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -129,9 +128,9 @@ const extractSectionsFromStream = (fullResponse: string) => {
 };
 
 function useSessionId() {
-  const sessionIdRef = useRef<string>(Date.now().toString());
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
   const resetSession = useCallback(() => {
-    sessionIdRef.current = Date.now().toString();
+    sessionIdRef.current = crypto.randomUUID();
   }, []);
   return { sessionId: sessionIdRef.current, resetSession };
 }
@@ -517,7 +516,7 @@ function ResearchChatPageContent() {
     scope?: string[];
   }) => {
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       content: payload.query,
       role: "user",
       timestamp: new Date().toISOString(),
@@ -525,7 +524,7 @@ function ResearchChatPageContent() {
 
     // Create a placeholder for the assistant's response
     const assistantPlaceholderMessage: Message = {
-      id: (Date.now() + 1).toString(), // Ensure unique ID
+      id: crypto.randomUUID(),
       content:
         payload.tool === "code-composer"
           ? "Reading and analyzing documents to generate code. Check the preview panel to see live progress."
@@ -541,7 +540,7 @@ function ResearchChatPageContent() {
 
     let earlyCodeGenerationId: string | null = null;
     if (payload.tool === "code-composer") {
-      earlyCodeGenerationId = Date.now().toString();
+      earlyCodeGenerationId = crypto.randomUUID();
 
       const newCodeGeneration: CodeGeneration = {
         id: earlyCodeGenerationId,
