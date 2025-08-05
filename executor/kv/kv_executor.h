@@ -22,12 +22,20 @@
 #include <map>
 #include <optional>
 #include <unordered_map>
+#include <vector>
 
 #include "chain/storage/storage.h"
 #include "executor/common/transaction_manager.h"
 #include "proto/kv/kv.pb.h"
 
 namespace resdb {
+
+enum class CompositeKeyType {
+  STRING = 0,
+  INTEGER = 1, 
+  BOOLEAN = 2,
+  TIMESTAMP = 3
+};
 
 class KVExecutor : public TransactionManager {
  public:
@@ -55,6 +63,20 @@ class KVExecutor : public TransactionManager {
   void GetHistory(const std::string& key, int min_key, int max_key,
                   Items* items);
   void GetTopHistory(const std::string& key, int top_number, Items* items);
+
+  void CreateCompositeKey(const std::string& primary_key,
+                           const std::string& field_name,
+                           const std::string& field_value,
+                           CompositeKeyType field_type);
+  
+  std::vector<std::string> GetByCompositeKey(const std::string& field_name,
+                                             const std::string& field_value,
+                                             CompositeKeyType field_type);
+  
+  std::vector<std::string> GetByCompositeKeyRange(const std::string& field_name,
+                                                const std::string& min_value,
+                                                const std::string& max_value,
+                                                CompositeKeyType field_type);
 
  private:
   std::unique_ptr<Storage> storage_;
