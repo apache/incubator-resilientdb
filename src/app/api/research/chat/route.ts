@@ -51,7 +51,7 @@ const handleStreamingResponse = async (
           stream: true,
         });
 
-        let response = ''
+        const responseChunks: string[] = [];
         let lastChunk;
         let sourceMetadata: any[] = [];
 
@@ -60,12 +60,11 @@ const handleStreamingResponse = async (
           const content = chunk.response || chunk.delta || "";
           if (content) {
             controller.enqueue(content);
-            response += content;
+            responseChunks.push(content);
           }
         }
-
         const memory = sessionManager.getSessionMemory(sessionId);
-        await memory.add({ role: "assistant", content: response });
+        await memory.add({ role: "assistant", content: responseChunks.join('') });
         
         const messages = await memory.get();
         console.log('Updated memory:', messages);
