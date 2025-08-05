@@ -1,26 +1,35 @@
-import { configureLlamaSettings } from "@/lib/config/llama-settings";
 import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
 import {
   PGVectorStore,
   PostgresDocumentStore,
   PostgresIndexStore,
 } from "@llamaindex/postgres";
+import {
+  agent, AgentWorkflow,
+  multiAgent
+} from "@llamaindex/workflow";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 import {
+  ChatMessage,
   ContextChatEngine,
   Document,
   IngestionPipeline,
   LlamaParseReader,
   MarkdownNodeParser,
+  RetrieverQueryEngine,
   SentenceSplitter,
+  Settings,
   StorageContext,
   storageContextFromDefaults,
   SummaryExtractor,
+  TextChatMessage,
+  ToolCallLLM,
   VectorStoreIndex
 } from "llamaindex";
 import { ClientConfig } from "pg";
 import { config } from "../config/environment";
+import { configureLlamaSettings } from "./config/llama-settings";
 
 dotenv.config();
 
@@ -223,14 +232,8 @@ export class LlamaService {
     }
   }
 
-  async createChatEngine(documents: string[]): Promise<ContextChatEngine> {
+  async createChatEngine(documents: string[], ctx: ChatMessage[]): Promise<ContextChatEngine> {
     const storageContext = await this.getStorageContext();
-    // const chatHistory = createMemory([
-    //     {
-    //       content: "You are a helpful assistant named Nexus.",
-    //       role: "system",
-    //     },
-    //   ]);
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
 
     const retriever = index.asRetriever({
@@ -245,12 +248,15 @@ export class LlamaService {
         ],
       },
     });
+    
     const chatEngine = new ContextChatEngine({
       retriever,
+      chatHistory: ctx || [],
       systemPrompt: RESEARCH_SYSTEM_PROMPT,
     });
     return chatEngine;
   }
+
 }
 
 export const llamaService = LlamaService.getInstance();
