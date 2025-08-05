@@ -102,7 +102,7 @@ export class LlamaService {
       this.vectorStore = new PGVectorStore({
         clientConfig: this.clientConfig,
         performSetup: true,
-        dimensions: config.vectorStore.embedDim,
+        dimensions: config.embedDim,
       });
     }
     return this.vectorStore;
