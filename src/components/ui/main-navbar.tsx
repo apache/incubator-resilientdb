@@ -2,16 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Home, LucideIcon, MessageSquare, Settings } from "lucide-react";
+import { Home, MessageSquare, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
-interface NavItem {
-  name: string;
-  url: string;
-  icon: LucideIcon;
-}
+
+
+
 
 interface MainNavBarProps {
   className?: string;
@@ -19,7 +16,8 @@ interface MainNavBarProps {
 
 export function MainNavBar({ className }: MainNavBarProps) {
   const pathname = usePathname();
-  const [isMobile, setIsMobile] = useState(false);
+
+
 
   const navItems = [
     { name: "Home", url: "/", icon: Home },
@@ -27,15 +25,9 @@ export function MainNavBar({ className }: MainNavBarProps) {
     { name: "Researcher", url: "/research", icon: Settings },
   ];
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+
+
 
   const isResearcher = pathname === "/research";
   return (

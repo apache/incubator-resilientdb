@@ -144,7 +144,7 @@ export class LlamaService {
       try {
         await fs.access(PARSING_CACHE, fs.constants.F_OK);
         cacheExists = true;
-      } catch (e) {
+      } catch {
         console.log("No cache found");
       }
       if (cacheExists) {
@@ -156,8 +156,8 @@ export class LlamaService {
         resultType: "json",
       });
 
-      let documents: Document[] = [];
-      for (let file of filePaths) {
+      const documents: Document[] = [];
+      for (const file of filePaths) {
         if (!cache[file]) {
           console.log(`Processing uncached file: ${file}`);
           try {
@@ -224,7 +224,7 @@ export class LlamaService {
   }
 
   async createChatEngine(documents: string[]): Promise<ContextChatEngine> {
-    const storageContext = await this.getStorageContext();
+
     // const chatHistory = createMemory([
     //     {
     //       content: "You are a helpful assistant named Nexus.",

@@ -46,7 +46,7 @@ export async function GET(
         break;
     }
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(fileBuffer as any, {
       headers: {
         "Content-Type": contentType,
         "Content-Disposition": "inline", // Display in browser instead of downloading

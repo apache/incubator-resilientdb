@@ -1,5 +1,7 @@
 "use client";
 
+
+
 import { MainNavBar } from "@/components/ui/main-navbar";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ReactNode } from "react";

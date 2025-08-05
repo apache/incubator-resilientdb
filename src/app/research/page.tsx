@@ -457,7 +457,7 @@ function ResearchChatPageContent() {
         );
         if (metaMatch) {
           try {
-            const metadata = JSON.parse(metaMatch[1]);
+            JSON.parse(metaMatch[1]);
             buffer = buffer.replace(/__CODE_COMPOSER_META__[\s\S]*?\n\n/, "");
           } catch (error) {
             console.error("Failed to parse code composer metadata:", error);
@@ -660,7 +660,7 @@ function ResearchChatPageContent() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = () => {
     // This will be handled by ChatInput component
   };
 
