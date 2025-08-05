@@ -18,23 +18,31 @@
  */
 
 #include "executor/kv/kv_executor.h"
+#include "executor/contract/executor/contract_executor.h"
 
 #include <glog/logging.h>
 
 namespace resdb {
 
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
-    : storage_(std::move(storage)) {}
+    : storage_(std::move(storage)) {
+    contract_manager_ = std::make_unique<resdb::contract::ContractTransactionManager>(storage_.get());
+}
 
-std::unique_ptr<std::string> KVExecutor::ExecuteData(
+std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
     const std::string& request) {
-  KVRequest kv_request;
-  KVResponse kv_response;
-
-  if (!kv_request.ParseFromString(request)) {
+  std::unique_ptr<KVRequest> kv_request = std::make_unique<KVRequest>();
+  if (!kv_request->ParseFromString(request)) {
     LOG(ERROR) << "parse data fail";
     return nullptr;
   }
+  return kv_request;
+}
+
+std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
+    const google::protobuf::Message& request) {
+  KVResponse kv_response;
+  const KVRequest& kv_request = dynamic_cast<const KVRequest&>(request);
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
@@ -61,6 +69,63 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
   }
+  else if(!kv_request.smart_contract_request().empty()){
+    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if(resp != nullptr){
+      kv_response.set_smart_contract_response(*resp);
+    }
+  }
+
+  std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
+  if (!kv_response.SerializeToString(resp_str.get())) {
+    return nullptr;
+  }
+
+  return resp_str;
+}
+
+std::unique_ptr<std::string> KVExecutor::ExecuteData(
+    const std::string& request) {
+  KVRequest kv_request;
+  KVResponse kv_response;
+
+  if (!kv_request.ParseFromString(request)) {
+    LOG(ERROR) << "parse data fail";
+    return nullptr;
+  }
+
+  LOG(ERROR)<<" execute cmd:"<<kv_request.cmd();
+  if (kv_request.cmd() == KVRequest::SET) {
+    Set(kv_request.key(), kv_request.value());
+  } else if (kv_request.cmd() == KVRequest::GET) {
+    kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
+    kv_response.set_value(GetAllValues());
+  } else if (kv_request.cmd() == KVRequest::GETRANGE) {
+    kv_response.set_value(GetRange(kv_request.key(), kv_request.value()));
+  } else if (kv_request.cmd() == KVRequest::SET_WITH_VERSION) {
+    SetWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
+  } else if (kv_request.cmd() == KVRequest::GET_WITH_VERSION) {
+    GetWithVersion(kv_request.key(), kv_request.version(),
+                   kv_response.mutable_value_info());
+  } else if (kv_request.cmd() == KVRequest::GET_ALL_ITEMS) {
+    GetAllItems(kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_KEY_RANGE) {
+    GetKeyRange(kv_request.min_key(), kv_request.max_key(),
+                kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_HISTORY) {
+    GetHistory(kv_request.key(), kv_request.min_version(),
+               kv_request.max_version(), kv_response.mutable_items());
+  } else if (kv_request.cmd() == KVRequest::GET_TOP) {
+    GetTopHistory(kv_request.key(), kv_request.top_number(),
+                  kv_response.mutable_items());
+  }
+  else if(!kv_request.smart_contract_request().empty()){
+    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if(resp != nullptr){
+      kv_response.set_smart_contract_response(*resp);
+    }
+  }
 
   std::unique_ptr<std::string> resp_str = std::make_unique<std::string>();
   if (!kv_response.SerializeToString(resp_str.get())) {
@@ -70,10 +135,12 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
+  LOG(ERROR)<<" set key:"<<key;
   storage_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
+  LOG(ERROR)<<" get key:"<<key;
   return storage_->GetValue(key);
 }
 

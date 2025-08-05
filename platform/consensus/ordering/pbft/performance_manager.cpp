@@ -56,6 +56,7 @@ PerformanceManager::PerformanceManager(
       verifier_(verifier) {
   stop_ = false;
   eval_started_ = false;
+  local_id_ = 0;
   eval_ready_future_ = eval_ready_promise_.get_future();
 
   if (config_.GetPublicKeyCertificateInfo()

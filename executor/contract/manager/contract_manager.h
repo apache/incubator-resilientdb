@@ -22,7 +22,9 @@
 #include "absl/status/statusor.h"
 #include "eEVM/opcode.h"
 #include "eEVM/simple/simpleglobalstate.h"
+#include "chain/storage/storage.h"
 #include "executor/contract/manager/utils.h"
+#include "executor/contract/manager/global_state.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {
@@ -30,7 +32,7 @@ namespace contract {
 
 class ContractManager {
  public:
-  ContractManager();
+  ContractManager(Storage* storage);
 
  public:
   Address DeployContract(const Address& owner_address,
@@ -42,6 +44,9 @@ class ContractManager {
                                            const Address& contract_address,
                                            const Params& func_param);
 
+  std::string GetBalance(const Address& account);
+  int SetBalance(const Address& account, const uint256_t& balance);
+
  private:
   std::string GetFuncAddress(const Address& contract_address,
                              const std::string& func_name);
@@ -52,7 +57,7 @@ class ContractManager {
       const std::vector<uint8_t>& func_para);
 
  private:
-  std::unique_ptr<eevm::SimpleGlobalState> gs_;
+  std::unique_ptr<GlobalState> gs_;
   std::map<Address, std::map<std::string, std::string>> func_address_;
 };
 

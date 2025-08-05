@@ -90,7 +90,7 @@ class ResponseManager {
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread user_req_thread_;
   std::atomic<bool> stop_;
-  uint64_t local_id_ = 0;
+  std::atomic<uint64_t> local_id_;
   Stats* global_stats_;
   SystemInfo* system_info_;
   std::atomic<int> send_num_;

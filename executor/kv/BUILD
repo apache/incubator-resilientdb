@@ -30,6 +30,7 @@ cc_library(
         "//executor/common:transaction_manager",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
+        "//executor/contract/executor:contract_executor",
     ],
 )
 

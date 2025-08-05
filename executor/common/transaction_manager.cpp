@@ -35,6 +35,50 @@ std::unique_ptr<std::string> TransactionManager::ExecuteData(
   return std::make_unique<std::string>();
 }
 
+std::unique_ptr<google::protobuf::Message> TransactionManager::ParseData(
+    const std::string& data) {
+  return nullptr;
+}
+
+std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+TransactionManager::Prepare(const BatchUserRequest& request) {
+  std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+      batch_response = std::make_unique<
+          std::vector<std::unique_ptr<google::protobuf::Message>>>();
+  {
+    for (auto& sub_request : request.user_requests()) {
+      std::unique_ptr<google::protobuf::Message> response =
+          ParseData(sub_request.request().data());
+      batch_response->push_back(std::move(response));
+    }
+    // LOG(ERROR)<<"prepare data size:"<<batch_response.size();
+  }
+
+  return batch_response;
+}
+
+std::unique_ptr<std::string> TransactionManager::ExecuteRequest(
+    const google::protobuf::Message& request) {
+  return nullptr;
+}
+
+std::vector<std::unique_ptr<std::string>> TransactionManager::ExecuteBatchData(
+    const std::vector<std::unique_ptr<google::protobuf::Message>>& requests) {
+  // LOG(ERROR)<<"execute data:"<<requests.size();
+  std::vector<std::unique_ptr<std::string>> ret;
+  {
+    for (auto& sub_request : requests) {
+      std::unique_ptr<std::string> response = ExecuteRequest(*sub_request);
+      if (response == nullptr) {
+        response = std::make_unique<std::string>();
+      }
+      ret.push_back(std::move(response));
+    }
+  }
+  return ret;
+}
+
+
 std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
     const BatchUserRequest& request) {
   std::unique_ptr<BatchUserResponse> batch_response =
