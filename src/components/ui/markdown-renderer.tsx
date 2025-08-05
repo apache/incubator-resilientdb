@@ -35,7 +35,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeHighlight]}
         components={{
-          cite: ({ children, ...props }) => {
+          cite: ({ ...props }) => {
             const citationId = Number((props as any)['data-citation-id']);
             const data = citations?.[citationId];
             // Always render CitationBadge, even without data
@@ -56,7 +56,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           p: ({ children }) => (
             <p className="mb-3 text-gray-200 leading-relaxed">{children}</p>
           ),
-          hr: ({ children }) => <hr className="my-4" />,
+          hr: () => <hr className="my-4" />,
           ul: ({ children }) => (
             <ul className="list-disc list-inside mb-3 text-gray-200 space-y-1">
               {children}

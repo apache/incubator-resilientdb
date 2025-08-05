@@ -311,7 +311,7 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
                 <CardContent className="pt-6">
                   <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
-                    No documents found for "{searchQuery}"
+                    No documents found for &quot;{searchQuery}&quot;
                   </p>
                   <Button
                     variant="ghost"

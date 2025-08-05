@@ -153,7 +153,7 @@ export class LlamaService {
       try {
         await fs.access(PARSING_CACHE, fs.constants.F_OK);
         cacheExists = true;
-      } catch (e) {
+      } catch {
         console.log("No cache found");
       }
       if (cacheExists) {
@@ -165,8 +165,8 @@ export class LlamaService {
         resultType: "json",
       });
 
-      let documents: Document[] = [];
-      for (let file of filePaths) {
+      const documents: Document[] = [];
+      for (const file of filePaths) {
         if (!cache[file]) {
           console.log(`Processing uncached file: ${file}`);
           try {
@@ -231,6 +231,7 @@ export class LlamaService {
       console.error(`Error ingesting docs for ${filePaths.join(", ")}:`, error);
     }
   }
+
 
   async createChatEngine(
     documents: string[],

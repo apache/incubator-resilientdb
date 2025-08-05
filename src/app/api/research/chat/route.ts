@@ -53,7 +53,7 @@ const handleStreamingResponse = async (
 
         let completeResponse = "";
         let lastChunk;
-        let sourceMetadata: any[] = [];
+        const sourceMetadata: any[] = [];
 
         for await (const chunk of stream) {
           lastChunk = chunk;
