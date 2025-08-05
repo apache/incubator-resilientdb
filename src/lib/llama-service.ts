@@ -232,8 +232,10 @@ export class LlamaService {
     }
   }
 
-  async createChatEngine(documents: string[], ctx: ChatMessage[]): Promise<ContextChatEngine> {
-    const storageContext = await this.getStorageContext();
+  async createChatEngine(
+    documents: string[],
+    ctx: ChatMessage[]
+  ): Promise<ContextChatEngine> {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
 
     const retriever = index.asRetriever({
@@ -248,7 +250,6 @@ export class LlamaService {
         ],
       },
     });
-    
     const chatEngine = new ContextChatEngine({
       retriever,
       chatHistory: ctx || [],
