@@ -1,4 +1,5 @@
 import { llamaService } from "@/lib/llama-service";
+import { sessionManager } from "@/lib/session-manager";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
@@ -9,6 +10,7 @@ interface RequestData {
   tool?: string;
   language?: string;
   scope?: string[];
+  sessionId?: string; 
 }
 
 const validateRequest = (data: RequestData): string | null => {
@@ -39,18 +41,17 @@ const validateRequest = (data: RequestData): string | null => {
 const handleStreamingResponse = async (
   chatEngine: any,
   query: string,
+  sessionId: string,
 ): Promise<ReadableStream> => {
   return new ReadableStream({
     async start(controller) {
       try {
-        // const sourceNodes = await retriever.retrieve(query);
-        // const citationLines = sourceNodes.map((node: any) => `[^${node.id}]" (Page ${node.metadata.page} of ${node.metadata.source_document})`).join("\n");
-
         const stream = await chatEngine.chat({
           message: query,
           stream: true,
         });
 
+        let completeResponse = "";
         let lastChunk;
         const sourceMetadata: any[] = [];
 
@@ -59,9 +60,15 @@ const handleStreamingResponse = async (
           const content = chunk.response || chunk.delta || "";
           if (content) {
             controller.enqueue(content);
+            completeResponse += content;
           }
         }
-
+        const memory = sessionManager.getSessionMemory(sessionId);
+        await memory.add({ role: "assistant", content: completeResponse });
+        
+        const messages = await memory.get();
+        console.log('Updated memory:', messages);
+        
         if (lastChunk?.sourceNodes) {
           for (const sourceNode of lastChunk.sourceNodes) {
             sourceMetadata.push(sourceNode.node.metadata);
@@ -70,7 +77,7 @@ const handleStreamingResponse = async (
         controller.enqueue(
           `__SOURCE_INFO__${JSON.stringify(sourceMetadata)}\n\n`,
         );
-        console.log(sourceMetadata);
+        
         controller.close();
       } catch (error) {
         console.error("Streaming error:", error);
@@ -113,13 +120,22 @@ export async function POST(req: NextRequest) {
       console.log(
         `Processing query: "${requestData.query}" for documents: ${documentPaths.join(", ")}`,
       );
+      
+      const sessionId = requestData.sessionId || Date.now().toString();
+      const memory = sessionManager.getSessionMemory(sessionId);
+      
+      await memory.add({ role: "user", content: requestData.query });
+      
+      const chatHistory = await memory.get();
 
-      const chatEngine = await llamaService.createChatEngine(documentPaths);
+      const chatEngine = await llamaService.createChatEngine(documentPaths, chatHistory);
 
       const stream = await handleStreamingResponse(
         chatEngine,
         requestData.query,
+        sessionId,
       );
+
       return new Response(stream, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",

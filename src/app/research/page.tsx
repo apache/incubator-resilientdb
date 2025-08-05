@@ -34,7 +34,7 @@ import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Menu, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
@@ -127,6 +127,14 @@ const extractSectionsFromStream = (fullResponse: string) => {
   return { topic, plan, pseudocode, implementation };
 };
 
+function useSessionId() {
+  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const resetSession = useCallback(() => {
+    sessionIdRef.current = crypto.randomUUID();
+  }, []);
+  return { sessionId: sessionIdRef.current, resetSession };
+}
+
 function ResearchChatPageContent() {
   const {
     data: documents = [],
@@ -138,9 +146,12 @@ function ResearchChatPageContent() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
+  const [indexError, setIndexError] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [codeGenerations, setCodeGenerations] = useState<CodeGeneration[]>([]);
+
+  const { sessionId, resetSession } = useSessionId();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -165,22 +176,7 @@ function ResearchChatPageContent() {
     const prepareDocumentIndex = async () => {
       if (selectedDocuments.length > 0) {
         setIsPreparingIndex(true);
-
-        const documentCount = selectedDocuments.length;
-        const documentMessage =
-          documentCount === 1
-            ? `📄 **${selectedDocuments[0].displayTitle || selectedDocuments[0].name}** has been selected. Preparing document for questions...`
-            : `📄 **${documentCount} documents** have been selected. Preparing documents for questions...`;
-
-        setMessages([
-          {
-            id: Date.now().toString(),
-            content: documentMessage,
-            role: "assistant",
-            timestamp: new Date().toISOString(),
-          },
-        ]);
-
+        setIndexError(false);
         try {
           const response = await fetch("/api/research/prepare-index", {
             method: "POST",
@@ -189,42 +185,12 @@ function ResearchChatPageContent() {
               documentPaths: selectedDocuments.map((doc) => doc.path),
             }),
           });
-
-          if (response.ok) {
-            const readyMessage =
-              documentCount === 1
-                ? `✅ **${selectedDocuments[0].displayTitle || selectedDocuments[0].name}** is ready! You can now ask questions about this document.`
-                : `✅ **${documentCount} documents** are ready! You can now ask questions about these documents.`;
-
-            setMessages([
-              {
-                id: Date.now().toString(),
-                content: readyMessage,
-                role: "assistant",
-                timestamp: new Date().toISOString(),
-              },
-            ]);
-          } else {
-            const error = await response.json();
-            setMessages([
-              {
-                id: Date.now().toString(),
-                content: `❌ Failed to prepare documents: ${error.error || "Unknown error"}`,
-                role: "assistant",
-                timestamp: new Date().toISOString(),
-              },
-            ]);
+          if (!response.ok) {
+            setIndexError(true);
           }
         } catch (error) {
+          setIndexError(true);
           console.error("Error preparing document:", error);
-          setMessages([
-            {
-              id: Date.now().toString(),
-              content: `❌ Error preparing documents. Please try again.`,
-              role: "assistant",
-              timestamp: new Date().toISOString(),
-            },
-          ]);
         } finally {
           setIsPreparingIndex(false);
         }
@@ -550,7 +516,7 @@ function ResearchChatPageContent() {
     scope?: string[];
   }) => {
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       content: payload.query,
       role: "user",
       timestamp: new Date().toISOString(),
@@ -558,7 +524,7 @@ function ResearchChatPageContent() {
 
     // Create a placeholder for the assistant's response
     const assistantPlaceholderMessage: Message = {
-      id: (Date.now() + 1).toString(), // Ensure unique ID
+      id: crypto.randomUUID(),
       content:
         payload.tool === "code-composer"
           ? "Reading and analyzing documents to generate code. Check the preview panel to see live progress."
@@ -574,7 +540,7 @@ function ResearchChatPageContent() {
 
     let earlyCodeGenerationId: string | null = null;
     if (payload.tool === "code-composer") {
-      earlyCodeGenerationId = Date.now().toString();
+      earlyCodeGenerationId = crypto.randomUUID();
 
       const newCodeGeneration: CodeGeneration = {
         id: earlyCodeGenerationId,
@@ -595,12 +561,11 @@ function ResearchChatPageContent() {
     }
 
     try {
-      // Enable streaming for all research queries
       const streamingPayload = {
         ...payload,
-        enableStreaming: true, // Enable streaming for real-time responses
+        enableStreaming: true,
+        sessionId,
       };
-
       const response = await fetch("/api/research/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -777,6 +742,21 @@ function ResearchChatPageContent() {
 
             {!isSidebarCollapsed && (
               <CardContent className="p-3 flex-1 overflow-hidden">
+                <div className="flex items-center gap-2 mb-2 w-full">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={selectedDocuments.length === 0 || messages.length === 0}
+                    className="flex-1 gap-2"
+                    onClick={() => {
+                      resetSession();
+                      setMessages([]);
+                    }}
+                  >
+                    <SquarePen />
+                    New Chat
+                  </Button>
+                </div>
                 <MultiDocumentSelector
                   documents={documents}
                   selectedDocuments={selectedDocuments}
@@ -789,6 +769,7 @@ function ResearchChatPageContent() {
                   showSearch={true}
                   showSelectAll={true}
                 />
+
               </CardContent>
             )}
 
@@ -863,10 +844,25 @@ function ResearchChatPageContent() {
                               : `${selectedDocuments.length} Documents`}
                           </CardTitle>
                           <CardDescription>
-                            Ask questions about{" "}
-                            {selectedDocuments.length === 1
-                              ? "this document"
-                              : "these documents"}
+                            {isPreparingIndex
+                              ? (selectedDocuments.length === 1
+                                  ? `Preparing ${selectedDocuments[0].displayTitle || selectedDocuments[0].name}...`
+                                  : `Preparing ${selectedDocuments.length} documents...`)
+                              : indexError
+                                ? (
+                                    <span className="text-red-600">
+                                      Could not load {selectedDocuments.length === 1 ? "document" : "documents"}
+                                    </span>
+                                  )
+                                : (
+                                    <>
+                                      <span className="text-green-600">✓</span>{" "}
+                                      {selectedDocuments.length === 1
+                                        ? "Ready to answer questions about this document."
+                                        : "Ready to answer questions about these documents."}
+                                    </>
+                                  )
+                            }
                           </CardDescription>
                         </div>
                         <div className="flex items-center space-x-2">
