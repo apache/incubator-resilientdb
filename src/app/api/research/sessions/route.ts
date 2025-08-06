@@ -26,7 +26,7 @@ function formatTimestamp(timestamp: number): string {
   return new Date(timestamp).toISOString();
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const now = Date.now();
     const sessions = sessionManager.getAllSessions();
