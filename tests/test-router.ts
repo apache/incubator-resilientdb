@@ -1,6 +1,7 @@
-import { agentStreamEvent, agentToolCallEvent, agentToolCallResultEvent } from "@llamaindex/workflow";
+import { NexusAgent } from "@/lib/agent";
+import { agentStreamEvent, agentToolCallEvent } from "@llamaindex/workflow";
 import chalk from "chalk";
-import { ChatMessage } from "llamaindex";
+import { createMemory, staticBlock } from "llamaindex";
 import { configureLlamaSettings } from "../src/lib/config/llama-settings";
 import { llamaService } from "../src/lib/llama-service";
 
@@ -93,28 +94,82 @@ async function testIngestion() {
 
 
 async function testAgent() {
-  const ctx = [{
-    role: "user",
-    content: "My name is Abdel."
-  }] as ChatMessage[]
-  const testQuery = "Can you explain the replica failure algorithm? After that, search the web for new ResilientDB developments"
-  const documents = ["documents/rcc.pdf"]
-  const agent = await llamaService.createNexusAgent(documents);
-  const response = await agent.runStream(testQuery, {
-    // chatHistory: ctx,
+  // Create memory with proper configuration for better LLM performance
+  const memory = createMemory({
+    tokenLimit: 8000, // Reasonable limit to prevent context overflow
+    shortTermTokenLimitRatio: 0.8, // Prioritize recent conversation over long-term
+    memoryBlocks: [
+      staticBlock({
+        content: "User context: The user's name is Abdel. They are interested in ResilientDB and blockchain technology research.",
+      }),
+    ],
   });
+
+  const testQuery = "Can you provide a fun fact from each paper? Separate tool calls, 10 words each"
+  const documents = ["documents/rcc.pdf", "documents/resilientdb.pdf"];
+
+  // Pass memory to the agent - it will handle adding the query automatically
+  const agent = await llamaService.createNexusAgent(documents, memory);
+  
+  const response = await agent.runStream(testQuery);
+  
   for await (const event of response) {
     if (agentToolCallEvent.include(event)) {
       console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
     }
-    if (agentToolCallResultEvent.include(event)) {
-      console.log(chalk.green(`\nTool result received: ${JSON.stringify(event.data, null, 2)}`));
+    if (agentStreamEvent.include(event)) {
+      process.stdout.write(event.data.delta);
+    }
+  }
+
+  // Check memory state
+  const messages = await memory.get();
+  console.log('\n\n' + chalk.blue('Memory State:'));
+  console.log(`Messages count: ${messages.length}`);
+  messages.forEach((msg, i) => {
+    const preview = msg.content?.toString().substring(0, 100) + '...';
+    console.log(`${i + 1}. ${chalk.cyan(msg.role)}: ${preview}`);
+  });
+
+  // const followUp = "Now make a new, combined tool call";
+  // console.log(chalk.blueBright(`\n\nFollow-up query: ${followUp}\n`));
+  // const followUpResponse = await agent.runStream(followUp);
+  // for await (const event of followUpResponse) { 
+  //   if (agentToolCallEvent.include(event)) {
+  //     console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
+  //   }
+  //   if (agentStreamEvent.include(event)) {
+  //     process.stdout.write(event.data.delta);
+  //   }
+  // }
+
+}
+
+async function testAgentClass() {
+// Initialize the agent
+  const nexusAgent = await NexusAgent.create();
+
+  const agentWorkflow = await nexusAgent.createAgent(["documents/rcc.pdf", "documents/resilientdb.pdf"]);
+
+  const prompt = "Can you explain replica failure from RCC document in 20 words? Once you're done, search the web for 2025 developments in ResilientDB. Be sure to announce tool usage before each tool call.";
+  console.log(chalk.blue(`\n\nPrompt: ${prompt}\n`));
+  const response = await agentWorkflow.runStream(prompt);
+  for await (const event of response) {
+    if (agentToolCallEvent.include(event)) {
+      console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
     }
     if (agentStreamEvent.include(event)) {
       process.stdout.write(event.data.delta);
     }
-
   }
+  // const folloUp = "What's my name?";
+  // console.log(chalk.blue(`\n\nFollow-up query: ${folloUp}\n`));
+  // const followUpResponse = await agentWorkflow.runStream(folloUp);
+  // for await (const event of followUpResponse) {
+  //   if (agentStreamEvent.include(event)) {
+  //     process.stdout.write(event.data.delta);
+  //   }
+  // }
 }
 
 
@@ -126,7 +181,8 @@ async function main() {
   // Single detailed test
   // await testRouterBehavior();
   // await testIngestion();
-  await testAgent();
+  // await testAgent();
+  await testAgentClass(); 
   // await testExample();
   
   console.log("\n\n🔄 Running multiple test queries...");

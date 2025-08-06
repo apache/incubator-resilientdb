@@ -49,10 +49,8 @@ Citation Instructions:
     - Always include citations for each distinct source, even if from the same document but different pages
 `;
 
-const AGENT_RESEARCH_PROMPT = (documentPaths: string[]) =>
+export const AGENT_RESEARCH_PROMPT = (documentPaths: string[]) =>
 `
-# Nexus AI Research Assistant System Prompt
-
 ## Core Identity
 You are **Nexus**, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems.
 
@@ -429,24 +427,24 @@ export class LlamaService {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
 
     // using a queryTool(slower)
-    const retrieverTool = index.queryTool({
-      metadata: {
-        name: "retriever_tool",
-        description: `This tool can retrieve information about the selected documents.`,
-      },
-      includeSourceNodes: true,
-      options: { similarityTopK: 3,
-        filters: {
-        filters: [
-          {
-            key: "source_document",
-            operator: "in",
-            value: documents,
-          },
-        ],
-      },
-      },
-    });
+    // const retrieverTool = index.queryTool({
+    //   metadata: {
+    //     name: "retriever_tool",
+    //     description: `This tool can retrieve information about the selected documents.`,
+    //   },
+    //   includeSourceNodes: true,
+    //   options: { similarityTopK: 3,
+    //     filters: {
+    //     filters: [
+    //       {
+    //         key: "source_document",
+    //         operator: "in",
+    //         value: documents,
+    //       },
+    //     ],
+    //   },
+    //   },
+    // });
 
     ////////////////////////////////////////////////////
     // using a bound retriever function to create a tool
@@ -464,27 +462,27 @@ export class LlamaService {
     //     });
     //   };
     // };
-    // const retrieverTool = tool(this.retrieve, {
-    //   name: "retriever_tool",
-    //   description: `This tool can retrieve detailed information from the selected documents.`,
-    //   parameters: {
-    //     type: "object",
-    //     properties: {
-    //       query: {
-    //         type: "string",
-    //         description: "The query to retrieve information from the document's vector embeddings.",
-    //       },
-    //       documentPaths: {
-    //         type: "array",
-    //         items: {
-    //           type: "string",
-    //         },
-    //         description: "The list of document paths to search in",
-    //       },
-    //     },
-    //     required: ["query", "documentPaths"],
-    //   },
-    // });
+    const retrieverTool = tool(this.retrieve, {
+      name: "retriever_tool",
+      description: `This tool can retrieve detailed information from the selected documents.`,
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The query to retrieve information from the document's vector embeddings.",
+          },
+          documentPaths: {
+            type: "array",
+            items: {
+              type: "string",
+            },
+            description: "The list of document paths to search in",
+          },
+        },
+        required: ["query", "documentPaths"],
+      },
+    });
     ////////////////////////////////////////////////////
 
     const searchTool = tool(this.searchWeb, {
@@ -510,6 +508,8 @@ export class LlamaService {
       tools: [retrieverTool, searchTool],
       llm: deepseek({
         model: "deepseek-chat",
+        temperature: 0.1,
+
       })
     });
 
