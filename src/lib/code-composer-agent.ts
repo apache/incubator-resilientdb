@@ -256,7 +256,7 @@ For each chunk, respond in this JSON format:
   private calculateFinalScore(
     originalScore: number,
     analysis: any,
-    options: AgentOptions
+    options: AgentOptions // eslint-disable-line @typescript-eslint/no-unused-vars
   ): number {
     const weights = {
       implementation: IMPLEMENTATION_WEIGHT,
@@ -286,7 +286,7 @@ For each chunk, respond in this JSON format:
 
   private async selectAndRankChunks(
     analyzedChunks: AnalyzedChunk[],
-    options: AgentOptions
+    options: AgentOptions // eslint-disable-line @typescript-eslint/no-unused-vars
   ): Promise<RetrievedNode[]> {
     console.log(`[CodeComposerAgent] Ranking ${analyzedChunks.length} analyzed chunks`);
 

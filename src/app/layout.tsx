@@ -2,7 +2,7 @@
 
 
 
-import { MainNavBar } from "@/components/ui/main-navbar";
+import { MainNavBar } from "@/components/ui/main-navbar"; // eslint-disable-line @typescript-eslint/no-unused-vars
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { ReactNode } from "react";
 import "./globals.css";

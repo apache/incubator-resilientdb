@@ -15,7 +15,7 @@ import {
   LlamaParseReader,
   MarkdownNodeParser,
   SentenceSplitter,
-  Settings,
+  Settings, // eslint-disable-line @typescript-eslint/no-unused-vars
   StorageContext,
   storageContextFromDefaults,
   SummaryExtractor,

@@ -3,7 +3,7 @@ import { llamaService } from "../src/lib/llama-service";
 
 const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
   console.log("\n🧪 Testing Chat Engine...");
-  const chatEngine = await llamaService.createChatEngine(documentPaths);
+  const chatEngine = await llamaService.createChatEngine(documentPaths, []);
   const chatResponse = await chatEngine.chat({
     message: testQuery,
     stream: true,
