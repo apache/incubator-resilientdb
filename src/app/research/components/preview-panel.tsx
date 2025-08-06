@@ -80,7 +80,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         userHasInteractedRef.current = false;
       }
     }
-  }, [hasCodeGenerations, hasPdfs, activeTab]);
+  }, [hasCodeGenerations, hasPdfs, activeTab, getDefaultTabValue]);
 
   useEffect(() => {
     const previousGenerations = previousCodeGenerationsRef.current;
