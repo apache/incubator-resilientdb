@@ -11,6 +11,7 @@
   "dependencies": {
     "@llamaindex/core": "^0.6.19",
     "@llamaindex/deepseek": "^0.0.32",
+    "@llamaindex/google": "^0.3.18",
     "@llamaindex/huggingface": "^0.1.24",
     "@llamaindex/postgres": "^0.0.62",
     "@llamaindex/workflow": "^1.1.20",

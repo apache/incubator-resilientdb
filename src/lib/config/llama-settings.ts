@@ -1,6 +1,6 @@
 import { config } from "@/config/environment";
 import { DeepSeekLLM } from "@llamaindex/deepseek";
-import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
+import { GEMINI_EMBEDDING_MODEL, GeminiEmbedding } from "@llamaindex/google";
 import chalk from "chalk";
 import { LLMMetadata, Settings } from "llamaindex";
 
@@ -8,7 +8,7 @@ import { LLMMetadata, Settings } from "llamaindex";
 let isConfigured = false;
 
 /**
- * Configure LlamaIndex global settings for DeepSeek LLM and HuggingFace embeddings
+ * Configure LlamaIndex global settings for DeepSeek LLM and Gemini embeddings
  * This centralizes all LLM and embedding configuration for the application
  */
 export const configureLlamaSettings = (): void => {
@@ -17,7 +17,7 @@ export const configureLlamaSettings = (): void => {
     return;
   }
 
-  console.log(chalk.bold("[LlamaSettings] Configuring LlamaIndex with DeepSeek + HuggingFace"));
+  console.log(chalk.bold("[LlamaSettings] Configuring LlamaIndex with DeepSeek + Gemini"));
 
   /**
    * Custom DeepSeek LLM with corrected metadata
@@ -43,12 +43,9 @@ export const configureLlamaSettings = (): void => {
   });
   
 
-
-  Settings.embedModel = new HuggingFaceEmbedding({
-    modelType: "BAAI/bge-large-en-v1.5", 
-    modelOptions: {
-      dtype: "auto",
-    },
+  Settings.embedModel = new GeminiEmbedding({
+    model: GEMINI_EMBEDDING_MODEL.EMBEDDING_001,
+    apiKey: config.geminiApiKey,
   });
 
   // Mark as configured

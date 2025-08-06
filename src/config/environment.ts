@@ -18,4 +18,8 @@ export const config = {
   llamaCloudIndexName: process.env.LLAMA_CLOUD_INDEX_NAME || "",
   llamaCloudBaseUrl: process.env.LLAMA_CLOUD_BASE_URL || "",
 
+  tavilyApiKey: process.env.TAVILY_API_KEY || "",
+
+  // Gemini configuration
+  geminiApiKey: process.env.GEMINI_API_KEY || "",
 };
