@@ -629,16 +629,6 @@ function ResearchChatPageContent() {
     // This will be handled by ChatInput component
   };
 
-  const handleDocumentKeyDown = useCallback(
-    (e: React.KeyboardEvent, doc: Document) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        handleDocumentSelect(doc);
-      }
-    },
-    [],
-  );
-
   const handleDocumentSelect = useCallback((doc: Document) => {
     setSelectedDocuments((prev) => {
       const index = prev.findIndex((d) => d.id === doc.id);
@@ -649,6 +639,17 @@ function ResearchChatPageContent() {
     });
     setIsMobileSheetOpen(false);
   }, []);
+
+  const handleDocumentKeyDown = useCallback(
+    (e: React.KeyboardEvent, doc: Document) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        handleDocumentSelect(doc);
+      }
+    },
+    [handleDocumentSelect],
+  );
+
 
   const handleDocumentDeselect = useCallback((doc: Document) => {
     setSelectedDocuments((prev) => prev.filter((d) => d.id !== doc.id));
