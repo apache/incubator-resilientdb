@@ -13,8 +13,9 @@ The project is built on LlamaIndex for retrieval and workflow orchestration, Dee
 - Persist short/long‑term memory per session in Postgres
 
 ### Status
-- Core RAG + agentic chat: implemented
+- Core RAG: implemented
 - Multi-document ingestion + retrieval: implemented
+- Agentic chat + memory: in progress
 
 
 ## Quickstart
