@@ -1,7 +1,5 @@
-<img width="1728" height="834" alt="Screenshot 2025-08-07 at 12 25 54 PM" src="https://github.com/user-attachments/assets/2be8d59d-f493-4c4f-abef-02eb76ab3af6" />
-
-
 ## Nexus - Research Agent
+<img width="1728" height="834" alt="Screenshot 2025-08-07 at 12 25 54 PM" src="https://github.com/user-attachments/assets/2be8d59d-f493-4c4f-abef-02eb76ab3af6" />
 
 Nexus is a Next.js application that helps students and researchers work with Apache ResilientDB and related distributed systems literature. It provides grounded, citation-backed answers over selected documents and introduces agentic capabilities for research workflows.
 
