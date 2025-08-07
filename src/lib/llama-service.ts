@@ -27,6 +27,7 @@ import {
 } from "llamaindex";
 import { ClientConfig } from "pg";
 import { TavilyClient } from "tavily";
+import z from "zod";
 import { config } from "../config/environment";
 import { configureLlamaSettings } from "./config/llama-settings";
 import { TITLE_MAPPINGS } from "./constants";
@@ -462,42 +463,24 @@ export class LlamaService {
     //     });
     //   };
     // };
-    const retrieverTool = tool(this.retrieve, {
+    const retrieverTool = tool({
       name: "retriever_tool",
       description: `This tool can retrieve detailed information from the selected documents.`,
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The query to retrieve information from the document's vector embeddings.",
-          },
-          documentPaths: {
-            type: "array",
-            items: {
-              type: "string",
-            },
-            description: "The list of document paths to search in",
-          },
-        },
-        required: ["query", "documentPaths"],
-      },
+      parameters: z.object({
+        query: z.string().describe("The query to retrieve information from the document's vector embeddings."),
+        documentPaths: z.array(z.string()).describe("The list of document paths to search in"),
+      }),
+      execute: this.retrieve,
     });
     ////////////////////////////////////////////////////
 
-    const searchTool = tool(this.searchWeb, {
+    const searchTool = tool({
       name: "search_web",
       description: "Search the web for information",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The search query optimized for web search",
-          },
-        },
-        required: ["query"],
-      },
+      parameters: z.object({
+        query: z.string().describe("The search query optimized for web search"),
+      }),
+      execute: this.searchWeb,
     });
 
     const systemPrompt = AGENT_RESEARCH_PROMPT(documents);

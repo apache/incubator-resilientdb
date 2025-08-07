@@ -35,6 +35,7 @@ import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
@@ -128,10 +129,22 @@ const extractSectionsFromStream = (fullResponse: string) => {
 };
 
 function useSessionId() {
-  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionIdRef = useRef<string>(searchParams.get('session') || crypto.randomUUID());
+  
   const resetSession = useCallback(() => {
-    sessionIdRef.current = crypto.randomUUID();
-  }, []);
+    const newSessionId = crypto.randomUUID();
+    sessionIdRef.current = newSessionId;
+    router.push(`/research?session=${newSessionId}`);
+  }, [router]);
+
+  useEffect(() => {
+    if (!searchParams.get('session')) {
+      router.replace(`/research?session=${sessionIdRef.current}`);
+    }
+  }, [searchParams, router]);
+  
   return { sessionId: sessionIdRef.current, resetSession };
 }
 
