@@ -325,3 +325,37 @@
     opacity: 1;
   }
 }
+
+/* Hide scrollbar completely */
+.scrollbar-none {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}
+
+
+.msgs {
+  background-color: #0A1023;
+}
+
+/* Smooth gradient header that appears on scroll */
+.chat-header-gradient {
+  background: linear-gradient(
+    to bottom,
+    #0A1023 0%,
+    #0A1023 40%,
+    rgba(10, 16, 35, 0.9) 60%,
+    rgba(10, 16, 35, 0.7) 75%,
+    rgba(10, 16, 35, 0.4) 85%,
+    rgba(10, 16, 35, 0.2) 92%,
+    transparent 100%
+  );
+  transition: opacity 0.3s ease-out;
+}
+
+.chat-header-gradient.at-top {
+  background: transparent;
+}

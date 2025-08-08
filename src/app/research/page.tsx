@@ -24,8 +24,7 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import { SourceAttribution } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
@@ -35,7 +34,6 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import {
   Sheet,
@@ -195,19 +193,38 @@ function ResearchChatPageContent() {
   const { activeTool, setTool } = useTool();
   const [language] = useState<Language>("ts");
   const [mode, setMode] = useState<"research" | "code">("research");
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const { sessionId, resetSession } = useSessionId();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Handle scroll to detect if at top
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollTop } = scrollContainerRef.current;
+      setIsAtTop(scrollTop <= 10); // Consider "at top" if within 10px
+    }
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Set up scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   // Handle document loading errors
   useEffect(() => {
@@ -847,7 +864,7 @@ function ResearchChatPageContent() {
           }`}
         >
           <div className="flex flex-col w-full">
-            <CardHeader className="border-b flex flex-row items-center justify-between space-y-0 mt-[0.45rem]">
+            <div className="flex flex-row items-center justify-between space-y-0 mt-[0.45rem] px-3.5">
               {!isSidebarCollapsed && (
                 <CardTitle className="text-lg">Research Library</CardTitle>
               )}
@@ -866,7 +883,7 @@ function ResearchChatPageContent() {
                   <ChevronLeft className="h-4 w-4" />
                 )}
               </Button>
-            </CardHeader>
+            </div>
 
             {!isSidebarCollapsed && (
               <CardContent className="p-3 flex-1 overflow-hidden">
@@ -928,7 +945,7 @@ function ResearchChatPageContent() {
             {/* Chat Interface */}
             <ResizablePanel defaultSize={60} minSize={30}>
               <Card
-                className="h-full flex flex-col rounded-none border-0 gap-0 min-h-0 bg-card/60 backdrop-blur-sm"
+                className="h-full flex flex-col rounded-none border-0 gap-0 min-h-0 bg-[#0A1023] backdrop-blur-sm"
                 role="main"
                 aria-label="Chat interface"
               >
@@ -961,148 +978,115 @@ function ResearchChatPageContent() {
                 ) : (
                   <>
                     {/* Chat Header */}
-                    <CardHeader className="border-b flex-shrink-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg truncate">
-                            Chat with{" "}
-                            {selectedDocuments.length === 1
-                              ? selectedDocuments[0].displayTitle ||
-                                selectedDocuments[0].name
-                              : `${selectedDocuments.length} Documents`}
-                          </CardTitle>
-                          <CardDescription>
-                            {isPreparingIndex
-                              ? (selectedDocuments.length === 1
-                                  ? `Preparing ${selectedDocuments[0].displayTitle || selectedDocuments[0].name}...`
-                                  : `Preparing ${selectedDocuments.length} documents...`)
-                              : indexError
-                                ? (
-                                    <span className="text-red-600">
-                                      Could not load {selectedDocuments.length === 1 ? "document" : "documents"}
-                                    </span>
-                                  )
-                                : (
-                                    <>
-                                      <span className="text-green-600">✓</span>{" "}
-                                      {selectedDocuments.length === 1
-                                        ? "Ready to answer questions about this document."
-                                        : "Ready to answer questions about these documents."}
-                                    </>
-                                  )
-                            }
-                          </CardDescription>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsMobileSheetOpen(true)}
-                            className="md:hidden"
-                            aria-label="Change document"
-                          >
-                            <Menu className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
+                    <div className={`px-6 py-4 pb-12 absolute top-0 left-0 z-10 flex-shrink-0 w-full chat-header-gradient ${isAtTop ? 'at-top' : ''}`}>
+                      <h1 className="text-2xl md:text-xl font-bold tracking-tight text-white whitespace-nowrap ">
+                      Nexus
+        </h1>
+                    </div> 
 
                     {/* Messages */}
                     <div className="flex-1 min-h-0 overflow-hidden">
-                      <ScrollArea
-                        className="h-full p-4 pb-0"
+                      <div
+                        ref={scrollContainerRef}
+                        className="h-full p-4 pb-0 overflow-y-auto scrollbar-none"
                         role="log"
                         aria-label="Chat messages"
                         aria-live="polite"
+                        style={{
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none'
+                        }}
                       >
-                        <div className="space-y-3">
-                          {messages.map((message) => (
-                            <div
-                              key={message.id}
-                              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                              role="article"
-                              aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
-                            >
-                              <Card
-                                variant="message"
-                                className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
-                                  message.role === "user"
-                                    ? "bg-primary text-primary-foreground border-primary"
-                                    : "bg-card"
-                                }`}
+                        <div className="min-h-full flex flex-col justify-end">
+                          <div className="space-y-3">
+                            {messages.map((message) => (
+                              <div
+                                key={message.id}
+                                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                                role="article"
+                                aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
                               >
-                                <CardContent variant="message">
-                                  {message.role === "user" ? (
-                                    <p className="text-sm">
-                                      {message.content}
-                                    </p>
-                                  ) : message.isLoadingPlaceholder ? (
-                                    <div
-                                      className="flex items-center justify-center "
-                                      aria-label="AI is thinking"
-                                    >
-                                      <Loader
-                                        size="md"
-                                        variant="loading-dots"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm">
-                                      {(() => {
-                                        const content = message.content || "";
-                                        const inserts = (message.toolInserts || [])
-                                          .slice()
-                                          .sort((a, b) => a.index - b.index);
-                                        if (inserts.length === 0) {
-                                          return <Response>{content}</Response>;
-                                        }
-                                        const nodes: React.ReactNode[] = [];
-                                        let cursor = 0;
-                                        inserts.forEach((ins, idx) => {
-                                          const clamped = Math.min(Math.max(ins.index, 0), content.length);
-                                          const text = content.slice(cursor, clamped);
-                                          if (text) nodes.push(
-                                            <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
+                                <Card
+                                  variant="message"
+                                  className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
+                                    message.role === "user"
+                                      ? "bg-primary text-primary-foreground border-primary"
+                                      : "bg-card"
+                                  }`}
+                                >
+                                  <CardContent variant="message">
+                                    {message.role === "user" ? (
+                                      <p className="text-sm">
+                                        {message.content}
+                                      </p>
+                                    ) : message.isLoadingPlaceholder ? (
+                                      <div
+                                        className="flex items-center justify-center "
+                                        aria-label="AI is thinking"
+                                      >
+                                        <Loader
+                                          size="md"
+                                          variant="loading-dots"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm">
+                                        {(() => {
+                                          const content = message.content || "";
+                                          const inserts = (message.toolInserts || [])
+                                            .slice()
+                                            .sort((a, b) => a.index - b.index);
+                                          if (inserts.length === 0) {
+                                            return <Response>{content}</Response>;
+                                          }
+                                          const nodes: React.ReactNode[] = [];
+                                          let cursor = 0;
+                                          inserts.forEach((ins, idx) => {
+                                            const clamped = Math.min(Math.max(ins.index, 0), content.length);
+                                            const text = content.slice(cursor, clamped);
+                                            if (text) nodes.push(
+                                              <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
+                                            );
+                                            nodes.push(
+                                              <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
+                                                <ToolHeader
+                                                  type={formatToolHeader(
+                                                    ins.part.type as string,
+                                                    ins.part.state as any,
+                                                    message.docPaths?.length
+                                                  ) as any}
+                                                  state={ins.part.state as any}
+                                                />
+                                              </Tool>
+                                            );
+                                            cursor = clamped;
+                                          });
+                                          const tail = content.slice(cursor);
+                                          if (tail) nodes.push(
+                                            <Response key={`txt-tail-${message.id}`}>{tail}</Response>
                                           );
-                                          nodes.push(
-                                            <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
-                                              <ToolHeader
-                                                type={formatToolHeader(
-                                                  ins.part.type as string,
-                                                  ins.part.state as any,
-                                                  message.docPaths?.length
-                                                ) as any}
-                                                state={ins.part.state as any}
-                                              />
-                                            </Tool>
-                                          );
-                                          cursor = clamped;
-                                        });
-                                        const tail = content.slice(cursor);
-                                        if (tail) nodes.push(
-                                          <Response key={`txt-tail-${message.id}`}>{tail}</Response>
-                                        );
-                                        return <div className="space-y-2">{nodes}</div>;
-                                      })()}
+                                          return <div className="space-y-2">{nodes}</div>;
+                                        })()}
 
-                                      {message.sources &&
-                                        message.sources.length > 0 && (
-                                          <SourceAttribution
-                                            sources={message.sources}
-                                            className="mt-2 pt-2 border-t border-border/20"
-                                            showLabel={true}
-                                            clickable={false}
-                                          />
-                                        )}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            </div>
-                          ))}
-                          <div ref={messagesEndRef} />
+                                        {message.sources &&
+                                          message.sources.length > 0 && (
+                                            <SourceAttribution
+                                              sources={message.sources}
+                                              className="mt-2 pt-2 border-t border-border/20"
+                                              showLabel={true}
+                                              clickable={false}
+                                            />
+                                          )}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                          </div>
                         </div>
-                      </ScrollArea>
+                      </div>
                     </div>
 
 <div className="px-1.5">
