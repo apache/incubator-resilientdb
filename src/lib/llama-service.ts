@@ -76,9 +76,7 @@ You are **Nexus**, an AI research assistant specialized in Apache ResilientDB an
 
 AVAILABLE DOCUMENTS (documentPath - Title):
 {
-${
-    documentPaths.map(docPath =>   `${docPath}": "${TITLE_MAPPINGS[docPath.replace("documents/", "")]}`).join(",\n")
-}
+${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replace("documents/", "")]}"`).join(",\n")}
 }
 
 #### Response Requirements
@@ -308,33 +306,7 @@ export class LlamaService {
     return chatEngine;
   }
 
-  // async createQueryEngine(
-  //   documents: string[],
-  //   tools?: any[]
-  // ): Promise<RetrieverQueryEngine> {
-  //   const storageContext = await this.getStorageContext();
-  //   const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
-
-  //   const retriever = index.asRetriever({
-  //     similarityTopK: 5,
-  //     filters: {
-  //       filters: [
-  //         {
-  //           key: "source_document",
-  //           operator: "in",
-  //           value: documents,
-  //         },
-  //       ],
-  //     },
-  //   });
-
-  //   const queryEngine = index.asQueryEngine({
-  //     retriever: retriever,
-  //   });
-
-  //   return queryEngine;
-  // }
-
+  // tbd
   async createCodingAgent(): Promise<AgentWorkflow> {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
     const tools = [
@@ -353,8 +325,8 @@ export class LlamaService {
       systemPrompt: `You are a coding agent. Your role is to implement code for technical concepts and algorithms based on detailed research findings, requirements, and instructions provided by the research agent. Always write correct, best practice, DRY, bug-free, and fully functional code.`,
       tools: [],
       llm: deepseek({
-        model: "deepseek-chat",
-    }) 
+        model: config.deepSeekModel,
+      }) 
     });
 
     const planningAgent = agent({
@@ -386,7 +358,7 @@ export class LlamaService {
       score: string;
     }[];
   }> => {
-    const tavily = new TavilyClient();
+    const tavily = new TavilyClient({ apiKey: config.tavilyApiKey });
     const response = await tavily.search({
       query: parameters.query,
       search_depth: "advanced",
@@ -402,7 +374,7 @@ export class LlamaService {
     query: string;
   }): Promise<any> => {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
-    const retriever = index.retriever({
+    const retriever = index.asRetriever({
       similarityTopK: 3,
       filters: {
         filters: [
@@ -424,8 +396,9 @@ export class LlamaService {
     // return results;
   };
 
+  // deprecated, see agent.ts
   async createNexusAgent(documents: string[]): Promise<AgentWorkflow> {
-    const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
+    
 
     // using a queryTool(slower)
     // const retrieverTool = index.queryTool({
@@ -490,7 +463,7 @@ export class LlamaService {
       systemPrompt,
       tools: [retrieverTool, searchTool],
       llm: deepseek({
-        model: "deepseek-chat",
+        model: config.deepSeekModel,
         temperature: 0.1,
 
       })

@@ -1,30 +1,28 @@
 import { config } from "@/config/environment";
-import { tool } from "@llamaindex/core/tools";
 import { deepseek } from "@llamaindex/deepseek";
 import { PGVectorStore } from "@llamaindex/postgres";
 import { agent, AgentWorkflow } from "@llamaindex/workflow";
-import {
-    BaseMemoryBlock,
-    createMemory,
-    Memory,
-    vectorBlock
-} from "llamaindex";
+import { BaseMemoryBlock, createMemory, Memory, tool, vectorBlock } from "llamaindex";
+import z from "zod";
 import { AGENT_RESEARCH_PROMPT, llamaService } from "./llama-service";
+import { robustFactExtractionBlock } from "./robust-fact-memory";
 
 
 interface AgentFactory {
-  createAgent(documents: string[]): Promise<AgentWorkflow>;
+  createAgent(documents: string[], sessionId: string): Promise<AgentWorkflow>;
 }
 
 export class NexusAgent implements AgentFactory {
   private readonly memoryVectorStore: PGVectorStore;
-  private readonly memory: Memory;
   private static instance?: NexusAgent;
+  // Map to persist agent workflows per sessionId
+  private readonly workflows: Map<string, AgentWorkflow> = new Map();
+  // Map to track the Memory instance associated with each session
+  private readonly memories: Map<string, Memory> = new Map();
 
   // Private constructor for singleton
   private constructor() {
     this.memoryVectorStore = this.initializeVectorStore();
-    this.memory = this.createMemorySystem();
   }
 
   // Factory method for creating singleton
@@ -58,100 +56,104 @@ export class NexusAgent implements AgentFactory {
     });
   }
 
-  private createMemorySystem(): Memory {
+  private createMemoryWithSession(sessionId: string): Memory {
     const memoryBlocks: BaseMemoryBlock[] = [
-    //   staticBlock({
-    //     content: `My name is Logan, and I live in Saskatoon. I work at LlamaIndex.`,
-    //   }),
-    //   factExtractionBlock({
-    //     priority: 1,
-    //     llm: deepseek({
-    //       model: "deepseek-chat",
-    //       temperature: 0.1,
-    //     }),
-    //     maxFacts: 10,
-    //   }),
+      robustFactExtractionBlock({
+        id: 'retrieved-facts',
+        priority: 1,
+        llm: deepseek({ model: config.deepSeekModel }),
+        maxFacts: 10,
+        isLongTerm: true,
+      }),
       vectorBlock({
+        id: sessionId, // This automatically handles session isolation
         vectorStore: this.memoryVectorStore,
         priority: 2,
+        retrievalContextWindow: 5,
         queryOptions: {
-            similarityTopK: 3,
-        }
+          similarityTopK: 3,
+          mode: "hybrid" as any,
+
+      },
       }),
     ];
 
-    return createMemory({
-    tokenLimit: 20,
+    const memory = createMemory({
+      tokenLimit: 30000,
+      shortTermTokenLimitRatio: .5,
       memoryBlocks,
     });
+
+    this.memories.set(sessionId, memory);
+    return memory;
   }
 
-  private createDocumentSearchTool(documents: string[]) {
-    return tool(llamaService.retrieve, {
+  private createDocumentSearchTool() {
+    return tool({
       name: "search_documents",
       description: "This tool can retrieve detailed information from the selected documents.",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The query to retrieve information from the document's vector embeddings.",
-          },
-          documentPaths: {
-            type: "array",
-            items: {
-              type: "string",
-            },
-            description: "The list of document paths to search in",
-          },
-        },
-        required: ["query", "documentPaths"],
-      },
+      parameters: z.object({
+        query: z.string().describe("The query to retrieve information from the document's vector embeddings."),
+        documentPaths: z.array(z.string()).describe("The list of document paths to search in"),
+      }),
+      execute: llamaService.retrieve,
     });
   }
 
   private createWebSearchTool() {
-    return tool(llamaService.searchWeb, {
+    return tool({
       name: "search_web",
       description: "Search the web for information",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The search query optimized for web search",
-          },
-        },
-        required: ["query"],
-      },
+      parameters: z.object({
+        query: z.string().describe("The search query optimized for web search"),
+      }),
+      execute: llamaService.searchWeb,
     });
   }
 
 
-  public async createAgent(documents: string[]): Promise<AgentWorkflow> {
+  public async createAgent(documents: string[], sessionId: string): Promise<AgentWorkflow> {
     if (!documents || documents.length === 0) {
       throw new Error("Documents array cannot be empty");
     }
 
-    const documentSearchTool = this.createDocumentSearchTool(documents);
+    // Return existing workflow if present to preserve short-term memory
+    const existingWorkflow = this.workflows.get(sessionId);
+    if (existingWorkflow) {
+      return existingWorkflow;
+    }
+
+    const documentSearchTool = this.createDocumentSearchTool();
     const webSearchTool = this.createWebSearchTool();
 
-    return agent({
+    const memory = this.createMemoryWithSession(sessionId);
+    const workflow = agent({
       name: "Nexus",
       description: "Responsible for overseeing the entire research process.",
       tools: [documentSearchTool, webSearchTool],
       systemPrompt: AGENT_RESEARCH_PROMPT(documents),
       llm: deepseek({
-        model: "deepseek-chat",
+        model: config.deepSeekModel,
       }),
-      memory: this.memory,
+      memory,
+      verbose: true,
     });
+
+    // Persist workflow for subsequent requests in same session
+    this.workflows.set(sessionId, workflow);
+    return workflow;
   }
 
-
-
-  // Reset singleton for testing
+  // Reset singleton for testing and clear cached workflows
   public static resetInstance(): void {
+    if (NexusAgent.instance) {
+      NexusAgent.instance.workflows.clear();
+      NexusAgent.instance.memories.clear();
+    }
     NexusAgent.instance = undefined;
+  }
+
+  public getMemory(sessionId: string): Memory | undefined {
+    return this.memories.get(sessionId);
   }
 }

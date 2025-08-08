@@ -1,5 +1,5 @@
-import { llamaService } from "@/lib/llama-service";
-import { sessionManager } from "@/lib/session-manager";
+import { NexusAgent } from "@/lib/agent";
+import { agentStreamEvent, agentToolCallEvent, AgentWorkflow } from "@llamaindex/workflow";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
@@ -38,54 +38,59 @@ const validateRequest = (data: RequestData): string | null => {
   return null;
 };
 
-const handleStreamingResponse = async (
-  chatEngine: any,
+
+
+const handleAgentStreamingResponse = async (
+  agentWorkflow: AgentWorkflow,
   query: string,
   sessionId: string,
 ): Promise<ReadableStream> => {
   return new ReadableStream({
     async start(controller) {
       try {
-        const stream = await chatEngine.chat({
-          message: query,
-          stream: true,
-        });
+        try {
+          const beforeMemory = NexusAgent.getInstance().getMemory(sessionId);
+          if (beforeMemory) {
+            console.log("[Memory][Before]", await beforeMemory.get());
+          }
+        } catch {}
+        const stream = await agentWorkflow.runStream(query);
 
         let completeResponse = "";
-        let lastChunk;
-        const sourceMetadata: any[] = [];
+        const toolCalls: any[] = [];
 
-        for await (const chunk of stream) {
-          lastChunk = chunk;
-          const content = chunk.response || chunk.delta || "";
-          if (content) {
-            controller.enqueue(content);
-            completeResponse += content;
+        for await (const event of stream) {
+          if (agentToolCallEvent.include(event)) {
+            toolCalls.push(event.data);
+          }
+          if (agentStreamEvent.include(event)) {
+            const content = event.data.delta || "";
+            if (content) {
+              controller.enqueue(content);
+              completeResponse += content;
+            }
           }
         }
-        const memory = sessionManager.getSessionMemory(sessionId);
-        await memory.add({ role: "assistant", content: completeResponse });
-        
-        const messages = await memory.get();
-        console.log('Updated memory:', messages);
-        
-        if (lastChunk?.sourceNodes) {
-          for (const sourceNode of lastChunk.sourceNodes) {
-            sourceMetadata.push(sourceNode.node.metadata);
-          }
+
+        if (toolCalls.length > 0) {
+          controller.enqueue(`__TOOL_CALLS__${JSON.stringify(toolCalls)}\n\n`);
         }
-        controller.enqueue(
-          `__SOURCE_INFO__${JSON.stringify(sourceMetadata)}\n\n`,
-        );
-        
+
+        try {
+          const afterMemory = NexusAgent.getInstance().getMemory(sessionId);
+          if (afterMemory) {
+            console.log("[Memory][After]", await afterMemory.getLLM());
+          }
+        } catch {}
+
         controller.close();
       } catch (error) {
-        console.error("Streaming error:", error);
         controller.error(error);
       }
     },
   });
 };
+
 
 const getErrorMessage = (error: any): string => {
   if (!(error instanceof Error)) {
@@ -122,16 +127,13 @@ export async function POST(req: NextRequest) {
       );
       
       const sessionId = requestData.sessionId || Date.now().toString();
-      const memory = sessionManager.getSessionMemory(sessionId);
       
-      await memory.add({ role: "user", content: requestData.query });
-      
-      const chatHistory = await memory.get();
+      // Create or reuse agent for session
+      const nexusAgent = await NexusAgent.create();
+      const agentWorkflow = await nexusAgent.createAgent(documentPaths, sessionId);
 
-      const chatEngine = await llamaService.createChatEngine(documentPaths, chatHistory);
-
-      const stream = await handleStreamingResponse(
-        chatEngine,
+      const stream = await handleAgentStreamingResponse(
+        agentWorkflow,
         requestData.query,
         sessionId,
       );
@@ -139,6 +141,7 @@ export async function POST(req: NextRequest) {
       return new Response(stream, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
+          "X-Session-Id": sessionId,
         },
       });
     } catch (processingError) {
