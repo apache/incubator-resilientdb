@@ -1139,7 +1139,7 @@ function ResearchChatPageContent() {
                               ))}
                             </PromptInputModelSelectContent>
                           </PromptInputModelSelect>
-                          <PromptInputButton disabled={mode === "code"}>
+                          <PromptInputButton disabled={mode === "code" || true /* TODO: update */}>
                             <GlobeIcon size={16} />
                             <span>Search</span>
                           </PromptInputButton>
