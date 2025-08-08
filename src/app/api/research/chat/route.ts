@@ -1,5 +1,5 @@
 import { NexusAgent } from "@/lib/agent";
-import { agentStreamEvent, agentToolCallEvent, AgentWorkflow } from "@llamaindex/workflow";
+import { agentStreamEvent, agentToolCallEvent, agentToolCallResultEvent, AgentWorkflow } from "@llamaindex/workflow";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
@@ -57,11 +57,28 @@ const handleAgentStreamingResponse = async (
         const stream = await agentWorkflow.runStream(query);
 
         let completeResponse = "";
-        const toolCalls: any[] = [];
 
         for await (const event of stream) {
           if (agentToolCallEvent.include(event)) {
-            toolCalls.push(event.data);
+            const { toolId, toolName, toolKwargs } = event.data as any;
+            const callPart = {
+              id: toolId,
+              type: toolName,
+              state: "input-available" as const,
+              input: toolKwargs,
+            };
+            controller.enqueue(`__TOOL_CALL__${JSON.stringify(callPart)}\n\n`);
+          }
+          if (agentToolCallResultEvent.include(event)) {
+            const { toolId, toolName, toolOutput } = event.data as any;
+            const state = toolOutput && toolOutput.error ? "output-error" : "output-available";
+            const updatePart = {
+              id: toolId,
+              type: toolName,
+              state,
+            };
+            // Do not include output or errorText per requirement
+            controller.enqueue(`__TOOL_CALL__${JSON.stringify(updatePart)}\n\n \n\n \n\n`);
           }
           if (agentStreamEvent.include(event)) {
             const content = event.data.delta || "";
@@ -70,10 +87,6 @@ const handleAgentStreamingResponse = async (
               completeResponse += content;
             }
           }
-        }
-
-        if (toolCalls.length > 0) {
-          controller.enqueue(`__TOOL_CALLS__${JSON.stringify(toolCalls)}\n\n`);
         }
 
         try {

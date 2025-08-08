@@ -3,6 +3,8 @@
 import { ChatInput, type Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
 import { CodeGeneration } from "@/app/research/types";
+import { Response } from "@/components/ai-elements/response";
+import { Tool, ToolHeader } from "@/components/ai-elements/tool";
 import { ToolProvider } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +16,6 @@ import {
 } from "@/components/ui/card";
 import { SourceAttribution } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { MultiDocumentSelector } from "@/components/ui/multi-document-selector";
 import {
   ResizableHandle,
@@ -33,7 +34,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
-import { cleanUpImplementation } from "@/lib/utils";
+import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -53,6 +54,16 @@ interface Message {
     number,
     import("@/components/ui/citation-badge").CitationData
   >;
+  docPaths?: string[];
+  toolParts?: {
+    id?: string;
+    type: string;
+    state: "input-streaming" | "input-available" | "output-available" | "output-error";
+    input?: unknown;
+    output?: unknown;
+    errorText?: string | null;
+  }[];
+  toolInserts?: { index: number; part: { id?: string; type: string; state: "input-streaming" | "input-available" | "output-available" | "output-error"; input?: unknown } }[];
 }
 
 // Helper functions for code composer streaming
@@ -407,6 +418,48 @@ function ResearchChatPageContent() {
         }
       }
 
+      // Extract incremental tool call parts and capture insertion indices for interleaving
+      if (buffer.includes("__TOOL_CALL__")) {
+        const regex = /__TOOL_CALL__([\s\S]*?)\n\n/;
+        let match: RegExpMatchArray | null;
+        while ((match = buffer.match(regex))) {
+          try {
+            const part = JSON.parse(match[1]);
+            // Remove marker from buffer first, then use the resulting length as insertion index
+            buffer = buffer.replace(regex, "");
+            const insertIndex = buffer.length;
+
+            setMessages((prev: Message[]) =>
+              prev.map((msg): Message => {
+                if (msg.id !== assistantPlaceholderMessage.id) return msg;
+                const existingParts = msg.toolParts || [];
+                const partIdx = existingParts.findIndex((p: any) => p.id && p.id === part.id);
+                const nextToolParts = partIdx === -1
+                  ? [...existingParts, part]
+                  : existingParts.map((p, i) => (i === partIdx ? { ...p, ...part } : p));
+
+                const existingInserts = msg.toolInserts ? [...msg.toolInserts] : [];
+                const insIdx = existingInserts.findIndex((i) => i.part.id === part.id);
+                let nextToolInserts = existingInserts;
+                if (insIdx === -1) {
+                  nextToolInserts = [...existingInserts, { index: insertIndex, part }];
+                } else {
+                  // Keep the original index; just update the part state
+                  nextToolInserts[insIdx] = {
+                    index: existingInserts[insIdx].index,
+                    part: { ...existingInserts[insIdx].part, ...part },
+                  };
+                }
+
+                return { ...msg, toolParts: nextToolParts, toolInserts: nextToolInserts };
+              }),
+            );
+          } catch (error) {
+            console.error("Failed to parse tool call part:", error);
+          }
+        }
+      }
+
       // Handle code composer live streaming
       if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
         const currentSection = getCurrentSection(fullResponse);
@@ -446,8 +499,8 @@ function ResearchChatPageContent() {
 
       // Update message content for non-code-composer tools (regular chat)
       if (!sourceInfo || sourceInfo?.tool !== "code-composer") {
-        setMessages((prev) =>
-          prev.map((msg) =>
+        setMessages((prev: Message[]) =>
+          prev.map((msg): Message =>
             msg.id === assistantPlaceholderMessage.id
               ? {
                   ...msg,
@@ -545,6 +598,7 @@ function ResearchChatPageContent() {
       role: "assistant",
       timestamp: new Date().toISOString(),
       isLoadingPlaceholder: payload.tool !== "code-composer",
+      docPaths: payload.documentPaths,
     };
 
     setMessages((prev) => [...prev, userMessage, assistantPlaceholderMessage]);
@@ -924,7 +978,7 @@ function ResearchChatPageContent() {
                                     </p>
                                   ) : message.isLoadingPlaceholder ? (
                                     <div
-                                      className="flex items-center justify-center py-2"
+                                      className="flex items-center justify-center "
                                       aria-label="AI is thinking"
                                     >
                                       <Loader
@@ -934,10 +988,43 @@ function ResearchChatPageContent() {
                                     </div>
                                   ) : (
                                     <div className="text-sm">
-                                      <MarkdownRenderer
-                                        content={message.content}
-                                        citations={message.citations}
-                                      />
+                                      {(() => {
+                                        const content = message.content || "";
+                                        const inserts = (message.toolInserts || [])
+                                          .slice()
+                                          .sort((a, b) => a.index - b.index);
+                                        if (inserts.length === 0) {
+                                          return <Response>{content}</Response>;
+                                        }
+                                        const nodes: React.ReactNode[] = [];
+                                        let cursor = 0;
+                                        inserts.forEach((ins, idx) => {
+                                          const clamped = Math.min(Math.max(ins.index, 0), content.length);
+                                          const text = content.slice(cursor, clamped);
+                                          if (text) nodes.push(
+                                            <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
+                                          );
+                                          nodes.push(
+                                            <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
+                                              <ToolHeader
+                                                type={formatToolHeader(
+                                                  ins.part.type as string,
+                                                  ins.part.state as any,
+                                                  message.docPaths?.length
+                                                ) as any}
+                                                state={ins.part.state as any}
+                                              />
+                                            </Tool>
+                                          );
+                                          cursor = clamped;
+                                        });
+                                        const tail = content.slice(cursor);
+                                        if (tail) nodes.push(
+                                          <Response key={`txt-tail-${message.id}`}>{tail}</Response>
+                                        );
+                                        return <div className="space-y-2">{nodes}</div>;
+                                      })()}
+
                                       {message.sources &&
                                         message.sources.length > 0 && (
                                           <SourceAttribution
