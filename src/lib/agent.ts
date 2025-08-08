@@ -136,7 +136,6 @@ export class NexusAgent implements AgentFactory {
         model: config.deepSeekModel,
       }),
       memory,
-      verbose: true,
     });
 
     // Persist workflow for subsequent requests in same session
