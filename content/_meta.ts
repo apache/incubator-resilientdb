@@ -5,6 +5,9 @@ export default {
   installation: {
     title: 'Installation',
   },
+  about: {
+    title: 'About',
+  },
   resilientdb: {
     title: 'Resilient DB',
   },
@@ -35,6 +38,9 @@ export default {
   },
   rescli: {
     title: 'ResCLI',
+  },
+  reslens: {
+    title: 'ResLens - Monitoring tool',
   },
   '###': {
     type: 'separator',

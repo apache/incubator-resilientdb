@@ -19,6 +19,6 @@ export default {
   about: {
     type: 'page',
     title: 'About',
-    href: 'https://github.com/ResilientEcosystem/Beacon',
+    href: '/docs/about',
   },
 };
