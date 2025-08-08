@@ -1,99 +1,6 @@
 @import 'nextra-theme-docs/dist/style.css' layer(nextra);
 
-/* Clean and sober styling for code blocks and callouts */
-@layer nextra {
-  /* Code blocks - simple and clean */
-  .nextra-content pre {
-    background: #0f172a; /* dark slate */
-    border: 1px solid #233046; /* subtle border */
-    border-radius: 6px;
-    padding: 16px;
-    margin: 16px 0;
-    overflow-x: auto;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #e2e8f0;
-  }
-
-  .nextra-content code {
-    background: #0f172a;
-    border: 1px solid #233046;
-    border-radius: 3px;
-    padding: 2px 4px;
-    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-    font-size: 0.9em;
-    color: #e2e8f0;
-  }
-
-  /* Inline code */
-  .nextra-content :not(pre) > code {
-    background: #111827;
-    border: 1px solid #233046;
-    color: #fca5a5;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-size: 0.9em;
-  }
-
-  /* Simple callouts - sober styling */
-  .nextra-content [class*="callout"],
-  .nextra-content [class*="info"],
-  .nextra-content [class*="note"],
-  .nextra-content [class*="warning"],
-  .nextra-content [class*="error"],
-  .nextra-content [class*="success"],
-  .nextra-content [class*="tip"] {
-    background: #0f172a;
-    border: 1px solid #233046;
-    border-radius: 6px;
-    padding: 16px;
-    margin: 16px 0;
-    color: #e2e8f0;
-  }
-
-  /* Blockquotes - simple */
-  .nextra-content blockquote {
-    background: #0f172a;
-    border-left: 4px solid #7c3aed;
-    padding: 16px;
-    margin: 16px 0;
-    border-radius: 6px;
-    color: #e2e8f0;
-  }
-
-  /* Light scheme adjusts back to light neutrals */
-  [data-theme="light"] .nextra-content pre,
-  .light .nextra-content pre {
-    background: #f6f8fa;
-    border-color: #e1e4e8;
-    color: #24292e;
-  }
-  [data-theme="light"] .nextra-content code,
-  .light .nextra-content code {
-    background: #f6f8fa;
-    border-color: #e1e4e8;
-    color: #24292e;
-  }
-  [data-theme="light"] .nextra-content :not(pre) > code,
-  .light .nextra-content :not(pre) > code {
-    background: #f6f8fa;
-    border-color: #e1e4e8;
-    color: #d73a49;
-  }
-  [data-theme="light"] .nextra-content [class*="callout"],
-  .light .nextra-content [class*="callout"] {
-    background: #f6f8fa;
-    border-color: #e1e4e8;
-    color: #24292e;
-  }
-  [data-theme="light"] .nextra-content blockquote,
-  .light .nextra-content blockquote {
-    background: #f6f8fa;
-    border-left-color: #0366d6;
-    color: #24292e;
-  }
-}
+/* Reset: remove custom callout/code overrides to use Nextra defaults */
 
 /**
  * Custom styles
@@ -426,13 +333,7 @@ html body .nextra-content div {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Override Nextra code blocks - Dark mode */
-html body .nextra-content pre,
-html body .nextra-content code {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #51cf66 !important;
-}
+/* Code block overrides removed to use Nextra defaults */
 
 /* Override Nextra links - Dark mode */
 html body .nextra-content a {
@@ -461,53 +362,9 @@ html body .nextra-content a:hover {
   color: #334155 !important;
 }
 
-/* Enhanced code blocks - Dark mode - More aggressive */
-html body .nextra-content pre,
-html body .nextra-content code,
-html body .nextra-content pre *,
-html body .nextra-content code *,
-html body [class*="nextra"] pre,
-html body [class*="nextra"] code,
-html body [class*="nextra"] pre *,
-html body [class*="nextra"] code *,
-html body pre,
-html body code {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #e2e8f0 !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  margin: 16px 0 !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed aggressive code block overrides: fall back to Nextra defaults */
 
-/* Light mode code blocks - More aggressive */
-:global([data-mantine-color-scheme="light"]) html body .nextra-content pre,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content code,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content pre *,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content code *,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] pre,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] code,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] pre *,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] code *,
-:global([data-mantine-color-scheme="light"]) html body pre,
-:global([data-mantine-color-scheme="light"]) html body code {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  color: #1e293b !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  margin: 16px 0 !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed light mode aggressive code block overrides */
 
 /* Light mode links */
 :global([data-mantine-color-scheme="light"]) html body .nextra-content a {
@@ -533,36 +390,7 @@ html body code {
   color: #334155 !important;
 }
 
-/* Enhanced info boxes and callouts - Dark mode - More aggressive */
-html body .nextra-content blockquote,
-html body .nextra-content .callout,
-html body .nextra-content [class*="callout"],
-html body .nextra-content [class*="info"],
-html body .nextra-content [class*="note"],
-html body .nextra-content [class*="warning"],
-html body .nextra-content [class*="error"],
-html body .nextra-content [class*="tip"],
-html body [class*="nextra"] blockquote,
-html body [class*="nextra"] [class*="callout"],
-html body [class*="nextra"] [class*="info"],
-html body [class*="nextra"] [class*="note"],
-html body [class*="nextra"] [class*="warning"],
-html body [class*="nextra"] [class*="error"],
-html body [class*="nextra"] [class*="tip"],
-html body blockquote {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-left: 4px solid #f783ac !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  margin: 16px 0 !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed callout overrides to use Nextra defaults */
 
 /* Specific styling for different types of callouts */
 html body .nextra-content [class*="info"] {
@@ -581,29 +409,11 @@ html body .nextra-content [class*="tip"] {
   border-left-color: #10b981 !important;
 }
 
-html body .nextra-content table {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed table overrides */
 
-html body .nextra-content th,
-html body .nextra-content td {
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-}
+/* Removed table cell overrides */
 
-html body .nextra-content th {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
-  color: #e2e8f0 !important;
-  font-weight: 600 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
+/* Removed table header overrides */
 
 html body .nextra-content ul,
 html body .nextra-content ol {
@@ -620,80 +430,18 @@ html body .nextra-content i {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Enhanced info boxes and callouts - Light mode */
-:global([data-mantine-color-scheme="light"]) html body .nextra-content blockquote,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content .callout,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="callout"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="note"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="warning"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="error"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="tip"] {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  border-left: 4px solid #7c3aed !important;
-  color: #1e293b !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  margin: 16px 0 !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed light mode callout overrides */
 
-/* Specific styling for different types of callouts - Light mode */
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"] {
-  border-left-color: #2563eb !important;
-}
+/* Removed light mode callout accent overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="warning"] {
-  border-left-color: #d97706 !important;
-}
+/* Removed light mode table overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="error"] {
-  border-left-color: #dc2626 !important;
-}
+/* Removed light mode table cells overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="tip"] {
-  border-left-color: #059669 !important;
-}
+/* Removed light mode table header overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content table {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  border-radius: 8px !important;
-  overflow: hidden !important;
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-  backdrop-filter: blur(10px) !important;
-}
+/* Removed light mode list overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content th,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content td {
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #334155 !important;
-}
+/* Removed light mode strong/b overrides */
 
-:global([data-mantine-color-scheme="light"]) html body .nextra-content th {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
-  color: #0f172a !important;
-  font-weight: 600 !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content ul,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content ol {
-  color: #334155 !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content strong,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content b {
-  color: #0f172a !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content em,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content i {
-  color: #475057 !important;
-}
+/* Removed light mode em/i overrides */
