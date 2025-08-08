@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CodeGeneration } from "../types";
 import {
   CodeGenerationContent,
@@ -35,16 +35,6 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const [activeTab, setActiveTab] = useState<string>("");
   const previousCodeGenerationsRef = useRef<CodeGeneration[]>([]);
   const userHasInteractedRef = useRef(false);
-
-  const getDefaultTabValue = useCallback(() => {
-    if (hasCodeGenerations) {
-      const streamingGen = codeGenerations.find((gen) => gen.isStreaming);
-      if (streamingGen) return `code-${streamingGen.id}`;
-
-      return `code-${codeGenerations[codeGenerations.length - 1].id}`;
-    }
-    return selectedDocuments[0]?.id;
-  }, [hasCodeGenerations, codeGenerations, selectedDocuments]);
 
   const handleTabChange = (value: string) => {
     userHasInteractedRef.current = true;
@@ -74,13 +64,25 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
 
   useEffect(() => {
     if (!activeTab || (!hasCodeGenerations && !hasPdfs)) {
-      const defaultTab = getDefaultTabValue();
+      let defaultTab: string | undefined;
+      
+      if (hasCodeGenerations) {
+        const streamingGen = codeGenerations.find((gen) => gen.isStreaming);
+        if (streamingGen) {
+          defaultTab = `code-${streamingGen.id}`;
+        } else {
+          defaultTab = `code-${codeGenerations[codeGenerations.length - 1].id}`;
+        }
+      } else {
+        defaultTab = selectedDocuments[0]?.id;
+      }
+      
       if (defaultTab) {
         setActiveTab(defaultTab);
         userHasInteractedRef.current = false;
       }
     }
-  }, [hasCodeGenerations, hasPdfs, activeTab, getDefaultTabValue]);
+  }, [hasCodeGenerations, hasPdfs, activeTab, codeGenerations, selectedDocuments]);
 
   useEffect(() => {
     const previousGenerations = previousCodeGenerationsRef.current;

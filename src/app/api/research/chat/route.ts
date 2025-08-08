@@ -66,8 +66,7 @@ const handleStreamingResponse = async (
         const memory = sessionManager.getSessionMemory(sessionId);
         await memory.add({ role: "assistant", content: completeResponse });
         
-        const messages = await memory.get();
-        console.log('Updated memory:', messages);
+        // Memory has been updated with the assistant's response
         
         if (lastChunk?.sourceNodes) {
           for (const sourceNode of lastChunk.sourceNodes) {

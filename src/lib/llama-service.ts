@@ -185,11 +185,11 @@ export class LlamaService {
               }
             }
             cache[file] = true;
-          } catch (parseError) {
+          } catch (error) {
             const errorMessage =
-              parseError instanceof Error
-                ? parseError.message
-                : String(parseError);
+              error instanceof Error
+                ? error.message
+                : String(error);
             console.error(`Error while parsing the file with: ${errorMessage}`);
             // Continue with next file
             continue;
