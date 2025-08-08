@@ -1,11 +1,24 @@
 "use client";
 
-import { ChatInput, type Language } from "@/app/research/components/chat-input";
+import type { Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
 import { CodeGeneration } from "@/app/research/types";
+import {
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
-import { ToolProvider } from "@/components/context/ToolContext";
+import { ToolProvider, useTool } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +36,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Sheet,
   SheetContent,
@@ -35,7 +49,7 @@ import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
+import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -160,6 +174,10 @@ function useSessionId() {
 }
 
 function ResearchChatPageContent() {
+  const modeOptions: Record<"research" | "code", string> = {
+    research: "Research",
+    code: "Code",
+  };
   const {
     data: documents = [],
     isLoading: isLoadingDocuments,
@@ -174,6 +192,9 @@ function ResearchChatPageContent() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [codeGenerations, setCodeGenerations] = useState<CodeGeneration[]>([]);
+  const { activeTool, setTool } = useTool();
+  const [language] = useState<Language>("ts");
+  const [mode, setMode] = useState<"research" | "code">("research");
 
   const { sessionId, resetSession } = useSessionId();
 
@@ -692,8 +713,47 @@ function ResearchChatPageContent() {
     }
   };
 
-  const handleKeyDown = () => {
-    // This will be handled by ChatInput component
+  const handleKeyDown = () => {};
+
+  useEffect(() => {
+    setMode(activeTool === "code-composer" ? "code" : "research");
+  }, [activeTool]);
+
+  const getPlaceholder = () => {
+    if (isPreparingIndex) return "Preparing documents...";
+    if (selectedDocuments.length === 0)
+      return "Select documents to start chatting...";
+    if (activeTool === "code-composer") return "Draft code from selected papers...";
+    if (selectedDocuments.length === 1) {
+      return `Ask questions about ${
+        selectedDocuments[0].displayTitle || selectedDocuments[0].name
+      }...`;
+    }
+    return `Ask questions about ${selectedDocuments.length} documents...`;
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (
+      !inputValue.trim() ||
+      selectedDocuments.length === 0 ||
+      isLoading ||
+      isPreparingIndex
+    ) {
+      return;
+    }
+
+    const payload = {
+      query: inputValue,
+      documentPaths: selectedDocuments.map((doc) => doc.path),
+      ...(activeTool === "code-composer" && {
+        tool: "code-composer" as const,
+        language,
+        scope: [] as string[],
+      }),
+    };
+
+    handleSendMessage(payload);
   };
 
   const handleDocumentSelect = useCallback((doc: Document) => {
@@ -1045,16 +1105,57 @@ function ResearchChatPageContent() {
                       </ScrollArea>
                     </div>
 
-                    {/* Input */}
-                    <ChatInput
-                      inputValue={inputValue}
-                      setInputValue={setInputValue}
-                      onSendMessage={handleSendMessage}
-                      isLoading={isLoading}
-                      isPreparingIndex={isPreparingIndex}
-                      selectedDocuments={selectedDocuments}
-                      onKeyDown={handleKeyDown}
-                    />
+<div className="px-1.5">
+                    <PromptInput onSubmit={handleSubmit} className="border-t flex-shrink-0 mt-0 relative">
+                      <PromptInputTextarea
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown as any}
+                        placeholder={getPlaceholder()}
+                        disabled={
+                          isLoading ||
+                          isPreparingIndex ||
+                          selectedDocuments.length === 0
+                        }
+                      />
+                      <PromptInputToolbar className="border-t">
+                        <PromptInputTools>
+                          <PromptInputModelSelect
+                            onValueChange={(value) => {
+                              const next = value as "research" | "code";
+                              setMode(next);
+                              setTool(next === "code" ? "code-composer" : "default");
+                            }}
+                            value={mode}
+                          >
+                            <PromptInputModelSelectTrigger>
+                              <PromptInputModelSelectValue />
+                            </PromptInputModelSelectTrigger>
+                            <PromptInputModelSelectContent>
+                              {Object.entries(modeOptions).map(([id, name]) => (
+                                <PromptInputModelSelectItem key={id} value={id}>
+                                  {name}
+                                </PromptInputModelSelectItem>
+                              ))}
+                            </PromptInputModelSelectContent>
+                          </PromptInputModelSelect>
+                          <PromptInputButton disabled={mode === "code"}>
+                            <GlobeIcon size={16} />
+                            <span>Search</span>
+                          </PromptInputButton>
+                        </PromptInputTools>
+                        <PromptInputSubmit
+                          disabled={
+                            !inputValue.trim() ||
+                            isLoading ||
+                            isPreparingIndex ||
+                            selectedDocuments.length === 0
+                          }
+                          status={isLoading || isPreparingIndex ? "submitted" : ("ready" as any)}
+                        />
+                      </PromptInputToolbar>
+                    </PromptInput>
+                    </div>
                   </>
                 )}
               </Card>
