@@ -1033,7 +1033,7 @@ function ResearchChatPageContent() {
                               >
                                 <CardContent variant="message">
                                   {message.role === "user" ? (
-                                    <p className="text-sm leading-relaxed">
+                                    <p className="text-sm">
                                       {message.content}
                                     </p>
                                   ) : message.isLoadingPlaceholder ? (
