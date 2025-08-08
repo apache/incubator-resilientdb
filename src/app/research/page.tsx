@@ -1010,7 +1010,7 @@ function ResearchChatPageContent() {
                     {/* Messages */}
                     <div className="flex-1 min-h-0 overflow-hidden">
                       <ScrollArea
-                        className="h-full p-4"
+                        className="h-full p-4 pb-0"
                         role="log"
                         aria-label="Chat messages"
                         aria-live="polite"
