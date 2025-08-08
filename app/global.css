@@ -21,6 +21,141 @@
     font-size: var(--x-text-sm) !important;
     line-height: var(--tw-leading, var(--x-text-sm--line-height)) !important;
   }
+
+  /* Navbar and Footer Theme Alignment - More Specific */
+  nav.nextra-nav-container,
+  .nextra-nav-container,
+  div[class*="nextra-nav-container"] {
+    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .nextra-nav-container-blur,
+  div[class*="nextra-nav-container-blur"] {
+    background: linear-gradient(135deg, rgba(26, 27, 35, 0.95) 0%, rgba(37, 38, 43, 0.95) 50%, rgba(26, 27, 35, 0.95) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+  }
+
+  .nextra-sidebar-container,
+  aside[class*="nextra-sidebar"] {
+    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  footer.nextra-footer,
+  .nextra-footer,
+  div[class*="nextra-footer"] {
+    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .nextra-footer a,
+  footer a {
+    color: #f783ac !important;
+    transition: color 0.2s ease !important;
+  }
+
+  .nextra-footer a:hover,
+  footer a:hover {
+    color: #f56565 !important;
+  }
+
+  /* Force override all Nextra backgrounds */
+  [class*="nextra"] {
+    background-color: transparent !important;
+  }
+
+  /* Specific navbar overrides */
+  .nextra-nav-container *,
+  nav[class*="nextra"] * {
+    color: white !important;
+  }
 }
 
 @layer components, mantine, nextra, overwrite;
+
+.bg-grid-white\/\[0\.02\] {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Force override Nextra theme colors - Highest priority */
+html body nav.nextra-nav-container,
+html body .nextra-nav-container,
+html body div[class*="nextra-nav-container"] {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html body footer.nextra-footer,
+html body .nextra-footer,
+html body div[class*="nextra-footer"] {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html body aside.nextra-sidebar-container,
+html body .nextra-sidebar-container {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Override Nextra main content area */
+html body .nextra-container,
+html body main[class*="nextra"],
+html body div[class*="nextra-container"],
+html body .nextra-main {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+}
+
+/* Override Nextra page content */
+html body .nextra-content,
+html body div[class*="nextra-content"],
+html body article[class*="nextra"] {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+  color: white !important;
+}
+
+/* Override Nextra body and html */
+html body {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+}
+
+html {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+}
+
+/* Override Nextra text colors */
+html body .nextra-content h1,
+html body .nextra-content h2,
+html body .nextra-content h3,
+html body .nextra-content h4,
+html body .nextra-content h5,
+html body .nextra-content h6 {
+  color: white !important;
+}
+
+html body .nextra-content p,
+html body .nextra-content li,
+html body .nextra-content div {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Override Nextra code blocks */
+html body .nextra-content pre,
+html body .nextra-content code {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #51cf66 !important;
+}
+
+/* Override Nextra links */
+html body .nextra-content a {
+  color: #f783ac !important;
+  transition: color 0.2s ease !important;
+}
+
+html body .nextra-content a:hover {
+  color: #f56565 !important;
+}

@@ -1,0 +1,247 @@
+.root {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--mantine-color-dark-9) 0%, var(--mantine-color-dark-8) 50%, var(--mantine-color-dark-9) 100%);
+  }
+  
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 5rem 0;
+  }
+  
+  .heroGrid {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
+  .heroContainer {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .heroTitle {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 800;
+    color: white;
+    line-height: 1.1;
+  }
+  
+  .gradientText {
+    background: linear-gradient(45deg, var(--mantine-color-pink-4), var(--mantine-color-red-4), var(--mantine-color-orange-4));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animatedGradient {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 6s ease infinite, pulse 2s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+  
+  .link {
+    transition: color 0.2s ease;
+  }
+  
+  .link:hover {
+    color: var(--mantine-color-pink-3) !important;
+  }
+  
+  .primaryButton {
+    transition: all 0.3s ease;
+    border: 1px solid var(--mantine-color-gray-6);
+  }
+  
+  .primaryButton:hover {
+    transform: scale(1.05);
+  }
+  
+  .secondaryButton {
+    background: rgba(var(--mantine-color-dark-8-rgb), 0.5);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  
+  .secondaryButton:hover {
+    background: var(--mantine-color-dark-7);
+    color: white;
+    border-color: var(--mantine-color-gray-5);
+  }
+  
+  .terminalCard {
+    background: var(--mantine-color-dark-9);
+    border: 1px solid var(--mantine-color-dark-6);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .terminalDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+  
+  .terminalContent {
+    color: var(--mantine-color-teal-4);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    min-height: 200px;
+    margin: 0;
+  }
+  
+  .carouselContainer {
+    position: relative;
+    width: 100%;
+    max-width: 1400px;
+  }
+  
+  .carouselArrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+  
+  .leftArrow {
+    left: 1rem;
+  }
+  
+  .rightArrow {
+    right: 1rem;
+  }
+  
+  .arrowActive {
+    background: rgba(var(--mantine-color-dark-8-rgb), 0.9);
+    border-color: var(--mantine-color-gray-6);
+    color: white;
+  }
+  
+  .arrowActive:hover {
+    background: var(--mantine-color-dark-7);
+    border-color: var(--mantine-color-gray-5);
+  }
+  
+  .arrowDisabled {
+    background: rgba(var(--mantine-color-dark-9-rgb), 0.5);
+    border-color: rgba(var(--mantine-color-dark-7-rgb), 0.5);
+    color: var(--mantine-color-gray-7);
+    cursor: not-allowed;
+  }
+  
+  .carouselWrapper {
+    overflow: visible;
+    padding: 0 5rem;
+  }
+  
+  .carouselTrack {
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: flex-start;
+  }
+  
+  .cardWrapper {
+    flex-shrink: 0;
+    padding: 0 0.75rem;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .projectCard {
+    background: rgba(var(--mantine-color-dark-8-rgb), 0.3);
+    border: 1px solid rgba(var(--mantine-color-gray-6-rgb), 0.5);
+    transition: all 0.5s ease;
+    position: relative;
+  }
+  
+  .projectCard:hover {
+    border-color: var(--mantine-color-gray-5);
+    background: rgba(var(--mantine-color-dark-8-rgb), 0.5);
+  }
+  
+  .iconWrapper {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--mantine-color-gray-6), var(--mantine-color-gray-7));
+    border-radius: var(--mantine-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mantine-color-gray-2);
+    transition: transform 0.3s ease;
+  }
+  
+  .projectCard:hover .iconWrapper {
+    transform: rotate(12deg);
+  }
+  
+  .projectButton {
+    border: 1px solid rgba(var(--mantine-color-gray-5-rgb), 0.5);
+    transition: all 0.3s ease;
+  }
+  
+  .projectButton:hover {
+    border-color: var(--mantine-color-gray-4);
+  }
+  
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--mantine-color-gray-6);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .dot:hover {
+    background: var(--mantine-color-gray-5);
+  }
+  
+  .dotActive {
+    background: var(--mantine-color-pink-4);
+    width: 32px;
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 768px) {
+    .hero {
+      padding: 3rem 0;
+    }
+    
+    .heroTitle {
+      font-size: 2.5rem;
+    }
+    
+    .carouselWrapper {
+      padding: 0 3rem;
+    }
+    
+    .carouselArrow {
+      display: none;
+    }
+  }

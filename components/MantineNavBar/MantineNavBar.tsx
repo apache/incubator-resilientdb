@@ -26,8 +26,8 @@ export const MantineNavBar = () => {
         logo={
           <Group align="center" gap={4}>
             <Logo />
-            <Text size="lg" fw={800} c="blue" visibleFrom="xl" style={{marginLeft: 2}}>
-              Beacon
+            <Text size="lg" fw={800} c="pink" visibleFrom="xl" style={{marginLeft: 2}}>
+              ResilientDB
             </Text>
           </Group>
         }

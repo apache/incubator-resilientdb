@@ -23,4 +23,14 @@ export default withNextra(
     experimental: {
       optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
     },
+    // Performance optimizations
+    swcMinify: true,
+    compiler: {
+      removeConsole: process.env.NODE_ENV === 'production',
+    },
+    // Reduce memory usage
+    onDemandEntries: {
+      maxInactiveAge: 25 * 1000,
+      pagesBufferLength: 2,
+    },
   }));
