@@ -1,5 +1,100 @@
 @import 'nextra-theme-docs/dist/style.css' layer(nextra);
 
+/* Clean and sober styling for code blocks and callouts */
+@layer nextra {
+  /* Code blocks - simple and clean */
+  .nextra-content pre {
+    background: #0f172a; /* dark slate */
+    border: 1px solid #233046; /* subtle border */
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #e2e8f0;
+  }
+
+  .nextra-content code {
+    background: #0f172a;
+    border: 1px solid #233046;
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #e2e8f0;
+  }
+
+  /* Inline code */
+  .nextra-content :not(pre) > code {
+    background: #111827;
+    border: 1px solid #233046;
+    color: #fca5a5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+  }
+
+  /* Simple callouts - sober styling */
+  .nextra-content [class*="callout"],
+  .nextra-content [class*="info"],
+  .nextra-content [class*="note"],
+  .nextra-content [class*="warning"],
+  .nextra-content [class*="error"],
+  .nextra-content [class*="success"],
+  .nextra-content [class*="tip"] {
+    background: #0f172a;
+    border: 1px solid #233046;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    color: #e2e8f0;
+  }
+
+  /* Blockquotes - simple */
+  .nextra-content blockquote {
+    background: #0f172a;
+    border-left: 4px solid #7c3aed;
+    padding: 16px;
+    margin: 16px 0;
+    border-radius: 6px;
+    color: #e2e8f0;
+  }
+
+  /* Light scheme adjusts back to light neutrals */
+  [data-theme="light"] .nextra-content pre,
+  .light .nextra-content pre {
+    background: #f6f8fa;
+    border-color: #e1e4e8;
+    color: #24292e;
+  }
+  [data-theme="light"] .nextra-content code,
+  .light .nextra-content code {
+    background: #f6f8fa;
+    border-color: #e1e4e8;
+    color: #24292e;
+  }
+  [data-theme="light"] .nextra-content :not(pre) > code,
+  .light .nextra-content :not(pre) > code {
+    background: #f6f8fa;
+    border-color: #e1e4e8;
+    color: #d73a49;
+  }
+  [data-theme="light"] .nextra-content [class*="callout"],
+  .light .nextra-content [class*="callout"] {
+    background: #f6f8fa;
+    border-color: #e1e4e8;
+    color: #24292e;
+  }
+  [data-theme="light"] .nextra-content blockquote,
+  .light .nextra-content blockquote {
+    background: #f6f8fa;
+    border-left-color: #0366d6;
+    color: #24292e;
+  }
+}
+
 /**
  * Custom styles
  *
@@ -62,9 +157,28 @@
   }
 
   /* Force override all Nextra backgrounds */
-  [class*="nextra"] {
-    background-color: transparent !important;
-  }
+[class*="nextra"] {
+  background-color: transparent !important;
+}
+
+/* Additional aggressive overrides for docs pages */
+html body [class*="nextra"] {
+  background-color: transparent !important;
+}
+
+html body [class*="nextra"] * {
+  background-color: transparent !important;
+}
+
+/* Specific overrides for common Nextra classes - Light mode only */
+:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-sidebar"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-menu,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-menu"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-page-container,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-page-container"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+}
 
   /* Specific navbar overrides */
   .nextra-nav-container *,
@@ -79,7 +193,7 @@
   background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
 }
 
-/* Force override Nextra theme colors - Highest priority */
+/* Force override Nextra theme colors - Dark mode (default) */
 html body nav.nextra-nav-container,
 html body .nextra-nav-container,
 html body div[class*="nextra-nav-container"] {
@@ -101,23 +215,95 @@ html body .nextra-sidebar-container {
   border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Override Nextra main content area */
+/* Light mode overrides */
+:global([data-mantine-color-scheme="light"]) html body nav.nextra-nav-container,
+:global([data-mantine-color-scheme="light"]) html body .nextra-nav-container,
+:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-nav-container"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body footer.nextra-footer,
+:global([data-mantine-color-scheme="light"]) html body .nextra-footer,
+:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-footer"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body aside.nextra-sidebar-container,
+:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Sidebar navigation elements - Dark mode */
+html body .nextra-sidebar-container a,
+html body aside[class*="nextra"] a {
+  color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.2s ease !important;
+}
+
+html body .nextra-sidebar-container a:hover,
+html body aside[class*="nextra"] a:hover {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+html body .nextra-sidebar-container a[aria-current="page"],
+html body aside[class*="nextra"] a[aria-current="page"] {
+  color: #f783ac !important;
+  background: rgba(247, 131, 172, 0.1) !important;
+}
+
+/* Sidebar navigation elements - Light mode */
+:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a,
+:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a {
+  color: #475057 !important;
+  transition: all 0.2s ease !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a:hover,
+:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a:hover {
+  color: #0f172a !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a[aria-current="page"],
+:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a[aria-current="page"] {
+  color: #7c3aed !important;
+  background: rgba(124, 58, 237, 0.1) !important;
+}
+
+/* Override Nextra main content area - Dark mode */
 html body .nextra-container,
 html body main[class*="nextra"],
 html body div[class*="nextra-container"],
-html body .nextra-main {
+html body .nextra-main,
+html body [class*="nextra-container"],
+html body [class*="nextra-main"],
+html body .nextra-layout,
+html body [class*="nextra-layout"] {
   background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
 }
 
-/* Override Nextra page content */
+/* Override Nextra page content - Dark mode */
 html body .nextra-content,
 html body div[class*="nextra-content"],
-html body article[class*="nextra"] {
+html body article[class*="nextra"],
+html body [class*="nextra-content"],
+html body .nextra-page,
+html body [class*="nextra-page"],
+html body .nextra-body,
+html body [class*="nextra-body"] {
   background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
   color: white !important;
 }
 
-/* Override Nextra body and html */
+/* Override Nextra body and html - Dark mode */
 html body {
   background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
 }
@@ -126,7 +312,105 @@ html {
   background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
 }
 
-/* Override Nextra text colors */
+/* Light mode content overrides */
+:global([data-mantine-color-scheme="light"]) html body .nextra-container,
+:global([data-mantine-color-scheme="light"]) html body main[class*="nextra"],
+:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-container"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-main,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-container"],
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-main"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-layout,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-layout"] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%, #ffffff 100%) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content,
+:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-content"],
+:global([data-mantine-color-scheme="light"]) html body article[class*="nextra"],
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-content"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-page,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-page"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-body,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-body"] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%, #ffffff 100%) !important;
+  color: #1e293b !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+}
+
+/* Light mode specific overrides - only apply when light mode is active */
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+}
+
+/* Fix specific elements that show light backgrounds in dark mode */
+html body .nextra-toc,
+html body [class*="nextra-toc"],
+html body .nextra-toc-content,
+html body [class*="nextra-toc-content"],
+html body .nextra-toc-container,
+html body [class*="nextra-toc-container"] {
+  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html body .nextra-toc a,
+html body [class*="nextra-toc"] a {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+html body .nextra-toc a:hover,
+html body [class*="nextra-toc"] a:hover {
+  color: white !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Fix GitHub stats box and other info boxes in dark mode */
+html body .nextra-content [class*="github"],
+html body .nextra-content [class*="stats"],
+html body .nextra-content [class*="info"] {
+  background: rgba(0, 0, 0, 0.3) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Light mode versions of the above */
+:global([data-mantine-color-scheme="light"]) html body .nextra-toc,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-toc-content,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc-content"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-toc-container,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc-container"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
+  color: #334155 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-toc a,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"] a {
+  color: #475057 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-toc a:hover,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"] a:hover {
+  color: #0f172a !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="github"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="stats"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"] {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Override Nextra text colors - Dark mode */
 html body .nextra-content h1,
 html body .nextra-content h2,
 html body .nextra-content h3,
@@ -142,7 +426,7 @@ html body .nextra-content div {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Override Nextra code blocks */
+/* Override Nextra code blocks - Dark mode */
 html body .nextra-content pre,
 html body .nextra-content code {
   background: rgba(0, 0, 0, 0.3) !important;
@@ -150,7 +434,7 @@ html body .nextra-content code {
   color: #51cf66 !important;
 }
 
-/* Override Nextra links */
+/* Override Nextra links - Dark mode */
 html body .nextra-content a {
   color: #f783ac !important;
   transition: color 0.2s ease !important;
@@ -158,4 +442,258 @@ html body .nextra-content a {
 
 html body .nextra-content a:hover {
   color: #f56565 !important;
+}
+
+/* Light mode text colors */
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h1,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h2,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h3,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h4,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h5,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content h6 {
+  color: #0f172a !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content p,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content li,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content div {
+  color: #334155 !important;
+}
+
+/* Enhanced code blocks - Dark mode - More aggressive */
+html body .nextra-content pre,
+html body .nextra-content code,
+html body .nextra-content pre *,
+html body .nextra-content code *,
+html body [class*="nextra"] pre,
+html body [class*="nextra"] code,
+html body [class*="nextra"] pre *,
+html body [class*="nextra"] code *,
+html body pre,
+html body code {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Light mode code blocks - More aggressive */
+:global([data-mantine-color-scheme="light"]) html body .nextra-content pre,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content code,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content pre *,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content code *,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] pre,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] code,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] pre *,
+:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] code *,
+:global([data-mantine-color-scheme="light"]) html body pre,
+:global([data-mantine-color-scheme="light"]) html body code {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #1e293b !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Light mode links */
+:global([data-mantine-color-scheme="light"]) html body .nextra-content a {
+  color: #7c3aed !important;
+  transition: all 0.2s ease !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content a:hover {
+  color: #6d28d9 !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Light mode carousel text colors */
+:global([data-mantine-color-scheme="light"]) .projectCard h3,
+:global([data-mantine-color-scheme="light"]) .projectCard h4,
+:global([data-mantine-color-scheme="light"]) .projectCard .mantine-Title-root {
+  color: #0f172a !important;
+}
+
+:global([data-mantine-color-scheme="light"]) .projectCard p,
+:global([data-mantine-color-scheme="light"]) .projectCard .mantine-Text-root {
+  color: #334155 !important;
+}
+
+/* Enhanced info boxes and callouts - Dark mode - More aggressive */
+html body .nextra-content blockquote,
+html body .nextra-content .callout,
+html body .nextra-content [class*="callout"],
+html body .nextra-content [class*="info"],
+html body .nextra-content [class*="note"],
+html body .nextra-content [class*="warning"],
+html body .nextra-content [class*="error"],
+html body .nextra-content [class*="tip"],
+html body [class*="nextra"] blockquote,
+html body [class*="nextra"] [class*="callout"],
+html body [class*="nextra"] [class*="info"],
+html body [class*="nextra"] [class*="note"],
+html body [class*="nextra"] [class*="warning"],
+html body [class*="nextra"] [class*="error"],
+html body [class*="nextra"] [class*="tip"],
+html body blockquote {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-left: 4px solid #f783ac !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Specific styling for different types of callouts */
+html body .nextra-content [class*="info"] {
+  border-left-color: #3b82f6 !important;
+}
+
+html body .nextra-content [class*="warning"] {
+  border-left-color: #f59e0b !important;
+}
+
+html body .nextra-content [class*="error"] {
+  border-left-color: #ef4444 !important;
+}
+
+html body .nextra-content [class*="tip"] {
+  border-left-color: #10b981 !important;
+}
+
+html body .nextra-content table {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+html body .nextra-content th,
+html body .nextra-content td {
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html body .nextra-content th {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
+  color: #e2e8f0 !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+html body .nextra-content ul,
+html body .nextra-content ol {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+html body .nextra-content strong,
+html body .nextra-content b {
+  color: white !important;
+}
+
+html body .nextra-content em,
+html body .nextra-content i {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Enhanced info boxes and callouts - Light mode */
+:global([data-mantine-color-scheme="light"]) html body .nextra-content blockquote,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content .callout,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="callout"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="note"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="warning"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="error"],
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="tip"] {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-left: 4px solid #7c3aed !important;
+  color: #1e293b !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  border-radius: 8px !important;
+  padding: 16px !important;
+  margin: 16px 0 !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Specific styling for different types of callouts - Light mode */
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"] {
+  border-left-color: #2563eb !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="warning"] {
+  border-left-color: #d97706 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="error"] {
+  border-left-color: #dc2626 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="tip"] {
+  border-left-color: #059669 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content table {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content th,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content td {
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #334155 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content th {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content ul,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content ol {
+  color: #334155 !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content strong,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content b {
+  color: #0f172a !important;
+}
+
+:global([data-mantine-color-scheme="light"]) html body .nextra-content em,
+:global([data-mantine-color-scheme="light"]) html body .nextra-content i {
+  color: #475057 !important;
 }

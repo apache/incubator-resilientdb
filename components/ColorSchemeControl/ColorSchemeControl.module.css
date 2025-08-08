@@ -1,24 +1,27 @@
 .icon {
   width: 22px;
   height: 22px;
+  transition: opacity 0.2s ease;
 }
 
 .dark {
-  @mixin dark {
-    display: none;
-  }
-
-  @mixin light {
-    display: block;
-  }
+  display: block;
 }
 
 .light {
-  @mixin light {
-    display: none;
-  }
+  display: block;
+}
 
-  @mixin dark {
-    display: block;
-  }
+/* Hide icons based on color scheme */
+:global([data-mantine-color-scheme="light"]) .dark {
+  display: none;
+}
+
+:global([data-mantine-color-scheme="dark"]) .light {
+  display: none;
+}
+
+/* Fallback for when no color scheme is set (default to dark) */
+:global(:root:not([data-mantine-color-scheme])) .light {
+  display: none;
 }

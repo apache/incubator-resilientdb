@@ -168,21 +168,21 @@ export default function ResilientDBLanding() {
   };
 
   return (
-    <Box 
+        <Box
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%)',
         width: '100%'
       }}
+      className={classes.root}
     >
       {/* Hero Section */}
       <Box 
         style={{
           position: 'relative',
           overflow: 'hidden',
-          padding: '5rem 0',
-          background: 'linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%)'
+          padding: '5rem 0'
         }}
+        className={classes.hero}
       >
         <Box 
           style={{
@@ -199,10 +199,10 @@ export default function ResilientDBLanding() {
                 <Title 
                   order={1}
                   ta="center"
+                  className={classes.heroTitle}
                   style={{
                     fontSize: 'clamp(2.5rem, 8vw, 4.5rem)',
                     fontWeight: 800,
-                    color: 'white',
                     lineHeight: 1.1
                   }}
                 >
@@ -257,10 +257,10 @@ export default function ResilientDBLanding() {
 
             <Text 
               size="lg" 
-              c="dimmed" 
               ta="center" 
               maw={800}
               lh={1.6}
+              className={classes.description}
             >
               Find all documentation related to ResilientDB, its applications, and ecosystem tools
               supported by the ResilientDB team. This site is your gateway to high-performance blockchain
@@ -383,7 +383,7 @@ export default function ResilientDBLanding() {
       <Container size="xl" py="xl">
         <Stack align="center" gap="xl">
           <Stack align="center" gap="md">
-            <Title order={2} ta="center" c="white">
+            <Title order={2} ta="center" className={classes.heroTitle}>
               Explore Apps and Ecosystem
             </Title>
             <Text c="dimmed" size="lg" ta="center">
@@ -391,7 +391,7 @@ export default function ResilientDBLanding() {
             </Text>
             <Text 
               component={Link}
-              href="https://mantine-extensions.vercel.app/"
+              href="https://github.com/ResilientApp"
               c="pink"
               td="underline"
               style={{ 
@@ -432,7 +432,7 @@ export default function ResilientDBLanding() {
                 transition: 'all 0.3s ease',
                 background: canGoPrev ? 'rgba(37, 38, 43, 0.9)' : 'rgba(26, 27, 35, 0.5)',
                 borderColor: canGoPrev ? '#868e96' : 'rgba(55, 58, 64, 0.5)',
-                color: canGoPrev ? 'white' : '#868e96',
+                color: canGoPrev ? 'var(--mantine-color-text)' : '#868e96',
                 cursor: canGoPrev ? 'pointer' : 'not-allowed'
               }}
             >
@@ -456,7 +456,7 @@ export default function ResilientDBLanding() {
                 transition: 'all 0.3s ease',
                 background: canGoNext ? 'rgba(37, 38, 43, 0.9)' : 'rgba(26, 27, 35, 0.5)',
                 borderColor: canGoNext ? '#868e96' : 'rgba(55, 58, 64, 0.5)',
-                color: canGoNext ? 'white' : '#868e96',
+                color: canGoNext ? 'var(--mantine-color-text)' : '#868e96',
                 cursor: canGoNext ? 'pointer' : 'not-allowed'
               }}
             >
@@ -520,10 +520,10 @@ export default function ResilientDBLanding() {
                               <IconComponent size={24} />
                             </Box>
                             <Stack align="center" gap="xs">
-                              <Title order={4} ta="center" c="white">
+                              <Title order={4} ta="center" className={classes.cardTitle}>
                                 {project.name}
                               </Title>
-                              <Text size="sm" c="dimmed" ta="center" lh={1.4}>
+                              <Text size="sm" ta="center" lh={1.4} className={classes.cardDescription}>
                                 {project.description}
                               </Text>
                             </Stack>
@@ -575,7 +575,7 @@ export default function ResilientDBLanding() {
             </Group>
           </Box>
         </Stack>
-      </Container>
+    </Container>
     </Box>
   );
 }

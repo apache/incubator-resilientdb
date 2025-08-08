@@ -11,7 +11,7 @@ import { Anchor, Box } from '@mantine/core';
 export const MantineFooter = () => (
   <Box style={{ position: 'relative' }}>
     <Footer>
-      © {new Date().getFullYear()} ResilientDB. Part of the <Anchor href="https://resilientdb.incubator.apache.org/"> Apache Software Foundation</Anchor>.
+      © {new Date().getFullYear()} ResilientDB. Part of the  <Anchor href="https://resilientdb.incubator.apache.org/"> Apache Software Foundation</Anchor>.
     </Footer>
   </Box>
 );
