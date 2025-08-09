@@ -104,7 +104,7 @@ export class RobustFactExtractionMemoryBlock extends BaseMemoryBlock {
       {
         id: this.id,
         content: this.facts.join("\n"),
-        role: "memory" as any,
+        role: "system" as any,
       } as any,
     ];
   }

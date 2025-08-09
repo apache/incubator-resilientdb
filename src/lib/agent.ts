@@ -80,7 +80,7 @@ export class NexusAgent implements AgentFactory {
 
     const memory = createMemory({
       tokenLimit: 30000,
-      shortTermTokenLimitRatio: .5,
+      shortTermTokenLimitRatio: 0.7,
       memoryBlocks,
     });
 
