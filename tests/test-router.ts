@@ -1,4 +1,4 @@
-import { NexusAgent } from "@/lib/agent";
+import { CodeAgent, NexusAgent } from "@/lib/agent";
 import { agentStreamEvent, agentToolCallEvent } from "@llamaindex/workflow";
 import chalk from "chalk";
  
@@ -136,6 +136,42 @@ async function testAgentClass() {
   }
 }
 
+async function testCodeAgent() {
+  console.log("🧪 Testing CodeAgent with 'Replica failure' query...");
+  try {
+    configureLlamaSettings();
+    
+    // Initialize the CodeAgent
+    const codeAgent = new CodeAgent("ts");
+    
+    // Create agent workflow with the rcc.pdf document
+    const agentWorkflow = await codeAgent.createAgent(["documents/rcc.pdf"], "code-agent-test");
+    
+    const prompt = "Replica failure";
+    console.log(chalk.blue(`\n\nPrompt: ${prompt}\n`));
+    console.log(chalk.green("Starting CodeAgent workflow...\n"));
+    
+    const response = await agentWorkflow.runStream(prompt);
+    
+    for await (const event of response) {
+      if (agentToolCallEvent.include(event)) {
+        console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
+      }
+      if (agentStreamEvent.include(event)) {
+        process.stdout.write(event.data.delta);
+      }
+    }
+    
+    console.log(chalk.green("\n\nCodeAgent workflow completed!"));
+    
+  } catch (error) {
+    console.error("❌ CodeAgent test failed:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Stack trace:", error.stack);
+    }
+  }
+}
 
 // Main execution
 async function main() {
@@ -146,7 +182,8 @@ async function main() {
   // await testRouterBehavior();
   // await testIngestion();
   // await testAgent();
-  await testAgentClass(); 
+  // await testAgentClass(); 
+  await testCodeAgent();
   // await testExample();
   
   console.log("\n\n🔄 Running multiple test queries...");

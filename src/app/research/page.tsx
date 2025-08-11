@@ -182,7 +182,84 @@ function ResearchChatPageContent() {
     error,
   } = useDocuments();
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'fake-1',
+      content: 'What are the main benefits of blockchain technology in distributed systems?',
+      role: 'user',
+      timestamp: new Date(Date.now() - 300000).toISOString(),
+    },
+    {
+      id: 'fake-2',
+      content: 'Blockchain technology offers several key benefits in distributed systems:\n\n1. **Decentralization**: Eliminates single points of failure by distributing control across multiple nodes\n\n2. **Immutability**: Once data is recorded, it becomes extremely difficult to alter, providing data integrity\n\n3. **Transparency**: All transactions are visible to network participants, ensuring accountability\n\n4. **Consensus Mechanisms**: Allows distributed nodes to agree on the state of the system without a central authority\n\n5. **Security**: Cryptographic hashing and digital signatures protect against tampering and fraud\n\n6. **Fault Tolerance**: The system can continue operating even if some nodes fail or become compromised',
+      role: 'assistant',
+      timestamp: new Date(Date.now() - 280000).toISOString(),
+      sources: [
+        {
+          path: 'resilientdb.pdf',
+          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
+          displayTitle: 'ResilientDB Research Paper'
+        }
+      ]
+    },
+    {
+      id: 'fake-3',
+      content: 'How does ResilientDB improve upon traditional blockchain implementations?',
+      role: 'user',
+      timestamp: new Date(Date.now() - 240000).toISOString(),
+    },
+    {
+      id: 'fake-4',
+      content: 'ResilientDB introduces several key improvements over traditional blockchain implementations:\n\n## Performance Enhancements\n- **Higher throughput**: Capable of processing thousands of transactions per second\n- **Lower latency**: Reduced confirmation times through optimized consensus algorithms\n- **Scalability**: Better handling of increasing network size and transaction volume\n\n## Sustainability Features\n- **Energy efficiency**: Reduces computational overhead compared to proof-of-work systems\n- **Resource optimization**: More efficient use of network and storage resources\n\n## Advanced Consensus\n- **PBFT-based consensus**: Uses practical Byzantine fault tolerance for better reliability\n- **Adaptive protocols**: Can adjust to different network conditions and requirements\n\n## Developer Experience\n- **Easy deployment**: Simplified setup and configuration processes\n- **Flexible architecture**: Supports various use cases and applications\n\nThese improvements make ResilientDB suitable for enterprise-scale applications requiring high performance and reliability.',
+      role: 'assistant',
+      timestamp: new Date(Date.now() - 200000).toISOString(),
+      sources: [
+        {
+          path: 'resilientdb.pdf',
+          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
+          displayTitle: 'ResilientDB Research Paper'
+        }
+      ]
+    },
+    {
+      id: 'fake-5',
+      content: 'Can you explain the consensus mechanism used in ResilientDB?',
+      role: 'user',
+      timestamp: new Date(Date.now() - 160000).toISOString(),
+    },
+    {
+      id: 'fake-6',
+      content: 'ResilientDB employs a sophisticated consensus mechanism based on **Practical Byzantine Fault Tolerance (PBFT)**:\n\n## Core PBFT Principles\n- **Byzantine fault tolerance**: Can handle up to 1/3 malicious or faulty nodes\n- **Three-phase protocol**: Pre-prepare, prepare, and commit phases ensure agreement\n- **Deterministic finality**: Once committed, transactions are immediately final\n\n## ResilientDB Enhancements\n1. **Optimized message passing**: Reduced communication overhead between nodes\n2. **Parallel processing**: Multiple consensus instances can run simultaneously\n3. **Dynamic view changes**: Efficient leader election and failure recovery\n4. **Geo-distributed support**: Optimized for global-scale deployments\n\n## Process Flow\n1. **Transaction submission**: Client sends transaction to primary node\n2. **Pre-prepare**: Primary broadcasts transaction to all replicas\n3. **Prepare phase**: Replicas verify and broadcast prepare messages\n4. **Commit phase**: Once 2f+1 prepare messages received, commit messages are sent\n5. **Execution**: Transaction is executed after receiving 2f+1 commit messages\n\nThis approach ensures both safety and liveness properties while maintaining high performance.',
+      role: 'assistant',
+      timestamp: new Date(Date.now() - 120000).toISOString(),
+      sources: [
+        {
+          path: 'resilientdb.pdf',
+          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
+          displayTitle: 'ResilientDB Research Paper'
+        }
+      ]
+    },
+    {
+      id: 'fake-7',
+      content: 'What are the performance benchmarks for ResilientDB compared to other systems?',
+      role: 'user',
+      timestamp: new Date(Date.now() - 80000).toISOString(),
+    },
+    {
+      id: 'fake-8',
+      content: 'ResilientDB demonstrates impressive performance benchmarks that significantly outperform traditional blockchain systems:\n\n## Throughput Comparison\n- **ResilientDB**: 10,000+ TPS (transactions per second)\n- **Traditional PoW**: 7-15 TPS\n- **Ethereum 2.0**: 15,000-100,000 TPS (theoretical)\n- **Bitcoin**: 7 TPS\n\n## Latency Metrics\n- **ResilientDB**: <100ms finality\n- **Traditional PoW**: 10-60 minutes\n- **Ethereum 2.0**: 12 seconds\n- **Bitcoin**: 10 minutes\n\n## Scalability Features\n- **Horizontal scaling**: Linear performance increase with node count\n- **Sharding support**: Can partition data across multiple chains\n- **Parallel processing**: Multiple consensus instances simultaneously\n\n## Resource Efficiency\n- **CPU usage**: 60-80% lower than PoW systems\n- **Memory footprint**: Optimized for enterprise deployments\n- **Network overhead**: Reduced message complexity\n\n## Real-world Performance\n- **Enterprise workloads**: Handles 100,000+ concurrent users\n- **Microsecond precision**: Sub-millisecond transaction ordering\n- **99.99% uptime**: High availability for production systems\n\nThese benchmarks make ResilientDB suitable for high-frequency trading, IoT applications, and real-time financial systems.',
+      role: 'assistant',
+      timestamp: new Date(Date.now() - 60000).toISOString(),
+      sources: [
+        {
+          path: 'resilientdb.pdf',
+          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
+          displayTitle: 'ResilientDB Research Paper'
+        }
+      ]
+    }
+  ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
@@ -191,9 +268,9 @@ function ResearchChatPageContent() {
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [codeGenerations, setCodeGenerations] = useState<CodeGeneration[]>([]);
   const { activeTool, setTool } = useTool();
-  const [language] = useState<Language>("ts");
+  const [language, setLanguage] = useState<Language>("ts");
   const [mode, setMode] = useState<"research" | "code">("research");
-  const [isAtTop, setIsAtTop] = useState(true);
+  const [scrollOpacity, setScrollOpacity] = useState(0);
 
   const { sessionId, resetSession } = useSessionId();
 
@@ -205,11 +282,14 @@ function ResearchChatPageContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Handle scroll to detect if at top
+  // Handle scroll to calculate gradient opacity
   const handleScroll = useCallback(() => {
     if (scrollContainerRef.current) {
       const { scrollTop } = scrollContainerRef.current;
-      setIsAtTop(scrollTop <= 10); // Consider "at top" if within 10px
+      // Calculate opacity based on scroll position
+      // Start fading in after 20px, fully visible after 100px
+      const opacity = Math.min(Math.max((scrollTop - 20) / 80, 0), 1);
+      setScrollOpacity(opacity);
     }
   }, []);
 
@@ -978,7 +1058,19 @@ function ResearchChatPageContent() {
                 ) : (
                   <>
                     {/* Chat Header */}
-                    <div className={`px-6 py-4 pb-12 absolute top-0 left-0 z-10 flex-shrink-0 w-full chat-header-gradient ${isAtTop ? 'at-top' : ''}`}>
+                    <div 
+                      className="px-6 py-4 pb-12 absolute top-0 left-0 z-10 flex-shrink-0 w-full"
+                      style={{
+                        background: `linear-gradient(to bottom, 
+                          rgba(10, 16, 35, ${scrollOpacity}) 0%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 1}) 30%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.8}) 50%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.6}) 65%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.4}) 80%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.2}) 90%, 
+                          transparent 100%)`
+                      }}
+                    >
                       <h1 className="text-2xl md:text-xl font-bold tracking-tight text-white whitespace-nowrap ">
                       Nexus
         </h1>
@@ -1123,6 +1215,21 @@ function ResearchChatPageContent() {
                               ))}
                             </PromptInputModelSelectContent>
                           </PromptInputModelSelect>
+                          {mode === "code" && (
+                            <PromptInputModelSelect
+                              onValueChange={(value) => setLanguage(value as Language)}
+                              value={language}
+                            >
+                              <PromptInputModelSelectTrigger>
+                                <PromptInputModelSelectValue />
+                              </PromptInputModelSelectTrigger>
+                              <PromptInputModelSelectContent>
+                                <PromptInputModelSelectItem value="ts">TypeScript</PromptInputModelSelectItem>
+                                <PromptInputModelSelectItem value="python">Python</PromptInputModelSelectItem>
+                                <PromptInputModelSelectItem value="cpp">C++</PromptInputModelSelectItem>
+                              </PromptInputModelSelectContent>
+                            </PromptInputModelSelect>
+                          )}
                           <PromptInputButton disabled={mode === "code" || true /* TODO: update */}>
                             <GlobeIcon size={16} />
                             <span>Search</span>

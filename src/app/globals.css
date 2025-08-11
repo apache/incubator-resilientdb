@@ -341,21 +341,17 @@
   background-color: #0A1023;
 }
 
-/* Smooth gradient header that appears on scroll */
+/* Smooth gradient header that fades in on scroll */
 .chat-header-gradient {
   background: linear-gradient(
     to bottom,
     #0A1023 0%,
-    #0A1023 40%,
-    rgba(10, 16, 35, 0.9) 60%,
-    rgba(10, 16, 35, 0.7) 75%,
-    rgba(10, 16, 35, 0.4) 85%,
-    rgba(10, 16, 35, 0.2) 92%,
+    #0A1023 30%,
+    rgba(10, 16, 35, 0.95) 50%,
+    rgba(10, 16, 35, 0.8) 65%,
+    rgba(10, 16, 35, 0.6) 80%,
+    rgba(10, 16, 35, 0.3) 90%,
     transparent 100%
   );
-  transition: opacity 0.3s ease-out;
-}
-
-.chat-header-gradient.at-top {
-  background: transparent;
+  transition: opacity 0.4s cubic-bezier(0.4, 0.2, 0.2, 1);
 }

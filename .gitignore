@@ -50,3 +50,5 @@ next-env.d.ts
 /src/archive
 /src/experimental
 parsing-cache.json
+
+deno.lock

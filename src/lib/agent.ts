@@ -1,8 +1,8 @@
 import { config } from "@/config/environment";
 import { deepseek } from "@llamaindex/deepseek";
 import { PGVectorStore } from "@llamaindex/postgres";
-import { agent, AgentWorkflow } from "@llamaindex/workflow";
-import { BaseMemoryBlock, createMemory, Memory, tool, vectorBlock } from "llamaindex";
+import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
+import { BaseMemoryBlock, createMemory, Memory, Settings, tool, ToolCallLLM, vectorBlock } from "llamaindex";
 import z from "zod";
 import { AGENT_RESEARCH_PROMPT, llamaService } from "./llama-service";
 import { robustFactExtractionBlock } from "./robust-fact-memory";
@@ -154,5 +154,108 @@ export class NexusAgent implements AgentFactory {
 
   public getMemory(sessionId: string): Memory | undefined {
     return this.memories.get(sessionId);
+  }
+}
+
+// CodeAgent to be selected when "code" mode is active in the UI.
+export class CodeAgent implements AgentFactory {
+  private readonly language: string;
+  constructor(language: string = "ts") {
+    this.language = language;
+  }
+
+  public async createAgent(_documents: string[], _sessionId: string): Promise<AgentWorkflow> {
+    const retrieveDocumentsTool = tool({
+      name: "retrieve_documents",
+      description: "CRITICAL: You MUST use this tool FIRST to retrieve document content before providing any analysis. This tool searches through the available documents and returns relevant information that you need to analyze.",
+      parameters: z.object({
+        query: z.string().describe("The search query to find relevant content in the documents. Be specific about what technical information you need."),
+        documentPaths: z.array(z.string()).describe("The list of document paths to search in. Use the available documents: " + _documents.join(", ")),
+      }),
+      execute: async ({ query, documentPaths }) => {
+        const results = await llamaService.retrieve({ query, documentPaths });
+        return results
+      },
+    });
+    
+    const codeAgent = agent({
+      name: "CodeAgent", 
+      description: "Generates final code implementation.",
+      tools: [], // Include tools for message compatibility but don't use them
+      systemPrompt: `You are implementing the final solution...
+
+      Using the research and pseudocode from the previous workflow steps, your task is to generate clean, production-ready ${this.language} code.
+
+      IMPORTANT: Do NOT use any tools. Focus only on code generation based on the research and pseudocode already provided in the conversation history.
+
+      Generate the complete implementation immediately:
+      - Write functional, well-structured code
+      - Include only essential comments for complex logic  
+      - Ensure the code follows best practices
+      - Stream the output directly without any setup or context checking
+
+      Start coding now:`,
+      llm: Settings.llm as ToolCallLLM
+    });
+    
+    const pseudoCodeAgent = agent({
+      name: "PseudoCodeAgent",
+      description: "Creates structured pseudocode.",
+      tools: [], // Include tools for message compatibility but don't use them
+      canHandoffTo: [codeAgent],
+      systemPrompt: `You are creating structured pseudocode for implementation.
+
+      You will receive research findings from the previous workflow step through the conversation history.
+
+      IMPORTANT: Do NOT use any tools. Focus only on creating pseudocode based on the research already provided in the conversation history.
+
+      Your task:
+      - Start with: "Creating structured pseudocode..."
+      - Develop detailed, step-by-step pseudocode
+      - Make it comprehensive enough for code generation
+      - Stream the pseudocode efficiently
+      - MANDATORY: After completing pseudocode, you MUST use the handOff tool to transfer control to CodeAgent with reason "Pseudocode complete, moving to implementation"
+
+      Begin immediately with pseudocode creation based on the research context, and finally use handOff tool to transfer to CodeAgent.`,
+      llm: Settings.llm as ToolCallLLM
+
+    });
+    
+    const plannerAgent = agent({
+      name: "PlannerAgent",
+      description: "Conducts research and planning.",
+      tools: [retrieveDocumentsTool], // Only one fast tool
+      canHandoffTo: [pseudoCodeAgent],
+      systemPrompt: `You are conducting research and analysis for code generation.
+
+      CRITICAL: You MUST use the retrieve_documents tool FIRST before providing any analysis.
+
+      Your task sequence:
+      1) ALWAYS start by calling retrieve_documents tool with a relevant query to get content from: [${_documents.join(", ")}]
+      2) After receiving the tool results, analyze the retrieved content and provide your research findings
+      3) MANDATORY: After analysis, you MUST use the handOff tool to transfer control to PseudoCodeAgent with reason "Research complete, moving to pseudocode design"
+
+      Focus on:
+      - Technical details for implementation
+      - Key patterns from the documents
+      - Specific requirements and constraints
+      - Architecture considerations
+
+      IMPORTANT: 
+      - Do not skip the tool call step. You must retrieve documents first, then analyze.
+      - You MUST call the handOff tool to transfer to PseudoCodeAgent after your analysis.`,
+      llm:  Settings.llm as ToolCallLLM
+    });
+    
+    const workflow = multiAgent({
+      agents: [plannerAgent, pseudoCodeAgent, codeAgent],
+      rootAgent: plannerAgent,
+      verbose: true,
+      memory: createMemory({
+        tokenLimit: 30000,
+        shortTermTokenLimitRatio: 0.7,
+      })
+    });
+    return workflow;
   }
 }

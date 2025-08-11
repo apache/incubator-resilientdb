@@ -1,4 +1,4 @@
-import { NexusAgent } from "@/lib/agent";
+import { CodeAgent, NexusAgent } from "@/lib/agent";
 import { agentStreamEvent, agentToolCallEvent, agentToolCallResultEvent, AgentWorkflow } from "@llamaindex/workflow";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
@@ -138,12 +138,24 @@ export async function POST(req: NextRequest) {
       console.log(
         `Processing query: "${requestData.query}" for documents: ${documentPaths.join(", ")}`,
       );
+
+      // Selected language passed to code agent
+      const selectedLanguage = requestData.language || "ts";
       
       const sessionId = requestData.sessionId || Date.now().toString();
       
       // Create or reuse agent for session
-      const nexusAgent = await NexusAgent.create();
-      const agentWorkflow = await nexusAgent.createAgent(documentPaths, sessionId);
+      const isCodeComposer = requestData.tool === "code-composer";
+      let agentWorkflow: AgentWorkflow;
+
+      if (isCodeComposer) {
+        // Use the simple CodeAgent placeholder that always returns a fixed message
+        const codeAgentFactory = new CodeAgent(selectedLanguage);
+        agentWorkflow = await codeAgentFactory.createAgent(documentPaths, sessionId);
+      } else {
+        const nexusAgent = await NexusAgent.create();
+        agentWorkflow = await nexusAgent.createAgent(documentPaths, sessionId);
+      }
 
       const stream = await handleAgentStreamingResponse(
         agentWorkflow,
