@@ -1,0 +1,6 @@
+# .gitignore
+config.yaml
+
+node_modules/
+compiled_contracts/
+
