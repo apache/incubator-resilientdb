@@ -1,0 +1,158 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+.pytest_cache/
+.junit/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+target/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# dotenv
+.env
+.env.*
+.venv
+
+# virtualenv
+venv/
+ENV/
+env/
+venv.bak/
+venv_old/
+
+# Poetry
+poetry.lock
+.poetry/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Pycharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Editor backups
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Compiled wheels
+*.whl
+
+# Distribution directories
+dist/
+build/
+
+# Egg info
+*.egg-info/
+
+# Local configuration files
+local_settings.py
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+
+# Ignore the virtual environment directory
+.resilient-python-cache-*/
+
+test_sync.py

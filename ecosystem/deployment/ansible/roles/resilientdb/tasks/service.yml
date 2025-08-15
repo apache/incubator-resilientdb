@@ -1,0 +1,98 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+---
+- name: Validate bazel_jobs parameter
+  assert:
+    that:
+      - bazel_jobs | int >= 1
+      - bazel_jobs | int <= 40
+    msg: "bazel_jobs must be between 1-40"
+
+- name: Kill any running kv_service processes
+  shell: killall -9 kv_service || true
+  become: yes
+
+- name: Clone ResilientDB repository
+  git:
+    repo: https://github.com/resilientdb/resilientdb.git
+    dest: "{{ resilientdb_dir }}"
+    version: master
+    force: yes
+    update: yes
+
+- name: Configure .bazelrc
+  template:
+    src: bazelrc.j2
+    dest: "{{ resilientdb_dir }}/.bazelrc"
+    mode: '0644'
+
+- name: Run INSTALL.sh
+  command: sh INSTALL.sh
+  args:
+    chdir: "{{ resilientdb_dir }}"
+
+- name: Build KV Service
+  command: bazel build //service/kv:kv_service
+  args:
+    chdir: "{{ resilientdb_dir }}"
+  environment:
+    JAVA_HOME: "{{ java_home_map[ansible_architecture] }}"
+
+- name: Ensure certificates directory exists
+  file:
+    path: "{{ resilientdb_dir }}/service/tools/data/cert"
+    state: directory
+    mode: '0755'
+
+- name: Create systemd service template for ResilientDB KV Server nodes
+  template:
+    src: resilientdb_kv@.service.j2
+    dest: /etc/systemd/system/resilientdb-kv@.service
+    force: yes
+
+- name: Create systemd service file for ResilientDB KV Client node
+  template:
+    src: resilientdb_client.service.j2
+    dest: /etc/systemd/system/resilientdb-client.service
+    force: yes
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+  changed_when: false
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
+
+- name: Restart ResilientDB KV Server nodes sequentially
+  include_tasks: restart_node.yml
+  loop:
+    - "1"
+    - "2"
+    - "3"
+    - "4"
+  loop_control:
+    loop_var: item
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
+
+- name: Restart ResilientDB KV Client node
+  systemd:
+    name: resilientdb-client
+    state: restarted
+    enabled: yes
+  when: ansible_service_mgr == "systemd"
+  ignore_errors: yes
