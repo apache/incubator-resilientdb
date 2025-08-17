@@ -20,14 +20,14 @@ header:
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
     # Ecosystem-specific exclusions
-    - 'ecosystem/.*\.rat-excludes'
-    - 'ecosystem/.*\.gitignore'
-    - 'ecosystem/.*\.bazelrc'
-    - 'ecosystem/.*\.gitattributes'
-    - 'ecosystem/.*\.npmrc'
-    - 'ecosystem/.*\.prettierrc'
-    - 'ecosystem/.*\.prettierignore'
-    - 'ecosystem/.*\.licenserc.yaml'
+    - 'ecosystem/**/.rat-excludes'
+    - 'ecosystem/**/.gitignore'
+    - 'ecosystem/**/.bazelrc'
+    - 'ecosystem/**/.gitattributes'
+    - 'ecosystem/**/.npmrc'
+    - 'ecosystem/**/.prettierrc'
+    - 'ecosystem/**/.prettierignore'
+    - 'ecosystem/**/.licenserc.yaml'
 
 
 
