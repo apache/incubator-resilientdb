@@ -32,9 +32,9 @@ namespace resdb {
 
 enum class CompositeKeyType {
   STRING = 0,
-  INTEGER = 1, 
+  INTEGER = 1,  // int32_t for regular integers
   BOOLEAN = 2,
-  TIMESTAMP = 3
+  TIMESTAMP = 3  // int64_t for Unix timestamps
 };
 
 class KVExecutor : public TransactionManager {
@@ -48,6 +48,7 @@ class KVExecutor : public TransactionManager {
       const std::string& request) override;
   std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& kv_request) override;
+
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
@@ -64,7 +65,8 @@ class KVExecutor : public TransactionManager {
                   Items* items);
   void GetTopHistory(const std::string& key, int top_number, Items* items);
 
-  void CreateCompositeKey(const std::string& primary_key,
+  // Composite key methods
+  int CreateCompositeKey(const std::string& primary_key,
                            const std::string& field_name,
                            const std::string& field_value,
                            CompositeKeyType field_type);
@@ -79,9 +81,24 @@ class KVExecutor : public TransactionManager {
                                                 CompositeKeyType field_type);
 
  private:
-  std::unique_ptr<Storage> storage_;
+  // Simple encoding functions
+  std::string EncodeValue(const std::string& value, CompositeKeyType field_type);
+  std::string EncodeInteger(int32_t value);
+  std::string EncodeBoolean(bool value);
+  std::string EncodeTimestamp(int64_t value);
+  
+  // Helper functions
+  std::string BuildCompositeKey(const std::string& field_name, 
+                                const std::string& encoded_value,
+                                const std::string& primary_key);
+  std::vector<std::string> ExtractPrimaryKeys(const std::vector<std::string>& composite_keys);
 
+  std::unique_ptr<Storage> storage_;
   std::unique_ptr<TransactionManager> contract_manager_;
+  
+  // Composite key configuration
+  const std::string composite_key_separator_ = ":";
+  const std::string composite_key_prefix_ = "idx";
 };
 
 }  // namespace resdb

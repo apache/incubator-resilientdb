@@ -18,15 +18,18 @@
  */
 
 #include "executor/kv/kv_executor.h"
-#include "executor/contract/executor/contract_executor.h"
 
 #include <glog/logging.h>
+
+#include "executor/contract/executor/contract_executor.h"
 
 namespace resdb {
 
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {
-    contract_manager_ = std::make_unique<resdb::contract::ContractTransactionManager>(storage_.get());
+  contract_manager_ =
+      std::make_unique<resdb::contract::ContractTransactionManager>(
+          storage_.get());
 }
 
 std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
@@ -68,10 +71,35 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
   } else if (kv_request.cmd() == KVRequest::GET_TOP) {
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
-  }
-  else if(!kv_request.smart_contract_request().empty()){
-    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
-    if(resp != nullptr){
+  } else if (kv_request.cmd() == KVRequest::CREATE_COMPOSITE_KEY) {
+    int status = CreateCompositeKey(
+        kv_request.key(), kv_request.field_name(), kv_request.value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    kv_response.set_value(std::to_string(status));
+  } else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
+    auto results = GetByCompositeKey(
+        kv_request.field_name(), kv_request.value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    Items* items = kv_response.mutable_items();
+    for (const auto& document : results) {
+      Item* item = items->add_item();
+      item->set_key("");
+      item->mutable_value_info()->set_value(document);
+    }
+  } else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
+    auto results = GetByCompositeKeyRange(
+        kv_request.field_name(), kv_request.min_value(), kv_request.max_value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    Items* items = kv_response.mutable_items();
+    for (const auto& document : results) {
+      Item* item = items->add_item();
+      item->set_key("");
+      item->mutable_value_info()->set_value(document);
+    }
+  } else if (!kv_request.smart_contract_request().empty()) {
+    std::unique_ptr<std::string> resp =
+        contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if (resp != nullptr) {
       kv_response.set_smart_contract_response(*resp);
     }
   }
@@ -94,7 +122,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
-  LOG(ERROR)<<" execute cmd:"<<kv_request.cmd();
+  LOG(ERROR) << " execute cmd:" << kv_request.cmd();
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
@@ -119,10 +147,35 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   } else if (kv_request.cmd() == KVRequest::GET_TOP) {
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
-  }
-  else if(!kv_request.smart_contract_request().empty()){
-    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
-    if(resp != nullptr){
+  } else if (kv_request.cmd() == KVRequest::CREATE_COMPOSITE_KEY) {
+    int status = CreateCompositeKey(
+        kv_request.key(), kv_request.field_name(), kv_request.value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    kv_response.set_value(std::to_string(status));
+  } else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
+    auto results = GetByCompositeKey(
+        kv_request.field_name(), kv_request.value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    Items* items = kv_response.mutable_items();
+    for (const auto& document : results) {
+      Item* item = items->add_item();
+      item->set_key("");
+      item->mutable_value_info()->set_value(document);
+    }
+  } else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
+    auto results = GetByCompositeKeyRange(
+        kv_request.field_name(), kv_request.min_value(), kv_request.max_value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
+    Items* items = kv_response.mutable_items();
+    for (const auto& document : results) {
+      Item* item = items->add_item();
+      item->set_key("");
+      item->mutable_value_info()->set_value(document);
+    }
+  } else if (!kv_request.smart_contract_request().empty()) {
+    std::unique_ptr<std::string> resp =
+        contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if (resp != nullptr) {
       kv_response.set_smart_contract_response(*resp);
     }
   }
@@ -135,18 +188,17 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  LOG(ERROR)<<" set key:"<<key;
+  LOG(ERROR) << " set key:" << key;
   storage_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  LOG(ERROR)<<" get key:"<<key;
+  LOG(ERROR) << " get key:" << key;
   return storage_->GetValue(key);
 }
 
 std::string KVExecutor::GetAllValues() { return storage_->GetAllValues(); }
 
-// Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
   return storage_->GetRange(min_key, max_key);
@@ -209,6 +261,145 @@ void KVExecutor::GetTopHistory(const std::string& key, int top_number,
     item->mutable_value_info()->set_value(it.first);
     item->mutable_value_info()->set_version(it.second);
   }
+}
+
+std::string KVExecutor::EncodeValue(const std::string& value,
+                                    CompositeKeyType field_type) {
+  switch (field_type) {
+    case CompositeKeyType::INTEGER:
+      return EncodeInteger(std::stoi(value));
+    case CompositeKeyType::BOOLEAN:
+      return EncodeBoolean(value == "true" || value == "1");
+    case CompositeKeyType::STRING:
+      return value;
+    case CompositeKeyType::TIMESTAMP:
+      return EncodeTimestamp(std::stoll(value));
+  }
+  return value;
+}
+
+std::string KVExecutor::EncodeInteger(int32_t value) {
+  std::string bytes(4, 0);
+  bytes[0] = (value >> 24) & 0xFF;
+  bytes[1] = (value >> 16) & 0xFF;
+  bytes[2] = (value >> 8) & 0xFF;
+  bytes[3] = value & 0xFF;
+  return bytes;
+}
+
+std::string KVExecutor::EncodeBoolean(bool value) {
+  return std::string(1, value ? 1 : 0);
+}
+
+std::string KVExecutor::EncodeTimestamp(int64_t value) {
+  std::string bytes(8, 0);
+  for (int i = 0; i < 8; i++) {
+    bytes[i] = (value >> (56 - 8 * i)) & 0xFF;
+  }
+  return bytes;
+}
+
+// Helper functions
+std::string KVExecutor::BuildCompositeKey(const std::string& field_name,
+                                          const std::string& encoded_value,
+                                          const std::string& primary_key) {
+  return composite_key_prefix_ + composite_key_separator_ + field_name +
+         composite_key_separator_ + encoded_value + composite_key_separator_ +
+         primary_key;
+}
+
+std::vector<std::string> KVExecutor::ExtractPrimaryKeys(
+    const std::vector<std::string>& composite_keys) {
+  std::vector<std::string> primary_keys;
+  for (const auto& composite_key : composite_keys) {
+    size_t last_colon = composite_key.find_last_of(composite_key_separator_);
+    if (last_colon != std::string::npos) {
+      std::string primary_key = composite_key.substr(last_colon + 1);
+      primary_keys.push_back(primary_key);
+    } else {
+      LOG(ERROR) << "  no colon found in composite key";
+    }
+  }
+  return primary_keys;
+}
+
+int KVExecutor::CreateCompositeKey(const std::string& primary_key,
+                                   const std::string& field_name,
+                                   const std::string& field_value,
+                                   CompositeKeyType field_type) {
+  std::string encoded_value = EncodeValue(field_value, field_type);
+  std::string composite_key =
+      BuildCompositeKey(field_name, encoded_value, primary_key);
+  return storage_->SetValue(composite_key, "");
+}
+
+std::vector<std::string> KVExecutor::GetByCompositeKey(
+    const std::string& field_name, const std::string& field_value,
+    CompositeKeyType field_type) {
+  std::string encoded_value = EncodeValue(field_value, field_type);
+  std::string prefix = composite_key_prefix_ + composite_key_separator_ +
+                       field_name + composite_key_separator_ + encoded_value +
+                       composite_key_separator_;
+
+  auto results = storage_->GetByPrefix(prefix);
+
+  std::vector<std::string> primary_keys = ExtractPrimaryKeys(results);
+
+  std::vector<std::string> documents;
+  for (const auto& primary_key : primary_keys) {
+    std::string document = storage_->GetValue(primary_key);
+    if (!document.empty()) {
+      documents.push_back(document);
+    }
+  }
+  return documents;
+}
+
+std::vector<std::string> KVExecutor::GetByCompositeKeyRange(
+    const std::string& field_name, const std::string& min_value,
+    const std::string& max_value, CompositeKeyType field_type) {
+  std::string encoded_min = EncodeValue(min_value, field_type);
+  std::string encoded_max = EncodeValue(max_value, field_type);
+
+  std::string start_key = composite_key_prefix_ + composite_key_separator_ +
+                          field_name + composite_key_separator_ + encoded_min +
+                          composite_key_separator_;
+  std::string end_key = composite_key_prefix_ + composite_key_separator_ +
+                        field_name + composite_key_separator_ + encoded_max +
+                        composite_key_separator_ + "\xFF";
+
+  std::string range_results = storage_->GetRange(start_key, end_key);
+
+  std::vector<std::string> composite_keys;
+  if (range_results.length() >= 2 && range_results[0] == '[' &&
+      range_results[range_results.length() - 1] == ']') {
+    std::string content = range_results.substr(1, range_results.length() - 2);
+    if (!content.empty()) {
+      size_t pos = 0;
+      while (pos < content.length()) {
+        size_t next_pos = content.find(',', pos);
+        if (next_pos == std::string::npos) {
+          composite_keys.push_back(content.substr(pos));
+          break;
+        } else {
+          composite_keys.push_back(content.substr(pos, next_pos - pos));
+          pos = next_pos + 1;
+        }
+      }
+    }
+  }
+
+  std::vector<std::string> primary_keys = ExtractPrimaryKeys(composite_keys);
+
+  std::vector<std::string> documents;
+  for (const auto& primary_key : primary_keys) {
+    std::string document = storage_->GetValue(primary_key);
+    if (!document.empty()) {
+      documents.push_back(document);
+    }
+  }
+
+  return documents;
 }
 
 }  // namespace resdb

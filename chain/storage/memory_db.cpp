@@ -166,5 +166,15 @@ std::vector<std::pair<std::string, int>> MemoryDB::GetTopHistory(
   return resp;
 }
 
+std::vector<std::string> MemoryDB::GetByPrefix(const std::string& prefix) {
+  std::vector<std::string> resp;
+  for (const auto& kv : kv_map_) {
+    if (kv.first.find(prefix) == 0) { 
+      resp.push_back(kv.second);
+    }
+  }
+  return resp;
+}
+
 }  // namespace storage
 }  // namespace resdb

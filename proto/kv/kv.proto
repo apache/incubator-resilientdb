@@ -79,5 +79,6 @@ message KVResponse {
     ValueInfo value_info = 3;
     Items items = 4;
     bytes smart_contract_response = 10;
+    repeated string composite_results = 11;
 }
 
