@@ -20,3 +20,4 @@ apache_release
 resdb/
 100*_db/
 gmon.out
+.history/
