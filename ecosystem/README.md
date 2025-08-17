@@ -53,9 +53,8 @@ ecosystem/
 To clone ResilientDB without the ecosystem directory (faster, smaller):
 
 ```bash
-git clone --filter=tree:0 --sparse https://github.com/harish876/incubator-resilientdb.git
+git clone --filter=tree:0 --sparse https://github.com/apache/incubator-resilientdb.git
 cd incubator-resilientdb
-git checkout monorepo-setup
 git sparse-checkout set --no-cone
 echo "/*" > .git/info/sparse-checkout
 echo "\!ecosystem/" >> .git/info/sparse-checkout
