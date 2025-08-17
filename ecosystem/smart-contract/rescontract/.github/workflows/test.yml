@@ -1,0 +1,79 @@
+name: Test ResContract CLI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js and NVM
+        run: |
+          # Install and set up Node.js and NVM
+          sudo apt update
+          sudo apt install -y nodejs npm
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # Loads nvm
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # Loads nvm bash completion
+          nvm install node
+          sudo npm install -g n
+          sudo n latest
+          hash -r
+          node --version
+
+      - name: Install ResilientDB
+        run: |
+          cd $HOME
+          git clone https://github.com/apache/incubator-resilientdb.git
+          cd incubator-resilientdb
+          ./INSTALL.sh
+          ./service/tools/contract/service_tools/start_contract_service.sh
+          bazel build service/tools/contract/api_tools/contract_tools
+          bazel build service/tools/kv/api_tools/kv_service_tools
+        env:
+          ResDB_Home: ${{ github.workspace }}/incubator-resilientdb
+
+      - name: Set ResDB_Home and Locate Config Path
+        run: |
+          export ResDB_Home="$HOME/incubator-resilientdb"
+          echo "ResDB_Home=$ResDB_Home" >> $GITHUB_ENV
+
+          # Locate the actual path of service.config
+          CONFIG_PATH=$(find "$ResDB_Home" -name "service.config" | head -n 1)
+          if [ -z "$CONFIG_PATH" ]; then
+            echo "Error: service.config not found"
+            exit 1
+          fi
+          echo "CONFIG_PATH=$CONFIG_PATH" >> $GITHUB_ENV
+
+      - name: Install ResContract CLI
+        run: |
+          cd $HOME
+          git clone https://github.com/ResilientEcosystem/ResContract.git
+          cd ResContract
+          sudo npm install -g
+          npm install commander
+
+      - name: Install Solidity Compiler (solc)
+        run: |
+          sudo add-apt-repository -y ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install -y solc
+
+      - name: Run CLI Tests
+        env:
+          ResDB_Home: ${{ env.ResDB_Home }}
+          CONFIG_PATH: ${{ env.CONFIG_PATH }}
+        run: |
+          echo "Testing create command"
+          rescontract create --config "$CONFIG_PATH"
