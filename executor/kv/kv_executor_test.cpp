@@ -241,7 +241,6 @@ class KVExecutorTest : public Test {
     return kv_response.items();
   }
 
-  // Composite key test helper methods
   int CreateCompositeKey(const std::string& primary_key,
                                  const std::string& field_name,
                                  const std::string& field_value,
@@ -590,7 +589,6 @@ TEST_F(KVExecutorTest, CompositeKeyRangeQuery) {
   EXPECT_EQ(range_results.item_size(), 2);  // Should return user_2 and user_3
 }
 
-//TODO
 TEST_F(KVExecutorTest, CompositeKeyMultipleFields) {
   // Create JSON documents with multiple fields
   std::string user1 =
