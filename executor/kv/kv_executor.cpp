@@ -317,7 +317,8 @@ std::vector<std::string> KVExecutor::ExtractPrimaryKeys(
       std::string primary_key = composite_key.substr(last_colon + 1);
       primary_keys.push_back(primary_key);
     } else {
-      LOG(ERROR) << "  no colon found in composite key";
+      LOG(ERROR) << "invalid composite key. no separator found in composite key"
+                 << composite_key;
     }
   }
   return primary_keys;
@@ -341,7 +342,7 @@ std::vector<std::string> KVExecutor::GetByCompositeKey(
                        field_name + composite_key_separator_ + encoded_value +
                        composite_key_separator_;
 
-  auto results = storage_->GetByPrefix(prefix);
+  auto results = storage_->GetKeysByPrefix(prefix);
 
   std::vector<std::string> primary_keys = ExtractPrimaryKeys(results);
 
@@ -364,29 +365,17 @@ std::vector<std::string> KVExecutor::GetByCompositeKeyRange(
   std::string start_key = composite_key_prefix_ + composite_key_separator_ +
                           field_name + composite_key_separator_ + encoded_min +
                           composite_key_separator_;
+
   std::string end_key = composite_key_prefix_ + composite_key_separator_ +
                         field_name + composite_key_separator_ + encoded_max +
                         composite_key_separator_ + "\xFF";
 
-  std::string range_results = storage_->GetRange(start_key, end_key);
+  std::vector<std::string> composite_keys = storage_->GetKeyRangeByPrefix(start_key, end_key);
 
-  std::vector<std::string> composite_keys;
-  if (range_results.length() >= 2 && range_results[0] == '[' &&
-      range_results[range_results.length() - 1] == ']') {
-    std::string content = range_results.substr(1, range_results.length() - 2);
-    if (!content.empty()) {
-      size_t pos = 0;
-      while (pos < content.length()) {
-        size_t next_pos = content.find(',', pos);
-        if (next_pos == std::string::npos) {
-          composite_keys.push_back(content.substr(pos));
-          break;
-        } else {
-          composite_keys.push_back(content.substr(pos, next_pos - pos));
-          pos = next_pos + 1;
-        }
-      }
-    }
+  std::cout << "Found " << composite_keys.size()
+            << " composite keys:" << std::endl;
+  for (const auto& key : composite_keys) {
+    std::cout << "  " << key << std::endl;
   }
 
   std::vector<std::string> primary_keys = ExtractPrimaryKeys(composite_keys);

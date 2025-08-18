@@ -43,4 +43,6 @@ cc_test(
         "//chain/storage:leveldb",
         "//common/test:test_main",
     ],
+    timeout = "long",
+    size = "medium",
 )

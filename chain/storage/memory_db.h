@@ -78,7 +78,9 @@ class MemoryDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
 
-  std::vector<std::string> GetByPrefix(const std::string& prefix) override;
+  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
+
+  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;

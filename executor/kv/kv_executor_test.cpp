@@ -19,6 +19,7 @@
 
 #include "executor/kv/kv_executor.h"
 
+#include <filesystem>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -41,9 +42,21 @@ using ::testing::Test;
 class KVExecutorTest : public Test {
  public:
   KVExecutorTest() {
+    Reset();  // Clean up any existing database
     auto storage = std::make_unique<storage::ResLevelDB>(std::nullopt);
     storage_ptr_ = storage.get();
     impl_ = std::make_unique<KVExecutor>(std::move(storage));
+  }
+
+  ~KVExecutorTest() {
+    Reset(); 
+  }
+
+ protected:
+  void Reset() { 
+    impl_.reset();  // Release the executor first
+    storage_ptr_ = nullptr;
+    std::filesystem::remove_all("/tmp/nexres-leveldb");
   }
 
   int Set(const std::string& key, const std::string& value) {
@@ -312,7 +325,6 @@ class KVExecutorTest : public Test {
     return kv_response.items();
   }
 
-  // Debug method to print all keys (including composite keys)
   void PrintAllKeys() {
     std::cout << "=== All Keys in Database ===" << std::endl;
     Items all_items = GetAllItems();
@@ -549,7 +561,6 @@ TEST_F(KVExecutorTest, CompositeKeyTimestampField) {
   EXPECT_EQ(results.item(0).value_info().value(), user1);
 }
 
-//TODO
 TEST_F(KVExecutorTest, CompositeKeyRangeQuery) {
   std::string user1 = "{\"name\":\"John\",\"age\":25,\"city\":\"NYC\"}";
   std::string user2 = "{\"name\":\"Jane\",\"age\":30,\"city\":\"LA\"}";

@@ -166,11 +166,21 @@ std::vector<std::pair<std::string, int>> MemoryDB::GetTopHistory(
   return resp;
 }
 
-std::vector<std::string> MemoryDB::GetByPrefix(const std::string& prefix) {
+std::vector<std::string> MemoryDB::GetKeysByPrefix(const std::string& prefix) {
   std::vector<std::string> resp;
   for (const auto& kv : kv_map_) {
     if (kv.first.find(prefix) == 0) { 
       resp.push_back(kv.second);
+    }
+  }
+  return resp;
+}
+
+std::vector<std::string> MemoryDB::GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) {
+  std::vector<std::string> resp;
+  for (const auto& kv : kv_map_) {
+    if (kv.first >= start_prefix && kv.first <= end_prefix) {
+      resp.push_back(kv.first);
     }
   }
   return resp;
