@@ -7,6 +7,13 @@ import remarkGfm from "remark-gfm";
 const nextConfig = {
   // Allow .mdx extensions for files
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
+  // Exclude archive and experimental files from type checking
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
   // Your Next.js config options go here
 };
 

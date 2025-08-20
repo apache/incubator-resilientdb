@@ -99,6 +99,7 @@ export class RobustFactExtractionMemoryBlock extends BaseMemoryBlock {
     this.summaryPrompt = options.summaryPrompt ?? DEFAULT_SUMMARY_PROMPT;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async get(_messages?: any): Promise<any[]> {
     return [
       {

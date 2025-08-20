@@ -56,8 +56,6 @@ const handleAgentStreamingResponse = async (
         } catch {}
         const stream = await agentWorkflow.runStream(query);
 
-        let completeResponse = "";
-
         for await (const event of stream) {
           if (agentToolCallEvent.include(event)) {
             const { toolId, toolName, toolKwargs } = event.data as any;
@@ -84,7 +82,6 @@ const handleAgentStreamingResponse = async (
             const content = event.data.delta || "";
             if (content) {
               controller.enqueue(content);
-              completeResponse += content;
             }
           }
         }

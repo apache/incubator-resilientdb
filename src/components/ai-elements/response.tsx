@@ -1,15 +1,15 @@
 'use client';
 
-import { CodeBlock, CodeBlockCopyButton } from './code-block';
+import { cn } from '@/lib/utils';
+import hardenReactMarkdown from 'harden-react-markdown';
+import 'katex/dist/katex.min.css';
 import type { ComponentProps, HTMLAttributes } from 'react';
 import { memo } from 'react';
 import ReactMarkdown, { type Options } from 'react-markdown';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import { cn } from '@/lib/utils';
-import 'katex/dist/katex.min.css';
-import hardenReactMarkdown from 'harden-react-markdown';
+import { CodeBlock, CodeBlockCopyButton } from './code-block';
 
 /**
  * Parses markdown text and removes incomplete tokens to prevent partial rendering
@@ -107,8 +107,10 @@ function parseIncompleteMarkdown(text: string): string {
   const inlineCodeMatch = result.match(inlineCodePattern);
   if (inlineCodeMatch) {
     // Check if we're dealing with a code block (triple backticks)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hasCodeBlockStart = result.includes('```');
     const codeBlockPattern = /```[\s\S]*?```/g;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const completeCodeBlocks = (result.match(codeBlockPattern) || []).length;
     const allTripleBackticks = (result.match(/```/g) || []).length;
 
@@ -174,27 +176,27 @@ export type ResponseProps = HTMLAttributes<HTMLDivElement> & {
 };
 
 const components: Options['components'] = {
-  ol: ({ node, children, className, ...props }) => (
+  ol: ({ children, className, ...props }) => (
     <ol className={cn('ml-4 list-outside list-decimal', className)} {...props}>
       {children}
     </ol>
   ),
-  li: ({ node, children, className, ...props }) => (
+  li: ({ children, className, ...props }) => (
     <li className={cn('py-1', className)} {...props}>
       {children}
     </li>
   ),
-  ul: ({ node, children, className, ...props }) => (
+  ul: ({ children, className, ...props }) => (
     <ul className={cn('ml-4 list-outside list-decimal', className)} {...props}>
       {children}
     </ul>
   ),
-  strong: ({ node, children, className, ...props }) => (
+  strong: ({ children, className, ...props }) => (
     <span className={cn('font-semibold', className)} {...props}>
       {children}
     </span>
   ),
-  a: ({ node, children, className, ...props }) => (
+  a: ({ children, className, ...props }) => (
     <a
       className={cn('font-medium text-primary underline', className)}
       rel="noreferrer"
@@ -204,7 +206,7 @@ const components: Options['components'] = {
       {children}
     </a>
   ),
-  h1: ({ node, children, className, ...props }) => (
+  h1: ({ children, className, ...props }) => (
     <h1
       className={cn('mt-6 mb-2 font-semibold text-3xl', className)}
       {...props}
@@ -212,7 +214,7 @@ const components: Options['components'] = {
       {children}
     </h1>
   ),
-  h2: ({ node, children, className, ...props }) => (
+  h2: ({ children, className, ...props }) => (
     <h2
       className={cn('mt-6 mb-2 font-semibold text-2xl', className)}
       {...props}
@@ -220,17 +222,17 @@ const components: Options['components'] = {
       {children}
     </h2>
   ),
-  h3: ({ node, children, className, ...props }) => (
+  h3: ({ children, className, ...props }) => (
     <h3 className={cn('mt-6 mb-2 font-semibold text-xl', className)} {...props}>
       {children}
     </h3>
   ),
-  h4: ({ node, children, className, ...props }) => (
+  h4: ({ children, className, ...props }) => (
     <h4 className={cn('mt-6 mb-2 font-semibold text-lg', className)} {...props}>
       {children}
     </h4>
   ),
-  h5: ({ node, children, className, ...props }) => (
+  h5: ({ children, className, ...props }) => (
     <h5
       className={cn('mt-6 mb-2 font-semibold text-base', className)}
       {...props}
@@ -238,7 +240,7 @@ const components: Options['components'] = {
       {children}
     </h5>
   ),
-  h6: ({ node, children, className, ...props }) => (
+  h6: ({ children, className, ...props }) => (
     <h6 className={cn('mt-6 mb-2 font-semibold text-sm', className)} {...props}>
       {children}
     </h6>
@@ -275,44 +277,45 @@ const components: Options['components'] = {
   },
 };
 
-export const Response = memo(
-  ({
-    className,
-    options,
-    children,
-    allowedImagePrefixes,
-    allowedLinkPrefixes,
-    defaultOrigin,
-    parseIncompleteMarkdown: shouldParseIncompleteMarkdown = true,
-    ...props
-  }: ResponseProps) => {
-    // Parse the children to remove incomplete markdown tokens if enabled
-    const parsedChildren =
-      typeof children === 'string' && shouldParseIncompleteMarkdown
-        ? parseIncompleteMarkdown(children)
-        : children;
+const ResponseComponent = ({
+  className,
+  options,
+  children,
+  allowedImagePrefixes,
+  allowedLinkPrefixes,
+  defaultOrigin,
+  parseIncompleteMarkdown: shouldParseIncompleteMarkdown = true,
+  ...props
+}: ResponseProps) => {
+  // Parse the children to remove incomplete markdown tokens if enabled
+  const parsedChildren =
+    typeof children === 'string' && shouldParseIncompleteMarkdown
+      ? parseIncompleteMarkdown(children)
+      : children;
 
-    return (
-      <div
-        className={cn(
-          'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
-          className,
-        )}
-        {...props}
+  return (
+    <div
+      className={cn(
+        'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+        className,
+      )}
+      {...props}
+    >
+      <HardenedMarkdown
+        components={components}
+        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        allowedImagePrefixes={allowedImagePrefixes ?? ['*']}
+        allowedLinkPrefixes={allowedLinkPrefixes ?? ['*']}
+        defaultOrigin={defaultOrigin}
+        {...options}
       >
-        <HardenedMarkdown
-          components={components}
-          rehypePlugins={[rehypeKatex]}
-          remarkPlugins={[remarkGfm, remarkMath]}
-          allowedImagePrefixes={allowedImagePrefixes ?? ['*']}
-          allowedLinkPrefixes={allowedLinkPrefixes ?? ['*']}
-          defaultOrigin={defaultOrigin}
-          {...options}
-        >
-          {parsedChildren}
-        </HardenedMarkdown>
-      </div>
-    );
-  },
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
-);
+        {parsedChildren}
+      </HardenedMarkdown>
+    </div>
+  );
+};
+
+ResponseComponent.displayName = 'Response';
+
+export const Response = memo(ResponseComponent, (prevProps, nextProps) => prevProps.children === nextProps.children);

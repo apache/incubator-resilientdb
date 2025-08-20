@@ -4,43 +4,43 @@ import type { Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
 import { CodeGeneration } from "@/app/research/types";
 import {
-    PromptInput,
-    PromptInputButton,
-    PromptInputModelSelect,
-    PromptInputModelSelectContent,
-    PromptInputModelSelectItem,
-    PromptInputModelSelectTrigger,
-    PromptInputModelSelectValue,
-    PromptInputSubmit,
-    PromptInputTextarea,
-    PromptInputToolbar,
-    PromptInputTools,
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
 import { ToolProvider, useTool } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardTitle
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle
 } from "@/components/ui/card";
 import { SourceAttribution } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
 import { MultiDocumentSelector } from "@/components/ui/multi-document-selector";
 import {
-    ResizableHandle,
-    ResizablePanel,
-    ResizablePanelGroup,
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
@@ -49,7 +49,7 @@ import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
   id: string;
@@ -186,6 +186,7 @@ function ResearchChatPageContent() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [indexError, setIndexError] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
@@ -1201,10 +1202,18 @@ function ResearchChatPageContent() {
   );
 }
 
+function ResearchChatPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResearchChatPageContent />
+    </Suspense>
+  );
+}
+
 export default function ResearchChatPage() {
   return (
     <ToolProvider>
-      <ResearchChatPageContent />
+      <ResearchChatPageWrapper />
     </ToolProvider>
   );
 }

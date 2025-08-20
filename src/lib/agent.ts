@@ -164,6 +164,7 @@ export class CodeAgent implements AgentFactory {
     this.language = language;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async createAgent(_documents: string[], _sessionId: string): Promise<AgentWorkflow> {
     const retrieveDocumentsTool = tool({
       name: "retrieve_documents",

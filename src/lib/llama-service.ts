@@ -1,29 +1,29 @@
 import { deepseek } from "@llamaindex/deepseek";
 import {
-  PGVectorStore,
-  PostgresDocumentStore,
-  PostgresIndexStore,
+    PGVectorStore,
+    PostgresDocumentStore,
+    PostgresIndexStore,
 } from "@llamaindex/postgres";
 import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 import {
-  ChatMessage,
-  ContextChatEngine,
-  Document,
-  IngestionPipeline,
-  LlamaParseReader,
-  MarkdownNodeParser,
-  NodeWithScore,
-  SentenceSplitter,
-  Settings,
-  StorageContext,
-  storageContextFromDefaults,
-  SummaryExtractor,
-  TextNode,
-  tool,
-  ToolCallLLM,
-  VectorStoreIndex
+    ChatMessage,
+    ContextChatEngine,
+    Document,
+    IngestionPipeline,
+    LlamaParseReader,
+    MarkdownNodeParser,
+    NodeWithScore,
+    SentenceSplitter,
+    Settings,
+    StorageContext,
+    storageContextFromDefaults,
+    SummaryExtractor,
+    TextNode,
+    tool,
+    ToolCallLLM,
+    VectorStoreIndex
 } from "llamaindex";
 import { ClientConfig } from "pg";
 import { TavilyClient } from "tavily";
@@ -199,7 +199,7 @@ export class LlamaService {
       try {
         await fs.access(PARSING_CACHE, fs.constants.F_OK);
         cacheExists = true;
-      } catch (e) {
+      } catch {
         console.log("No cache found");
       }
       if (cacheExists) {
@@ -212,8 +212,8 @@ export class LlamaService {
         verbose: true
       });
 
-      let documents: Document[] = [];
-      for (let file of filePaths) {
+      const documents: Document[] = [];
+      for (const file of filePaths) {
         if (!cache[file]) {
           console.log(`Processing uncached file: ${file}`);
           try {

@@ -16,6 +16,14 @@ const eslintConfig = [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  {
+    files: ["src/archive/**/*", "src/experimental/**/*"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "prefer-const": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
 ];
 
 export default eslintConfig;

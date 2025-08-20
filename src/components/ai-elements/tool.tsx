@@ -1,17 +1,17 @@
 'use client';
 
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { ToolUIPart } from 'ai';
 import {
-  CheckCircleIcon,
-  CircleIcon,
-  ClockIcon,
-  XCircleIcon
+    CheckCircleIcon,
+    CircleIcon,
+    ClockIcon,
+    XCircleIcon
 } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import { CodeBlock } from './code-block';
@@ -33,13 +33,6 @@ export type ToolHeaderProps = {
 };
 
 const getStatusBadge = (status: ToolUIPart['state']) => {
-  const labels = {
-    'input-streaming': 'Pending',
-    'input-available': 'Running',
-    'output-available': 'Completed',
-    'output-error': 'Error',
-  } as const;
-
   const icons = {
     'input-streaming': <CircleIcon className="size-3" />,
     'input-available': <ClockIcon className="size-3 animate-pulse" />,
