@@ -8,7 +8,7 @@ import {
 import { Tabs, TabsList } from "@/components/ui/tabs";
 import { Document } from "@/hooks/useDocuments";
 import { FileText } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CodeGeneration } from "../types";
 import {
   CodeGenerationContent,
@@ -36,7 +36,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   const previousCodeGenerationsRef = useRef<CodeGeneration[]>([]);
   const userHasInteractedRef = useRef(false);
 
-  const getDefaultTabValue = () => {
+  const getDefaultTabValue = useCallback(() => {
     if (hasCodeGenerations) {
       const streamingGen = codeGenerations.find((gen) => gen.isStreaming);
       if (streamingGen) return `code-${streamingGen.id}`;
@@ -44,7 +44,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       return `code-${codeGenerations[codeGenerations.length - 1].id}`;
     }
     return selectedDocuments[0]?.id;
-  };
+  }, [hasCodeGenerations, codeGenerations, selectedDocuments]);
 
   const handleTabChange = (value: string) => {
     userHasInteractedRef.current = true;
