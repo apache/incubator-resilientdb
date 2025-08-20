@@ -1142,7 +1142,11 @@ function ResearchChatPageContent() {
                             </PromptInputModelSelectTrigger>
                             <PromptInputModelSelectContent>
                               {Object.entries(modeOptions).map(([id, name]) => (
-                                <PromptInputModelSelectItem key={id} value={id}>
+                                <PromptInputModelSelectItem 
+                                  disabled={id === "code" && process.env.NODE_ENV === "production" && process.env.VERCEL === "1"} 
+                                  key={id} 
+                                  value={id}
+                                >
                                   {name}
                                 </PromptInputModelSelectItem>
                               ))}
