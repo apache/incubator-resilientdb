@@ -75,7 +75,7 @@ interface Message {
     output?: unknown;
     errorText?: string | null;
   }[];
-  toolInserts?: { index: number; part: { id?: string; type: string; state: "input-streaming" | "input-available" | "output-available" | "output-error"; input?: unknown } }[];
+
 }
 
 // Helper functions for code composer streaming
@@ -182,84 +182,7 @@ function ResearchChatPageContent() {
     error,
   } = useDocuments();
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'fake-1',
-      content: 'What are the main benefits of blockchain technology in distributed systems?',
-      role: 'user',
-      timestamp: new Date(Date.now() - 300000).toISOString(),
-    },
-    {
-      id: 'fake-2',
-      content: 'Blockchain technology offers several key benefits in distributed systems:\n\n1. **Decentralization**: Eliminates single points of failure by distributing control across multiple nodes\n\n2. **Immutability**: Once data is recorded, it becomes extremely difficult to alter, providing data integrity\n\n3. **Transparency**: All transactions are visible to network participants, ensuring accountability\n\n4. **Consensus Mechanisms**: Allows distributed nodes to agree on the state of the system without a central authority\n\n5. **Security**: Cryptographic hashing and digital signatures protect against tampering and fraud\n\n6. **Fault Tolerance**: The system can continue operating even if some nodes fail or become compromised',
-      role: 'assistant',
-      timestamp: new Date(Date.now() - 280000).toISOString(),
-      sources: [
-        {
-          path: 'resilientdb.pdf',
-          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
-          displayTitle: 'ResilientDB Research Paper'
-        }
-      ]
-    },
-    {
-      id: 'fake-3',
-      content: 'How does ResilientDB improve upon traditional blockchain implementations?',
-      role: 'user',
-      timestamp: new Date(Date.now() - 240000).toISOString(),
-    },
-    {
-      id: 'fake-4',
-      content: 'ResilientDB introduces several key improvements over traditional blockchain implementations:\n\n## Performance Enhancements\n- **Higher throughput**: Capable of processing thousands of transactions per second\n- **Lower latency**: Reduced confirmation times through optimized consensus algorithms\n- **Scalability**: Better handling of increasing network size and transaction volume\n\n## Sustainability Features\n- **Energy efficiency**: Reduces computational overhead compared to proof-of-work systems\n- **Resource optimization**: More efficient use of network and storage resources\n\n## Advanced Consensus\n- **PBFT-based consensus**: Uses practical Byzantine fault tolerance for better reliability\n- **Adaptive protocols**: Can adjust to different network conditions and requirements\n\n## Developer Experience\n- **Easy deployment**: Simplified setup and configuration processes\n- **Flexible architecture**: Supports various use cases and applications\n\nThese improvements make ResilientDB suitable for enterprise-scale applications requiring high performance and reliability.',
-      role: 'assistant',
-      timestamp: new Date(Date.now() - 200000).toISOString(),
-      sources: [
-        {
-          path: 'resilientdb.pdf',
-          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
-          displayTitle: 'ResilientDB Research Paper'
-        }
-      ]
-    },
-    {
-      id: 'fake-5',
-      content: 'Can you explain the consensus mechanism used in ResilientDB?',
-      role: 'user',
-      timestamp: new Date(Date.now() - 160000).toISOString(),
-    },
-    {
-      id: 'fake-6',
-      content: 'ResilientDB employs a sophisticated consensus mechanism based on **Practical Byzantine Fault Tolerance (PBFT)**:\n\n## Core PBFT Principles\n- **Byzantine fault tolerance**: Can handle up to 1/3 malicious or faulty nodes\n- **Three-phase protocol**: Pre-prepare, prepare, and commit phases ensure agreement\n- **Deterministic finality**: Once committed, transactions are immediately final\n\n## ResilientDB Enhancements\n1. **Optimized message passing**: Reduced communication overhead between nodes\n2. **Parallel processing**: Multiple consensus instances can run simultaneously\n3. **Dynamic view changes**: Efficient leader election and failure recovery\n4. **Geo-distributed support**: Optimized for global-scale deployments\n\n## Process Flow\n1. **Transaction submission**: Client sends transaction to primary node\n2. **Pre-prepare**: Primary broadcasts transaction to all replicas\n3. **Prepare phase**: Replicas verify and broadcast prepare messages\n4. **Commit phase**: Once 2f+1 prepare messages received, commit messages are sent\n5. **Execution**: Transaction is executed after receiving 2f+1 commit messages\n\nThis approach ensures both safety and liveness properties while maintaining high performance.',
-      role: 'assistant',
-      timestamp: new Date(Date.now() - 120000).toISOString(),
-      sources: [
-        {
-          path: 'resilientdb.pdf',
-          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
-          displayTitle: 'ResilientDB Research Paper'
-        }
-      ]
-    },
-    {
-      id: 'fake-7',
-      content: 'What are the performance benchmarks for ResilientDB compared to other systems?',
-      role: 'user',
-      timestamp: new Date(Date.now() - 80000).toISOString(),
-    },
-    {
-      id: 'fake-8',
-      content: 'ResilientDB demonstrates impressive performance benchmarks that significantly outperform traditional blockchain systems:\n\n## Throughput Comparison\n- **ResilientDB**: 10,000+ TPS (transactions per second)\n- **Traditional PoW**: 7-15 TPS\n- **Ethereum 2.0**: 15,000-100,000 TPS (theoretical)\n- **Bitcoin**: 7 TPS\n\n## Latency Metrics\n- **ResilientDB**: <100ms finality\n- **Traditional PoW**: 10-60 minutes\n- **Ethereum 2.0**: 12 seconds\n- **Bitcoin**: 10 minutes\n\n## Scalability Features\n- **Horizontal scaling**: Linear performance increase with node count\n- **Sharding support**: Can partition data across multiple chains\n- **Parallel processing**: Multiple consensus instances simultaneously\n\n## Resource Efficiency\n- **CPU usage**: 60-80% lower than PoW systems\n- **Memory footprint**: Optimized for enterprise deployments\n- **Network overhead**: Reduced message complexity\n\n## Real-world Performance\n- **Enterprise workloads**: Handles 100,000+ concurrent users\n- **Microsecond precision**: Sub-millisecond transaction ordering\n- **99.99% uptime**: High availability for production systems\n\nThese benchmarks make ResilientDB suitable for high-frequency trading, IoT applications, and real-time financial systems.',
-      role: 'assistant',
-      timestamp: new Date(Date.now() - 60000).toISOString(),
-      sources: [
-        {
-          path: 'resilientdb.pdf',
-          name: 'ResilientDB: Global-Scale Sustainable Blockchain Fabric',
-          displayTitle: 'ResilientDB Research Paper'
-        }
-      ]
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
@@ -536,16 +459,16 @@ function ResearchChatPageContent() {
         }
       }
 
-      // Extract incremental tool call parts and capture insertion indices for interleaving
+      // Extract tool call parts - remove from buffer and store separately
       if (buffer.includes("__TOOL_CALL__")) {
-        const regex = /__TOOL_CALL__([\s\S]*?)\n\n/;
+        // Ensure we only parse fully delimited blocks
+        const regex = /\n\n__TOOL_CALL__([\s\S]*?)\n\n/;
         let match: RegExpMatchArray | null;
         while ((match = buffer.match(regex))) {
           try {
             const part = JSON.parse(match[1]);
-            // Remove marker from buffer first, then use the resulting length as insertion index
+            // Remove the entire tool call block from buffer to prevent display
             buffer = buffer.replace(regex, "");
-            const insertIndex = buffer.length;
 
             setMessages((prev: Message[]) =>
               prev.map((msg): Message => {
@@ -556,24 +479,20 @@ function ResearchChatPageContent() {
                   ? [...existingParts, part]
                   : existingParts.map((p, i) => (i === partIdx ? { ...p, ...part } : p));
 
-                const existingInserts = msg.toolInserts ? [...msg.toolInserts] : [];
-                const insIdx = existingInserts.findIndex((i) => i.part.id === part.id);
-                let nextToolInserts = existingInserts;
-                if (insIdx === -1) {
-                  nextToolInserts = [...existingInserts, { index: insertIndex, part }];
-                } else {
-                  // Keep the original index; just update the part state
-                  nextToolInserts[insIdx] = {
-                    index: existingInserts[insIdx].index,
-                    part: { ...existingInserts[insIdx].part, ...part },
-                  };
-                }
-
-                return { ...msg, toolParts: nextToolParts, toolInserts: nextToolInserts };
+                return { ...msg, toolParts: nextToolParts };
               }),
             );
           } catch (error) {
             console.error("Failed to parse tool call part:", error);
+          }
+        }
+        // Remove any trailing partial marker from buffer to prevent display
+        const lastMarkerIdx = buffer.lastIndexOf("__TOOL_CALL__");
+        if (lastMarkerIdx !== -1) {
+          const suffix = buffer.slice(lastMarkerIdx);
+          if (!/\n\n$/.test(suffix)) {
+            // Incomplete control block detected; remove it from display buffer
+            buffer = buffer.slice(0, lastMarkerIdx);
           }
         }
       }
@@ -617,12 +536,21 @@ function ResearchChatPageContent() {
 
       // Update message content for non-code-composer tools (regular chat)
       if (!sourceInfo || sourceInfo?.tool !== "code-composer") {
+        // Prevent leaking control delimiters to UI: strip any unterminated control block tail
+        let safeBuffer = buffer;
+        const tailIdx = safeBuffer.lastIndexOf("__TOOL_CALL__");
+        if (tailIdx !== -1) {
+          const tail = safeBuffer.slice(tailIdx);
+          if (!/\n\n$/.test(tail)) {
+            safeBuffer = safeBuffer.slice(0, tailIdx);
+          }
+        }
         setMessages((prev: Message[]) =>
           prev.map((msg): Message =>
             msg.id === assistantPlaceholderMessage.id
               ? {
                   ...msg,
-                  content: buffer,
+                  content: safeBuffer,
                   isLoadingPlaceholder: false,
                   sources: sourceInfo?.sources || [],
                   citations: (() => {
@@ -1123,42 +1051,25 @@ function ResearchChatPageContent() {
                                       </div>
                                     ) : (
                                       <div className="text-sm">
-                                        {(() => {
-                                          const content = message.content || "";
-                                          const inserts = (message.toolInserts || [])
-                                            .slice()
-                                            .sort((a, b) => a.index - b.index);
-                                          if (inserts.length === 0) {
-                                            return <Response>{content}</Response>;
-                                          }
-                                          const nodes: React.ReactNode[] = [];
-                                          let cursor = 0;
-                                          inserts.forEach((ins, idx) => {
-                                            const clamped = Math.min(Math.max(ins.index, 0), content.length);
-                                            const text = content.slice(cursor, clamped);
-                                            if (text) nodes.push(
-                                              <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
-                                            );
-                                            nodes.push(
-                                              <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
+                                        <Response>{message.content}</Response>
+                                        
+                                        {/* Show tool calls separately at the end */}
+                                        {message.toolParts && message.toolParts.length > 0 && (
+                                          <div className="mt-3 space-y-2">
+                                            {message.toolParts.map((part, idx) => (
+                                              <Tool key={`tool-${message.id}-${part.id || idx}`} defaultOpen={false}>
                                                 <ToolHeader
                                                   type={formatToolHeader(
-                                                    ins.part.type as string,
-                                                    ins.part.state as any,
+                                                    part.type as string,
+                                                    part.state as any,
                                                     message.docPaths?.length
                                                   ) as any}
-                                                  state={ins.part.state as any}
+                                                  state={part.state as any}
                                                 />
                                               </Tool>
-                                            );
-                                            cursor = clamped;
-                                          });
-                                          const tail = content.slice(cursor);
-                                          if (tail) nodes.push(
-                                            <Response key={`txt-tail-${message.id}`}>{tail}</Response>
-                                          );
-                                          return <div className="space-y-2">{nodes}</div>;
-                                        })()}
+                                            ))}
+                                          </div>
+                                        )}
 
                                         {message.sources &&
                                           message.sources.length > 0 && (

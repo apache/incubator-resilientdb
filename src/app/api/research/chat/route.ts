@@ -67,7 +67,8 @@ const handleAgentStreamingResponse = async (
               state: "input-available" as const,
               input: toolKwargs,
             };
-            controller.enqueue(`__TOOL_CALL__${JSON.stringify(callPart)}\n\n`);
+            // Delimit clearly to avoid interleaving with token stream
+            controller.enqueue(`\n\n__TOOL_CALL__${JSON.stringify(callPart)}\n\n`);
           }
           if (agentToolCallResultEvent.include(event)) {
             const { toolId, toolName, toolOutput } = event.data as any;
@@ -78,7 +79,7 @@ const handleAgentStreamingResponse = async (
               state,
             };
             // Do not include output or errorText per requirement
-            controller.enqueue(`__TOOL_CALL__${JSON.stringify(updatePart)}\n\n \n\n \n\n`);
+            controller.enqueue(`\n\n__TOOL_CALL__${JSON.stringify(updatePart)}\n\n`);
           }
           if (agentStreamEvent.include(event)) {
             const content = event.data.delta || "";
