@@ -4,43 +4,43 @@ import type { Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
 import { CodeGeneration } from "@/app/research/types";
 import {
-  PromptInput,
-  PromptInputButton,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
+    PromptInput,
+    PromptInputButton,
+    PromptInputModelSelect,
+    PromptInputModelSelectContent,
+    PromptInputModelSelectItem,
+    PromptInputModelSelectTrigger,
+    PromptInputModelSelectValue,
+    PromptInputSubmit,
+    PromptInputTextarea,
+    PromptInputToolbar,
+    PromptInputTools,
 } from "@/components/ai-elements/prompt-input";
 import { Response } from "@/components/ai-elements/response";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
 import { ToolProvider, useTool } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle
+    Card,
+    CardContent,
+    CardDescription,
+    CardTitle
 } from "@/components/ui/card";
 import { SourceAttribution } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
 import { MultiDocumentSelector } from "@/components/ui/multi-document-selector";
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
@@ -75,7 +75,7 @@ interface Message {
     output?: unknown;
     errorText?: string | null;
   }[];
-
+  toolInserts?: { index: number; part: { id?: string; type: string; state: "input-streaming" | "input-available" | "output-available" | "output-error"; input?: unknown } }[];
 }
 
 // Helper functions for code composer streaming
@@ -459,16 +459,16 @@ function ResearchChatPageContent() {
         }
       }
 
-      // Extract tool call parts - remove from buffer and store separately
+      // Extract incremental tool call parts and capture insertion indices for interleaving
       if (buffer.includes("__TOOL_CALL__")) {
-        // Ensure we only parse fully delimited blocks
-        const regex = /\n\n__TOOL_CALL__([\s\S]*?)\n\n/;
+        const regex = /__TOOL_CALL__([\s\S]*?)\n\n/;
         let match: RegExpMatchArray | null;
         while ((match = buffer.match(regex))) {
           try {
             const part = JSON.parse(match[1]);
-            // Remove the entire tool call block from buffer to prevent display
+            // Remove marker from buffer first, then use the resulting length as insertion index
             buffer = buffer.replace(regex, "");
+            const insertIndex = buffer.length;
 
             setMessages((prev: Message[]) =>
               prev.map((msg): Message => {
@@ -479,20 +479,24 @@ function ResearchChatPageContent() {
                   ? [...existingParts, part]
                   : existingParts.map((p, i) => (i === partIdx ? { ...p, ...part } : p));
 
-                return { ...msg, toolParts: nextToolParts };
+                const existingInserts = msg.toolInserts ? [...msg.toolInserts] : [];
+                const insIdx = existingInserts.findIndex((i) => i.part.id === part.id);
+                let nextToolInserts = existingInserts;
+                if (insIdx === -1) {
+                  nextToolInserts = [...existingInserts, { index: insertIndex, part }];
+                } else {
+                  // Keep the original index; just update the part state
+                  nextToolInserts[insIdx] = {
+                    index: existingInserts[insIdx].index,
+                    part: { ...existingInserts[insIdx].part, ...part },
+                  };
+                }
+
+                return { ...msg, toolParts: nextToolParts, toolInserts: nextToolInserts };
               }),
             );
           } catch (error) {
             console.error("Failed to parse tool call part:", error);
-          }
-        }
-        // Remove any trailing partial marker from buffer to prevent display
-        const lastMarkerIdx = buffer.lastIndexOf("__TOOL_CALL__");
-        if (lastMarkerIdx !== -1) {
-          const suffix = buffer.slice(lastMarkerIdx);
-          if (!/\n\n$/.test(suffix)) {
-            // Incomplete control block detected; remove it from display buffer
-            buffer = buffer.slice(0, lastMarkerIdx);
           }
         }
       }
@@ -1051,25 +1055,42 @@ function ResearchChatPageContent() {
                                       </div>
                                     ) : (
                                       <div className="text-sm">
-                                        <Response>{message.content}</Response>
-                                        
-                                        {/* Show tool calls separately at the end */}
-                                        {message.toolParts && message.toolParts.length > 0 && (
-                                          <div className="mt-3 space-y-2">
-                                            {message.toolParts.map((part, idx) => (
-                                              <Tool key={`tool-${message.id}-${part.id || idx}`} defaultOpen={false}>
+                                        {(() => {
+                                          const content = message.content || "";
+                                          const inserts = (message.toolInserts || [])
+                                            .slice()
+                                            .sort((a, b) => a.index - b.index);
+                                          if (inserts.length === 0) {
+                                            return <Response>{content}</Response>;
+                                          }
+                                          const nodes: React.ReactNode[] = [];
+                                          let cursor = 0;
+                                          inserts.forEach((ins, idx) => {
+                                            const clamped = Math.min(Math.max(ins.index, 0), content.length);
+                                            const text = content.slice(cursor, clamped);
+                                            if (text) nodes.push(
+                                              <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
+                                            );
+                                            nodes.push(
+                                              <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
                                                 <ToolHeader
                                                   type={formatToolHeader(
-                                                    part.type as string,
-                                                    part.state as any,
+                                                    ins.part.type as string,
+                                                    ins.part.state as any,
                                                     message.docPaths?.length
                                                   ) as any}
-                                                  state={part.state as any}
+                                                  state={ins.part.state as any}
                                                 />
                                               </Tool>
-                                            ))}
-                                          </div>
-                                        )}
+                                            );
+                                            cursor = clamped;
+                                          });
+                                          const tail = content.slice(cursor);
+                                          if (tail) nodes.push(
+                                            <Response key={`txt-tail-${message.id}`}>{tail}</Response>
+                                          );
+                                          return <div className="space-y-2">{nodes}</div>;
+                                        })()}
 
                                         {message.sources &&
                                           message.sources.length > 0 && (
