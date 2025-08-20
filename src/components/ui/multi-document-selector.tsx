@@ -142,7 +142,7 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
     return (
       <div className={`space-y-3 ${className}`}>
         {/* Header with search and select all */}
-        <div className="space-y-2">
+        <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Available Documents

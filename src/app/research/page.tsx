@@ -1,27 +1,40 @@
 "use client";
 
-import { ChatInput, type Language } from "@/app/research/components/chat-input";
+import type { Language } from "@/app/research/components/chat-input";
 import { PreviewPanel } from "@/app/research/components/preview-panel";
 import { CodeGeneration } from "@/app/research/types";
-import { ToolProvider } from "@/components/context/ToolContext";
+import {
+  PromptInput,
+  PromptInputButton,
+  PromptInputModelSelect,
+  PromptInputModelSelectContent,
+  PromptInputModelSelectItem,
+  PromptInputModelSelectTrigger,
+  PromptInputModelSelectValue,
+  PromptInputSubmit,
+  PromptInputTextarea,
+  PromptInputToolbar,
+  PromptInputTools,
+} from "@/components/ai-elements/prompt-input";
+import { Response } from "@/components/ai-elements/response";
+import { Tool, ToolHeader } from "@/components/ai-elements/tool";
+import { ToolProvider, useTool } from "@/components/context/ToolContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
-  CardTitle,
+  CardTitle
 } from "@/components/ui/card";
 import { SourceAttribution } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { MultiDocumentSelector } from "@/components/ui/multi-document-selector";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Sheet,
   SheetContent,
@@ -33,9 +46,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
 import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
-import { cleanUpImplementation } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, Menu, MessageCircle, SquarePen } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
+import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 interface Message {
   id: string;
@@ -52,6 +66,16 @@ interface Message {
     number,
     import("@/components/ui/citation-badge").CitationData
   >;
+  docPaths?: string[];
+  toolParts?: {
+    id?: string;
+    type: string;
+    state: "input-streaming" | "input-available" | "output-available" | "output-error";
+    input?: unknown;
+    output?: unknown;
+    errorText?: string | null;
+  }[];
+  toolInserts?: { index: number; part: { id?: string; type: string; state: "input-streaming" | "input-available" | "output-available" | "output-error"; input?: unknown } }[];
 }
 
 // Helper functions for code composer streaming
@@ -128,14 +152,30 @@ const extractSectionsFromStream = (fullResponse: string) => {
 };
 
 function useSessionId() {
-  const sessionIdRef = useRef<string>(crypto.randomUUID());
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sessionIdRef = useRef<string>(searchParams.get('session') || crypto.randomUUID());
+  
   const resetSession = useCallback(() => {
-    sessionIdRef.current = crypto.randomUUID();
-  }, []);
+    const newSessionId = crypto.randomUUID();
+    sessionIdRef.current = newSessionId;
+    router.push(`/research?session=${newSessionId}`);
+  }, [router]);
+
+  useEffect(() => {
+    if (!searchParams.get('session')) {
+      router.replace(`/research?session=${sessionIdRef.current}`);
+    }
+  }, [searchParams, router]);
+  
   return { sessionId: sessionIdRef.current, resetSession };
 }
 
 function ResearchChatPageContent() {
+  const modeOptions: Record<"research" | "code", string> = {
+    research: "Research",
+    code: "Code",
+  };
   const {
     data: documents = [],
     isLoading: isLoadingDocuments,
@@ -146,23 +186,49 @@ function ResearchChatPageContent() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isPreparingIndex, setIsPreparingIndex] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [indexError, setIndexError] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const [codeGenerations, setCodeGenerations] = useState<CodeGeneration[]>([]);
+  const { activeTool, setTool } = useTool();
+  const [language, setLanguage] = useState<Language>("ts");
+  const [mode, setMode] = useState<"research" | "code">("research");
+  const [scrollOpacity, setScrollOpacity] = useState(0);
 
   const { sessionId, resetSession } = useSessionId();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // Handle scroll to calculate gradient opacity
+  const handleScroll = useCallback(() => {
+    if (scrollContainerRef.current) {
+      const { scrollTop } = scrollContainerRef.current;
+      // Calculate opacity based on scroll position
+      // Start fading in after 20px, fully visible after 100px
+      const opacity = Math.min(Math.max((scrollTop - 20) / 80, 0), 1);
+      setScrollOpacity(opacity);
+    }
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Set up scroll listener
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, [handleScroll]);
 
   // Handle document loading errors
   useEffect(() => {
@@ -394,6 +460,48 @@ function ResearchChatPageContent() {
         }
       }
 
+      // Extract incremental tool call parts and capture insertion indices for interleaving
+      if (buffer.includes("__TOOL_CALL__")) {
+        const regex = /__TOOL_CALL__([\s\S]*?)\n\n/;
+        let match: RegExpMatchArray | null;
+        while ((match = buffer.match(regex))) {
+          try {
+            const part = JSON.parse(match[1]);
+            // Remove marker from buffer first, then use the resulting length as insertion index
+            buffer = buffer.replace(regex, "");
+            const insertIndex = buffer.length;
+
+            setMessages((prev: Message[]) =>
+              prev.map((msg): Message => {
+                if (msg.id !== assistantPlaceholderMessage.id) return msg;
+                const existingParts = msg.toolParts || [];
+                const partIdx = existingParts.findIndex((p: any) => p.id && p.id === part.id);
+                const nextToolParts = partIdx === -1
+                  ? [...existingParts, part]
+                  : existingParts.map((p, i) => (i === partIdx ? { ...p, ...part } : p));
+
+                const existingInserts = msg.toolInserts ? [...msg.toolInserts] : [];
+                const insIdx = existingInserts.findIndex((i) => i.part.id === part.id);
+                let nextToolInserts = existingInserts;
+                if (insIdx === -1) {
+                  nextToolInserts = [...existingInserts, { index: insertIndex, part }];
+                } else {
+                  // Keep the original index; just update the part state
+                  nextToolInserts[insIdx] = {
+                    index: existingInserts[insIdx].index,
+                    part: { ...existingInserts[insIdx].part, ...part },
+                  };
+                }
+
+                return { ...msg, toolParts: nextToolParts, toolInserts: nextToolInserts };
+              }),
+            );
+          } catch (error) {
+            console.error("Failed to parse tool call part:", error);
+          }
+        }
+      }
+
       // Handle code composer live streaming
       if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
         const currentSection = getCurrentSection(fullResponse);
@@ -433,12 +541,21 @@ function ResearchChatPageContent() {
 
       // Update message content for non-code-composer tools (regular chat)
       if (!sourceInfo || sourceInfo?.tool !== "code-composer") {
-        setMessages((prev) =>
-          prev.map((msg) =>
+        // Prevent leaking control delimiters to UI: strip any unterminated control block tail
+        let safeBuffer = buffer;
+        const tailIdx = safeBuffer.lastIndexOf("__TOOL_CALL__");
+        if (tailIdx !== -1) {
+          const tail = safeBuffer.slice(tailIdx);
+          if (!/\n\n$/.test(tail)) {
+            safeBuffer = safeBuffer.slice(0, tailIdx);
+          }
+        }
+        setMessages((prev: Message[]) =>
+          prev.map((msg): Message =>
             msg.id === assistantPlaceholderMessage.id
               ? {
                   ...msg,
-                  content: buffer,
+                  content: safeBuffer,
                   isLoadingPlaceholder: false,
                   sources: sourceInfo?.sources || [],
                   citations: (() => {
@@ -532,6 +649,7 @@ function ResearchChatPageContent() {
       role: "assistant",
       timestamp: new Date().toISOString(),
       isLoadingPlaceholder: payload.tool !== "code-composer",
+      docPaths: payload.documentPaths,
     };
 
     setMessages((prev) => [...prev, userMessage, assistantPlaceholderMessage]);
@@ -625,8 +743,47 @@ function ResearchChatPageContent() {
     }
   };
 
-  const handleKeyDown = () => {
-    // This will be handled by ChatInput component
+  const handleKeyDown = () => {};
+
+  useEffect(() => {
+    setMode(activeTool === "code-composer" ? "code" : "research");
+  }, [activeTool]);
+
+  const getPlaceholder = () => {
+    if (isPreparingIndex) return "Preparing documents...";
+    if (selectedDocuments.length === 0)
+      return "Select documents to start chatting...";
+    if (activeTool === "code-composer") return "Draft code from selected papers...";
+    if (selectedDocuments.length === 1) {
+      return `Ask questions about ${
+        selectedDocuments[0].displayTitle || selectedDocuments[0].name
+      }...`;
+    }
+    return `Ask questions about ${selectedDocuments.length} documents...`;
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (
+      !inputValue.trim() ||
+      selectedDocuments.length === 0 ||
+      isLoading ||
+      isPreparingIndex
+    ) {
+      return;
+    }
+
+    const payload = {
+      query: inputValue,
+      documentPaths: selectedDocuments.map((doc) => doc.path),
+      ...(activeTool === "code-composer" && {
+        tool: "code-composer" as const,
+        language,
+        scope: [] as string[],
+      }),
+    };
+
+    handleSendMessage(payload);
   };
 
   const handleDocumentSelect = useCallback((doc: Document) => {
@@ -720,7 +877,7 @@ function ResearchChatPageContent() {
           }`}
         >
           <div className="flex flex-col w-full">
-            <CardHeader className="border-b flex flex-row items-center justify-between space-y-0 mt-[0.45rem]">
+            <div className="flex flex-row items-center justify-between space-y-0 mt-[0.45rem] px-3.5">
               {!isSidebarCollapsed && (
                 <CardTitle className="text-lg">Research Library</CardTitle>
               )}
@@ -739,7 +896,7 @@ function ResearchChatPageContent() {
                   <ChevronLeft className="h-4 w-4" />
                 )}
               </Button>
-            </CardHeader>
+            </div>
 
             {!isSidebarCollapsed && (
               <CardContent className="p-3 flex-1 overflow-hidden">
@@ -801,7 +958,7 @@ function ResearchChatPageContent() {
             {/* Chat Interface */}
             <ResizablePanel defaultSize={60} minSize={30}>
               <Card
-                className="h-full flex flex-col rounded-none border-0 gap-0 min-h-0 bg-card/60 backdrop-blur-sm"
+                className="h-full flex flex-col rounded-none border-0 gap-0 min-h-0 bg-[#0A1023] backdrop-blur-sm"
                 role="main"
                 aria-label="Chat interface"
               >
@@ -834,127 +991,199 @@ function ResearchChatPageContent() {
                 ) : (
                   <>
                     {/* Chat Header */}
-                    <CardHeader className="border-b flex-shrink-0">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg truncate">
-                            Chat with{" "}
-                            {selectedDocuments.length === 1
-                              ? selectedDocuments[0].displayTitle ||
-                                selectedDocuments[0].name
-                              : `${selectedDocuments.length} Documents`}
-                          </CardTitle>
-                          <CardDescription>
-                            {isPreparingIndex
-                              ? (selectedDocuments.length === 1
-                                  ? `Preparing ${selectedDocuments[0].displayTitle || selectedDocuments[0].name}...`
-                                  : `Preparing ${selectedDocuments.length} documents...`)
-                              : indexError
-                                ? (
-                                    <span className="text-red-600">
-                                      Could not load {selectedDocuments.length === 1 ? "document" : "documents"}
-                                    </span>
-                                  )
-                                : (
-                                    <>
-                                      <span className="text-green-600">✓</span>{" "}
-                                      {selectedDocuments.length === 1
-                                        ? "Ready to answer questions about this document."
-                                        : "Ready to answer questions about these documents."}
-                                    </>
-                                  )
-                            }
-                          </CardDescription>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsMobileSheetOpen(true)}
-                            className="md:hidden"
-                            aria-label="Change document"
-                          >
-                            <Menu className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
+                    <div 
+                      className="px-6 py-4 pb-12 absolute top-0 left-0 z-10 flex-shrink-0 w-full"
+                      style={{
+                        background: `linear-gradient(to bottom, 
+                          rgba(10, 16, 35, ${scrollOpacity}) 0%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 1}) 30%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.8}) 50%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.6}) 65%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.4}) 80%, 
+                          rgba(10, 16, 35, ${scrollOpacity * 0.2}) 90%, 
+                          transparent 100%)`
+                      }}
+                    >
+                      <h1 className="text-2xl md:text-xl font-bold tracking-tight text-white whitespace-nowrap ">
+                      Nexus
+        </h1>
+                    </div> 
 
                     {/* Messages */}
                     <div className="flex-1 min-h-0 overflow-hidden">
-                      <ScrollArea
-                        className="h-full p-4"
+                      <div
+                        ref={scrollContainerRef}
+                        className="h-full p-4 pb-0 overflow-y-auto scrollbar-none"
                         role="log"
                         aria-label="Chat messages"
                         aria-live="polite"
+                        style={{
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none'
+                        }}
                       >
-                        <div className="space-y-3">
-                          {messages.map((message) => (
-                            <div
-                              key={message.id}
-                              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                              role="article"
-                              aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
-                            >
-                              <Card
-                                variant="message"
-                                className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
-                                  message.role === "user"
-                                    ? "bg-primary text-primary-foreground border-primary"
-                                    : "bg-card"
-                                }`}
+                        <div className="min-h-full flex flex-col justify-end">
+                          <div className="space-y-3">
+                            {messages.map((message) => (
+                              <div
+                                key={message.id}
+                                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                                role="article"
+                                aria-label={`${message.role === "user" ? "Your message" : "AI response"}`}
                               >
-                                <CardContent variant="message">
-                                  {message.role === "user" ? (
-                                    <p className="text-sm leading-relaxed">
-                                      {message.content}
-                                    </p>
-                                  ) : message.isLoadingPlaceholder ? (
-                                    <div
-                                      className="flex items-center justify-center py-2"
-                                      aria-label="AI is thinking"
-                                    >
-                                      <Loader
-                                        size="md"
-                                        variant="loading-dots"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm">
-                                      <MarkdownRenderer
-                                        content={message.content}
-                                        citations={message.citations}
-                                      />
-                                      {message.sources &&
-                                        message.sources.length > 0 && (
-                                          <SourceAttribution
-                                            sources={message.sources}
-                                            className="mt-2 pt-2 border-t border-border/20"
-                                            showLabel={true}
-                                            clickable={false}
-                                          />
-                                        )}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            </div>
-                          ))}
-                          <div ref={messagesEndRef} />
+                                <Card
+                                  variant="message"
+                                  className={`max-w-[85%] md:max-w-[80%] transition-all duration-200 ease-out ${
+                                    message.role === "user"
+                                      ? "bg-primary text-primary-foreground border-primary"
+                                      : "bg-card"
+                                  }`}
+                                >
+                                  <CardContent variant="message">
+                                    {message.role === "user" ? (
+                                      <p className="text-sm">
+                                        {message.content}
+                                      </p>
+                                    ) : message.isLoadingPlaceholder ? (
+                                      <div
+                                        className="flex items-center justify-center "
+                                        aria-label="AI is thinking"
+                                      >
+                                        <Loader
+                                          size="md"
+                                          variant="loading-dots"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm">
+                                        {(() => {
+                                          const content = message.content || "";
+                                          const inserts = (message.toolInserts || [])
+                                            .slice()
+                                            .sort((a, b) => a.index - b.index);
+                                          if (inserts.length === 0) {
+                                            return <Response>{content}</Response>;
+                                          }
+                                          const nodes: React.ReactNode[] = [];
+                                          let cursor = 0;
+                                          inserts.forEach((ins, idx) => {
+                                            const clamped = Math.min(Math.max(ins.index, 0), content.length);
+                                            const text = content.slice(cursor, clamped);
+                                            if (text) nodes.push(
+                                              <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
+                                            );
+                                            nodes.push(
+                                              <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
+                                                <ToolHeader
+                                                  type={formatToolHeader(
+                                                    ins.part.type as string,
+                                                    ins.part.state as any,
+                                                    message.docPaths?.length
+                                                  ) as any}
+                                                  state={ins.part.state as any}
+                                                />
+                                              </Tool>
+                                            );
+                                            cursor = clamped;
+                                          });
+                                          const tail = content.slice(cursor);
+                                          if (tail) nodes.push(
+                                            <Response key={`txt-tail-${message.id}`}>{tail}</Response>
+                                          );
+                                          return <div className="space-y-2">{nodes}</div>;
+                                        })()}
+
+                                        {message.sources &&
+                                          message.sources.length > 0 && (
+                                            <SourceAttribution
+                                              sources={message.sources}
+                                              className="mt-2 pt-2 border-t border-border/20"
+                                              showLabel={true}
+                                              clickable={false}
+                                            />
+                                          )}
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                          </div>
                         </div>
-                      </ScrollArea>
+                      </div>
                     </div>
 
-                    {/* Input */}
-                    <ChatInput
-                      inputValue={inputValue}
-                      setInputValue={setInputValue}
-                      onSendMessage={handleSendMessage}
-                      isLoading={isLoading}
-                      isPreparingIndex={isPreparingIndex}
-                      selectedDocuments={selectedDocuments}
-                      onKeyDown={handleKeyDown}
-                    />
+<div className="px-1.5">
+                    <PromptInput onSubmit={handleSubmit} className="border-t flex-shrink-0 mt-0 relative">
+                      <PromptInputTextarea
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown as any}
+                        placeholder={getPlaceholder()}
+                        disabled={
+                          isLoading ||
+                          isPreparingIndex ||
+                          selectedDocuments.length === 0
+                        }
+                      />
+                      <PromptInputToolbar className="border-t">
+                        <PromptInputTools>
+                          <PromptInputModelSelect
+                            onValueChange={(value) => {
+                              const next = value as "research" | "code";
+                              setMode(next);
+                              setTool(next === "code" ? "code-composer" : "default");
+                            }}
+                            value={mode}
+                          >
+                            <PromptInputModelSelectTrigger>
+                              <PromptInputModelSelectValue />
+                            </PromptInputModelSelectTrigger>
+                            <PromptInputModelSelectContent>
+                              {Object.entries(modeOptions).map(([id, name]) => (
+                                <PromptInputModelSelectItem 
+                                  disabled={id === "code" && process.env.NODE_ENV === "production" && process.env.VERCEL === "1"} 
+                                  key={id} 
+                                  value={id}
+                                >
+                                  {name}
+                                </PromptInputModelSelectItem>
+                              ))}
+                            </PromptInputModelSelectContent>
+                          </PromptInputModelSelect>
+                          {mode === "code" && (
+                            <PromptInputModelSelect
+                              onValueChange={(value) => setLanguage(value as Language)}
+                              value={language}
+                            >
+                              <PromptInputModelSelectTrigger>
+                                <PromptInputModelSelectValue />
+                              </PromptInputModelSelectTrigger>
+                              <PromptInputModelSelectContent>
+                                <PromptInputModelSelectItem value="ts">TypeScript</PromptInputModelSelectItem>
+                                <PromptInputModelSelectItem value="python">Python</PromptInputModelSelectItem>
+                                <PromptInputModelSelectItem value="cpp">C++</PromptInputModelSelectItem>
+                              </PromptInputModelSelectContent>
+                            </PromptInputModelSelect>
+                          )}
+                          <PromptInputButton disabled={mode === "code" || true /* TODO: update */}>
+                            <GlobeIcon size={16} />
+                            <span>Search</span>
+                          </PromptInputButton>
+                        </PromptInputTools>
+                        <PromptInputSubmit
+                          disabled={
+                            !inputValue.trim() ||
+                            isLoading ||
+                            isPreparingIndex ||
+                            selectedDocuments.length === 0
+                          }
+                          status={isLoading || isPreparingIndex ? "submitted" : ("ready" as any)}
+                        />
+                      </PromptInputToolbar>
+                    </PromptInput>
+                    </div>
                   </>
                 )}
               </Card>
@@ -977,10 +1206,18 @@ function ResearchChatPageContent() {
   );
 }
 
+function ResearchChatPageWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResearchChatPageContent />
+    </Suspense>
+  );
+}
+
 export default function ResearchChatPage() {
   return (
     <ToolProvider>
-      <ResearchChatPageContent />
+      <ResearchChatPageWrapper />
     </ToolProvider>
   );
 }

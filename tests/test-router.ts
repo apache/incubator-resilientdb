@@ -1,39 +1,43 @@
+import { CodeAgent, NexusAgent } from "@/lib/agent";
+import { agentStreamEvent, agentToolCallEvent } from "@llamaindex/workflow";
+import chalk from "chalk";
+ 
 import { configureLlamaSettings } from "../src/lib/config/llama-settings";
 import { llamaService } from "../src/lib/llama-service";
 
-const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
-  console.log("\n🧪 Testing Chat Engine...");
-  const chatEngine = await llamaService.createChatEngine(documentPaths, []);
-  const chatResponse = await chatEngine.chat({
-    message: testQuery,
-    stream: true,
-  });
+// const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
+//   console.log("\n🧪 Testing Chat Engine...");
+//   const chatEngine = await llamaService.createChatEngine(documentPaths);
+//   const chatResponse = await chatEngine.chat({
+//     message: testQuery,
+//     stream: true,
+//   });
 
-  console.log("📺 Chat response:");
-  console.log("─".repeat(50));
-  let lastChunk;
+//   console.log("📺 Chat response:");
+//   console.log("─".repeat(50));
+//   let lastChunk;
   
-  for await (const chunk of chatResponse) {
-    lastChunk = chunk; // Store the current chunk as the last one
+//   for await (const chunk of chatResponse) {
+//     lastChunk = chunk; // Store the current chunk as the last one
     
-    const content = chunk.response || chunk.delta || "";
-    if (content) {
-      process.stdout.write(content);
-    }
-  }
+//     const content = chunk.response || chunk.delta || "";
+//     if (content) {
+//       process.stdout.write(content);
+//     }
+//   }
   
-  // After the loop, process the last chunk's source nodes
-  if (lastChunk?.sourceNodes) {
-    process.stdout.write("\n📚 Source Node Metadata:\n");
-    process.stdout.write("─".repeat(30) + "\n");
+//   // After the loop, process the last chunk's source nodes
+//   if (lastChunk?.sourceNodes) {
+//     process.stdout.write("\n📚 Source Node Metadata:\n");
+//     process.stdout.write("─".repeat(30) + "\n");
     
-    for (const sourceNode of lastChunk.sourceNodes) {
-      if (sourceNode.node.metadata) {
-        process.stdout.write(JSON.stringify(sourceNode.node.metadata, null, 2) + "\n");
-      }
-    }
-  }
-};
+//     for (const sourceNode of lastChunk.sourceNodes) {
+//       if (sourceNode.node.metadata) {
+//         process.stdout.write(JSON.stringify(sourceNode.node.metadata, null, 2) + "\n");
+//       }
+//     }
+//   }
+// };
 
 // const testQueryEngine = async (testQuery: string, documentPaths: string[], options: { topK: number; tool: string }) => {
 //   console.log("\n🔧 Creating streaming query engine...");
@@ -70,7 +74,7 @@ async function testRouterBehavior() {
     console.log(`📋 Query: "${testQuery}"`);
     console.log(`📄 Documents: ${documentPaths.join(", ")}`);
     console.log(`⚙️  Options:`, options);
-    await testChatEngine(testQuery, documentPaths);
+    // await testChatEngine(testQuery, documentPaths);
     // await testQueryEngine(testQuery, documentPaths, options);
   } catch (error) {
     console.error("❌ Test failed:", error);
@@ -81,21 +85,113 @@ async function testRouterBehavior() {
   }
 }
 
+async function testIngestion() {
+  console.log("🧪 Testing ingestion...");
+  configureLlamaSettings();
+  const documentPaths = ["documents/rcc.pdf"];
+  await llamaService.ingestDocs(documentPaths);
+}
+
+
+async function testAgent() {
+  const testQuery = "Can you provide a fun fact from each paper? Separate tool calls, 10 words each";
+  const documents = ["documents/rcc.pdf", "documents/resilientdb.pdf"];
+
+  const agent = await llamaService.createNexusAgent(documents);
+  const response = await agent.runStream(testQuery);
+  for await (const event of response) {
+    if (agentToolCallEvent.include(event)) {
+      console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
+    }
+    if (agentStreamEvent.include(event)) {
+      process.stdout.write(event.data.delta);
+    }
+  }
+}
+
+async function testAgentClass() {
+// Initialize the agent
+  const nexusAgent = await NexusAgent.create();
+
+  const agentWorkflow = await nexusAgent.createAgent(["documents/rcc.pdf", "documents/resilientdb.pdf"], "test-session");
+
+  const prompt = "Can you explain replica failure from RCC document in 20 words?";
+  console.log(chalk.blue(`\n\nPrompt: ${prompt}\n`));
+  const response = await agentWorkflow.runStream(prompt);
+  for await (const event of response) {
+    if (agentToolCallEvent.include(event)) {
+      console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
+    }
+    if (agentStreamEvent.include(event)) {
+      process.stdout.write(event.data.delta);
+    }
+  }
+  const folloUp = "Can you shorten that to 10 words?";
+  console.log(chalk.blue(`\n\nFollow-up query: ${folloUp}\n`));
+  const followUpResponse = await agentWorkflow.runStream(folloUp);
+  for await (const event of followUpResponse) {
+    if (agentStreamEvent.include(event)) {
+      process.stdout.write(event.data.delta);
+    }
+  }
+}
+
+async function testCodeAgent() {
+  console.log("🧪 Testing CodeAgent with 'Replica failure' query...");
+  try {
+    configureLlamaSettings();
+    
+    // Initialize the CodeAgent
+    const codeAgent = new CodeAgent("ts");
+    
+    // Create agent workflow with the rcc.pdf document
+    const agentWorkflow = await codeAgent.createAgent(["documents/rcc.pdf"], "code-agent-test");
+    
+    const prompt = "Replica failure";
+    console.log(chalk.blue(`\n\nPrompt: ${prompt}\n`));
+    console.log(chalk.green("Starting CodeAgent workflow...\n"));
+    
+    const response = await agentWorkflow.runStream(prompt);
+    
+    for await (const event of response) {
+      if (agentToolCallEvent.include(event)) {
+        console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
+      }
+      if (agentStreamEvent.include(event)) {
+        process.stdout.write(event.data.delta);
+      }
+    }
+    
+    console.log(chalk.green("\n\nCodeAgent workflow completed!"));
+    
+  } catch (error) {
+    console.error("❌ CodeAgent test failed:", error);
+    if (error instanceof Error) {
+      console.error("Error message:", error.message);
+      console.error("Stack trace:", error.stack);
+    }
+  }
+}
 
 // Main execution
 async function main() {
-  console.log("🚀 Starting Router Behavior Test");
-  console.log("=".repeat(80));
+  // console.log("🚀 Starting Router Behavior Test");
+  console.log("=".repeat(50));
   
   // Single detailed test
-  await testRouterBehavior();
+  // await testRouterBehavior();
+  // await testIngestion();
+  // await testAgent();
+  // await testAgentClass(); 
+  await testCodeAgent();
+  // await testExample();
   
   console.log("\n\n🔄 Running multiple test queries...");
 //   await runMultipleTests();
 
   // await testSourceNodes();
   
-  console.log("\n✅ All tests completed!");
+  console.log("\nAll tests completed!");
 }
 
 // Run the test

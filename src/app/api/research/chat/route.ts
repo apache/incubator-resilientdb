@@ -1,5 +1,5 @@
-import { llamaService } from "@/lib/llama-service";
-import { sessionManager } from "@/lib/session-manager";
+import { CodeAgent, NexusAgent } from "@/lib/agent";
+import { agentStreamEvent, agentToolCallEvent, agentToolCallResultEvent, AgentWorkflow } from "@llamaindex/workflow";
 import { NextRequest, NextResponse } from "next/server";
 import { config } from "../../../../config/environment";
 
@@ -38,53 +38,69 @@ const validateRequest = (data: RequestData): string | null => {
   return null;
 };
 
-const handleStreamingResponse = async (
-  chatEngine: any,
+
+
+const handleAgentStreamingResponse = async (
+  agentWorkflow: AgentWorkflow,
   query: string,
   sessionId: string,
 ): Promise<ReadableStream> => {
   return new ReadableStream({
     async start(controller) {
       try {
-        const stream = await chatEngine.chat({
-          message: query,
-          stream: true,
-        });
+        try {
+          const beforeMemory = NexusAgent.getInstance().getMemory(sessionId);
+          if (beforeMemory) {
+            console.log("[Memory][Before]", await beforeMemory.get());
+          }
+        } catch {}
+        const stream = await agentWorkflow.runStream(query);
 
-        let completeResponse = "";
-        let lastChunk;
-        const sourceMetadata: any[] = [];
-
-        for await (const chunk of stream) {
-          lastChunk = chunk;
-          const content = chunk.response || chunk.delta || "";
-          if (content) {
-            controller.enqueue(content);
-            completeResponse += content;
+        for await (const event of stream) {
+          if (agentToolCallEvent.include(event)) {
+            const { toolId, toolName, toolKwargs } = event.data as any;
+            const callPart = {
+              id: toolId,
+              type: toolName,
+              state: "input-available" as const,
+              input: toolKwargs,
+            };
+            controller.enqueue(`__TOOL_CALL__${JSON.stringify(callPart)}\n\n`);
+          }
+          if (agentToolCallResultEvent.include(event)) {
+            const { toolId, toolName, toolOutput } = event.data as any;
+            const state = toolOutput && toolOutput.error ? "output-error" : "output-available";
+            const updatePart = {
+              id: toolId,
+              type: toolName,
+              state,
+            };
+            // Do not include output or errorText per requirement
+            controller.enqueue(`__TOOL_CALL__${JSON.stringify(updatePart)}\n\n \n\n \n\n`);
+          }
+          if (agentStreamEvent.include(event)) {
+            const content = event.data.delta || "";
+            if (content) {
+              controller.enqueue(content);
+            }
           }
         }
-        const memory = sessionManager.getSessionMemory(sessionId);
-        await memory.add({ role: "assistant", content: completeResponse });
-        
-        // Memory has been updated with the assistant's response
-        
-        if (lastChunk?.sourceNodes) {
-          for (const sourceNode of lastChunk.sourceNodes) {
-            sourceMetadata.push(sourceNode.node.metadata);
+
+        try {
+          const afterMemory = NexusAgent.getInstance().getMemory(sessionId);
+          if (afterMemory) {
+            console.log("[Memory][After]", await afterMemory.getLLM());
           }
-        }
-        controller.enqueue(
-          `__SOURCE_INFO__${JSON.stringify(sourceMetadata)}\n\n`,
-        );
-        
+        } catch {}
+
         controller.close();
       } catch (error) {
-        console.error("Streaming error:", error);
         controller.error(error);
       }
     },
   });
 };
+
 
 const getErrorMessage = (error: any): string => {
   if (!(error instanceof Error)) {
@@ -119,18 +135,27 @@ export async function POST(req: NextRequest) {
       console.log(
         `Processing query: "${requestData.query}" for documents: ${documentPaths.join(", ")}`,
       );
+
+      // Selected language passed to code agent
+      const selectedLanguage = requestData.language || "ts";
       
       const sessionId = requestData.sessionId || Date.now().toString();
-      const memory = sessionManager.getSessionMemory(sessionId);
       
-      await memory.add({ role: "user", content: requestData.query });
-      
-      const chatHistory = await memory.get();
+      // Create or reuse agent for session
+      const isCodeComposer = requestData.tool === "code-composer";
+      let agentWorkflow: AgentWorkflow;
 
-      const chatEngine = await llamaService.createChatEngine(documentPaths, chatHistory);
+      if (isCodeComposer) {
+        // Use the simple CodeAgent placeholder that always returns a fixed message
+        const codeAgentFactory = new CodeAgent(selectedLanguage);
+        agentWorkflow = await codeAgentFactory.createAgent(documentPaths, sessionId);
+      } else {
+        const nexusAgent = await NexusAgent.create();
+        agentWorkflow = await nexusAgent.createAgent(documentPaths, sessionId);
+      }
 
-      const stream = await handleStreamingResponse(
-        chatEngine,
+      const stream = await handleAgentStreamingResponse(
+        agentWorkflow,
         requestData.query,
         sessionId,
       );
@@ -138,6 +163,7 @@ export async function POST(req: NextRequest) {
       return new Response(stream, {
         headers: {
           "Content-Type": "text/plain; charset=utf-8",
+          "X-Session-Id": sessionId,
         },
       });
     } catch (processingError) {

@@ -1,34 +1,41 @@
-import { HuggingFaceEmbedding } from "@llamaindex/huggingface";
+import { deepseek } from "@llamaindex/deepseek";
 import {
-  PGVectorStore,
-  PostgresDocumentStore,
-  PostgresIndexStore,
+    PGVectorStore,
+    PostgresDocumentStore,
+    PostgresIndexStore,
 } from "@llamaindex/postgres";
-
+import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 import {
-  ChatMessage,
-  ContextChatEngine,
-  Document,
-  IngestionPipeline,
-  LlamaParseReader,
-  MarkdownNodeParser,
-  SentenceSplitter,
-  Settings, // eslint-disable-line @typescript-eslint/no-unused-vars
-  StorageContext,
-  storageContextFromDefaults,
-  SummaryExtractor,
-  VectorStoreIndex
+    ChatMessage,
+    ContextChatEngine,
+    Document,
+    IngestionPipeline,
+    LlamaParseReader,
+    MarkdownNodeParser,
+    NodeWithScore,
+    SentenceSplitter,
+    Settings,
+    StorageContext,
+    storageContextFromDefaults,
+    SummaryExtractor,
+    TextNode,
+    tool,
+    ToolCallLLM,
+    VectorStoreIndex
 } from "llamaindex";
 import { ClientConfig } from "pg";
+import { TavilyClient } from "tavily";
+import z from "zod";
 import { config } from "../config/environment";
 import { configureLlamaSettings } from "./config/llama-settings";
+import { TITLE_MAPPINGS } from "./constants";
 
 dotenv.config();
 
 const RESEARCH_SYSTEM_PROMPT = `
-You are Nexus, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
+You are Nexus, an AI research assistant specialized in Apache ResilientDB, blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
 You have access to the content of a document and can provide accurate, detailed answers based on that content.
 - When asked about the document, always base your responses on the information provided in the document. When possible, cite sections, pages, or other specific information from the document.
 - If you cannot find specific information in the document, say so clearly.
@@ -42,6 +49,57 @@ Citation Instructions:
     - When consecutive statements reference the same source document AND page, only include the citation marker once at the end of that section
     - Always include citations for each distinct source, even if from the same document but different pages
 `;
+
+export const AGENT_RESEARCH_PROMPT = (documentPaths: string[]) =>
+`
+## Core Identity
+You are **Nexus**, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems.
+
+## Capabilities
+- Answer questions about documents with access to document content
+- Provide accurate, detailed answers based on document content
+- Explain complex technical concepts in blockchain and distributed systems
+- Assist with Apache ResilientDB research and implementation
+
+## Operational Guidelines
+
+- For most questions, you should use the **search_documents tool** to answer questions, even if the question is not about ResilientDB or related blockchain topics.
+- If uncertain about which document to search, search all available documents.
+- ALWAYS state to the user that you are going to use a tool before you call it..
+- Example: "Let me look through the documents..." 
+- Then proceed to use the appropriate tools to find information
+
+### Tool Selection
+- Prioritize the **search_documents tool** for answering questions.
+  - Refer to documents by their **title**, not by their file name 
+- Use the **search_web tool** for web searches when needed
+
+### Document Handling
+
+AVAILABLE DOCUMENTS (documentPath - Title):
+{
+${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replace("documents/", "")]}"`).join(",\n")}
+}
+
+#### Response Requirements
+- **Always** base responses on information provided in the document when asked about document content, and from the web when needed.
+- **Cite specific sections, pages, or other information** from the document/web results when possible
+- **Clearly state** if specific information cannot be found in the document/web
+- If asked about content NOT related to ResilientDB or related blockchain topics:
+  - Give a brief answer
+  - Guide the user to ask about something that IS related to ResilientDB or related blockchain topics.
+
+
+#### Reference Standards
+- Favor referring to documents by their **title** instead of file name
+- When referencing sources, avoid metadata terms like "node" or "Header_1"
+
+## Communication Style
+- Professional, friendly and technical when discussing complex concepts
+- Clear and educational for students and researchers
+- Helpful and guided when users ask about topics outside available documents
+`;
+
 const PARSING_CACHE = "parsing-cache.json";
 
 export class LlamaService {
@@ -71,25 +129,19 @@ export class LlamaService {
     this.documentStore = new PostgresDocumentStore({
       clientConfig: this.clientConfig,
     });
-    const huggingFaceEmbedding = new HuggingFaceEmbedding({
-      modelType: "BAAI/bge-large-en-v1.5",
-      modelOptions: {
-        dtype: "auto",
-      },
-    });
+  
     this.pipeline = new IngestionPipeline({
       transformations: [
         new MarkdownNodeParser(),
-        // look into using MarkdownElementNodeParser for getting table data
         new SentenceSplitter({
-          chunkSize: 1024,
+          chunkSize: 768,
           chunkOverlap: 20,
         }),
         new SummaryExtractor(),
-        huggingFaceEmbedding,
+        Settings.embedModel,
       ],
       vectorStore: this.vectorStore,
-      docStore: this.documentStore,
+      // docStore: this.documentStore,
     });
   }
 
@@ -157,6 +209,7 @@ export class LlamaService {
       const reader = new LlamaParseReader({
         apiKey: config.llamaCloudApiKey,
         resultType: "json",
+        verbose: true
       });
 
       const documents: Document[] = [];
@@ -226,7 +279,6 @@ export class LlamaService {
     }
   }
 
-
   async createChatEngine(
     documents: string[],
     ctx: ChatMessage[]
@@ -252,6 +304,175 @@ export class LlamaService {
     });
     return chatEngine;
   }
+
+  // tbd
+  async createCodingAgent(): Promise<AgentWorkflow> {
+    const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
+    const tools = [
+      index.queryTool({
+        metadata: {
+          name: "rag_tool",
+          description: `This tool can answer detailed questions about the paper.`,
+        },
+        options: { similarityTopK: 10 },
+      }),
+    ];
+    const codingAgent = agent({
+      name: "CodingAgent",
+      description:
+        "Responsible for implementing code based on research findings and technical requirements.",
+      systemPrompt: `You are a coding agent. Your role is to implement code for technical concepts and algorithms based on detailed research findings, requirements, and instructions provided by the research agent. Always write correct, best practice, DRY, bug-free, and fully functional code.`,
+      tools: [],
+      llm: deepseek({
+        model: config.deepSeekModel,
+      }) 
+    });
+
+    const planningAgent = agent({
+      name: "ResearchAgent",
+      description:
+        "Responsible for finding all information necessary for implementing technical concepts from research papers to code.",
+      systemPrompt: `You are a research agent. Your role is to find and extract ALL information necessary for implementing technical concepts, algorithms, and methods from research papers and technical documents. Gather detailed, precise, and actionable insights required for accurate code implementation. Present your findings clearly for the coding agent to use directly in code generation.`,
+      tools: tools,
+      canHandoffTo: [codingAgent],
+      llm: Settings.llm as ToolCallLLM,
+    });
+
+    const workflow = multiAgent({
+      agents: [planningAgent, codingAgent],
+      rootAgent: planningAgent, // The PlanningAgent starts the process
+    });
+
+    return workflow;
+  }
+
+  searchWeb = async (parameters: {
+    query: string;
+  }): Promise<{
+    results: {
+      url: string;
+      title: string;
+      content: string;
+      raw_content?: string | undefined;
+      score: string;
+    }[];
+  }> => {
+    const tavily = new TavilyClient({ apiKey: config.tavilyApiKey });
+    const response = await tavily.search({
+      query: parameters.query,
+      search_depth: "advanced",
+      include_answer: true,
+      include_images: true,
+      max_results: 10,
+    });
+    return response;
+  };
+
+  retrieve = async (parameters: {
+    documentPaths: string[];
+    query: string;
+  }): Promise<any> => {
+    console.log("retrieve", parameters);
+    const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
+    const retriever = index.asRetriever({
+      similarityTopK: 3,
+      filters: {
+        filters: [
+          {
+            key: "source_document",
+            operator: "in",
+            value: parameters.documentPaths,
+          },
+        ],
+      },
+    });
+    const nodes = await retriever.retrieve({ query: parameters.query });
+    return nodes.map((node: NodeWithScore) => {
+      return {
+        content: (node.node as TextNode).text,
+        metadata: node.node.metadata,
+      };
+    });
+    // return results;
+  };
+
+  // deprecated, see agent.ts
+  async createNexusAgent(documents: string[]): Promise<AgentWorkflow> {
+    
+
+    // using a queryTool(slower)
+    // const retrieverTool = index.queryTool({
+    //   metadata: {
+    //     name: "retriever_tool",
+    //     description: `This tool can retrieve information about the selected documents.`,
+    //   },
+    //   includeSourceNodes: true,
+    //   options: { similarityTopK: 3,
+    //     filters: {
+    //     filters: [
+    //       {
+    //         key: "source_document",
+    //         operator: "in",
+    //         value: documents,
+    //       },
+    //     ],
+    //   },
+    //   },
+    // });
+
+    ////////////////////////////////////////////////////
+    // using a bound retriever function to create a tool
+    // const boundRetriever = (documents: string[]) => {
+    //   return async (parameters: { query: string }) => {
+    //     const nodes = await this.retrieve({
+    //       query: parameters.query,
+    //       documentPaths: documents,
+    //     });
+    //     return nodes.map((node: NodeWithScore) => {
+    //       return {
+    //         content: (node.node as TextNode).text,
+    //         metadata: node.node.metadata,
+    //       };
+    //     });
+    //   };
+    // };
+    const retrieverTool = tool({
+      name: "retriever_tool",
+      description: `This tool can retrieve detailed information from the selected documents.`,
+      parameters: z.object({
+        query: z.string().describe("The query to retrieve information from the document's vector embeddings."),
+        documentPaths: z.array(z.string()).describe("The list of document paths to search in"),
+      }),
+      execute: this.retrieve,
+    });
+    ////////////////////////////////////////////////////
+
+    const searchTool = tool({
+      name: "search_web",
+      description: "Search the web for information",
+      parameters: z.object({
+        query: z.string().describe("The search query optimized for web search"),
+      }),
+      execute: this.searchWeb,
+    });
+
+    const systemPrompt = AGENT_RESEARCH_PROMPT(documents);
+    const NexusAgent = agent({
+      name: "Nexus",
+      description: "Responsible for overseeing the entire research process.",
+      systemPrompt,
+      tools: [retrieverTool, searchTool],
+      llm: deepseek({
+        model: config.deepSeekModel,
+        temperature: 0.1,
+
+      })
+    });
+
+
+    return NexusAgent;
+  }
+
 
 }
 

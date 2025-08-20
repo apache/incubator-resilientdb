@@ -2,7 +2,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsList } from "@/components/ui/tabs";
@@ -119,39 +118,20 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     >
       {hasPdfs || hasCodeGenerations ? (
         <div className="h-full flex flex-col w-full min-w-0">
-          <CardHeader className="border-b flex-shrink-0">
-            <CardTitle className="text-lg truncate">
+            <CardTitle className="text-lg truncate px-3 pt-2 pb-0">
               {hasCodeGenerations && hasPdfs
                 ? "Preview & Code"
                 : hasCodeGenerations
                   ? "Code Generations"
                   : "PDF Preview"}
             </CardTitle>
-            <CardDescription>
-              {hasPdfs && (
-                <>
-                  {selectedDocuments.length === 1
-                    ? "1 document selected"
-                    : `${selectedDocuments.length} documents selected`}
-                </>
-              )}
-              {hasCodeGenerations && hasPdfs && " • "}
-              {hasCodeGenerations && (
-                <>
-                  {codeGenerations.length === 1
-                    ? "1 code generation"
-                    : `${codeGenerations.length} code generations`}
-                </>
-              )}
-            </CardDescription>
-          </CardHeader>
           <CardContent className="flex-1 p-0 min-h-0 w-full min-w-0">
             <Tabs
               value={activeTab}
               onValueChange={handleTabChange}
               className="h-full flex flex-col w-full min-w-0"
             >
-              <div className="px-4 pt-4 pb-2">
+              <div className="px-2 pt-2 pb-0">
                 <TabsList className="w-full justify-start overflow-x-auto">
                   {/* Code Generation Tabs */}
                   <CodeGenerationTabs

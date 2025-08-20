@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { TOOL_CALL_MAPPINGS } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,3 +23,22 @@ export function cleanUpImplementation(implementation: string) {
 
   return implementation;
 } 
+
+export type ToolState = "input-streaming" | "input-available" | "output-available" | "output-error";
+
+export function formatToolHeader(toolType: string, state: ToolState, docCount?: number) {
+  const mapping = TOOL_CALL_MAPPINGS[toolType];
+  const base = mapping
+    ? state === "input-available"
+      ? mapping.input
+      : state === "output-available"
+        ? mapping.output
+        : mapping.error
+    : toolType;
+
+  if (typeof docCount === "number" && toolType === "search_documents") {
+    const plural = docCount === 1 ? "document" : "documents";
+    return `${base} ${docCount} ${plural}`;
+  }
+  return base;
+}

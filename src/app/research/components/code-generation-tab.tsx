@@ -1,3 +1,4 @@
+import { Response } from "@/components/ai-elements/response";
 import {
   Accordion,
   AccordionContent,
@@ -8,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MultiDocumentSourceBadge } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
-import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, Check, Clock, Code2, Copy, X, Zap } from "lucide-react";
@@ -213,7 +213,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({
           <AccordionContent>
             <div className="text-sm bg-muted/30 rounded-md p-3 border break-words w-full min-w-0 overflow-hidden min-h-[60px] flex items-start">
               {generation.plan ? (
-                <MarkdownRenderer content={generation.plan} />
+                <Response>{generation.plan}</Response>
               ) : (
                 <span className="text-muted-foreground italic">
                   Generating plan...
@@ -246,7 +246,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({
           <AccordionContent>
             <div className="text-sm bg-muted/30 rounded-md p-3 border font-mono whitespace-pre-wrap break-words w-full min-w-0 overflow-hidden min-h-[60px] flex items-start">
               {generation.pseudocode ? (
-                <MarkdownRenderer content={generation.pseudocode} />
+                <Response>{generation.pseudocode}</Response>
               ) : (
                 <span className="text-muted-foreground italic font-sans">
                   Generating pseudocode...
@@ -280,7 +280,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({
           <AccordionContent>
             <div className="text-sm bg-muted/30 rounded-md p-3 border font-mono whitespace-pre-wrap break-words w-full min-w-0 overflow-hidden min-h-[100px] flex items-start">
               {generation.implementation ? (
-                <MarkdownRenderer content={generation.implementation} />
+                <Response>{generation.implementation}</Response>
               ) : (
                 <span className="text-muted-foreground italic font-sans">
                   Generating implementation...
