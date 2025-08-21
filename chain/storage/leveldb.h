@@ -59,6 +59,10 @@ class ResLevelDB : public Storage {
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;
 
+  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
+
+  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
+
   // Return a list of <value, version>
   std::vector<std::pair<std::string, int>> GetHistory(const std::string& key,
                                                       int min_version,

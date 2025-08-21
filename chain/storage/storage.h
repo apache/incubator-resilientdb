@@ -54,6 +54,10 @@ class Storage {
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
 
+  virtual std::vector<std::string> GetKeysByPrefix(const std::string& prefix) = 0;
+
+  virtual std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) = 0;
+
   virtual bool Flush() { return true; };
 };
 

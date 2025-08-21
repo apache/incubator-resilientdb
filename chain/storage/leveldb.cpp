@@ -165,6 +165,29 @@ std::string ResLevelDB::GetRange(const std::string& min_key,
   return values;
 }
 
+std::vector<std::string> ResLevelDB::GetKeysByPrefix(const std::string& prefix) {
+  std::vector<std::string> resp;
+  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  for (it->Seek(prefix); it->Valid() && it->key().starts_with(prefix);
+       it->Next()) {
+    resp.push_back(it->key().ToString());
+  }
+  delete it;
+  return resp;
+}
+
+std::vector<std::string> ResLevelDB::GetKeyRangeByPrefix(
+    const std::string& start_prefix, const std::string& end_prefix) {
+  std::vector<std::string> resp;
+  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  for (it->Seek(start_prefix);
+       it->Valid() && it->key().ToString() <= end_prefix; it->Next()) {
+    resp.push_back(it->key().ToString());
+  }
+  delete it;
+  return resp;
+}
+
 bool ResLevelDB::UpdateMetrics() {
   if (block_cache_ == nullptr) {
     return false;
