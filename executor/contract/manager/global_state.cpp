@@ -76,13 +76,11 @@ void GlobalState::Insert(const StateEntry& p) {
 }
 
 std::string GlobalState::GetBalance(const eevm::Address& account) {
-  std::string key = "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
-  return storage_->GetValue(key);
+  return storage_->GetValue(eevm::to_hex_string(AccountToAddress(account)));
 }
 
 int GlobalState::SetBalance(const eevm::Address& account, const uint256_t& balance) {
-  std::string key = "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
-  return storage_->SetValue(key, eevm::to_hex_string(balance));
+  return storage_->SetValue(eevm::to_hex_string(AccountToAddress(account)), eevm::to_hex_string(balance));
 }
 
 }  // namespace contract
