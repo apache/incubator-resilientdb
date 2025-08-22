@@ -248,12 +248,6 @@ export class LlamaService {
           // Run pipeline to process and embed documents
           const nodes = await this.pipeline.run({ documents });
           console.info(`Pipeline processed ${nodes.length} nodes`);
-
-          // Explicitly create index to ensure vector store insertion
-          const storageContext = await this.getStorageContext();
-          await VectorStoreIndex.fromDocuments(documents, {
-            storageContext,
-          });
           console.info(`Successfully created index and inserted ${documents.length} documents into vector store`);
         } catch (error) {
           console.error("Error during ingestion pipeline:", error);
