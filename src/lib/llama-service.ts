@@ -1,31 +1,27 @@
 import { deepseek } from "@llamaindex/deepseek";
-import {
-    PGVectorStore,
-    PostgresDocumentStore,
-    PostgresIndexStore,
-} from "@llamaindex/postgres";
+import { SupabaseVectorStore } from "@llamaindex/supabase";
 import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
 import dotenv from "dotenv";
 import fs from "fs/promises";
 import {
-    ChatMessage,
-    ContextChatEngine,
-    Document,
-    IngestionPipeline,
-    LlamaParseReader,
-    MarkdownNodeParser,
-    NodeWithScore,
-    SentenceSplitter,
-    Settings,
-    StorageContext,
-    storageContextFromDefaults,
-    SummaryExtractor,
-    TextNode,
-    tool,
-    ToolCallLLM,
-    VectorStoreIndex
+  ChatMessage,
+  ContextChatEngine,
+  Document,
+  FilterOperator,
+  IngestionPipeline,
+  LlamaParseReader,
+  MarkdownNodeParser,
+  NodeWithScore,
+  SentenceSplitter,
+  Settings,
+  StorageContext,
+  storageContextFromDefaults,
+  SummaryExtractor,
+  TextNode,
+  tool,
+  ToolCallLLM,
+  VectorStoreIndex
 } from "llamaindex";
-import { ClientConfig } from "pg";
 import { TavilyClient } from "tavily";
 import z from "zod";
 import { config } from "../config/environment";
@@ -51,7 +47,7 @@ Citation Instructions:
 `;
 
 export const AGENT_RESEARCH_PROMPT = (documentPaths: string[]) =>
-`
+  `
 ## Core Identity
 You are **Nexus**, an AI research assistant specialized in Apache ResilientDB and its related blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems.
 
@@ -103,33 +99,25 @@ ${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replac
 const PARSING_CACHE = "parsing-cache.json";
 
 export class LlamaService {
-  private vectorStore: PGVectorStore;
-  private indexStore: PostgresIndexStore;
-  private documentStore: PostgresDocumentStore;
+  private vectorStore: SupabaseVectorStore;
   private pipeline: IngestionPipeline;
-  private clientConfig: ClientConfig;
   private static instance: LlamaService;
 
   private constructor() {
-    this.clientConfig = {
-      connectionString: config.databaseUrl,
-    };
     configureLlamaSettings();
 
-    this.vectorStore = new PGVectorStore({
-      clientConfig: this.clientConfig,
-      performSetup: true,
-      dimensions: config.embedDim,
+    console.info(`[LlamaService] Initializing SupabaseVectorStore with table: ${config.supabaseVectorTable}`);
+
+    if (!config.supabaseUrl || !config.supabaseKey) {
+      throw new Error("Supabase URL and key are required for vector store initialization");
+    }
+
+    this.vectorStore = new SupabaseVectorStore({
+      supabaseUrl: config.supabaseUrl,
+      supabaseKey: config.supabaseKey,
+      table: config.supabaseVectorTable,
     });
 
-    this.indexStore = new PostgresIndexStore({
-      clientConfig: this.clientConfig,
-    });
-
-    this.documentStore = new PostgresDocumentStore({
-      clientConfig: this.clientConfig,
-    });
-  
     this.pipeline = new IngestionPipeline({
       transformations: [
         new MarkdownNodeParser(),
@@ -141,7 +129,7 @@ export class LlamaService {
         Settings.embedModel,
       ],
       vectorStore: this.vectorStore,
-      // docStore: this.documentStore,
+      // docStore: optional Supabase doc store not used
     });
   }
 
@@ -152,46 +140,38 @@ export class LlamaService {
     return LlamaService.instance;
   }
 
+  /**
+   * Clear the parsing cache to force re-ingestion of all documents
+   */
+  async clearCache(): Promise<void> {
+    try {
+      await fs.unlink(PARSING_CACHE);
+      console.info("[LlamaService] Parsing cache cleared");
+    } catch {
+      console.info("[LlamaService] No cache file to clear");
+    }
+  }
+
   private getVectorStore() {
     if (!this.vectorStore) {
-      this.vectorStore = new PGVectorStore({
-        clientConfig: this.clientConfig,
-        performSetup: true,
-        dimensions: config.embedDim,
+      this.vectorStore = new SupabaseVectorStore({
+        supabaseUrl: config.supabaseUrl,
+        supabaseKey: config.supabaseKey,
+        table: config.supabaseVectorTable,
       });
     }
     return this.vectorStore;
   }
-
-  private getIndexStore() {
-    if (!this.indexStore) {
-      this.indexStore = new PostgresIndexStore({
-        clientConfig: this.clientConfig,
-      });
-    }
-    return this.indexStore;
-  }
-
-  private getDocumentStore() {
-    if (!this.documentStore) {
-      this.documentStore = new PostgresDocumentStore({
-        clientConfig: this.clientConfig,
-      });
-    }
-    return this.documentStore;
-  }
   private async getStorageContext(): Promise<StorageContext> {
     return await storageContextFromDefaults({
       vectorStore: this.getVectorStore(),
-      indexStore: this.getIndexStore(),
-      docStore: this.getDocumentStore(),
     });
   }
 
   /**
    * Ingests docs content using the pipeline (fire and forget)
    */
-  async ingestDocs(filePaths: string[]): Promise<void> {
+  async ingestDocs(filePaths: string[], forceReingestion = false): Promise<void> {
     try {
       console.info(`Starting docs ingestion for ${filePaths.join(", ")}`);
       let cache: Record<string, boolean> = {};
@@ -214,7 +194,10 @@ export class LlamaService {
 
       const documents: Document[] = [];
       for (const file of filePaths) {
-        if (!cache[file]) {
+        if (!cache[file] || forceReingestion) {
+          if (forceReingestion && cache[file]) {
+            console.log(`Force re-ingesting cached file: ${file}`);
+          }
           console.log(`Processing uncached file: ${file}`);
           try {
             const jsonObjects = await reader.loadJson(file);
@@ -254,21 +237,30 @@ export class LlamaService {
 
       await fs.writeFile(PARSING_CACHE, JSON.stringify(cache));
       console.info(
-        `[LlamaService] Successfully loaded ${
-          documents.length
+        `[LlamaService] Successfully loaded ${documents.length
         } document chunks from ${filePaths.join(", ")}`
       );
 
       if (documents.length > 0) {
-        // console.log("Pipeline: ", this.pipeline);
-        console.info(`Ingesting ${documents.length} docs files`);
-        await this.pipeline.run({ documents });
+        console.info(`Ingesting ${documents.length} document chunks`);
 
-        console.info("Awaiting VectorStoreIndex.fromDocuments");
-        // await VectorStoreIndex.fromDocuments(documents);
-        console.info(`Successfully ingested ${documents.length} docs files`);
+        try {
+          // Run pipeline to process and embed documents
+          const nodes = await this.pipeline.run({ documents });
+          console.info(`Pipeline processed ${nodes.length} nodes`);
+
+          // Explicitly create index to ensure vector store insertion
+          const storageContext = await this.getStorageContext();
+          await VectorStoreIndex.fromDocuments(documents, {
+            storageContext,
+          });
+          console.info(`Successfully created index and inserted ${documents.length} documents into vector store`);
+        } catch (error) {
+          console.error("Error during ingestion pipeline:", error);
+          throw error;
+        }
       } else {
-        console.info(`All docs files were already ingested`);
+        console.info(`All docs files were already cached - skipping ingestion`);
       }
 
       console.info(
@@ -291,7 +283,7 @@ export class LlamaService {
         filters: [
           {
             key: "source_document",
-            operator: "in",
+            operator: FilterOperator.IN,
             value: documents,
           },
         ],
@@ -325,7 +317,7 @@ export class LlamaService {
       tools: [],
       llm: deepseek({
         model: config.deepSeekModel,
-      }) 
+      })
     });
 
     const planningAgent = agent({
@@ -376,15 +368,15 @@ export class LlamaService {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
     const retriever = index.asRetriever({
       similarityTopK: 3,
-      filters: {
-        filters: [
-          {
-            key: "source_document",
-            operator: "in",
-            value: parameters.documentPaths,
-          },
-        ],
-      },
+      // filters: {
+      //   filters: [
+      //     {
+      //       key: "source_document",
+      //       operator: "in",
+      //       value: parameters.documentPaths,
+      //     },
+      //   ],
+      // },
     });
     const nodes = await retriever.retrieve({ query: parameters.query });
     return nodes.map((node: NodeWithScore) => {
@@ -398,7 +390,7 @@ export class LlamaService {
 
   // deprecated, see agent.ts
   async createNexusAgent(documents: string[]): Promise<AgentWorkflow> {
-    
+
 
     // using a queryTool(slower)
     // const retrieverTool = index.queryTool({

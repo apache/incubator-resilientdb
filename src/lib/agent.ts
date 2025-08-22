@@ -1,6 +1,6 @@
 import { config } from "@/config/environment";
 import { deepseek } from "@llamaindex/deepseek";
-import { PGVectorStore } from "@llamaindex/postgres";
+import { SupabaseVectorStore } from "@llamaindex/supabase";
 import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
 import { BaseMemoryBlock, createMemory, Memory, Settings, tool, ToolCallLLM, vectorBlock } from "llamaindex";
 import z from "zod";
@@ -13,7 +13,7 @@ interface AgentFactory {
 }
 
 export class NexusAgent implements AgentFactory {
-  private readonly memoryVectorStore: PGVectorStore;
+  private readonly memoryVectorStore: SupabaseVectorStore;
   private static instance?: NexusAgent;
   // Map to persist agent workflows per sessionId
   private readonly workflows: Map<string, AgentWorkflow> = new Map();
@@ -28,9 +28,9 @@ export class NexusAgent implements AgentFactory {
   // Factory method for creating singleton
   public static async create(): Promise<NexusAgent> {
     if (!NexusAgent.instance) {
-      
-      if (!config?.databaseUrl) {
-        throw new Error("Database URL is required");
+
+      if (!config?.supabaseUrl || !config?.supabaseKey) {
+        throw new Error("Supabase URL and Key are required");
       }
 
       NexusAgent.instance = new NexusAgent();
@@ -45,14 +45,11 @@ export class NexusAgent implements AgentFactory {
     return NexusAgent.instance;
   }
 
-  private initializeVectorStore(): PGVectorStore {
-    return new PGVectorStore({
-      clientConfig: {
-        connectionString: config.databaseUrl
-      },
-      tableName: "llamaindex_memory_embeddings",
-      performSetup: true,
-      dimensions: config.embedDim,
+  private initializeVectorStore(): SupabaseVectorStore {
+    return new SupabaseVectorStore({
+      supabaseUrl: config.supabaseUrl,
+      supabaseKey: config.supabaseKey,
+      table: config.supabaseMemoryTable,
     });
   }
 
@@ -74,7 +71,7 @@ export class NexusAgent implements AgentFactory {
           similarityTopK: 3,
           mode: "hybrid" as any,
 
-      },
+        },
       }),
     ];
 
@@ -178,9 +175,9 @@ export class CodeAgent implements AgentFactory {
         return results
       },
     });
-    
+
     const codeAgent = agent({
-      name: "CodeAgent", 
+      name: "CodeAgent",
       description: "Generates final code implementation.",
       tools: [], // Include tools for message compatibility but don't use them
       systemPrompt: `You are implementing the final solution...
@@ -198,7 +195,7 @@ export class CodeAgent implements AgentFactory {
       Start coding now:`,
       llm: Settings.llm as ToolCallLLM
     });
-    
+
     const pseudoCodeAgent = agent({
       name: "PseudoCodeAgent",
       description: "Creates structured pseudocode.",
@@ -221,7 +218,7 @@ export class CodeAgent implements AgentFactory {
       llm: Settings.llm as ToolCallLLM
 
     });
-    
+
     const plannerAgent = agent({
       name: "PlannerAgent",
       description: "Conducts research and planning.",
@@ -245,9 +242,9 @@ export class CodeAgent implements AgentFactory {
       IMPORTANT: 
       - Do not skip the tool call step. You must retrieve documents first, then analyze.
       - You MUST call the handOff tool to transfer to PseudoCodeAgent after your analysis.`,
-      llm:  Settings.llm as ToolCallLLM
+      llm: Settings.llm as ToolCallLLM
     });
-    
+
     const workflow = multiAgent({
       agents: [plannerAgent, pseudoCodeAgent, codeAgent],
       rootAgent: plannerAgent,
