@@ -21,8 +21,9 @@ total = 0
 def read_tps(file):
     tps = []
     lat = []
-    first_zero = 0
-    last_zero = 0
+    lat2 = []
+    lat3 = []
+    lat4 = []
     with open(file) as f:
         for l in f.readlines():
             s = l.split()
@@ -30,41 +31,42 @@ def read_tps(file):
                 try:
                   if(r.split(':')[0] == 'txn'):
                       tps.append(int(r.split(':')[1]))
-                      if tps[-1] > 0:
-                        if first_zero ==0:
-                          first_zero = len(tps)-1
-                        last_zero = len(tps)
                 except:
                   print("s:",s)
-            if l.find("client latency") > 0:
+            if l.find("req client latency") > 0:
                 print("get lat:",s)
                 lat.append(float(s[-1].split(':')[-1]))
-    print("tps:",tps, first_zero, last_zero, tps[first_zero: last_zero])
-    print("lat:",lat)
-    if(len(lat)>0):
-      return [],lat
-    return tps[first_zero:last_zero], lat
+            if l.find("consensus latency :") > 0 and l.find("consensus latency :-nan") == -1:
+                print("get consensus latency:",s[-10])
+                lat2.append(float(s[-7].split(':')[-1]))
+            if l.find("propose latency :") > 0 and l.find("propose latency :-nan") == -1:
+                print("get propose latency:",s[-7])
+                lat3.append(float(s[-4].split(':')[-1]))
+            if l.find("reply latency:") > 0:
+                print("get reply latency:",s[-1])
+                lat4.append(float(s[-1].split(':')[-1]))
+
+                 
+    return tps, lat, lat2, lat3, lat4
 
 def cal_tps(tps, tot):
     tps_sum = []
     tps_max = 0
 
     for v in tps:
-        if v == 0:
-            continue
-        if v < 1000:
+        if v <= 0:
             continue
         tps_max = max(tps_max, v)
         tps_sum.append(v) 
 
-    #tps_sum.sort()
-    #tps_sum = tps_sum[tot:-tot]
+    tps_sum.sort()
+    tps_sum = tps_sum[tot:]
     print("tsp:",tps_sum)
     print("max throughput:",tps_max)
     print("average throughput:",sum(tps_sum)/len(tps_sum))
     return tps_max, sum(tps_sum)/len(tps_sum)
 
-def cal_lat(lat):
+def cal_lat(lat, tot):
     lat_sum = []
     lat_max = 0
     for v in lat:
@@ -73,8 +75,60 @@ def cal_lat(lat):
         lat_max = max(lat_max, v)
         lat_sum.append(v) 
 
+    # tot = int(tot)
+    # lat_sum = lat_sum[:-tot]
     print("max latency:",lat_max)
     print("average latency:",sum(lat_sum)/len(lat_sum))
+    return lat_max, sum(lat_sum)/len(lat_sum)
+
+def cal_lat2(lat, tot):
+    lat_sum = []
+    lat_max = 0
+    for v in lat:
+        if v <= 0:
+            continue
+        lat_max = max(lat_max, v)
+        lat_sum.append(v) 
+
+    tot = int(tot)
+    # lat_sum = lat_sum[:-tot]
+    print("max consensus latency:",lat_max)
+    print("average consensus latency:",sum(lat_sum)/len(lat_sum))
+    return lat_max, sum(lat_sum)/len(lat_sum)
+
+def cal_lat3(lat, tot):
+    if len(lat) == 0: 
+        return 0, 0
+    lat_sum = []
+    lat_max = 0
+    for v in lat:
+        if v <= 0:
+            continue
+        lat_max = max(lat_max, v)
+        lat_sum.append(v) 
+
+    tot = int(tot)
+    # lat_sum = lat_sum[:-tot]
+    print("max propose latency:",lat_max)
+    print("average propose latency:",sum(lat_sum)/len(lat_sum))
+    return lat_max, sum(lat_sum)/len(lat_sum)
+
+
+def cal_lat4(lat, tot):
+    if len(lat) == 0: 
+        return 0, 0
+    lat_sum = []
+    lat_max = 0
+    for v in lat:
+        if v <= 0:
+            continue
+        lat_max = max(lat_max, v)
+        lat_sum.append(v) 
+
+    tot = int(tot)
+    # lat_sum = lat_sum[:-tot]
+    print("max reply latency:",lat_max)
+    print("average reply latency:",sum(lat_sum)/len(lat_sum))
     return lat_max, sum(lat_sum)/len(lat_sum)
 
 if __name__ == '__main__':
@@ -84,14 +138,24 @@ if __name__ == '__main__':
 
     tps = []
     lat = []
+    lat2 = []
+    lat3 = []
+    lat4 = []
     total = len(files)
     for f in files:
-        t, l=read_tps(f)
+        t, l, l2, l3, l4=read_tps(f)
+        # print(t)
         tps += t
         lat += l
+        lat2 += l2
+        lat3 += l3
+        lat4 += l4
 
     max_tps, avg_tps = cal_tps(tps, len(files))
-    max_lat, avg_lat = cal_lat(lat)
+    max_lat, avg_lat = cal_lat(lat, len(files)/2)
+    # max_lat3, avg_lat3 = cal_lat3(lat3, len(files)/2)
+    # max_lat2, avg_lat2 = cal_lat2(lat2, len(files)/2)
+    # max_lat4, avg_lat4 = cal_lat4(lat4, len(files)/2)
 
     print("max throughput:{} average throughput:{} "
     "max latency:{} average latency:{} "

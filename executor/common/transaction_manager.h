@@ -24,6 +24,8 @@
 #include "chain/storage/storage.h"
 #include "platform/proto/resdb.pb.h"
 
+#include "executor/common/tpcc_executor.h"
+
 namespace resdb {
 
 /*
@@ -39,6 +41,9 @@ class TransactionManager {
 
   virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
       const BatchUserRequest& request);
+  
+  virtual std::unique_ptr<BatchUserResponse> ExecuteTPCCBatch(
+        BatchUserRequest& request);
 
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request);
@@ -61,6 +66,7 @@ class TransactionManager {
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;
+  std::unique_ptr<TpccExecutor> tpcc_executor_ = nullptr;
 };
 
 }  // namespace resdb

@@ -121,6 +121,38 @@ class ResDBConfig {
   uint32_t GetViewchangeCommitTimeout() const;
   void SetViewchangeCommitTimeout(uint64_t timeout_ms);
 
+  // SlotHotStuff1 SlotNum
+  uint32_t GetSlotNum() const;
+  void SetSlotNum(uint64_t slot_num);
+
+  // SlotHotStuff1 Non Responsive Number
+  uint32_t GetNonResponsiveNum() const;
+  void SetNonResponsiveNum(uint64_t value);
+
+  // SlotHotStuff1 Fork-Tail Attack Number
+  uint32_t GetForkTailNum() const;
+  void SetForkTailNum(uint64_t value);
+
+  // SlotHotStuff1 RollBack Attack Number
+  uint32_t GetRollBackNum() const;
+  void SetRollBackNum(uint64_t value);
+
+  // If Tpcc Transaction is Enabled
+  bool IsTpccEnabled() const;
+  void SetTpccEnabled(bool value);
+
+  // If Network Delay Test is Enabled
+  int32_t NetworkDelayNum() const;
+  void SetNetworkDelayNum(int32_t value);
+
+  // Mean Network Delay
+  double MeanNetworkDelay() const;
+  void SetMeanNetworkDelay(double value);
+
+  // SlotHotStuff1 Crash Number
+  uint32_t GetCrashNum() const;
+  void SetCrashNum(uint64_t value);
+
  private:
   ResConfigData config_data_;
   std::vector<ReplicaInfo> replicas_;
@@ -135,14 +167,14 @@ class ResDBConfig {
   bool signature_verifier_enabled_ = true;
   bool is_performance_running_ = false;
   bool is_test_mode_ = false;
-  uint32_t client_batch_wait_time_ms_ = 100;  // milliseconds, 0.1s
+  uint32_t client_batch_wait_time_ms_ = 100;  // milliseconds, 1ms
   uint64_t viewchange_commit_timeout_ms_ =
       60000;  // default 60s to change viewchange
 
 
   // This is the default settings.
   // change these parameters in the configuration.
-  uint32_t max_process_txn_ = 64;
+  uint32_t max_process_txn_ = 0;
   uint32_t worker_num_ = 16;
   uint32_t input_worker_num_ = 5;
   uint32_t output_worker_num_ = 5;

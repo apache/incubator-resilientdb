@@ -130,6 +130,12 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     request.set_ret(-2);
     request.set_hash(user_request->hash());
 
+    BatchUserRequest batch_request;
+    if (!batch_request.ParseFromString(user_request->data())) {
+      LOG(ERROR) << "parse data fail";
+    }
+    request.set_seq(batch_request.local_id());
+
     replica_communicator_->SendMessage(request, request.proxy_id());
     return -2;
   }

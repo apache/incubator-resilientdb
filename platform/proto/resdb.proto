@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "platform/proto/replica_info.proto";
+import "platform/proto/tpcc.proto";
 import "common/proto/signature_info.proto";
 
 package resdb;
@@ -69,6 +70,10 @@ message Request {
     int64 uid = 23;
     int64 create_time = 24;
     int64 commit_time = 25;
+    int32 next_primary = 26;
+
+    optional TpccTransaction tpcc_txn = 27;
+    bytes data_hash = 28;
 }
 
 // The response message containing response
@@ -111,6 +116,9 @@ message BatchUserResponse {
   uint64 local_id = 7;
   bytes hash = 8;
   int32 primary_id = 9;
+  // SlotHotStuff1 the second last proposal
+  int32 next_primary = 10;
+  uint64 commit_time = 11;
 }
 
 message HeartBeatInfo{

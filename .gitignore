@@ -1,9 +1,6 @@
 deps/*/
 scripts/deploy/config/key.conf
 scripts/deploy/config_out/
-scripts/deploy/result_*
-scripts/deploy/local_ordering_*
-scripts/deploy/final_ordering_*
 deploy/kv_server/output/
 .idea/
 .vscode/
@@ -14,3 +11,4 @@ bazel-*
 venv
 sdk_validator/venv
 __pycache__
+scripts/deploy/result_*_log

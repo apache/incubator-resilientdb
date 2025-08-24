@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -32,6 +32,7 @@
 #include "platform/networkstrate/replica_communicator.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/statistic/stats.h"
+#include "platform/consensus/ordering/common/framework/tpcc.h"
 
 namespace resdb {
 namespace common {
@@ -46,20 +47,21 @@ class PerformanceManager {
 
   int StartEval();
 
-  int ProcessResponseMsg(std::unique_ptr<Context> context,
+  virtual int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
   void SetDataFunc(std::function<std::string()> func);
 
   protected:
   virtual void SendMessage(const Request& request);
+  
 
- private:
+ protected:
   // Add response messages which will be sent back to the caller
   // if there are f+1 same messages.
-  comm::CollectorResultCode AddResponseMsg(
+  virtual comm::CollectorResultCode AddResponseMsg(
       std::unique_ptr<Request> request,
       std::function<void(std::unique_ptr<BatchUserResponse>)> call_back);
-  void SendResponseToClient(const BatchUserResponse& batch_response);
+  virtual void SendResponseToClient(const BatchUserResponse& batch_response);
 
   struct QueueItem {
     std::unique_ptr<Context> context;
@@ -67,15 +69,17 @@ class PerformanceManager {
   };
   int DoBatch(const std::vector<std::unique_ptr<QueueItem>>& batch_req);
   int BatchProposeMsg();
-  int GetPrimary();
+  virtual int GetPrimary();
+  int GetPrimaryMulti();
+  int GetPrimarySlotHotStuff1();
+  int GetPrimarySlot();
   std::unique_ptr<Request> GenerateUserRequest();
 
  protected:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
-  int replica_num_;
 
- private:
+//  private:
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread user_req_thread_[16];
   std::atomic<bool> stop_;
@@ -93,10 +97,26 @@ class PerformanceManager {
   static const int response_set_size_ = 6000000;
   std::map<int64_t, int> response_[response_set_size_];
   std::mutex response_lock_[response_set_size_];
+ 
+ protected:
+  int replica_num_;
   int id_;
-  int primary_;
+  // int primary_;
+  std::atomic<int> primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
+  std::atomic<uint64_t> counter_;
+  int client_num_;
+  int slot_num_;
+
+  std::vector<int> inflight_;
+  int inflight_limit_;
+  std::atomic<uint64_t> last_response_ = 0;
+
+  uint64_t last_send_time_ = 0;
+
+  TpccTransactionGenerator* tpcc_txn_generator_;
+
 };
 
 }  // namespace common

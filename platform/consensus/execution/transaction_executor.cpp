@@ -144,8 +144,7 @@ bool TransactionExecutor::NeedResponse() {
 int TransactionExecutor::Commit(std::unique_ptr<Request> message) {
   global_stats_->IncPendingExecute();
   if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
-    // LOG(ERROR)<<"add out of order exe:"<<message->seq()<<" from
-    // proxy:"<<message->proxy_id();
+    // LOG(ERROR)<<"add out of order exe:"<<message->seq()<<" from proxy:"<<message->proxy_id();
     std::unique_ptr<Request> msg = std::make_unique<Request>(*message);
     execute_OOO_queue_.Push(std::move(message));
     commit_queue_.Push(std::move(msg));
@@ -178,8 +177,7 @@ void TransactionExecutor::OrderMessage() {
       global_stats_->IncExecute();
       uint64_t seq = message->seq();
       if (next_execute_seq_ > seq) {
-        // LOG(INFO) << "request seq:" << seq << " has been executed"
-        // << " next seq:" << next_execute_seq_;
+        // LOG(INFO) << "request seq:" << seq << " has been executed" << " next seq:" << next_execute_seq_;
         continue;
       }
 
@@ -202,7 +200,6 @@ void TransactionExecutor::OrderMessage() {
 }
 
 void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
-    // LOG(ERROR) << "[AEM]";
     global_stats_->IncCommit();
     message->set_commit_time(GetCurrentTime());
     execute_queue_.Push(std::move(message));
@@ -339,7 +336,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   assert(batch_request_p);
 
-  // LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
+  // LOG(ERROR)<<"execute seq:"<<batch_request->seq()<<" proxy
+  // id:"<<request->proxy_id()<<" local id:"<<batch_request->local_id();
 
   // LOG(INFO) << " get request batch size:"
   // << batch_request.user_requests_size()<<" proxy id:"
@@ -349,7 +347,11 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   // need_execute = false;
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
-      response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      if (config_.IsTpccEnabled()) {
+        response = transaction_manager_->ExecuteTPCCBatch(*batch_request_p);
+      } else {
+        response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      }
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
@@ -398,6 +400,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   //LOG(ERROR)<<" proxy id:"<<batch_request_p->proxy_id()<<" local id:"<<batch_request_p->local_id()<<" latency:"<<GetCurrentTime()- response->createtime();
 
   response->set_seq(request->seq());
+  response->set_primary_id(request->primary_id());
+  response->set_next_primary(request->next_primary());
+
+  response->set_commit_time(request->commit_time());
 
   if (post_exec_func_) {
     post_exec_func_(std::move(request), std::move(response));

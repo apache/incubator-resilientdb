@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -55,7 +55,6 @@ class Consensus : public ConsensusManager {
     virtual int ProcessCustomConsensus(std::unique_ptr<Request> request);
     virtual int ProcessNewTransaction(std::unique_ptr<Request> request);
     virtual int CommitMsg(const google::protobuf::Message& msg);
-    void SendFail(const int proxy_id, const std::string& hash);
 
  protected:
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);

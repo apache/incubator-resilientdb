@@ -6,13 +6,14 @@
 #include "platform/consensus/ordering/hs/algorithm/proposal_manager.h"
 #include "platform/consensus/ordering/hs/proto/proposal.pb.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace hs {
 
 class HotStuff: public common::ProtocolBase {
  public:
-  HotStuff(int id, int f, int total_num, SignatureVerifier* verifier );
+  HotStuff(int id, int f, int total_num, SignatureVerifier* verifier, int non_responsive_num, int fork_tail_num );
   ~HotStuff();
 
   //  recv txn -> send block with links -> rec block ack -> send block with certs
@@ -51,8 +52,17 @@ class HotStuff: public common::ProtocolBase {
   //[view][hash][signer][cert]
   //std::map<std::string, std::map<int, std::unique_ptr<Certificate>> >  receive_[1024];
   std::map<int,  std::map<std::string, std::map<int, std::unique_ptr<Certificate>> > > receive_;
+  Stats* global_stats_ = nullptr;
 
+  int non_responsive_num_;
+  int fork_tail_num_;
+  uint64_t timer_length_;
+
+  bool qc_formed_, proposal_received_;
+  std::unique_ptr<QC> formed_qc_;
+
+  uint64_t crash_num_ = 10;
 };
 
-}  // namespace tusk
+}  // namespace hs
 }  // namespace resdb

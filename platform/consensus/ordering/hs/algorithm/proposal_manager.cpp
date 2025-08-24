@@ -7,9 +7,10 @@
 namespace resdb {
 namespace hs {
 
-ProposalManager::ProposalManager(int32_t id, int limit_count, SignatureVerifier* verifier)
-    : id_(id), limit_count_(limit_count), verifier_(verifier) {
+ProposalManager::ProposalManager(int32_t id, int limit_count, SignatureVerifier* verifier, int total_num, int non_responsive_num, int fork_tail_num)
+    : id_(id), limit_count_(limit_count), verifier_(verifier), total_num_(total_num), non_responsive_num_(non_responsive_num), fork_tail_num_(fork_tail_num) {
     round_ = 1;
+    global_stats_ = Stats::GetGlobalStats();
     assert(verifier_ != nullptr);
 }
 
@@ -84,6 +85,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
   {
     std::unique_lock<std::mutex> lk(txn_mutex_);
     for(const auto& txn: txns){
+      global_stats_->AddProposeLatency(GetCurrentTime() - txn->reception_time());
       *proposal->add_transactions() = *txn;
     }
     if(!generic_qc_.hash().empty()){
@@ -95,7 +97,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     proposal->mutable_header()->set_view(round_);
     proposal->set_sender(id_);
   }
-
+  proposal->set_createtime(GetCurrentTime());
   proposal->set_hash(GetHash(*proposal));
   return proposal;
 }
@@ -107,38 +109,45 @@ int ProposalManager::CurrentView(){
 void ProposalManager::AddQC(std::unique_ptr<QC> qc){
   std::unique_lock<std::mutex> lk(txn_mutex_);
   if(generic_qc_.view() == 0 || generic_qc_.view() < qc->view()){
-    generic_qc_ = *qc;
-    round_ = generic_qc_.view()+1;
+    int leader = GetLeader(qc->view());
+    if(!(leader < 3 * fork_tail_num_ && leader % 3 ==1)) {
+      generic_qc_ = *qc;
+    } 
+    round_ = qc->view()+1;
   //  LOG(ERROR)<<"get new round:"<<round_;
   }
 }
 
-std::unique_ptr<Proposal> ProposalManager::AddProposal(std::unique_ptr<Proposal> proposal){
+std::vector<std::unique_ptr<Proposal>> ProposalManager::AddProposal(std::unique_ptr<Proposal> proposal){
   //LOG(ERROR)<<"ADD PROPOSAL";
   std::unique_lock<std::mutex> lk(txn_mutex_);
   if(generic_qc_.view() < proposal->header().qc().view()){
     generic_qc_ = proposal->header().qc();
   }
 
-  std::unique_ptr<Proposal> commit_ready_proposal_ = nullptr;
+  std::vector<std::unique_ptr<Proposal>> commit_ready_proposals_;
   const Proposal * father = nullptr, * fafather = nullptr, * fafafather = nullptr;
   father = GetProposal(proposal->header().prehash());
   if(father != nullptr){
     //LOG(ERROR)<<"get father view:"<<father->header().view();
     fafather = GetProposal(father->header().prehash());
     lock_qc_ = father->header().qc();
-    if(fafather != nullptr){
+    if(fafather != nullptr && fafather->header().view() == father->header().view() - 1){
      // LOG(ERROR)<<"get fafather view:"<<fafather->header().view();
       fafafather = GetProposal(fafather->header().prehash());
-      if(fafafather != nullptr){
-        //commit;
+      if(fafafather != nullptr && fafafather->header().view() == fafather->header().view() - 1){
       //  LOG(ERROR)<<"commit fafafather view:"<<fafafather->header().view();
-        commit_ready_proposal_ = FetchProposal(fafather->header().prehash());
+        auto fetched_proposal = FetchProposal(fafather->header().prehash());
+          while (fetched_proposal) {
+            auto got_proposal = fetched_proposal.get();
+            commit_ready_proposals_.push_back(std::move(fetched_proposal));
+            fetched_proposal = FetchProposal(got_proposal->header().prehash());
+        }
       }
     }
   }
   local_block_[proposal->hash()] = std::move(proposal);
-  return commit_ready_proposal_;
+  return commit_ready_proposals_;
 }
 
 const Proposal * ProposalManager::GetProposal(const std::string& hash){
@@ -151,11 +160,19 @@ const Proposal * ProposalManager::GetProposal(const std::string& hash){
 
 std::unique_ptr<Proposal> ProposalManager::FetchProposal(const std::string& hash){
   auto it = local_block_.find(hash);
-  assert(it != local_block_.end());
+  // assert(it != local_block_.end());
+  if (it == local_block_.end()) {
+    return nullptr;
+  }
   std::unique_ptr<Proposal> ret = std::move(it->second);
   local_block_.erase(it);
   return ret;
 }
 
-}  // namespace tusk
+int ProposalManager::GetLeader(int view){
+  //LOG(ERROR)<<" view:"<<view<<" next leader:"<<(view+1)%total_num_ + 1;
+  return view % total_num_ + 1;
+}
+
+}  // namespace hs
 }  // namespace resdb

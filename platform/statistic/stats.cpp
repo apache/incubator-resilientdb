@@ -163,6 +163,18 @@ void Stats::MonitorGlobal() {
   uint64_t block_size_num = 0, block_size = 0;
   uint64_t last_block_size_num = 0, last_block_size = 0;
 
+  uint64_t consensus_latency_num = 0, consensus_latency = 0;
+  uint64_t last_consensus_latency_num = 0, last_consensus_latency = 0;
+
+  uint64_t propose_latency_num = 0, propose_latency = 0;
+  uint64_t last_propose_latency_num = 0, last_propose_latency = 0;
+
+  uint64_t reply_latency_num = 0, reply_latency = 0;
+  uint64_t last_reply_latency_num = 0, last_reply_latency = 0;
+
+  uint64_t global_ordering_latency_num = 0, global_ordering_latency = 0;
+  uint64_t last_global_ordering_latency_num = 0, last_global_ordering_latency = 0;
+
   while (!stop_) {
     sleep(monitor_sleep_time_);
     time += monitor_sleep_time_;
@@ -248,6 +260,18 @@ void Stats::MonitorGlobal() {
 
     num_transactions_time = num_transactions_time_;
     num_consumed_transactions_time = num_consumed_transactions_time_;
+
+    consensus_latency_num = consensus_latency_num_;
+    consensus_latency = consensus_latency_;
+
+    propose_latency_num = propose_latency_num_;
+    propose_latency = propose_latency_;
+
+    reply_latency_num = reply_latency_num_;
+    reply_latency = reply_latency_;
+
+    global_ordering_latency_num = global_ordering_latency_num_;
+    global_ordering_latency = global_ordering_latency_;
 
     LOG(ERROR) << "=========== monitor =========\n"
                << "server call:" << server_call - last_server_call
@@ -370,17 +394,17 @@ void Stats::MonitorGlobal() {
                                         last_commit_interval_time) /
                         (commit_interval_num - last_commit_interval_num) / 1000000.0
 
-              << " commit_txn :"
+              << " commit_txn latency :"
                  << static_cast<double>(commit_txn_time -
                                         last_commit_txn_time) /
                         (commit_txn_num - last_commit_txn_num) 
 
-              << " commit_block :"
+              << " commit_block latency :"
                  << static_cast<double>(commit_block_time -
                                         last_commit_block_time) /
                         (commit_block_num - last_commit_block_num) 
 
-              << " block_size :"
+              << " block_size latency :"
                  << static_cast<double>(block_size -
                                         last_block_size) /
                         (block_size_num - last_block_size_num) 
@@ -388,7 +412,24 @@ void Stats::MonitorGlobal() {
               << " commit_ratio latency :"
                  << static_cast<double>(commit_ratio_time -
                                         last_commit_ratio_time) /
-                        (commit_ratio_num - last_commit_ratio_num)
+                        (commit_ratio_num - last_commit_ratio_num) / 1000000.0
+
+              << " consensus latency :"
+                 << static_cast<double>(consensus_latency -
+                                        last_consensus_latency) /
+                        (consensus_latency_num - last_consensus_latency_num) / 1000000.0
+
+              << " propose latency :"
+                 << static_cast<double>(propose_latency -
+                                        last_propose_latency) /
+                        (propose_latency_num - last_propose_latency_num) / 1000000.0
+
+
+              << " global_ordering latency :"
+                 << static_cast<double>(global_ordering_latency -
+                                        last_global_ordering_latency) /
+                        (global_ordering_latency_num - last_global_ordering_latency_num) / 1000000.0
+
                << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
@@ -396,6 +437,10 @@ void Stats::MonitorGlobal() {
                  << static_cast<double>(run_req_run_time -
                                         last_run_req_run_time) /
                         (run_req_num - last_run_req_num) / 1000000.0;
+      LOG(ERROR) << "  reply latency:"
+                 << static_cast<double>(reply_latency -
+                                        last_reply_latency) /
+                        (reply_latency_num - last_reply_latency_num) / 1000000.0;
     }
 
     last_seq_fail = seq_fail;
@@ -478,6 +523,18 @@ void Stats::MonitorGlobal() {
 
     last_verify_num = verify_num;
     last_verify_time = verify_time;
+
+    last_consensus_latency_num = consensus_latency_num;
+    last_consensus_latency = consensus_latency;
+
+    last_propose_latency_num = propose_latency_num;
+    last_propose_latency = propose_latency;
+
+    last_reply_latency_num = reply_latency_num;
+    last_reply_latency = reply_latency;
+
+    last_global_ordering_latency_num = global_ordering_latency_num;
+    last_global_ordering_latency = global_ordering_latency;
   }
 }
 
@@ -539,6 +596,12 @@ void Stats::SendBroadCastMsg(uint32_t num) { send_broad_cast_msg_ += num; }
 void Stats::SendBroadCastMsgPerRep() { send_broad_cast_msg_per_rep_++; }
 
 void Stats::SeqFail() { seq_fail_++; }
+
+void Stats::DecTotalRequest(uint32_t num) {
+  if (total_request_ >= num) {
+    total_request_ -= num;
+  }
+}
 
 void Stats::IncTotalRequest(uint32_t num) {
   if (prometheus_) {
@@ -669,6 +732,30 @@ void Stats::AddCommitRatio(uint64_t run_time) {
 void Stats::AddExecuteDelay(uint64_t run_time) {
   execute_delay_num_++;
   execute_delay_time_ += run_time;
+}
+
+void Stats::AddConsensusLatency(uint64_t run_time) {
+  // LOG(ERROR) << "runtime: " << run_time;
+  consensus_latency_num_++;
+  consensus_latency_ += run_time;
+}
+
+void Stats::AddProposeLatency(uint64_t run_time) {
+  // LOG(ERROR) << "runtime: " << run_time;
+  propose_latency_num_++;
+  propose_latency_ += run_time;
+}
+
+void Stats::AddReplyLatency(uint64_t run_time) {
+  // LOG(ERROR) << "runtime: " << run_time;
+  reply_latency_num_++;
+  reply_latency_ += run_time;
+}
+
+void Stats::AddGlobalOrderingLatency(uint64_t run_time) {
+  // LOG(ERROR) << "runtime: " << run_time;
+  global_ordering_latency_num_++;
+  global_ordering_latency_ += run_time;
 }
 
 void Stats::SetPrometheus(const std::string& prometheus_address) {

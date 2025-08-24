@@ -91,7 +91,7 @@ class PerformanceManager {
   LockFreeQueue<QueueItem> batch_queue_;
   std::thread user_req_thread_[16];
   std::atomic<bool> stop_;
-  uint64_t local_id_ = 0;
+  uint64_t local_id_ = 1;
   Stats* global_stats_;
   std::vector<int> send_num_;
   std::mutex mutex_;

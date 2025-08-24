@@ -253,4 +253,68 @@ void ResDBConfig::SetViewchangeCommitTimeout(uint64_t timeout_ms) {
   config_data_.set_view_change_timeout_ms(timeout_ms);
 }
 
+uint32_t ResDBConfig::GetSlotNum() const {
+  return config_data_.slot_num();
+}
+
+void ResDBConfig::SetSlotNum(uint64_t slot_num) {
+  config_data_.set_slot_num(slot_num);
+}
+
+uint32_t ResDBConfig::GetNonResponsiveNum() const {
+  return config_data_.non_responsive_num();
+}
+
+void ResDBConfig::SetNonResponsiveNum(uint64_t value) {
+  config_data_.set_non_responsive_num(value);
+}
+
+uint32_t ResDBConfig::GetForkTailNum() const {
+  return config_data_.fork_tail_num();
+}
+
+void ResDBConfig::SetForkTailNum(uint64_t value) {
+  config_data_.set_fork_tail_num(value);
+}
+
+uint32_t ResDBConfig::GetRollBackNum() const {
+  return config_data_.rollback_num();
+}
+
+void ResDBConfig::SetRollBackNum(uint64_t value) {
+  config_data_.set_rollback_num(value);
+}
+
+bool ResDBConfig::IsTpccEnabled() const {
+  return config_data_.tpcc_enabled();
+}
+
+void ResDBConfig::SetTpccEnabled(bool value) {
+  config_data_.set_tpcc_enabled(value);
+}
+
+int32_t ResDBConfig::NetworkDelayNum() const {
+  return config_data_.network_delay_num();
+}
+
+void ResDBConfig::SetNetworkDelayNum(int32_t value) {
+  config_data_.set_network_delay_num(value);
+}
+
+double ResDBConfig::MeanNetworkDelay() const {
+  return config_data_.mean_network_delay();
+}
+
+void ResDBConfig::SetMeanNetworkDelay(double value) {
+  config_data_.set_mean_network_delay(value);
+}
+
+uint32_t ResDBConfig::GetCrashNum() const {
+  return config_data_.crash_num();
+}
+
+void ResDBConfig::SetCrashNum(uint64_t value) {
+  config_data_.set_crash_num(value);
+}
+
 }  // namespace resdb

@@ -521,7 +521,7 @@ void ViewChangeManager::AddComplaintTimer(uint64_t proxy_id, std::string hash) {
 
 void ViewChangeManager::MonitoringViewChangeTimeOut() {
   while (!stop_) {
-    // [DK3] After timer is out, the client will check if the corresponding
+    // [XX3] After timer is out, the client will check if the corresponding
     // client request has recevied sufficient valid responses
     sem_wait(&viewchange_timer_signal_);
     vc_mutex_.lock();
@@ -544,12 +544,12 @@ void ViewChangeManager::MonitoringViewChangeTimeOut() {
     if (viewchange_timeout->timeout_time > current_time) {
       usleep(viewchange_timeout->timeout_time - current_time);
     }
-    // [DK3] if not enough responses are received, the client broadcasts the
+    // [XX3] if not enough responses are received, the client broadcasts the
     // client request to all replicas
     if (viewchange_timeout->type == ViewChangeTimerType::TYPE_NEWVIEW) {
       if (status_ == ViewChangeStatus::READY_NEW_VIEW &&
           viewchange_timeout->view == system_info_->GetCurrentView()) {
-        // [DK12] if the replicas cannot receive a newview message in a timely
+        // [XX12] if the replicas cannot receive a newview message in a timely
         // manner, they will enter the next view and starts a new round of
         // viewchange. SetCurrentViewAndNewPrimary(viewchange_timeout->view +
         // 1);
@@ -558,7 +558,7 @@ void ViewChangeManager::MonitoringViewChangeTimeOut() {
       }
     } else if (viewchange_timeout->type ==
                ViewChangeTimerType::TYPE_VIEWCHANGE) {
-      // [DK9] if the primary cannot get enough viewchange messages before the
+      // [XX9] if the primary cannot get enough viewchange messages before the
       // timer is out, then it broadcasts its viewchanges messages and starts
       // the timer again.
       if (status_ == ViewChangeStatus::READY_VIEW_CHANGE &&
@@ -569,7 +569,7 @@ void ViewChangeManager::MonitoringViewChangeTimeOut() {
       }
     } else if (viewchange_timeout->type ==
                ViewChangeTimerType::TYPE_COMPLAINT) {
-      // [DK7] if the primary does not broadcast the request in a timely manner,
+      // [XX7] if the primary does not broadcast the request in a timely manner,
       // the replica starts a viewchange
       if (complaining_clients_[viewchange_timeout->proxy_id]
               .CountViewChangeTimeout(viewchange_timeout->hash)) {

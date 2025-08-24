@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation

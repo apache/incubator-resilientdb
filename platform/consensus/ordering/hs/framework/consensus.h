@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -29,6 +29,7 @@
 #include "platform/consensus/execution/transaction_executor.h"
 #include "platform/consensus/ordering/hs/algorithm/hs.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
+#include "platform/consensus/ordering/hs/framework/performance_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -45,9 +46,11 @@ class Consensus : public common::Consensus{
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const Transaction& txn);
 
+  std::unique_ptr<HotStuffPerformanceManager> GetPerformanceManager();
+
   private:
     std::unique_ptr<HotStuff> hs_;
 };
 
-}  // namespace tusk
+}  // namespace hs
 }  // namespace resdb

@@ -42,6 +42,7 @@ cc_library(
         "//platform/proto:broadcast_cc_proto",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
+        "//common/utils:utils",
     ],
 )
 
@@ -115,6 +116,7 @@ cc_library(
         "//platform/common/queue:blocking_queue",
         "//platform/common/queue:lock_free_queue",
         "//platform/proto:broadcast_cc_proto",
+        "//common/utils:utils",
     ],
 )
 
@@ -152,6 +154,7 @@ cc_library(
         "//platform/common/queue:batch_queue",
         "//platform/proto:broadcast_cc_proto",
         "//platform/statistic:stats",
+        "//common/utils:utils",
     ],
 )
 

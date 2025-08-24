@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -75,6 +75,10 @@ void Consensus::Init(){
 
 void Consensus::InitProtocol(ProtocolBase * protocol){
   //protocol->SetSignatureVerifier(GetSignatureVerifier());
+
+  if (config_.NetworkDelayNum() > 0) {
+    protocol->SetNetworkDelayGenerator(config_.NetworkDelayNum(), config_.MeanNetworkDelay());
+  }
 
   protocol->SetSingleCallFunc(
       [&](int type, const google::protobuf::Message& msg, int node_id) {
@@ -180,20 +184,11 @@ int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
     request.set_type(Request::TYPE_RESPONSE);
     request.set_sender_id(config_.GetSelfInfo().id());
     request.set_proxy_id(batch_resp.proxy_id());
+    request.set_primary_id(batch_resp.primary_id());
     batch_resp.SerializeToString(request.mutable_data());
     //global_stats_->AddResponseDelay(GetCurrentTime()- batch_resp.createtime());
     replica_communicator_->SendMessage(request, request.proxy_id());
   return 0;
-}
-
-void Consensus::SendFail(const int proxy_id, const std::string& hash){
-  Request request;
-  request.set_type(Request::TYPE_RESPONSE);
-  request.set_sender_id(config_.GetSelfInfo().id());
-  request.set_proxy_id(proxy_id);
-  request.set_ret(-2);
-  request.set_hash(hash);
-  replica_communicator_->SendMessage(request, request.proxy_id());
 }
 /*
 int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {

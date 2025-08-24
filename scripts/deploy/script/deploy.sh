@@ -6,6 +6,8 @@ set -e
 # load ip list
 . ./script/load_config.sh $1
 
+USER_NAME="ubuntu"
+
 script_path=${BAZEL_WORKSPACE_PATH}/scripts
 
 if [[ -z $server ]];
@@ -68,7 +70,7 @@ function run_cmd(){
   count=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no $USER_NAME@${ip} "$1" &
     ((count++))
   done
 
@@ -79,7 +81,7 @@ function run_cmd(){
 }
 
 function run_one_cmd(){
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
+  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no $USER_NAME@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
@@ -93,7 +95,7 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > /dev/null 2>&1 &
+  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert $USER_NAME@${ip}:~/  > null 2>&1 &
   #scp -i ${key} -r ${bin_path} ${output_path}/server.config ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
   ((count++))
 done
@@ -121,20 +123,28 @@ while [ $count -gt 0 ]; do
   count=`expr $count - 1`
 done
 
-# Check ready logs
-idx=1
-for ip in ${deploy_iplist[@]};
-do
+function check(){
+   server_ip=$1
+   server_num=$2
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "grep \"receive public size:${#iplist[@]}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no $USER_NAME@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
+    else
+      echo "${server_ip} done"
     fi
   done
-  ((idx++))
+}
+
+# Check ready logs
+for ip in ${deploy_iplist[@]};
+do
+  check ${ip} ${#iplist[@]} &
 done
+
+wait
 
 echo "Servers are running....."
 

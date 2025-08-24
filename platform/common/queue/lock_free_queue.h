@@ -49,10 +49,12 @@ class LockFreeQueue {
     }
   }
 
-  std::unique_ptr<T> Pop(int timeout_ms = 100) {
+  std::unique_ptr<T> Pop(int timeout_ms = 100, bool flag = false) {
     T* ret = nullptr;
     if (!queue_.pop(ret)) {
       if (timeout_ms > 0) {
+        if(flag)
+          LOG(ERROR) << "empty";
         std::unique_lock<std::mutex> lk(mutex_);
         need_notify_ = true;
         cv_.wait_for(lk, std::chrono::milliseconds(timeout_ms),

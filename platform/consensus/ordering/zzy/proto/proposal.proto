@@ -1,0 +1,47 @@
+
+syntax = "proto3";
+
+import "common/proto/signature_info.proto";
+
+package resdb.zzy;
+
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  int64 uid = 6;
+  int64 create_time = 7;
+  int64 seq = 9;
+}
+
+message QC {
+  bytes data_hash = 1;
+  SignatureInfo sign = 2;
+  int64 seq = 3;
+}
+
+message QCList {
+  repeated QC qc = 1;
+}
+
+message Proposal {
+  bytes hash = 1;
+  int32 proposer = 2;
+  int64 seq =3 ;
+  optional SignatureInfo data_signature = 4;
+  repeated SignatureInfo sign = 5;
+  QCList qc = 6;
+  int64 local_id = 7;
+}
+
+enum MessageType {
+  None = 0;
+  Propose = 1;
+  Prepare = 2;
+  Commit = 3;
+  ACK = 4;
+  CommitACK = 5;
+}
+

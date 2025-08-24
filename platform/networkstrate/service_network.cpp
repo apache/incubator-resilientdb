@@ -81,7 +81,7 @@ void ServiceNetwork::InputProcess() {
   std::vector<std::thread> threads;
 
   int woker_num = config_.GetWorkerNum();
-  LOG(ERROR) << "server:" << config_.GetSelfInfo().id() << " start running with " << woker_num << "input threads";
+  LOG(ERROR) << "server:" << config_.GetSelfInfo().id() << " start running";
   for (int i = 0; i < woker_num; ++i) {
     threads.push_back(std::thread([&]() {
       while (IsRunning()) {

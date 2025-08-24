@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -44,6 +44,7 @@ PerformanceManager::PerformanceManager(
   stop_ = false;
   eval_started_ = false;
   eval_ready_future_ = eval_ready_promise_.get_future();
+  tpcc_txn_generator_ = new TpccTransactionGenerator();
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
@@ -62,6 +63,11 @@ PerformanceManager::PerformanceManager(
   if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
+  client_num_ = 1;
+  slot_num_ = 1;
+  counter_ = slot_num_ * primary_;
+  inflight_.resize(replica_num_ + 1);
+  inflight_limit_ = 20;
 }
 
 PerformanceManager::~PerformanceManager() {
@@ -73,7 +79,12 @@ PerformanceManager::~PerformanceManager() {
   }
 }
 
-int PerformanceManager::GetPrimary() { return primary_; }
+// int PerformanceManager::GetPrimary() { return primary_; }
+
+int PerformanceManager::GetPrimary() { 
+  LOG(ERROR) << "SEND to " << primary_;
+  return primary_;
+}
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -90,13 +101,17 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 5000000; ++i) {
+  int max_num = config_.IsTpccEnabled() ? 100000 : 10000000;
+  for (int i = 0; i < max_num; ++i) {
     // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
+    if (config_.IsTpccEnabled()) {
+      tpcc_txn_generator_->fillTpccTransaction(queue_item->user_request.get());
+    }
     batch_queue_.Push(std::move(queue_item));
-    if (i == 200000) {
+    if (i == 2000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -119,7 +134,7 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
     return 0;
   }
 
-  //LOG(INFO) << "get response:" << request->seq() << " sender:"<<request->sender_id();
+  LOG(INFO) << "get response:" << request->seq() << " sender:"<<request->sender_id();
   std::unique_ptr<BatchUserResponse> batch_response = nullptr;
   CollectorResultCode ret =
       AddResponseMsg(std::move(request), [&](std::unique_ptr<BatchUserResponse> request) {
@@ -127,10 +142,29 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
         return;
       });
 
-  if (ret == CollectorResultCode::STATE_CHANGED) {
-    LOG(ERROR) << "[DK] RSP";
-    assert(batch_response);
+  if (config_.NetworkDelayNum() > 0) {
+    if (ret == CollectorResultCode::FIRST_RESPONSE) {
+      assert(batch_response);
+      int primary_id = batch_response->primary_id();
+      // LOG(ERROR) << "here: " << primary_id;
+      inflight_[primary_id]--;
+      last_response_ = primary_id;
+      send_num_--;
+    } 
+    if (ret == CollectorResultCode::STATE_CHANGED) {
+      assert(batch_response);
       SendResponseToClient(*batch_response);
+    }
+  }
+  else {
+    if (ret == CollectorResultCode::STATE_CHANGED) {
+      assert(batch_response);
+      int primary_id = batch_response->primary_id();
+      // LOG(ERROR) << "primary_id: " << primary_id;
+      inflight_[primary_id]--;
+      last_response_ = primary_id;
+      SendResponseToClient(*batch_response);
+    }
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
@@ -151,7 +185,7 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   }
 
   uint64_t seq = batch_response->local_id();
-  // LOG(ERROR)<<"receive seq:"<<seq;
+  //LOG(ERROR)<<"receive seq:"<<seq;
 
   bool done = false;
   {
@@ -162,7 +196,7 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
       return CollectorResultCode::OK;
     }
     response_[idx][seq]++;
-    // LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<" num:"<<response_[idx][seq]<<" send:"<<send_num_;
+    //LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<" num:"<<response_[idx][seq]<<" send:"<<send_num_;
     if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
       //LOG(ERROR)<<"get seq :"<<request->seq()<<" local id:"<<seq<<" num:"<<response_[idx][seq]<<" done:"<<send_num_;
       response_[idx].erase(response_[idx].find(seq));
@@ -181,12 +215,21 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    //LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
+    // LOG(ERROR) << "create time: " << create_time;
+    // LOG(ERROR)<<"receive current:"<<GetCurrentTime()<<" create time:"<<create_time<<" run time:"<<run_time<<" local id:"<<batch_response.local_id();
+    // LOG(ERROR) << "Add Latency: " << run_time;
+    // LOG(ERROR) << "Add ReplyLatency: " << GetCurrentTime() - batch_response.commit_time();
+    if (config_.NetworkDelayNum() == replica_num_) {
+      run_time += config_.MeanNetworkDelay();
+    }
     global_stats_->AddLatency(run_time);
+    global_stats_->AddReplyLatency(GetCurrentTime() - batch_response.commit_time());
   } else {
   }
   //send_num_-=10;
-  send_num_--;
+  if (config_.NetworkDelayNum() == 0) {
+    send_num_--;
+  }
 }
 
 // =================== request ========================
@@ -198,9 +241,9 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   bool start = false;
   while (!stop_) {
-    if (send_num_ > config_.GetMaxProcessTxn()) {
-      // LOG(ERROR)<<"wait send num:"<<send_num_;
-      usleep(1000);
+    if (send_num_ > 0 && send_num_ >= config_.GetMaxProcessTxn()) {
+      // LOG(ERROR)<<"wait send num:"<<send_num_ << " and " << config_.GetMaxProcessTxn();
+      usleep(100);
       continue;
     }
     if (batch_req.size() < config_.ClientBatchNum()) {
@@ -217,6 +260,11 @@ int PerformanceManager::BatchProposeMsg() {
         continue;
       }
     }
+    // while (send_num_ > config_.GetMaxProcessTxn()) {
+    //   // LOG(ERROR)<<"wait send num:"<<send_num_;
+    //   usleep(100);
+    //   // continue;
+    // }
     start = true;
     for(int i = 0; i < 1;++i){
       int ret = DoBatch(batch_req);
@@ -241,12 +289,13 @@ int PerformanceManager::DoBatch(
     req->set_id(i);
   }
 
+
   batch_request.set_local_id(local_id_++);
 
   {
     int idx = batch_request.local_id() % response_set_size_;
     std::unique_lock<std::mutex> lk(response_lock_[idx]);
-    response_[idx][batch_request.local_id()]++;
+    response_[idx][batch_request.local_id()] = 0; // [DK] Why do we increase the value by 1 here?
   }
 
   batch_request.set_proxy_id(config_.GetSelfInfo().id());
@@ -270,7 +319,7 @@ int PerformanceManager::DoBatch(
   global_stats_->BroadCastMsg();
   send_num_++;
   sum_ += batch_req.size();
-  //LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary();
+  // LOG(ERROR)<<"send num:"<<send_num_<<" total num:"<<total_num_<<" sum:"<<sum_<<" to:"<<GetPrimary();
   if (total_num_++ == 1000000) {
     stop_ = true;
     LOG(WARNING) << "total num is done:" << total_num_;
@@ -283,7 +332,11 @@ int PerformanceManager::DoBatch(
 }
 
 void PerformanceManager::SendMessage(const Request& request){
-  replica_communicator_->SendMessage(request, GetPrimary());
+  int primary = GetPrimary();
+  // LOG(ERROR) << "[X]send to: " <<  primary << " at " << GetCurrentTime() - last_send_time_ << " " << GetCurrentTime();
+  last_send_time_ = GetCurrentTime();
+  replica_communicator_->SendMessage(request, primary);
+  
 }
 
 }  // namespace common

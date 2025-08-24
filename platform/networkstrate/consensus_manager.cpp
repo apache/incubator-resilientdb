@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "platform/proto/broadcast.pb.h"
+#include "common/utils/utils.h"
 
 namespace resdb {
 

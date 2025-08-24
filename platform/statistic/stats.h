@@ -51,6 +51,10 @@ class Stats {
   void AddBlockSize(int size);
   void AddCommitRatio(uint64_t num);
   void AddExecuteDelay(uint64_t run_time);
+  void AddConsensusLatency(uint64_t run_time);
+  void AddProposeLatency(uint64_t run_time);
+  void AddReplyLatency(uint64_t run_time);
+  void AddGlobalOrderingLatency(uint64_t run_time);
 
   void Monitor();
   void MonitorGlobal();
@@ -72,6 +76,7 @@ class Stats {
   void SendBroadCastMsgPerRep();
   void SeqFail();
   void IncTotalRequest(uint32_t num);
+  void DecTotalRequest(uint32_t num);
   void IncTotalGeoRequest(uint32_t num);
   void IncGeoRequest();
 
@@ -127,6 +132,10 @@ class Stats {
   std::atomic<uint64_t> block_size_num_, block_size_;
   std::atomic<uint64_t> commit_ratio_num_, commit_ratio_time_;
   std::atomic<uint64_t> execute_delay_num_, execute_delay_time_;
+  std::atomic<uint64_t> consensus_latency_num_, consensus_latency_;
+  std::atomic<uint64_t> propose_latency_num_, propose_latency_;
+  std::atomic<uint64_t> reply_latency_num_, reply_latency_;
+  std::atomic<uint64_t> global_ordering_latency_num_, global_ordering_latency_;
   int monitor_sleep_time_ = 5;  // default 5s.
 
   std::unique_ptr<PrometheusHandler> prometheus_;

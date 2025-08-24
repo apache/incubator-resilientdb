@@ -24,7 +24,9 @@
 namespace resdb {
 
 TransactionManager::TransactionManager(bool is_out_of_order, bool need_response)
-    : is_out_of_order_(is_out_of_order), need_response_(need_response) {}
+    : is_out_of_order_(is_out_of_order), need_response_(need_response) {
+      // tpcc_executor_ = std::make_unique<TpccExecutor>();
+    }
 
 bool TransactionManager::IsOutOfOrder() { return is_out_of_order_; }
 
@@ -84,8 +86,7 @@ std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
   std::unique_ptr<BatchUserResponse> batch_response =
       std::make_unique<BatchUserResponse>();
   for (auto& sub_request : request.user_requests()) {
-    std::unique_ptr<std::string> response =
-        ExecuteData(sub_request.request().data());
+    std::unique_ptr<std::string> response = ExecuteData(sub_request.request().data());
     if (response == nullptr) {
       response = std::make_unique<std::string>();
     }
@@ -94,5 +95,27 @@ std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
 
   return batch_response;
 }
+
+
+std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteTPCCBatch(
+    BatchUserRequest& request) {
+  std::unique_ptr<BatchUserResponse> batch_response =
+      std::make_unique<BatchUserResponse>();
+  for (auto& sub_request : request.user_requests()) {
+    std::unique_ptr<std::string> response = nullptr;
+    if (sub_request.request().has_tpcc_txn()) {
+      auto non_const_request = sub_request.request();
+      response = tpcc_executor_->ExecuteTransaction(non_const_request.mutable_tpcc_txn());
+      // LOG(ERROR) << *response;
+    } 
+    if (response == nullptr) {
+      response = std::make_unique<std::string>();
+    }
+    batch_response->add_response()->swap(*response);
+  }
+
+  return batch_response;
+}
+
 
 }  // namespace resdb

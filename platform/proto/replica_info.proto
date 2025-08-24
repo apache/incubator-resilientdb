@@ -45,7 +45,19 @@ message ResConfigData{
   optional int32 max_client_complaint_num = 21;
 
   optional int32 duplicate_check_frequency_useconds = 22;
-  optional int32 water_mark = 23;
+
+// for slot_hs1 
+  optional int32 slot_num = 23;
+  optional int32 non_responsive_num = 24;
+  optional int32 fork_tail_num = 25;
+  optional int32 rollback_num = 26;
+
+  optional bool tpcc_enabled = 27;
+  optional int32 network_delay_num = 28;
+  optional double mean_network_delay = 29;
+
+  optional int32 water_mark = 30;
+  optional int32 crash_num = 31;
 }
 
 message ReplicaStates {

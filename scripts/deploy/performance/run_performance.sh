@@ -2,22 +2,16 @@
 
 . ./script/env.sh
 
+# ./script/copy_local_db.sh
+
 ./script/deploy.sh $1
 
 . ./script/load_config.sh $1
 
+USER_NAME="ubuntu"
+
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
-user=ubuntu
-home_path="/home/ubuntu"
-
-for ip in ${iplist[@]};
-do
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "rm -rf local_ordering.txt; rm -rf final_ordering.txt"` & 
-done
-
-echo "deleting ordering txt files done."
-
 
 bazel run //benchmark/protocols/pbft:kv_service_tools 
 
@@ -31,26 +25,28 @@ echo "get cofigfile:"$config_file
 ${BAZEL_WORKSPACE_PATH}/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
 done
 
-sleep 60
+sleep 20
 
 echo "benchmark done"
+count=1
 for ip in ${iplist[@]};
 do
-echo "$ip"
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "killall -9 ${server_bin}"` & 
+`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no $USER_NAME@${ip} "killall -9 ${server_bin}"` &
+((count++))
 done
 
-wait
+while [ $count -gt 0 ]; do
+        wait $pids
+        count=`expr $count - 1`
+done
 
-i=0
 echo "getting results"
+id=0
 for ip in ${iplist[@]};
 do
-  i=`expr $i + 1`
-  echo "scp -i ${key} ${user}@${ip}:${home_path}/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} ${user}@${ip}:${home_path}/${server_bin}.log result_${i}_log` &
-  `scp -i ${key} ${user}@${ip}:${home_path}/local_ordering.txt local_ordering_${i}` &
-  `scp -i ${key} ${user}@${ip}:${home_path}/final_ordering.txt final_ordering_${i}` &
+  id=`expr $id + 1`
+  echo "scp -i ${key} $USER_NAME@${ip}:~/${server_bin}.log ./${ip}_log"
+  `scp -i ${key} $USER_NAME@${ip}:~/${server_bin}.log result_${id}_log` &
 done
 
 wait
@@ -61,4 +57,3 @@ python3 performance/calculate_result.py `ls result_*_log` > results.log
 echo "save result to results.log"
 cat results.log
 cat $TEMPLATE_PATH
-echo $TEMPLATE_PATH

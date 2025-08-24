@@ -1,6 +1,13 @@
 package(default_visibility = ["//platform/consensus/ordering:__subpackages__"])
 
 cc_library(
+    name = "glog",
+    deps = [
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_library(
     name = "consensus",
     srcs = ["consensus.cpp"],
     hdrs = ["consensus.h"],
@@ -23,6 +30,7 @@ cc_library(
         ":transaction_utils",
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
+        ":tpcc",
     ],
 )
 
@@ -47,3 +55,15 @@ cc_library(
         "//platform/proto:resdb_cc_proto",
     ],
 )
+
+cc_library(
+    name = "tpcc",
+    srcs = ["tpcc.cpp"],
+    hdrs = ["tpcc.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//platform/proto:resdb_cc_proto",
+        ":glog",
+    ],
+)
+

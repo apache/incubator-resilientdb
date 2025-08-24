@@ -16,6 +16,20 @@ cc_proto_library(
 )
 
 proto_library(
+    name = "tpcc_proto",
+    srcs = ["tpcc.proto"],
+    deps = [
+    ],
+)
+
+cc_proto_library(
+    name = "tpcc_cc_proto",
+    deps = [":tpcc_proto"],
+    visibility = ["//visibility:public"],
+)
+
+
+proto_library(
     name = "replica_info_proto",
     srcs = ["replica_info.proto"],
     deps = [
@@ -49,6 +63,7 @@ proto_library(
     srcs = ["resdb.proto"],
     deps = [
         ":replica_info_proto",
+        ":tpcc_proto",
         "//common/proto:signature_info_proto",
     ],
 )

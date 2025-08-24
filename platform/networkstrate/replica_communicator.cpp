@@ -24,6 +24,7 @@
 #include <thread>
 
 #include "platform/proto/broadcast.pb.h"
+#include "common/utils/utils.h"
 
 namespace resdb {
 
@@ -104,7 +105,7 @@ void ReplicaCommunicator::StartBroadcastInBackGround() {
   broadcast_thread_ = std::thread([&]() {
     while (IsRunning()) {
       std::vector<std::unique_ptr<QueueItem>> batch_req =
-          batch_queue_.Pop(10000);
+          batch_queue_.Pop(100);
       if (batch_req.empty()) {
         continue;
       }
@@ -112,9 +113,10 @@ void ReplicaCommunicator::StartBroadcastInBackGround() {
       for (auto& queue_item : batch_req) {
         broadcast_data.add_data()->swap(queue_item->data);
       }
-
       global_stats_->SendBroadCastMsg(broadcast_data.data_size());
+      uint64_t x = GetCurrentTime();
       int ret = SendMessageFromPool(broadcast_data, replicas_);
+      // LOG(ERROR) << "FINISH SENDING: " << GetCurrentTime() - x << " " << (GetCurrentTime() & 0xFFFFFF);
       if (ret < 0) {
         LOG(ERROR) << "broadcast request fail:";
       }
@@ -137,6 +139,7 @@ int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message) {
 
 int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                      const ReplicaInfo& replica_info) {
+  // LOG(ERROR) << "Here1";
   if (is_use_long_conn_) {
     std::string data = NetChannel::GetRawMessageString(message, verifier_);
     BroadcastData broadcast_data;

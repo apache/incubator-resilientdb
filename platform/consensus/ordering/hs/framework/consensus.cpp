@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -33,9 +33,18 @@
 namespace resdb {
 namespace hs {
 
+std::unique_ptr<HotStuffPerformanceManager> Consensus::GetPerformanceManager() {
+        return config_.IsPerformanceRunning()
+        ? std::make_unique<HotStuffPerformanceManager>(
+          config_, GetBroadCastClient(), GetSignatureVerifier())
+        : nullptr;
+}
+
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)) {
+
+  SetPerformanceManager(GetPerformanceManager());
 
   Init();
 
@@ -46,7 +55,7 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    hs_= std::make_unique<HotStuff>(config_.GetSelfInfo().id(), f, total_replicas, GetSignatureVerifier());
+    hs_= std::make_unique<HotStuff>(config_.GetSelfInfo().id(), f, total_replicas, GetSignatureVerifier(), config_.GetNonResponsiveNum(), config_.GetForkTailNum());
     InitProtocol(hs_.get());
   }
 }

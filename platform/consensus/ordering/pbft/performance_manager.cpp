@@ -107,12 +107,12 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 60000000000; ++i) {
+  for (int i = 0; i < 60000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 20000000) {
+    if (i == 20000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -133,12 +133,18 @@ int PerformanceManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   // messages.
   // The callback will be triggered if it received f+1 messages.
   if (request->ret() == -2) {
-    // LOG(INFO) << "get response fail:" << request->ret();
+    //LOG(INFO) << "get response fail:" << request->ret()<<" send num:"<<send_num_[primary_id]<< " primary:"<<primary_id<<" here:"<<GetPrimary()<<" seq:"<<request->seq();
     // send_num_--;
+    if (send_num_[GetPrimary()] > 0) {
+      send_num_[GetPrimary()]--;
+    }
+    collector_pool_->Update(request->seq());
+
     RemoveWaitingResponseRequest(hash);
     return 0;
   }
-  CollectorResultCode ret =
+
+    CollectorResultCode ret =
       AddResponseMsg(context->signature, std::move(request),
                      [&](const Request& request,
                          const TransactionCollector::CollectorDataType*) {
@@ -192,7 +198,17 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   }
 
   int type = request->type();
-  uint64_t seq = request->seq();
+
+
+  std::unique_ptr<BatchUserResponse> batch_response = std::make_unique<BatchUserResponse>();
+  if (!batch_response->ParseFromString(request->data())) {
+    LOG(ERROR) << "parse response fail:"<<request->data().size()
+    <<" seq:"<<request->seq(); return CollectorResultCode::INVALID;
+  }
+
+  uint64_t seq = batch_response->local_id();
+
+  request->set_seq(seq);
   int resp_received_count = 0;
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, false,
@@ -245,6 +261,7 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   while (!stop_) {
     // std::lock_guard<std::mutex> lk(mutex_);
+    // LOG(ERROR)<<" batch send num:"<<send_num_[GetPrimary()]<<" max pross:"<<config_.GetMaxProcessTxn();
     if (send_num_[GetPrimary()] >= config_.GetMaxProcessTxn()) {
       usleep(100000);
       continue;
@@ -298,6 +315,7 @@ int PerformanceManager::DoBatch(
     req->set_id(i);
   }
 
+  batch_request.set_local_id(local_id_++);
   batch_request.set_createtime(GetCurrentTime());
   batch_request.SerializeToString(new_request->mutable_data());
   if (verifier_) {
@@ -320,7 +338,7 @@ int PerformanceManager::DoBatch(
     LOG(WARNING) << "total num is done:" << total_num_;
   }
   if (total_num_ % 10000 == 0) {
-    LOG(WARNING) << "total num is :" << total_num_;
+    LOG(WARNING) << "total num is :" << total_num_<<" send num:"<<send_num_[GetPrimary()];
   }
   global_stats_->IncClientCall();
   AddWaitingResponseRequest(std::move(new_request));

@@ -7,16 +7,19 @@
 namespace resdb {
 namespace hs {
 
-HotStuff::HotStuff(int id, int f, int total_num, SignatureVerifier * verifier)
-  : ProtocolBase(id, f, total_num), verifier_(verifier){
+HotStuff::HotStuff(int id, int f, int total_num, SignatureVerifier * verifier, int non_responsive_num, int fork_tail_num)
+  : ProtocolBase(id, f, total_num), verifier_(verifier), non_responsive_num_(non_responsive_num), fork_tail_num_(fork_tail_num){
 
     LOG(ERROR)<<"id:"<<id<<" f:"<<f<<" total:"<<total_num_;
 
-  proposal_manager_ = std::make_unique<ProposalManager>(id, 2*f_+1, verifier);
+  global_stats_ = Stats::GetGlobalStats();
+  proposal_manager_ = std::make_unique<ProposalManager>(id, 2*f_+1, verifier, total_num, non_responsive_num, fork_tail_num);
   has_sent_ = false;
     send_thread_ = std::thread(&HotStuff::AsyncSend, this);
     commit_thread_ = std::thread(&HotStuff::AsyncCommit, this);
-    batch_size_ = 64;
+    batch_size_ = 1;
+  timer_length_ = 10000;
+  qc_formed_ = proposal_received_ = false;
 }
 
 HotStuff::~HotStuff() {
@@ -54,7 +57,6 @@ void HotStuff::AsyncSend() {
       std::unique_lock<std::mutex> lk(n_mutex_);
       vote_cv_.wait_for(lk, std::chrono::microseconds(1000),
           [&] { return Ready(); });
-
       if(Ready()){
         break;
       }
@@ -72,6 +74,10 @@ void HotStuff::AsyncSend() {
         //break;
       }
       txns.push_back(std::move(txn));
+    }
+
+    if (id_ < 3 * non_responsive_num_ && id_ % 3 == 1) {
+      usleep(timer_length_);
     }
 
     std::unique_ptr<Proposal> proposal =  nullptr;
@@ -92,7 +98,8 @@ void HotStuff::AsyncCommit() {
     if(p == nullptr){
       continue;
     }
-
+    global_stats_->AddConsensusLatency(GetCurrentTime()-p->createtime());
+    // LOG(ERROR) << "create time: " << p->createtime();
     for(Transaction& txn : *p->mutable_transactions()){
       txn.set_id(seq++);
       Commit(txn);
@@ -103,17 +110,26 @@ void HotStuff::AsyncCommit() {
 
 bool HotStuff::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
   //  std::unique_lock<std::mutex> lk(txn_mutex_);
+  txn->set_reception_time(GetCurrentTime());
   txn->set_proposer(id_);
   txns_.Push(std::move(txn));
   return true;
 }
 
 bool HotStuff::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
+  if (IsSlowReplica(id_)) {
+    usleep(GetRandomDelay());
+  }
     int view = proposal->header().view();
     std::unique_ptr<Certificate> cert = nullptr;
   {
-    //LOG(ERROR)<<"RECEIVE proposer view:"<<proposal->header().view();
+    LOG(ERROR)<<"RECEIVE proposer view:"<<proposal->header().view() << " from: " << proposal->sender();
     std::unique_lock<std::mutex> lk(mutex_);
+
+    if (id_ == NextLeader(view)) {
+      proposal_received_ = true;
+    }
+
     if(!proposal_manager_->Verify(*proposal)){
       LOG(ERROR)<<" proposal invalid";
       return false;
@@ -122,22 +138,44 @@ bool HotStuff::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
     cert = GenerateCertificate(*proposal);
     assert(cert != nullptr);
 
-    std::unique_ptr<Proposal> committed_p = proposal_manager_->AddProposal(std::move(proposal));
-    if(committed_p != nullptr){
-      CommitProposal(std::move(committed_p));
+    std::vector<std::unique_ptr<Proposal>> committed_p_list = proposal_manager_->AddProposal(std::move(proposal));
+    for (int i=committed_p_list.size()-1; i>=0; i--) {
+      LOG(ERROR) << "commit view: " << committed_p_list[i]->header().view();
+      CommitProposal(std::move(committed_p_list[i]));
     }
 
     //LOG(ERROR)<<"send cert view:"<<view<<" to:"<<NextLeader(view);
+    if (qc_formed_) {
+      // LOG(ERROR) << "after proposal recieeved";
+      proposal_manager_->AddQC(std::move(formed_qc_));
+      StartNewRound();
+      qc_formed_ = proposal_received_ = false;
+    }
   }
 
-  SendMessage(MessageType::Vote, *cert, NextLeader(view));
+  auto next_leader = proposal_manager_->GetLeader(view+1);
+
+  SendMessage(MessageType::Vote, *cert, next_leader);
+
+  if (next_leader % 3 == 1 && next_leader <= 3 * crash_num_) {
+    int next_next_leader = proposal_manager_->GetLeader(view+2);
+    if (id_ == next_next_leader) {
+      proposal_received_ = true;
+    }
+    cert->set_view(view+1);
+    usleep(timer_length_);
+    SendMessage(MessageType::Vote, *cert, next_next_leader);
+  }
 
   return true;
 }
 
 bool HotStuff::ReceiveCertificate(std::unique_ptr<Certificate> cert) {
 
-  //LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
+  if (id_ % 3 == 1 && id_ <= 3*crash_num_) {
+    return true;
+  }
+
   std::unique_lock<std::mutex> lk(mutex_);
   //LOG(ERROR)<<"RECEIVE proposer cert :"<<cert->view()<<" from:"<<cert->signer();
   bool valid = proposal_manager_->VerifyCert(*cert);
@@ -161,10 +199,16 @@ bool HotStuff::ReceiveCertificate(std::unique_ptr<Certificate> cert) {
       *qc->add_signatures() = it.second->sign();
     }
 
-    //LOG(ERROR)<<"add qc view:"<<view;
-    proposal_manager_->AddQC(std::move(qc));
+    qc_formed_ = true;
+    if (proposal_received_) {
+      // LOG(ERROR) << "after qc formed";
+      proposal_manager_->AddQC(std::move(qc));
+      StartNewRound();
+      qc_formed_ = proposal_received_ = false;
+    } else {
+      formed_qc_ = std::move(qc);
+    }
 
-    StartNewRound();
   }
   return true;
 }
@@ -189,5 +233,5 @@ std::unique_ptr<Certificate> HotStuff::GenerateCertificate(const Proposal& propo
   return cert;
 }
 
-}  // namespace tusk
+}  // namespace hs
 }  // namespace resdb

@@ -23,6 +23,7 @@
 
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/proto/replica_info.pb.h"
+#include "common/utils/utils.h"
 
 namespace resdb {
 
@@ -89,6 +90,10 @@ void AsyncReplicaClient::OnSend() {
         } else {
           sending_data_idx_ += send_size;
           if (sending_data_idx_ >= sending_data_size_) {
+            // LOG(ERROR) << 'A';
+            // while(true) {
+            //   break;
+            // }
             OnSendMessage();
           } else {
             OnSend();

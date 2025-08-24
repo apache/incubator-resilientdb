@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022 ExpoLab, UC Davis
+
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation
@@ -34,6 +34,7 @@ enum CollectorResultCode {
   INVALID = -2,
   OK = 0,
   STATE_CHANGED = 1,
+  FIRST_RESPONSE = 2,
 };
 
 std::unique_ptr<Request> NewRequest(Request::Type type, const Request& request,
