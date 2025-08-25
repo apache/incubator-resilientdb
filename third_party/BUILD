@@ -57,3 +57,10 @@ cc_library(
         "@com_crowcpp_crow//:crow",
     ],
 )
+
+cc_library(
+    name = "rapidjson",
+    deps = [
+        "//third_party/rapidjson:rapidjson",
+    ],
+)
