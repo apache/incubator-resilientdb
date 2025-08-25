@@ -44,6 +44,7 @@ class ResLevelDB : public Storage {
 
   virtual ~ResLevelDB();
   int SetValue(const std::string& key, const std::string& value) override;
+  int DelValue(const std::string& key) override;
   std::string GetValue(const std::string& key) override;
   std::string GetAllValues(void) override;
   std::string GetRange(const std::string& min_key,

@@ -79,7 +79,10 @@ class KVExecutor : public TransactionManager {
                                                 const std::string& min_value,
                                                 const std::string& max_value,
                                                 CompositeKeyType field_type);
+  int UpdateCompositeKey(const std::string& primary_key, const std::string& field_name, const std::string& old_field_value, const std::string& new_field_value, 
+                          CompositeKeyType old_field_type, CompositeKeyType new_field_type);
 
+  int DelVal(const std::string& key);
  private:
   // Simple encoding functions
   std::string EncodeValue(const std::string& value, CompositeKeyType field_type);

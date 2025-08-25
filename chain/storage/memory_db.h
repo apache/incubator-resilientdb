@@ -55,7 +55,7 @@ class MemoryDB : public Storage {
 
   int SetValue(const std::string& key, const std::string& value);
   std::string GetValue(const std::string& key);
-
+  int DelValue(const std::string& key);
   std::string GetAllValues() override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;

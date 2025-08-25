@@ -31,6 +31,7 @@ class Storage {
   virtual ~Storage() = default;
 
   virtual int SetValue(const std::string& key, const std::string& value) = 0;
+  virtual int DelValue(const std::string& key) = 0;
   virtual std::string GetValue(const std::string& key) = 0;
   virtual std::string GetAllValues() = 0;
   virtual std::string GetRange(const std::string& min_key,

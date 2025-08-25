@@ -38,6 +38,8 @@ message KVRequest {
         CREATE_COMPOSITE_KEY = 11;
         GET_BY_COMPOSITE_KEY = 12;
         GET_COMPOSITE_KEY_RANGE = 13;
+        UPDATE_COMPOSITE_KEY = 14;
+        DEL_VAL = 15;
     }
     CMD cmd = 1;
     string key = 2;

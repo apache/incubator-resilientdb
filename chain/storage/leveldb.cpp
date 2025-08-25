@@ -113,6 +113,48 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
   return 0;
 }
 
+int ResLevelDB::DelValue(const std::string& key) {
+  // bool found = false;
+  // std::string value;
+  // if (block_cache_) {
+  //   value = block_cache_->Get(key);
+  //   found = !value.empty();
+  // }
+  // if (!found) {
+  //   leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
+  //   if (status.ok()) {
+  //     found = true;  // Ensure value is empty if not found in DB
+  //   }
+  // }
+  // if (found == true){
+  //   return 0;
+  // }
+
+  leveldb::Status status = db_->Delete(leveldb::WriteOptions(), key);
+  if (status.ok()) {
+      return 0;
+  } else {
+    LOG(ERROR) << "flush buffer fail:" << status.ToString();
+    return -1;
+  }
+  return 0;
+  
+  // batch_.Delete(key);
+
+  // if (batch_.ApproximateSize() >= write_batch_size_) {
+  //   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+  //   if (status.ok()) {
+  //     batch_.Clear();
+  //     UpdateMetrics();
+  //     return 0;
+  //   } else {
+  //     LOG(ERROR) << "flush buffer fail:" << status.ToString();
+  //     return -1;
+  //   }
+  // }
+  // return 0;
+}
+
 std::string ResLevelDB::GetValue(const std::string& key) {
   std::string value;
   bool found_in_cache = false;

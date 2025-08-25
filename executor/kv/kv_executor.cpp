@@ -76,7 +76,14 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
         kv_request.key(), kv_request.field_name(), kv_request.value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
     kv_response.set_value(std::to_string(status));
-  } else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
+  }  else if (kv_request.cmd() == KVRequest::UPDATE_COMPOSITE_KEY) {
+    int status = UpdateCompositeKey(kv_request.key(), kv_request.field_name(), kv_request.value(), kv_request.value(), 
+                          static_cast<CompositeKeyType>(kv_request.field_type()), static_cast<CompositeKeyType>(kv_request.field_type()));
+    kv_response.set_value(std::to_string(status));
+  }else if (kv_request.cmd() == KVRequest::DEL_VAL) {
+    int status = DelVal(kv_request.key());
+    kv_response.set_value(std::to_string(status));
+  }else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
     auto results = GetByCompositeKey(
         kv_request.field_name(), kv_request.value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
@@ -162,7 +169,14 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
       item->set_key("");
       item->mutable_value_info()->set_value(document);
     }
-  } else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
+  } else if (kv_request.cmd() == KVRequest::UPDATE_COMPOSITE_KEY) {
+    int status = UpdateCompositeKey(kv_request.key(), kv_request.field_name(), kv_request.value(), kv_request.value(), 
+                          static_cast<CompositeKeyType>(kv_request.field_type()), static_cast<CompositeKeyType>(kv_request.field_type()));
+    kv_response.set_value(std::to_string(status));
+  }else if (kv_request.cmd() == KVRequest::DEL_VAL) {
+    int status = DelVal(kv_request.key());
+    kv_response.set_value(std::to_string(status));
+  }else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
     auto results = GetByCompositeKeyRange(
         kv_request.field_name(), kv_request.min_value(), kv_request.max_value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
@@ -389,6 +403,31 @@ std::vector<std::string> KVExecutor::GetByCompositeKeyRange(
   }
 
   return documents;
+}
+
+int KVExecutor::UpdateCompositeKey(const std::string& primary_key, const std::string& field_name, const std::string& old_field_value, const std::string& new_field_value, 
+        CompositeKeyType old_field_type, CompositeKeyType new_field_type){
+  int status_create = CreateCompositeKey(primary_key, field_name, new_field_value, new_field_type);
+  if(status_create!=0){
+    std::cout<<"create composite key status fail"<<std::endl;
+    return -1;
+  }
+  std::string encoded_old_field_value = EncodeValue(old_field_value, old_field_type);
+  std::string delete_composite_key = BuildCompositeKey(field_name, encoded_old_field_value, primary_key);
+  std::string check = storage_->GetValue(delete_composite_key);
+  if (check == ""){
+    return 0;
+  }
+  int status_delete = storage_->DelValue(delete_composite_key);
+  if(status_delete!=0){
+    std::cout<<"delete composite key status fail"<<std::endl;
+    return -1;
+  }
+  return 0;
+}
+
+int KVExecutor::DelVal(const std::string& key){
+  return storage_->DelValue(key);
 }
 
 }  // namespace resdb

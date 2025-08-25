@@ -33,6 +33,11 @@ int MemoryDB::SetValue(const std::string& key, const std::string& value) {
   return 0;
 }
 
+int MemoryDB::DelValue(const std::string& key) {
+  kv_map_.erase(key);
+  return 0;
+}
+
 std::string MemoryDB::GetAllValues(void) {
   std::string values = "[";
   bool first_iteration = true;
