@@ -24,7 +24,6 @@ cc_library(
     name = "crow_service",
     srcs = ["crow_service.cpp"],
     hdrs = ["crow_service.h"],
-    tags = ["manual"],
     deps = [
         "//service/kv_service:resdb_kv_client",
         "//third_party:crow",
@@ -41,7 +40,6 @@ cc_library(
 cc_binary(
     name = "crow_service_main",
     srcs = ["crow_service_main.cpp"],
-    tags = ["manual"],
     deps = [
         ":crow_service",
     ],
@@ -50,7 +48,6 @@ cc_binary(
 cc_test(
     name = "crow_service_test",
     srcs = ["crow_service_test.cpp"],
-    tags = ["manual"],
     deps = [
         ":crow_service",
         "@com_resdb_nexres//common/test:test_main",
