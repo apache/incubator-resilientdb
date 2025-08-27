@@ -58,9 +58,4 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "rapidjson",
-    deps = [
-        "//third_party/rapidjson:rapidjson",
-    ],
-)
+
