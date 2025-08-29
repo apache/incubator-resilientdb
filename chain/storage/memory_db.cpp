@@ -33,6 +33,11 @@ int MemoryDB::SetValue(const std::string& key, const std::string& value) {
   return 0;
 }
 
+int MemoryDB::DelValue(const std::string& key) {
+  kv_map_.erase(key);
+  return 0;
+}
+
 std::string MemoryDB::GetAllValues(void) {
   std::string values = "[";
   bool first_iteration = true;
@@ -163,6 +168,26 @@ std::vector<std::pair<std::string, int>> MemoryDB::GetTopHistory(
       break;
     }
   } while (it != search_it->second.begin());
+  return resp;
+}
+
+std::vector<std::string> MemoryDB::GetKeysByPrefix(const std::string& prefix) {
+  std::vector<std::string> resp;
+  for (const auto& kv : kv_map_) {
+    if (kv.first.find(prefix) == 0) { 
+      resp.push_back(kv.second);
+    }
+  }
+  return resp;
+}
+
+std::vector<std::string> MemoryDB::GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) {
+  std::vector<std::string> resp;
+  for (const auto& kv : kv_map_) {
+    if (kv.first >= start_prefix && kv.first <= end_prefix) {
+      resp.push_back(kv.first);
+    }
+  }
   return resp;
 }
 

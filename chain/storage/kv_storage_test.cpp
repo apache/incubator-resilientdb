@@ -228,6 +228,10 @@ TEST_P(KVStorageTest, BlockCacheSpecificTest) {
   }
 }
 
+TEST_P(KVStorageTest, GetRangeByPrefix) {
+  
+}
+
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
                         ::testing::Values(MEM, LEVELDB,
                                           LEVELDB_WITH_BLOCK_CACHE));

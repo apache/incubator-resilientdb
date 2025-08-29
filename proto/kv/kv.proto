@@ -34,6 +34,12 @@ message KVRequest {
         GET_KEY_RANGE = 8;
         GET_HISTORY = 9;
         GET_TOP = 10;
+
+        CREATE_COMPOSITE_KEY = 11;
+        GET_BY_COMPOSITE_KEY = 12;
+        GET_COMPOSITE_KEY_RANGE = 13;
+        UPDATE_COMPOSITE_KEY = 14;
+        DEL_VAL = 15;
     }
     CMD cmd = 1;
     string key = 2;
@@ -48,6 +54,11 @@ message KVRequest {
     // For top history
     int32 top_number = 9;
     bytes smart_contract_request = 10;
+    
+    string field_name = 11;
+    int32 field_type = 12;  // Maps to CompositeKeyType enum
+    string min_value = 13;   // For range queries
+    string max_value = 14;   // For range queries
 }
 
 message ValueInfo {
@@ -70,5 +81,6 @@ message KVResponse {
     ValueInfo value_info = 3;
     Items items = 4;
     bytes smart_contract_response = 10;
+    repeated string composite_results = 11;
 }
 

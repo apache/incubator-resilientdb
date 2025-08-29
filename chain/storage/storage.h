@@ -31,6 +31,7 @@ class Storage {
   virtual ~Storage() = default;
 
   virtual int SetValue(const std::string& key, const std::string& value) = 0;
+  virtual int DelValue(const std::string& key) = 0;
   virtual std::string GetValue(const std::string& key) = 0;
   virtual std::string GetAllValues() = 0;
   virtual std::string GetRange(const std::string& min_key,
@@ -53,6 +54,10 @@ class Storage {
 
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
+
+  virtual std::vector<std::string> GetKeysByPrefix(const std::string& prefix) = 0;
+
+  virtual std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) = 0;
 
   virtual bool Flush() { return true; };
 };

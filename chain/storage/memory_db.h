@@ -55,7 +55,7 @@ class MemoryDB : public Storage {
 
   int SetValue(const std::string& key, const std::string& value);
   std::string GetValue(const std::string& key);
-
+  int DelValue(const std::string& key);
   std::string GetAllValues() override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
@@ -77,6 +77,10 @@ class MemoryDB : public Storage {
 
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
+
+  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
+
+  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;

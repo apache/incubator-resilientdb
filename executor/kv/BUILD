@@ -40,6 +40,9 @@ cc_test(
     deps = [
         ":kv_executor",
         "//chain/storage:memory_db",
+        "//chain/storage:leveldb",
         "//common/test:test_main",
     ],
+    timeout = "long",
+    size = "medium",
 )
