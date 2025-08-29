@@ -7,13 +7,13 @@ import {
   ChatMessage,
   ContextChatEngine,
   Document,
-  FilterOperator,
   IngestionPipeline,
   LlamaParseReader,
   MarkdownNodeParser,
   NodeWithScore,
   SentenceSplitter,
   Settings,
+  SimilarityPostprocessor,
   StorageContext,
   storageContextFromDefaults,
   SummaryExtractor,
@@ -169,6 +169,15 @@ export class LlamaService {
   }
 
   /**
+   * Create a similarity postprocessor with 0.5 cutoff
+   */
+  private createSimilarityPostprocessor(): SimilarityPostprocessor {
+    return new SimilarityPostprocessor({
+      similarityCutoff: 0.6,
+    });
+  }
+
+  /**
    * Ingests docs content using the pipeline (fire and forget)
    */
   async ingestDocs(filePaths: string[], forceReingestion = false): Promise<void> {
@@ -271,20 +280,51 @@ export class LlamaService {
   ): Promise<ContextChatEngine> {
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
 
-    const retriever = index.asRetriever({
-      similarityTopK: 5,
-      filters: {
-        filters: [
-          {
-            key: "source_document",
-            operator: FilterOperator.IN,
-            value: documents,
-          },
-        ],
-      },
-    });
+    // TODO: IN operator doesn't work with Supabase, so we'll use EQ operator for now
+    // const retriever = index.asRetriever({
+    //   similarityTopK: 5,
+    //   filters: {
+    //     filters: [
+    //       {
+    //         key: "source_document",
+    //         operator: FilterOperator.IN,
+    //         value: documents,
+    //       },
+    //     ],
+    //   },
+    // });
+    //
+    // Create a custom retriever that handles multiple documents with EQ operator
+    const customRetriever = {
+      retrieve: async ({ query }: { query: string }) => {
+        const allNodes: NodeWithScore[] = [];
+        const postprocessor = this.createSimilarityPostprocessor();
+        
+        for (const docPath of documents) {
+          const retriever = index.asRetriever({
+            similarityTopK: 3, // Get results per document
+            filters: {
+              filters: [
+                {
+                  key: "source_document",
+                  operator: "==",
+                  value: docPath,
+                },
+              ],
+            },
+          });
+          
+          const nodes = await retriever.retrieve({ query });
+          allNodes.push(...nodes);
+        }
+        
+        // Apply similarity postprocessor to filter low-quality results
+        return await postprocessor.postprocessNodes(allNodes);
+      }
+    };
+
     const chatEngine = new ContextChatEngine({
-      retriever,
+      retriever: customRetriever as any,
       chatHistory: ctx || [],
       systemPrompt: RESEARCH_SYSTEM_PROMPT,
     });
@@ -360,26 +400,39 @@ export class LlamaService {
   }): Promise<any> => {
     console.log("retrieve", parameters);
     const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
-    const retriever = index.asRetriever({
-      similarityTopK: 3,
-      // filters: {
-      //   filters: [
-      //     {
-      //       key: "source_document",
-      //       operator: "in",
-      //       value: parameters.documentPaths,
-      //     },
-      //   ],
-      // },
-    });
-    const nodes = await retriever.retrieve({ query: parameters.query });
-    return nodes.map((node: NodeWithScore) => {
+    
+    // Since IN operator doesn't work with Supabase, retrieve from each document separately
+    const allNodes: NodeWithScore[] = [];
+    const postprocessor = this.createSimilarityPostprocessor();
+    
+    for (const docPath of parameters.documentPaths) {
+      const retriever = index.asRetriever({
+        similarityTopK: 5, // Get more results per document
+        filters: {
+          filters: [
+            {
+              key: "source_document",
+              operator: "==",
+              value: docPath,
+            },
+          ],
+        },
+      });
+      
+      const nodes = await retriever.retrieve({ query: parameters.query });
+      allNodes.push(...nodes);
+    }
+    
+    // Apply similarity postprocessor to filter low-quality results
+    const filteredNodes = await postprocessor.postprocessNodes(allNodes);
+    
+    console.log("nodes", filteredNodes.map((node: NodeWithScore) => node.node.metadata));
+    return filteredNodes.map((node: NodeWithScore) => {
       return {
         content: (node.node as TextNode).text,
         metadata: node.node.metadata,
       };
     });
-    // return results;
   };
 
   // deprecated, see agent.ts
