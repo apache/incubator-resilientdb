@@ -81,6 +81,88 @@ Ubuntu 20+
 
 ---
 
+## Project Structure
+
+```
+incubator-resilientdb/
+├── api/                              # API layer and interfaces
+├── benchmark/                        # Performance benchmarking tools
+│   └── protocols/                    # Protocol-specific benchmarks
+│       ├── pbft/                     # PBFT protocol benchmarks
+│       └── poe/                      # PoE protocol benchmarks
+├── chain/                           # Blockchain chain management
+│   ├── state/                       # Chain state management
+│   └── storage/                     # Storage layer (LevelDB, etc.)
+├── common/                          # Common utilities and libraries
+│   ├── crypto/                      # Cryptographic functions
+│   ├── lru/                         # LRU cache implementation
+│   ├── proto/                       # Protocol buffer definitions
+│   ├── test/                        # Testing utilities
+│   └── utils/                       # General utilities
+├── ecosystem/                       # Ecosystem components (git subtrees)
+│   ├── cache/                       # Caching implementations
+│   │   ├── resilient-node-cache/    # Node.js caching
+│   │   └── resilient-python-cache/  # Python caching
+│   ├── deployment/                  # Deployment and infrastructure
+│   │   ├── ansible/                 # Ansible playbooks
+│   │   └── orbit/                   # Orbit deployment tool
+│   ├── graphql/                     # GraphQL service
+│   ├── monitoring/                  # Monitoring and observability
+│   │   ├── reslens/                 # ResLens monitoring tool
+│   │   └── reslens-middleware/      # ResLens middleware
+│   ├── sdk/                         # Software Development Kits
+│   │   ├── resdb-orm/               # Python ORM
+│   │   ├── resvault-sdk/            # ResVault SDK
+│   │   └── rust-sdk/                # Rust SDK
+│   ├── smart-contract/              # Smart contract ecosystem
+│   │   ├── rescontract/             # ResContract repository
+│   │   ├── resilient-contract-kit/  # Contract development toolkit
+│   │   └── smart-contract-graphql/  # Smart contract GraphQL service
+│   └── tools/                       # Development and operational tools
+│       ├── create-resilient-app/    # App scaffolding tool
+│       └── resvault/                # ResVault tool
+├── executor/                        # Transaction execution engine
+│   ├── common/                      # Common execution utilities
+│   ├── contract/                    # Smart contract execution
+│   ├── kv/                          # Key-value execution
+│   └── utxo/                        # UTXO execution
+├── interface/                       # Client interfaces and APIs
+│   ├── common/                      # Common interface utilities
+│   ├── contract/                    # Smart contract interface
+│   ├── kv/                          # Key-value interface
+│   ├── rdbc/                        # ResilientDB Database Connectivity
+│   └── utxo/                        # UTXO interface
+├── monitoring/                      # Core monitoring components
+├── platform/                        # Core platform components
+│   ├── common/                      # Common platform utilities
+│   ├── config/                      # Configuration management
+│   ├── consensus/                   # Consensus protocols
+│   │   ├── checkpoint/              # Checkpoint management
+│   │   ├── execution/               # Transaction execution
+│   │   ├── ordering/                # Transaction ordering
+│   │   └── recovery/                # Recovery mechanisms
+│   ├── networkstrate/               # Network strategy layer
+│   ├── proto/                       # Protocol definitions
+│   ├── rdbc/                        # RDBC implementation
+│   └── statistic/                   # Statistics and metrics
+├── proto/                           # Protocol buffer definitions
+│   ├── contract/                    # Smart contract protos
+│   ├── kv/                          # Key-value protos
+│   └── utxo/                        # UTXO protos
+├── scripts/                         # Deployment and utility scripts
+│   └── deploy/                      # Deployment scripts
+├── service/                         # Service implementations
+│   ├── contract/                    # Smart contract service
+│   ├── kv/                          # Key-value service
+│   ├── tools/                       # Service tools
+│   ├── utils/                       # Service utilities
+│   └── utxo/                        # UTXO service
+├── third_party/                     # Third-party dependencies
+└── tools/                           # Development and build tools
+```
+
+**Note**: The `ecosystem/` directory contains git subtrees for ecosystem components. You can clone the repository without ecosystem components for a smaller, faster download. See [ecosystem/README.md](ecosystem/README.md) for details.
+
 ## Build and Deploy ResilientDB
 
 Next, we show how to quickly build ResilientDB and deploy 4 replicas and 1 client proxy on your local machine. The proxy acts as an interface for all the clients. It batches client requests and forwards these batches to the replica designated as the leader. The 4 replicas participate in the PBFT consensus to order and execute these batches. Post execution, they return the response to the leader.

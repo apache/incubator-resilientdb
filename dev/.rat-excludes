@@ -5,7 +5,6 @@
 repositories.bzl
 .gitignore
 .git
-.rat-excludes
 DISCLAIMER-WIP
 CNAME
 WORKSPACE
@@ -17,3 +16,11 @@ build
 Doxyfile
 header
 .*\.sol
+ecosystem/.*\.rat-excludes
+ecosystem/.*\.gitignore
+ecosystem/.*\.bazelrc
+ecosystem/.*\.gitattributes
+ecosystem/.*\.npmrc
+ecosystem/.*\.prettierrc
+ecosystem/.*\.prettierignore
+ecosystem/.*\.licenserc.yaml

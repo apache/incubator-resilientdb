@@ -34,7 +34,6 @@ cc_library(
     name = "py_verificator",
     srcs = ["py_verificator.cpp"],
     hdrs = ["py_verificator.h"],
-    tags = ["manual"],
     deps = [
         "@com_resdb_nexres//common:comm",
         "@pybind11//:pybind11_embed",
