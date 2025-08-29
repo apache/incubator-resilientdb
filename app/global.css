@@ -71,16 +71,7 @@
     color: rgba(255, 255, 255, 0.8) !important;
   }
 
-  .nextra-footer a,
-  footer a {
-    color: #f783ac !important;
-    transition: color 0.2s ease !important;
-  }
 
-  .nextra-footer a:hover,
-  footer a:hover {
-    color: #f56565 !important;
-  }
 
   /* Force override all Nextra backgrounds */
 [class*="nextra"] {

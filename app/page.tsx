@@ -19,7 +19,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Container, 
   Title, 
@@ -94,6 +94,7 @@ export default function ResilientDBLanding() {
   const [typewriterText, setTypewriterText] = useState('');
   const [currentLine, setCurrentLine] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(Math.floor((ecosystemProjects.length - 3) / 2));
+  const terminalRef = useRef<HTMLPreElement>(null);
   
   const terminalLines = [
     '🔗 ResilientDB Node Dependencies:',
@@ -114,6 +115,13 @@ export default function ResilientDBLanding() {
       return () => clearTimeout(timer);
     }
   }, [currentLine, terminalLines]);
+
+  // Auto-scroll to bottom when text updates
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [typewriterText]);
 
   const cardWidth = 320;
   const canGoNext = currentIndex < ecosystemProjects.length - 3;
@@ -288,11 +296,26 @@ export default function ResilientDBLanding() {
               <Text 
                 component={Link} 
                 href="https://resilientdb.com/" 
-                c="pink"
-                td="underline"
                 style={{ 
-                  transition: 'color 0.2s ease',
-                  cursor: 'pointer'
+                  color: '#51cf66',
+                  textDecoration: 'none',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  background: 'rgba(81, 207, 102, 0.1)',
+                  border: '1px solid rgba(81, 207, 102, 0.2)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(81, 207, 102, 0.2)';
+                  e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(81, 207, 102, 0.1)';
+                  e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.2)';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 the official website
@@ -382,6 +405,7 @@ export default function ResilientDBLanding() {
           </Group>
           
           <Box 
+            ref={terminalRef}
             component="pre"
             style={{
               color: '#51cf66',
@@ -389,8 +413,13 @@ export default function ResilientDBLanding() {
               fontSize: '0.875rem',
               lineHeight: 1.6,
               whiteSpace: 'pre-wrap',
-              minHeight: '200px',
-              margin: 0
+              height: '250px',
+              maxHeight: '250px',
+              overflowY: 'auto',
+              margin: 0,
+              padding: '1rem',
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#373a40 #1a1b23'
             }}
           >
             {typewriterText}
@@ -411,14 +440,29 @@ export default function ResilientDBLanding() {
             <Text 
               component={Link}
               href="https://github.com/ResilientApp"
-              c="pink"
-              td="underline"
               style={{ 
-                transition: 'color 0.2s ease',
+                color: '#51cf66',
+                textDecoration: 'none',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                background: 'rgba(81, 207, 102, 0.1)',
+                border: '1px solid rgba(81, 207, 102, 0.2)',
+                transition: 'all 0.3s ease',
                 cursor: 'pointer',
+                fontWeight: 500,
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '6px'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(81, 207, 102, 0.2)';
+                e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.4)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(81, 207, 102, 0.1)';
+                e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.2)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               Visit the ResilientDB Hub for more projects

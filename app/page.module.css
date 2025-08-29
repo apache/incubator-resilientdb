@@ -180,8 +180,32 @@
     font-size: 0.875rem;
     line-height: 1.6;
     white-space: pre-wrap;
-    min-height: 200px;
+    height: 250px;
+    max-height: 250px;
+    overflow-y: auto;
     margin: 0;
+    padding: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--mantine-color-dark-6) var(--mantine-color-dark-9);
+  }
+
+  /* Custom scrollbar styles for webkit browsers */
+  .terminalContent::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .terminalContent::-webkit-scrollbar-track {
+    background: var(--mantine-color-dark-9);
+    border-radius: 4px;
+  }
+
+  .terminalContent::-webkit-scrollbar-thumb {
+    background: var(--mantine-color-dark-6);
+    border-radius: 4px;
+  }
+
+  .terminalContent::-webkit-scrollbar-thumb:hover {
+    background: var(--mantine-color-dark-5);
   }
   
   .carouselContainer {
