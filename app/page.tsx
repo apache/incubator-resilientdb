@@ -299,23 +299,17 @@ export default function ResilientDBLanding() {
                 style={{ 
                   color: '#51cf66',
                   textDecoration: 'none',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  background: 'rgba(81, 207, 102, 0.1)',
-                  border: '1px solid rgba(81, 207, 102, 0.2)',
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
                   fontWeight: 500
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(81, 207, 102, 0.2)';
-                  e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.4)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.color = '#40c057';
+                  e.currentTarget.style.textShadow = '0 1px 2px rgba(81, 207, 102, 0.3)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(81, 207, 102, 0.1)';
-                  e.currentTarget.style.borderColor = 'rgba(81, 207, 102, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.color = '#51cf66';
+                  e.currentTarget.style.textShadow = 'none';
                 }}
               >
                 the official website
