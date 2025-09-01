@@ -191,7 +191,7 @@ export class LlamaService {
       } catch {
         console.log("No cache found");
       }
-      if (cacheExists) {
+      if (cacheExists || process.env.VERCEL) {
         cache = JSON.parse(await fs.readFile(PARSING_CACHE, "utf-8"));
       }
 
@@ -203,7 +203,7 @@ export class LlamaService {
 
       const documents: Document[] = [];
       for (const file of filePaths) {
-        if (!cache[file] || forceReingestion) {
+        if (!process.env.VERCEL && (!cache[file] || forceReingestion)) {
           if (forceReingestion && cache[file]) {
             console.log(`Force re-ingesting cached file: ${file}`);
           }
