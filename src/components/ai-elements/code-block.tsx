@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { CheckIcon, CopyIcon } from 'lucide-react';
 import type { ComponentProps, HTMLAttributes, ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -8,8 +10,6 @@ import {
   oneDark,
   oneLight,
 } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 
 type CodeBlockContextType = {
   code: string;
@@ -37,7 +37,7 @@ export const CodeBlock = ({
   <CodeBlockContext.Provider value={{ code }}>
     <div
       className={cn(
-        'relative w-full overflow-hidden rounded-md border bg-background text-foreground',
+        'relative w-full overflow-x-auto rounded-md border bg-background text-foreground',
         className,
       )}
       {...props}
@@ -52,6 +52,8 @@ export const CodeBlock = ({
             fontSize: '0.875rem',
             background: 'hsl(var(--background))',
             color: 'hsl(var(--foreground))',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
           }}
           showLineNumbers={showLineNumbers}
           lineNumberStyle={{
@@ -62,7 +64,9 @@ export const CodeBlock = ({
           codeTagProps={{
             className: 'font-mono text-sm',
           }}
-          className="dark:hidden overflow-hidden"
+          className="dark:hidden"
+          wrapLines={true}
+          wrapLongLines={true}
         >
           {code}
         </SyntaxHighlighter>
@@ -75,6 +79,8 @@ export const CodeBlock = ({
             fontSize: '0.875rem',
             background: 'hsl(var(--background))',
             color: 'hsl(var(--foreground))',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
           }}
           showLineNumbers={showLineNumbers}
           lineNumberStyle={{
@@ -85,7 +91,9 @@ export const CodeBlock = ({
           codeTagProps={{
             className: 'font-mono text-sm',
           }}
-          className="hidden dark:block overflow-hidden"
+          className="hidden dark:block"
+          wrapLines={true}
+          wrapLongLines={true}
         >
           {code}
         </SyntaxHighlighter>

@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MultiDocumentSourceBadge } from "@/components/ui/document-source-badge";
 import { Loader } from "@/components/ui/loader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TabsContent, TabsTrigger } from "@/components/ui/tabs";
@@ -48,46 +47,7 @@ const useCopyToClipboard = () => {
   return { copyToClipboard, copiedStates };
 };
 
-const TopicSection: React.FC<CodeSectionProps> = ({ generation }) => {
-  // Only render if we have content or are currently streaming this section
-  if (
-    !generation.topic &&
-    !(generation.isStreaming && generation.currentSection === "topic")
-  ) {
-    return null;
-  }
-
-  return (
-    <div className="w-full min-w-0 mb-2">
-      <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-        <Zap className="h-3 w-3" />
-        Topic
-        <MultiDocumentSourceBadge
-          sources={generation.sources || []}
-          maxVisible={3}
-          variant="outline"
-          size="sm"
-          showIcon={true}
-          className="gap-1"
-        />
-        {generation.isStreaming && generation.currentSection === "topic" && (
-          <Loader size="sm" className="text-yellow-500 w-3 h-3 ml-1" />
-        )}
-      </h3>
-      <div>
-        {generation.topic ? (
-          <span className="font-medium text-foreground">
-            {generation.topic}
-          </span>
-        ) : (
-          <span className="text-muted-foreground italic text-sm">
-            Generating topic...
-          </span>
-        )}
-      </div>
-    </div>
-  );
-};
+// Topic section removed per spec
 
 const QuerySection: React.FC<CodeSectionProps> = ({ generation }) => (
   <div className="w-full min-w-0">
@@ -108,7 +68,7 @@ const ReadingDocumentsSection: React.FC<CodeSectionProps> = ({
     <h3 className="text-sm font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
       <BookOpen className="h-3 w-3" />
       Reading Documents
-      {generation.sources && generation.sources.length == 0 && (
+      {(!generation.sources || generation.sources.length === 0) && (
         <Loader size="sm" className="text-yellow-500 w-3 h-3 ml-1" />
       )}
       {generation.sources && generation.sources.length > 0 && (
@@ -118,23 +78,14 @@ const ReadingDocumentsSection: React.FC<CodeSectionProps> = ({
       )}
     </h3>
     <div>
-      {generation.sources && generation.sources.length === 0 ? (
+      {!generation.sources || generation.sources.length === 0 ? (
         <Loader
           variant="text-shimmer"
           text="Analyzing and ranking document content..."
           size="sm"
           className="italic"
         />
-      ) : generation.currentSection === "reading-documents" ? (
-        <Loader
-          variant="text-shimmer"
-          text="Preparing implementation plan..."
-          size="sm"
-          className="italic"
-        />
-      ) : (
-        <></>
-      )}
+      ) : null}
     </div>
   </div>
 );
@@ -196,8 +147,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({
       className="w-full"
     >
       {/* Plan Section - Only render if content exists or is being generated */}
-      {(generation.plan ||
-        (generation.isStreaming && generation.currentSection === "plan")) && (
+      {(generation.plan || (generation.isStreaming && generation.currentSection === "plan")) && (
         <AccordionItem value="plan">
           <AccordionTrigger className="text-sm font-semibold text-muted-foreground hover:no-underline">
             <div className="flex items-center gap-2">
@@ -258,9 +208,7 @@ const AccordionSections: React.FC<AccordionSectionsProps> = ({
       )}
 
       {/* Implementation Section - Only render if content exists or is being generated */}
-      {(generation.implementation ||
-        (generation.isStreaming &&
-          generation.currentSection === "implementation")) && (
+      {(generation.implementation || (generation.isStreaming && generation.currentSection === "implementation")) && (
         <AccordionItem value="implementation">
           <AccordionTrigger className="text-sm font-semibold text-muted-foreground hover:no-underline">
             <div className="flex items-center gap-2">
@@ -315,8 +263,7 @@ export const CodeGenerationTabs: React.FC<CodeGenerationTabProps> = ({
     <>
       {/* Code Generation Tab Triggers */}
       {codeGenerations.map((generation) => {
-        const displayText =
-          generation.topic || getLanguageLabel(generation.language);
+        const displayText = getLanguageLabel(generation.language);
 
         return (
           <TabsTrigger
@@ -376,7 +323,6 @@ export const CodeGenerationContent: React.FC<CodeGenerationTabProps> = ({
             <div className="p-4 space-y-6 w-full min-w-0">
               <QuerySection generation={generation} />
               <ReadingDocumentsSection generation={generation} />
-              <TopicSection generation={generation} />
               <AccordionSections
                 generation={generation}
                 getLanguageLabel={getLanguageLabel}

@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
-import { parseChainOfThoughtResponse } from "@/lib/code-composer-prompts";
 import { TITLE_MAPPINGS } from "@/lib/constants";
 import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
@@ -365,9 +364,17 @@ function ResearchChatPageContent() {
 
     const decoder = new TextDecoder();
     let buffer = "";
-    let sourceInfo: any = null;
     let fullResponse = "";
     let currentCodeGeneration: string | null = null;
+
+    const isCodeComposerFlow = payload.tool === "code-composer";
+    let phase: "reading-documents" | "plan" | "pseudocode" | "implementation" =
+      "reading-documents";
+    let prevPlainLength = 0;
+    let planText = "";
+    let pseudocodeText = "";
+    let implementationText = "";
+    let hasInitializedCodeGen = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -377,87 +384,46 @@ function ResearchChatPageContent() {
       buffer += chunk;
       fullResponse += chunk;
 
-      // Check if we have source information at the beginning
-      if (buffer.includes("__SOURCE_INFO__") && !sourceInfo) {
-        const sourceInfoMatch = buffer.match(/__SOURCE_INFO__([\s\S]*?)\n\n/);
-        if (sourceInfoMatch) {
-          try {
-            const rawSourceInfo = JSON.parse(sourceInfoMatch[1]);
-
-            sourceInfo = parseSourceInfo(rawSourceInfo);
-
-            buffer = buffer.replace(/__SOURCE_INFO__[\s\S]*?\n\n/, "");
-
-            if (sourceInfo.tool === "code-composer") {
-              if (earlyCodeGenerationId) {
-                currentCodeGeneration = earlyCodeGenerationId;
-
-                setCodeGenerations((prev) =>
-                  prev.map((gen) =>
-                    gen.id === earlyCodeGenerationId
-                      ? {
-                          ...gen,
-                          language: sourceInfo.language || gen.language,
-                          sources: sourceInfo?.sources || [],
-                        }
-                      : gen,
-                  ),
-                );
-              } else {
-                const codeGenId = Date.now().toString();
-                currentCodeGeneration = codeGenId;
-
-                const newCodeGeneration: CodeGeneration = {
-                  id: codeGenId,
-                  language: sourceInfo.language || "ts",
-                  query: payload.query,
-                  topic: "",
-                  plan: "",
-                  pseudocode: "",
-                  implementation: "",
-                  hasStructuredResponse: false,
-                  timestamp: new Date().toISOString(),
-                  isStreaming: true,
-                  currentSection: "reading-documents",
-                  sources: sourceInfo?.sources || [],
-                };
-
-                setCodeGenerations((prev) => [...prev, newCodeGeneration]);
-              }
-
-              setMessages((prev) =>
-                prev.map((msg) =>
-                  msg.id === assistantPlaceholderMessage.id
-                    ? {
-                        ...msg,
-                        content:
-                          "Code generation started. Check the preview panel to see live progress.",
-                        isLoadingPlaceholder: false,
-                        sources: sourceInfo?.sources || [],
-                        citations: (() => {
-                          const cit: Record<
-                            number,
-                            import("@/components/ui/citation-badge").CitationData
-                          > = {};
-                          if (sourceInfo?.citations) {
-                            Object.values(sourceInfo.citations).forEach(
-                              (c: any) => {
-                                cit[c.id] = c;
-                              },
-                            );
-                          }
-                          return Object.keys(cit).length ? cit : undefined;
-                        })(),
-                      }
-                    : msg,
-                ),
-              );
-              continue;
-            }
-          } catch (error) {
-            console.error("Failed to parse source info:", error);
-          }
+      // Initialize code generation entry for code-composer flows
+      if (isCodeComposerFlow && !hasInitializedCodeGen) {
+        hasInitializedCodeGen = true;
+        if (earlyCodeGenerationId) {
+          currentCodeGeneration = earlyCodeGenerationId;
+        } else {
+          const codeGenId = Date.now().toString();
+          currentCodeGeneration = codeGenId;
+          const newCodeGeneration: CodeGeneration = {
+            id: codeGenId,
+            language: payload.language || "ts",
+            query: payload.query,
+            topic: "",
+            plan: "",
+            pseudocode: "",
+            implementation: "",
+            hasStructuredResponse: false,
+            timestamp: new Date().toISOString(),
+            isStreaming: true,
+            currentSection: "reading-documents",
+            sources: [],
+          };
+          setCodeGenerations((prev) => [...prev, newCodeGeneration]);
         }
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantPlaceholderMessage.id
+              ? {
+                  ...msg,
+                  content:
+                    "Code generation started. Check the preview panel to see live progress. You may continue chatting after the code generation is complete.",
+                  isLoadingPlaceholder: false,
+                }
+              : msg,
+          ),
+        );
+
+        setMode("research");
+        setTool("default");
       }
 
       // Extract incremental tool call parts and capture insertion indices for interleaving
@@ -491,6 +457,47 @@ function ResearchChatPageContent() {
 
             const part = JSON.parse(payloadJson);
 
+            if (isCodeComposerFlow) {
+              if (part.type === "handOff" && part.state === "input-available") {
+                const toAgent = part.input?.toAgent;
+                if (toAgent === "PseudoCodeAgent") {
+                  phase = "pseudocode";
+                } else if (toAgent === "CodeAgent") {
+                  phase = "implementation";
+                }
+              }
+              if (
+                (part.type === "search_documents" || part.type === "retrieve_documents") &&
+                part.state === "output-available" &&
+                phase === "reading-documents"
+              ) {
+                phase = "plan";
+                // Mark documents as processed in code generation panel
+                if (currentCodeGeneration) {
+                  setCodeGenerations((prev) =>
+                    prev.map((gen) =>
+                      gen.id === currentCodeGeneration
+                        ? {
+                            ...gen,
+                            sources: (payload.documentPaths || []).map((p) => {
+                              const normalized = p.replace(/^documents\//, "");
+                              return {
+                                path: normalized,
+                                name: normalized,
+                                displayTitle: TITLE_MAPPINGS[normalized] || normalized,
+                              };
+                            }),
+                          }
+                        : gen,
+                    ),
+                  );
+                }
+              }
+              // Do not render tool inserts in chat for code generation mode
+              continue;
+            }
+
+            // Regular research mode: show tool inserts inline
             setMessages((prev: Message[]) =>
               prev.map((msg): Message => {
                 if (msg.id !== assistantPlaceholderMessage.id) return msg;
@@ -522,26 +529,44 @@ function ResearchChatPageContent() {
         }
       }
 
-      // Handle code composer live streaming
-      if (sourceInfo?.tool === "code-composer" && currentCodeGeneration) {
-        const currentSection = getCurrentSection(fullResponse);
-        const { topic, plan, pseudocode, implementation } =
-          extractSectionsFromStream(fullResponse);
+      // Handle code composer live streaming into the code generation tab
+      if (isCodeComposerFlow && currentCodeGeneration) {
+        let safeBuffer = buffer;
+        const tailIdx2 = safeBuffer.lastIndexOf("__TOOL_CALL__");
+        if (tailIdx2 !== -1) {
+          const tail2 = safeBuffer.slice(tailIdx2);
+          if (!/\n\n$/.test(tail2)) {
+            safeBuffer = safeBuffer.slice(0, tailIdx2);
+          }
+        }
 
-        setCodeGenerations((prev) =>
-          prev.map((gen) =>
-            gen.id === currentCodeGeneration
-              ? {
-                  ...gen,
-                  topic,
-                  plan,
-                  pseudocode,
-                  implementation,
-                  currentSection,
-                }
-              : gen,
-          ),
-        );
+        const newText = safeBuffer.slice(prevPlainLength);
+        if (newText) {
+          if (phase === "plan") {
+            planText += newText;
+          } else if (phase === "pseudocode") {
+            pseudocodeText += newText;
+          } else if (phase === "implementation") {
+            implementationText += newText;
+          }
+
+          const topicCandidate = planText.split("\n").map((s) => s.trim()).find((s) => s.length > 0) || "";
+          setCodeGenerations((prev) =>
+            prev.map((gen) =>
+              gen.id === currentCodeGeneration
+                ? {
+                    ...gen,
+                    topic: topicCandidate,
+                    plan: planText,
+                    pseudocode: pseudocodeText,
+                    implementation: implementationText,
+                    currentSection: phase,
+                  }
+                : gen,
+            ),
+          );
+        }
+        prevPlainLength = safeBuffer.length;
         continue;
       }
 
@@ -560,7 +585,7 @@ function ResearchChatPageContent() {
       }
 
       // Update message content for non-code-composer tools (regular chat)
-      if (!sourceInfo || sourceInfo?.tool !== "code-composer") {
+      if (payload.tool !== "code-composer") {
         // Prevent leaking control delimiters to UI: strip any unterminated control block tail
         let safeBuffer = buffer;
         const tailIdx = safeBuffer.lastIndexOf("__TOOL_CALL__");
@@ -577,71 +602,37 @@ function ResearchChatPageContent() {
                   ...msg,
                   content: safeBuffer,
                   isLoadingPlaceholder: false,
-                  sources: sourceInfo?.sources || [],
-                  citations: (() => {
-                    const cit: Record<
-                      number,
-                      import("@/components/ui/citation-badge").CitationData
-                    > = {};
-                    if (sourceInfo?.citations) {
-                      Object.values(sourceInfo.citations).forEach((c: any) => {
-                        cit[c.id] = c;
-                      });
-                    }
-                    return Object.keys(cit).length ? cit : undefined;
-                  })(),
+                  sources: [],
+                  citations: undefined,
                 }
               : msg,
           ),
         );
       }
     }
-
-    if (sourceInfo?.tool === "code-composer") {
-      try {
-        const parsed = parseChainOfThoughtResponse(fullResponse);
-
-        let cleanImplementation = parsed.implementation;
-        if (cleanImplementation) {
-          cleanImplementation = cleanImplementation
-            .replace(/__CODE_COMPOSER_META__[\s\S]*$/, "")
-            .trim();
-
-          const lastCodeBlockEnd = cleanImplementation.lastIndexOf("```");
-          if (lastCodeBlockEnd !== -1) {
-            const afterCodeBlock = cleanImplementation
-              .substring(lastCodeBlockEnd + 3)
-              .trim();
-            if (
-              afterCodeBlock.length > 50 &&
-              afterCodeBlock.includes("This implementation")
-            ) {
-              cleanImplementation = cleanImplementation
-                .substring(0, lastCodeBlockEnd + 3)
-                .trim();
-            }
-          }
-        }
-
-        setCodeGenerations((prev) =>
-          prev.map((gen) =>
-            gen.isStreaming
-              ? {
-                  ...gen,
-                  topic: parsed.topic,
-                  plan: parsed.plan,
-                  pseudocode: parsed.pseudocode,
-                  implementation: cleanImplementation,
-                  hasStructuredResponse: parsed.hasStructuredResponse,
-                  isStreaming: false,
-                  currentSection: undefined,
-                }
-              : gen,
-          ),
-        );
-      } catch (error) {
-        console.error("Failed to parse code generation:", error);
-      }
+    if (isCodeComposerFlow && currentCodeGeneration) {
+      setCodeGenerations((prev) =>
+        prev.map((gen) =>
+          gen.id === currentCodeGeneration
+            ? {
+                ...gen,
+                topic:
+                  planText
+                    .split("\n")
+                    .map((s) => s.trim())
+                    .find((s) => s.length > 0) || "",
+                plan: planText,
+                pseudocode: pseudocodeText,
+                implementation: implementationText,
+                hasStructuredResponse: Boolean(
+                  planText || pseudocodeText || implementationText,
+                ),
+                isStreaming: false,
+                currentSection: undefined,
+              }
+            : gen,
+        ),
+      );
     }
   };
 
