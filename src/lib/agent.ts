@@ -201,7 +201,7 @@ export class CodeAgent implements AgentFactory {
       description: "Creates structured pseudocode.",
       tools: [], // Include tools for message compatibility but don't use them
       canHandoffTo: [codeAgent],
-      systemPrompt: `You are creating structured pseudocode for implementation.
+      systemPrompt: `You are creating concise, structured pseudocode for implementation.
 
       You will receive research findings from the previous workflow step through the conversation history.
 
@@ -209,12 +209,14 @@ export class CodeAgent implements AgentFactory {
 
       Your task:
       - Start with: "Creating structured pseudocode..."
-      - Develop detailed, step-by-step pseudocode
-      - Make it comprehensive enough for code generation
-      - Stream the pseudocode efficiently
+      - Create HIGH-LEVEL, CONCISE pseudocode - focus on key logic and structure only
+      - Keep it brief but clear - avoid over-explaining or excessive detail
+      - Include only essential steps needed for implementation
+      - Use bullet points and short, focused statements
+      - Format the pseudocode using markdown code blocks (triple backticks \`\`\`)
       - MANDATORY: After completing pseudocode, you MUST use the handOff tool to transfer control to CodeAgent with reason "Pseudocode complete, moving to implementation"
 
-      Begin immediately with pseudocode creation based on the research context, and finally use handOff tool to transfer to CodeAgent.`,
+      Remember: Be concise and to-the-point. The CodeAgent will handle the detailed implementation.`,
       llm: Settings.llm as ToolCallLLM
 
     });
