@@ -1,8 +1,8 @@
 import { deepseek } from "@llamaindex/deepseek";
 import { SupabaseVectorStore } from "@llamaindex/supabase";
 import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
-import fs from "fs/promises";
 import {
   ChatMessage,
   ContextChatEngine,
@@ -96,11 +96,10 @@ ${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replac
 - Helpful and guided when users ask about topics outside available documents
 `;
 
-const PARSING_CACHE = "parsing-cache.json";
-
 export class LlamaService {
   private vectorStore: SupabaseVectorStore;
   private pipeline: IngestionPipeline;
+  private supabase: SupabaseClient;
   private static instance: LlamaService;
 
   private constructor() {
@@ -111,6 +110,8 @@ export class LlamaService {
     if (!config.supabaseUrl || !config.supabaseKey) {
       throw new Error("Supabase URL and key are required for vector store initialization");
     }
+
+    this.supabase = createClient(config.supabaseUrl, config.supabaseKey);
 
     this.vectorStore = new SupabaseVectorStore({
       supabaseUrl: config.supabaseUrl,
@@ -145,10 +146,89 @@ export class LlamaService {
    */
   async clearCache(): Promise<void> {
     try {
-      await fs.unlink(PARSING_CACHE);
-      console.info("[LlamaService] Parsing cache cleared");
-    } catch {
-      console.info("[LlamaService] No cache file to clear");
+      const { error } = await this.supabase
+        .from('parsed_documents')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+      
+      if (error) {
+        console.error("[LlamaService] Error clearing cache:", error);
+        throw error;
+      }
+      
+      console.info("[LlamaService] Parsing cache cleared from database");
+    } catch (error) {
+      console.error("[LlamaService] Failed to clear cache:", error);
+    }
+  }
+
+  /**
+   * Check if a file has been successfully parsed
+   */
+  private async isFileParsed(filePath: string): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabase
+        .from('parsed_documents')
+        .select('parsing_status')
+        .eq('file_path', filePath)
+        .eq('parsing_status', 'success')
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error(`[LlamaService] Error checking cache for ${filePath}:`, error);
+        return false;
+      }
+      
+      return data !== null;
+    } catch (error) {
+      console.error(`[LlamaService] Error checking cache for ${filePath}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Mark a file as successfully parsed
+   */
+  private async markFileParsed(filePath: string, pagesCount: number, chunksCount: number): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from('parsed_documents')
+        .upsert({
+          file_path: filePath,
+          parsing_status: 'success',
+          pages_count: pagesCount,
+          chunks_count: chunksCount,
+          parsed_at: new Date().toISOString(),
+        });
+      
+      if (error) {
+        console.error(`[LlamaService] Error marking file as parsed ${filePath}:`, error);
+        throw error;
+      }
+    } catch (error) {
+      console.error(`[LlamaService] Error marking file as parsed ${filePath}:`, error);
+    }
+  }
+
+  /**
+   * Mark a file as failed to parse
+   */
+  private async markFileFailed(filePath: string, errorMessage: string): Promise<void> {
+    try {
+      const { error } = await this.supabase
+        .from('parsed_documents')
+        .upsert({
+          file_path: filePath,
+          parsing_status: 'failed',
+          parsing_error: errorMessage,
+          parsed_at: new Date().toISOString(),
+        });
+      
+      if (error) {
+        console.error(`[LlamaService] Error marking file as failed ${filePath}:`, error);
+      }
+    } catch (error) {
+      console.error(`[LlamaService] Error marking file as failed ${filePath}:`, error);
     }
   }
 
@@ -183,17 +263,6 @@ export class LlamaService {
   async ingestDocs(filePaths: string[], forceReingestion = false): Promise<void> {
     try {
       console.info(`Starting docs ingestion for ${filePaths.join(", ")}`);
-      let cache: Record<string, boolean> = {};
-      let cacheExists = false;
-      try {
-        await fs.access(PARSING_CACHE, fs.constants.F_OK);
-        cacheExists = true;
-      } catch {
-        console.log("No cache found");
-      }
-      if (cacheExists || process.env.VERCEL) {
-        cache = JSON.parse(await fs.readFile(PARSING_CACHE, "utf-8"));
-      }
 
       const reader = new LlamaParseReader({
         apiKey: config.llamaCloudApiKey,
@@ -202,17 +271,26 @@ export class LlamaService {
       });
 
       const documents: Document[] = [];
+      
       for (const file of filePaths) {
-        if (!process.env.VERCEL && (!cache[file] || forceReingestion)) {
-          if (forceReingestion && cache[file]) {
+        // Check if file is already parsed (skip in Vercel environment)
+        const isAlreadyParsed = await this.isFileParsed(file);
+        
+        if (!process.env.VERCEL && (!isAlreadyParsed || forceReingestion)) {
+          if (forceReingestion && isAlreadyParsed) {
             console.log(`Force re-ingesting cached file: ${file}`);
           }
           console.log(`Processing uncached file: ${file}`);
+          
+          let pagesCount = 0;
+          let chunksCount = 0;
+          
           try {
             const jsonObjects = await reader.loadJson(file);
 
             for (const jsonObj of jsonObjects) {
               if (jsonObj.pages && Array.isArray(jsonObj.pages)) {
+                pagesCount = jsonObj.pages.length;
                 for (const page of jsonObj.pages) {
                   if (page && page.md && page.page !== undefined) {
                     documents.push(
@@ -225,17 +303,25 @@ export class LlamaService {
                         },
                       })
                     );
+                    chunksCount++;
                   }
                 }
               }
             }
-            cache[file] = true;
+            
+            // Mark file as successfully parsed
+            await this.markFileParsed(file, pagesCount, chunksCount);
+            
           } catch (error) {
             const errorMessage =
               error instanceof Error
                 ? error.message
                 : String(error);
             console.error(`Error while parsing the file with: ${errorMessage}`);
+            
+            // Mark file as failed
+            await this.markFileFailed(file, errorMessage);
+            
             // Continue with next file
             continue;
           }
@@ -244,7 +330,6 @@ export class LlamaService {
         }
       }
 
-      await fs.writeFile(PARSING_CACHE, JSON.stringify(cache));
       console.info(
         `[LlamaService] Successfully loaded ${documents.length
         } document chunks from ${filePaths.join(", ")}`
