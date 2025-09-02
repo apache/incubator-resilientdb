@@ -45,7 +45,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
 import { TITLE_MAPPINGS } from "@/lib/constants";
-import { cleanUpImplementation, formatToolHeader } from "@/lib/utils";
+import { formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -77,78 +77,7 @@ interface Message {
   toolInserts?: { index: number; part: { id?: string; type: string; state: "input-streaming" | "input-available" | "output-available" | "output-error"; input?: unknown } }[];
 }
 
-// Helper functions for code composer streaming
-const getCurrentSection = (
-  fullResponse: string,
-): "reading-documents" | "topic" | "plan" | "pseudocode" | "implementation" => {
-  const topicIndex = fullResponse.indexOf("## TOPIC");
-  const planIndex = fullResponse.indexOf("## PLAN");
-  const pseudocodeIndex = fullResponse.indexOf("## PSEUDOCODE");
-  const implementationIndex = fullResponse.indexOf("## IMPLEMENTATION");
 
-  // If we haven't received any structured content yet, we're still reading documents
-  if (
-    topicIndex === -1 &&
-    planIndex === -1 &&
-    pseudocodeIndex === -1 &&
-    implementationIndex === -1
-  ) {
-    return "reading-documents";
-  }
-
-  if (
-    implementationIndex !== -1 &&
-    fullResponse.length > implementationIndex + 18
-  ) {
-    return "implementation";
-  }
-  if (pseudocodeIndex !== -1 && fullResponse.length > pseudocodeIndex + 15) {
-    return "pseudocode";
-  }
-  if (planIndex !== -1 && fullResponse.length > planIndex + 8) {
-    return "plan";
-  }
-  return "topic";
-};
-
-const extractSectionsFromStream = (fullResponse: string) => {
-  const topicStart = fullResponse.indexOf("## TOPIC");
-  const planStart = fullResponse.indexOf("## PLAN");
-  const pseudocodeStart = fullResponse.indexOf("## PSEUDOCODE");
-  const implementationStart = fullResponse.indexOf("## IMPLEMENTATION");
-
-  let topic = "";
-  let plan = "";
-  let pseudocode = "";
-  let implementation = "";
-
-  if (topicStart !== -1) {
-    const topicEnd = planStart !== -1 ? planStart : fullResponse.length;
-    topic = fullResponse.substring(topicStart + 9, topicEnd).trim();
-  }
-
-  if (planStart !== -1) {
-    const planEnd =
-      pseudocodeStart !== -1 ? pseudocodeStart : fullResponse.length;
-    plan = fullResponse.substring(planStart + 8, planEnd).trim();
-  }
-
-  if (pseudocodeStart !== -1) {
-    const pseudocodeEnd =
-      implementationStart !== -1 ? implementationStart : fullResponse.length;
-    pseudocode = fullResponse
-      .substring(pseudocodeStart + 15, pseudocodeEnd)
-      .trim();
-  }
-
-  if (implementationStart !== -1) {
-    implementation = fullResponse.substring(implementationStart + 18).trim();
-
-    implementation = cleanUpImplementation(implementation);
-  }
-
-  return { topic, plan, pseudocode, implementation };
-};
 
 function useSessionId() {
   const router = useRouter();
@@ -265,56 +194,7 @@ function ResearchChatPageContent() {
     prepareDocumentIndex();
   }, [selectedDocuments]);
 
-  function parseSourceInfo(sourceInfoJson: any) {
-    // Check if it's already formatted (object with sources/citations) or raw array
-    if (Array.isArray(sourceInfoJson)) {
-      const sourceMap = new Map<
-        string,
-        { path: string; name: string; displayTitle: string }
-      >();
-      const citationMap: Record<
-        number,
-        import("@/components/ui/citation-badge").CitationData
-      > = {};
-      let citationId = 1;
 
-      sourceInfoJson.forEach((metadata: any) => {
-        if (!metadata?.source_document) {
-          console.warn("Missing source_document in metadata:", metadata);
-          return;
-        }
-
-        const sourceDocument = metadata.source_document.replace(
-          "documents/",
-          "",
-        );
-        const displayTitle = TITLE_MAPPINGS[sourceDocument] || sourceDocument;
-
-        if (!sourceMap.has(sourceDocument)) {
-          sourceMap.set(sourceDocument, {
-            path: sourceDocument,
-            name: sourceDocument,
-            displayTitle,
-          });
-        }
-
-        citationMap[citationId] = {
-          id: citationId,
-          displayTitle,
-          page: metadata.page_label || metadata.page || 0,
-        };
-        citationId++;
-      });
-
-      return {
-        sources: Array.from(sourceMap.values()),
-        citations: citationMap,
-      };
-    } else {
-      // Already formatted object
-      return sourceInfoJson;
-    }
-  }
 
   const handleCodeComposerStream = async (
     response: Response,
@@ -364,7 +244,6 @@ function ResearchChatPageContent() {
 
     const decoder = new TextDecoder();
     let buffer = "";
-    let fullResponse = "";
     let currentCodeGeneration: string | null = null;
 
     const isCodeComposerFlow = payload.tool === "code-composer";
@@ -382,7 +261,6 @@ function ResearchChatPageContent() {
 
       const chunk = decoder.decode(value, { stream: true });
       buffer += chunk;
-      fullResponse += chunk;
 
       // Initialize code generation entry for code-composer flows
       if (isCodeComposerFlow && !hasInitializedCodeGen) {
