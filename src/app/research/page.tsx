@@ -466,10 +466,30 @@ function ResearchChatPageContent() {
         let match: RegExpMatchArray | null;
         while ((match = buffer.match(regex))) {
           try {
-            const part = JSON.parse(match[1]);
-            // Remove marker from buffer first, then use the resulting length as insertion index
-            buffer = buffer.replace(regex, "");
-            const insertIndex = buffer.length;
+            const fullMatch = match[0];
+            const payloadJson = match[1];
+            const matchIndex = (match as unknown as { index?: number }).index ?? buffer.indexOf("__TOOL_CALL__");
+
+            // Compute insertion index at a safe boundary to avoid mid-word splits
+            const before = buffer.slice(0, matchIndex);
+            const after = buffer.slice(matchIndex + fullMatch.length);
+            const joined = before + after;
+            const candidateIndex = before.length; // original position of marker
+            const isAlphaNum = (c: string) => /[A-Za-z0-9]/.test(c);
+            const prevChar = candidateIndex > 0 ? joined[candidateIndex - 1] : "";
+            const nextChar = joined[candidateIndex] ?? "";
+            let insertIndex = candidateIndex;
+            if (isAlphaNum(prevChar) && isAlphaNum(nextChar)) {
+              // Advance to the end of the current word to avoid splitting it
+              while (insertIndex < joined.length && isAlphaNum(joined[insertIndex])) {
+                insertIndex += 1;
+              }
+            }
+
+            // Remove the matched control block
+            buffer = before + after;
+
+            const part = JSON.parse(payloadJson);
 
             setMessages((prev: Message[]) =>
               prev.map((msg): Message => {
@@ -1143,7 +1163,6 @@ function ResearchChatPageContent() {
                             <PromptInputModelSelectContent>
                               {Object.entries(modeOptions).map(([id, name]) => (
                                 <PromptInputModelSelectItem 
-                                  disabled={id === "code" && process.env.NODE_ENV === 'development'} 
                                   key={id} 
                                   value={id}
                                 >
