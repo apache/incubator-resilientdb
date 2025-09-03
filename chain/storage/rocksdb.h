@@ -23,30 +23,26 @@
 #include <optional>
 #include <string>
 
-#include "chain/storage/proto/leveldb_config.pb.h"
+#include "chain/storage/proto/rocksdb_config.pb.h"
 #include "chain/storage/storage.h"
-#include "common/lru/lru_cache.h"
-#include "leveldb/db.h"
-#include "leveldb/filter_policy.h"
-#include "leveldb/write_batch.h"
-#include "platform/statistic/stats.h"
+#include "rocksdb/db.h"
+#include "rocksdb/write_batch.h"
 
 namespace resdb {
 namespace storage {
 
-std::unique_ptr<Storage> NewResLevelDB(
-    const std::string& path, std::optional<LevelDBInfo> config = std::nullopt);
-std::unique_ptr<Storage> NewResLevelDB(
-    std::optional<LevelDBInfo> config = std::nullopt);
+std::unique_ptr<Storage> NewResRocksDB(
+    const std::string& path, std::optional<RocksDBInfo> config = std::nullopt);
+std::unique_ptr<Storage> NewResRocksDB(
+    std::optional<RocksDBInfo> config = std::nullopt);
 
-class ResLevelDB : public Storage {
+class ResRocksDB : public Storage {
  public:
-  ResLevelDB(std::optional<LevelDBInfo> config_data = std::nullopt);
-
-  virtual ~ResLevelDB();
+  ResRocksDB(std::optional<RocksDBInfo> config_data = std::nullopt);
+  virtual ~ResRocksDB();
   int SetValue(const std::string& key, const std::string& value) override;
-  int DelValue(const std::string& key) override;
   std::string GetValue(const std::string& key) override;
+  int DelValue(const std::string& key) override;
   std::string GetAllValues(void) override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
@@ -61,19 +57,19 @@ class ResLevelDB : public Storage {
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;
 
-  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
-
-  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
-
   // Return a list of <value, version>
   std::vector<std::pair<std::string, int>> GetHistory(const std::string& key,
                                                       int min_version,
                                                       int max_version) override;
-
   std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int top_number) override;
 
-  bool UpdateMetrics();
+  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
+
+  std::vector<std::string> GetKeyRangeByPrefix(
+      const std::string& start_prefix, const std::string& end_prefix) override;
+
+
 
   bool Flush() override;
 
@@ -81,15 +77,11 @@ class ResLevelDB : public Storage {
   void CreateDB(const std::string& path);
 
  private:
-  std::unique_ptr<leveldb::DB> db_ = nullptr;
-  ::leveldb::WriteBatch batch_;
+  std::unique_ptr<::rocksdb::DB> db_ = nullptr;
+  ::rocksdb::WriteBatch batch_;
+  unsigned int num_threads_ = 1;
   unsigned int write_buffer_size_ = 64 << 20;
   unsigned int write_batch_size_ = 1;
-
- protected:
-  Stats* global_stats_ = nullptr;
-  const leveldb::FilterPolicy* filter_policy_ = nullptr;
-  std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
 };
 
 }  // namespace storage

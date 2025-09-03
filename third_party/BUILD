@@ -42,6 +42,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rocksdb",
+    # tags = ["manual"],
+    deps = [
+        "@com_github_facebook_rocksdb//:rocksdb"
+    ],
+)
+
+make(
+    name = "zstd",
+    lib_source = "@com_facebook_zstd//:all_srcs",
+    out_static_libs = ["libzstd.a"],
+)
+
 load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 
 cc_library(

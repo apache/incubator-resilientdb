@@ -82,7 +82,6 @@ class KVExecutor : public TransactionManager {
   int UpdateCompositeKey(const std::string& primary_key, const std::string& field_name, const std::string& old_field_value, const std::string& new_field_value, 
                           CompositeKeyType old_field_type, CompositeKeyType new_field_type);
 
-  int DelVal(const std::string& key);
  private:
   // Simple encoding functions
   std::string EncodeValue(const std::string& value, CompositeKeyType field_type);
@@ -94,6 +93,8 @@ class KVExecutor : public TransactionManager {
   std::string BuildCompositeKey(const std::string& field_name, 
                                 const std::string& encoded_value,
                                 const std::string& primary_key);
+  std::string BuildCompositeKeyPrefix(const std::string& field_name, 
+                                const std::string& encoded_value);
   std::vector<std::string> ExtractPrimaryKeys(const std::vector<std::string>& composite_keys);
 
   std::unique_ptr<Storage> storage_;
@@ -102,6 +103,9 @@ class KVExecutor : public TransactionManager {
   // Composite key configuration
   const std::string composite_key_separator_ = ":";
   const std::string composite_key_prefix_ = "idx";
+
+  //TODO: add protocol versioning support
+  const std::string version_ = "v1";
 };
 
 }  // namespace resdb

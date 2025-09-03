@@ -41,8 +41,11 @@ cc_test(
         ":kv_executor",
         "//chain/storage:memory_db",
         "//chain/storage:leveldb",
+        "//chain/storage:rocksdb",
         "//common/test:test_main",
+        "@com_github_gflags_gflags//:gflags",
     ],
-    timeout = "long",
-    size = "medium",
+    args = ["--storage_types=all"],  # Default to testing all storage types
+    timeout = "short",
+    size = "small",
 )

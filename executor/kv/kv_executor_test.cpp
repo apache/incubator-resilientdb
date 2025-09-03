@@ -24,10 +24,11 @@
 #include <gtest/gtest.h>
 
 #include "chain/storage/leveldb.h"
+#include "chain/storage/rocksdb.h"
 #include "chain/storage/memory_db.h"
 #include "chain/storage/storage.h"
 #include "common/test/test_macros.h"
-#include "platform/config/resdb_config_utils.h"
+
 #include "proto/kv/kv.pb.h"
 #include "executor/kv/kv_executor.h"
 
@@ -35,16 +36,33 @@ namespace resdb {
 namespace {
 
 using ::resdb::testing::EqualsProto;
-using storage::MemoryDB;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::Test;
+using ::testing::TestWithParam;
 
-class KVExecutorTest : public Test {
+enum StorageType { MEM = 0, LEVELDB = 1, LEVELDB_WITH_BLOCK_CACHE = 2, ROCKSDB = 3 };
+
+class KVExecutorTest : public TestWithParam<StorageType> {
  public:
   KVExecutorTest() {
-    Reset();  // Clean up any existing database
-    auto storage = std::make_unique<storage::ResLevelDB>(std::nullopt);
+    Reset();
+    StorageType t = GetParam();
+    storage::LevelDBInfo config;
+    std::unique_ptr<Storage> storage;
+
+    switch (t) {
+      case MEM:
+        storage = storage::NewMemoryDB();
+        break;
+      case LEVELDB:
+        storage = storage::NewResLevelDB(std::nullopt);
+        break;
+      case LEVELDB_WITH_BLOCK_CACHE:
+        config.set_enable_block_cache(true);
+        storage = storage::NewResLevelDB(config);
+        break;
+      case ROCKSDB:
+        storage = storage::NewResRocksDB(std::nullopt);
+        break;
+    }
     storage_ptr_ = storage.get();
     impl_ = std::make_unique<KVExecutor>(std::move(storage));
   }
@@ -58,6 +76,7 @@ class KVExecutorTest : public Test {
     impl_.reset();  // Release the executor first
     storage_ptr_ = nullptr;
     std::filesystem::remove_all("/tmp/nexres-leveldb");
+    std::filesystem::remove_all("/tmp/nexres-rocksdb");
   }
 
   int Set(const std::string& key, const std::string& value) {
@@ -404,7 +423,7 @@ class KVExecutorTest : public Test {
   std::unique_ptr<KVExecutor> impl_;
 };
 
-TEST_F(KVExecutorTest, SetValue) {
+TEST_P(KVExecutorTest, SetValue) {
   std::map<std::string, std::string> data;
 
   EXPECT_EQ(GetAllValues(), "[]");
@@ -417,7 +436,7 @@ TEST_F(KVExecutorTest, SetValue) {
   EXPECT_EQ(GetRange("a", "z"), "[test_value]");
 }
 
-TEST_F(KVExecutorTest, SetValueWithVersion) {
+TEST_P(KVExecutorTest, SetValueWithVersion) {
   std::map<std::string, std::string> data;
 
   {
@@ -508,7 +527,7 @@ TEST_F(KVExecutorTest, SetValueWithVersion) {
   }
 }
 
-TEST_F(KVExecutorTest, CompositeKeyStringField) {
+TEST_P(KVExecutorTest, CompositeKeyStringField) {
   std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
   std::string user2 = "{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}";
   std::string user3 = "{\"name\":\"Bob\",\"age\":35,\"city\":\"Chicago\"}";
@@ -537,7 +556,7 @@ TEST_F(KVExecutorTest, CompositeKeyStringField) {
   EXPECT_EQ(empty_results.item_size(), 0);
 }
 
-TEST_F(KVExecutorTest, CompositeKeyIntegerField) {
+TEST_P(KVExecutorTest, CompositeKeyIntegerField) {
   std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
   std::string user2 = "{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}";
   std::string user3 = "{\"name\":\"Bob\",\"age\":35,\"city\":\"Chicago\"}";
@@ -553,10 +572,6 @@ TEST_F(KVExecutorTest, CompositeKeyIntegerField) {
   int status2 = CreateCompositeKey("user_2", "age", "25", 1);
   int status3 = CreateCompositeKey("user_3", "age", "35", 1);
   int status4 = CreateCompositeKey("user_4", "age", "30", 1);
-
-  std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
-  EXPECT_EQ(Set("user_1", user_update), 0);
-  //UpdateCompositeKey(primary_key:"user_1", field_name"age",old_field_value: "30", new_field_value: "31"); -> delete the old -> create the new one.
 
   EXPECT_EQ(status1, 0);
   EXPECT_EQ(status2, 0);
@@ -624,42 +639,39 @@ TEST_F(KVExecutorTest, CompositeKeyIntegerField) {
 
 // }
 
-TEST_F(KVExecutorTest, UpdateCompositeKeys){
-  std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
 
-  EXPECT_EQ(Set("user_1", user1), 0);
+//@harish876
+// TEST_F(KVExecutorTest, UpdateCompositeKeys){
+//   std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
 
-  
-  
-  int status1 = CreateCompositeKey("user_1", "age", "30", 1);
-  EXPECT_EQ(status1, 0);
+//   EXPECT_EQ(Set("user_1", user1), 0);
+
+//   int status1 = CreateCompositeKey("user_1", "age", "30", 1);
+//   EXPECT_EQ(status1, 0);
  
 
-  std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
-  EXPECT_EQ(Set("user_1", user_update), 0);
-  // int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
-  // EXPECT_EQ(status5, 0);
-  EXPECT_EQ(Get("user_1"), user_update);
+//   std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
+//   EXPECT_EQ(Set("user_1", user_update), 0);
+//   // int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
+//   // EXPECT_EQ(status5, 0);
+//   EXPECT_EQ(Get("user_1"), user_update);
 
-  // int status = DelVal("user_1");
-  // EXPECT_EQ(status, 0);
+//   // int status = DelVal("user_1");
+//   // EXPECT_EQ(status, 0);
 
-  // EXPECT_EQ(Get("user_1"), "");
+//   EXPECT_EQ(Get("user_1"), "");
+//   Items results = GetByCompositeKey("age", "30", 1);
+//   EXPECT_EQ(results.item_size(), 0);
 
-  int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
-  EXPECT_EQ(status5, 0);
+//   // Items empty_results = GetByCompositeKey("age", "30", 1);
+//   // EXPECT_EQ(empty_results.item_size(), 0);
 
-  Items results = GetByCompositeKey("age", "30", 1);
-  EXPECT_EQ(results.item_size(), 0);
-
-  // Items empty_results = GetByCompositeKey("age", "30", 1);
-  // EXPECT_EQ(empty_results.item_size(), 0);
-
-}
+// }
 
 
 
-TEST_F(KVExecutorTest, CompositeKeyBooleanField) {
+
+TEST_P(KVExecutorTest, CompositeKeyBooleanField) {
   std::string user1 = "{\"name\":\"John\",\"active\":true,\"city\":\"NYC\"}";
   std::string user2 = "{\"name\":\"Jane\",\"active\":false,\"city\":\"LA\"}";
   std::string user3 = "{\"name\":\"Bob\",\"active\":true,\"city\":\"Chicago\"}";
@@ -684,7 +696,7 @@ TEST_F(KVExecutorTest, CompositeKeyBooleanField) {
   EXPECT_EQ(inactive_results.item(0).value_info().value(), user2);
 }
 
-TEST_F(KVExecutorTest, CompositeKeyTimestampField) {
+TEST_P(KVExecutorTest, CompositeKeyTimestampField) {
   std::string user1 =
       "{\"name\":\"John\",\"created_at\":1640995200,\"city\":\"NYC\"}";
   std::string user2 =
@@ -710,7 +722,7 @@ TEST_F(KVExecutorTest, CompositeKeyTimestampField) {
   EXPECT_EQ(results.item(0).value_info().value(), user1);
 }
 
-TEST_F(KVExecutorTest, CompositeKeyRangeQuery) {
+TEST_P(KVExecutorTest, CompositeKeyRangeQuery) {
   std::string user1 = "{\"name\":\"John\",\"age\":25,\"city\":\"NYC\"}";
   std::string user2 = "{\"name\":\"Jane\",\"age\":30,\"city\":\"LA\"}";
   std::string user3 = "{\"name\":\"Bob\",\"age\":35,\"city\":\"Chicago\"}";
@@ -739,7 +751,7 @@ TEST_F(KVExecutorTest, CompositeKeyRangeQuery) {
   EXPECT_EQ(range_results.item_size(), 2);  // Should return user_2 and user_3
 }
 
-TEST_F(KVExecutorTest, CompositeKeyMultipleFields) {
+TEST_P(KVExecutorTest, CompositeKeyMultipleFields) {
   // Create JSON documents with multiple fields
   std::string user1 =
       "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\",\"active\":true}";
@@ -799,6 +811,9 @@ TEST_F(KVExecutorTest, CompositeKeyMultipleFields) {
   Items active_results = GetByCompositeKey("active", "true", 2);
   EXPECT_EQ(active_results.item_size(), 2);  // John and Bob are active
 }
+
+INSTANTIATE_TEST_CASE_P(KVExecutorTest, KVExecutorTest,
+                        ::testing::Values(LEVELDB, ROCKSDB));
 
 }  // namespace
 

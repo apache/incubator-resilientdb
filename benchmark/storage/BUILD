@@ -24,6 +24,7 @@ cc_binary(
     deps = [
         "//executor/kv:kv_executor",
         "//chain/storage:leveldb",
+        "//chain/storage:rocksdb",
         "//proto/kv:kv_cc_proto",
         "@com_google_benchmark//:benchmark",
         "@nlohmann_json//:json",
