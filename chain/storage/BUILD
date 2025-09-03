@@ -58,16 +58,31 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rocksdb",
+    srcs = ["rocksdb.cpp"],
+    hdrs = ["rocksdb.h"],
+
+    deps = [
+        ":storage",
+        "//chain/storage/proto:kv_cc_proto",
+        "//chain/storage/proto:rocksdb_config_cc_proto",
+        "//common:comm",
+        "//third_party:rocksdb",
+    ],
+)
+
 cc_test(
     name = "kv_storage_test",
     srcs = ["kv_storage_test.cpp"],
     deps = [
         ":leveldb",
         ":memory_db",
+        ":rocksdb",
         "//common/test:test_main",
     ],
-    timeout = "short",  # Set the timeout to "short"
-    size = "small",     # Set the size to "small"
+    timeout = "long",
+    size = "medium",
 )
 
 cc_test(

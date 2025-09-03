@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   if (command == "test") {
     for (int i = 0; i < std::stoi(value); i++) {
       std::stringstream ss;
-      ss << " bazel-bin/service/tools/kv/api_tools/kv_service_tools --config "
+      ss << "bazel-bin/service/tools/kv/api_tools/kv_service_tools --config "
             "service/tools/config/interface/service.config --cmd set "
          << "--key key" << (std::rand() % 500) << " " << "--value value"
          << (std::rand() % 500);

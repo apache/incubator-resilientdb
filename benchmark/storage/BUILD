@@ -18,34 +18,20 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-
-cc_library(
-    name = "kv_executor",
-    srcs = ["kv_executor.cpp"],
-    hdrs = ["kv_executor.h"],
+cc_binary(
+    name = "composite_key_benchmark",
+    srcs = ["composite_key_benchmark.cpp"],
     deps = [
-        "//chain/storage",
-        "//common:comm",
-        "//executor/common:transaction_manager",
-        "//platform/config:resdb_config_utils",
-        "//proto/kv:kv_cc_proto",
-        "//executor/contract/executor:contract_executor",
-    ],
-)
-
-cc_test(
-    name = "kv_executor_test",
-    srcs = ["kv_executor_test.cpp"],
-    deps = [
-        ":kv_executor",
-        "//chain/storage:memory_db",
+        "//executor/kv:kv_executor",
         "//chain/storage:leveldb",
         "//chain/storage:rocksdb",
-        "//common/test:test_main",
-        "@com_github_gflags_gflags//:gflags",
+        "//proto/kv:kv_cc_proto",
+        "@com_google_benchmark//:benchmark",
+        "@nlohmann_json//:json",
+        "@com_github_google_glog//:glog",
     ],
-    args = ["--storage_types=all"],  # Default to testing all storage types
-    timeout = "short",
-    size = "small",
+    copts = [
+        "-std=c++17",
+        "-O2",
+    ],
 )

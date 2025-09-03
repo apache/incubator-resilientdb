@@ -25,17 +25,21 @@
 
 #include "chain/storage/leveldb.h"
 #include "chain/storage/memory_db.h"
+#include "chain/storage/rocksdb.h"
+
+
 
 namespace resdb {
 namespace storage {
 namespace {
 
-enum StorageType { MEM = 0, LEVELDB = 1, LEVELDB_WITH_BLOCK_CACHE = 2 };
+enum StorageType { MEM = 0, LEVELDB = 1, LEVELDB_WITH_BLOCK_CACHE = 2, ROCKSDB = 3 };
 
 class KVStorageTest : public ::testing::TestWithParam<StorageType> {
  protected:
   KVStorageTest() {
     StorageType t = GetParam();
+    LevelDBInfo config;
     switch (t) {
       case MEM:
         storage = NewMemoryDB();
@@ -46,9 +50,12 @@ class KVStorageTest : public ::testing::TestWithParam<StorageType> {
         break;
       case LEVELDB_WITH_BLOCK_CACHE:
         Reset();
-        LevelDBInfo config;
         config.set_enable_block_cache(true);
         storage = NewResLevelDB(path_, config);
+        break;
+      case ROCKSDB:
+        Reset();
+        storage = NewResRocksDB(path_);
         break;
     }
   }
@@ -230,7 +237,7 @@ TEST_P(KVStorageTest, BlockCacheSpecificTest) {
 
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
                         ::testing::Values(MEM, LEVELDB,
-                                          LEVELDB_WITH_BLOCK_CACHE));
+                                          LEVELDB_WITH_BLOCK_CACHE, ROCKSDB));
 
 }  // namespace
 }  // namespace storage
