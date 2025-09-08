@@ -203,4 +203,4 @@ Nexus implements the LlamaIndex Memory framework with both short-term and long-t
   - Recommend relevant new papers based on ongoing sessions and research interests.
 
 ### Closing
-Nexus brings together a modern TS-first stack, robust retrieval, transparent tool use, and session memory to create a reliable research copilot for distributed systems. If you need verifiable, source-grounded answers—not just plausible ones—Nexus is designed for you.
+Nexus brings together a modern TS-first stack, robust retrieval, transparent tool use, and session memory to create a reliable research copilot for distributed systems.
