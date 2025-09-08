@@ -359,103 +359,103 @@ export class LlamaService {
     }
   }
 
-  async createChatEngine(
-    documents: string[],
-    ctx: ChatMessage[]
-  ): Promise<ContextChatEngine> {
-    const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
+  // async createChatEngine(
+  //   documents: string[],
+  //   ctx: ChatMessage[]
+  // ): Promise<ContextChatEngine> {
+  //   const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
 
-    // TODO: IN operator doesn't work with Supabase, so we'll use EQ operator for now
-    // const retriever = index.asRetriever({
-    //   similarityTopK: 5,
-    //   filters: {
-    //     filters: [
-    //       {
-    //         key: "source_document",
-    //         operator: FilterOperator.IN,
-    //         value: documents,
-    //       },
-    //     ],
-    //   },
-    // });
-    //
-    // Create a custom retriever that handles multiple documents with EQ operator
-    const customRetriever = {
-      retrieve: async ({ query }: { query: string }) => {
-        const allNodes: NodeWithScore[] = [];
-        const postprocessor = this.createSimilarityPostprocessor();
+  //   // TODO: IN operator doesn't work with Supabase, so we'll use EQ operator for now
+  //   // const retriever = index.asRetriever({
+  //   //   similarityTopK: 5,
+  //   //   filters: {
+  //   //     filters: [
+  //   //       {
+  //   //         key: "source_document",
+  //   //         operator: FilterOperator.IN,
+  //   //         value: documents,
+  //   //       },
+  //   //     ],
+  //   //   },
+  //   // });
+  //   //
+  //   // Create a custom retriever that handles multiple documents with EQ operator
+  //   const customRetriever = {
+  //     retrieve: async ({ query }: { query: string }) => {
+  //       const allNodes: NodeWithScore[] = [];
+  //       const postprocessor = this.createSimilarityPostprocessor();
         
-        for (const docPath of documents) {
-          const retriever = index.asRetriever({
-            similarityTopK: 3, // Get results per document
-            filters: {
-              filters: [
-                {
-                  key: "source_document",
-                  operator: "==",
-                  value: docPath,
-                },
-              ],
-            },
-          });
+  //       for (const docPath of documents) {
+  //         const retriever = index.asRetriever({
+  //           similarityTopK: 3, // Get results per document
+  //           filters: {
+  //             filters: [
+  //               {
+  //                 key: "source_document",
+  //                 operator: "==",
+  //                 value: docPath,
+  //               },
+  //             ],
+  //           },
+  //         });
           
-          const nodes = await retriever.retrieve({ query });
-          allNodes.push(...nodes);
-        }
+  //         const nodes = await retriever.retrieve({ query });
+  //         allNodes.push(...nodes);
+  //       }
         
-        // Apply similarity postprocessor to filter low-quality results
-        return await postprocessor.postprocessNodes(allNodes);
-      }
-    };
+  //       // Apply similarity postprocessor to filter low-quality results
+  //       return await postprocessor.postprocessNodes(allNodes);
+  //     }
+  //   };
 
-    const chatEngine = new ContextChatEngine({
-      retriever: customRetriever as any,
-      chatHistory: ctx || [],
-      systemPrompt: RESEARCH_SYSTEM_PROMPT,
-    });
-    return chatEngine;
-  }
+  //   const chatEngine = new ContextChatEngine({
+  //     retriever: customRetriever as any,
+  //     chatHistory: ctx || [],
+  //     systemPrompt: RESEARCH_SYSTEM_PROMPT,
+  //   });
+  //   return chatEngine;
+  // }
 
-  // tbd
-  async createCodingAgent(): Promise<AgentWorkflow> {
-    const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
-    const tools = [
-      index.queryTool({
-        metadata: {
-          name: "rag_tool",
-          description: `This tool can answer detailed questions about the paper.`,
-        },
-        options: { similarityTopK: 10 },
-      }),
-    ];
-    const codingAgent = agent({
-      name: "CodingAgent",
-      description:
-        "Responsible for implementing code based on research findings and technical requirements.",
-      systemPrompt: `You are a coding agent. Your role is to implement code for technical concepts and algorithms based on detailed research findings, requirements, and instructions provided by the research agent. Always write correct, best practice, DRY, bug-free, and fully functional code.`,
-      tools: [],
-      llm: deepseek({
-        model: config.deepSeekModel,
-      })
-    });
+  // // tbd
+  // async createCodingAgent(): Promise<AgentWorkflow> {
+  //   const index = await VectorStoreIndex.fromVectorStore(this.getVectorStore());
+  //   const tools = [
+  //     index.queryTool({
+  //       metadata: {
+  //         name: "rag_tool",
+  //         description: `This tool can answer detailed questions about the paper.`,
+  //       },
+  //       options: { similarityTopK: 10 },
+  //     }),
+  //   ];
+  //   const codingAgent = agent({
+  //     name: "CodingAgent",
+  //     description:
+  //       "Responsible for implementing code based on research findings and technical requirements.",
+  //     systemPrompt: `You are a coding agent. Your role is to implement code for technical concepts and algorithms based on detailed research findings, requirements, and instructions provided by the research agent. Always write correct, best practice, DRY, bug-free, and fully functional code.`,
+  //     tools: [],
+  //     llm: deepseek({
+  //       model: config.deepSeekModel,
+  //     })
+  //   });
 
-    const planningAgent = agent({
-      name: "ResearchAgent",
-      description:
-        "Responsible for finding all information necessary for implementing technical concepts from research papers to code.",
-      systemPrompt: `You are a research agent. Your role is to find and extract ALL information necessary for implementing technical concepts, algorithms, and methods from research papers and technical documents. Gather detailed, precise, and actionable insights required for accurate code implementation. Present your findings clearly for the coding agent to use directly in code generation.`,
-      tools: tools,
-      canHandoffTo: [codingAgent],
-      llm: Settings.llm as ToolCallLLM,
-    });
+  //   const planningAgent = agent({
+  //     name: "ResearchAgent",
+  //     description:
+  //       "Responsible for finding all information necessary for implementing technical concepts from research papers to code.",
+  //     systemPrompt: `You are a research agent. Your role is to find and extract ALL information necessary for implementing technical concepts, algorithms, and methods from research papers and technical documents. Gather detailed, precise, and actionable insights required for accurate code implementation. Present your findings clearly for the coding agent to use directly in code generation.`,
+  //     tools: tools,
+  //     canHandoffTo: [codingAgent],
+  //     llm: Settings.llm as ToolCallLLM,
+  //   });
 
-    const workflow = multiAgent({
-      agents: [planningAgent, codingAgent],
-      rootAgent: planningAgent, // The PlanningAgent starts the process
-    });
+  //   const workflow = multiAgent({
+  //     agents: [planningAgent, codingAgent],
+  //     rootAgent: planningAgent, // The PlanningAgent starts the process
+  //   });
 
-    return workflow;
-  }
+  //   return workflow;
+  // }
 
   searchWeb = async (parameters: {
     query: string;
@@ -520,82 +520,82 @@ export class LlamaService {
     });
   };
 
-  // deprecated, see agent.ts
-  async createNexusAgent(documents: string[]): Promise<AgentWorkflow> {
+  // // deprecated, see agent.ts
+  // async createNexusAgent(documents: string[]): Promise<AgentWorkflow> {
 
 
-    // using a queryTool(slower)
-    // const retrieverTool = index.queryTool({
-    //   metadata: {
-    //     name: "retriever_tool",
-    //     description: `This tool can retrieve information about the selected documents.`,
-    //   },
-    //   includeSourceNodes: true,
-    //   options: { similarityTopK: 3,
-    //     filters: {
-    //     filters: [
-    //       {
-    //         key: "source_document",
-    //         operator: "in",
-    //         value: documents,
-    //       },
-    //     ],
-    //   },
-    //   },
-    // });
+  //   // using a queryTool(slower)
+  //   // const retrieverTool = index.queryTool({
+  //   //   metadata: {
+  //   //     name: "retriever_tool",
+  //   //     description: `This tool can retrieve information about the selected documents.`,
+  //   //   },
+  //   //   includeSourceNodes: true,
+  //   //   options: { similarityTopK: 3,
+  //   //     filters: {
+  //   //     filters: [
+  //   //       {
+  //   //         key: "source_document",
+  //   //         operator: "in",
+  //   //         value: documents,
+  //   //       },
+  //   //     ],
+  //   //   },
+  //   //   },
+  //   // });
 
-    ////////////////////////////////////////////////////
-    // using a bound retriever function to create a tool
-    // const boundRetriever = (documents: string[]) => {
-    //   return async (parameters: { query: string }) => {
-    //     const nodes = await this.retrieve({
-    //       query: parameters.query,
-    //       documentPaths: documents,
-    //     });
-    //     return nodes.map((node: NodeWithScore) => {
-    //       return {
-    //         content: (node.node as TextNode).text,
-    //         metadata: node.node.metadata,
-    //       };
-    //     });
-    //   };
-    // };
-    const retrieverTool = tool({
-      name: "retriever_tool",
-      description: `This tool can retrieve detailed information from the selected documents.`,
-      parameters: z.object({
-        query: z.string().describe("The query to retrieve information from the document's vector embeddings."),
-        documentPaths: z.array(z.string()).describe("The list of document paths to search in"),
-      }),
-      execute: this.retrieve,
-    });
-    ////////////////////////////////////////////////////
+  //   ////////////////////////////////////////////////////
+  //   // using a bound retriever function to create a tool
+  //   // const boundRetriever = (documents: string[]) => {
+  //   //   return async (parameters: { query: string }) => {
+  //   //     const nodes = await this.retrieve({
+  //   //       query: parameters.query,
+  //   //       documentPaths: documents,
+  //   //     });
+  //   //     return nodes.map((node: NodeWithScore) => {
+  //   //       return {
+  //   //         content: (node.node as TextNode).text,
+  //   //         metadata: node.node.metadata,
+  //   //       };
+  //   //     });
+  //   //   };
+  //   // };
+  //   const retrieverTool = tool({
+  //     name: "retriever_tool",
+  //     description: `This tool can retrieve detailed information from the selected documents.`,
+  //     parameters: z.object({
+  //       query: z.string().describe("The query to retrieve information from the document's vector embeddings."),
+  //       documentPaths: z.array(z.string()).describe("The list of document paths to search in"),
+  //     }),
+  //     execute: this.retrieve,
+  //   });
+  //   ////////////////////////////////////////////////////
 
-    const searchTool = tool({
-      name: "search_web",
-      description: "Search the web for information",
-      parameters: z.object({
-        query: z.string().describe("The search query optimized for web search"),
-      }),
-      execute: this.searchWeb,
-    });
+  //   const searchTool = tool({
+  //     name: "search_web",
+  //     description: "Search the web for information",
+  //     parameters: z.object({
+  //       query: z.string().describe("The search query optimized for web search"),
+  //     }),
+  //     execute: this.searchWeb,
+  //   });
 
-    const systemPrompt = AGENT_RESEARCH_PROMPT(documents);
-    const NexusAgent = agent({
-      name: "Nexus",
-      description: "Responsible for overseeing the entire research process.",
-      systemPrompt,
-      tools: [retrieverTool, searchTool],
-      llm: deepseek({
-        model: config.deepSeekModel,
-        temperature: 0.1,
+  //   const systemPrompt = AGENT_RESEARCH_PROMPT(documents);
+  //   const NexusAgent = agent({
+  //     name: "Nexus",
+  //     description: "Responsible for overseeing the entire research process.",
+  //     systemPrompt,
+  //     tools: [retrieverTool, searchTool],
+  //     llm: deepseek({
+  //       model: config.deepSeekModel,
+  //       temperature: 0.1,
 
-      })
-    });
+  //     })
+  //   });
 
 
-    return NexusAgent;
-  }
+  //   return NexusAgent;
+  // }
 
 
 }
