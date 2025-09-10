@@ -1,0 +1,15 @@
+{
+  "name": "resvault-sdk",
+  "version": "1.0.3",
+  "description": "A lightweight SDK for ResVault.",
+  "main": "dist/resvault-sdk.js",
+  "types": "dist/resvault-sdk.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Apratim Shukla",
+  "license": "Apache-2.0"
+}

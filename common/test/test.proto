@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package resdb.test;
+
+message JsonSubMessage {
+    int64 id = 1;
+    string  data = 2;
+};
+
+message JsonMessage {
+    int64 id = 1;
+    string data = 2;
+    JsonMessage sub_msg = 3;
+};
+

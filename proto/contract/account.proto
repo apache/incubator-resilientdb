@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package resdb.contract;
+
+message Account {
+  string address = 1;
+}
+
+

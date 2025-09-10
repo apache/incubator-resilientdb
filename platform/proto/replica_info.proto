@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package resdb;
+
+import "common/proto/signature_info.proto";
+import "chain/storage/proto/leveldb_config.proto";
+import "chain/storage/proto/rocksdb_config.proto";
+
+message ReplicaInfo {
+    int64 id = 1;
+    optional string ip = 2;
+    optional int32 port = 3;
+    optional CertificateInfo certificate_info = 4; // include the private/public key, public key of admin and the certificate published by admin.
+}
+
+message RegionInfo {
+  repeated ReplicaInfo replica_info = 1;
+  int32 region_id = 2;
+}
+
+message ResConfigData{
+  repeated RegionInfo region = 1;
+  int32 self_region_id = 2;
+  optional storage.RocksDBInfo rocksdb_info = 3;
+  optional storage.LevelDBInfo leveldb_info = 4;
+  optional bool enable_viewchange = 5;
+  optional int32 view_change_timeout_ms = 10;
+  optional bool not_need_signature = 6; // when delivering messages, it should be signed or not.
+  optional bool is_performance_running = 7; // if it is running a performance benchmark.
+  optional int32 max_process_txn = 8; // max client transactions in flight.
+  optional int32 client_batch_num=11; // batch size of transaction for each client request
+  optional int32 worker_num =12; // batch size of transaction for each client request
+  optional int32 input_worker_num =13; 
+  optional int32 output_worker_num =14;
+  optional int32 tcp_batch_num = 15;
+  optional bool require_txn_validation = 16; // for python sdk
+  optional bool recovery_enabled = 17; // whether to enable recovery locally
+  optional string recovery_path = 18;
+  optional int32 recovery_buffer_size = 19;
+  optional int32 recovery_ckpt_time_s = 20;
+
+// for hotstuff.
+  optional bool use_chain_hotstuff = 9;
+
+  optional int32 max_client_complaint_num = 21;
+
+  optional int32 duplicate_check_frequency_useconds = 22;
+
+// for slot_hs1 
+  optional int32 slot_num = 23;
+  optional int32 non_responsive_num = 24;
+  optional int32 fork_tail_num = 25;
+  optional int32 rollback_num = 26;
+
+  optional bool tpcc_enabled = 27;
+  optional int32 network_delay_num = 28;
+  optional double mean_network_delay = 29;
+
+  optional int32 water_mark = 30;
+  optional int32 crash_num = 31;
+
+  optional int64 timer_length = 32; 
+}
+
+message ReplicaStates {
+  repeated ReplicaState state = 1;
+}
+
+message ReplicaState {
+  int64 view = 1;
+  ReplicaInfo replica_info = 2;
+  ResConfigData replica_config = 3;
+}
