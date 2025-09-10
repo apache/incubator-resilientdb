@@ -30,14 +30,14 @@ For the convenience of reviewers, we have already created the instances required
 For the convenience of ARI reviewers, we provide a pre-configured AWS host machine with the following public IP address:
 
 ```bash
-18.212.209.83
+18.215.156.88
 ```
 ​   
 You can access this host using the attached private key `hs1-ari.pem` (available in **Code & Scripts / Data** of the submission). To log in, first set the correct permissions on the key, then establish the SSH connection:
 
 ```bash
 chmod 400 ./your_path_to/hs1-ari.pem
-ssh -i ./your_path_to/hs1-ari.pem ubuntu@18.212.209.83
+ssh -i ./your_path_to/hs1-ari.pem ubuntu@18.215.156.88
 ```
 
 Once logged in, clone the ResilientDB repository, switch to the hotstuff-1 branch, and install the dependencies.
