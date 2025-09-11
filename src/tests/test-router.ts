@@ -2,8 +2,8 @@ import { CodeAgent, NexusAgent } from "@/lib/agent";
 import { agentStreamEvent, agentToolCallEvent } from "@llamaindex/workflow";
 import chalk from "chalk";
  
-import { configureLlamaSettings } from "../src/lib/config/llama-settings";
-import { llamaService } from "../src/lib/llama-service";
+import { configureLlamaSettings } from "../lib/config/llama-settings";
+import { llamaService } from "../lib/llama-service";
 
 // const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
 //   console.log("\n🧪 Testing Chat Engine...");
