@@ -27,6 +27,7 @@
 #include "chain/storage/storage.h"
 #include "common/lru/lru_cache.h"
 #include "leveldb/db.h"
+#include "leveldb/filter_policy.h"
 #include "leveldb/write_batch.h"
 #include "platform/statistic/stats.h"
 
@@ -44,6 +45,7 @@ class ResLevelDB : public Storage {
 
   virtual ~ResLevelDB();
   int SetValue(const std::string& key, const std::string& value) override;
+  int DelValue(const std::string& key) override;
   std::string GetValue(const std::string& key) override;
   std::string GetAllValues(void) override;
   std::string GetRange(const std::string& min_key,
@@ -58,6 +60,10 @@ class ResLevelDB : public Storage {
   std::map<std::string, std::pair<std::string, int>> GetAllItems() override;
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;
+
+  std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
+
+  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
 
   // Return a list of <value, version>
   std::vector<std::pair<std::string, int>> GetHistory(const std::string& key,
@@ -82,6 +88,7 @@ class ResLevelDB : public Storage {
 
  protected:
   Stats* global_stats_ = nullptr;
+  const leveldb::FilterPolicy* filter_policy_ = nullptr;
   std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
 };
 

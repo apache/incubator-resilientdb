@@ -19,44 +19,31 @@
 
 #pragma once
 
-#include <list>
-#include <map>
 #include <memory>
-#include <unordered_map>
+#include <optional>
+#include <string>
 
+#include "chain/storage/proto/rocksdb_config.pb.h"
 #include "chain/storage/storage.h"
+#include "rocksdb/db.h"
+#include "rocksdb/write_batch.h"
 
 namespace resdb {
 namespace storage {
 
-// Key Value Storage supporting two types of interfaces:
-// Non-version:
-//  It provides set and get function to set a value to a specific key
-//  Values will be set directly.
-// Version:
-//  It provides set and get function to set a value to a specific key
-//  with a version.
-//  The version inside setting function is to support OCC verification.
-//  The version value should be obtained before setting
-//  and returned back when setting a new value. If the version is not
-//  the same as the old one, return failure.
-//  If the value of a specific version does not exist or providing
-//  version 0 as parameter when accessing get
-//  it returns the current value along its version.
-//
-// Note: Only one type of interface are allowed to be used.
-//
+std::unique_ptr<Storage> NewResRocksDB(
+    const std::string& path, std::optional<RocksDBInfo> config = std::nullopt);
+std::unique_ptr<Storage> NewResRocksDB(
+    std::optional<RocksDBInfo> config = std::nullopt);
 
-std::unique_ptr<Storage> NewMemoryDB();
-
-class MemoryDB : public Storage {
+class ResRocksDB : public Storage {
  public:
-  MemoryDB();
-
-  int SetValue(const std::string& key, const std::string& value);
-  std::string GetValue(const std::string& key);
-  int DelValue(const std::string& key);
-  std::string GetAllValues() override;
+  ResRocksDB(std::optional<RocksDBInfo> config_data = std::nullopt);
+  virtual ~ResRocksDB();
+  int SetValue(const std::string& key, const std::string& value) override;
+  std::string GetValue(const std::string& key) override;
+  int DelValue(const std::string& key) override;
+  std::string GetAllValues(void) override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
 
@@ -74,18 +61,27 @@ class MemoryDB : public Storage {
   std::vector<std::pair<std::string, int>> GetHistory(const std::string& key,
                                                       int min_version,
                                                       int max_version) override;
-
-  std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
-                                                         int number) override;
+  std::vector<std::pair<std::string, int>> GetTopHistory(
+      const std::string& key, int top_number) override;
 
   std::vector<std::string> GetKeysByPrefix(const std::string& prefix) override;
 
-  std::vector<std::string> GetKeyRangeByPrefix(const std::string& start_prefix, const std::string& end_prefix) override;
+  std::vector<std::string> GetKeyRangeByPrefix(
+      const std::string& start_prefix, const std::string& end_prefix) override;
+
+
+
+  bool Flush() override;
 
  private:
-  std::unordered_map<std::string, std::string> kv_map_;
-  std::unordered_map<std::string, std::list<std::pair<std::string, int>>>
-      kv_map_with_v_;
+  void CreateDB(const std::string& path);
+
+ private:
+  std::unique_ptr<::rocksdb::DB> db_ = nullptr;
+  ::rocksdb::WriteBatch batch_;
+  unsigned int num_threads_ = 1;
+  unsigned int write_buffer_size_ = 64 << 20;
+  unsigned int write_batch_size_ = 1;
 };
 
 }  // namespace storage
