@@ -21,15 +21,16 @@
 
 #include <map>
 
-#include "eEVM/storage.h"
 #include "chain/storage/storage.h"
+#include "eEVM/storage.h"
+#include "executor/contract/manager/utils.h"
 
 namespace resdb {
 namespace contract {
 
 class GlobalView : public eevm::Storage {
  public:
-  GlobalView(resdb::Storage* storage);
+  GlobalView(const Address& address, resdb::Storage* storage);
   virtual ~GlobalView() = default;
 
   void store(const uint256_t& key, const uint256_t& value) override;
@@ -37,6 +38,7 @@ class GlobalView : public eevm::Storage {
   bool remove(const uint256_t& key) override;
 
  private:
+  const Address address_;
   resdb::Storage* storage_;
 };
 
