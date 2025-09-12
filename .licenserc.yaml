@@ -7,6 +7,10 @@ header:
     - '.*'
     - '.**/**'
     - '**/*.sol'
+    - CNAME
+    - DISCLAIMER
+    - LICENSE
+    - NOTICE
     - 'dev/.rat-excludes'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
