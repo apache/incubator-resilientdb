@@ -2,7 +2,7 @@
 
 . ./script/env.sh
 
-# ./script/copy_local_db.sh
+./script/copy_local_db.sh
 
 ./script/deploy.sh $1
 
@@ -53,7 +53,7 @@ wait
 
 python3 performance/calculate_result.py `ls result_*_log` > results.log
 
-rm -rf result_*_log
+# rm -rf result_*_log
 echo "save result to results.log"
 cat results.log
 cat $TEMPLATE_PATH

@@ -66,7 +66,7 @@ int ProtocolBase::Commit(const google::protobuf::Message& msg) {
 
 void ProtocolBase::SetNetworkDelayGenerator(int32_t network_delay_num, double mean_network_delay) {
   network_delay_num_ = network_delay_num;
-  mean_network_delay_ = mean_network_delay;
+  mean_network_delay_ = mean_network_delay * 1000; // convert to microsecond
 
   sigma_ = 0.2 * mean_network_delay_;  // Standard deviation
   gen_ = std::mt19937(rd_()); // Mersenne Twister engine

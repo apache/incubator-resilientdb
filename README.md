@@ -313,7 +313,7 @@ Use the following script, replacing `protocol_name`, `num_impacted_replica`, and
 
 `protocol_name`: one of `[HS-1, HS-2, HS, HS-1-SLOT]`
 
-`num_impacted_replica`: one of `[0, 1, 4, 7, 10]`
+`num_impacted_replica`: one of `[0, 10, 11, 20, 21, 31]`
 
 `network_delay`: one of `[1, 5, 50, 500]`
 
@@ -401,7 +401,7 @@ To launch instances, use the provided script:
 ./start_us_east_1_instances.sh 31
 ```
 
-#### Step 2: Run the Network Delay Experiment
+#### Step 2: Run the Leader Slowness Experiment
 
 Use the following script, replacing `protocol_name`, `num_slow_leaders`, and `timer_length` with your desired values:
 

@@ -96,7 +96,9 @@ def main():
 
     command = command + " ./config/performance.conf"
 
-    generate_performance_server_conf(region_number)
+    replica_num = 31
+
+    generate_performance_server_conf(replica_num)
 
     print(f"{command}")
 

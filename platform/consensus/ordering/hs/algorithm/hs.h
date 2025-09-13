@@ -61,6 +61,8 @@ class HotStuff: public common::ProtocolBase {
   std::unique_ptr<QC> formed_qc_;
 
   uint64_t crash_num_ = 0;
+
+  uint64_t timer_length_;
 };
 
 }  // namespace hs

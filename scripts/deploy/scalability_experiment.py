@@ -20,7 +20,8 @@ def generate_config(
     rollback_num = 0,
     tpcc_enabled = False,
     network_delay_num =  0,
-    mean_network_delay = 0): 
+    mean_network_delay = 0,
+    timer_length = 100): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
@@ -36,7 +37,8 @@ def generate_config(
         "rollback_num": str(rollback_num),
         "tpcc_enabled": "true" if tpcc_enabled else "false",
         "network_delay_num": str(network_delay_num),
-        "mean_network_delay": str(mean_network_delay)
+        "mean_network_delay": str(mean_network_delay),
+        "timer_length": str(timer_length),
     }
 
     with open(config_path, "w") as f:

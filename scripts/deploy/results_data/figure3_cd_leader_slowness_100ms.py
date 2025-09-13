@@ -6,35 +6,35 @@ class ThroughputLatency:
         self.latency = latency
 
 HS = {
-    0: ThroughputLatency(55642, 9.0483),
-    1: ThroughputLatency(20264, 24.812),
-    4: ThroughputLatency(6962, 72.384),
-    7: ThroughputLatency(4189, 124.2736),
-    10: ThroughputLatency(3015, 168.3731),
+    0: ThroughputLatency(55642, 0.0090483),
+    1: ThroughputLatency(20264, 0.02545),
+    4: ThroughputLatency(6962, 0.072384),
+    7: ThroughputLatency(4189, 0.1242736),
+    10: ThroughputLatency(3015, 0.1683731),
 }
 
 HS_2 = {
-    0: ThroughputLatency(55470, 7.1089),
-    1: ThroughputLatency(20229, 19.8532),
-    4: ThroughputLatency(6939, 58.2012),
-    7: ThroughputLatency(4132, 98.8459),
-    10: ThroughputLatency(3019, 134.4022),
+    0: ThroughputLatency(55470, 0.0071089),
+    1: ThroughputLatency(20229, 0.0198532),
+    4: ThroughputLatency(6939, 0.0582012),
+    7: ThroughputLatency(4132, 0.0988459),
+    10: ThroughputLatency(3019, 0.1344022),
 }
 
 HS_1 = {
-    0: ThroughputLatency(55303, 5.3013),
-    1: ThroughputLatency(20222, 14.8907),
-    4: ThroughputLatency(6975, 43.9212),
-    7: ThroughputLatency(4211, 72.5262),
-    10: ThroughputLatency(3017, 100.9351),
+    0: ThroughputLatency(55303, 0.0053013),
+    1: ThroughputLatency(20283, 0.01535),
+    4: ThroughputLatency(6975, 0.043912),
+    7: ThroughputLatency(4211, 0.072562),
+    10: ThroughputLatency(2914, 0.11574),
 }
 
 HS_1_SLOT = {
-    0: ThroughputLatency(55983, 5.129),
-    1: ThroughputLatency(53790, 5.4213),
-    4: ThroughputLatency(48538, 5.6162),
-    7: ThroughputLatency(42923, 5.9481),
-    10: ThroughputLatency(36705, 6.5191),
+    0: ThroughputLatency(55983, 0.005129),
+    1: ThroughputLatency(55617, 0.0049811),
+    4: ThroughputLatency(48538, 0.0056162),
+    7: ThroughputLatency(42923, 0.0059481),
+    10: ThroughputLatency(41763, 0.00573),
 }
 
 PlaceHolder = {
