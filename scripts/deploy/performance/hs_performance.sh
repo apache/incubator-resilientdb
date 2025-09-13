@@ -1,5 +1,8 @@
 export server=//benchmark/protocols/hs:kv_server_performance
 export TEMPLATE_PATH=$PWD/config/hs.config
+RED="\033[31m"
+RESET="\033[0m"
+
 
 ./performance/run_performance.sh $*
 

@@ -53,7 +53,8 @@ wait
 
 python3 performance/calculate_result.py `ls result_*_log` > results.log
 
-# rm -rf result_*_log
+rm -rf result_*_log
 echo "save result to results.log"
-cat results.log
 cat $TEMPLATE_PATH
+cat results.log
+

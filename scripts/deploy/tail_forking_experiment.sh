@@ -5,11 +5,11 @@
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Path to the Python script
-PYTHON_SCRIPT="$BASE_DIR/leader_slowness_experiment.py"
+PYTHON_SCRIPT="$BASE_DIR/tail_forking_experiment.py"
 
 # Check parameters
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <protocol> <num_faulty_leader>"
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <protocol> <num_faulty_leader> <time_length>"
     exit 1
 fi
 
@@ -17,9 +17,10 @@ rm -rf result_*
 
 PROTOCOL=$1
 NUM_FAULTY=$2
+TIME_LENGTH=$3
 
 # Capture the Python script's output
-OUTPUT=$(python3 "$PYTHON_SCRIPT" "$PROTOCOL" "$NUM_FAULTY")
+OUTPUT=$(python3 "$PYTHON_SCRIPT" "$PROTOCOL" "$NUM_FAULTY" "$TIME_LENGTH")
 
 # Print the output (or use it later in the script)
 echo "returned command: $OUTPUT"

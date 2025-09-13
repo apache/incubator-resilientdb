@@ -85,14 +85,16 @@ def main():
     parser = argparse.ArgumentParser(description="Read protocol and replica number")
     parser.add_argument("protocol", type=str, help="Protocol name (string)")
     parser.add_argument("num_faulty", type=int, help="Number of faulty leaders (integer)")
+    parser.add_argument("timer_length", type=int, help="Timer length in ms (integer)")
 
     args = parser.parse_args()
 
     protocol = args.protocol
     num_faulty = args.num_faulty
+    timer_length = args.timer_length
 
     command, config_path, max_process_txn = get_experiment_command_and_config_and_maxprocesstxn(protocol)
-    generate_config(config_path = config_path, max_process_txn = max_process_txn, fork_tail_num = num_faulty)
+    generate_config(config_path = config_path, max_process_txn = max_process_txn, fork_tail_num = num_faulty, timer_length = timer_length)
 
     command = command + " ./config/performance.conf"
 
