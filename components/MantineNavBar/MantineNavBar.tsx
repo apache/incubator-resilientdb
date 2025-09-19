@@ -1,15 +1,11 @@
 'use client';
 
-import { Group, Text } from '@mantine/core';
+import { Box } from '@mantine/core';
+import { usePathname } from 'next/navigation';
 
 import '@mantine/core/styles.css';
-
-import { Navbar } from 'nextra-theme-docs';
-import { ColorSchemeControl } from '../ColorSchemeControl/ColorSchemeControl';
-import { Logo } from '../Logo/Logo';
 import { MantineNextraThemeObserver } from '../MantineNextraThemeObserver/MantineNextraThemeObserver';
-import { AskAIModal } from '../AskAIModal';
-import { SearchBar } from '../SearchBar/SearchBar';
+import Header from '@/components/landing/Header';
 
 /**
  * You can customize the Nextra NavBar component.
@@ -19,26 +15,14 @@ import { SearchBar } from '../SearchBar/SearchBar';
  *
  */
 export const MantineNavBar = () => {
+  const pathname = usePathname();
+  if (pathname === '/') return null;
   return (
     <>
       <MantineNextraThemeObserver />
-      <Navbar
-        logo={
-          <Group align="center" gap={4}>
-            <Logo />
-            <Text size="lg" fw={800} c="blue" visibleFrom="xl" style={{marginLeft: 2}}>
-              Beacon
-            </Text>
-          </Group>
-        }
-      >
-        <>
-          <Group gap="sm">
-            {/* <AskAIModal /> */}
-            <ColorSchemeControl />
-          </Group>
-        </>
-      </Navbar>
+      <Box style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+        <Header />
+      </Box>
     </>
   );
 };

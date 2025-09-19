@@ -1,12 +1,32 @@
 .title {
   color: white;
-  font-size: 100px;
+  font-size: 72px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
-    font-size: 70px;
+    font-size: 44px;
   }
 }
 
 .subtitle {
-  font-size: 100px;
+  font-size: 80px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.hero {
+  position: relative;
+  padding-top: 96px;
+}
+
+.halo {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(600px 200px at 50% 0%, rgba(0, 102, 255, 0.15), transparent 70%),
+    radial-gradient(300px 150px at 10% 30%, rgba(255, 0, 128, 0.12), transparent 70%),
+    radial-gradient(300px 150px at 90% 30%, rgba(255, 196, 0, 0.12), transparent 70%);
+  pointer-events: none;
+  mask-image: radial-gradient(closest-side, rgba(0,0,0,0.6), transparent 70%);
 }

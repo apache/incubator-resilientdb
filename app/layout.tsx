@@ -5,18 +5,19 @@ import '@gfazioli/mantine-text-animate/styles.layer.css';
 
 import { ColorSchemeScript, mantineHtmlProps, MantineProvider } from '@mantine/core';
 
-import '@mantine/core/styles.layer.css';
-
 import { Layout } from 'nextra-theme-docs';
 import { Banner, Head } from 'nextra/components';
 import { getPageMap } from 'nextra/page-map';
 import { theme } from '../theme';
+import { Inter } from 'next/font/google';
 
 import './global.css';
 
 import { FloatingAssistant } from '@/components/FloatingAssistant';
 import { PocketFlowChatbot } from '@/components/PocketFlowChatbot';
 import { Providers } from './providers';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata = {
   title: {
@@ -64,10 +65,10 @@ export default async function RootLayout({ children }: { children: any }) {
   const pageMap = await getPageMap();
 
   return (
-    <html lang="en" dir="ltr" {...mantineHtmlProps}>
+    <html lang="en" dir="ltr" {...mantineHtmlProps} className={`${inter.className} ${inter.variable}`}>
       <Head>
         <ColorSchemeScript nonce="8IBTHwOdqNKAWeKl7plt8g==" defaultColorScheme="dark" />
-        <link rel="shortcut icon" href="/lighthouse.png" />
+        <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml" />
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
@@ -75,22 +76,22 @@ export default async function RootLayout({ children }: { children: any }) {
       </Head>
       <body>
         <Providers>
-          <MantineProvider theme={theme} defaultColorScheme="auto">
+          <MantineProvider theme={theme} defaultColorScheme="dark">
             <Layout
-              banner={
-                <Banner storageKey="mantine-nextjs-nextra">
-                  ✨ AI powered documentation for ResilientDB Ecosystem and Apps
-                </Banner>
-              }
+              // banner={
+              //   <Banner storageKey="mantine-nextjs-nextra">
+              //     ✨ AI powered documentation for ResilientDB Ecosystem and Apps
+              //   </Banner>
+              // }
               navbar={<MantineNavBar />}
               pageMap={pageMap}
               docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
               footer={<MantineFooter />}
-              sidebar={{ defaultMenuCollapseLevel: 1 }}
+              sidebar={{ defaultMenuCollapseLevel: 1, toggleButton: true }}
             >
               {children}
             </Layout>
-            <FloatingAssistant />
+            {/* <FloatingAssistant /> */}
             <PocketFlowChatbot />
           </MantineProvider>
         </Providers>
