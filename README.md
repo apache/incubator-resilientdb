@@ -1,57 +1,67 @@
-# Mantine Next.js + Nextra template
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
+  http://www.apache.org/licenses/LICENSE-2.0
 
-<img width="1536" alt="image" src="https://github.com/user-attachments/assets/eac2e76d-0c63-4429-bb93-b75476e55216" />
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
+# Beacon – Documentation and AI Assistant for the ResilientDB Ecosystem
 
+Beacon is the home for ResilientDB documentation, examples, and learning resources. It brings everything into one place—clear guides, curated ecosystem docs, interactive playgrounds—and adds an AI assistant that helps you find answers faster and build with confidence.
 
-This is a template for [Next.js](https://nextjs.org/) app router + [Mantine](https://mantine.dev/) + [Nextra](https://nextra.site/) documentation site.
+![Beacon hero](./.github/assets/beacon-hero.png)
 
-## Features
+Visit the live site: https://beacon.resilientdb.com
 
-This template comes with the following features:
+## What Beacon Does
 
-- [PostCSS](https://postcss.org/) with [mantine-postcss-preset](https://mantine.dev/styles/postcss-preset)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Storybook](https://storybook.js.org/)
-- [Jest](https://jestjs.io/) setup with [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
-- ESLint setup with [eslint-config-mantine](https://github.com/mantinedev/eslint-config-mantine)
-- Provides API example in `/api/version`
+- Centralizes official docs and ecosystem projects in a single, easy‑to‑navigate site
+- Helps new contributors and users onboard quickly with focused guides and examples
+- Surfaces best practices and reference architectures for building with ResilientDB
+- Provides live demos and playgrounds to learn by doing
 
-## Nextra Features
+## Key Features
 
-- [Nextra](https://nextra.site/) documentation site with Mantine theme
-- Sync Dark mode between documentation and application (Mantine/Nextra)
-- Customizable components in `components` folder
-- Provides new Navigation and Footer components for Nextra documentation site
+- AI Companion and Chatbot
+  - Ask context‑aware questions across docs
+  - Generate examples, commands, and “first steps” checklists
+  - Summarize long pages and compare options
+- Unified Docs & Guides
+  - Clear navigation across core, ecosystem tools, and SDKs
+  - MDX‑based content, diagrams, callouts, and code blocks
+- Interactive Playgrounds
+  - TypeScript and Python examples, terminal‑style demos
+  - Step‑by‑step tutorials that you can follow and modify
+- Powerful Search
+  - Quickly find APIs, guides, and ecosystem resources
+- Thoughtful Design
+  - Consistent light/dark modes, accessible typography, responsive layout
 
-## Folder structure
+## Getting Started (Local Development)
 
-- `components` – shared components 
-    - you can use them in both documentation and application
-    - you may customize them to fit your needs
-- `content` – Nextra documentation site (.mdx and _meta.json files)
+```bash
+npm i
+npm run dev
+```
 
+Build for production:
 
-## npm scripts
+```bash
+npm run build
+```
 
-### Build and dev scripts
+## Contributing
 
-- `dev` – start dev server
-- `build` – bundle application for production
-- `analyze` – analyzes application bundle with [@next/bundle-analyzer](https://www.npmjs.com/package/@next/bundle-analyzer)
-
-### Testing scripts
-
-- `typecheck` – checks TypeScript types
-- `lint` – runs ESLint
-- `prettier:check` – checks files with Prettier
-- `jest` – runs jest tests
-- `jest:watch` – starts jest watch
-- `test` – runs `jest`, `prettier:check`, `lint` and `typecheck` scripts
-
-### Other scripts
-
-- `storybook` – starts storybook dev server
-- `storybook:build` – build production storybook bundle to `storybook-static`
-- `prettier:write` – formats all files with Prettier
+Contributions are welcome! Open an issue or pull request with focused edits. If you’re adding or editing docs, prefer small, incremental changes with clear examples. If you’re enhancing the AI assistant behavior, include a short rationale and a quick way to test.
