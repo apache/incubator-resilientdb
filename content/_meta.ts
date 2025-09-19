@@ -2,6 +2,9 @@ export default {
   index: {
     title: 'Quick Start',
   },
+  about: {
+    title: 'About',
+  },
   installation: {
     title: 'Installation',
   },

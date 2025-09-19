@@ -155,57 +155,7 @@ export default function Header() {
       </nav>
 
       <div style={{ position: 'relative' }}>
-        <input
-          type="text"
-          placeholder="Search..."
-          style={{
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: 20,
-            padding: '8px 16px 8px 40px',
-            color: '#fff',
-            fontSize: 14,
-            width: 200,
-            outline: 'none',
-            transition: 'all 200ms ease',
-          }}
-          onFocus={(e) => {
-            e.target.style.background = 'rgba(255,255,255,0.15)';
-            e.target.style.borderColor = 'rgba(255,255,255,0.4)';
-          }}
-          onBlur={(e) => {
-            e.target.style.background = 'rgba(255,255,255,0.1)';
-            e.target.style.borderColor = 'rgba(255,255,255,0.2)';
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              // Trigger search functionality
-              const event = new KeyboardEvent('keydown', {
-                key: 'k',
-                metaKey: true,
-                ctrlKey: true,
-              });
-              document.dispatchEvent(event);
-            }
-          }}
-        />
-        <svg
-          style={{
-            position: 'absolute',
-            left: 12,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: 16,
-            height: 16,
-            color: 'rgba(255,255,255,0.6)',
-            pointerEvents: 'none',
-          }}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+          {/* <SearchBar/> */}
       </div>
     </header>
   );
