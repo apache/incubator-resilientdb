@@ -6,7 +6,7 @@ export default function HeroContent() {
       style={{
         position: 'absolute',
         inset: 0,
-        zIndex: 20,
+        zIndex: 10,
         display: 'grid',
         placeItems: 'center',
         padding: 24,
@@ -41,7 +41,31 @@ export default function HeroContent() {
 
         <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.7 }}>
         Find all documentation related to ResilientDB, its applications, and ecosystem tools supported by the ResilientDB team. This site is your gateway to high-performance blockchain infrastructure, developer guides, and integration resources. To learn more about ResilientDB, visit the 
-        <span style={{ fontSize: 14, fontWeight: 300, color: 'deepskyblue'}}><a href="https://resilientdb.incubator.apache.org/" target="_blank"> official website.</a></span>
+        <a 
+          href="https://resilientdb.incubator.apache.org/" 
+          target="_blank"
+          style={{ 
+            color: '#00bfff', 
+            textDecoration: 'underline',
+            textDecorationColor: 'rgba(0, 191, 255, 0.5)',
+            textUnderlineOffset: '3px',
+            fontWeight: 400,
+            transition: 'all 200ms ease',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#ffffff';
+            e.currentTarget.style.textDecorationColor = 'rgba(255, 255, 255, 0.8)';
+            e.currentTarget.style.textShadow = '0 0 8px rgba(0, 191, 255, 0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#00bfff';
+            e.currentTarget.style.textDecorationColor = 'rgba(0, 191, 255, 0.5)';
+            e.currentTarget.style.textShadow = 'none';
+          }}
+        >
+          {" "}official website
+        </a>.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>

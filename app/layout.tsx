@@ -91,8 +91,8 @@ export default async function RootLayout({ children }: { children: any }) {
             >
               {children}
             </Layout>
-            {/* <FloatingAssistant /> */}
-            <PocketFlowChatbot />
+            <FloatingAssistant />
+            {/* <PocketFlowChatbot /> */}
           </MantineProvider>
         </Providers>
       </body>
