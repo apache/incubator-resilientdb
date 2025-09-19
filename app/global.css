@@ -1,25 +1,4 @@
-/*
-* Licensed to the Apache Software Foundation (ASF) under one
-* or more contributor license agreements.  See the NOTICE file
-* distributed with this work for additional information
-* regarding copyright ownership.  The ASF licenses this file
-* to you under the Apache License, Version 2.0 (the
-* "License"); you may not use this file except in compliance
-* with the License.  You may obtain a copy of the License at
-* 
-*   http://www.apache.org/licenses/LICENSE-2.0
-* 
-* Unless required by applicable law or agreed to in writing,
-* software distributed under the License is distributed on an
-* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-* KIND, either express or implied.  See the License for the
-* specific language governing permissions and limitations
-* under the License.
-*/
-
 @import 'nextra-theme-docs/dist/style.css' layer(nextra);
-
-/* Reset: remove custom callout/code overrides to use Nextra defaults */
 
 /**
  * Custom styles
@@ -31,7 +10,9 @@
  */
 @layer overwrite {
   :root {
-    --x-color-nextra-bg: var(--mantine-color-body);
+    /* Force Nextra base background to pure black to match landing */
+    --x-color-nextra-bg: #000;
+    --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   }
 
   :where(.dark) {
@@ -42,416 +23,199 @@
     font-size: var(--x-text-sm) !important;
     line-height: var(--tw-leading, var(--x-text-sm--line-height)) !important;
   }
-
-  /* Navbar and Footer Theme Alignment - More Specific */
-  nav.nextra-nav-container,
-  .nextra-nav-container,
-  div[class*="nextra-nav-container"] {
-    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .nextra-nav-container-blur,
-  div[class*="nextra-nav-container-blur"] {
-    background: linear-gradient(135deg, rgba(26, 27, 35, 0.95) 0%, rgba(37, 38, 43, 0.95) 50%, rgba(26, 27, 35, 0.95) 100%) !important;
-    backdrop-filter: blur(10px) !important;
-  }
-
-  .nextra-sidebar-container,
-  aside[class*="nextra-sidebar"] {
-    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-  }
-
-  footer.nextra-footer,
-  .nextra-footer,
-  div[class*="nextra-footer"] {
-    background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: rgba(255, 255, 255, 0.8) !important;
-  }
-
-
-
-  /* Force override all Nextra backgrounds */
-[class*="nextra"] {
-  background-color: transparent !important;
-}
-
-/* Additional aggressive overrides for docs pages */
-html body [class*="nextra"] {
-  background-color: transparent !important;
-}
-
-html body [class*="nextra"] * {
-  background-color: transparent !important;
-}
-
-/* Specific overrides for common Nextra classes - Light mode only */
-:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-sidebar"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-menu,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-menu"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-page-container,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-page-container"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-}
-
-  /* Specific navbar overrides */
-  .nextra-nav-container *,
-  nav[class*="nextra"] * {
-    color: white !important;
-  }
 }
 
 @layer components, mantine, nextra, overwrite;
 
-.bg-grid-white\/\[0\.02\] {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+/* Global sleek styles */
+@layer overwrite {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    color: var(--mantine-color-text);
+    font-family: var(--font-sans);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(0, 102, 255, 0.12), transparent 100%),
+      radial-gradient(1000px 500px at -10% 10%, rgba(255, 0, 128, 0.09), transparent 100%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.0)) !important;
+    /* background: #000000; */
+  }
+
+  :where(.dark) body {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: inherit;
+    font-family: var(--font-sans);
+  }
+
+  a {
+    color: #1f2937;
+  }
+  :where(.dark) a {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+
+  /* Stronger override for Nextra link styling in docs */
+  :where(.dark) .nextra-content a,
+  :where(.dark) .nextra-content a:visited {
+    color: rgba(255, 255, 255, 0.92) !important;
+  }
+  .nextra-content a,
+  .nextra-content a:visited {
+    color: #1f2937 !important;
+  }
+
+  /* Ensure Nextra containers don’t paint a gray background */
+  :where(.nextra-container,
+    .nextra-content,
+    .nextra-sidebar-container,
+    .nx-bg-neutral-900,
+    .nx-bg-gray-900,
+    .nx-bg-black,
+    .nx-bg-dark,
+    .nx-bg-zinc-900,
+    .nx-bg-slate-900) {
+    background-color: transparent !important;
+  }
+
+  /* Make sticky headers/footers transparent and remove borders/shadows */
+  :where(.nx-sticky) {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  :where(.nextra-sidebar) header,
+  :where(.nextra-sidebar) footer,
+  :where(.nextra-container > header) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Glassmorphism utility */
+  .glass {
+    background: rgba(255, 255, 255, 0.06); 
+    -webkit-backdrop-filter: saturate(120%) blur(10px);
+    backdrop-filter: saturate(120%) blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  code, pre {
+    border-radius: 10px;
+  }
+
+  /* Target article tag for markdown content font styling */
+  article {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* Specific styling for the main content article */
+  article[data-pagefind-body="true"] {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Override Nextra's default article styling */
+  article.x\:w-full {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  }
+
+  /* Sidebar footer background override */
+  :where(.nextra-sidebar-footer) {
+    background: transparent !important;
+    border-top: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Lightweight parallax blob for landing */
+  .parallax-blob {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 55vmax;
+    height: 55vmax;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: radial-gradient(closest-side, rgba(0, 102, 255, 0.18), transparent 72%);
+    pointer-events: none;
+    transition: transform 0.18s ease-out, opacity 300ms ease-out;
+    will-change: transform;
+    filter: blur(12px);
+    opacity: 0;
+  }
+
+  /* Beacon of light effect */
+  @keyframes beamPulse {
+    0%, 100% { opacity: 0.45; transform: translateX(-50%) scaleX(1); }
+    50% { opacity: 0.7; transform: translateX(-50%) scaleX(1.08); }
+  }
+  .beacon-beam {
+    position: absolute;
+    left: 50%;
+    top: -10vh;
+    height: 120vh;
+    width: 2px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0) 0%,
+      rgba(0, 146, 255, 0.4) 40%,
+      rgba(0, 146, 255, 0.35) 60%,
+      rgba(255,255,255,0) 100%);
+    filter: blur(8px);
+    opacity: 0.55;
+    pointer-events: none;
+    animation: beamPulse 4s ease-in-out infinite;
+  }
+  .beacon-source {
+    position: absolute;
+    left: 50%;
+    bottom: 10vh;
+    width: 36vmin;
+    height: 12vmin;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(0,146,255,0.28), rgba(0,146,255,0.08) 60%, transparent 70%);
+    filter: blur(14px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Distant beacon cone (perspective beam) */
+  .beacon-cone {
+    position: absolute;
+    left: 50%;
+    bottom: -10vh;
+    transform: translateX(-50%) perspective(800px) rotateX(60deg);
+    width: 4px;
+    height: 130vh;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 146, 255, 0.0) 0%,
+      rgba(0, 146, 255, 0.28) 30%,
+      rgba(0, 146, 255, 0.18) 70%,
+      rgba(0, 146, 255, 0.0) 100%
+    );
+    box-shadow: 0 0 40px 6px rgba(0,146,255,0.18), 0 0 120px 24px rgba(0,146,255,0.10);
+    filter: blur(2px);
+    pointer-events: none;
+    opacity: 0.55;
+  }
+
+  /* Beacon outline (SVG stroke glow) */
+  .beacon-outline {
+    position: absolute;
+    left: 50%;
+    bottom: 6vh;
+    transform: translateX(-50%);
+    width: clamp(120px, 22vmin, 220px);
+    height: auto;
+    opacity: 0.8;
+    pointer-events: none;
+  }
 }
-
-/* Force override Nextra theme colors - Dark mode (default) */
-html body nav.nextra-nav-container,
-html body .nextra-nav-container,
-html body div[class*="nextra-nav-container"] {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-html body footer.nextra-footer,
-html body .nextra-footer,
-html body div[class*="nextra-footer"] {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-html body aside.nextra-sidebar-container,
-html body .nextra-sidebar-container {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Light mode overrides */
-:global([data-mantine-color-scheme="light"]) html body nav.nextra-nav-container,
-:global([data-mantine-color-scheme="light"]) html body .nextra-nav-container,
-:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-nav-container"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body footer.nextra-footer,
-:global([data-mantine-color-scheme="light"]) html body .nextra-footer,
-:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-footer"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-  border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: rgba(0, 0, 0, 0.7) !important;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body aside.nextra-sidebar-container,
-:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Sidebar navigation elements - Dark mode */
-html body .nextra-sidebar-container a,
-html body aside[class*="nextra"] a {
-  color: rgba(255, 255, 255, 0.8) !important;
-  transition: all 0.2s ease !important;
-}
-
-html body .nextra-sidebar-container a:hover,
-html body aside[class*="nextra"] a:hover {
-  color: white !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-html body .nextra-sidebar-container a[aria-current="page"],
-html body aside[class*="nextra"] a[aria-current="page"] {
-  color: #f783ac !important;
-  background: rgba(247, 131, 172, 0.1) !important;
-}
-
-/* Sidebar navigation elements - Light mode */
-:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a,
-:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a {
-  color: #475057 !important;
-  transition: all 0.2s ease !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a:hover,
-:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a:hover {
-  color: #0f172a !important;
-  background: rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-sidebar-container a[aria-current="page"],
-:global([data-mantine-color-scheme="light"]) html body aside[class*="nextra"] a[aria-current="page"] {
-  color: #7c3aed !important;
-  background: rgba(124, 58, 237, 0.1) !important;
-}
-
-/* Override Nextra main content area - Dark mode */
-html body .nextra-container,
-html body main[class*="nextra"],
-html body div[class*="nextra-container"],
-html body .nextra-main,
-html body [class*="nextra-container"],
-html body [class*="nextra-main"],
-html body .nextra-layout,
-html body [class*="nextra-layout"] {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-}
-
-/* Override Nextra page content - Dark mode */
-html body .nextra-content,
-html body div[class*="nextra-content"],
-html body article[class*="nextra"],
-html body [class*="nextra-content"],
-html body .nextra-page,
-html body [class*="nextra-page"],
-html body .nextra-body,
-html body [class*="nextra-body"] {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-  color: white !important;
-}
-
-/* Override Nextra body and html - Dark mode */
-html body {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-}
-
-html {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-}
-
-/* Light mode content overrides */
-:global([data-mantine-color-scheme="light"]) html body .nextra-container,
-:global([data-mantine-color-scheme="light"]) html body main[class*="nextra"],
-:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-container"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-main,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-container"],
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-main"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-layout,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-layout"] {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%, #ffffff 100%) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content,
-:global([data-mantine-color-scheme="light"]) html body div[class*="nextra-content"],
-:global([data-mantine-color-scheme="light"]) html body article[class*="nextra"],
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-content"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-page,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-page"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-body,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-body"] {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%, #ffffff 100%) !important;
-  color: #1e293b !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-}
-
-/* Light mode specific overrides - only apply when light mode is active */
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-}
-
-/* Fix specific elements that show light backgrounds in dark mode */
-html body .nextra-toc,
-html body [class*="nextra-toc"],
-html body .nextra-toc-content,
-html body [class*="nextra-toc-content"],
-html body .nextra-toc-container,
-html body [class*="nextra-toc-container"] {
-  background: linear-gradient(135deg, #1a1b23 0%, #25262b 50%, #1a1b23 100%) !important;
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-html body .nextra-toc a,
-html body [class*="nextra-toc"] a {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-html body .nextra-toc a:hover,
-html body [class*="nextra-toc"] a:hover {
-  color: white !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Fix GitHub stats box and other info boxes in dark mode */
-html body .nextra-content [class*="github"],
-html body .nextra-content [class*="stats"],
-html body .nextra-content [class*="info"] {
-  background: rgba(0, 0, 0, 0.3) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Light mode versions of the above */
-:global([data-mantine-color-scheme="light"]) html body .nextra-toc,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-toc-content,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc-content"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-toc-container,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc-container"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%, #f8fafc 100%) !important;
-  color: #334155 !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-toc a,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"] a {
-  color: #475057 !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-toc a:hover,
-:global([data-mantine-color-scheme="light"]) html body [class*="nextra-toc"] a:hover {
-  color: #0f172a !important;
-  background: rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="github"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="stats"],
-:global([data-mantine-color-scheme="light"]) html body .nextra-content [class*="info"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%) !important;
-  color: #334155 !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Override Nextra text colors - Dark mode */
-html body .nextra-content h1,
-html body .nextra-content h2,
-html body .nextra-content h3,
-html body .nextra-content h4,
-html body .nextra-content h5,
-html body .nextra-content h6 {
-  color: white !important;
-}
-
-html body .nextra-content p,
-html body .nextra-content li,
-html body .nextra-content div {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-/* Code block overrides removed to use Nextra defaults */
-
-/* Override Nextra links - Dark mode */
-html body .nextra-content a {
-  color: #f783ac !important;
-  transition: color 0.2s ease !important;
-}
-
-html body .nextra-content a:hover {
-  color: #f56565 !important;
-}
-
-/* Light mode text colors */
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h1,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h2,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h3,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h4,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h5,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content h6 {
-  color: #0f172a !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content p,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content li,
-:global([data-mantine-color-scheme="light"]) html body .nextra-content div {
-  color: #334155 !important;
-}
-
-/* Removed aggressive code block overrides: fall back to Nextra defaults */
-
-/* Removed light mode aggressive code block overrides */
-
-/* Light mode links */
-:global([data-mantine-color-scheme="light"]) html body .nextra-content a {
-  color: #7c3aed !important;
-  transition: all 0.2s ease !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-}
-
-:global([data-mantine-color-scheme="light"]) html body .nextra-content a:hover {
-  color: #6d28d9 !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* Light mode carousel text colors */
-:global([data-mantine-color-scheme="light"]) .projectCard h3,
-:global([data-mantine-color-scheme="light"]) .projectCard h4,
-:global([data-mantine-color-scheme="light"]) .projectCard .mantine-Title-root {
-  color: #0f172a !important;
-}
-
-:global([data-mantine-color-scheme="light"]) .projectCard p,
-:global([data-mantine-color-scheme="light"]) .projectCard .mantine-Text-root {
-  color: #334155 !important;
-}
-
-/* Removed callout overrides to use Nextra defaults */
-
-/* Specific styling for different types of callouts */
-html body .nextra-content [class*="info"] {
-  border-left-color: #3b82f6 !important;
-}
-
-html body .nextra-content [class*="warning"] {
-  border-left-color: #f59e0b !important;
-}
-
-html body .nextra-content [class*="error"] {
-  border-left-color: #ef4444 !important;
-}
-
-html body .nextra-content [class*="tip"] {
-  border-left-color: #10b981 !important;
-}
-
-/* Removed table overrides */
-
-/* Removed table cell overrides */
-
-/* Removed table header overrides */
-
-html body .nextra-content ul,
-html body .nextra-content ol {
-  color: rgba(255, 255, 255, 0.9) !important;
-}
-
-html body .nextra-content strong,
-html body .nextra-content b {
-  color: white !important;
-}
-
-html body .nextra-content em,
-html body .nextra-content i {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Removed light mode callout overrides */
-
-/* Removed light mode callout accent overrides */
-
-/* Removed light mode table overrides */
-
-/* Removed light mode table cells overrides */
-
-/* Removed light mode table header overrides */
-
-/* Removed light mode list overrides */
-
-/* Removed light mode strong/b overrides */
-
-/* Removed light mode em/i overrides */

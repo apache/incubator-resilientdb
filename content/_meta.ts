@@ -21,11 +21,11 @@ export default {
   index: {
     title: 'Quick Start',
   },
-  installation: {
-    title: 'Installation',
-  },
   about: {
     title: 'About',
+  },
+  installation: {
+    title: 'Installation',
   },
   resilientdb: {
     title: 'Resilient DB',

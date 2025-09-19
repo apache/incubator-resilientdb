@@ -19,7 +19,7 @@
 
 'use client'
 
-import { Button } from '@mantine/core';
+import { Button, Group, Kbd, Text } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 
 export function SearchBar() {
@@ -34,12 +34,14 @@ export function SearchBar() {
   };
 
   return (
-    <Button
-      onClick={handleSearch}
-      leftSection={<IconSearch size={20} />}
-      variant="subtle"
-    >
-      Search
+    <Button onClick={handleSearch} variant="subtle" radius="xl" px={12}>
+      <Group gap={6} wrap="nowrap">
+        <IconSearch size={18} />
+        <Text size="sm" c="dimmed">Search</Text>
+        <Kbd>Ctrl</Kbd>
+        <Text size="sm" c="dimmed">+</Text>
+        <Kbd>K</Kbd>
+      </Group>
     </Button>
   );
 } 

@@ -19,8 +19,8 @@
 
 'use client';
 
-import { ActionIcon, Tooltip, Paper, Text, Group, Box, Modal, Textarea, Button, Stack, Divider, Avatar } from '@mantine/core';
-import { IconBrain, IconSend, IconRobot, IconUser } from '@tabler/icons-react';
+import { ActionIcon, Tooltip, Paper, Text, Group, Box, Modal, Textarea, Button, Stack, Divider, Avatar, Switch, Badge } from '@mantine/core';
+import { IconBrain, IconSend, IconRobot, IconUser, IconHighlight, IconSettings } from '@tabler/icons-react';
 import { useState, useEffect, ReactNode, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -47,6 +47,8 @@ export function FloatingAssistant() {
   const [isAskingQuestion, setIsAskingQuestion] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [lastSelection, setLastSelection] = useState('');
+  const [highlightMode, setHighlightMode] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Function to check if element is within a code editor
   const isWithinCodeEditor = (element: Element | null): boolean => {
@@ -66,6 +68,9 @@ export function FloatingAssistant() {
 
   // Debounced text selection handler
   const handleTextSelection = useCallback(() => {
+    // Only handle text selection if highlight mode is enabled
+    if (!highlightMode) return;
+
     // Clear any existing timer
     if (debounceTimer) {
       clearTimeout(debounceTimer);
@@ -93,7 +98,7 @@ export function FloatingAssistant() {
     }, 300); // 300ms debounce delay
 
     setDebounceTimer(timer);
-  }, [debounceTimer, lastSelection]);
+  }, [debounceTimer, lastSelection, highlightMode]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -182,24 +187,199 @@ Please:
 
   return (
     <>
-      <Tooltip label="AI Assistant - Select text to get explanations or ask general questions">
-        <ActionIcon
-          variant="filled"
-          color="blue"
-          size="xl"
-          radius="xl"
+      <div
           style={{
             position: 'fixed',
             bottom: '20px',
             right: '20px',
             zIndex: 1000,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          alignItems: 'flex-end',
+        }}
+      >
+        {/* Settings Toggle */}
+        <Tooltip 
+          label="AI Assistant Settings"
+          styles={{
+            tooltip: {
+              background: 'rgba(0,0,0,0.8)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: '12px',
+              fontWeight: 400,
+            }
           }}
-          onClick={() => setIsOpen(true)}
         >
-          <IconBrain size={20} />
+          <ActionIcon
+            variant="light"
+            size="md"
+            radius="xl"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.7)',
+              transition: 'all 200ms ease',
+            }}
+            onClick={() => setShowSettings(!showSettings)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 191, 255, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.3)';
+              e.currentTarget.style.color = '#00bfff';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+            }}
+          >
+            <IconSettings size={16} />
         </ActionIcon>
       </Tooltip>
+
+        {/* Settings Panel */}
+        {showSettings && (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12,
+              padding: 16,
+              minWidth: 200,
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 1,
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                borderRadius: '12px 12px 0 0',
+              }}
+            />
+            <Stack gap={12}>
+              <Group justify="space-between" align="center">
+                <Group gap={8}>
+                  <IconHighlight size={16} style={{ color: '#00bfff' }} />
+                  <Text size="sm" c="rgba(255,255,255,0.9)" fw={500}>
+                    Highlight Mode
+                  </Text>
+                </Group>
+                <Switch
+                  checked={highlightMode}
+                  onChange={(event) => setHighlightMode(event.currentTarget.checked)}
+                  size="sm"
+                  styles={{
+                    track: {
+                      backgroundColor: highlightMode ? 'rgba(0, 191, 255, 0.3)' : 'rgba(255,255,255,0.1)',
+                      borderColor: highlightMode ? 'rgba(0, 191, 255, 0.5)' : 'rgba(255,255,255,0.2)',
+                    },
+                    thumb: {
+                      backgroundColor: highlightMode ? '#00bfff' : 'rgba(255,255,255,0.6)',
+                    },
+                  }}
+                />
+              </Group>
+              <Text size="xs" c="rgba(255,255,255,0.6)" style={{ lineHeight: 1.4 }}>
+                {highlightMode 
+                  ? "Select text to automatically get explanations" 
+                  : "Click the AI button to ask questions manually"}
+              </Text>
+              {highlightMode && (
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color="blue"
+                  style={{
+                    background: 'rgba(0, 191, 255, 0.1)',
+                    border: '1px solid rgba(0, 191, 255, 0.2)',
+                    color: '#00bfff',
+                  }}
+                >
+                  Active
+                </Badge>
+              )}
+            </Stack>
+          </div>
+        )}
+
+        {/* Main AI Assistant Button */}
+        <Tooltip 
+          label={highlightMode ? "AI Assistant - Select text to get explanations" : "AI Assistant - Click to ask questions"}
+          styles={{
+            tooltip: {
+              background: 'rgba(0,0,0,0.8)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.9)',
+              fontSize: '12px',
+              fontWeight: 400,
+            }
+          }}
+        >
+          <ActionIcon
+            variant="light"
+            size="xl"
+            radius="xl"
+            style={{
+              background: 'rgba(0, 191, 255, 0.1)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(0, 191, 255, 0.2)',
+              color: '#00bfff',
+              transition: 'all 200ms ease',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+            onClick={() => setIsOpen(true)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 191, 255, 0.2)';
+              e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.4)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 191, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(0, 191, 255, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.2)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 1,
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                borderRadius: '50% 50% 0 0',
+              }}
+            />
+            <IconBrain size={20} style={{ position: 'relative', zIndex: 1 }} />
+            {highlightMode && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -2,
+                  right: -2,
+                  width: 8,
+                  height: 8,
+                  background: '#00ff88',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(0,0,0,0.8)',
+                }}
+              />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </div>
 
       <Modal
         opened={isOpen}
@@ -211,6 +391,10 @@ Please:
             flexDirection: 'column',
             height: '80vh',
             padding: 0,
+            background: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 16,
           },
           body: {
             flex: 1,
@@ -219,40 +403,92 @@ Please:
             flexDirection: 'column',
           },
           header: {
-            padding: '1rem',
-            borderBottom: '1px solid var(--mantine-color-dark-4)',
-            backgroundColor: 'var(--mantine-color-dark-7)',
+            padding: '20px',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.02)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px 16px 0 0',
           },
         }}
         title={
           <Group justify="space-between" w="100%">
-            <Group>
-              <Avatar color="blue" radius="xl">
-                <IconRobot size={20} />
-              </Avatar>
-              <Text size="sm" fw={500}>AI Assistant</Text>
+            <Group gap={12}>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  background: 'rgba(0, 191, 255, 0.1)',
+                  border: '1px solid rgba(0, 191, 255, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <IconRobot size={20} style={{ color: '#00bfff' }} />
+              </div>
+              <div>
+                <Text size="sm" fw={500} c="rgba(255,255,255,0.9)">
+                  AI Assistant
+                </Text>
+                <Text size="xs" c="rgba(255,255,255,0.6)">
+                  {highlightMode ? "Highlight mode enabled" : "Manual mode"}
+                </Text>
+              </div>
             </Group>
             {selectedText && (
-              <Text size="xs" c="dimmed" style={{ maxWidth: '70%' }}>
+              <div
+                style={{
+                  background: 'rgba(0, 191, 255, 0.1)',
+                  border: '1px solid rgba(0, 191, 255, 0.2)',
+                  borderRadius: 8,
+                  padding: '8px 12px',
+                  maxWidth: '60%',
+                }}
+              >
+                <Text size="xs" c="#00bfff" fw={500}>
                 Selected: "{selectedText.length > 50 ? selectedText.substring(0, 50) + '...' : selectedText}"
               </Text>
+              </div>
             )}
           </Group>
         }
       >
         <Stack style={{ flex: 1, height: '100%' }} p={0}>
           {selectedText && (
-            <Paper p="md" bg="dark.6" style={{ borderBottom: '1px solid var(--mantine-color-dark-4)' }}>
-              <Group>
-                <Avatar color="gray" radius="xl">
-                  <IconUser size={16} />
-                </Avatar>
-                <Box>
-                  <Text size="sm" fw={500} mb={4}>Selected Text</Text>
-                  <Text size="sm" c="dimmed">{selectedText}</Text>
+            <div
+              style={{
+                padding: '16px 20px',
+                background: 'rgba(255,255,255,0.03)',
+                borderBottom: '1px solid rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <Group gap={12}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconUser size={14} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                </div>
+                <Box style={{ flex: 1 }}>
+                  <Text size="sm" fw={500} mb={4} c="rgba(255,255,255,0.9)">
+                    Selected Text
+                  </Text>
+                  <Text size="sm" c="rgba(255,255,255,0.7)" style={{ lineHeight: 1.5 }}>
+                    {selectedText}
+                  </Text>
                 </Box>
               </Group>
-            </Paper>
+            </div>
           )}
           
           <Box 
@@ -266,20 +502,62 @@ Please:
             }}
           >
             {isLoading ? (
-              <Group>
-                <Avatar color="blue" radius="xl">
-                  <IconRobot size={20} />
-                </Avatar>
-                <Paper p="md" bg="dark.7" style={{ maxWidth: '80%' }}>
-                  <Text size="sm" c="dimmed">Generating response...</Text>
-                </Paper>
+              <Group align="flex-start" gap={12}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 191, 255, 0.1)',
+                    border: '1px solid rgba(0, 191, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconRobot size={16} style={{ color: '#00bfff' }} />
+                </div>
+                <div
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 12,
+                    padding: 16,
+                    maxWidth: '80%',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <Text size="sm" c="rgba(255,255,255,0.7)">
+                    Generating response...
+                  </Text>
+                </div>
               </Group>
             ) : explanation ? (
-              <Group align="flex-start">
-                <Avatar color="blue" radius="xl">
-                  <IconRobot size={20} />
-                </Avatar>
-                <Paper p="md" bg="dark.7" style={{ maxWidth: '80%' }}>
+              <Group align="flex-start" gap={12}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 191, 255, 0.1)',
+                    border: '1px solid rgba(0, 191, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconRobot size={16} style={{ color: '#00bfff' }} />
+                </div>
+                <div
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 12,
+                    padding: 16,
+                    maxWidth: '80%',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
                   <ReactMarkdown
                     components={{
                       code({ node, inline, className, children, ...props }: CodeProps) {
@@ -300,7 +578,7 @@ Please:
                         );
                       },
                       p: ({ children }: MarkdownComponentProps) => (
-                        <Text size="sm" mb="md" style={{ whiteSpace: 'pre-wrap' }}>
+                        <Text size="sm" mb="md" c="rgba(255,255,255,0.9)" style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>
                           {children}
                         </Text>
                       ),
@@ -315,67 +593,91 @@ Please:
                         </Box>
                       ),
                       li: ({ children }: MarkdownComponentProps) => (
-                        <Text size="sm" component="li" mb="xs">
+                        <Text size="sm" component="li" mb="xs" c="rgba(255,255,255,0.9)">
                           {children}
                         </Text>
                       ),
                       h1: ({ children }: MarkdownComponentProps) => (
-                        <Text size="xl" fw={700} mb="md">
+                        <Text size="xl" fw={700} mb="md" c="rgba(255,255,255,0.9)">
                           {children}
                         </Text>
                       ),
                       h2: ({ children }: MarkdownComponentProps) => (
-                        <Text size="lg" fw={600} mb="md">
+                        <Text size="lg" fw={600} mb="md" c="rgba(255,255,255,0.9)">
                           {children}
                         </Text>
                       ),
                       h3: ({ children }: MarkdownComponentProps) => (
-                        <Text size="md" fw={600} mb="md">
+                        <Text size="md" fw={600} mb="md" c="rgba(255,255,255,0.9)">
                           {children}
                         </Text>
                       ),
                       blockquote: ({ children }: MarkdownComponentProps) => (
-                        <Paper
-                          withBorder
-                          p="xs"
-                          mb="md"
-                          bg="dark.6"
-                          style={{ borderLeft: '4px solid var(--mantine-color-blue-6)' }}
+                        <div
+                          style={{
+                            padding: 12,
+                            marginBottom: 16,
+                            background: 'rgba(0, 191, 255, 0.05)',
+                            border: '1px solid rgba(0, 191, 255, 0.1)',
+                            borderLeft: '4px solid #00bfff',
+                            borderRadius: 8,
+                          }}
                         >
                           {children}
-                        </Paper>
+                        </div>
                       ),
                     }}
                   >
                     {explanation}
                   </ReactMarkdown>
-                </Paper>
+                </div>
               </Group>
             ) : (
-              <Group>
-                <Avatar color="blue" radius="xl">
-                  <IconRobot size={20} />
-                </Avatar>
-                <Paper p="md" bg="dark.7" style={{ maxWidth: '80%' }}>
-                  <Text size="sm" c="dimmed">
+              <Group align="flex-start" gap={12}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(0, 191, 255, 0.1)',
+                    border: '1px solid rgba(0, 191, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconRobot size={16} style={{ color: '#00bfff' }} />
+                </div>
+                <div
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 12,
+                    padding: 16,
+                    maxWidth: '80%',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <Text size="sm" c="rgba(255,255,255,0.7)">
                     {selectedText 
                       ? "Select text to get an explanation" 
                       : "Ask any question or select text to get an explanation"}
                   </Text>
-                </Paper>
+                </div>
               </Group>
             )}
           </Box>
 
-          <Paper 
-            p="md" 
+          <div
             style={{ 
-              borderTop: '1px solid var(--mantine-color-dark-4)',
-              backgroundColor: 'var(--mantine-color-dark-7)',
+              padding: '20px',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.02)',
+              backdropFilter: 'blur(8px)',
             }}
           >
             <form onSubmit={handleAskQuestion}>
-              <Group>
+              <Group gap={12}>
                 <Textarea
                   placeholder={selectedText 
                     ? "Ask a specific question about the selected text..." 
@@ -389,9 +691,18 @@ Please:
                   maxRows={3}
                   styles={{
                     input: {
-                      backgroundColor: 'var(--mantine-color-dark-6)',
-                      borderColor: 'var(--mantine-color-dark-4)',
-                    },
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      color: 'rgba(255,255,255,0.9)',
+                      borderRadius: 12,
+                      '&:focus': {
+                        borderColor: 'rgba(0, 191, 255, 0.5)',
+                        background: 'rgba(255,255,255,0.08)',
+                      },
+                      '&::placeholder': {
+                        color: 'rgba(255,255,255,0.5)',
+                      }
+                    }
                   }}
                 />
                 <Button 
@@ -399,12 +710,27 @@ Please:
                   loading={isAskingQuestion}
                   disabled={!question.trim()}
                   leftSection={<IconSend size={14} />}
+                  style={{
+                    background: 'rgba(0, 191, 255, 0.1)',
+                    border: '1px solid rgba(0, 191, 255, 0.3)',
+                    color: '#00bfff',
+                    borderRadius: 12,
+                    transition: 'all 200ms ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 191, 255, 0.2)';
+                    e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 191, 255, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.3)';
+                  }}
                 >
                   Send
                 </Button>
               </Group>
             </form>
-          </Paper>
+          </div>
         </Stack>
       </Modal>
     </>

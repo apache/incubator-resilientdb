@@ -268,10 +268,48 @@ loop.run_until_complete(__run())
   };
 
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack>
+    <div
+      style={{
+        background: 'rgba(255,255,255,0.02)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 16,
+        padding: 24,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Glass effect overlay */}
+      <div style={{ 
+        position: 'absolute', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        height: 1, 
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', 
+        borderRadius: '16px 16px 0 0' 
+      }} />
+      
+      <Stack gap={20}>
         <Group justify="space-between" align="center">
-          <Group>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              paddingInline: 12,
+              paddingBlock: 6,
+              borderRadius: 999,
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(6px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: 300 }}>
+              🐍 Python Playground
+            </span>
+          </div>
+          
+          <Group gap={8}>
             <Tooltip label="Load example">
               <Select
                 size="xs"
@@ -281,6 +319,16 @@ loop.run_until_complete(__run())
                   value && setCode(codeTemplates.find((t) => t.value === value)?.code || '')
                 }
                 leftSection={<IconTemplate size={14} />}
+                styles={{
+                  input: {
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    color: 'rgba(255,255,255,0.9)',
+                    '&:focus': {
+                      borderColor: 'rgba(0, 191, 255, 0.5)',
+                    }
+                  }
+                }}
               />
             </Tooltip>
             <Tooltip label="Ask AI Assistant">
@@ -288,6 +336,11 @@ loop.run_until_complete(__run())
                 variant="light" 
                 onClick={() => setShowChat(!showChat)}
                 color={showChat ? "blue" : "gray"}
+                style={{
+                  background: showChat ? 'rgba(0, 191, 255, 0.1)' : 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: showChat ? '#00bfff' : 'rgba(255,255,255,0.7)',
+                }}
               >
                 <IconMessage size={14} />
               </ActionIcon>
@@ -295,7 +348,15 @@ loop.run_until_complete(__run())
           </Group>
         </Group>
 
-        <Box>
+        <div
+          style={{
+            background: 'rgba(0,0,0,0.3)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 12,
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
           <CodeMirror
             value={code}
             height="400px"
@@ -330,20 +391,46 @@ loop.run_until_complete(__run())
               lintKeymap: true,
             }}
           />
-        </Box>
+        </div>
 
         {showChat && (
           <>
-            <Paper withBorder p="md" radius="md">
-              <Stack>
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 12,
+                padding: 16,
+                position: 'relative',
+              }}
+            >
+              <Stack gap={16}>
                 <Group justify="space-between" align="center">
-                  <Text size="sm" fw={500}>AI Assistant</Text>
-                  <Group>
+                  <div
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      paddingInline: 8,
+                      paddingBlock: 4,
+                      borderRadius: 6,
+                      background: 'rgba(0, 191, 255, 0.1)',
+                      border: '1px solid rgba(0, 191, 255, 0.2)',
+                    }}
+                  >
+                    <Text size="xs" fw={500} c="#00bfff">AI Assistant</Text>
+                  </div>
+                  <Group gap={4}>
                     <Tooltip label={isExpanded ? "Minimize" : "Expand"}>
                       <ActionIcon 
                         variant="light" 
                         onClick={() => setIsExpanded(true)}
                         disabled={isExpanded}
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.7)',
+                        }}
                       >
                         <IconMaximize size={14} />
                       </ActionIcon>
@@ -354,16 +441,37 @@ loop.run_until_complete(__run())
                         color="red" 
                         onClick={clearConversation}
                         disabled={messages.length === 0}
+                        style={{
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.7)',
+                        }}
                       >
                         <IconTrash size={14} />
                       </ActionIcon>
                     </Tooltip>
                   </Group>
                 </Group>
-                <Box style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                   {[...messages].reverse().map((message, i) => (
-                    <Paper key={i} p="xs" mb="xs" bg={message.role === 'user' ? 'dark.6' : 'dark.7'}>
-                      <Text size="sm" c={message.role === 'user' ? 'blue' : 'white'}>
+                    <div
+                      key={i}
+                      style={{
+                        padding: 12,
+                        marginBottom: 8,
+                        borderRadius: 8,
+                        background: message.role === 'user' 
+                          ? 'rgba(0, 191, 255, 0.1)' 
+                          : 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        backdropFilter: 'blur(4px)',
+                      }}
+                    >
+                      <Text 
+                        size="sm" 
+                        c={message.role === 'user' ? '#00bfff' : 'rgba(255,255,255,0.9)'}
+                        style={{ lineHeight: 1.5 }}
+                      >
                         {message.role === 'user' ? (
                           message.content
                         ) : (
@@ -392,11 +500,11 @@ loop.run_until_complete(__run())
                           </ReactMarkdown>
                         )}
                       </Text>
-                    </Paper>
+                    </div>
                   ))}
-                </Box>
+                </div>
                 <form onSubmit={handleSubmit}>
-                  <Group>
+                  <Group gap={8}>
                     <Textarea
                       placeholder="Ask about your code... (Press Enter to send, Shift+Enter for new line)"
                       value={input}
@@ -407,24 +515,49 @@ loop.run_until_complete(__run())
                       autosize
                       minRows={1}
                       maxRows={4}
+                      styles={{
+                        input: {
+                          background: 'rgba(255,255,255,0.05)',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.9)',
+                          '&:focus': {
+                            borderColor: 'rgba(0, 191, 255, 0.5)',
+                          },
+                          '&::placeholder': {
+                            color: 'rgba(255,255,255,0.5)',
+                          }
+                        }
+                      }}
                     />
                     {isAiLoading ? (
                       <Button 
                         color="red" 
                         onClick={stopGeneration}
                         leftSection={<IconPlayerStop size={14} />}
+                        style={{
+                          background: 'rgba(255, 77, 77, 0.1)',
+                          border: '1px solid rgba(255, 77, 77, 0.3)',
+                          color: '#ff4d4d',
+                        }}
                       >
                         Stop
                       </Button>
                     ) : (
-                      <Button type="submit">
+                      <Button 
+                        type="submit"
+                        style={{
+                          background: 'rgba(0, 191, 255, 0.1)',
+                          border: '1px solid rgba(0, 191, 255, 0.3)',
+                          color: '#00bfff',
+                        }}
+                      >
                         Send
                       </Button>
                     )}
                   </Group>
                 </form>
               </Stack>
-            </Paper>
+            </div>
 
             <Modal
               opened={isExpanded}
@@ -541,39 +674,63 @@ loop.run_until_complete(__run())
             onClick={runCode}
             loading={isRunning}
             disabled={isLoading}
-            color="blue"
             leftSection={<IconPlayerPlay size={14} />}
+            style={{
+              background: 'rgba(0, 191, 255, 0.1)',
+              border: '1px solid rgba(0, 191, 255, 0.3)',
+              color: '#00bfff',
+              borderRadius: 8,
+            }}
           >
             {isRunning ? 'Running...' : 'Run'}
           </Button>
           <Button
             onClick={clearOutput}
-            variant="light"
             disabled={isLoading || output.length === 0}
             leftSection={<IconTrash size={14} />}
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.7)',
+              borderRadius: 8,
+            }}
           >
             Clear Output
           </Button>
         </Group>
 
-        <Paper
-          withBorder
-          p="xs"
+        <div
           style={{
-            backgroundColor: '#1e1e1e',
-            color: '#33ff00',
-            fontFamily: 'monospace',
+            background: 'rgba(0,0,0,0.4)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 12,
+            padding: 16,
             height: '200px',
             overflow: 'auto',
+            fontFamily: 'monospace',
+            position: 'relative',
           }}
         >
           {output.map((line, i) => (
-            <Text key={i} style={{ whiteSpace: 'pre-wrap', color: 'inherit' }}>
+            <Text 
+              key={i} 
+              style={{ 
+                whiteSpace: 'pre-wrap', 
+                color: line.includes('✅') ? '#00ff88' : 
+                       line.includes('❌') ? '#ff4d4d' : 
+                       line.includes('▶') ? '#00bfff' : 
+                       'rgba(255,255,255,0.8)',
+                fontSize: 13,
+                lineHeight: 1.4,
+                display: 'block',
+                marginBottom: 2,
+              }}
+            >
               {line}
             </Text>
           ))}
-        </Paper>
+        </div>
       </Stack>
-    </Paper>
+    </div>
   );
 }
