@@ -27,9 +27,6 @@ export default {
   installation: {
     title: 'Installation',
   },
-  about: {
-    title: 'About',
-  },
   resilientdb: {
     title: 'Resilient DB',
   },
