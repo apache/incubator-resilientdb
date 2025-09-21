@@ -20,7 +20,7 @@ export const MantineNavBar = () => {
   return (
     <>
       <MantineNextraThemeObserver />
-      <Box style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+      <Box>
         <Header />
       </Box>
     </>

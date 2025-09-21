@@ -1,3 +1,5 @@
+#!/usr/bin/env tsx
+
 /*
 * Licensed to the Apache Software Foundation (ASF) under one
 * or more contributor license agreements.  See the NOTICE file
@@ -17,38 +19,23 @@
 * under the License.
 */
 
-import bundleAnalyzer from '@next/bundle-analyzer';
-import nextra from 'nextra';
+import { documentIndexer } from '../lib/documentIndexer';
 
-const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-});
+async function buildIndex() {
+  try {
+    console.log('🚀 Starting document index build...');
+    
+    const index = await documentIndexer.indexDocuments();
+    
+    console.log('✅ Document index built successfully!');
+    console.log(`📊 Indexed ${index.totalDocuments} document chunks`);
+    console.log(`📅 Last updated: ${index.lastUpdated}`);
+    console.log(`💾 Index saved to: public/document-index.json`);
+    
+  } catch (error) {
+    console.error('❌ Error building document index:', error);
+    process.exit(1);
+  }
+}
 
-const withNextra = nextra({
-  latex: true,
-  search: {
-    codeblocks: false
-  },
-  contentDirBasePath: '/docs',
-})
-
-export default withNextra(
-  withBundleAnalyzer({
-    reactStrictMode: false,
-    cleanDistDir: true,
-    eslint: {
-      ignoreDuringBuilds: true,
-    },
-    experimental: {
-      optimizePackageImports: ['@mantine/core', '@mantine/hooks'],
-    },
-    // Performance optimizations
-    compiler: {
-      removeConsole: process.env.NODE_ENV === 'production',
-    },
-    // Reduce memory usage
-    onDemandEntries: {
-      maxInactiveAge: 25 * 1000,
-      pagesBufferLength: 2,
-    },
-  }));
+buildIndex();

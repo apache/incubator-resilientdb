@@ -5,7 +5,8 @@ import { SearchBar } from '../SearchBar/SearchBar';
 export default function Header() {
   return (
     <header style={{ position: 'relative', zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      {/* Logo - Left side */}
+      <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
         <a href="/" style={{ textDecoration: 'none' }}>
           <button
             style={{
@@ -41,7 +42,8 @@ export default function Header() {
         </a>
       </div>
 
-      <nav style={{ display: 'flex', alignItems: 'center', columnGap: 8 }}>
+      {/* Navigation - Center */}
+      <nav style={{ display: 'flex', alignItems: 'center', columnGap: 8, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
           <a
           href="/docs"
             style={{
@@ -154,8 +156,9 @@ export default function Header() {
         </a>
       </nav>
 
-      <div style={{ position: 'relative' }}>
-          {/* <SearchBar/> */}
+      {/* Search Bar - Right side */}
+      <div style={{ display: 'flex', alignItems: 'center', flex: '0 0 auto' }}>
+        <SearchBar/>
       </div>
     </header>
   );

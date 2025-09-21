@@ -218,4 +218,61 @@
     opacity: 0.8;
     pointer-events: none;
   }
+
+  /* Custom Pagefind Search Styles */
+  .pagefind-search {
+    position: relative;
+    z-index: 10000;
+  }
+
+  .pagefind-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+  }
+
+  .pagefind-search-container {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    min-width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+
+  .pagefind-search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pagefind-search-result {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .pagefind-search-result:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .pagefind-search-result:last-child {
+    border-bottom: none;
+  }
 }
