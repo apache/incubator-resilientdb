@@ -154,9 +154,7 @@ export default function Header() {
         </a>
       </nav>
 
-      <div style={{ position: 'relative' }}>
-          {/* <SearchBar/> */}
-      </div>
+      <SearchBar/>
     </header>
   );
 }

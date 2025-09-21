@@ -47,7 +47,7 @@ export function FloatingAssistant() {
   const [isAskingQuestion, setIsAskingQuestion] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [lastSelection, setLastSelection] = useState('');
-  const [highlightMode, setHighlightMode] = useState(true);
+  const [highlightMode, setHighlightMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   // Function to check if element is within a code editor
@@ -183,6 +183,17 @@ Please:
     setIsAskingQuestion(true);
     getExplanation(selectedText || '', question);
     setQuestion('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (question.trim()) {
+        setIsAskingQuestion(true);
+        getExplanation(selectedText || '', question);
+        setQuestion('');
+      }
+    }
   };
 
   return (
@@ -684,6 +695,7 @@ Please:
                     : "Ask any question..."}
                   value={question}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setQuestion(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   style={{ flex: 1 }}
                   disabled={isLoading}
                   autosize
