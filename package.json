@@ -5,8 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind --exclude-selectors 'nav,footer,header,.nextra-nav-container'",
-    "build:pagefind": "pagefind --site .next/server/app --output-path public/_pagefind --exclude-selectors 'nav,footer,header,.nextra-nav-container'",
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind && npx tsx scripts/build-index.ts",
+    "build:pagefind": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "build:index": "npx tsx scripts/build-index.ts",
     "analyze": "ANALYZE=true next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
@@ -42,6 +43,7 @@
     "@uiw/react-codemirror": "^4.23.12",
     "ai": "^4.3.16",
     "framer-motion": "12.23.14",
+    "gray-matter": "^4.0.3",
     "internmap": "^2.0.3",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
@@ -90,6 +92,7 @@
     "stylelint": "^16.19.1",
     "stylelint-config-standard-scss": "^14.0.0",
     "ts-jest": "^29.3.2",
+    "tsx": "^4.20.5",
     "typescript": "5.8.3",
     "typescript-eslint": "^8.32.0"
   },
