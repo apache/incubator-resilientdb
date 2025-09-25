@@ -97,6 +97,24 @@ CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/100000        2370 ms   
 CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/1000000      97125 ms        96949 ms            1 composite_keys=1M items_per_second=10.3147k/s total_records=1M
 ```
 
+# Latency Comparison: Sequential Reads (time in ms)
+
+| Records | Primary Only | 25% Composite Write Amplification | 50% Composite Write Amplification | 100% Composite Write Amplification |
+|---------|-------------|---------------|---------------|----------------|
+| 1K      | 18.8        | 19.1          | 20.7          | 21.8          |
+| 10K     | 206         | 209           | 209           | 227           |
+| 100K    | 2231        | 2233          | 2335          | 2370          |
+| 1M      | 29095       | 34021         | 30012         | 97125         |
+
+# Latency Comparison: Sequential Reads (time in ms)
+
+| Records | Primary Only | 25% Composite (Overhead) | 50% Composite (Overhead) | 100% Composite (Overhead) |
+|---------|-------------|-------------------------|-------------------------|--------------------------|
+| 1K      | 18.8        | 19.1 (+1.6%)           | 20.7 (+10.1%)          | 21.8 (+16.0%)           |
+| 10K     | 206         | 209 (+1.5%)            | 209 (+1.5%)            | 227 (+10.2%)            |
+| 100K    | 2231        | 2233 (+0.1%)           | 2335 (+4.7%)           | 2370 (+6.2%)            |
+| 1M      | 29095       | 34021 (+16.9%)         | 30012 (+3.2%)          | 97125 (+233.8%)         |
+
 - RocksDB (BlobDB Enabled)
 ```
 INFO: Running command line: bazel-bin/benchmark/storage/composite_key_benchmark '--benchmark_filter=PrimaryKey*' '--storage_type=rocksdb'
@@ -130,6 +148,23 @@ CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/10000          171 ms   
 CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/100000        1853 ms         1852 ms            1 composite_keys=100k items_per_second=53.9821k/s total_records=100k
 CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/1000000      21148 ms        21147 ms            1 composite_keys=1M items_per_second=47.2885k/s total_records=1M
 ```
+# Latency Comparison: Sequential Reads (time in ms)
+
+| Records | Primary Only | 25% Composite Write Amplification | 50% Composite Write Amplification | 100% Composite Write Amplification |
+|---------|-------------|---------------|---------------|----------------|
+| 1K      | 16.1        | 16.7          | 16.2          | 16.3          |
+| 10K     | 170         | 172           | 173           | 171           |
+| 100K    | 1780        | 1864          | 1823          | 1853          |
+| 1M      | 19080       | 20900         | 23071         | 21148         |
+
+# Latency Comparison: RocksDB with BlobDB, Sequential Reads (time in ms) with Overhead
+
+| Records | Primary Only | 25% Composite (Overhead) | 50% Composite (Overhead) | 100% Composite (Overhead) |
+|---------|-------------|-------------------------|-------------------------|--------------------------|
+| 1K      | 16.1        | 16.7 (+3.7%)           | 16.2 (+0.6%)           | 16.3 (+1.2%)            |
+| 10K     | 170         | 172 (+1.2%)            | 173 (+1.8%)            | 171 (+0.6%)             |
+| 100K    | 1780        | 1864 (+4.7%)           | 1823 (+2.4%)           | 1853 (+4.1%)            |
+| 1M      | 19080       | 20900 (+9.5%)          | 23071 (+20.9%)         | 21148 (+10.8%)          |
 
 - RocksDB (PrefixCapped search with bloom filters)
 ```
@@ -164,6 +199,24 @@ CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/10000          174 ms   
 CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/100000        1841 ms         1841 ms            1 composite_keys=100k items_per_second=54.325k/s total_records=100k
 CompositeKeyBenchmark/PrimaryKeyWithCompositeKeys_100AF/1000000      21040 ms        21039 ms            1 composite_keys=1M items_per_second=47.5313k/s total_records=1M
 ```
+
+# Latency Comparison: RocksDB with Prefix Optimization, Sequential Reads (time in ms)
+
+| Records | Primary Only | 25% Composite Write Amplification | 50% Composite Write Amplification | 100% Composite Write Amplification |
+|---------|-------------|---------------|---------------|----------------|
+| 1K      | 16.4        | 16.5          | 16.3          | 16.3          |
+| 10K     | 171         | 170           | 174           | 174           |
+| 100K    | 1800        | 1792          | 1830          | 1841          |
+| 1M      | 19564       | 21907         | 21594         | 21040         |
+
+# Latency Comparison: RocksDB with Prefix Optimization, Sequential Reads (time in ms) with Overhead
+
+| Records | Primary Only | 25% Composite (Overhead) | 50% Composite (Overhead) | 100% Composite (Overhead) |
+|---------|-------------|-------------------------|-------------------------|--------------------------|
+| 1K      | 16.4        | 16.5 (+0.6%)           | 16.3 (-0.6%)           | 16.3 (-0.6%)            |
+| 10K     | 171         | 170 (-0.6%)            | 174 (+1.8%)            | 174 (+1.8%)             |
+| 100K    | 1800        | 1792 (-0.4%)           | 1830 (+1.7%)           | 1841 (+2.3%)            |
+| 1M      | 19564       | 21907 (+12.0%)         | 21594 (+10.4%)         | 21040 (+7.5%)           |
 
 ## Benchmark 3: RocksDB vs LevelDB
 ```

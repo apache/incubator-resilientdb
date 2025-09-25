@@ -191,8 +191,12 @@ class CompositeKeyBenchmark : public benchmark::Fixture {
   void SetUp(const benchmark::State& state) override {
     static LogSuppressor log_suppressor;
 
-    std::filesystem::remove_all("/tmp/nexres-leveldb");
-    std::filesystem::remove_all("/tmp/nexres-rocksdb");
+    if(std::filesystem::exists("/tmp/nexres-leveldb")) {
+      std::filesystem::remove_all("/tmp/nexres-leveldb");
+    }
+    if(std::filesystem::exists("/tmp/nexres-rocksdb")) {
+      std::filesystem::remove_all("/tmp/nexres-rocksdb");
+    }
 
     std::unique_ptr<Storage> storage;
     std::string type = FLAGS_storage_type;
@@ -430,7 +434,7 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
 }
 
 BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
-                   PrimaryKeyOnly_Seq)(benchmark::State& state) {
+                   PrimaryKeyOnly_Rand)(benchmark::State& state) {
   const int num_records = state.range(0);
 
   for (int i = 0; i < num_records; i++) {
@@ -439,10 +443,15 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
     SetValue(executor_.get(), "record_" + std::to_string(i), json);
   }
 
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dist(0, num_records - 1);
+
   for (auto _ : state) {
     for (int i = 0; i < num_records; i++) {
+      int random_id = dist(gen);
       std::string result =
-          GetValue(executor_.get(), "record_" + std::to_string(i));
+          GetValue(executor_.get(), "record_" + std::to_string(random_id));
       benchmark::DoNotOptimize(result);
     }
   }
@@ -450,10 +459,12 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
   state.SetItemsProcessed(state.iterations() * num_records);
   state.counters["total_records"] = num_records;
   state.counters["composite_keys"] = 0;
+
+  TearDown(state);
 }
 
 BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
-                   PrimaryKeyWithCompositeKeys_25AF_Seq)(benchmark::State& state) {
+                   PrimaryKeyWithCompositeKeys_25AF_Rand)(benchmark::State& state) {
   const int num_records = state.range(0);
 
   for (int i = 0; i < num_records; i++) {
@@ -466,11 +477,15 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
                          std::to_string(i), 1);
     }
   }
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dist(0, num_records - 1);
 
   for (auto _ : state) {
     for (int i = 0; i < num_records; i++) {
+      int random_id = dist(gen);
       std::string result =
-          GetValue(executor_.get(), "record_" + std::to_string(i));
+          GetValue(executor_.get(), "record_" + std::to_string(random_id));
       benchmark::DoNotOptimize(result);
     }
   }
@@ -478,10 +493,12 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
   state.SetItemsProcessed(state.iterations() * num_records);
   state.counters["total_records"] = num_records;
   state.counters["composite_keys"] = num_records;
+
+  TearDown(state);
 }
 
 BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
-                   PrimaryKeyWithCompositeKeys_50AF_Seq)(benchmark::State& state) {
+                   PrimaryKeyWithCompositeKeys_50AF_Rand)(benchmark::State& state) {
   const int num_records = state.range(0);
 
   for (int i = 0; i < num_records; i++) {
@@ -494,11 +511,15 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
                          std::to_string(i), 1);
     }
   }
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dist(0, num_records - 1);
 
   for (auto _ : state) {
     for (int i = 0; i < num_records; i++) {
+      int random_id = dist(gen);
       std::string result =
-          GetValue(executor_.get(), "record_" + std::to_string(i));
+          GetValue(executor_.get(), "record_" + std::to_string(random_id));
       benchmark::DoNotOptimize(result);
     }
   }
@@ -506,10 +527,12 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
   state.SetItemsProcessed(state.iterations() * num_records);
   state.counters["total_records"] = num_records;
   state.counters["composite_keys"] = num_records;
+
+  TearDown(state);
 }
 
 BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
-                   PrimaryKeyWithCompositeKeys_100AF_Seq)(benchmark::State& state) {
+                   PrimaryKeyWithCompositeKeys_100AF_Rand)(benchmark::State& state) {
   const int num_records = state.range(0);
 
   for (int i = 0; i < num_records; i++) {
@@ -521,10 +544,15 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
                        std::to_string(i), 1);
   }
 
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dist(0, num_records - 1);
+
   for (auto _ : state) {
     for (int i = 0; i < num_records; i++) {
+      int random_id = dist(gen);
       std::string result =
-          GetValue(executor_.get(), "record_" + std::to_string(i));
+          GetValue(executor_.get(), "record_" + std::to_string(random_id));
       benchmark::DoNotOptimize(result);
     }
   }
@@ -532,6 +560,8 @@ BENCHMARK_DEFINE_F(CompositeKeyBenchmark,
   state.SetItemsProcessed(state.iterations() * num_records);
   state.counters["total_records"] = num_records;
   state.counters["composite_keys"] = num_records;
+
+  TearDown(state);
 }
 
 BENCHMARK_REGISTER_F(CompositeKeyBenchmark, StringFieldInMemory)
@@ -561,28 +591,28 @@ BENCHMARK_REGISTER_F(CompositeKeyBenchmark, IntegerFieldComposite)
     // ->Args({10000000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyOnly_Seq)
+BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyOnly_Rand)
     ->Args({1000})
     ->Args({10000})
     ->Args({100000})
     // ->Args({1000000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_25AF_Seq)
+BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_25AF_Rand)
     ->Args({1000})
     ->Args({10000})
     ->Args({100000})
     ->Args({1000000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_50AF_Seq)
+BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_50AF_Rand)
     ->Args({1000})
     ->Args({10000})
     ->Args({100000})
     ->Args({1000000})
     ->Unit(benchmark::kMillisecond);
 
-BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_100AF_Seq)
+BENCHMARK_REGISTER_F(CompositeKeyBenchmark, PrimaryKeyWithCompositeKeys_100AF_Rand)
     ->Args({1000})
     ->Args({10000})
     ->Args({100000})

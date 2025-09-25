@@ -1,0 +1,39 @@
+{
+  "title": "LevelDB: Primary Key Retrieval Latency Comparison: 25%, 50%, 100% Write Amplification, Sequential Reads",
+  "units": "ms",
+  "data": {
+    "records": ["1K", "10K", "100K", "1M"],
+    "series": [
+      {
+        "name": "Primary Only",
+        "values": [18.8, 206, 2231, 29095],
+        "color": "#2196F3"
+      },
+      {
+        "name": "25% Write Amplification",
+        "values": [19.1, 209, 2233, 34021],
+        "color": "#4CAF50"
+      },
+      {
+        "name": "50% Write Amplification",
+        "values": [20.7, 209, 2335, 30012],
+        "color": "#FFC107"
+      },
+      {
+        "name": "100% Write Amplification",
+        "values": [21.8, 227, 2370, 97125],
+        "color": "#F44336"
+      }
+    ],
+    "axis": {
+      "x": {
+        "label": "Number of Records",
+        "scale": "linear"
+      },
+      "y": {
+        "label": "Latency (ms)",
+        "scale": "log"
+      }
+    }
+  }
+}

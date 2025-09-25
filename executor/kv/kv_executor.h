@@ -99,7 +99,7 @@ class KVExecutor : public TransactionManager {
 
   std::unique_ptr<Storage> storage_;
   std::unique_ptr<TransactionManager> contract_manager_;
-  
+
   // Composite key configuration
   const std::string composite_key_separator_ = ":";
   const std::string composite_key_prefix_ = "idx";
