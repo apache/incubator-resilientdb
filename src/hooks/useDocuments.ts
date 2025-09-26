@@ -11,18 +11,6 @@ export interface Document {
   displayTitle?: string;
 }
 
-
-
-const fetchDocuments = async (): Promise<Document[]> => {
-  const response = await fetch('/api/research/documents');
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch documents: ${response.status}`);
-  }
-  
-  return response.json();
-};
-
 function updateURL(url: string) {
   return url.substring(0, url.lastIndexOf('/')) + '/' + 'preview';
 }
@@ -31,16 +19,43 @@ const getDisplayTitle = (filename: string): string => {
   return TITLE_MAPPINGS[lowerFilename] || filename.replace('.pdf', '');
 };
 
+function transformGroupedData(
+  data: Record<string, any[]>,
+  folderOrder: string[]
+) {
+  return folderOrder.map((folderId) =>
+    (data[folderId] || []).map((doc) => ({
+      ...doc,
+      displayTitle: getDisplayTitle(doc.name),
+      webViewLink: updateURL(doc.webViewLink),
+    }))
+  );
+}
+
+
+const fetchDocuments = async (): Promise<Document[][]> => {
+  const response = await fetch('/api/research/documents');
+  const data = await response.json();
+  const folderIds = [
+      "16yvY-jnMOZ1hMGaMYk0oi86eBbCqCHR2", // Class PDFs
+      "1BKiGBrrrBMegCBUV1RlpkWBTktNPt4GL" // BOOKS
+    ];
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch documents: ${response.status}`);
+  }
+  const transformed = transformGroupedData(data.data, folderIds);
+  console.log(' documents transformed successfully',transformed)
+  // console.log(Object.values(transformed).flat())
+  return transformed; // Flatten the structure to return an array of documents
+};
+
+
+
 export const useDocuments = () => {
   return useQuery({
     queryKey: ['documents'],
     queryFn: fetchDocuments,
-    select: (data: Document[]) => 
-      data.map((doc) => ({
-        ...doc,
-        displayTitle: getDisplayTitle(doc.name),
-        webViewLink: updateURL(doc.webViewLink),
-      })),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });

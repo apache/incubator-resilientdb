@@ -851,6 +851,7 @@ function ResearchChatPageContent() {
                 role="main"
                 aria-label="Chat interface"
               >
+
                 {selectedDocuments.length === 0 ? (
                   <CardContent className="flex-1 flex items-center justify-center p-4">
                     <Card className="text-center max-w-md">
