@@ -1,21 +1,21 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#  http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#  
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+--> 
 
 ![](https://img.shields.io/github/v/release/resilientdb/resilientdb)
 ![](https://img.shields.io/badge/language-c++-orange.svg)
@@ -80,6 +80,88 @@ The latest ResilientDB documentation, including a programming guide, is availabl
 Ubuntu 20+
 
 ---
+
+## Project Structure
+
+```
+incubator-resilientdb/
+├── api/                              # API layer and interfaces
+├── benchmark/                        # Performance benchmarking tools
+│   └── protocols/                    # Protocol-specific benchmarks
+│       ├── pbft/                     # PBFT protocol benchmarks
+│       └── poe/                      # PoE protocol benchmarks
+├── chain/                           # Blockchain chain management
+│   ├── state/                       # Chain state management
+│   └── storage/                     # Storage layer (LevelDB, etc.)
+├── common/                          # Common utilities and libraries
+│   ├── crypto/                      # Cryptographic functions
+│   ├── lru/                         # LRU cache implementation
+│   ├── proto/                       # Protocol buffer definitions
+│   ├── test/                        # Testing utilities
+│   └── utils/                       # General utilities
+├── ecosystem/                       # Ecosystem components (git subtrees)
+│   ├── cache/                       # Caching implementations
+│   │   ├── resilient-node-cache/    # Node.js caching
+│   │   └── resilient-python-cache/  # Python caching
+│   ├── deployment/                  # Deployment and infrastructure
+│   │   ├── ansible/                 # Ansible playbooks
+│   │   └── orbit/                   # Orbit deployment tool
+│   ├── graphql/                     # GraphQL service
+│   ├── monitoring/                  # Monitoring and observability
+│   │   ├── reslens/                 # ResLens monitoring tool
+│   │   └── reslens-middleware/      # ResLens middleware
+│   ├── sdk/                         # Software Development Kits
+│   │   ├── resdb-orm/               # Python ORM
+│   │   ├── resvault-sdk/            # ResVault SDK
+│   │   └── rust-sdk/                # Rust SDK
+│   ├── smart-contract/              # Smart contract ecosystem
+│   │   ├── rescontract/             # ResContract repository
+│   │   ├── resilient-contract-kit/  # Contract development toolkit
+│   │   └── smart-contract-graphql/  # Smart contract GraphQL service
+│   └── tools/                       # Development and operational tools
+│       ├── create-resilient-app/    # App scaffolding tool
+│       └── resvault/                # ResVault tool
+├── executor/                        # Transaction execution engine
+│   ├── common/                      # Common execution utilities
+│   ├── contract/                    # Smart contract execution
+│   ├── kv/                          # Key-value execution
+│   └── utxo/                        # UTXO execution
+├── interface/                       # Client interfaces and APIs
+│   ├── common/                      # Common interface utilities
+│   ├── contract/                    # Smart contract interface
+│   ├── kv/                          # Key-value interface
+│   ├── rdbc/                        # ResilientDB Database Connectivity
+│   └── utxo/                        # UTXO interface
+├── monitoring/                      # Core monitoring components
+├── platform/                        # Core platform components
+│   ├── common/                      # Common platform utilities
+│   ├── config/                      # Configuration management
+│   ├── consensus/                   # Consensus protocols
+│   │   ├── checkpoint/              # Checkpoint management
+│   │   ├── execution/               # Transaction execution
+│   │   ├── ordering/                # Transaction ordering
+│   │   └── recovery/                # Recovery mechanisms
+│   ├── networkstrate/               # Network strategy layer
+│   ├── proto/                       # Protocol definitions
+│   ├── rdbc/                        # RDBC implementation
+│   └── statistic/                   # Statistics and metrics
+├── proto/                           # Protocol buffer definitions
+│   ├── contract/                    # Smart contract protos
+│   ├── kv/                          # Key-value protos
+│   └── utxo/                        # UTXO protos
+├── scripts/                         # Deployment and utility scripts
+│   └── deploy/                      # Deployment scripts
+├── service/                         # Service implementations
+│   ├── contract/                    # Smart contract service
+│   ├── kv/                          # Key-value service
+│   ├── tools/                       # Service tools
+│   ├── utils/                       # Service utilities
+│   └── utxo/                        # UTXO service
+├── third_party/                     # Third-party dependencies
+└── tools/                           # Development and build tools
+```
+
+**Note**: The `ecosystem/` directory contains git subtrees for ecosystem components. You can clone the repository without ecosystem components for a smaller, faster download. See [ecosystem/README.md](ecosystem/README.md) for details.
 
 ## Build and Deploy ResilientDB
 

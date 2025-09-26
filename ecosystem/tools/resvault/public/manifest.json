@@ -1,0 +1,37 @@
+{
+  "short_name": "ResVault",
+  "name": "ResVault",
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "64": "icon-64.png",
+    "128": "icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],  
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "manifest_version": 3,
+  "version": "0.0.1",
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "ResVault",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png",
+      "64": "icon-64.png",
+      "128": "icon-128.png"
+    }
+  }
+}

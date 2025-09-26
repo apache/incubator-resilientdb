@@ -1,0 +1,39 @@
+{
+  "name": "resilient-node-cache",
+  "version": "1.0.1",
+  "description": "TypeScript library for syncing ResilientDB data via WebSocket and HTTP with seamless reconnection.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/index.ts",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ResilientEcosystem/resilient-node-cache"
+  },
+  "keywords": [
+    "websocket",
+    "mongodb",
+    "typescript",
+    "npm-module",
+    "sync",
+    "reconnection",
+    "resilientdb"
+  ],
+  "author": "Apratim Shukla",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "mongodb": "^4.14.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "@types/ws": "^8.5.4",
+    "mongodb-memory-server": "^10.1.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
+  }
+}
