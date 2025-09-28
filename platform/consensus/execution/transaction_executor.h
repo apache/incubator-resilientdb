@@ -18,10 +18,10 @@
  */
 
 #pragma once
-#include <functional>
-#include <thread>
 #include <atomic>
 #include <cstdint>
+#include <functional>
+#include <thread>
 
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
@@ -33,31 +33,11 @@
 
 namespace resdb {
 
-// class ReplicaLatestSeq {
-// public:
-//   uint64_t get_latest_executed_seq() const {
-//     return latest_executed_seq_.load(std::memory_order_acquire);
-//   }
-
-//   // Call this AFTER a transaction with sequence `seq` executes successfully.
-//   void set_OnExecuteSuccess(uint64_t seq) {
-//     // Monotonic update: only move forward.
-//     uint64_t cur = latest_executed_seq_.load(std::memory_order_relaxed);
-//     while (seq > cur && !latest_executed_seq_.compare_exchange_weak(
-//               cur, seq, std::memory_order_release, std::memory_order_relaxed)) {
-//       /* retry with updated `cur` */
-//     }
-//   }
-
-// private:
-//   std::atomic<uint64_t> latest_executed_seq_{0};
-// };
-
 // Execute the requests that may contain system information or user requests.
 class TransactionExecutor {
  public:
-  void set_OnExecuteSuccess(uint64_t seq);
-  uint64_t get_latest_executed_seq() const;
+  // void set_OnExecuteSuccess(uint64_t seq);
+  // uint64_t get_latest_executed_seq() const;
   typedef std::function<void(std::unique_ptr<Request>,
                              std::unique_ptr<BatchUserResponse> resp)>
       PostExecuteFunc;
@@ -97,7 +77,7 @@ class TransactionExecutor {
   void Prepare(std::unique_ptr<Request> request);
 
  private:
-  std::atomic<uint64_t> latest_executed_seq_{0};
+  // std::atomic<uint64_t> latest_executed_seq_{0};
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
 
@@ -123,9 +103,8 @@ class TransactionExecutor {
 
  protected:
   ResDBConfig config_;
-  
+
  private:
-  
   std::atomic<uint64_t> next_execute_seq_ = 1;
   PreExecuteFunc pre_exec_func_ = nullptr;
   SeqUpdateNotifyFunc seq_update_notify_func_ = nullptr;
@@ -151,7 +130,6 @@ class TransactionExecutor {
     End_Prepare = 4,
   };
 
-
   std::vector<std::thread> prepare_thread_;
   static const int mod = 2048;
   std::mutex f_mutex_[mod], fd_mutex_[mod];
@@ -168,7 +146,6 @@ class TransactionExecutor {
       uint64_t,
       std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>>
       data_[mod];
-
 };
 
 }  // namespace resdb

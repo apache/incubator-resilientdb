@@ -326,9 +326,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
 
-  if (response != nullptr){
-    set_OnExecuteSuccess(request->seq());
-  }
+  // if (response != nullptr){
+  //   set_OnExecuteSuccess(request->seq());
+  // }
   
   if (duplicate_manager_ && batch_request_p) {	      
     duplicate_manager_->AddExecuted(batch_request_p->hash(), batch_request_p->seq());		    
@@ -351,18 +351,18 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   global_stats_->IncExecuteDone();
 }
 
-void TransactionExecutor::set_OnExecuteSuccess(uint64_t seq) {
-  // Monotonic update: only move forward.
-  uint64_t cur = latest_executed_seq_.load(std::memory_order_relaxed);
-  while (seq > cur && !latest_executed_seq_.compare_exchange_weak(
-            cur, seq, std::memory_order_release, std::memory_order_relaxed)) {
-    /* retry with updated `cur` */
-  }
-}
+// void TransactionExecutor::set_OnExecuteSuccess(uint64_t seq) {
+//   // Monotonic update: only move forward.
+//   uint64_t cur = latest_executed_seq_.load(std::memory_order_relaxed);
+//   while (seq > cur && !latest_executed_seq_.compare_exchange_weak(
+//             cur, seq, std::memory_order_release, std::memory_order_relaxed)) {
+//     /* retry with updated `cur` */
+//   }
+// }
 
-uint64_t TransactionExecutor::get_latest_executed_seq() const {
-  return latest_executed_seq_.load(std::memory_order_acquire);
-}
+// uint64_t TransactionExecutor::get_latest_executed_seq() const {
+//   return latest_executed_seq_.load(std::memory_order_acquire);
+// }
 
 void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
   duplicate_manager_ = manager;

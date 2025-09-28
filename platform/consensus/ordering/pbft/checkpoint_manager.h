@@ -73,7 +73,7 @@ class CheckPointManager : public CheckPoint {
 
   uint64_t GetCommittableSeq();
 
-  uint64_t GetLastExecutedSeq() override;
+//   uint64_t GetLastExecutedSeq() override;
 
  private:
   void UpdateCheckPointStatus();
