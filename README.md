@@ -27,7 +27,7 @@ For the convenience of reviewers, we have already created the instances required
 
 # Build and Deploy ResilientDB
 
-For the convenience of ARI reviewers, we provide a pre-configured AWS host machine with the following public IP address (**To save fundings, we have turned this instance off, please contact us through the ARI Comments to turn it on.**):
+For the convenience of ARI reviewers, we provide a pre-configured AWS host machine with the following public IP address (**To save fundings, we have turned this instance off, please contact us (dakang@ucdavis.edu) to turn it on.**):
 
 ```bash
 18.215.156.88
