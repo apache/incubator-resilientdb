@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 // Initialize Google Drive API
-export const getDriveService = (auth) => {
+export const getDriveService = (auth: any) => {
   return google.drive({ version: 'v3', auth });
 };
 
@@ -53,8 +53,15 @@ export const getFilesFromFolder = async (folderId: string, auth = null) => {
   } catch (error) {
     console.error('Error fetching files from folder:', error);
     
-    if (error.code === 401 || error.message?.includes('invalid_grant')) {
-      throw new Error('Google authentication failed. Please regenerate your access and refresh tokens.');
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      ('code' in error || 'message' in error)
+    ) {
+      const err = error as { code?: number; message?: string };
+      if (err.code === 401 || err.message?.includes('invalid_grant')) {
+        throw new Error('Google authentication failed. Please regenerate your access and refresh tokens.');
+      }
     }
     
     throw error;
@@ -67,15 +74,18 @@ export const getFileContent = async (fileId:string, auth = null) => {
     const authClient = auth || getGoogleAuth();
     const drive = getDriveService(authClient);
 
-    const response = await drive.files.get({
-      fileId: fileId,
-      alt: 'media'
-    }, {
-      responseType: 'arraybuffer'
-    });
+    const response = await drive.files.get(
+      {
+        fileId: fileId,
+        alt: 'media'
+      },
+      {
+        responseType: 'arraybuffer'
+      }
+    );
 
     // Convert to base64 for PDF viewing
-    const base64 = Buffer.from(response.data).toString('base64');
+    const base64 = Buffer.from(response.data as ArrayBuffer).toString('base64');
     return `data:application/pdf;base64,${base64}`;
   } catch (error) {
     console.error('Error getting file content:', error);
@@ -84,7 +94,7 @@ export const getFileContent = async (fileId:string, auth = null) => {
 };
 
 // Get file metadata and content
-export const getFileWithContent = async (fileId, auth = null) => {
+export const getFileWithContent = async (fileId: string, auth = null) => {
   try {
     const authClient = auth || getGoogleAuth();
     const drive = getDriveService(authClient);
@@ -103,7 +113,7 @@ export const getFileWithContent = async (fileId, auth = null) => {
       responseType: 'arraybuffer'
     });
 
-    const base64Content = Buffer.from(contentResponse.data).toString('base64');
+    const base64Content = Buffer.from(contentResponse.data as ArrayBuffer).toString('base64');
 
     return {
       metadata: metadataResponse.data,

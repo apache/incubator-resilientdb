@@ -97,8 +97,10 @@ async function testAgent() {
   const testQuery = "Can you provide a fun fact from each paper? Separate tool calls, 10 words each";
   const documents = ["documents/rcc.pdf", "documents/resilientdb.pdf"];
 
-  const agent = await llamaService.createNexusAgent(documents);
-  const response = await agent.runStream(testQuery);
+  // Use NexusAgent directly since llamaService.createNexusAgent does not exist
+  const nexusAgent = await NexusAgent.create();
+  const agentWorkflow = await nexusAgent.createAgent(documents, "test-session");
+  const response = await agentWorkflow.runStream(testQuery);
   for await (const event of response) {
     if (agentToolCallEvent.include(event)) {
       console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
