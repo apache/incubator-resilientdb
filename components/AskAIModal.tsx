@@ -21,11 +21,45 @@
 
 import { Button, Modal, TextInput, Stack, Text, Divider } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useEffect, useRef } from 'react';
 import { IconRobot, IconSearch } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 
 export function AskAIModal() {
-  const [opened, { open, close }] = useDisclosure(false);
+  const [opened, { open: openDisclosure, close: closeDisclosure }] = useDisclosure(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const firstInputRef = useRef<HTMLInputElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  const open = (from?: HTMLElement | null) => {
+    lastFocusedRef.current = from ?? (document.activeElement as HTMLElement | null);
+    openDisclosure();
+  };
+
+  const close = () => {
+    closeDisclosure();
+    // return focus to last focused element
+    setTimeout(() => {
+      try {
+        lastFocusedRef.current?.focus?.();
+      } catch (err) {}
+    }, 0);
+  };
+
+  // Add Escape handler while modal is open
+  useEffect(() => {
+    if (!opened) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    // focus first input when opened
+    setTimeout(() => firstInputRef.current?.focus(), 50);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [opened]);
   const router = useRouter();
 
   const handleSearch = (query: string) => {
@@ -39,7 +73,14 @@ export function AskAIModal() {
   return (
     <>
       <Button 
-        onClick={open}
+        ref={triggerRef}
+        onClick={(e) => open(e.currentTarget)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open(e.currentTarget as HTMLElement);
+          }
+        }}
         leftSection={<IconRobot size={20} />}
         variant="subtle"
       >
@@ -57,6 +98,7 @@ export function AskAIModal() {
             Ask me anything about ResilientDB and its ecosystem. I'm here to help!
           </Text>
           <TextInput
+            ref={firstInputRef}
             placeholder="Ask the AI assistant..."
             size="md"
             leftSection={<IconRobot size={16} />}

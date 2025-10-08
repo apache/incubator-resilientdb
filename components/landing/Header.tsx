@@ -1,6 +1,7 @@
 'use client';
 
 import { SearchBar } from '../SearchBar/SearchBar';
+import { useRef, useState, useEffect } from 'react';
 
 export default function Header() {
   return (
@@ -65,6 +66,7 @@ export default function Header() {
           </a>
 
         <div style={{ position: 'relative' }}>
+        {/* Community dropdown trigger */}
         <button
           style={{
               color: 'rgba(255,255,255,0.8)',
@@ -91,6 +93,35 @@ export default function Header() {
               const dropdown = e.currentTarget.nextElementSibling as HTMLElement;
               if (dropdown) dropdown.style.display = 'none';
             }}
+            // Keyboard accessibility: open on Enter/Space and show focus outline
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                // toggle the dropdown via JS: find next sibling
+                const dropdown = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement | null;
+                if (dropdown) {
+                  const isShown = dropdown.style.display === 'block';
+                  if (!isShown) {
+                    dropdown.style.display = 'block';
+                    // focus first link in dropdown
+                    const first = dropdown.querySelector('a, button') as HTMLElement | null;
+                    first?.focus();
+                  } else {
+                    dropdown.style.display = 'none';
+                  }
+                }
+              }
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const dropdown = (e.currentTarget as HTMLElement).nextElementSibling as HTMLElement | null;
+                const first = dropdown?.querySelector('a, button') as HTMLElement | null;
+                first?.focus();
+              }
+            }}
+            // Make the button focusable/tabbable
+            tabIndex={0}
+            aria-haspopup="true"
+            aria-expanded={false}
           >
             Community
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
@@ -99,6 +130,8 @@ export default function Header() {
         </button>
           
           <div
+            role="menu"
+            aria-label="Community"
             style={{
               position: 'absolute',
               top: '100%',
@@ -113,11 +146,22 @@ export default function Header() {
             }}
             onMouseEnter={(e) => (e.currentTarget.style.display = 'block')}
             onMouseLeave={(e) => (e.currentTarget.style.display = 'none')}
+            onKeyDown={(e) => {
+              // Close on Escape and return focus to trigger
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                const trigger = (e.currentTarget.previousElementSibling) as HTMLElement | null;
+                (e.currentTarget as HTMLElement).style.display = 'none';
+                trigger?.focus?.();
+              }
+            }}
           >
             <a
               href="https://blog.resilientdb.com"
               target="_blank"
               rel="noopener noreferrer"
+              role="menuitem"
+              tabIndex={-1}
               style={{
                 display: 'block',
                 color: 'rgba(255,255,255,0.8)',
@@ -129,6 +173,15 @@ export default function Header() {
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  const menu = (e.currentTarget.parentElement) as HTMLElement | null;
+                  menu && (menu.style.display = 'none');
+                  const trigger = menu?.previousElementSibling as HTMLElement | null;
+                  trigger?.focus?.();
+                }
+              }}
             >
               Blog
             </a>

@@ -21,7 +21,7 @@
 
 /* TODO BUILD THIS OUT */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { javascript } from '@codemirror/lang-javascript';
 import { IconPlayerPlay, IconTemplate, IconTrash, IconMessage, IconPlayerStop, IconMaximize, IconMinimize } from '@tabler/icons-react';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
@@ -231,6 +231,37 @@ export function TypeScriptPlayground({ templates }: { templates?: Template[] }) 
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const expandTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  const openExpanded = (from?: HTMLElement | null) => {
+    lastFocusedRef.current = from ?? (document.activeElement as HTMLElement | null);
+    setIsExpanded(true);
+    // focus textarea inside modal after open
+    setTimeout(() => {
+      const ta = document.querySelector('.cm-theme') as HTMLElement | null;
+      ta?.focus?.();
+    }, 50);
+  };
+
+  const closeExpanded = () => {
+    setIsExpanded(false);
+    setTimeout(() => {
+      try { lastFocusedRef.current?.focus?.(); } catch (err) {}
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeExpanded();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isExpanded]);
 
   useEffect(() => {
     // Initialize TypeScript environment
@@ -524,8 +555,15 @@ export function TypeScriptPlayground({ templates }: { templates?: Template[] }) 
                   <Group>
                     <Tooltip label={isExpanded ? "Minimize" : "Expand"}>
                       <ActionIcon 
+                        ref={expandTriggerRef}
                         variant="light" 
-                        onClick={() => setIsExpanded(true)}
+                        onClick={(e) => openExpanded(e.currentTarget)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openExpanded(e.currentTarget as HTMLElement);
+                          }
+                        }}
                         disabled={isExpanded}
                       >
                         <IconMaximize size={14} />
@@ -611,7 +649,7 @@ export function TypeScriptPlayground({ templates }: { templates?: Template[] }) 
 
             <Modal
               opened={isExpanded}
-              onClose={() => setIsExpanded(false)}
+              onClose={() => closeExpanded()}
               size="xl"
               title={
                 <Group justify="space-between" w="100%">
@@ -619,9 +657,9 @@ export function TypeScriptPlayground({ templates }: { templates?: Template[] }) 
                   <Group>
                     <Tooltip label="Minimize">
                       <ActionIcon 
-                        variant="light" 
-                        onClick={() => setIsExpanded(false)}
-                      >
+                          variant="light" 
+                          onClick={() => closeExpanded()}
+                        >
                         <IconMinimize size={14} />
                       </ActionIcon>
                     </Tooltip>

@@ -30,6 +30,8 @@ export function PagefindSearch({ onClose }: PagefindSearchProps) {
   const [isAgentLoading, setIsAgentLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   // Load Pagefind
@@ -159,29 +161,64 @@ export function PagefindSearch({ onClose }: PagefindSearchProps) {
   }, [query, pagefind, mode]);
 
   // Handle keyboard shortcuts
+  // Global keyboard shortcuts (open/search mode toggle)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
+        // remember where focus was and open
+        lastFocusedRef.current = document.activeElement as HTMLElement | null;
         setIsOpen(true);
-        setTimeout(() => inputRef.current?.focus(), 100);
+        // focus the input shortly after opening
+        setTimeout(() => inputRef.current?.focus(), 50);
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
         e.preventDefault();
-        setMode(mode === 'search' ? 'agent' : 'search');
-      }
-      if (e.key === 'Escape') {
-        setIsOpen(false);
-        setQuery('');
-        setResults([]);
-        setAgentResults([]);
-        onClose?.();
+        setMode((m) => (m === 'search' ? 'agent' : 'search'));
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, mode]);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
+  // Add an Escape handler only while the modal is open so it can be removed when closed
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  // Open/close helpers that manage focus
+  const openModal = (fromTrigger?: HTMLElement | null) => {
+    lastFocusedRef.current = fromTrigger || (document.activeElement as HTMLElement | null);
+    setIsOpen(true);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setQuery('');
+    setResults([]);
+    setAgentResults([]);
+    onClose?.();
+    // return focus to trigger if possible
+    setTimeout(() => {
+      try {
+        (lastFocusedRef.current ?? triggerRef.current)?.focus?.();
+      } catch (err) {
+        // ignore
+      }
+    }, 0);
+  };
 
   // Clean URL by removing .html extension and fixing paths
   const cleanUrl = (url: string): string => {
@@ -219,7 +256,14 @@ export function PagefindSearch({ onClose }: PagefindSearchProps) {
   if (!isOpen) {
     return (
       <button
-        onClick={() => setIsOpen(true)}
+        ref={triggerRef}
+        onClick={(e) => openModal(e.currentTarget)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openModal(e.currentTarget as HTMLElement);
+          }
+        }}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -252,7 +296,7 @@ export function PagefindSearch({ onClose }: PagefindSearchProps) {
           fill="currentColor"
           viewBox="0 0 20 20"
           style={{ opacity: 0.6, flexShrink: 0 }}
-        >
+  >
           <path
             fillRule="evenodd"
             d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
