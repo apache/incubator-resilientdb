@@ -275,4 +275,12 @@
   .pagefind-search-result:last-child {
     border-bottom: none;
   }
+
+  /* Universal stronger focus-visible ring*/
+  :focus-visible {
+    outline: none !important; 
+    box-shadow: 0 0 0 2px var(--focus-inner-ring, #000), 0 0 0 4px var(--focus-outer-ring, #fff);
+    /* match the element's radius so rings follow shape */
+    border-radius: inherit;
+  }
 }

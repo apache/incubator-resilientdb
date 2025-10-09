@@ -21,7 +21,7 @@
 
 import { ActionIcon, Tooltip, Paper, Text, Group, Box, Modal, Textarea, Button, Stack, Divider, Avatar, Switch, Badge } from '@mantine/core';
 import { IconBrain, IconSend, IconRobot, IconUser, IconHighlight, IconSettings } from '@tabler/icons-react';
-import { useState, useEffect, ReactNode, useCallback } from 'react';
+import { useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
@@ -49,6 +49,10 @@ export function FloatingAssistant() {
   const [lastSelection, setLastSelection] = useState('');
   const [highlightMode, setHighlightMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const firstFocusRef = useRef<HTMLTextAreaElement | HTMLButtonElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+  const switchRef = useRef<HTMLInputElement | null>(null);
 
   // Function to check if element is within a code editor
   const isWithinCodeEditor = (element: Element | null): boolean => {
@@ -124,7 +128,46 @@ export function FloatingAssistant() {
     setExplanation('');
     setQuestion('');
     setLastSelection('');
+    // return focus to trigger
+    setTimeout(() => {
+      try {
+        lastFocusedRef.current?.focus?.();
+      } catch (err) {}
+    }, 0);
   };
+
+  const openModal = (from?: HTMLElement | null) => {
+    lastFocusedRef.current = from ?? (document.activeElement as HTMLElement | null);
+    setIsOpen(true);
+    setTimeout(() => {
+      // focus the textarea input if present
+      const textarea = document.querySelector('textarea[placeholder]') as HTMLTextAreaElement | null;
+      (firstFocusRef.current as HTMLElement | null ?? textarea)?.focus?.();
+    }, 50);
+  };
+
+  // Escape handler while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleModalClose();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen]);
+
+  // Focus the highlight switch when settings panel is opened
+  useEffect(() => {
+    if (!showSettings) return;
+    setTimeout(() => {
+      try {
+        switchRef.current?.focus?.();
+      } catch (err) {}
+    }, 50);
+  }, [showSettings]);
 
   const getExplanation = async (text: string, customQuestion?: string) => {
     setIsLoading(true);
@@ -235,7 +278,23 @@ Please:
               color: 'rgba(255,255,255,0.7)',
               transition: 'all 200ms ease',
             }}
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => setShowSettings((s) => !s)}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setShowSettings((s) => !s);
+              }
+            }}
+            onFocus={(e) => {
+              // stronger focus ring for keyboard users
+              e.currentTarget.style.boxShadow = '0 0 0 6px rgba(0,191,255,0.18)';
+              e.currentTarget.style.outline = '2px solid rgba(0,191,255,0.18)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.outline = 'none';
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(0, 191, 255, 0.1)';
               e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.3)';
@@ -287,6 +346,15 @@ Please:
                   checked={highlightMode}
                   onChange={(event) => setHighlightMode(event.currentTarget.checked)}
                   size="sm"
+                  tabIndex={0}
+                  // Allow Enter to toggle in addition to Space
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      setHighlightMode((v) => !v);
+                    }
+                  }}
+                  ref={switchRef as any}
                   styles={{
                     track: {
                       backgroundColor: highlightMode ? 'rgba(0, 191, 255, 0.3)' : 'rgba(255,255,255,0.1)',
@@ -348,7 +416,20 @@ Please:
               position: 'relative',
               overflow: 'hidden',
             }}
-            onClick={() => setIsOpen(true)}
+            ref={triggerRef}
+            onClick={(e) => openModal(e.currentTarget)}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openModal(e.currentTarget as HTMLElement);
+              }
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 0 8px rgba(0,191,255,0.16)';
+              e.currentTarget.style.outline = '2px solid rgba(0,191,255,0.16)';
+            }}
+            onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.outline = 'none'; }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = 'rgba(0, 191, 255, 0.2)';
               e.currentTarget.style.borderColor = 'rgba(0, 191, 255, 0.4)';
@@ -465,7 +546,7 @@ Please:
           </Group>
         }
       >
-        <Stack style={{ flex: 1, height: '100%' }} p={0}>
+      <Stack style={{ flex: 1, height: '100%' }} p={0}>
           {selectedText && (
             <div
               style={{
@@ -690,6 +771,7 @@ Please:
             <form onSubmit={handleAskQuestion}>
               <Group gap={12}>
                 <Textarea
+                  ref={firstFocusRef as any}
                   placeholder={selectedText 
                     ? "Ask a specific question about the selected text..." 
                     : "Ask any question..."}

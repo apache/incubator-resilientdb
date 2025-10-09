@@ -19,7 +19,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { python } from '@codemirror/lang-python';
 import { IconPlayerPlay, IconTemplate, IconTrash, IconMessage, IconPlayerStop, IconMaximize, IconMinimize } from '@tabler/icons-react';
 import { vscodeDark } from '@uiw/codemirror-theme-vscode';
@@ -88,6 +88,36 @@ export function PythonPlayground({ templates }: { templates?: Template[] }) {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const expandTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  const openExpanded = (from?: HTMLElement | null) => {
+    lastFocusedRef.current = from ?? (document.activeElement as HTMLElement | null);
+    setIsExpanded(true);
+    setTimeout(() => {
+      const ta = document.querySelector('textarea') as HTMLElement | null;
+      ta?.focus?.();
+    }, 50);
+  };
+
+  const closeExpanded = () => {
+    setIsExpanded(false);
+    setTimeout(() => {
+      try { lastFocusedRef.current?.focus?.(); } catch (err) {}
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeExpanded();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isExpanded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -423,8 +453,15 @@ loop.run_until_complete(__run())
                   <Group gap={4}>
                     <Tooltip label={isExpanded ? "Minimize" : "Expand"}>
                       <ActionIcon 
+                        ref={expandTriggerRef}
                         variant="light" 
-                        onClick={() => setIsExpanded(true)}
+                        onClick={(e) => openExpanded(e.currentTarget)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openExpanded(e.currentTarget as HTMLElement);
+                          }
+                        }}
                         disabled={isExpanded}
                         style={{
                           background: 'rgba(255,255,255,0.05)',
