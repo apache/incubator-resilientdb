@@ -49,7 +49,7 @@ class Recovery {
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
 
-  // int64_t get_latest_executed_seq_recov();
+  uint64_t get_latest_executed_seq_recov();
  
   private:
   struct RecoveryData {

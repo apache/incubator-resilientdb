@@ -36,8 +36,8 @@ namespace resdb {
 // Execute the requests that may contain system information or user requests.
 class TransactionExecutor {
  public:
-  // void set_OnExecuteSuccess(uint64_t seq);
-  // uint64_t get_latest_executed_seq() const;
+  void set_OnExecuteSuccess(uint64_t seq);
+  uint64_t get_latest_executed_seq() const;
   typedef std::function<void(std::unique_ptr<Request>,
                              std::unique_ptr<BatchUserResponse> resp)>
       PostExecuteFunc;
@@ -77,7 +77,8 @@ class TransactionExecutor {
   void Prepare(std::unique_ptr<Request> request);
 
  private:
-  // std::atomic<uint64_t> latest_executed_seq_{0};
+  std::atomic<uint64_t> latest_executed_seq_{0};
+  // uint64_t latest_executed_seq_ = 0;
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
 

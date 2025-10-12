@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstddef>
 #include <filesystem>
 
 #include "common/utils/utils.h"
@@ -261,9 +262,9 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
 }
 
-// int64_t Recovery::get_latest_executed_seq_recov(){
-//   return checkpoint_->GetLastExecutedSeq();
-// }
+uint64_t Recovery::get_latest_executed_seq_recov(){
+  return checkpoint_->GetLastExecutedSeq();
+}
 
 void Recovery::WriteLog(const Context* context, const Request* request) {
   std::string data;
@@ -283,9 +284,8 @@ void Recovery::WriteLog(const Context* context, const Request* request) {
   max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
   AppendData(data);
   AppendData(sig);
-  // int64_t latest_executed_seq = get_latest_executed_seq_recov();
-  // std::string line = "latest_executed_seq: " + std::to_string(latest_executed_seq) + "\n";
-  // AppendData(line);
+  uint64_t latest_executed_seq = get_latest_executed_seq_recov();
+  AppendData(std::to_string(latest_executed_seq));
 
   Flush();
 }
