@@ -6,7 +6,7 @@ export interface Document {
   name: string;
   path: string;
   size: number;
-  webViewLink:string;
+  webViewLink: string;
   uploadedAt: string;
   displayTitle?: string;
 }
@@ -18,6 +18,15 @@ const getDisplayTitle = (filename: string): string => {
   const lowerFilename = filename.toLowerCase();
   return TITLE_MAPPINGS[lowerFilename] || filename.replace('.pdf', '');
 };
+function convertToDownloadUrl(webViewLink: string): string {
+  // Extract file ID from Google Drive URLs
+  const match = webViewLink.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    const fileId = match[1];
+    return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  }
+  return webViewLink; // Return original if not a Google Drive URL
+}
 
 function transformGroupedData(
   data: Record<string, any[]>,
@@ -28,6 +37,7 @@ function transformGroupedData(
       ...doc,
       displayTitle: getDisplayTitle(doc.name),
       webViewLink: updateURL(doc.webViewLink),
+      path: convertToDownloadUrl(doc.webViewLink),
     }))
   );
 }

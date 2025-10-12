@@ -166,6 +166,7 @@ function ResearchChatPageContent() {
     }
   }, [error]);
 
+  
   // Prepare index when document changes
   useEffect(() => {
     const prepareDocumentIndex = async () => {
@@ -675,7 +676,7 @@ function ResearchChatPageContent() {
 
     const payload = {
       query: inputValue,
-      documentPaths: selectedDocuments.map((doc) => doc.webViewLink),
+      documentPaths: selectedDocuments.map((doc) => doc.path),
       ...(activeTool === "code-composer" && {
         tool: "code-composer" as const,
         language,

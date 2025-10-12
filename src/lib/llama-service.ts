@@ -273,6 +273,8 @@ export class LlamaService {
       const documents: Document[] = [];
       
       for (const file of filePaths) {
+        console.log(`Processing file: ${file}`);
+
         // Check if file is already parsed (skip in Vercel environment)
         const isAlreadyParsed = await this.isFileParsed(file);
         
