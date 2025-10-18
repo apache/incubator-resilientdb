@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
-import { TITLE_MAPPINGS } from "@/lib/constants";
 import { formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";

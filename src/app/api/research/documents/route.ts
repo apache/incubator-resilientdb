@@ -1,7 +1,7 @@
 // import { readdir, stat } from "fs/promises";
 import { NextResponse } from "next/server";
 // import { join } from "path";
-import { getFilesFromFolder, getFilesFromMultipleFolders } from "@/lib/google-drive";
+import { getFilesFromMultipleFolders } from "@/lib/google-drive";
 
 export async function GET() {
   try {
