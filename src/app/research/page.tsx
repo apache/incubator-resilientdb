@@ -977,13 +977,16 @@ function ResearchChatPageContent() {
                                             if (text) nodes.push(
                                               <Response key={`txt-${message.id}-${idx}`}>{text}</Response>
                                             );
+                                            const docCount = ins.part.type === "search_documents" 
+                                              ? (ins.part.input as any)?.documentPaths?.length 
+                                              : undefined;
                                             nodes.push(
                                               <Tool key={`tool-${message.id}-${ins.part.id || idx}`} defaultOpen={false}>
                                                 <ToolHeader
                                                   type={formatToolHeader(
                                                     ins.part.type as string,
                                                     ins.part.state as any,
-                                                    message.docPaths?.length
+                                                    docCount
                                                   ) as any}
                                                   state={ins.part.state as any}
                                                 />

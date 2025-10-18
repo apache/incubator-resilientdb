@@ -124,6 +124,7 @@ export class NexusAgent implements AgentFactory {
     const webSearchTool = this.createWebSearchTool();
 
     const memory = this.createMemoryWithSession(sessionId);
+    console.log("AGENT_RESEARCH_PROMPT", AGENT_RESEARCH_PROMPT(documents));
     const workflow = agent({
       name: "Nexus",
       description: "Responsible for overseeing the entire research process.",
@@ -151,6 +152,26 @@ export class NexusAgent implements AgentFactory {
 
   public getMemory(sessionId: string): Memory | undefined {
     return this.memories.get(sessionId);
+  }
+
+  public async addDocumentUpdateToMemory(sessionId: string, documentPaths: string[]): Promise<void> {
+    const memory = this.memories.get(sessionId);
+    if (!memory) {
+      console.warn(`[NexusAgent] Memory not found for session ${sessionId}`);
+      return;
+    }
+
+    const documentList = documentPaths.map(path => `- ${path}`).join("\n");
+    const message = `Updated documents:\n${documentList}`;
+
+    await memory.add({
+      role: "system" as const,
+      content: message,
+    });
+
+    console.log(`[NexusAgent] Added document update message to memory for session ${sessionId}`);
+
+    console.log("Updated Memory", await memory.get());
   }
 }
 
