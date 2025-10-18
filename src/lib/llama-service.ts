@@ -1,11 +1,7 @@
-import { deepseek } from "@llamaindex/deepseek";
 import { SupabaseVectorStore } from "@llamaindex/supabase";
-import { agent, AgentWorkflow, multiAgent } from "@llamaindex/workflow";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import {
-  ChatMessage,
-  ContextChatEngine,
   Document,
   IngestionPipeline,
   LlamaParseReader,
@@ -18,33 +14,14 @@ import {
   storageContextFromDefaults,
   SummaryExtractor,
   TextNode,
-  tool,
-  ToolCallLLM,
   VectorStoreIndex
 } from "llamaindex";
 import { TavilyClient } from "tavily";
-import z from "zod";
 import { config } from "../config/environment";
 import { configureLlamaSettings } from "./config/llama-settings";
 import { TITLE_MAPPINGS } from "./constants";
 
 dotenv.config();
-
-const RESEARCH_SYSTEM_PROMPT = `
-You are Nexus, an AI research assistant specialized in Apache ResilientDB, blockchain technology, distributed systems, and fault-tolerant consensus protocols. Your primary role is to help students, researchers, and practitioners understand complex technical concepts related to Apache ResilientDB and blockchain systems, who can answer questions about documents. 
-You have access to the content of a document and can provide accurate, detailed answers based on that content.
-- When asked about the document, always base your responses on the information provided in the document. When possible, cite sections, pages, or other specific information from the document.
-- If you cannot find specific information in the document, say so clearly.
-- If asked about something that is not in the document, give a brief answer and try to guide the user to ask about something that is in the document.
-- Please favor referring to the document by its title, instead of the file name.
-- If referring to a source, do not use metadata terms like "node" or "Header_1". 
-\n\n
-Citation Instructions: 
-    - When referencing information from documents, use the format [^id] where id is the 1-based index of the source node
-    - Only include the citation markers. Do not include any other citation explanations in your response
-    - When consecutive statements reference the same source document AND page, only include the citation marker once at the end of that section
-    - Always include citations for each distinct source, even if from the same document but different pages
-`;
 
 export const AGENT_RESEARCH_PROMPT = (documentPaths: string[]) =>
   `
@@ -76,6 +53,21 @@ AVAILABLE DOCUMENTS (documentPath - Title):
 {
 ${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replace("documents/", "")]}"`).join(",\n")}
 }
+
+### CRITICAL TOOL USAGE REQUIREMENT
+**YOU MUST MAKE A SEPARATE TOOL CALL FOR EACH DOCUMENT YOU EXAMINE.**
+
+- **DO NOT** pass multiple documents in a single tool call
+- **ALWAYS** make individual tool calls, one per document
+- When searching multiple documents, make sequential separate tool calls for each document path
+- Example of CORRECT behavior:
+  - Tool call 1: search_documents with documentPaths: ["documents/document1.pdf"]
+  - Tool call 2: search_documents with documentPaths: ["documents/document2.pdf"]
+  - Tool call 3: search_documents with documentPaths: ["documents/document3.pdf"]
+- Example of INCORRECT behavior:
+  - Tool call 1: search_documents with documentPaths: ["documents/document1.pdf", "documents/document2.pdf", "documents/document3.pdf"]
+
+This ensures thorough examination of each document and proper tracking of information sources.
 
 #### Response Requirements
 - **Always** base responses on information provided in the document when asked about document content, and from the web when needed.
@@ -273,6 +265,8 @@ export class LlamaService {
       const documents: Document[] = [];
       
       for (const file of filePaths) {
+        console.log(`Processing file: ${file}`);
+
         // Check if file is already parsed (skip in Vercel environment)
         const isAlreadyParsed = await this.isFileParsed(file);
         

@@ -2,11 +2,13 @@ import { readFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import { join } from "path";
 
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
+   
     // Await params before accessing its properties
     const { path } = await params;
 

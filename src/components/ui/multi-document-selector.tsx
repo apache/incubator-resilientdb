@@ -17,7 +17,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 
 interface MultiDocumentSelectorProps {
   className?: string;
-  documents: Document[];
+  documents: Document[] | Document[][];
   selectedDocuments: Document[];
   isLoadingDocuments: boolean;
   onDocumentSelect: (doc: Document) => void;
@@ -49,26 +49,44 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
   }) => {
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Filter documents based on search query
-    const filteredDocuments = useMemo(() => {
-      if (!searchQuery.trim()) return documents;
+    // Support grouped documents (Document[][]) or flat list (Document[])
+    const { groups, flattenedAll } = useMemo(() => {
+      const isGrouped =
+        Array.isArray(documents) && documents.length > 0 && Array.isArray((documents as any)[0]);
+
+      if (isGrouped) {
+        const groups = (documents as Document[][]).map((g) => g || []);
+        const flattenedAll = groups.flat();
+        return { groups, flattenedAll };
+      }
+
+      const flat = (documents as Document[]) || [];
+      return { groups: [flat], flattenedAll: flat };
+    }, [documents]);
+
+    // Filter documents based on search query (per-group)
+    const { filteredGroups, flattenedFiltered } = useMemo(() => {
+      if (!searchQuery.trim()) return { filteredGroups: groups, flattenedFiltered: flattenedAll };
 
       const query = searchQuery.toLowerCase();
-      return documents.filter(
-        (doc) =>
-          doc.name.toLowerCase().includes(query) ||
-          (doc.displayTitle && doc.displayTitle.toLowerCase().includes(query)),
+      const filteredGroups = groups.map((group) =>
+        group.filter(
+          (doc) =>
+            doc.name.toLowerCase().includes(query) ||
+            (doc.displayTitle && doc.displayTitle.toLowerCase().includes(query)),
+        ),
       );
-    }, [documents, searchQuery]);
+
+      return { filteredGroups, flattenedFiltered: filteredGroups.flat() };
+    }, [groups, flattenedAll, searchQuery]);
 
     // Check if document is selected
     const isDocumentSelected = useCallback(
-      (doc: Document) => {
-        return selectedDocuments.some((selected) => selected.id === doc.id);
-      },
+      (doc: Document) => selectedDocuments.some((selected) => selected.id === doc.id),
       [selectedDocuments],
     );
 
+ 
     // Handle document toggle
     const handleDocumentToggle = useCallback(
       (doc: Document) => {
@@ -90,31 +108,28 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
         selectedDocuments.length,
       ],
     );
-
+    // Debug
+    // console.log('Selected documents:', documents);
     // Handle select all toggle
     const handleSelectAllToggle = useCallback(() => {
-      if (selectedDocuments.length === documents.length) {
+      const total = flattenedAll.length;
+      if (selectedDocuments.length === total) {
         onDeselectAll();
       } else {
         onSelectAll();
       }
-    }, [
-      selectedDocuments.length,
-      documents.length,
-      onSelectAll,
-      onDeselectAll,
-    ]);
+    }, [selectedDocuments.length, flattenedAll.length, onSelectAll, onDeselectAll]);
 
     // Calculate selection stats
     const selectionStats = useMemo(() => {
-      const selected = selectedDocuments.length;
-      const total = documents.length;
-      const filtered = filteredDocuments.length;
+  const selected = selectedDocuments.length;
+  const total = flattenedAll.length;
+  const filtered = flattenedFiltered.length;
       const allSelected = selected === total && total > 0;
       const someSelected = selected > 0 && selected < total;
 
       return { selected, total, filtered, allSelected, someSelected };
-    }, [selectedDocuments.length, documents.length, filteredDocuments.length]);
+  }, [selectedDocuments.length, /*documents.length*/ flattenedAll.length, /*filteredDocuments.length*/ flattenedFiltered.length]);
 
     if (isLoadingDocuments) {
       return (
@@ -126,7 +141,7 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
       );
     }
 
-    if (documents.length === 0) {
+    if (flattenedAll.length === 0) {
       return (
         <div className={`space-y-3 ${className}`}>
           <Card className="text-center py-6 border-dashed">
@@ -140,7 +155,9 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
     }
 
     return (
+
       <div className={`space-y-3 ${className}`}>
+        
         {/* Header with search and select all */}
         <div className="space-y-2 pt-2">
           <div className="flex items-center justify-between">
@@ -190,6 +207,7 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
                   : "Select all documents"
               }
             >
+            
               {selectionStats.allSelected ? (
                 <>
                   <X className="h-4 w-4 mr-2" />
@@ -207,106 +225,120 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
 
         {/* Document list */}
         <ScrollArea className="h-[calc(100vh-320px)]">
-          <div className="space-y-2">
-            {filteredDocuments.map((doc) => {
-              const isSelected = isDocumentSelected(doc);
-              const isDisabled =
-                !isSelected &&
-                maxSelections &&
-                selectedDocuments.length >= maxSelections;
+          <div className="space-y-4">
+           
+            {(() => {
+              // Titles for groups: try to be sensible when length matches common categories
+              const groupTitles =
+                filteredGroups.length === 3
+                  ? ['Research Papers', 'Class Papers', 'Books']
+                  : filteredGroups.length === 2
+                  ? ['Class Papers', 'Books']
+                  : filteredGroups.map((_, i) => `Group ${i + 1}`);
 
-              return (
-                <Card
-                  key={doc.id}
-                  variant="message"
-                  className={`cursor-pointer transition-all w-full ${
-                    isSelected
-                      ? "bg-primary/10 border-primary/20 ring-1 ring-primary/20"
-                      : isDisabled
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-accent/50 hover:border-border/60"
-                  }`}
-                  onClick={() => !isDisabled && handleDocumentToggle(doc)}
-                  onKeyDown={(e) => !isDisabled && onDocumentKeyDown(e, doc)}
-                  tabIndex={isDisabled ? -1 : 0}
-                  role="checkbox"
-                  aria-checked={isSelected}
-                  aria-label={`${isSelected ? "Deselect" : "Select"} document: ${doc.displayTitle || doc.name}`}
-                >
-                  <CardContent
-                    variant="message-compact"
-                    className="w-full px-3"
+              const renderDocCard = (doc: Document) => {
+                const isSelected = isDocumentSelected(doc);
+                const isDisabled =
+                  !isSelected &&
+                  maxSelections &&
+                  selectedDocuments.length >= maxSelections;
+
+                return (
+                  <Card
+                    key={doc.id}
+                    variant="message"
+                    className={`cursor-pointer transition-all w-full ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary/20 ring-1 ring-primary/20'
+                        : isDisabled
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-accent/50 hover:border-border/60'
+                    }`}
+                    onClick={() => !isDisabled && handleDocumentToggle(doc)}
+                    onKeyDown={(e) => !isDisabled && onDocumentKeyDown(e, doc)}
+                    tabIndex={isDisabled ? -1 : 0}
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    aria-label={`${isSelected ? 'Deselect' : 'Select'} document: ${doc.displayTitle || doc.name}`}
                   >
-                    <div className="flex items-start space-x-3 w-full">
-                      {/* Checkbox */}
-                      <div className="flex-shrink-0 mt-0.5">
-                        <div
-                          className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-                            isSelected
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : isDisabled
-                                ? "border-muted-foreground/30"
-                                : "border-muted-foreground hover:border-primary"
-                          }`}
-                        >
-                          {isSelected && <Check className="h-3 w-3" />}
+                   
+                    <CardContent variant="message-compact" className="w-full px-3">
+                      <div className="flex items-start space-x-3 w-full">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <div
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? 'bg-primary border-primary text-primary-foreground'
+                                : isDisabled
+                                ? 'border-muted-foreground/30'
+                                : 'border-muted-foreground hover:border-primary'
+                            }`}
+                          >
+                            {isSelected && <Check className="h-3 w-3" />}
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Document info */}
-                      <div className="flex items-start space-x-1.5 flex-1 min-w-0">
-                        <FileText className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                        <div className="flex-1 min-w-0 overflow-hidden">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <p className="text-sm font-medium break-words leading-tight max-h-[2.4em] overflow-hidden text-ellipsis line-clamp-2">
-                                {doc.displayTitle || doc.name}
-                              </p>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              <p className="max-w-xs break-words">
-                                {doc.displayTitle || doc.name}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <div className="flex flex-wrap items-center gap-1 mt-2">
+                        <div className="flex items-start space-x-1.5 flex-1 min-w-0">
+                          <FileText className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                          <div className="flex-1 min-w-0 overflow-hidden">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                            <Badge
-                              variant="secondary"
-                              className="items-start justify-start text-xs"
-                                >
-                                <span className="truncate text-ellipsis max-w-[100px]">{doc.name}</span>
+                                <p className="text-sm font-medium break-words leading-tight max-h-[2.4em] overflow-hidden text-ellipsis line-clamp-2">
+                                  {doc.displayTitle || doc.name}
+                                </p>
+                              </TooltipTrigger>
+                              <TooltipContent side="right">
+                                <p className="max-w-xs break-words">{doc.displayTitle || doc.name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <div className="flex flex-wrap items-center gap-1 mt-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="secondary" className="items-start justify-start text-xs">
+                                    <span className="truncate text-ellipsis max-w-[100px]">{doc.name}</span>
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                  <p className="max-w-xs break-words">{doc.name}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Badge variant="outline" className="text-xs flex-shrink-0">
+                                {(doc.size / 1024 / 1024).toFixed(1)} MB
                               </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent side="right">
-                              <p className="max-w-xs break-words">
-                                {doc.name}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                            <Badge
-                              variant="outline"
-                              className="text-xs flex-shrink-0"
-                            >
-                              {(doc.size / 1024 / 1024).toFixed(1)} MB
-                            </Badge>
-                            {isSelected && (
-                              <Badge variant="default" className="text-xs">
-                                Selected
-                              </Badge>
-                            )}
+                              {isSelected && (
+                                <Badge variant="default" className="text-xs">
+                                  Selected
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
+                    </CardContent>
+                  </Card>
+                );
+              };
+
+              const sectionRenderer = (title: string, docs: Document[]) =>
+                docs.length === 0 ? null : (
+                  <div key={title} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</Label>
+                      <div className="text-xs text-muted-foreground">{docs.length} item{docs.length > 1 ? 's' : ''}</div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="space-y-2">{docs.map(renderDocCard)}</div>
+                  </div>
+                );
+
+              return (
+                <div className="space-y-4">
+                  {filteredGroups.map((g, idx) => sectionRenderer(groupTitles[idx] || `Group ${idx + 1}`, g))}
+                </div>
               );
-            })}
+            })()}
 
             {/* No search results */}
-            {searchQuery && filteredDocuments.length === 0 && (
+            {searchQuery && flattenedFiltered.length === 0 && (
               <Card className="text-center py-6 border-dashed">
                 <CardContent className="pt-6">
                   <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
@@ -326,6 +358,7 @@ const MultiDocumentSelector = memo<MultiDocumentSelectorProps>(
             )}
           </div>
         </ScrollArea>
+        
 
         {/* Selection limit warning */}
         {maxSelections && selectedDocuments.length >= maxSelections && (

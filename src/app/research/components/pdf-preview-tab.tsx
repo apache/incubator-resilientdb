@@ -9,6 +9,8 @@ interface PDFPreviewTabProps {
 export const PDFPreviewTabs: React.FC<PDFPreviewTabProps> = ({
   selectedDocuments,
 }) => {
+  
+
   return (
     <>
       {/* PDF Document Tab Triggers */}
@@ -30,6 +32,8 @@ export const PDFPreviewTabs: React.FC<PDFPreviewTabProps> = ({
 export const PDFPreviewContent: React.FC<PDFPreviewTabProps> = ({
   selectedDocuments,
 }) => {
+    
+
   return (
     <>
       {/* PDF Document Tab Content */}
@@ -41,7 +45,9 @@ export const PDFPreviewContent: React.FC<PDFPreviewTabProps> = ({
           forceMount
         >
           <iframe
-            src={`/api/research/files/${doc.path}#toolbar=0&navpanes=0&scrollbar=1`}
+            src={doc.webViewLink}
+            width="100%"
+            height="100%"
             className="w-full h-full border-0"
             title={`Preview of ${doc.name}`}
             aria-label={`PDF preview of ${doc.displayTitle || doc.name}`}

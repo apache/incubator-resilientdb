@@ -1,9 +1,7 @@
-import { CodeAgent, NexusAgent } from "@/lib/agent";
+import { CodeAgent } from "@/lib/agent";
 import { agentStreamEvent, agentToolCallEvent } from "@llamaindex/workflow";
 import chalk from "chalk";
- 
-import { configureLlamaSettings } from "../src/lib/config/llama-settings";
-import { llamaService } from "../src/lib/llama-service";
+import { configureLlamaSettings } from "../lib/config/llama-settings";
 
 // const testChatEngine = async (testQuery: string, documentPaths: string[]) => {
 //   console.log("\n🧪 Testing Chat Engine...");
@@ -60,81 +58,6 @@ import { llamaService } from "../src/lib/llama-service";
 //   console.log("\n" + "─".repeat(50));
 //   console.log("✅ Streaming completed successfully");
 // };
-
-async function testRouterBehavior() {
-  console.log("🧪 Testing router behavior with rcc.pdf...");
-  try {
-    configureLlamaSettings();
-    const testQuery = "Explain the replica failure algoirthm in 50 words. \nWhen you use information from the documents, append a citation like [^id], where id is the index of the source node in the source node array.";
-    const documentPaths = ["documents/rcc.pdf"];
-    const options = {
-      topK: 5,
-      tool: "default"
-    };
-    console.log(`📋 Query: "${testQuery}"`);
-    console.log(`📄 Documents: ${documentPaths.join(", ")}`);
-    console.log(`⚙️  Options:`, options);
-    // await testChatEngine(testQuery, documentPaths);
-    // await testQueryEngine(testQuery, documentPaths, options);
-  } catch (error) {
-    console.error("❌ Test failed:", error);
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-      console.error("Stack trace:", error.stack);
-    }
-  }
-}
-
-async function testIngestion() {
-  console.log("🧪 Testing ingestion...");
-  configureLlamaSettings();
-  const documentPaths = ["documents/rcc.pdf"];
-  await llamaService.ingestDocs(documentPaths);
-}
-
-
-async function testAgent() {
-  const testQuery = "Can you provide a fun fact from each paper? Separate tool calls, 10 words each";
-  const documents = ["documents/rcc.pdf", "documents/resilientdb.pdf"];
-
-  const agent = await llamaService.createNexusAgent(documents);
-  const response = await agent.runStream(testQuery);
-  for await (const event of response) {
-    if (agentToolCallEvent.include(event)) {
-      console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
-    }
-    if (agentStreamEvent.include(event)) {
-      process.stdout.write(event.data.delta);
-    }
-  }
-}
-
-async function testAgentClass() {
-// Initialize the agent
-  const nexusAgent = await NexusAgent.create();
-
-  const agentWorkflow = await nexusAgent.createAgent(["documents/rcc.pdf", "documents/resilientdb.pdf"], "test-session");
-
-  const prompt = "Can you explain replica failure from RCC document in 20 words?";
-  console.log(chalk.blue(`\n\nPrompt: ${prompt}\n`));
-  const response = await agentWorkflow.runStream(prompt);
-  for await (const event of response) {
-    if (agentToolCallEvent.include(event)) {
-      console.log(chalk.yellow(`\nTool being called: ${JSON.stringify(event.data, null, 2)}`));
-    }
-    if (agentStreamEvent.include(event)) {
-      process.stdout.write(event.data.delta);
-    }
-  }
-  const folloUp = "Can you shorten that to 10 words?";
-  console.log(chalk.blue(`\n\nFollow-up query: ${folloUp}\n`));
-  const followUpResponse = await agentWorkflow.runStream(folloUp);
-  for await (const event of followUpResponse) {
-    if (agentStreamEvent.include(event)) {
-      process.stdout.write(event.data.delta);
-    }
-  }
-}
 
 async function testCodeAgent() {
   console.log("🧪 Testing CodeAgent with 'Replica failure' query...");
