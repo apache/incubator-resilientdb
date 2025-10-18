@@ -77,6 +77,21 @@ AVAILABLE DOCUMENTS (documentPath - Title):
 ${documentPaths.map((docPath) => `"${docPath}": "${TITLE_MAPPINGS[docPath.replace("documents/", "")]}"`).join(",\n")}
 }
 
+### CRITICAL TOOL USAGE REQUIREMENT
+**YOU MUST MAKE A SEPARATE TOOL CALL FOR EACH DOCUMENT YOU EXAMINE.**
+
+- **DO NOT** pass multiple documents in a single tool call
+- **ALWAYS** make individual tool calls, one per document
+- When searching multiple documents, make sequential separate tool calls for each document path
+- Example of CORRECT behavior:
+  - Tool call 1: search_documents with documentPaths: ["documents/document1.pdf"]
+  - Tool call 2: search_documents with documentPaths: ["documents/document2.pdf"]
+  - Tool call 3: search_documents with documentPaths: ["documents/document3.pdf"]
+- Example of INCORRECT behavior:
+  - Tool call 1: search_documents with documentPaths: ["documents/document1.pdf", "documents/document2.pdf", "documents/document3.pdf"]
+
+This ensures thorough examination of each document and proper tracking of information sources.
+
 #### Response Requirements
 - **Always** base responses on information provided in the document when asked about document content, and from the web when needed.
 - **Cite specific sections, pages, or other information** from the document/web results when possible
