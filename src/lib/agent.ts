@@ -124,12 +124,11 @@ export class NexusAgent implements AgentFactory {
     const webSearchTool = this.createWebSearchTool();
 
     const memory = this.createMemoryWithSession(sessionId);
-    console.log("AGENT_RESEARCH_PROMPT", AGENT_RESEARCH_PROMPT(documents));
     const workflow = agent({
       name: "Nexus",
       description: "Responsible for overseeing the entire research process.",
       tools: [documentSearchTool, webSearchTool],
-      systemPrompt: AGENT_RESEARCH_PROMPT(documents),
+      systemPrompt: AGENT_RESEARCH_PROMPT,
       llm: deepseek({
         model: config.deepSeekModel,
       }),

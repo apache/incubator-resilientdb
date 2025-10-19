@@ -7,6 +7,7 @@ interface RequestData {
   query: string;
   documentPath?: string;
   documentPaths?: string[];
+  preferWebSearch?: boolean;
   tool?: string;
   language?: string;
   scope?: string[];
@@ -44,6 +45,8 @@ const handleAgentStreamingResponse = async (
   agentWorkflow: AgentWorkflow,
   query: string,
   sessionId: string,
+  documentPaths?: string[],
+  preferWebSearch?: boolean,
 ): Promise<ReadableStream> => {
   return new ReadableStream({
     async start(controller) {
@@ -54,7 +57,21 @@ const handleAgentStreamingResponse = async (
             console.log("[Memory][Before]", await beforeMemory.get());
           }
         } catch {}
-        const stream = await agentWorkflow.runStream(query);
+        
+        // Build contextual query with document context and web search preference
+        let contextualQuery = query;
+        
+        // Add web search priority if requested
+        if (preferWebSearch) {
+          contextualQuery = `[Web Search Priority] ${contextualQuery}`;
+        }
+        
+        // Add document context
+        if (documentPaths && documentPaths.length > 0) {
+          contextualQuery = `[Context: User has selected these documents: ${documentPaths.join(", ")}]\n\nUser Query: ${contextualQuery}`;
+        }
+        
+        const stream = await agentWorkflow.runStream(contextualQuery);
 
         for await (const event of stream) {
           if (agentToolCallEvent.include(event)) {
@@ -158,6 +175,8 @@ export async function POST(req: NextRequest) {
         agentWorkflow,
         requestData.query,
         sessionId,
+        documentPaths,
+        requestData.preferWebSearch,
       );
 
       return new Response(stream, {

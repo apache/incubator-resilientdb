@@ -42,7 +42,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Document, useDocuments } from "@/hooks/useDocuments";
 import { formatToolHeader } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, GlobeIcon, Menu, MessageCircle, SquarePen } from "lucide-react";
@@ -122,6 +122,7 @@ function ResearchChatPageContent() {
   const [language, setLanguage] = useState<Language>("ts");
   const [mode, setMode] = useState<"research" | "code">("research");
   const [scrollOpacity, setScrollOpacity] = useState(0);
+  const [preferWebSearch, setPreferWebSearch] = useState<boolean>(false);
 
   const { sessionId, resetSession } = useSessionId();
 
@@ -529,6 +530,7 @@ function ResearchChatPageContent() {
   const handleSendMessage = async (payload: {
     query: string;
     documentPaths: string[];
+    preferWebSearch?: boolean;
     tool?: string;
     language?: Language;
     scope?: string[];
@@ -676,12 +678,17 @@ function ResearchChatPageContent() {
     const payload = {
       query: inputValue,
       documentPaths: selectedDocuments.map((doc) => doc.path),
+      preferWebSearch,
       ...(activeTool === "code-composer" && {
         tool: "code-composer" as const,
         language,
         scope: [] as string[],
       }),
     };
+
+    if (preferWebSearch) {
+      setPreferWebSearch(false);
+    }
 
     handleSendMessage(payload);
   };
@@ -1074,10 +1081,22 @@ function ResearchChatPageContent() {
                                 </PromptInputModelSelectContent>
                               </PromptInputModelSelect>
                             )}
-                            <PromptInputButton disabled={mode === "code" || true /* TODO: update */}>
-                              <GlobeIcon size={16} />
-                              <span>Search</span>
-                            </PromptInputButton>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <PromptInputButton
+                                  disabled={mode === "code"}
+                                  onClick={() => setPreferWebSearch(!preferWebSearch)}
+                                  variant={preferWebSearch ? "default" : "ghost"}
+                                  className={preferWebSearch ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}
+                                >
+                                  <GlobeIcon size={16} />
+                                  <span>Search</span>
+                                </PromptInputButton>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Nexus will search the web</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </PromptInputTools>
                           <PromptInputSubmit
                             disabled={
