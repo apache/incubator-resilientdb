@@ -19,9 +19,6 @@
 
 #pragma once
 
-#include <map>
-#include <optional>
-#include <unordered_map>
 #include <vector>
 
 #include "chain/storage/storage.h"
@@ -35,6 +32,67 @@ enum class CompositeKeyType {
   INTEGER = 1,  // int32_t for regular integers
   BOOLEAN = 2,
   TIMESTAMP = 3  // int64_t for Unix timestamps
+};
+
+class CompositeKeyBuilderBase {
+ public:
+  virtual ~CompositeKeyBuilderBase() = default;
+  virtual std::string Build(const std::string& field_name,
+                            const std::string& encoded_value,
+                            const std::string& primary_key) = 0;
+  virtual std::string BuildPrefix(const std::string& field_name,
+                                  const std::string& encoded_value) = 0;
+  virtual std::string BuildLowerBound(const std::string& field_name,
+                                      const std::string& encoded_min_value) = 0;
+  virtual std::string BuildUpperBound(const std::string& field_name,
+                                      const std::string& encoded_max_value) = 0;
+  virtual std::string GetSeparator() const = 0;
+  virtual std::string GetPrefix() const = 0;
+  virtual std::string GetVersion() const = 0;
+};
+
+class DefaultCompositeKeyBuilder : public CompositeKeyBuilderBase {
+ public:
+  DefaultCompositeKeyBuilder(const std::string& separator,
+                             const std::string& prefix,
+                             const std::string& version)
+      : separator_(separator), prefix_(prefix), version_(version) {}
+
+  std::string Build(const std::string& field_name,
+                    const std::string& encoded_value,
+                    const std::string& primary_key) override;
+
+  std::string BuildPrefix(const std::string& field_name,
+                          const std::string& encoded_value) override;
+
+  std::string BuildLowerBound(const std::string& field_name,
+                              const std::string& encoded_min_value) override;
+
+  std::string BuildUpperBound(const std::string& field_name,
+                              const std::string& encoded_max_value) override;
+
+  std::string GetSeparator() const override { return separator_; }
+  std::string GetPrefix() const override { return prefix_; }
+  std::string GetVersion() const override { return version_; }
+
+  class KeyBuilder {
+   public:
+    explicit KeyBuilder(const std::string& separator);
+    KeyBuilder& add(const std::string& component);
+    KeyBuilder& addSeparator();
+    std::string build() const;
+
+   private:
+    std::string result_;
+    const std::string separator_;
+  };
+
+  KeyBuilder CreateBuilder() const;
+
+ private:
+  const std::string separator_;
+  const std::string prefix_;
+  const std::string version_;
 };
 
 class KVExecutor : public TransactionManager {
@@ -52,7 +110,7 @@ class KVExecutor : public TransactionManager {
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
-  int Delete(const std::string &key);
+  int Delete(const std::string& key);
   std::string GetAllValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
@@ -68,45 +126,46 @@ class KVExecutor : public TransactionManager {
 
   // Composite key methods
   int CreateCompositeKey(const std::string& primary_key,
-                           const std::string& field_name,
-                           const std::string& field_value,
-                           CompositeKeyType field_type);
-  
+                         const std::string& field_name,
+                         const std::string& field_value,
+                         CompositeKeyType field_type);
+
   std::vector<std::string> GetByCompositeKey(const std::string& field_name,
                                              const std::string& field_value,
                                              CompositeKeyType field_type);
-  
+
   std::vector<std::string> GetByCompositeKeyRange(const std::string& field_name,
-                                                const std::string& min_value,
-                                                const std::string& max_value,
-                                                CompositeKeyType field_type);
-  int UpdateCompositeKey(const std::string& primary_key, const std::string& field_name, const std::string& old_field_value, const std::string& new_field_value, 
-                          CompositeKeyType old_field_type, CompositeKeyType new_field_type);
+                                                  const std::string& min_value,
+                                                  const std::string& max_value,
+                                                  CompositeKeyType field_type);
+  int UpdateCompositeKey(const std::string& primary_key,
+                         const std::string& field_name,
+                         const std::string& old_field_value,
+                         const std::string& new_field_value,
+                         CompositeKeyType old_field_type,
+                         CompositeKeyType new_field_type);
+
+  void SetCompositeKeyBuilder(std::unique_ptr<CompositeKeyBuilderBase> builder);
 
  private:
-  // Simple encoding functions
-  std::string EncodeValue(const std::string& value, CompositeKeyType field_type);
+  std::string EncodeValue(const std::string& value,
+                          CompositeKeyType field_type);
   std::string EncodeInteger(int32_t value);
   std::string EncodeBoolean(bool value);
   std::string EncodeTimestamp(int64_t value);
-  
-  // Helper functions
-  std::string BuildCompositeKey(const std::string& field_name, 
+
+  std::string BuildCompositeKey(const std::string& field_name,
                                 const std::string& encoded_value,
                                 const std::string& primary_key);
-  std::string BuildCompositeKeyPrefix(const std::string& field_name, 
-                                const std::string& encoded_value);
-  std::vector<std::string> ExtractPrimaryKeys(const std::vector<std::string>& composite_keys);
+  std::string BuildCompositeKeyPrefix(const std::string& field_name,
+                                      const std::string& encoded_value);
+  std::vector<std::string> ExtractPrimaryKeys(
+      const std::vector<std::string>& composite_keys);
 
   std::unique_ptr<Storage> storage_;
   std::unique_ptr<TransactionManager> contract_manager_;
+  std::unique_ptr<CompositeKeyBuilderBase> composite_key_builder_;
 
-  // Composite key configuration
-  const std::string composite_key_separator_ = ":";
-  const std::string composite_key_prefix_ = "idx";
-
-  //TODO: add protocol versioning support
-  const std::string version_ = "v1";
   const std::string composite_val_marker_ = "Y";
 };
 
