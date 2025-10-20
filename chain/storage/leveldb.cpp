@@ -124,11 +124,8 @@ int ResLevelDB::DelValue(const std::string& key) {
   leveldb::Status status = db_->Delete(leveldb::WriteOptions(), key);
   if (status.ok()) {
       return 0;
-  } else {
-    LOG(ERROR) << "flush buffer fail:" << status.ToString();
-    return -1;
-  }
-  return 0;
+  } 
+  return -1;
 }
 
 std::string ResLevelDB::GetValue(const std::string& key) {

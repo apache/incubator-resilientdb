@@ -21,6 +21,9 @@
 
 #include <glog/logging.h>
 
+#include <iomanip>
+#include <sstream>
+
 #include "executor/contract/executor/contract_executor.h"
 
 namespace resdb {
@@ -51,6 +54,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::DEL_VAL) {
+    kv_response.set_value(std::to_string(Delete(kv_request.key())));
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
@@ -76,14 +81,18 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
         kv_request.key(), kv_request.field_name(), kv_request.value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
     kv_response.set_value(std::to_string(status));
-  }  else if (kv_request.cmd() == KVRequest::UPDATE_COMPOSITE_KEY) {
-    int status = UpdateCompositeKey(kv_request.key(), kv_request.field_name(), kv_request.value(), kv_request.value(), 
-                          static_cast<CompositeKeyType>(kv_request.field_type()), static_cast<CompositeKeyType>(kv_request.field_type()));
+  } else if (kv_request.cmd() == KVRequest::UPDATE_COMPOSITE_KEY) {
+    int status = UpdateCompositeKey(
+        kv_request.key(), kv_request.field_name(), kv_request.min_value(),
+        kv_request.max_value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
     kv_response.set_value(std::to_string(status));
-  }else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
+  } else if (kv_request.cmd() == KVRequest::GET_BY_COMPOSITE_KEY) {
     auto results = GetByCompositeKey(
         kv_request.field_name(), kv_request.value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
+    std::string result;
     Items* items = kv_response.mutable_items();
     for (const auto& document : results) {
       Item* item = items->add_item();
@@ -131,6 +140,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::DEL_VAL) {
+    kv_response.set_value(std::to_string(Delete(kv_request.key())));
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
@@ -167,11 +178,13 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
       item->mutable_value_info()->set_value(document);
     }
   } else if (kv_request.cmd() == KVRequest::UPDATE_COMPOSITE_KEY) {
-    int status = UpdateCompositeKey(kv_request.key(), kv_request.field_name(), kv_request.value(), kv_request.value(), 
-                          static_cast<CompositeKeyType>(kv_request.field_type()), static_cast<CompositeKeyType>(kv_request.field_type()));
+    int status = UpdateCompositeKey(
+        kv_request.key(), kv_request.field_name(), kv_request.min_value(),
+        kv_request.max_value(),
+        static_cast<CompositeKeyType>(kv_request.field_type()),
+        static_cast<CompositeKeyType>(kv_request.field_type()));
     kv_response.set_value(std::to_string(status));
-  
-  }else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
+  } else if (kv_request.cmd() == KVRequest::GET_COMPOSITE_KEY_RANGE) {
     auto results = GetByCompositeKeyRange(
         kv_request.field_name(), kv_request.min_value(), kv_request.max_value(),
         static_cast<CompositeKeyType>(kv_request.field_type()));
@@ -197,13 +210,15 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  //LOG(ERROR) << " set key:" << key;
   storage_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  //LOG(ERROR) << " get key:" << key;
   return storage_->GetValue(key);
+}
+
+int KVExecutor::Delete(const std::string& key) {
+  return storage_->DelValue(key);
 }
 
 std::string KVExecutor::GetAllValues() { return storage_->GetAllValues(); }
@@ -308,56 +323,56 @@ std::string KVExecutor::EncodeTimestamp(int64_t value) {
   return bytes;
 }
 
+
 /* TODO: Abstract key encoding and construction to this class */
 class CompositeKeyBuilder {
-public:
-    explicit CompositeKeyBuilder(const std::string& separator) : separator_(separator) {
-        result_.reserve(256);
-    }
+ public:
+  explicit CompositeKeyBuilder(const std::string& separator)
+      : separator_(separator) {
+    result_.reserve(256);
+  }
 
-    CompositeKeyBuilder& add(const std::string& component) {
-        if (!result_.empty()) {
-            result_ += separator_;
-        }
-        result_ += component;
-        return *this;
+  CompositeKeyBuilder& add(const std::string& component) {
+    if (!result_.empty()) {
+      result_ += separator_;
     }
+    result_ += component;
+    return *this;
+  }
 
-    CompositeKeyBuilder& addSeparator() {
-        result_ += separator_;
-        return *this;
-    }
+  CompositeKeyBuilder& addSeparator() {
+    result_ += separator_;
+    return *this;
+  }
 
-    std::string build() const {
-        return result_;
-    }
+  std::string build() const { return result_; }
 
-private:
-    std::string result_;
-    const std::string& separator_;
+ private:
+  std::string result_;
+  const std::string& separator_;
 };
 
 std::string KVExecutor::BuildCompositeKey(const std::string& field_name,
-                                       const std::string& encoded_value,
-                                       const std::string& primary_key) {
-    return CompositeKeyBuilder(composite_key_separator_)
-        .add(composite_key_prefix_)
-        .add(version_)
-        .add(field_name)
-        .add(encoded_value)
-        .add(primary_key)
-        .build();
+                                          const std::string& encoded_value,
+                                          const std::string& primary_key) {
+  return CompositeKeyBuilder(composite_key_separator_)
+      .add(composite_key_prefix_)
+      .add(version_)
+      .add(field_name)
+      .add(encoded_value)
+      .add(primary_key)
+      .build();
 }
 
-std::string KVExecutor::BuildCompositeKeyPrefix(const std::string& field_name,
-                                          const std::string& encoded_value) {
-    return CompositeKeyBuilder(composite_key_separator_)
-        .add(composite_key_prefix_)
-        .add(version_)
-        .add(field_name)
-        .add(encoded_value)
-        .addSeparator()
-        .build();
+std::string KVExecutor::BuildCompositeKeyPrefix(
+    const std::string& field_name, const std::string& encoded_value) {
+  return CompositeKeyBuilder(composite_key_separator_)
+      .add(composite_key_prefix_)
+      .add(version_)
+      .add(field_name)
+      .add(encoded_value)
+      .addSeparator()
+      .build();
 }
 
 std::vector<std::string> KVExecutor::ExtractPrimaryKeys(
@@ -383,14 +398,14 @@ int KVExecutor::CreateCompositeKey(const std::string& primary_key,
   std::string encoded_value = EncodeValue(field_value, field_type);
   std::string composite_key =
       BuildCompositeKey(field_name, encoded_value, primary_key);
-  return storage_->SetValue(composite_key, "");
+  return storage_->SetValue(composite_key, composite_val_marker_);
 }
 
 std::vector<std::string> KVExecutor::GetByCompositeKey(
     const std::string& field_name, const std::string& field_value,
     CompositeKeyType field_type) {
   std::string encoded_value = EncodeValue(field_value, field_type);
-    std::string prefix = BuildCompositeKeyPrefix(field_name, encoded_value);
+  std::string prefix = BuildCompositeKeyPrefix(field_name, encoded_value);
 
   auto results = storage_->GetKeysByPrefix(prefix);
 
@@ -413,23 +428,24 @@ std::vector<std::string> KVExecutor::GetByCompositeKeyRange(
   std::string encoded_max = EncodeValue(max_value, field_type);
 
   std::string start_key = CompositeKeyBuilder(composite_key_separator_)
-      .add(composite_key_prefix_)
-      .add(version_)
-      .add(field_name)
-      .add(encoded_min)
-      .addSeparator()
-      .build();
+                              .add(composite_key_prefix_)
+                              .add(version_)
+                              .add(field_name)
+                              .add(encoded_min)
+                              .addSeparator()
+                              .build();
 
   std::string end_key = CompositeKeyBuilder(composite_key_separator_)
-      .add(composite_key_prefix_)
-      .add(version_)
-      .add(field_name)
-      .add(encoded_max)
-      .add("\xFF")
-      .addSeparator()
-      .build();
+                            .add(composite_key_prefix_)
+                            .add(version_)
+                            .add(field_name)
+                            .add(encoded_max)
+                            .add("\xFF")
+                            .addSeparator()
+                            .build();
 
-  std::vector<std::string> composite_keys = storage_->GetKeyRangeByPrefix(start_key, end_key);
+  std::vector<std::string> composite_keys =
+      storage_->GetKeyRangeByPrefix(start_key, end_key);
 
   std::vector<std::string> primary_keys = ExtractPrimaryKeys(composite_keys);
 
@@ -444,26 +460,33 @@ std::vector<std::string> KVExecutor::GetByCompositeKeyRange(
   return documents;
 }
 
-int KVExecutor::UpdateCompositeKey(const std::string& primary_key, const std::string& field_name, const std::string& old_field_value, const std::string& new_field_value, 
-        CompositeKeyType old_field_type, CompositeKeyType new_field_type){
-  int status_create = CreateCompositeKey(primary_key, field_name, new_field_value, new_field_type);
-  if(status_create!=0){
-    LOG(ERROR)<<"create composite key status fail";
-    return -1;
-  }
-  std::string encoded_old_field_value = EncodeValue(old_field_value, old_field_type);
-  std::string delete_composite_key = BuildCompositeKey(field_name, encoded_old_field_value, primary_key);
+int KVExecutor::UpdateCompositeKey(const std::string& primary_key,
+                                   const std::string& field_name,
+                                   const std::string& old_field_value,
+                                   const std::string& new_field_value,
+                                   CompositeKeyType old_field_type,
+                                   CompositeKeyType new_field_type) {
+  std::string encoded_old_field_value =
+      EncodeValue(old_field_value, old_field_type);
+
+  std::string delete_composite_key =
+      BuildCompositeKey(field_name, encoded_old_field_value, primary_key);
   std::string check = storage_->GetValue(delete_composite_key);
-  if (check == ""){
-    return 0;
+         
+  if (check == composite_val_marker_) {
+    int status_delete = storage_->DelValue(delete_composite_key);
+    if (status_delete != 0) {
+      LOG(ERROR) << "delete composite key status fail";
+      return -1;
+    }
   }
-  int status_delete = storage_->DelValue(delete_composite_key);
-  if(status_delete!=0){
-    LOG(ERROR)<<"delete composite key status fail";
+  int status_create = CreateCompositeKey(
+      primary_key, field_name, new_field_value, old_field_type);  // TODO
+  if (status_create != 0) {
+    LOG(ERROR) << "create composite key status fail";
     return -1;
   }
   return 0;
 }
-
 
 }  // namespace resdb

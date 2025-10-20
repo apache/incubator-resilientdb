@@ -312,7 +312,6 @@ int ResRocksDB::DelValue(const std::string& key) {
   if (status.ok()) {
     return 0;
   }
-  LOG(ERROR) << "flush buffer fail:" << status.ToString();
   return -1;
 }
 

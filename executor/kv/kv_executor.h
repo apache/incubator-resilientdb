@@ -52,6 +52,7 @@ class KVExecutor : public TransactionManager {
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
+  int Delete(const std::string &key);
   std::string GetAllValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
@@ -106,6 +107,7 @@ class KVExecutor : public TransactionManager {
 
   //TODO: add protocol versioning support
   const std::string version_ = "v1";
+  const std::string composite_val_marker_ = "Y";
 };
 
 }  // namespace resdb

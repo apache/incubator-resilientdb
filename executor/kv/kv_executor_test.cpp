@@ -298,11 +298,10 @@ class KVExecutorTest : public TestWithParam<StorageType> {
     KVRequest request;
     request.set_cmd(KVRequest::UPDATE_COMPOSITE_KEY);
     request.set_key(primary_key);
-    request.set_value(old_field_value);
-    request.set_value(new_field_value);
     request.set_field_name(field_name);
-    request.set_field_type(old_field_type);
-    request.set_field_type(new_field_type);
+    request.set_min_value(old_field_value);
+    request.set_max_value(new_field_value);
+    request.set_field_type(old_field_type); //old field type and new field type should be the same
 
     std::string str;
     if (!request.SerializeToString(&str)) {
@@ -329,11 +328,6 @@ class KVExecutorTest : public TestWithParam<StorageType> {
     request.set_cmd(KVRequest::DEL_VAL);
     request.set_key(key);
     
-    // request.set_value(field_value);
-    // request.set_field_name(field_name);
-    
-    // request.set_field_type(field_type);
-
     std::string str;
     if (!request.SerializeToString(&str)) {
       return -1;
@@ -355,7 +349,7 @@ class KVExecutorTest : public TestWithParam<StorageType> {
   }
 
   Items GetByCompositeKey(const std::string& field_name,
-                          const std::string& field_value, int field_type) {
+                              const std::string& field_value, int field_type) {
     KVRequest request;
     request.set_cmd(KVRequest::GET_BY_COMPOSITE_KEY);
     request.set_value(field_value);
@@ -592,83 +586,43 @@ TEST_P(KVExecutorTest, CompositeKeyIntegerField) {
 }
 
 
-// TEST_F(KVExecutorTest, UpdateCompositeKey){
-//   std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
-//   std::string user2 = "{\"name\":\"amy\",\"age\":30,\"city\":\"LA\"}";
+TEST_P(KVExecutorTest, DeleteValue) {
+  std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
+  EXPECT_EQ(Set("user_1", user1), 0);
+  EXPECT_EQ(Get("user_1"), user1);
 
-//   // Store documents
-//   EXPECT_EQ(Set("user_1", user1), 0);
-//   EXPECT_EQ(Set("user_2", user2), 0);
+  int status1 = DelVal("user_1");
+  EXPECT_EQ(status1, 0);
+  EXPECT_EQ(Get("user_1"), "");
+}
 
+TEST_P(KVExecutorTest, UpdateCompositeKey){
+  std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
+  std::string user2 = "{\"name\":\"amy\",\"age\":30,\"city\":\"LA\"}";
 
-//   int status1 = CreateCompositeKey("user_1", "age", "30", 1);
-//   int status2 = CreateCompositeKey("user_2", "age", "30", 1);
+  EXPECT_EQ(Set("user_1", user1), 0);
+  EXPECT_EQ(Set("user_2", user2), 0);
+
+  int status1 = CreateCompositeKey("user_1", "age", "30", 1);
+  int status2 = CreateCompositeKey("user_2", "age", "30", 1);
   
-//   EXPECT_EQ(status1, 0);
-//   EXPECT_EQ(status2, 0);
+  EXPECT_EQ(status1, 0);
+  EXPECT_EQ(status2, 0);
 
-//   std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
-//   EXPECT_EQ(Set("user_1", user_update), 0);
-//   int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
-//   EXPECT_EQ(status5, 0);
+  std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
+  EXPECT_EQ(Set("user_1", user_update), 0);
+  int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
+  EXPECT_EQ(status5, 0);
 
-//   Items results = GetByCompositeKey("age", "31", 1);
-//   EXPECT_EQ(results.item_size(), 1);
+  Items results = GetByCompositeKey("age", "31", 1);
+  EXPECT_EQ(results.item_size(), 1);
+  EXPECT_EQ(results.item(0).value_info().value(), user_update);
 
-//   Items empty_results = GetByCompositeKey("age", "30", 1);
-//   EXPECT_EQ(empty_results.item_size(), 1);
+  Items empty_results = GetByCompositeKey("age", "30", 1);
+  EXPECT_EQ(empty_results.item_size(), 1);
+  EXPECT_EQ(empty_results.item(0).value_info().value(), user2);
 
-// }
-
-// TEST_F(KVExecutorTest, UpdateCompositeKey){
-
-//   int status1 = CreateCompositeKey("user_1", "age", "30", 1);
-//   int status2 = CreateCompositeKey("user_2", "age", "30", 1);
-  
-//   EXPECT_EQ(status1, 0);
-//   EXPECT_EQ(status2, 0);
-
-//   int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
-//   EXPECT_EQ(status5, 0);
-
-//   Items results = GetByCompositeKey("age", "31", 1);
-//   EXPECT_EQ(results.item_size(), 1);
-
-//   Items empty_results = GetByCompositeKey("age", "30", 1);
-//   EXPECT_EQ(empty_results.item_size(), 1);
-
-// }
-
-
-//@harish876
-// TEST_F(KVExecutorTest, UpdateCompositeKeys){
-//   std::string user1 = "{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"}";
-
-//   EXPECT_EQ(Set("user_1", user1), 0);
-
-//   int status1 = CreateCompositeKey("user_1", "age", "30", 1);
-//   EXPECT_EQ(status1, 0);
- 
-
-//   std::string user_update = "{\"name\":\"John\",\"age\":31,\"city\":\"NYC\"}";
-//   EXPECT_EQ(Set("user_1", user_update), 0);
-//   // int status5 = UpdateCompositeKey("user_1", "age", "30", "31", 1, 1);
-//   // EXPECT_EQ(status5, 0);
-//   EXPECT_EQ(Get("user_1"), user_update);
-
-//   // int status = DelVal("user_1");
-//   // EXPECT_EQ(status, 0);
-
-//   EXPECT_EQ(Get("user_1"), "");
-//   Items results = GetByCompositeKey("age", "30", 1);
-//   EXPECT_EQ(results.item_size(), 0);
-
-//   // Items empty_results = GetByCompositeKey("age", "30", 1);
-//   // EXPECT_EQ(empty_results.item_size(), 0);
-
-// }
-
-
+}
 
 
 TEST_P(KVExecutorTest, CompositeKeyBooleanField) {
