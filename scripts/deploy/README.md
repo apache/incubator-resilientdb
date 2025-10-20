@@ -1,4 +1,4 @@
-#
+<!-- #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,6 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+-->
 
 This directory includes deployment scripts that help to deploy ResilientDB on multiple machines. At present, these scripts only support deploying KV service and KV Performance server.
 
