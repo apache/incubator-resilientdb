@@ -23,6 +23,7 @@ package resdb;
 
 import "common/proto/signature_info.proto";
 import "chain/storage/proto/leveldb_config.proto";
+import "chain/storage/proto/rocksdb_config.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -39,6 +40,7 @@ message RegionInfo {
 message ResConfigData{
   repeated RegionInfo region = 1;
   int32 self_region_id = 2;
+  optional storage.RocksDBInfo rocksdb_info = 3;
   optional storage.LevelDBInfo leveldb_info = 4;
   optional bool enable_viewchange = 5;
   optional int32 view_change_timeout_ms = 10;

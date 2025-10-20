@@ -22,6 +22,7 @@
 #include <glog/logging.h>
 #include "common/utils/utils.h"
 
+
 namespace resdb {
 
 TransactionExecutor::TransactionExecutor(
@@ -248,13 +249,17 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatch(batch_request);
   }
-
+  if (response != nullptr){
+    std::cout<<3<<"testing"<<request->seq()<<std::endl;
+    set_OnExecuteSuccess(request->seq());
+  }
   // global_stats_->IncTotalRequest(batch_request.user_requests_size());
   // global_stats_->IncExecuteDone();
 }
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
                                   bool need_execute) {
+  std::cout<<0<<"testing"<<request->seq()<<std::endl;
   RegisterExecute(request->seq());
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
@@ -288,10 +293,15 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   //  <<request->proxy_id()<<" need execute:"<<need_execute;
 
   std::unique_ptr<BatchUserResponse> response;
+  
   global_stats_->GetTransactionDetails(*batch_request_p);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      if (response != nullptr){
+        std::cout<<1<<"testing"<<request->seq()<<std::endl;
+        set_OnExecuteSuccess(request->seq());
+      }
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
@@ -313,6 +323,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 	    else {
 		    response_v = transaction_manager_->ExecuteBatchData(*data_p);
 	    }
+      if (response != nullptr || !response_v.empty()){
+        std::cout<<2<<"testing"<<request->seq()<<std::endl;
+        set_OnExecuteSuccess(request->seq());
+      }
       FinishExecute(request->seq());
 
       if(response == nullptr){
@@ -325,6 +339,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
 
+
+  
   if (duplicate_manager_ && batch_request_p) {	      
     duplicate_manager_->AddExecuted(batch_request_p->hash(), batch_request_p->seq());		    
   }
@@ -344,6 +360,20 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
 
   global_stats_->IncExecuteDone();
+}
+
+void TransactionExecutor::set_OnExecuteSuccess(uint64_t seq) {
+  // Monotonic update: only move forward.
+  uint64_t cur = latest_executed_seq_.load(std::memory_order_relaxed);
+  while (seq > cur && !latest_executed_seq_.compare_exchange_weak(
+            cur, seq, std::memory_order_release, std::memory_order_relaxed)) {
+    /* retry with updated `cur` */
+  }
+  // latest_executed_seq_ = seq;
+}
+
+uint64_t TransactionExecutor::get_latest_executed_seq() const {
+  return latest_executed_seq_/*.load(std::memory_order_acquire)*/;
 }
 
 void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {

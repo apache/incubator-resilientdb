@@ -190,10 +190,12 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+
     if (!IsValidAddress(contract_address)) {
         printf("ERROR: Invalid contract address format: %s\n", contract_address.c_str());
         return 1;
     }
+
 
     printf(
         "execute\n caller address:%s\n contract address: %s\n func: %s\n "
@@ -226,6 +228,7 @@ int main(int argc, char** argv) {
         printf("ERROR: Invalid address format: %s\n", address.c_str());
         return 1;
     }
+
     printf("address %s balance %s\n", address.c_str(), balance.c_str());
     auto ret = client.SetBalance(address, balance);
     printf("set address %s balance %s ret %s\n", address.c_str(), balance.c_str(), (*ret).c_str());

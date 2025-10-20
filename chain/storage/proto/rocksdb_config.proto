@@ -17,18 +17,13 @@
  * under the License.
  */
 
-#pragma once
+syntax = "proto3";
 
-#include <gmock/gmock.h>
+package resdb.storage;
 
-#include "platform/consensus/checkpoint/checkpoint.h"
-
-namespace resdb {
-
-class MockCheckPoint : public CheckPoint {
- public:
-  MOCK_METHOD(uint64_t, GetStableCheckpoint, (), (override));
-  MOCK_METHOD(uint64_t, GetLastExecutedSeq, (), (override));
-};
-
-}  // namespace resdb
+message RocksDBInfo {
+  uint32 num_threads = 2;
+  uint32 write_buffer_size_mb = 3;
+  uint32 write_batch_size = 4;
+  string path = 5;
+}

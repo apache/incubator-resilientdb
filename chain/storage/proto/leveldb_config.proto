@@ -27,4 +27,6 @@ message LevelDBInfo {
   string path = 4;
   optional bool enable_block_cache = 5;
   optional uint32 block_cache_capacity = 6;
+  optional bool enable_bloom_filter = 7;
+  optional uint32 bloom_filter_bits_per_key = 8;
 }

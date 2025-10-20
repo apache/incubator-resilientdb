@@ -378,4 +378,8 @@ uint64_t CheckPointManager::GetCommittableSeq() {
   return committable_seq_;
 }
 
+uint64_t CheckPointManager::GetLastExecutedSeq(){
+  return executor_->get_latest_executed_seq();
+}
+
 }  // namespace resdb

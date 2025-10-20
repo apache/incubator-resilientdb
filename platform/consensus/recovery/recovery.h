@@ -49,7 +49,9 @@ class Recovery {
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
 
- private:
+  uint64_t get_latest_executed_seq_recov();
+ 
+  private:
   struct RecoveryData {
     std::unique_ptr<Context> context;
     std::unique_ptr<Request> request;

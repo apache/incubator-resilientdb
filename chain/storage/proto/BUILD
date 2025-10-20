@@ -42,3 +42,13 @@ cc_proto_library(
     name = "leveldb_config_cc_proto",
     deps = [":leveldb_config_proto"],
 )
+
+proto_library(
+    name = "rocksdb_config_proto",
+    srcs = ["rocksdb_config.proto"],
+)
+
+cc_proto_library(
+    name = "rocksdb_config_cc_proto",
+    deps = [":rocksdb_config_proto"],
+)

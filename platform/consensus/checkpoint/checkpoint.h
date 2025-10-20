@@ -27,6 +27,7 @@ class CheckPoint {
   virtual ~CheckPoint() = default;
 
   virtual uint64_t GetStableCheckpoint() = 0;
+  virtual uint64_t GetLastExecutedSeq() = 0;
 };
 
 }  // namespace resdb

@@ -182,6 +182,26 @@ http_archive(
 )
 
 bind(
+    name = "zstd",
+    actual = "//third_party:zstd",
+)
+
+http_archive(
+    name = "com_facebook_zstd",
+    build_file_content = all_content,
+    strip_prefix = "zstd-1.5.2",
+    url = "https://github.com/facebook/zstd/archive/refs/tags/v1.5.2.zip",
+)
+
+http_archive(
+    name = "com_github_facebook_rocksdb",
+    build_file = "@com_resdb_nexres//third_party:rocksdb.BUILD",
+    sha256 = "928cbd416c0531e9b2e7fa74864ce0d7097dca3f5a8c31f31459772a28dbfcba",
+    strip_prefix = "rocksdb-7.2.2",
+    url = "https://github.com/facebook/rocksdb/archive/refs/tags/v7.2.2.zip",
+)
+
+bind(
     name = "snappy",
     actual = "@com_google_snappy//:snappy",
 )
@@ -255,4 +275,11 @@ http_archive(
     sha256 = "babcdfd2c744905a73d20de211b51367bda0d5200f11d654c4314b909d8c963c",
     strip_prefix = "asio-asio-1-26-0",
     url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
+)
+
+http_archive(
+    name = "com_google_benchmark",
+    sha256 = "6bc180a57d23d4d9515519f92b0c83d61b05b5bab188961f36ac7b06b0d9e9ce",
+    strip_prefix = "benchmark-1.8.3",
+    urls = ["https://github.com/google/benchmark/archive/v1.8.3.tar.gz"],
 )

@@ -17,216 +17,155 @@
  * under the License.
  */
 
-#include "chain/storage/leveldb.h"
+#include "chain/storage/rocksdb.h"
 
 #include <glog/logging.h>
-#include <unistd.h>
-
-#include <cstdint>
 
 #include "chain/storage/proto/kv.pb.h"
-#include "leveldb/options.h"
+#include "rocksdb/slice_transform.h"
+#include "rocksdb/db.h"
+#include "rocksdb/filter_policy.h"
+#include "rocksdb/options.h"
+#include "rocksdb/slice.h"
+#include "rocksdb/table.h"
+#include "rocksdb/write_batch.h"
 
 namespace resdb {
 namespace storage {
 
-std::unique_ptr<Storage> NewResLevelDB(const std::string& path,
-                                       std::optional<LevelDBInfo> config) {
+std::unique_ptr<Storage> NewResRocksDB(const std::string& path,
+                                       std::optional<RocksDBInfo> config) {
   if (config == std::nullopt) {
-    config = LevelDBInfo();
+    config = RocksDBInfo();
   }
   (*config).set_path(path);
-  return std::make_unique<ResLevelDB>(config);
+  return std::make_unique<ResRocksDB>(config);
 }
 
-std::unique_ptr<Storage> NewResLevelDB(std::optional<LevelDBInfo> config) {
-  return std::make_unique<ResLevelDB>(config);
+std::unique_ptr<Storage> NewResRocksDB(std::optional<RocksDBInfo> config) {
+  return std::make_unique<ResRocksDB>(config);
 }
 
-ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
-  std::string path = "/tmp/nexres-leveldb";
+ResRocksDB::ResRocksDB(std::optional<RocksDBInfo> config) {
+  std::string path = "/tmp/nexres-rocksdb";
   if (config.has_value()) {
+    num_threads_ = (*config).num_threads();
     write_buffer_size_ = (*config).write_buffer_size_mb() << 20;
     write_batch_size_ = (*config).write_batch_size();
-    if (!(*config).path().empty()) {
-      LOG(ERROR) << "Custom path for ResLevelDB provided in config: "
+    if ((*config).path() != "") {
+      LOG(ERROR) << "Custom path for RocksDB provided in config: "
                  << (*config).path();
       path = (*config).path();
     }
   }
-  if ((*config).enable_block_cache()) {
-    uint32_t capacity = 1000;
-    if ((*config).has_block_cache_capacity()) {
-      capacity = (*config).block_cache_capacity();
-    }
-    block_cache_ =
-        std::make_unique<LRUCache<std::string, std::string>>(capacity);
-    LOG(ERROR) << "initialized block cache" << std::endl;
-  }
-  global_stats_ = Stats::GetGlobalStats();
   CreateDB(path);
 }
 
-void ResLevelDB::CreateDB(const std::string& path) {
-  LOG(ERROR) << "ResLevelDB Create DB: path:" << path
-             << " write buffer size:" << write_buffer_size_
-             << " batch size:" << write_batch_size_;
-  leveldb::Options options;
+void ResRocksDB::CreateDB(const std::string& path) {
+  rocksdb::Options options;
   options.create_if_missing = true;
+  if (num_threads_ > 1) options.IncreaseParallelism(num_threads_);
+  options.OptimizeLevelStyleCompaction();
   options.write_buffer_size = write_buffer_size_;
 
-  leveldb::DB* db = nullptr;
-  
-  //hard coded bloom filter policy for now
-  filter_policy_ = leveldb::NewBloomFilterPolicy(20);
-  options.filter_policy = filter_policy_;
-  leveldb::Status status = leveldb::DB::Open(options, path, &db);
+  // ------------------------------------------------------------------------- //
+  // Conifgs for the rocksdb - hard coded -> change to config 
+  // ------------------------------------------------------------------------- //
+  options.enable_blob_files = true;
+  rocksdb::BlockBasedTableOptions table_options;
+  table_options.filter_policy.reset(rocksdb::NewBloomFilterPolicy(10, false));
+  table_options.whole_key_filtering = true;
+  options.table_factory.reset(
+      rocksdb::NewBlockBasedTableFactory(table_options));
+  options.prefix_extractor.reset(rocksdb::NewFixedPrefixTransform(7));
+  // ------------------------------------------------------------------------- //
+
+  rocksdb::DB* db = nullptr;
+  rocksdb::Status status = rocksdb::DB::Open(options, path, &db);
   if (status.ok()) {
-    db_ = std::unique_ptr<leveldb::DB>(db);
+    db_ = std::unique_ptr<rocksdb::DB>(db);
+    LOG(ERROR) << "Successfully opened RocksDB in path: " << path;
+  } else {
+    LOG(ERROR) << "RocksDB status fail";
   }
   assert(status.ok());
-  LOG(ERROR) << "Successfully opened LevelDB";
+  LOG(ERROR) << "Successfully opened RocksDB";
 }
 
-ResLevelDB::~ResLevelDB() {
+ResRocksDB::~ResRocksDB() {
   if (db_) {
+    Flush();  // Ensure any pending writes are flushed
     db_.reset();
   }
-  if (block_cache_) {
-    block_cache_->Flush();
-  }
-  if (filter_policy_) {
-    delete filter_policy_;
-  }
 }
 
-int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
-  if (block_cache_) {
-    block_cache_->Put(key, value);
-  }
+int ResRocksDB::SetValue(const std::string& key, const std::string& value) {
   batch_.Put(key, value);
 
-  if (batch_.ApproximateSize() >= write_batch_size_) {
-    leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+  if (batch_.Count() >= write_batch_size_) {
+    rocksdb::Status status = db_->Write(rocksdb::WriteOptions(), &batch_);
     if (status.ok()) {
       batch_.Clear();
-      UpdateMetrics();
-      return 0;
     } else {
-      LOG(ERROR) << "flush buffer fail:" << status.ToString();
+      LOG(ERROR) << "write value fail:" << status.ToString();
       return -1;
     }
   }
   return 0;
 }
 
-int ResLevelDB::DelValue(const std::string& key) {
-  leveldb::Status status = db_->Delete(leveldb::WriteOptions(), key);
+std::string ResRocksDB::GetValue(const std::string& key) {
+  std::string value = "";
+  rocksdb::Status status = db_->Get(rocksdb::ReadOptions(), key, &value);
   if (status.ok()) {
-      return 0;
-  } 
-  return -1;
+    return value;
+  } else {
+    return "";
+  }
 }
 
-std::string ResLevelDB::GetValue(const std::string& key) {
-  std::string value;
-  bool found_in_cache = false;
-
-  if (block_cache_) {
-    value = block_cache_->Get(key);
-    found_in_cache = !value.empty();
-  }
-
-  if (!found_in_cache) {
-    leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
-    if (!status.ok()) {
-      value.clear();  // Ensure value is empty if not found in DB
-    }
-  }
-
-  UpdateMetrics();
-  return value;
-}
-
-std::string ResLevelDB::GetAllValues(void) {
+std::string ResRocksDB::GetAllValues(void) {
   std::string values = "[";
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  rocksdb::Iterator* itr = db_->NewIterator(rocksdb::ReadOptions());
   bool first_iteration = true;
-  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+  for (itr->SeekToFirst(); itr->Valid(); itr->Next()) {
     if (!first_iteration) values.append(",");
     first_iteration = false;
-    values.append(it->value().ToString());
+    values.append(itr->value().ToString());
   }
   values.append("]");
 
-  delete it;
+  delete itr;
   return values;
 }
 
-std::string ResLevelDB::GetRange(const std::string& min_key,
+std::string ResRocksDB::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
   std::string values = "[";
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  rocksdb::Iterator* itr = db_->NewIterator(rocksdb::ReadOptions());
   bool first_iteration = true;
-  for (it->Seek(min_key); it->Valid() && it->key().ToString() <= max_key;
-       it->Next()) {
+  for (itr->Seek(min_key); itr->Valid() && itr->key().ToString() <= max_key;
+       itr->Next()) {
     if (!first_iteration) values.append(",");
     first_iteration = false;
-    values.append(it->value().ToString());
+    values.append(itr->value().ToString());
   }
   values.append("]");
 
-  delete it;
+  delete itr;
   return values;
 }
 
-std::vector<std::string> ResLevelDB::GetKeysByPrefix(const std::string& prefix) {
-  std::vector<std::string> resp;
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
-  for (it->Seek(prefix); it->Valid() && it->key().starts_with(prefix);
-       it->Next()) {
-    resp.push_back(it->key().ToString());
-  }
-  delete it;
-  return resp;
-}
-
-std::vector<std::string> ResLevelDB::GetKeyRangeByPrefix(
-    const std::string& start_prefix, const std::string& end_prefix) {
-  std::vector<std::string> resp;
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
-  for (it->Seek(start_prefix);
-       it->Valid() && it->key().ToString() <= end_prefix; it->Next()) {
-    resp.push_back(it->key().ToString());
-  }
-  delete it;
-  return resp;
-}
-
-bool ResLevelDB::UpdateMetrics() {
-  if (block_cache_ == nullptr) {
-    return false;
-  }
-  std::string stats;
-  std::string approximate_size;
-  db_->GetProperty("leveldb.stats", &stats);
-  db_->GetProperty("leveldb.approximate-memory-usage", &approximate_size);
-  global_stats_->SetStorageEngineMetrics(block_cache_->GetCacheHitRatio(),
-                                         stats, approximate_size);
-  return true;
-}
-
-bool ResLevelDB::Flush() {
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+bool ResRocksDB::Flush() {
+  rocksdb::Status status = db_->Write(rocksdb::WriteOptions(), &batch_);
   if (status.ok()) {
     batch_.Clear();
     return true;
   }
-  LOG(ERROR) << "flush buffer fail:" << status.ToString();
+  LOG(ERROR) << "write value fail:" << status.ToString();
   return false;
 }
-
-int ResLevelDB::SetValueWithVersion(const std::string& key,
+int ResRocksDB::SetValueWithVersion(const std::string& key,
                                     const std::string& value, int version) {
   std::string value_str = GetValue(key);
   ValueHistory history;
@@ -254,7 +193,7 @@ int ResLevelDB::SetValueWithVersion(const std::string& key,
   return SetValue(key, value_str);
 }
 
-std::pair<std::string, int> ResLevelDB::GetValueWithVersion(
+std::pair<std::string, int> ResRocksDB::GetValueWithVersion(
     const std::string& key, int version) {
   std::string value_str = GetValue(key);
   ValueHistory history;
@@ -282,10 +221,10 @@ std::pair<std::string, int> ResLevelDB::GetValueWithVersion(
 }
 
 // Return a map of <key, <value, version>>
-std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetAllItems() {
+std::map<std::string, std::pair<std::string, int>> ResRocksDB::GetAllItems() {
   std::map<std::string, std::pair<std::string, int>> resp;
 
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  rocksdb::Iterator* it = db_->NewIterator(rocksdb::ReadOptions());
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     ValueHistory history;
     if (!history.ParseFromString(it->value().ToString()) ||
@@ -302,11 +241,11 @@ std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetAllItems() {
   return resp;
 }
 
-std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetKeyRange(
+std::map<std::string, std::pair<std::string, int>> ResRocksDB::GetKeyRange(
     const std::string& min_key, const std::string& max_key) {
   std::map<std::string, std::pair<std::string, int>> resp;
 
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  rocksdb::Iterator* it = db_->NewIterator(rocksdb::ReadOptions());
   for (it->Seek(min_key); it->Valid() && it->key().ToString() <= max_key;
        it->Next()) {
     ValueHistory history;
@@ -325,7 +264,7 @@ std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetKeyRange(
 }
 
 // Return a list of <value, version>
-std::vector<std::pair<std::string, int>> ResLevelDB::GetHistory(
+std::vector<std::pair<std::string, int>> ResRocksDB::GetHistory(
     const std::string& key, int min_version, int max_version) {
   std::vector<std::pair<std::string, int>> resp;
   std::string value_str = GetValue(key);
@@ -349,7 +288,7 @@ std::vector<std::pair<std::string, int>> ResLevelDB::GetHistory(
 }
 
 // Return a list of <value, version>
-std::vector<std::pair<std::string, int>> ResLevelDB::GetTopHistory(
+std::vector<std::pair<std::string, int>> ResRocksDB::GetTopHistory(
     const std::string& key, int top_number) {
   std::vector<std::pair<std::string, int>> resp;
   std::string value_str = GetValue(key);
@@ -368,5 +307,37 @@ std::vector<std::pair<std::string, int>> ResLevelDB::GetTopHistory(
   return resp;
 }
 
+int ResRocksDB::DelValue(const std::string& key) {
+  rocksdb::Status status = db_->Delete(rocksdb::WriteOptions(), key);
+  if (status.ok()) {
+    return 0;
+  }
+  return -1;
+}
+
+std::vector<std::string> ResRocksDB::GetKeysByPrefix(
+    const std::string& prefix) {
+  std::vector<std::string> resp;
+  rocksdb::Iterator* it = db_->NewIterator(rocksdb::ReadOptions());
+  for (it->Seek(prefix); it->Valid() && it->key().starts_with(prefix);
+       it->Next()) {
+    resp.push_back(it->key().ToString());
+  }
+  delete it;
+  return resp;
+}
+
+std::vector<std::string> ResRocksDB::GetKeyRangeByPrefix(
+    const std::string& start_prefix, const std::string& end_prefix) {
+  std::vector<std::string> resp;
+  rocksdb::Iterator* it = db_->NewIterator(rocksdb::ReadOptions());
+  for (it->Seek(start_prefix);
+       it->Valid() && it->key().ToString() <= end_prefix; it->Next()) {
+    resp.push_back(it->key().ToString());
+  }
+  delete it;
+  return resp;
+}
 }  // namespace storage
+
 }  // namespace resdb
