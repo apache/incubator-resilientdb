@@ -28,6 +28,7 @@ namespace resdb {
 class MockCheckPoint : public CheckPoint {
  public:
   MOCK_METHOD(uint64_t, GetStableCheckpoint, (), (override));
+  MOCK_METHOD(uint64_t, GetLastExecutedSeq, (), (override));
 };
 
 }  // namespace resdb

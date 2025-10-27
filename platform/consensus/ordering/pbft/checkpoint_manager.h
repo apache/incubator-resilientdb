@@ -49,6 +49,7 @@ class CheckPointManager : public CheckPoint {
                         std::unique_ptr<Request> request);
 
   uint64_t GetStableCheckpoint() override;
+  uint64_t GetLastExecutedSeq() override;
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
@@ -74,6 +75,7 @@ class CheckPointManager : public CheckPoint {
   uint64_t GetCommittableSeq();
 
  private:
+  
   void UpdateCheckPointStatus();
   void UpdateStableCheckPointStatus();
   void BroadcastCheckPoint(uint64_t seq, const std::string& hash,

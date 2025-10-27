@@ -24,6 +24,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <fstream>
+#include <stdio.h>
+#include <iostream>
 
 #include <filesystem>
 
@@ -261,7 +264,20 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
 }
 
+uint64_t Recovery::get_latest_executed_seq_recov(){
+  return checkpoint_->GetLastExecutedSeq();
+}
+
 void Recovery::WriteLog(const Context* context, const Request* request) {
+  std::cout<<"In WriteLog"<<std::endl;
+  uint64_t latest_executed_seq = get_latest_executed_seq_recov();
+  std::ofstream log_file("/home/ubuntu/member_chenyi_919398968/addFunctionality/platform/consensus/recovery/latest_seqnum.txt"); 
+  if (!log_file.is_open()) { 
+    std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
+  } 
+  log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+  log_file.flush(); 
+  log_file.close();
   std::string data;
   if (request) {
     request->SerializeToString(&data);
