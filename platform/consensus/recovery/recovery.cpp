@@ -271,7 +271,10 @@ uint64_t Recovery::get_latest_executed_seq_recov(){
 void Recovery::WriteLog(const Context* context, const Request* request) {
   std::cout<<"In WriteLog"<<std::endl;
   uint64_t latest_executed_seq = get_latest_executed_seq_recov();
-  std::ofstream log_file("latest_seqnum.txt"); 
+  std::string temp_dir = "/tmp";
+  std::string file_path = temp_dir + "/latest_seqnum.txt";
+  std::ofstream log_file(file_path);
+  // std::ofstream log_file("latest_seqnum.txt"); 
   if (!log_file.is_open()) { 
     std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
   } 
