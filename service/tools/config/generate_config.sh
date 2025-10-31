@@ -96,7 +96,16 @@ do
   idx=$(($idx+1))
 done
 
-${CONFIG_TOOLS_BIN} ./server.config ./server.config.json 
+TEMPLATE_JSON=${output_path}/server/server.config
+
+if [ -f "$TEMPLATE_JSON" ]; then
+  ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ${TEMPLATE_JSON}
+else
+  ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json
+fi
+
+mkdir -p ${output_path}/server
+cp server.config.json ${output_path}/server/server.json
 mv server.config.json ${output_path}/server/server.config
 mv client.config ${output_path}/interface/service.config
 echo "config done:" ${output_path}/server/server.config

@@ -17,6 +17,8 @@
  * under the License.
  */
 
+#include <google/protobuf/util/json_util.h>
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -25,17 +27,17 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/util/json_util.h>
 #include "platform/proto/replica_info.pb.h"
 
 namespace {
 
+using google::protobuf::util::JsonParseOptions;
+using google::protobuf::util::JsonPrintOptions;
 using google::protobuf::util::JsonStringToMessage;
 using google::protobuf::util::MessageToJsonString;
-using google::protobuf::util::JsonParseOptions;
-using resdb::ResConfigData;
-using resdb::ReplicaInfo;
 using resdb::RegionInfo;
+using resdb::ReplicaInfo;
+using resdb::ResConfigData;
 
 bool readLines(const std::string& path, std::vector<std::string>* lines) {
   std::ifstream in(path);
@@ -49,6 +51,8 @@ bool readLines(const std::string& path, std::vector<std::string>* lines) {
   }
   return true;
 }
+
+// pretty printer no longer needed; using JsonPrintOptions
 
 std::string readFileToString(const std::string& path) {
   std::ifstream in(path);
@@ -82,38 +86,40 @@ int main(int argc, char** argv) {
 
   ResConfigData config_data;
   std::map<std::string, std::vector<ReplicaInfo>> region_to_replicas;
-  
+
   for (const std::string& line : lines) {
-    if (line.empty() || line.find_first_not_of(" \t\r\n") == std::string::npos) {
+    if (line.empty() ||
+        line.find_first_not_of(" \t\r\n") == std::string::npos) {
       continue;
     }
-    
+
     std::istringstream iss(line);
     std::string id_str, ip, port_str, region_id;
-    
+
     if (!(iss >> id_str >> ip >> port_str)) {
       continue;
     }
-    
+
     if (!(iss >> region_id)) {
       region_id = "0";
     }
-    
+
     int64_t id;
     int32_t port;
     try {
       id = std::stoll(id_str);
       port = std::stoi(port_str);
     } catch (const std::exception& e) {
-      std::cerr << "Warning: Failed to parse id or port from line: " << line << "\n";
+      std::cerr << "Warning: Failed to parse id or port from line: " << line
+                << "\n";
       continue;
     }
-    
+
     ReplicaInfo replica;
     replica.set_id(id);
     replica.set_ip(ip);
     replica.set_port(port);
-    
+
     region_to_replicas[region_id].push_back(replica);
   }
 
@@ -125,7 +131,11 @@ int main(int argc, char** argv) {
   }
 
   std::string output_json;
-  MessageToJsonString(config_data, &output_json);
+  JsonPrintOptions print_options;
+  print_options.add_whitespace = true;
+  print_options.preserve_proto_field_names = true;
+  print_options.always_print_primitive_fields = true;
+  MessageToJsonString(config_data, &output_json, print_options);
   std::cerr << "Generated JSON (before template):\n" << output_json << "\n\n";
 
   std::ofstream out(output_path);
@@ -139,33 +149,36 @@ int main(int argc, char** argv) {
   if (!template_path.empty()) {
     std::string base_json = readFileToString(output_path);
     std::cerr << "Read base config:\n" << base_json << "\n\n";
-    
+
     ResConfigData base_config;
     JsonParseOptions parse_options;
     auto status = JsonStringToMessage(base_json, &base_config, parse_options);
     if (!status.ok()) {
-      std::cerr << "Failed to parse generated JSON: " << status.message() << "\n";
+      std::cerr << "Failed to parse generated JSON: " << status.message()
+                << "\n";
       return 5;
     }
-    
+
     std::string template_json_str = readFileToString(template_path);
     if (template_json_str.empty()) {
       std::cerr << "Failed to read template file: " << template_path << "\n";
       return 6;
     }
     std::cerr << "Read template config:\n" << template_json_str << "\n\n";
-    
+
     ResConfigData template_config;
-    status = JsonStringToMessage(template_json_str, &template_config, parse_options);
+    status =
+        JsonStringToMessage(template_json_str, &template_config, parse_options);
     if (!status.ok()) {
-      std::cerr << "Failed to parse template JSON: " << status.message() << "\n";
+      std::cerr << "Failed to parse template JSON: " << status.message()
+                << "\n";
       return 7;
     }
-    
+
     base_config.MergeFrom(template_config);
-    
+
     std::string merged_json;
-    MessageToJsonString(base_config, &merged_json);
+    MessageToJsonString(base_config, &merged_json, print_options);
     std::cerr << "Merged JSON (after template):\n" << merged_json << "\n\n";
     std::ofstream out2(output_path);
     if (!out2.is_open()) {
