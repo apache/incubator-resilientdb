@@ -257,6 +257,19 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
     case Request::TYPE_PREPARE:
     case Request::TYPE_COMMIT:
     case Request::TYPE_CHECKPOINT:
+    {
+      uint64_t latest_executed_seq = get_latest_executed_seq_recov();
+      std::string temp_dir = "/tmp";
+      std::string file_path = temp_dir + "/latest_seqnum.txt";
+      std::ofstream log_file(file_path);
+      // std::ofstream log_file("latest_seqnum.txt"); 
+      if (!log_file.is_open()) { 
+        std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
+      } 
+      log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+      log_file.flush(); 
+      log_file.close();
+    }
     case Request::TYPE_NEWVIEW:
       return WriteLog(context, request);
     default:
@@ -269,18 +282,7 @@ uint64_t Recovery::get_latest_executed_seq_recov(){
 }
 
 void Recovery::WriteLog(const Context* context, const Request* request) {
-  std::cout<<"In WriteLog"<<std::endl;
-  uint64_t latest_executed_seq = get_latest_executed_seq_recov();
-  std::string temp_dir = "/tmp";
-  std::string file_path = temp_dir + "/latest_seqnum.txt";
-  std::ofstream log_file(file_path);
-  // std::ofstream log_file("latest_seqnum.txt"); 
-  if (!log_file.is_open()) { 
-    std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
-  } 
-  log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
-  log_file.flush(); 
-  log_file.close();
+
   std::string data;
   if (request) {
     request->SerializeToString(&data);
