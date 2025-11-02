@@ -318,7 +318,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
       if (executor_) {         
-        latest_executed_seq_ = GetLastExecutedSeq();
+        latest_executed_seq = GetLastExecutedSeq();
         std::cout<<"In checkpoint"<<std::endl;    
         
       }
@@ -334,7 +334,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
         if (!log_file.is_open()) { 
           std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
         } 
-        log_file << "Lastest_seqnum: " << latest_executed_seq_ << std::endl; 
+        log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
         log_file.flush(); 
         log_file.close();
       }
@@ -396,7 +396,7 @@ uint64_t CheckPointManager::GetCommittableSeq() {
 }
 
 uint64_t CheckPointManager::GetLastExecutedSeq(){
-  return latest_executed_seq_;;
+  return executor_->get_latest_executed_seq();
 }
 
 }  // namespace resdb
