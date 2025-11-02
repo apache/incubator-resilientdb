@@ -254,22 +254,26 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
   switch (request->type()) {
     case Request::TYPE_PRE_PREPARE:
+      break;
     case Request::TYPE_PREPARE:
+      break;
     case Request::TYPE_COMMIT:
+      break;
     case Request::TYPE_CHECKPOINT:
-    {
-      uint64_t latest_executed_seq = get_latest_executed_seq_recov();
-      std::string temp_dir = "/tmp";
-      std::string file_path = temp_dir + "/latest_seqnum.txt";
-      std::ofstream log_file(file_path);
-      // std::ofstream log_file("latest_seqnum.txt"); 
-      if (!log_file.is_open()) { 
-        std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
-      } 
-      log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
-      log_file.flush(); 
-      log_file.close();
-    }
+    // {
+    //   uint64_t latest_executed_seq = get_latest_executed_seq_recov();
+    //   std::string temp_dir = "/tmp";
+    //   std::string file_path = temp_dir + "/latest_seqnum.txt";
+    //   std::ofstream log_file(file_path);
+    //   // std::ofstream log_file("latest_seqnum.txt"); 
+    //   if (!log_file.is_open()) { 
+    //     std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
+    //   } 
+    //   log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+    //   log_file.flush(); 
+    //   log_file.close();
+    // }
+      // break;
     case Request::TYPE_NEWVIEW:
       return WriteLog(context, request);
     default:
