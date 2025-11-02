@@ -334,7 +334,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
         if (!log_file.is_open()) { 
           std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
         } 
-        log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+        log_file << "Lastest_seqnum: " << latest_executed_seq_ << std::endl; 
         log_file.flush(); 
         log_file.close();
       }
