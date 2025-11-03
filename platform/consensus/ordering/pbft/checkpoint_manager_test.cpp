@@ -124,6 +124,51 @@ TEST_F(CheckPointManagerTest, SendCheckPoint) {
   LOG(ERROR) << "done";
 }
 
+TEST_F(CheckPointManagerTest, latestSeqCheckpointInRecovery) {
+  std::unique_ptr<TransactionManager> trmanager = std::make_unique<TransactionManager>(false, true);
+  std::unique_ptr<SystemInfo> system_info = std::make_unique<SystemInfo>(config_);
+  std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_seq(10);
+  request->set_is_recovery(true);
+  TransactionExecutor executor(
+    config_,
+    [&](std::unique_ptr<Request>, std::unique_ptr<BatchUserResponse> resp) {},
+    system_info.get(), std::move(trmanager));
+  CheckPointManager manager(config_, &replica_communicator_, nullptr);
+  manager.SetExecutor(&executor);
+  //execute once
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+
+  // ResDBConfig config = GetResDBConfig();
+  // Request request;
+  // request.set_seq(1);
+
+  BatchUserRequest batch_request;
+  batch_request.add_user_requests()->mutable_request()->set_data("execute_1");
+  batch_request.SerializeToString((*request).mutable_data());
+
+  // SystemInfo system_info(config);
+  // auto mock_executor = std::make_unique<MockTransactionExecutorDataImpl>();
+
+  // EXPECT_CALL(*mock_executor, ExecuteData)
+  //     .WillOnce(Invoke([&](const std::string& input) {
+  //       EXPECT_EQ(input, "execute_1");
+  //       done.set_value(true);
+  //       return nullptr;
+  //     }));
+  // TransactionExecutor executor(
+  //     config,
+  //     [&](std::unique_ptr<Request>, std::unique_ptr<BatchUserResponse> resp) {},
+  //     &system_info, std::move(mock_executor));
+
+  executor.Commit(std::move(request));
+
+  done_future.get();
+  //done executor
+  // manager.UpdateCheckPointStatus();
+}
+
 TEST_F(CheckPointManagerTest, SendCheckPointOnce) {
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();

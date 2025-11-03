@@ -86,7 +86,7 @@ class CheckPointManager : public CheckPoint {
   bool Wait();
 
  protected:
-  uint64_t latest_executed_seq_ = 0;
+  uint64_t last_executed_seq_ = 0;
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
   std::unique_ptr<ChainState> txn_db_;
