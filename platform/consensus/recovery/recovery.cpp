@@ -254,11 +254,11 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
   switch (request->type()) {
     case Request::TYPE_PRE_PREPARE:
-      break;
+      // break;
     case Request::TYPE_PREPARE:
-      break;
+      // break;
     case Request::TYPE_COMMIT:
-      break;
+      // break;
     case Request::TYPE_CHECKPOINT:
     // {
     //   uint64_t latest_executed_seq = get_latest_executed_seq_recov();
@@ -281,9 +281,9 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
 }
 
-uint64_t Recovery::get_latest_executed_seq_recov(){
-  return checkpoint_->GetLastExecutedSeq();
-}
+// uint64_t Recovery::get_latest_executed_seq_recov(){
+//   return checkpoint_->GetLastExecutedSeq();
+// }
 
 void Recovery::WriteLog(const Context* context, const Request* request) {
 

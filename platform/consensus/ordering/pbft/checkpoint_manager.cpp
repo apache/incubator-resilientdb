@@ -318,7 +318,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;
       if (executor_) {         
-        latest_executed_seq = GetLastExecutedSeq();
+        latest_executed_seq_ = executor_->get_latest_executed_seq();
         std::cout<<"In checkpoint"<<std::endl;    
         
       }
@@ -327,6 +327,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
                             stable_seqs);
       }
       if(is_recovery){
+        std::cout<<"Latest_executed_seq_: "<<latest_executed_seq_<<std::endl;
         std::string temp_dir = "/tmp";
         std::string file_path = temp_dir + "/latest_seqnum.txt";
         // std::ofstream log_file("/home/ubuntu/.cache/bazel/_bazel_ubuntu/latest_seqnum.txt");
@@ -334,7 +335,7 @@ void CheckPointManager::UpdateCheckPointStatus() {
         if (!log_file.is_open()) { 
           std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
         } 
-        log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+        log_file << "Lastest_seqnum: " << latest_executed_seq_ << std::endl; 
         log_file.flush(); 
         log_file.close();
       }
@@ -395,8 +396,8 @@ uint64_t CheckPointManager::GetCommittableSeq() {
   return committable_seq_;
 }
 
-uint64_t CheckPointManager::GetLastExecutedSeq(){
-  return executor_->get_latest_executed_seq();
-}
+// void CheckPointManager::SetLastExecutedSeq(uint64_t latest_executed_seq){
+//   latest_executed_seq = executor_->get_latest_executed_seq();
+// }
 
 }  // namespace resdb

@@ -49,7 +49,7 @@ class CheckPointManager : public CheckPoint {
                         std::unique_ptr<Request> request);
 
   uint64_t GetStableCheckpoint() override;
-  uint64_t GetLastExecutedSeq() override;
+//   void SetLastExecutedSeq(uint64_t latest_executed_seq);
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
@@ -86,7 +86,7 @@ class CheckPointManager : public CheckPoint {
   bool Wait();
 
  protected:
-//   uint64_t latest_executed_seq_ = 0;
+  uint64_t latest_executed_seq_ = 0;
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
   std::unique_ptr<ChainState> txn_db_;

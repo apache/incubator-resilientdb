@@ -40,7 +40,7 @@ class Recovery {
   void Init();
 
   virtual void AddRequest(const Context* context, const Request* request);
-  uint64_t get_latest_executed_seq_recov();
+  // uint64_t get_latest_executed_seq_recov();
   void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
                 std::function<void(std::unique_ptr<Context> context,
                                    std::unique_ptr<Request> request)>

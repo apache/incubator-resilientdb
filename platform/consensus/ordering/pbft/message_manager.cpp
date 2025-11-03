@@ -40,7 +40,19 @@ MessageManager::MessageManager(
               std::unique_ptr<BatchUserResponse> resp_msg) {
             if (request->is_recovery()) {
               if (checkpoint_manager_) {
-                checkpoint_manager_->AddCommitData(std::move(request));
+                // checkpoint_manager_->AddCommitData(std::move(request));
+                // std::cout<<"In message here"<<std::endl;
+                // uint64_t latest_executed_seq = checkpoint_manager_->latest_executed_seq_;
+                // std::string temp_dir = "/tmp";
+                // std::string file_path = temp_dir + "/latest_seqnum.txt";
+                // std::ofstream log_file(file_path, std::ios::app);
+                // // std::ofstream log_file("latest_seqnum.txt"); 
+                // if (!log_file.is_open()) { 
+                //   std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
+                // } 
+                // log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
+                // log_file.flush(); 
+                // log_file.close();
               }
               return;
             }
