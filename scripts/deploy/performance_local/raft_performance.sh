@@ -16,8 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-
-protocol=poe
+protocol=raft
 export server=//benchmark/protocols/$protocol:kv_server_performance
 export service_tools=//benchmark/protocols/$protocol:kv_service_tools
 export TEMPLATE_PATH=$PWD/config/$protocol.config

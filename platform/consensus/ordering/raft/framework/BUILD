@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,10 +16,18 @@
 # under the License.
 #
 
-protocol=poe
-export server=//benchmark/protocols/$protocol:kv_server_performance
-export service_tools=//benchmark/protocols/$protocol:kv_service_tools
-export TEMPLATE_PATH=$PWD/config/$protocol.config
-export performance=true
+package(default_visibility = ["//visibility:private"])
 
-./performance_local/run_performance.sh $*
+cc_library(
+    name = "consensus",
+    srcs = ["consensus.cpp"],
+    hdrs = ["consensus.h"],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        "//common/utils",
+        "//platform/consensus/ordering/common/framework:consensus",
+        "//platform/consensus/ordering/raft/algorithm:raft",
+    ],
+)

@@ -26,7 +26,7 @@ home_path="./"
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
 
-bazel run //benchmark/protocols/pbft:kv_service_tools -- $PWD/config_out/client.config 
+bazel run $service_tools -- $PWD/config_out/client.config 
 
 sleep 60
 

@@ -17,8 +17,12 @@
 # under the License.
 #
 
-export server=//benchmark/protocols/pbft:kv_server_performance
-#export TEMPLATE_PATH=$PWD/config/pbft.config
+protocol=pbft
+export server=//benchmark/protocols/$protocol:kv_server_performance
+export service_tools=//benchmark/protocols/$protocol:kv_service_tools
+export TEMPLATE_PATH=$PWD/config/$protocol.config
 export performance=true
+
+#export TEMPLATE_PATH=$PWD/config/pbft.config
 
 ./performance_local/run_performance.sh $*

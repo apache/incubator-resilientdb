@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,10 +16,19 @@
 # under the License.
 #
 
-protocol=poe
-export server=//benchmark/protocols/$protocol:kv_server_performance
-export service_tools=//benchmark/protocols/$protocol:kv_service_tools
-export TEMPLATE_PATH=$PWD/config/$protocol.config
-export performance=true
+package(default_visibility = ["//platform/consensus/ordering/raft:__subpackages__"])
 
-./performance_local/run_performance.sh $*
+load("@rules_cc//cc:defs.bzl", "cc_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_proto_grpc//python:defs.bzl", "python_proto_library")
+
+proto_library(
+    name = "proposal_proto",
+    srcs = ["proposal.proto"],
+    #visibility = ["//visibility:public"],
+)
+
+cc_proto_library(
+    name = "proposal_cc_proto",
+    deps = [":proposal_proto"],
+)
