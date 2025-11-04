@@ -119,10 +119,8 @@ std::unique_ptr<Block> ProposalManager::GetBlock(const std::string& hash,
     std::unique_lock<std::mutex> lk(p_mutex_);
     auto it = pending_blocks_[sender].find(hash);
     if (it == pending_blocks_[sender].end()) {
-      //LOG(ERROR) << "block from sender:" << sender << " not found";
-      return nullptr;
+      LOG(ERROR) << "block from sender:" << sender << " not found";
       need_wait = true;
-      assert(1==0);
       continue;
     }
     assert(it != pending_blocks_[sender].end());
@@ -176,28 +174,17 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       return nullptr;
       // LOG(ERROR) << "generate wait proposal block size:" << blocks_.size();
     }
-    int max_block = 1;
+    int max_block = 10;
     int num = 0;
     int64_t current_time = GetCurrentTime();
     proposal->set_create_time(current_time);
-    //LOG(ERROR)<<"block size:"<<blocks_.size();
     for (auto& block : blocks_) {
       data += block->hash();
       Block* ab = proposal->add_block();
-      *ab = *block;
-
-      Block * sb = proposal->add_sub_block();
-      sb->set_hash(block->hash());
-      sb->set_sender_id(block->sender_id());
-      sb->set_local_id(block->local_id());
-      sb->set_create_time(block->create_time());
-
-      /*
       ab->set_hash(block->hash());
       ab->set_sender_id(block->sender_id());
       ab->set_local_id(block->local_id());
       ab->set_create_time(block->create_time());
-      */
       //LOG(ERROR) << " add block:" << block->local_id()
       //           << " block delay:" << (current_time - block->create_time())
       //           << " block size:" << blocks_.size()
@@ -236,19 +223,9 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
     *proposal->mutable_history() = last->history();
   }
 
-  
-  {
-    std::vector<Block> ps = graph_->GetNewBlocks();
-    for(auto block : ps) {
-      auto sub_block = proposal->add_sub_block();
-      *sub_block = block;
-    }
-    //LOG(ERROR)<<" proposal sub block size:"<<proposal->sub_block_size();
-  }
-
   {
     std::vector<Proposal*> ps = graph_->GetNewProposals(round);
-    //LOG(ERROR)<<"get weak p from round:"<<round<<" size:"<<ps.size();
+    // LOG(ERROR)<<"get weak p from round:"<<round<<" size:"<<ps.size();
     for (Proposal* p : ps) {
       if (p->header().height() >= round) {
         LOG(ERROR) << "round invalid:" << round
@@ -259,10 +236,8 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       if (p->header().hash() == last->header().hash()) {
         continue;
       }
-      if(p->header().proposer_id() != id_){
-        continue;
-      }
-      LOG(ERROR)<<"add weak p:"<<p->header().height()<<" proposer:"<<p->header().proposer_id()<<" height:"<<p->header().height();
+      // LOG(ERROR)<<"add weak p:"<<p->header().height()<<"
+      // proposer:"<<p->header().proposer_id();
       *proposal->mutable_weak_proposals()->add_hash() = p->header().hash();
       data += p->header().hash();
     }
