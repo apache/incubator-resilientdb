@@ -152,7 +152,7 @@ TEST_F(CheckPointManagerTest, latestSeqCheckpointInRecovery) {
   //done executor
   // manager.UpdateCheckPointStatus();
 }
-}
+
 
 TEST_F(CheckPointManagerTest, SendCheckPointOnce) {
   std::promise<bool> propose_done;
