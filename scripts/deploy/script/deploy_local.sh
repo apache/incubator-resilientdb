@@ -112,7 +112,7 @@ fi
 idx=1
 for ip in ${deploy_iplist[@]};
 do
-  run_one_cmd "mkdir -p ${home_path}/${main_folder}/$idx" &
+  run_one_cmd "mkdir -p ${home_path}/${main_folder}/$idx"
   ((count++))
   ((idx++))
 done
