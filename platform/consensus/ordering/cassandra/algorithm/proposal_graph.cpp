@@ -521,7 +521,7 @@ bool ProposalGraph::Compare(const NodeInfo& p1, const NodeInfo& p2) {
   int h = (p1.proposal.header().height())%total_num_;
   if ( h == 0) h = total_num_;
   //LOG(ERROR)<<" check height cmp:"<<abs(p1.proposal.header().proposer_id() - h )<<" "<<abs(p2.proposal.header().proposer_id() - h);
-  return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
+  //return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
 
   if (abs(p1.proposal.sub_block_size() - p2.proposal.sub_block_size()) > 5) {
     //return p1.proposal.sub_block_size() < p2.proposal.sub_block_size();
