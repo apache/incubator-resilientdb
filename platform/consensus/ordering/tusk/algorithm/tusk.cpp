@@ -10,7 +10,7 @@ namespace tusk {
 Tusk::Tusk(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
-  batch_size_ = 10;
+  batch_size_ = 15;
   proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
@@ -80,7 +80,7 @@ void Tusk::AsyncSend() {
     for (int i = 1; i < batch_size_; ++i) {
       auto txn = txns_.Pop(10);
       if (txn == nullptr) {
-        continue;
+        //continue;
         break;
       }
       txn->set_queuing_time(GetCurrentTime() - txn->create_time());

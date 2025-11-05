@@ -142,7 +142,7 @@ bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 
 void RCC::AsyncSend() {
 
-  int limit = 2;
+  int limit = 8;
   bool start = false;
   int64_t last_time = 0;
 

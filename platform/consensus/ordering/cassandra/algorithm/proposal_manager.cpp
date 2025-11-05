@@ -246,28 +246,6 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
     //LOG(ERROR)<<" proposal sub block size:"<<proposal->sub_block_size();
   }
 
-  {
-    std::vector<Proposal*> ps = graph_->GetNewProposals(round);
-    //LOG(ERROR)<<"get weak p from round:"<<round<<" size:"<<ps.size();
-    for (Proposal* p : ps) {
-      if (p->header().height() >= round) {
-        LOG(ERROR) << "round invalid:" << round
-                   << " header:" << p->header().height();
-      }
-      assert(p->header().height() < round);
-
-      if (p->header().hash() == last->header().hash()) {
-        continue;
-      }
-      if(p->header().proposer_id() != id_){
-        continue;
-      }
-      LOG(ERROR)<<"add weak p:"<<p->header().height()<<" proposer:"<<p->header().proposer_id()<<" height:"<<p->header().height();
-      *proposal->mutable_weak_proposals()->add_hash() = p->header().hash();
-      data += p->header().hash();
-    }
-  }
-
   proposal->mutable_header()->set_proposer_id(id_);
   proposal->mutable_header()->set_proposal_id(local_proposal_id_++);
   data += std::to_string(proposal->header().proposal_id()) +
@@ -309,27 +287,6 @@ void ProposalManager::ObtainHistoryProposal(const Proposal* p,
     ObtainHistoryProposal(next_p, v, resp, current_height);
     resp.push_back(next_p);
   }
-
-  for (const std::string& hash : p->weak_proposals().hash()) {
-    const Proposal* next_p = graph_->GetProposalInfo(hash);
-    assert(next_p != nullptr);
-    int height = next_p->header().height();
-    // LOG(ERROR)<<"ask height:"<<current_height<<" current height:"<<height;
-    if (current_height - height > 5) {
-      return;
-    }
-    if (v.find(std::make_pair(next_p->header().proposer_id(),
-                              next_p->header().proposal_id())) != v.end()) {
-      return;
-    }
-    v.insert(std::make_pair(next_p->header().proposer_id(),
-                            next_p->header().proposal_id()));
-    // LOG(ERROR)<<"Obtain height:"<<height<<"
-    // proposer:"<<next_p->header().proposer_id()<<"
-    // id:"<<next_p->header().proposal_id();
-    ObtainHistoryProposal(next_p, v, resp, current_height);
-    resp.push_back(next_p);
-  }
 }
 
 int ProposalManager::VerifyProposalHistory(const Proposal* p) {
@@ -353,21 +310,6 @@ int ProposalManager::VerifyProposalHistory(const Proposal* p) {
     }
   }
 
-  for (const std::string& hash : p->weak_proposals().hash()) {
-    const Proposal* next_p = graph_->GetProposalInfo(hash);
-    if (next_p != nullptr) {
-      continue;
-    }
-    if (tmp_proposal_.find(hash) == tmp_proposal_.end()) {
-      LOG(ERROR) << "weak not found";
-      return 3;
-    }
-    ret = 1;
-    auto& it = tmp_proposal_[hash];
-    assert(it != nullptr);
-    LOG(ERROR) << "Find weak in tmp:" << it->header().proposer_id()
-               << " id:" << it->header().proposal_id();
-  }
   return ret;
 }
 

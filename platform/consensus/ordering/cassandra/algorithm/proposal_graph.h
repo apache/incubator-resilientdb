@@ -13,7 +13,7 @@ namespace cassandra_recv {
 
 class ProposalGraph {
  public:
-  ProposalGraph(int fault_num, int id);
+  ProposalGraph(int fault_num, int id,int total_num);
   inline void SetCommitCallBack(std::function<void(const Proposal&)> func) {
     commit_callback_ = func;
   }
@@ -83,6 +83,7 @@ class ProposalGraph {
   Stats* global_stats_;
   int id_;
   std::map<std::string, Block> new_blocks_;
+  int total_num_;
 };
 
 }  // namespace cassandra_recv

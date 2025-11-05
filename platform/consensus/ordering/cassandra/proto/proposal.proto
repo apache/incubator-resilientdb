@@ -40,7 +40,6 @@ message Proposal {
   repeated Transaction transactions = 4;
   uint64 create_time = 5;
   repeated Block block = 6;
-  WeakProposal weak_proposals = 7;
   repeated Block sub_block = 8;
 };
 

@@ -18,7 +18,7 @@ std::vector<ProposalState> GetStates() {
 }
 */
 
-ProposalGraph::ProposalGraph(int fault_num, int id) : f_(fault_num),id_(id) {
+ProposalGraph::ProposalGraph(int fault_num, int id, int total_num) : f_(fault_num),id_(id), total_num_(total_num) {
   ranking_ = std::make_unique<Ranking>();
   current_height_ = 0;
   global_stats_ = Stats::GetGlobalStats();
@@ -311,22 +311,6 @@ void ProposalGraph::Commit(const std::string& hash) {
       }
 
       commit_p.back().push_back(p);
-       //LOG(ERROR)<<"commit node:"<<p->header().proposer_id()<<" id:"<<p->header().proposal_id()
-      //<<" weak proposal size:"<<p->weak_proposals().hash_size();
-       //LOG(ERROR)<<"push p:"<<p->header().proposer_id();
-      for (const std::string& w_hash : p->weak_proposals().hash()) {
-        assert(1==0);
-        auto it = node_info_.find(w_hash);
-        if (it == node_info_.end()) {
-          LOG(ERROR) << "node not found, hash:";
-          assert(1 == 0);
-        }
-
-        // LOG(ERROR)<<"add weak
-        // proposal:"<<it->second->proposal.header().proposer_id()<<"
-        // id:"<<it->second->proposal.header().proposal_id();
-        q.push(w_hash);
-      }
       if (!p->header().prehash().empty()) {
         q.push(p->header().prehash());
       }
@@ -534,10 +518,10 @@ bool ProposalGraph::Compare(const NodeInfo& p1, const NodeInfo& p2) {
     return CompareState(p1.state, p2.state) < 0;
   }
 
-  int h = (p1.proposal.header().height())%64;
-  if ( h == 0) h = 64;
+  int h = (p1.proposal.header().height())%total_num_;
+  if ( h == 0) h = total_num_;
   //LOG(ERROR)<<" check height cmp:"<<abs(p1.proposal.header().proposer_id() - h )<<" "<<abs(p2.proposal.header().proposer_id() - h);
-  //return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
+  return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
 
   if (abs(p1.proposal.sub_block_size() - p2.proposal.sub_block_size()) > 5) {
     //return p1.proposal.sub_block_size() < p2.proposal.sub_block_size();

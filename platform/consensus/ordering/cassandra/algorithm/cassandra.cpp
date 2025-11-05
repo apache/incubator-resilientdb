@@ -30,7 +30,7 @@ Cassandra::Cassandra(int id, int f, int total_num, SignatureVerifier* verifier)
   precommitted_num_ = 0;
   execute_id_ = 1;
 
-  graph_ = std::make_unique<ProposalGraph>(f_, id);
+  graph_ = std::make_unique<ProposalGraph>(f_, id, total_num);
   proposal_manager_ = std::make_unique<ProposalManager>(id, graph_.get());
 
   graph_->SetCommitCallBack(
@@ -217,32 +217,6 @@ void Cassandra::AsyncPrepare() {
         prepare_(txn);
       }
     }
-
-    // LOG(ERROR)<<" weak proposal:"<<p->weak_proposals().hash_size();
-    for (const std::string& hash : p->weak_proposals().hash()) {
-      const Proposal* pre_p = graph_->GetProposalInfo(hash);
-      if (pre_p == nullptr) {
-        continue;
-      }
-       //LOG(ERROR)<<"prepare weak block from:"<<pre_p->header().proposer_id()
-       //<<" id:"<<pre_p->header().proposal_id();
-      for (const Block& block : pre_p->block()) {
-        std::unique_lock<std::mutex> lkx(mutex_);
-        Block* data_block = proposal_manager_->GetBlockSnap(
-            block.hash(), pre_p->header().proposer_id());
-        if (data_block == nullptr) {
-          continue;
-        }
-
-        for (Transaction& txn :
-             *data_block->mutable_data()->mutable_transaction()) {
-          long long uid = (((long long)pre_p->header().proposer_id() << 50) |
-                           (long long)(pre_p->header().proposal_id()) << 20 | id++);
-          txn.set_uid(uid);
-          prepare_(txn);
-        }
-      }
-    }
     //LOG(ERROR) << "prepare done";
   }
 }
@@ -392,8 +366,7 @@ int Cassandra::SendTxn(int round) {
 
   LOG(ERROR) << "====== bc proposal block size:" << proposal->block_size()
              << " round:" << round
-             << " id:" << proposal->header().proposal_id()
-             << " weak links:"<< proposal->weak_proposals().hash_size();
+             << " id:" << proposal->header().proposal_id();
 
   Broadcast(MessageType::NewProposal, *proposal);
 
