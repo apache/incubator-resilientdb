@@ -29,10 +29,6 @@ message History {
   int32 id = 4;
 }
 
-message WeakProposal {
-  repeated bytes hash = 1;
-}
-
 message Proposal {
   Header header = 1;
   repeated History history = 2;
