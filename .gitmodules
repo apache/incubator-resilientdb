@@ -1,0 +1,3 @@
+[submodule "ecosystem/nexus"]
+	path = ecosystem/nexus
+	url = https://github.com/ResilientApp/nexus.git
