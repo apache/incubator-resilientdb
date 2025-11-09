@@ -18,16 +18,17 @@
  */
 
 /**
- * ResCanvas Drawing Toolkit - Main Client
+ * Collaborative Drawing Toolkit - Main Client
  * 
- * Official JavaScript toolkit for building collaborative drawing applications on ResilientDB.
+ * Universal JavaScript toolkit for building collaborative drawing applications
+ * with blockchain-backed storage.
  * 
  * @example
  * ```javascript
- * import ResCanvasClient from '@rescanvas/drawing-toolkit';
+ * import DrawingClient from 'collaborative-drawing-toolkit';
  * 
- * const client = new ResCanvasClient({
- *   baseUrl: 'https://api.rescanvas.com',
+ * const client = new DrawingClient({
+ *   baseUrl: 'https://api.example.com',
  *   apiVersion: 'v1'
  * });
  * 
@@ -47,12 +48,12 @@ import InvitesClient from './modules/invites.js';
 import NotificationsClient from './modules/notifications.js';
 import SocketClient from './modules/socket.js';
 
-class ResCanvasClient {
+class DrawingClient {
   /**
-   * Create a new ResCanvas client instance
+   * Create a new collaborative drawing client instance
    * 
    * @param {Object} config - Configuration options
-   * @param {string} config.baseUrl - Base URL of ResCanvas API (required)
+   * @param {string} config.baseUrl - Base URL of backend API server (required)
    * @param {string} [config.apiVersion='v1'] - API version to use
    * @param {number} [config.timeout=30000] - Request timeout in milliseconds
    * @param {number} [config.retries=3] - Number of retries for failed requests
@@ -60,7 +61,7 @@ class ResCanvasClient {
    */
   constructor(config) {
     if (!config || !config.baseUrl) {
-      throw new Error('ResCanvasClient requires a baseUrl in config');
+      throw new Error('DrawingClient requires a baseUrl in config');
     }
 
     this.config = {
@@ -264,5 +265,5 @@ class ApiError extends Error {
   }
 }
 
-export default ResCanvasClient;
+export default DrawingClient;
 export { ApiError };

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * Integration Test Suite for ResCanvas Drawing Toolkit
+/*
+ * Integration Test Suite for Collaborative Drawing Toolkit
  * Tests actual module instantiation, method signatures, and endpoint construction
  */
 
@@ -98,7 +98,7 @@ Module.prototype.require = function (id) {
 };
 
 log('\n' + '='.repeat(70), colors.bright);
-log('ResCanvas Drawing Toolkit - Integration Test Suite', colors.bright + colors.cyan);
+log('Collaborative Drawing Toolkit - Integration Test Suite', colors.bright + colors.cyan);
 log('='.repeat(70) + '\n', colors.bright);
 
 // Test 1: Client Initialization
@@ -107,17 +107,17 @@ log('Test Suite 1: Client Initialization', colors.bright + colors.blue);
 test('Client can be imported as ES module', () => {
   // We can't actually import ES modules in Node CommonJS, but we can verify the structure
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
-  if (!content.includes('export default ResCanvasClient')) {
-    throw new Error('Missing default export of ResCanvasClient');
+  if (!content.includes('export default DrawingClient')) {
+    throw new Error('Missing default export of DrawingClient');
   }
 });
 
 test('Client requires baseUrl configuration', () => {
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
   if (!content.includes('if (!config || !config.baseUrl)')) {
@@ -127,7 +127,7 @@ test('Client requires baseUrl configuration', () => {
 
 test('Client builds correct API paths', () => {
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
   // Check path construction
@@ -141,7 +141,7 @@ log('\nTest Suite 2: Module Method Signatures', colors.bright + colors.blue);
 
 test('Auth module has correct method signatures', () => {
   const fs = require('fs');
-  const authPath = path.join(__dirname, 'src/modules/auth.js');
+  const authPath = path.join(__dirname, '../src/modules/auth.js');
   const content = fs.readFileSync(authPath, 'utf8');
 
   const expectedMethods = [
@@ -163,7 +163,7 @@ test('Auth module has correct method signatures', () => {
 
 test('Canvases module has correct method signatures', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   const requiredMethods = [
@@ -183,7 +183,7 @@ test('Canvases module has correct method signatures', () => {
 
 test('Invites module has correct method signatures', () => {
   const fs = require('fs');
-  const invitesPath = path.join(__dirname, 'src/modules/invites.js');
+  const invitesPath = path.join(__dirname, '../src/modules/invites.js');
   const content = fs.readFileSync(invitesPath, 'utf8');
 
   const methods = ['list', 'accept', 'decline'];
@@ -197,7 +197,7 @@ test('Invites module has correct method signatures', () => {
 
 test('Notifications module has correct method signatures', () => {
   const fs = require('fs');
-  const notifPath = path.join(__dirname, 'src/modules/notifications.js');
+  const notifPath = path.join(__dirname, '../src/modules/notifications.js');
   const content = fs.readFileSync(notifPath, 'utf8');
 
   const methods = ['list', 'markRead', 'delete', 'clear', 'getPreferences', 'updatePreferences'];
@@ -211,7 +211,7 @@ test('Notifications module has correct method signatures', () => {
 
 test('Socket module has correct method signatures', () => {
   const fs = require('fs');
-  const socketPath = path.join(__dirname, 'src/modules/socket.js');
+  const socketPath = path.join(__dirname, '../src/modules/socket.js');
   const content = fs.readFileSync(socketPath, 'utf8');
 
   const methods = ['connect', 'disconnect', 'joinCanvas', 'leaveCanvas', 'on', 'emit'];
@@ -227,7 +227,7 @@ log('\nTest Suite 3: Endpoint Path Construction', colors.bright + colors.blue);
 
 test('All canvas endpoints use /canvases prefix', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   // Extract all _request calls
@@ -251,7 +251,7 @@ test('All canvas endpoints use /canvases prefix', () => {
 
 test('History operations use nested /history/* paths', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   const historyOps = ['/history/undo', '/history/redo', '/history/status', '/history/reset'];
@@ -264,7 +264,7 @@ test('History operations use nested /history/* paths', () => {
 
 test('Invitations use /collaborations/invitations paths', () => {
   const fs = require('fs');
-  const invitesPath = path.join(__dirname, 'src/modules/invites.js');
+  const invitesPath = path.join(__dirname, '../src/modules/invites.js');
   const content = fs.readFileSync(invitesPath, 'utf8');
 
   if (!content.includes('/collaborations/invitations')) {
@@ -274,7 +274,7 @@ test('Invitations use /collaborations/invitations paths', () => {
 
 test('Auth endpoints use /auth prefix', () => {
   const fs = require('fs');
-  const authPath = path.join(__dirname, 'src/modules/auth.js');
+  const authPath = path.join(__dirname, '../src/modules/auth.js');
   const content = fs.readFileSync(authPath, 'utf8');
 
   const authOps = ['/auth/register', '/auth/login', '/auth/logout', '/auth/refresh', '/auth/me'];
@@ -290,7 +290,7 @@ log('\nTest Suite 4: HTTP Method Correctness', colors.bright + colors.blue);
 
 test('Clear operation uses DELETE method', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   // Find clear method
@@ -307,7 +307,7 @@ test('Clear operation uses DELETE method', () => {
 
 test('Create operations use POST method', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   // Check create method
@@ -319,7 +319,7 @@ test('Create operations use POST method', () => {
 
 test('Update operations use PATCH method', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   // Check update method
@@ -331,7 +331,7 @@ test('Update operations use PATCH method', () => {
 
 test('Delete operations use DELETE method', () => {
   const fs = require('fs');
-  const roomsPath = path.join(__dirname, 'src/modules/canvases.js');
+  const roomsPath = path.join(__dirname, '../src/modules/canvases.js');
   const content = fs.readFileSync(roomsPath, 'utf8');
 
   // Check delete method
@@ -346,7 +346,7 @@ log('\nTest Suite 5: Error Handling', colors.bright + colors.blue);
 
 test('ApiError class is defined', () => {
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
   if (!content.includes('class ApiError')) {
@@ -362,7 +362,7 @@ test('ApiError class is defined', () => {
 
 test('Client has retry logic', () => {
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
   if (!content.includes('retries') || !content.includes('for (let attempt')) {
@@ -372,7 +372,7 @@ test('Client has retry logic', () => {
 
 test('Client handles token expiration', () => {
   const fs = require('fs');
-  const indexPath = path.join(__dirname, 'src/index.js');
+  const indexPath = path.join(__dirname, '../src/index.js');
   const content = fs.readFileSync(indexPath, 'utf8');
 
   if (!content.includes('onTokenExpired') || !content.includes('401')) {
@@ -385,7 +385,7 @@ log('\nTest Suite 6: Documentation Consistency', colors.bright + colors.blue);
 
 test('README examples use correct API paths', () => {
   const fs = require('fs');
-  const readmePath = path.join(__dirname, 'README.md');
+  const readmePath = path.join(__dirname, '../README.md');
   const content = fs.readFileSync(readmePath, 'utf8');
 
   // README should show client.canvases API (which is correct)
@@ -401,7 +401,7 @@ test('README examples use correct API paths', () => {
 
 test('Example HTML uses correct endpoints', () => {
   const fs = require('fs');
-  const examplePath = path.join(__dirname, 'examples/basic-drawing-app.html');
+  const examplePath = path.join(__dirname, '../examples/basic-drawing-app.html');
   const content = fs.readFileSync(examplePath, 'utf8');
 
   // Should use /api/v1/canvases

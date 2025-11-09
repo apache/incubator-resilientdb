@@ -18,7 +18,7 @@
  */
 
 /**
- * Rooms module for ResCanvas SDK
+ * Rooms module for Collaborative Drawing SDK
  * 
  * Handles room management, drawing operations, and collaboration features.
  */

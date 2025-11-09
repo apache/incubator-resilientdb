@@ -18,7 +18,7 @@
  */
 
 /**
- * Canvases module for ResCanvas SDK
+ * Canvases module for Collaborative Drawing SDK
  * 
  * Handles canvas management, drawing operations, and collaboration features.
  */

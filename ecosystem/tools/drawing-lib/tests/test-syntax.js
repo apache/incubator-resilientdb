@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * Comprehensive Syntax and Structure Validator for ResCanvas Drawing Toolkit
+/*
+ * Comprehensive Syntax and Structure Validator for Collaborative Drawing Toolkit
  * Tests all modules for syntax errors, import/export correctness, and API endpoint validation
  */
 
@@ -46,7 +46,7 @@ function test(name, fn) {
 }
 
 function readFile(filePath) {
-  const fullPath = path.join(__dirname, filePath);
+  const fullPath = path.join(__dirname, '..', filePath);
   if (!fs.existsSync(fullPath)) {
     throw new Error(`File not found: ${filePath}`);
   }
@@ -100,7 +100,7 @@ function checkEndpoints(filePath, expectedEndpoints) {
 // ============================================================================
 
 log('\n' + '='.repeat(70), colors.bright);
-log('ResCanvas Drawing Toolkit - Comprehensive Test Suite', colors.bright + colors.cyan);
+log('Collaborative Drawing Toolkit - Comprehensive Test Suite', colors.bright + colors.cyan);
 log('='.repeat(70) + '\n', colors.bright);
 
 // Test 1: File Structure
@@ -123,7 +123,7 @@ test('All required source files exist', () => {
   ];
 
   for (const file of requiredFiles) {
-    const fullPath = path.join(__dirname, file);
+    const fullPath = path.join(__dirname, '..', file);
     if (!fs.existsSync(fullPath)) {
       throw new Error(`Required file missing: ${file}`);
     }
@@ -168,10 +168,10 @@ for (const file of jsFiles) {
 
 // Test 4: Main Client (index.js)
 log('\nTest Suite 4: Main Client Configuration', colors.bright + colors.blue);
-test('index.js exports ResCanvasClient', () => {
+test('index.js exports DrawingClient', () => {
   const content = readFile('src/index.js');
-  if (!content.includes('class ResCanvasClient') && !content.includes('export default')) {
-    throw new Error('ResCanvasClient class or export not found');
+  if (!content.includes('class DrawingClient') && !content.includes('export default')) {
+    throw new Error('DrawingClient class or export not found');
   }
 });
 

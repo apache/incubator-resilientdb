@@ -18,7 +18,7 @@
  */
 
 /**
- * Invitations module for ResCanvas SDK
+ * Invitations module for Collaborative Drawing SDK
  * 
  * Handles room invitation management.
  */

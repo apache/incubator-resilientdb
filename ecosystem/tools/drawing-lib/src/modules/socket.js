@@ -18,7 +18,7 @@
  */
 
 /**
- * Socket.IO client module for ResCanvas SDK
+ * Socket.IO client module for Collaborative Drawing SDK
  * 
  * Handles real-time collaboration via Socket.IO.
  */

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-/**
- * Comprehensive Functional Test Suite for ResCanvas Drawing Toolkit
+/*
+ * Comprehensive Functional Test Suite for Collaborative Drawing Toolkit
  * Tests actual module behavior, API request construction, error handling, and real-world scenarios
  */
 
@@ -125,14 +125,14 @@ if (typeof jest === 'undefined') {
 }
 
 log('\n' + '='.repeat(70), colors.bright);
-log('ResCanvas Drawing Toolkit - Functional Test Suite', colors.bright + colors.cyan);
+log('Collaborative Drawing Toolkit - Functional Test Suite', colors.bright + colors.cyan);
 log('='.repeat(70) + '\n', colors.bright);
 
 // Test Suite 1: Client Configuration & Initialization
 log('Test Suite 1: Client Configuration & Initialization', colors.bright + colors.blue);
 
 test('Client validates required baseUrl parameter', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('if (!config || !config.baseUrl)')) {
     throw new Error('Client should validate baseUrl is required');
@@ -144,7 +144,7 @@ test('Client validates required baseUrl parameter', () => {
 });
 
 test('Client constructs correct API base URL with version', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   // Check API base construction
   const apiBasePattern = /this\.apiBase\s*=\s*`\$\{this\.config\.baseUrl\}\/api\/\$\{this\.config\.apiVersion\}`/;
@@ -154,7 +154,7 @@ test('Client constructs correct API base URL with version', () => {
 });
 
 test('Client defaults to v1 API version', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes("apiVersion: config.apiVersion || 'v1'")) {
     throw new Error('Should default to v1 when apiVersion not provided');
@@ -162,7 +162,7 @@ test('Client defaults to v1 API version', () => {
 });
 
 test('Client removes trailing slash from baseUrl', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('.replace(/\\/$/, \'\')')) {
     throw new Error('Should remove trailing slash from baseUrl');
@@ -170,7 +170,7 @@ test('Client removes trailing slash from baseUrl', () => {
 });
 
 test('Client initializes all required modules', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   const modules = ['auth', 'canvases', 'invites', 'notifications', 'socket'];
   for (const mod of modules) {
@@ -181,7 +181,7 @@ test('Client initializes all required modules', () => {
 });
 
 test('Client stores token for authenticated requests', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('setToken(token)')) {
     throw new Error('Should have setToken method');
@@ -196,7 +196,7 @@ test('Client stores token for authenticated requests', () => {
 log('\nTest Suite 2: Request Method & Error Handling', colors.bright + colors.blue);
 
 test('_request method constructs full URL correctly', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('const url = `${this.apiBase}${path}`')) {
     throw new Error('_request should construct full URL from apiBase and path');
@@ -204,7 +204,7 @@ test('_request method constructs full URL correctly', () => {
 });
 
 test('_request method includes Authorization header when token present', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('Authorization')) {
     throw new Error('Should include Authorization header');
@@ -216,7 +216,7 @@ test('_request method includes Authorization header when token present', () => {
 });
 
 test('_request method implements retry logic', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('for (let attempt = 0')) {
     throw new Error('Should implement retry loop');
@@ -228,7 +228,7 @@ test('_request method implements retry logic', () => {
 });
 
 test('_request method handles timeout', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('timeout') || !indexContent.includes('AbortController')) {
     throw new Error('Should implement request timeout with AbortController');
@@ -236,7 +236,7 @@ test('_request method handles timeout', () => {
 });
 
 test('_request method handles 401 token expiration', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   if (!indexContent.includes('401')) {
     throw new Error('Should check for 401 status');
@@ -248,7 +248,7 @@ test('_request method handles 401 token expiration', () => {
 });
 
 test('ApiError class includes all necessary information', () => {
-  const indexContent = fs.readFileSync(path.join(__dirname, 'src/index.js'), 'utf8');
+  const indexContent = fs.readFileSync(path.join(__dirname, '../src/index.js'), 'utf8');
 
   const apiErrorMatch = indexContent.match(/class ApiError[\s\S]{0,800}constructor[\s\S]{0,500}\}/);
   if (!apiErrorMatch) {
@@ -265,7 +265,7 @@ test('ApiError class includes all necessary information', () => {
 log('\nTest Suite 3: Authentication Module Functionality', colors.bright + colors.blue);
 
 test('register() method sends correct data to /auth/register', () => {
-  const authContent = fs.readFileSync(path.join(__dirname, 'src/modules/auth.js'), 'utf8');
+  const authContent = fs.readFileSync(path.join(__dirname, '../src/modules/auth.js'), 'utf8');
 
   const registerMatch = authContent.match(/async register\([^)]+\)[\s\S]{0,400}/);
   if (!registerMatch) {
@@ -287,7 +287,7 @@ test('register() method sends correct data to /auth/register', () => {
 });
 
 test('login() method returns token and stores it', () => {
-  const authContent = fs.readFileSync(path.join(__dirname, 'src/modules/auth.js'), 'utf8');
+  const authContent = fs.readFileSync(path.join(__dirname, '../src/modules/auth.js'), 'utf8');
 
   const loginMatch = authContent.match(/async login\([^)]+\)[\s\S]{0,400}/);
   if (!loginMatch) {
@@ -305,7 +305,7 @@ test('login() method returns token and stores it', () => {
 });
 
 test('refresh() method updates token', () => {
-  const authContent = fs.readFileSync(path.join(__dirname, 'src/modules/auth.js'), 'utf8');
+  const authContent = fs.readFileSync(path.join(__dirname, '../src/modules/auth.js'), 'utf8');
 
   const refreshMatch = authContent.match(/async refresh\([^)]*\)[\s\S]{0,400}/);
   if (!refreshMatch) {
@@ -323,7 +323,7 @@ test('refresh() method updates token', () => {
 });
 
 test('logout() method clears token', () => {
-  const authContent = fs.readFileSync(path.join(__dirname, 'src/modules/auth.js'), 'utf8');
+  const authContent = fs.readFileSync(path.join(__dirname, '../src/modules/auth.js'), 'utf8');
 
   const logoutMatch = authContent.match(/async logout\([^)]*\)[\s\S]{0,400}/);
   if (!logoutMatch) {
@@ -337,7 +337,7 @@ test('logout() method clears token', () => {
 });
 
 test('getMe() method fetches current user info', () => {
-  const authContent = fs.readFileSync(path.join(__dirname, 'src/modules/auth.js'), 'utf8');
+  const authContent = fs.readFileSync(path.join(__dirname, '../src/modules/auth.js'), 'utf8');
 
   const getMeMatch = authContent.match(/async getMe\([^)]*\)[\s\S]{0,300}/);
   if (!getMeMatch) {
@@ -354,7 +354,7 @@ test('getMe() method fetches current user info', () => {
 log('\nTest Suite 4: Canvas/Rooms Module Functionality', colors.bright + colors.blue);
 
 test('create() creates canvas with proper data structure', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const createMatch = roomsContent.match(/async create\([^)]+\)[\s\S]{0,400}/);
   if (!createMatch) {
@@ -372,7 +372,7 @@ test('create() creates canvas with proper data structure', () => {
 });
 
 test('list() supports pagination parameters', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const listMatch = roomsContent.match(/async list\([^)]*\)[\s\S]{0,600}/);
   if (!listMatch) {
@@ -390,7 +390,7 @@ test('list() supports pagination parameters', () => {
 });
 
 test('update() uses PATCH method', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const updateMatch = roomsContent.match(/async update\([^)]+\)[\s\S]{0,400}/);
   if (!updateMatch) {
@@ -404,7 +404,7 @@ test('update() uses PATCH method', () => {
 });
 
 test('delete() uses DELETE method', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const deleteMatch = roomsContent.match(/async delete\([^)]+\)[\s\S]{0,400}/);
   if (!deleteMatch) {
@@ -418,7 +418,7 @@ test('delete() uses DELETE method', () => {
 });
 
 test('getStrokes() supports filtering by user and time', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const getStrokesMatch = roomsContent.match(/async getStrokes\([^)]+\)[\s\S]{0,600}/);
   if (!getStrokesMatch) {
@@ -436,7 +436,7 @@ test('getStrokes() supports filtering by user and time', () => {
 });
 
 test('addStroke() sends pathData, color, lineWidth', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const addStrokeMatch = roomsContent.match(/async addStroke\([^)]+\)[\s\S]{0,400}/);
   if (!addStrokeMatch) {
@@ -454,7 +454,7 @@ test('addStroke() sends pathData, color, lineWidth', () => {
 });
 
 test('clear() uses DELETE method on /strokes endpoint', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const clearMatch = roomsContent.match(/async clear\([^)]+\)[\s\S]{0,400}/);
   if (!clearMatch) {
@@ -472,7 +472,7 @@ test('clear() uses DELETE method on /strokes endpoint', () => {
 });
 
 test('undo() POSTs to /history/undo endpoint', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const undoMatch = roomsContent.match(/async undo\([^)]+\)[\s\S]{0,400}/);
   if (!undoMatch) {
@@ -490,7 +490,7 @@ test('undo() POSTs to /history/undo endpoint', () => {
 });
 
 test('redo() POSTs to /history/redo endpoint', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const redoMatch = roomsContent.match(/async redo\([^)]+\)[\s\S]{0,400}/);
   if (!redoMatch) {
@@ -504,7 +504,7 @@ test('redo() POSTs to /history/redo endpoint', () => {
 });
 
 test('getUndoRedoStatus() GETs from /history/status', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const statusMatch = roomsContent.match(/async getUndoRedoStatus\([^)]+\)[\s\S]{0,400}/);
   if (!statusMatch) {
@@ -522,7 +522,7 @@ test('getUndoRedoStatus() GETs from /history/status', () => {
 });
 
 test('resetStacks() POSTs to /history/reset', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const resetMatch = roomsContent.match(/async resetStacks\([^)]+\)[\s\S]{0,400}/);
   if (!resetMatch) {
@@ -536,7 +536,7 @@ test('resetStacks() POSTs to /history/reset', () => {
 });
 
 test('share() sends array of usernames with roles', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const shareMatch = roomsContent.match(/async share\([^)]+\)[\s\S]{0,400}/);
   if (!shareMatch) {
@@ -554,7 +554,7 @@ test('share() sends array of usernames with roles', () => {
 });
 
 test('transferOwnership() sends new owner ID', () => {
-  const roomsContent = fs.readFileSync(path.join(__dirname, 'src/modules/canvases.js'), 'utf8');
+  const roomsContent = fs.readFileSync(path.join(__dirname, '../src/modules/canvases.js'), 'utf8');
 
   const transferMatch = roomsContent.match(/async transferOwnership\([^)]+\)[\s\S]{0,400}/);
   if (!transferMatch) {
@@ -575,7 +575,7 @@ test('transferOwnership() sends new owner ID', () => {
 log('\nTest Suite 5: Invites/Collaborations Module Functionality', colors.bright + colors.blue);
 
 test('list() GETs from /collaborations/invitations', () => {
-  const invitesContent = fs.readFileSync(path.join(__dirname, 'src/modules/invites.js'), 'utf8');
+  const invitesContent = fs.readFileSync(path.join(__dirname, '../src/modules/invites.js'), 'utf8');
 
   const listMatch = invitesContent.match(/async list\([^)]*\)[\s\S]{0,300}/);
   if (!listMatch) {
@@ -589,7 +589,7 @@ test('list() GETs from /collaborations/invitations', () => {
 });
 
 test('accept() POSTs to /collaborations/invitations/{id}/accept', () => {
-  const invitesContent = fs.readFileSync(path.join(__dirname, 'src/modules/invites.js'), 'utf8');
+  const invitesContent = fs.readFileSync(path.join(__dirname, '../src/modules/invites.js'), 'utf8');
 
   const acceptMatch = invitesContent.match(/async accept\([^)]+\)[\s\S]{0,300}/);
   if (!acceptMatch) {
@@ -607,7 +607,7 @@ test('accept() POSTs to /collaborations/invitations/{id}/accept', () => {
 });
 
 test('decline() POSTs to /collaborations/invitations/{id}/decline', () => {
-  const invitesContent = fs.readFileSync(path.join(__dirname, 'src/modules/invites.js'), 'utf8');
+  const invitesContent = fs.readFileSync(path.join(__dirname, '../src/modules/invites.js'), 'utf8');
 
   const declineMatch = invitesContent.match(/async decline\([^)]+\)[\s\S]{0,300}/);
   if (!declineMatch) {
@@ -624,7 +624,7 @@ test('decline() POSTs to /collaborations/invitations/{id}/decline', () => {
 log('\nTest Suite 6: Notifications Module Functionality', colors.bright + colors.blue);
 
 test('list() GETs notifications with optional filters', () => {
-  const notifsContent = fs.readFileSync(path.join(__dirname, 'src/modules/notifications.js'), 'utf8');
+  const notifsContent = fs.readFileSync(path.join(__dirname, '../src/modules/notifications.js'), 'utf8');
 
   const listMatch = notifsContent.match(/async list\([^)]*\)[\s\S]{0,500}/);
   if (!listMatch) {
@@ -638,7 +638,7 @@ test('list() GETs notifications with optional filters', () => {
 });
 
 test('markRead() marks notification as read', () => {
-  const notifsContent = fs.readFileSync(path.join(__dirname, 'src/modules/notifications.js'), 'utf8');
+  const notifsContent = fs.readFileSync(path.join(__dirname, '../src/modules/notifications.js'), 'utf8');
 
   const markReadMatch = notifsContent.match(/async markRead\([^)]+\)[\s\S]{0,300}/);
   if (!markReadMatch) {
@@ -652,7 +652,7 @@ test('markRead() marks notification as read', () => {
 });
 
 test('delete() DELETEs specific notification', () => {
-  const notifsContent = fs.readFileSync(path.join(__dirname, 'src/modules/notifications.js'), 'utf8');
+  const notifsContent = fs.readFileSync(path.join(__dirname, '../src/modules/notifications.js'), 'utf8');
 
   const deleteMatch = notifsContent.match(/async delete\([^)]+\)[\s\S]{0,300}/);
   if (!deleteMatch) {
@@ -666,7 +666,7 @@ test('delete() DELETEs specific notification', () => {
 });
 
 test('getPreferences() fetches notification settings', () => {
-  const notifsContent = fs.readFileSync(path.join(__dirname, 'src/modules/notifications.js'), 'utf8');
+  const notifsContent = fs.readFileSync(path.join(__dirname, '../src/modules/notifications.js'), 'utf8');
 
   const getPrefMatch = notifsContent.match(/async getPreferences\([^)]*\)[\s\S]{0,300}/);
   if (!getPrefMatch) {
@@ -680,7 +680,7 @@ test('getPreferences() fetches notification settings', () => {
 });
 
 test('updatePreferences() updates notification settings', () => {
-  const notifsContent = fs.readFileSync(path.join(__dirname, 'src/modules/notifications.js'), 'utf8');
+  const notifsContent = fs.readFileSync(path.join(__dirname, '../src/modules/notifications.js'), 'utf8');
 
   const updatePrefMatch = notifsContent.match(/async updatePreferences\([^)]+\)[\s\S]{0,300}/);
   if (!updatePrefMatch) {
@@ -697,7 +697,7 @@ test('updatePreferences() updates notification settings', () => {
 log('\nTest Suite 7: Socket.IO Module Functionality', colors.bright + colors.blue);
 
 test('connect() initializes socket with token auth', () => {
-  const socketContent = fs.readFileSync(path.join(__dirname, 'src/modules/socket.js'), 'utf8');
+  const socketContent = fs.readFileSync(path.join(__dirname, '../src/modules/socket.js'), 'utf8');
 
   const connectMatch = socketContent.match(/connect\([^)]+\)[\s\S]{0,500}/);
   if (!connectMatch) {
@@ -715,7 +715,7 @@ test('connect() initializes socket with token auth', () => {
 });
 
 test('joinCanvas() emits join_room event with roomId', () => {
-  const socketContent = fs.readFileSync(path.join(__dirname, 'src/modules/socket.js'), 'utf8');
+  const socketContent = fs.readFileSync(path.join(__dirname, '../src/modules/socket.js'), 'utf8');
 
   const joinMatch = socketContent.match(/joinCanvas\([^)]+\)[\s\S]{0,300}/);
   if (!joinMatch) {
@@ -733,7 +733,7 @@ test('joinCanvas() emits join_room event with roomId', () => {
 });
 
 test('leaveCanvas() emits leave_room event', () => {
-  const socketContent = fs.readFileSync(path.join(__dirname, 'src/modules/socket.js'), 'utf8');
+  const socketContent = fs.readFileSync(path.join(__dirname, '../src/modules/socket.js'), 'utf8');
 
   const leaveMatch = socketContent.match(/leaveCanvas\([^)]+\)[\s\S]{0,300}/);
   if (!leaveMatch) {
@@ -747,7 +747,7 @@ test('leaveCanvas() emits leave_room event', () => {
 });
 
 test('on() registers event listener', () => {
-  const socketContent = fs.readFileSync(path.join(__dirname, 'src/modules/socket.js'), 'utf8');
+  const socketContent = fs.readFileSync(path.join(__dirname, '../src/modules/socket.js'), 'utf8');
 
   const onMatch = socketContent.match(/\bon\([^)]+\)[\s\S]{0,200}/);
   if (!onMatch) {
@@ -761,7 +761,7 @@ test('on() registers event listener', () => {
 });
 
 test('disconnect() closes socket connection', () => {
-  const socketContent = fs.readFileSync(path.join(__dirname, 'src/modules/socket.js'), 'utf8');
+  const socketContent = fs.readFileSync(path.join(__dirname, '../src/modules/socket.js'), 'utf8');
 
   const disconnectMatch = socketContent.match(/disconnect\([^)]*\)[\s\S]{0,200}/);
   if (!disconnectMatch) {
@@ -777,16 +777,16 @@ test('disconnect() closes socket connection', () => {
 // Test Suite 8: Example Application Validation
 log('\nTest Suite 8: Example Application Validation', colors.bright + colors.blue);
 
-test('Example imports/uses ResCanvasClient', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+test('Example imports/uses DrawingClient', () => {
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
-  if (!exampleContent.includes('ResCanvasClient') && !exampleContent.includes('client')) {
-    throw new Error('Example should use ResCanvasClient');
+  if (!exampleContent.includes('DrawingClient') && !exampleContent.includes('client')) {
+    throw new Error('Example should use DrawingClient');
   }
 });
 
 test('Example demonstrates authentication flow', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
   if (!exampleContent.includes('login') && !exampleContent.includes('auth')) {
     throw new Error('Example should show authentication');
@@ -794,7 +794,7 @@ test('Example demonstrates authentication flow', () => {
 });
 
 test('Example demonstrates canvas creation and drawing', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
   if (!exampleContent.includes('canvas') || !exampleContent.includes('ctx')) {
     throw new Error('Example should include canvas drawing');
@@ -806,7 +806,7 @@ test('Example demonstrates canvas creation and drawing', () => {
 });
 
 test('Example uses correct API v1 endpoints', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
   if (!exampleContent.includes('/api/v1/canvases')) {
     throw new Error('Example should use /api/v1/canvases endpoints');
@@ -818,7 +818,7 @@ test('Example uses correct API v1 endpoints', () => {
 });
 
 test('Example includes undo/redo functionality', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
   if (!exampleContent.includes('undo') || !exampleContent.includes('redo')) {
     throw new Error('Example should demonstrate undo/redo');
@@ -830,7 +830,7 @@ test('Example includes undo/redo functionality', () => {
 });
 
 test('Example uses proper error handling', () => {
-  const exampleContent = fs.readFileSync(path.join(__dirname, 'examples/basic-drawing-app.html'), 'utf8');
+  const exampleContent = fs.readFileSync(path.join(__dirname, '../examples/basic-drawing-app.html'), 'utf8');
 
   const tryCount = (exampleContent.match(/try\s*{/g) || []).length;
   const catchCount = (exampleContent.match(/catch\s*\(/g) || []).length;
@@ -844,7 +844,7 @@ test('Example uses proper error handling', () => {
 log('\nTest Suite 9: Documentation Quality & Completeness', colors.bright + colors.blue);
 
 test('README includes installation instructions', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   if (!readmeContent.toLowerCase().includes('install')) {
     throw new Error('README should include installation section');
@@ -856,7 +856,7 @@ test('README includes installation instructions', () => {
 });
 
 test('README includes quick start example', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   if (!readmeContent.includes('Quick Start') && !readmeContent.includes('Getting Started')) {
     throw new Error('README should have quick start section');
@@ -868,7 +868,7 @@ test('README includes quick start example', () => {
 });
 
 test('README documents all main modules', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   const modules = ['auth', 'canvases', 'socket', 'invites', 'notifications'];
   for (const mod of modules) {
@@ -879,7 +879,7 @@ test('README documents all main modules', () => {
 });
 
 test('README includes authentication examples', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   if (!readmeContent.includes('login') || !readmeContent.includes('register')) {
     throw new Error('README should include authentication examples');
@@ -887,7 +887,7 @@ test('README includes authentication examples', () => {
 });
 
 test('README includes drawing/stroke examples', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   if (!readmeContent.includes('stroke') || !readmeContent.includes('canvas')) {
     throw new Error('README should include drawing examples');
@@ -895,7 +895,7 @@ test('README includes drawing/stroke examples', () => {
 });
 
 test('README mentions Socket.IO for real-time features', () => {
-  const readmeContent = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+  const readmeContent = fs.readFileSync(path.join(__dirname, '../README.md'), 'utf8');
 
   if (!readmeContent.toLowerCase().includes('socket') && !readmeContent.toLowerCase().includes('real-time')) {
     throw new Error('README should mention real-time capabilities');
@@ -930,7 +930,7 @@ test('MIGRATION guide includes before/after examples', () => {
 log('\nTest Suite 10: Package Configuration & Metadata', colors.bright + colors.blue);
 
 test('package.json has correct entry point', () => {
-  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   if (!pkgContent.main) {
     throw new Error('package.json should specify main entry point');
@@ -942,7 +942,7 @@ test('package.json has correct entry point', () => {
 });
 
 test('package.json specifies ES module type', () => {
-  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   if (pkgContent.type !== 'module') {
     log('    Note: Consider adding "type": "module" for ES modules', colors.yellow);
@@ -950,7 +950,7 @@ test('package.json specifies ES module type', () => {
 });
 
 test('package.json includes required metadata', () => {
-  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   const required = ['name', 'version', 'description', 'license', 'author'];
   for (const field of required) {
@@ -961,7 +961,7 @@ test('package.json includes required metadata', () => {
 });
 
 test('package.json specifies socket.io-client dependency', () => {
-  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   if (!pkgContent.dependencies || !pkgContent.dependencies['socket.io-client']) {
     throw new Error('socket.io-client should be listed as dependency');
@@ -969,7 +969,7 @@ test('package.json specifies socket.io-client dependency', () => {
 });
 
 test('package.json license is Apache-2.0', () => {
-  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const pkgContent = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
 
   if (pkgContent.license !== 'Apache-2.0') {
     throw new Error('License should be Apache-2.0 for Apache ResilientDB');

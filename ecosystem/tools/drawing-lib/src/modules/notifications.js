@@ -18,7 +18,7 @@
  */
 
 /**
- * Notifications module for ResCanvas SDK
+ * Notifications module for Collaborative Drawing SDK
  * 
  * Handles user notification management.
  */

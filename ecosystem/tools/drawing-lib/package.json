@@ -1,7 +1,7 @@
 {
-  "name": "@rescanvas/drawing-toolkit",
+  "name": "collaborative-drawing-toolkit",
   "version": "2.0.0",
-  "description": "Collaborative drawing toolkit for ResilientDB - JavaScript SDK for building blockchain-backed drawing applications",
+  "description": "Universal JavaScript SDK for building collaborative drawing applications with blockchain-backed storage",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
@@ -17,8 +17,6 @@
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "rescanvas",
-    "resilientdb",
     "collaborative",
     "drawing",
     "canvas",
@@ -27,20 +25,23 @@
     "toolkit",
     "sdk",
     "decentralized",
+    "resilientdb",
     "web3",
     "paint",
-    "whiteboard"
+    "whiteboard",
+    "art",
+    "sketch"
   ],
-  "author": "ResCanvas Team <https://resilientdb.com>",
+  "author": "ResilientDB Contributors",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/apache/incubator-resilientdb"
   },
   "bugs": {
-    "url": "https://github.com/ResilientApp/ResCanvas/issues"
+    "url": "https://github.com/apache/incubator-resilientdb/issues"
   },
-  "homepage": "https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/tools/rescanvas-drawing-toolkit",
+  "homepage": "https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/tools/drawing-toolkit",
   "dependencies": {
     "socket.io-client": "^4.7.2"
   },

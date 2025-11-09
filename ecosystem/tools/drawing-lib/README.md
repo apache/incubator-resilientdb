@@ -1,10 +1,8 @@
-# ResCanvas Drawing Toolkit
+# Collaborative Drawing Toolkit
 
 **License**: Apache-2.0
 
-A comprehensive JavaScript client library for building collaborative drawing applications on ResilientDB. This toolkit provides a complete SDK for managing canvases, submitting drawing strokes, real-time collaboration, and integrating with ResilientDB's blockchain infrastructure.
-
-> **Important:** This is a **client-side SDK** that requires a running [ResCanvas backend](https://github.com/ResilientApp/ResCanvas) to function. See [Backend Setup](#backend-setup-required) for details.
+A universal JavaScript client library for building collaborative drawing applications with blockchain-backed storage. This toolkit provides a complete SDK for managing canvases, submitting drawing strokes, real-time collaboration, and integrating with ResilientDB's decentralized infrastructure.
 
 ## Features
 
@@ -20,72 +18,75 @@ A comprehensive JavaScript client library for building collaborative drawing app
 ## Project Structure
 
 ```
-rescanvas-drawing-toolkit/
+drawing-toolkit/
 ├── src/                   # Source code
 │   ├── index.js           # Main client export
-│   └── modules/           # SDK modules (auth, rooms, socket, etc.)
+│   └── modules/           # SDK modules (auth, canvases, socket, etc.)
 ├── examples/              # Example applications
 ├── tests/                 # Test suite
-├── dist/                  # Built files generated
+├── dist/                  # Built files (generated)
 ├── LICENSE                # Apache 2.0 License
-├── README.md              # Full documentation
+├── README.md              # This file
 └── package.json           # Package configuration
 ```
 
 ## Installation
 
 ```bash
-npm install @rescanvas/drawing-toolkit
+npm install collaborative-drawing-toolkit
 ```
 
 Or using yarn:
 
 ```bash
-yarn add @rescanvas/drawing-toolkit
+yarn add collaborative-drawing-toolkit
 ```
 
-## Backend Setup (Required)
+## Backend Requirements
 
-**This toolkit is a client library and requires the ResCanvas backend infrastructure to function.**
+**This toolkit is a client library and requires a compatible backend server to function.**
 
-### Prerequisites
+### Required Infrastructure
 
-You must have the following running and accessible:
+You must have the following services running and accessible:
 
-1. **ResCanvas Backend** - Flask API server
-2. **ResilientDB** - Decentralized blockchain database
-3. **MongoDB** - Warm cache and queryable replica
+1. **Backend API Server** - Handles authentication, authorization, and data management
+2. **ResilientDB** - Decentralized blockchain database for immutable storage
+3. **MongoDB** - Warm cache and queryable data replica
 4. **Redis** - In-memory cache for real-time performance
 
-### Quick Backend Setup
+### Backend Setup Example
 
+This toolkit is designed to work with any backend that implements the required API endpoints. For a reference implementation, see compatible backend servers that support:
+
+- JWT authentication (`/api/v1/auth/*`)
+- Canvas management (`/api/v1/canvases/*`)
+- Real-time collaboration via Socket.IO
+- ResilientDB integration for blockchain storage
+
+Example backend setup:
 ```bash
-# Clone ResCanvas repository
-git clone https://github.com/ResilientApp/ResCanvas.git
-cd ResCanvas/backend
-
-# Install dependencies
-pip install -r requirements.txt
+# Install backend dependencies
+pip install flask flask-socketio redis pymongo resilientdb
 
 # Configure environment variables
-cp .env.example .env
-# Edit .env with your ResilientDB, MongoDB, and Redis connection strings
+export MONGO_URI="mongodb://localhost:27017"
+export REDIS_URL="redis://localhost:6379"
+export RESILIENTDB_ENDPOINT="http://localhost:8000"
 
-# Start the backend
+# Start backend server
 python app.py
 # Backend runs on http://localhost:10010 by default
 ```
 
-For detailed setup instructions, see the [ResCanvas repository](https://github.com/ResilientApp/ResCanvas).
-
 ## Quick Start
 
 ```javascript
-import ResCanvasClient from '@rescanvas/drawing-toolkit';
+import DrawingClient from 'collaborative-drawing-toolkit';
 
-// Initialize the client (point to your ResCanvas backend)
-const client = new ResCanvasClient({
-  baseUrl: 'http://localhost:10010',  // Your ResCanvas backend URL
+// Initialize the client (point to your backend server)
+const client = new DrawingClient({
+  baseUrl: 'http://localhost:10010',  // Your backend server URL
   apiVersion: 'v1'
 });
 
@@ -123,7 +124,7 @@ client.socket.on('new_line', (stroke) => {
 
 ## Architecture
 
-The toolkit integrates with ResilientDB's ecosystem to provide:
+This toolkit integrates with a backend server and ResilientDB infrastructure to provide:
 
 1. **Immutable Storage**: All drawing strokes are stored in ResilientDB via GraphQL
 2. **Caching Layer**: Redis for real-time performance, MongoDB for queryable replica
@@ -135,8 +136,8 @@ The toolkit integrates with ResilientDB's ecosystem to provide:
 ### Client Initialization
 
 ```javascript
-const client = new ResCanvasClient({
-  baseUrl: 'https://api.example.com',  // Required: Your backend URL
+const client = new DrawingClient({
+  baseUrl: 'https://api.example.com',  // Required: Your backend server URL
   apiVersion: 'v1',                      // Optional: API version (default: 'v1')
   timeout: 30000,                        // Optional: Request timeout ms (default: 30000)
   retries: 3,                            // Optional: Retry attempts (default: 3)
@@ -361,22 +362,22 @@ client.socket.disconnect();
 
 ## Integration with ResilientDB
 
-This toolkit is designed to work seamlessly with ResilientDB's ecosystem:
+This toolkit is designed to work seamlessly with ResilientDB's blockchain infrastructure:
 
-### Backend Setup
+### Backend Integration
 
-Your backend should integrate:
+A compatible backend server should integrate:
 
 1. **ResilientDB KV Service**: For blockchain storage
 2. **GraphQL Service**: For transaction submission
 3. **Redis**: For real-time caching
 4. **MongoDB**: For queryable stroke replica
-5. **Python Sync Service**: To mirror ResilientDB to MongoDB
+5. **Sync Service**: To mirror ResilientDB data to MongoDB
 
 Example backend structure:
 ```
 backend/
-├── app.py              # Flask server
+├── app.py              # Server application
 ├── routes/             # API endpoints
 ├── services/
 │   ├── graphql_service.py  # ResilientDB GraphQL client
@@ -400,16 +401,16 @@ backend/
 See [examples/basic-drawing-app.html](examples/basic-drawing-app.html) for a complete example.
 
 ```javascript
-import ResCanvasClient from '@rescanvas/drawing-toolkit';
+import DrawingClient from 'collaborative-drawing-toolkit';
 
 class DrawingApp {
   constructor(canvasElement) {
     this.canvas = canvasElement;
     this.ctx = this.canvas.getContext('2d');
-    this.client = new ResCanvasClient({
+    this.client = new DrawingClient({
       baseUrl: 'http://localhost:10010'
     });
-    this.currentRoom = null;
+    this.currentCanvas = null;
     this.isDrawing = false;
     this.currentPath = [];
   }
@@ -421,12 +422,12 @@ class DrawingApp {
       password: 'password'
     });
 
-    // Create or join room
+    // Create or join canvas
     const { canvas } = await this.client.canvases.create({
       name: 'My Canvas',
       type: 'public'
     });
-    this.currentRoom = room;
+    this.currentCanvas = canvas;
 
     // Setup real-time collaboration
     this.client.socket.connect(token);
@@ -491,10 +492,10 @@ app.init();
 ### Secure Room with Wallet Signing
 
 ```javascript
-import ResCanvasClient from '@rescanvas/drawing-toolkit';
+import DrawingClient from 'collaborative-drawing-toolkit';
 import { signMessage } from './wallet-utils';
 
-const client = new ResCanvasClient({
+const client = new DrawingClient({
   baseUrl: 'http://localhost:10010'
 });
 
@@ -505,7 +506,7 @@ await client.auth.register({
   walletPubKey: myWalletPublicKey
 });
 
-// Create secure room
+// Create secure canvas
 const { canvas } = await client.canvases.create({
   name: 'Secure Collaborative Canvas',
   type: 'secure'
@@ -554,7 +555,7 @@ try {
 
 ### Environment Variables
 
-When deploying a backend for this toolkit:
+When deploying a backend server for this toolkit:
 
 ```env
 # MongoDB for queryable stroke replica
@@ -579,7 +580,7 @@ npm test
 
 ## Contributing
 
-Contributions are welcome! Please follow the Apache ResilientDB contribution guidelines.
+Contributions are welcome! Please follow standard open-source contribution practices.
 
 1. Fork the repository
 2. Create a feature branch
@@ -604,5 +605,4 @@ limitations under the License.
 ## Links
 
 - [ResilientDB](https://resilientdb.com)
-- [ResCanvas GitHub](https://github.com/ResilientApp/ResCanvas)
 - [Apache ResilientDB](https://github.com/apache/incubator-resilientdb)

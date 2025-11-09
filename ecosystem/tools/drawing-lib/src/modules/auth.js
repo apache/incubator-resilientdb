@@ -18,7 +18,7 @@
  */
 
 /**
- * Authentication module for ResCanvas SDK
+ * Authentication module for Collaborative Drawing SDK
  * 
  * Handles user registration, login, token refresh, and logout.
  */
