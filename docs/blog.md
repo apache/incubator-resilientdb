@@ -1,7 +1,7 @@
 ## Nexus: An Agentic RAG Assistant for ResilientDB and Distributed Systems
 
 ### Overview
-Nexus is a Next.js-based agentic Retrieval-Augmented Generation (RAG) assistant tailored for Apache ResilientDB, blockchain, and distributed systems. It combines LlamaIndex (TypeScript) orchestration, DeepSeek for reasoning, Gemini Embedding 001 for retrieval, and Supabase (Postgres + pgvector) for persistent storage and memory, delivering grounded, cited answers with inline markers.
+Nexus is a Next.js-based agentic Retrieval-Augmented Generation (RAG) assistant tailored for Apache ResilientDB, blockchain, and distributed systems. It combines LlamaIndex (TypeScript) orchestration, DeepSeek for reasoning, Gemini Embedding 001 for retrieval, and Supabase (Postgres + pgvector) for persistent storage and memory, delivering grounded answers with clear citations.
 
 ### Motivation
 - The research landscape is dense; answers must be verifiable and source-linked.
@@ -10,7 +10,7 @@ Nexus is a Next.js-based agentic Retrieval-Augmented Generation (RAG) assistant 
 
 ### Key Features
 - Research and Code modes:
-  - **Research Mode**: Single `NexusAgent` with `search_documents` and `search_web` tools, cites results with [^id], streams tool usage transparently
+  - **Research Mode**: Single `NexusAgent` with `search_documents` and `search_web` tools, streams tool usage transparently and surfaces source badges in the preview panel (inline footnotes are on the roadmap)
   - **Code Mode** (experimental): Multi-agent workflow via `CodeAgent` class:
     - `PlannerAgent`: Retrieves document content and analyzes for implementation details
     - `PseudoCodeAgent`: Creates structured pseudocode from research findings  
@@ -52,7 +52,7 @@ Nexus implements a sophisticated document ingestion pipeline using LlamaIndex's 
 
 ```mermaid
 flowchart LR
-  PDF["PDF in documents/"] --> LP["LlamaParse (JSON)"]
+  PDF["PDF from Google Drive"] --> LP["LlamaParse (JSON)"]
   LP --> MD["MarkdownNodeParser"]
   MD --> SS["SentenceSplitter (size=768, overlap=20)"]
   SS --> SE["SummaryExtractor"]
@@ -91,9 +91,9 @@ sequenceDiagram
   Agent->>Supabase: Retrieve vectors (per selected doc)
   Agent-->>ChatRoute: __TOOL_CALL__ {type: search_documents, state: output-available}
   Agent->>Tavily: (optional) web search
-  Agent-->>ChatRoute: delta tokens + citations [^1], [^2]
+  Agent-->>ChatRoute: delta tokens
   ChatRoute-->>UI: Interleaved content + tool updates
-  UI-->>User: Answer + source badges
+  UI-->>User: Answer + source badges in the preview panel
 ```
 
 ### Stack
@@ -130,6 +130,7 @@ sequenceDiagram
     - LLAMA_CLOUD_API_KEY (for LlamaParse)
     - TAVILY_API_KEY
     - SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_SERVICE_ROLE_KEY)
+  - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, GOOGLE_REFRESH_TOKEN (for Drive access)
 
 - Environment
 ```bash
@@ -145,6 +146,11 @@ SUPABASE_URL=...
 SUPABASE_ANON_KEY=...         # or SUPABASE_SERVICE_ROLE_KEY=...
 SUPABASE_VECTOR_TABLE=llamaindex_vector_embeddings
 SUPABASE_MEMORY_TABLE=llamaindex_memory_embeddings
+
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+GOOGLE_REDIRECT_URI=...
+GOOGLE_REFRESH_TOKEN=...
 ```
 
 - Install and run
@@ -154,26 +160,22 @@ npm run dev
 # open http://localhost:3000/research
 ```
 
-- Add documents
-```bash
-# put your PDFs here:
-documents/
-  resilientdb.pdf
-  rcc.pdf
-  bchain-transaction-pro.pdf
-```
+- Connect document sources
+  - Share the desired folders with the Google account tied to your refresh token.
+  - Update the folder IDs inside `src/app/api/research/documents/route.ts` if you need different collections.
+  - Uploaded PDFs in those Drive folders appear automatically in the in-app library once credentials are configured.
 
 - Use the app
   - Select one or more documents in the sidebar.
   - Wait for “Preparing documents…” to complete (ingestion runs via /api/research/prepare-index).
-  - Ask questions. The agent retrieves from your selected docs and cites results with [^id].
+  - Ask questions. The agent retrieves from your selected docs and lists sources within the preview panel.
 
 ### Memory Design (Session-Scoped)
 Nexus implements the LlamaIndex Memory framework with both short-term and long-term memory capabilities:
 
 **Short-term Memory:**
 - Token-limited FIFO queue (30,000 tokens total, 70% allocated to chat history)
-- When chat history exceeds the ratio, oldest messages (3,000 tokens) are flushed to long-term memory
+- When chat history exceeds the ratio, the framework automatically trims the oldest short-term messages while leaving long-term memory blocks intact
 - Maintains recent conversational context within the session
 
 **Long-term Memory (via Memory Blocks):**
@@ -191,8 +193,8 @@ Nexus implements the LlamaIndex Memory framework with both short-term and long-t
 - Requires cloud APIs (DeepSeek, LlamaParse, Gemini, Tavily); offline mode is not supported out-of-the-box.
 
 ### Future Work
-- Citation highlighting in the PDF preview panel
-  - Click a [^id] marker to jump and highlight the exact passage/page range.
+- Inline citation markers and highlighting in the PDF preview panel
+  - Add [^id]-style footnotes to responses and allow clicking to jump to the referenced passage/page range.
 - Custom selective context
   - Let users include/exclude sections (e.g., Methods only), set per-query filters, or re-rank top-k nodes.
 - Advanced reranking
