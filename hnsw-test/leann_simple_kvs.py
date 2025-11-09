@@ -1,101 +1,102 @@
-import os
-import shutil
-from pathlib import Path
 from leann import LeannBuilder, LeannSearcher
-import pprint
+from pathlib import Path
+import os
 
-# --- 0. Setup KVS (dictionary) and Leann ---
+# 1. Define the hash map (Python dictionary) to search
+data_map = {
+    # Original entries
+    "doc1": "LEANN saves 97% storage compared to traditional vector databases.",
+    "doc2": "Tung Tung Tung Sahur called—they need their banana-crocodile hybrid back",
+    "doc3": "The weather in Davis is sunny today.",
+    "doc4": "Understanding consensus protocols is key for blockchain.",
 
-# 1. KVS (dictionary) setup (simulating ResilientDB)
-kvs = {}
+    # New entries (Course-related)
+    "doc5": "ResilientDB is a high-throughput blockchain fabric designed for performance.",
+    "doc6": "This project explores novel techniques for sharding in distributed ledgers.",
+    "doc7": "DeFi applications are often built on top of smart contracts.",
+    "doc8": "Practical Byzantine Fault Tolerance (PBFT) is a foundational agreement protocol.",
+    "doc9": "Cross-chain communication enables interoperability between different blockchains.",
+    "doc10": "The project requires using the ResilientDB Fabric unless approved otherwise.",
 
-# 2. Leann index file path
-INDEX_PATH = str(Path("./").resolve() / "simple_kvs_leann_default.leann")
+    # New entries (Unrelated noise)
+    "doc11": "Mitochondria are the powerhouse of the cell.",
+    "doc12": "How to bake a perfect sourdough bread with a starters.",
+    "doc13": "The final report must be written in LaTeX using ACM templates.",
+    "doc14": "UC Davis is known for its agricultural studies."
+}
 
-# 3. Clean up previous index files (for re-running the demo)
-if os.path.exists(f"{INDEX_PATH}.meta.json"):
-    print(f"Cleaning up existing index at '{INDEX_PATH}'...")
-    try:
-        base_name = INDEX_PATH.replace('.leann', '')
-        os.remove(f"{base_name}.leann.meta.json")
-        os.remove(f"{base_name}.leann.passages.jsonl")
-        os.remove(f"{base_name}.leann.passages.idx")
-        os.remove(f"{base_name}.index") # HNSW index file
-    except FileNotFoundError:
-        pass
-print("-" * 30)
+# 2. Create lists to map Leann's internal IDs (0, 1, 2...)
+#    back to our original hash map keys.
+#    map_keys[i] corresponds to map_values[i]
+map_keys = list(data_map.keys())
+map_values = list(data_map.values())
 
+INDEX_PATH = str(Path("./hnsw-test").resolve() / "my_hashmap.leann")
 
-# --- 1. 'Set' Data to KVS and Build Leann Index ---
-print("--- 1. Setting data and building Leann index (default mode) ---")
+# --- 3. Build the Leann Index ---
+print("Building index with LeannBuilder...")
+builder = LeannBuilder(backend_name="hnsw")
 
-# Initialize LeannBuilder (default settings, no memory-saving config)
-# This will use recompute=True, which requires more RAM during search
-builder = LeannBuilder(
-    backend_name="hnsw",
-    embedding_model="sentence-transformers/all-MiniLM-L6-v2" # Using a lightweight model
-)
+# Add the text values from the hash map to the builder.
+# Leann will assign internal IDs starting from 0 (0, 1, 2, 3...)
+for text in map_values:
+    builder.add_text(text)
 
-# Data to store (simulating kv_client.Set(key, value))
-data_to_set = [
-    ("greeting", "Hello ResilientDB! This is a test."),
-    ("doc_001", "Leann is a library for vector search."),
-    ("doc_002", "HNSW is a fast algorithm for approximate nearest neighbor search.")
-]
-
-for key, value in data_to_set:
-    
-    # (A) ResilientDB 'Set' operation (store in dictionary)
-    print(f"SET: KVS Key = '{key}'")
-    kvs[key] = value
-    
-    # (B) Add to Leann index
-    # We pass the KVS key in the metadata 'id'
-    builder.add_text(value, metadata={"id": key})
-
-# Build the Leann (HNSW) index
+# Build and save the index file
 builder.build_index(INDEX_PATH)
+print(f"Index built and saved to {INDEX_PATH}")
 
-print("\nCurrent KVS (dictionary) state:")
-pprint.pprint(kvs)
-print("Leann (HNSW) index built.")
-print("-" * 30)
+# --- 4. Prepare the Leann Searcher ---
+searcher = LeannSearcher(INDEX_PATH)
 
+# 5. Create the semantic search function
+def semantic_search_leann(query_text, k=3):
+    """
+    Uses LeannSearcher (vector indexing) to find the k-most
+    semantically similar items from the hash map.
+    """
+    
+    # searcher.search() returns a list of SearchResult objects
+    results_from_leann = searcher.search(query_text, top_k=k)
+    
+    final_results = []
+    if not results_from_leann:
+        return final_results
 
-# --- 2. Run Semantic Search (Leann + HNSW) ---
-print("--- 2. Running semantic search (default mode) ---")
-
-try:
-    # Use 'with' to safely open the LeannSearcher
-    # This will start an internal server (requires more RAM)
-    with LeannSearcher(INDEX_PATH) as searcher:
+    # Loop through the SearchResult objects
+    for result in results_from_leann:
         
-        query = "What is a fast vector search algorithm?"
-        print(f"Query: '{query}'")
+        # Get the internal ID (as an int) from the result object
+        item_index = int(result.id) 
+        
+        # Use the ID to look up our original key and value
+        key = map_keys[item_index]
+        value = map_values[item_index]
+        
+        # Get the similarity score
+        score = result.score 
+        
+        final_results.append({
+            "key": key,
+            "value": value,
+            "similarity_score": score
+        })
+        
+    return final_results
 
-        # (1) Run semantic search on Leann (HNSW)
-        # We do NOT pass recompute_embeddings=False, using the default
-        results = searcher.search(query, top_k=1)
+# --- 6. Run the search ---
+print("\n--- Search Results (using leann) ---")
 
-        if results:
-            # (2) Get the 'id' from Leann. In this mode,
-            # 'id' should be the original string key ("doc_002").
-            found_key = results[0].id 
-            
-            print(f"\n  -> Leann found key: '{found_key}' (Score: {results[0].score:.4f})")
-            
-            # (3) Use the key from Leann to 'Get' the full data
-            #     from the KVS (dictionary). This is the integration.
-            final_value = kvs.get(found_key)
-            
-            print("  -> Final value retrieved from KVS (dictionary):")
-            print(f"    {final_value}")
-        else:
-            print("  -> No results found.")
+# First query
+query1 = "Robust Database"
+# Call the renamed function
+results1 = semantic_search_leann(query1) 
 
-except FileNotFoundError:
-    print(f"ERROR: Index file not found at {INDEX_PATH}.")
-except Exception as e:
-    print(f"An error occurred during search: {e}")
+if results1:
+    print(f"Query: '{query1}'")
+    # Print all results (since k=3 by default)
+    for i, result in enumerate(results1):
+        print(f"  Rank {i+1} ({result['key']}): {result['value']}")
+        print(f"          (Score: {result['similarity_score']:.4f})")
 
-print("-" * 30)
+print("---")

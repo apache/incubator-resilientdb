@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "backend_name": "hnsw",
+  "embedding_model": "facebook/contriever",
+  "dimensions": 768,
+  "backend_kwargs": {},
+  "embedding_mode": "sentence-transformers",
+  "passage_sources": [
+    {
+      "type": "jsonl",
+      "path": "my_hashmap.leann.passages.jsonl",
+      "index_path": "my_hashmap.leann.passages.idx",
+      "path_relative": "my_hashmap.leann.passages.jsonl",
+      "index_path_relative": "my_hashmap.leann.passages.idx"
+    }
+  ],
+  "is_compact": true,
+  "is_pruned": true
+}
