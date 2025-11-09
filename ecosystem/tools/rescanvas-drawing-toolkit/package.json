@@ -1,0 +1,60 @@
+{
+  "name": "@rescanvas/drawing-toolkit",
+  "version": "2.0.0",
+  "description": "Collaborative drawing toolkit for ResilientDB - JavaScript SDK for building blockchain-backed drawing applications",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "examples"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "rescanvas",
+    "resilientdb",
+    "collaborative",
+    "drawing",
+    "canvas",
+    "real-time",
+    "blockchain",
+    "toolkit",
+    "sdk",
+    "decentralized",
+    "web3",
+    "paint",
+    "whiteboard"
+  ],
+  "author": "ResCanvas Team <https://resilientdb.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/incubator-resilientdb"
+  },
+  "bugs": {
+    "url": "https://github.com/ResilientApp/ResCanvas/issues"
+  },
+  "homepage": "https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/tools/rescanvas-drawing-toolkit",
+  "dependencies": {
+    "socket.io-client": "^4.7.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@types/node": "^20.0.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "rollup": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
