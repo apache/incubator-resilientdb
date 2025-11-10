@@ -77,12 +77,3 @@ py_binary(
         "//platform/proto:replica_info_py_proto",
     ],
 )
-
-cc_binary(
-    name = "generate_region_config_cc",
-    srcs = ["generate_region_config_cc.cpp"],
-    deps = [
-        "//platform/config:resdb_config_utils",
-        "//platform/proto:replica_info_cc_proto",
-    ],
-)
