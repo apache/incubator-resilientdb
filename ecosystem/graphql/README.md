@@ -303,3 +303,7 @@ Finally, restart the Nginx service to apply the changes:
 Then, test with:
 
     {The public IP address of your machine}/graphql
+
+
+# TODO
+ - Generate Server Config like the parent repo dynamically

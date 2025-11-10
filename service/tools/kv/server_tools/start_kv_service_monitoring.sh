@@ -24,6 +24,10 @@ WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
 GRAFANA_PORT=8090
 
+./service/tools/kv/server_tools/generate_keys_and_certs.sh || {
+  echo "Failed to generate configs/certificates" 1>&2
+  exit 1
+}
 
 bazel build //service/kv:kv_service --define enable_leveldb=True $@
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert 8090 > server0.log &
