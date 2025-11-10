@@ -1,6 +1,5 @@
 from leann import LeannBuilder, LeannSearcher
 from pathlib import Path
-import os
 
 # 1. Define the hash map (Python dictionary) to search
 data_map = {
@@ -25,21 +24,18 @@ data_map = {
     "doc14": "UC Davis is known for its agricultural studies."
 }
 
-# 2. Create lists to map Leann's internal IDs (0, 1, 2...)
-#    back to our original hash map keys.
-#    map_keys[i] corresponds to map_values[i]
-map_keys = list(data_map.keys())
-map_values = list(data_map.values())
+# 2. Make a single source of groundtruth for ID, key, and value
+docs = list(data_map.items())
 
-INDEX_PATH = str(Path("./hnsw-test").resolve() / "my_hashmap.leann")
+INDEX_PATH = Path("./hnsw-test").resolve() / "my_hashmap.leann"
+INDEX_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 # --- 3. Build the Leann Index ---
 print("Building index with LeannBuilder...")
 builder = LeannBuilder(backend_name="hnsw")
 
-# Add the text values from the hash map to the builder.
-# Leann will assign internal IDs starting from 0 (0, 1, 2, 3...)
-for text in map_values:
+# Add the text from the docs to the builder.
+for _, text in docs:
     builder.add_text(text)
 
 # Build and save the index file
@@ -47,18 +43,22 @@ builder.build_index(INDEX_PATH)
 print(f"Index built and saved to {INDEX_PATH}")
 
 # --- 4. Prepare the Leann Searcher ---
-searcher = LeannSearcher(INDEX_PATH)
+searcher = LeannSearcher(str(INDEX_PATH))
 
 # 5. Create the semantic search function
-def semantic_search_leann(query_text, k=3):
+def semantic_search_leann(query_text: str, k: int = 3):
     """
     Uses LeannSearcher (vector indexing) to find the k-most
     semantically similar items from the hash map.
     """
+    if not query_text:
+        return []
     
-    # searcher.search() returns a list of SearchResult objects
+    k = max(0, min(k, len(docs)))
+    if k == 0:
+        return []
+
     results_from_leann = searcher.search(query_text, top_k=k)
-    
     final_results = []
     if not results_from_leann:
         return final_results
@@ -67,14 +67,18 @@ def semantic_search_leann(query_text, k=3):
     for result in results_from_leann:
         
         # Get the internal ID (as an int) from the result object
-        item_index = int(result.id) 
+        try: 
+            item_index = int(result.id)
+        except:
+            continue 
         
-        # Use the ID to look up our original key and value
-        key = map_keys[item_index]
-        value = map_values[item_index]
+        if not (0 <= item_index < len(docs)):
+            continue
+        
+        key, value = docs[item_index]       
         
         # Get the similarity score
-        score = result.score 
+        score = float(result.score) 
         
         final_results.append({
             "key": key,
@@ -84,19 +88,21 @@ def semantic_search_leann(query_text, k=3):
         
     return final_results
 
-# --- 6. Run the search ---
+# --- 6. Show the result ---
+def print_results(query: str, results):
+    if not results:
+        print(f"No results for query: {query!r}")
+        return
+    
+    print(f"Query: '{query}'")
+    
+    for i, r in enumerate(results, 1):
+        print(f"  Rank {i} ({r['key']}): {r['value']}")
+        print(f"          (Score: {r['similarity_score']:.4f})")
+
+# --- 7. Run the search ---
 print("\n--- Search Results (using leann) ---")
-
-# First query
 query1 = "Robust Database"
-# Call the renamed function
-results1 = semantic_search_leann(query1) 
-
-if results1:
-    print(f"Query: '{query1}'")
-    # Print all results (since k=3 by default)
-    for i, result in enumerate(results1):
-        print(f"  Rank {i+1} ({result['key']}): {result['value']}")
-        print(f"          (Score: {result['similarity_score']:.4f})")
-
+results1 = semantic_search_leann(query1, k=3)
+print_results(query1, results1)
 print("---")
