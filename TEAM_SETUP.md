@@ -20,9 +20,24 @@ curl http://localhost:5001/graphql -X POST -H "Content-Type: application/json" -
 ## Quick Start (5 Minutes)
 
 ### Prerequisites
+- **ResilientDB set up and running** (see "ResilientDB Setup" section below)
 - Docker and Docker Compose installed
 - Git (to clone the repository)
 - Node.js 18+ (optional, for local development)
+
+### Step 0: Set Up ResilientDB (Required First)
+**⚠️ IMPORTANT:** You need ResilientDB running before starting this project.
+
+**Option A: Set up ResilientDB separately (Recommended)**
+1. Follow ResilientDB setup instructions from official docs
+2. Start ResilientDB KV service on port 18000
+3. Verify it's running: `curl http://localhost:18000/v1/transactions/test`
+4. Then proceed to Step 1 below
+
+**Option B: Try Docker setup (May not work)**
+- The `expolab/resdb` image should start KV service, but we're overriding the command
+- Try Step 3 below, then verify KV service is running
+- If port 18000 doesn't respond, you'll need to set up ResilientDB separately (Option A)
 
 ### Step 1: Clone the Repository
 ```bash
@@ -33,8 +48,8 @@ cd graphq-llm
 ### Step 2: Set Up Environment Variables
 Create a `.env` file in the project root:
 ```bash
-# Copy example if available, or create manually
-cp .env.example .env  # if exists
+# Copy example 
+cp .env.example .env  
 ```
 
 Required environment variables:
@@ -66,13 +81,22 @@ That's it! 🎉
 
 **What happens automatically:**
 - ✅ ResilientDB container starts **first**
-- ✅ GraphQL server automatically installs dependencies
-- ✅ GraphQL server fixes Python 3.8 compatibility issues
-- ✅ GraphQL server starts on port 5001
-- ✅ Health check confirms ResilientDB is ready
+- ✅ **ResilientDB KV service starts automatically** (from `expolab/resdb` image)
+  - KV service runs on port 18000
+  - This is the core database service
+- ✅ GraphQL server setup runs (`setup-graphql.sh`)
+  - Installs Python dependencies
+  - Fixes Python 3.8 compatibility issues
+  - Starts GraphQL server on port 5001
+- ✅ Health check confirms ResilientDB KV service is ready (port 18000)
 - ✅ **Then** backend service starts (waits for ResilientDB to be healthy)
-- ✅ Backend connects to ResilientDB using service name `resilientdb`
+- ✅ Backend connects to ResilientDB GraphQL using service name `resilientdb:5001`
 - ✅ All services are networked together via Docker's internal network
+
+**Important:** The `expolab/resdb` Docker image already includes:
+- ResilientDB KV service (the database itself)
+- ResilientDB GraphQL code (we just set it up and start it)
+- No separate ResilientDB installation needed!
 
 **Wait for services to be healthy** (about 60-120 seconds for first run):
 ```bash
@@ -120,28 +144,132 @@ docker-compose -f docker-compose.dev.yml logs -f resilientdb
    - ☐ Create `.env` file
    - ☐ Add API keys (LLM, optional: Hugging Face, ResLens)
 
-2. **Document Ingestion (First Time Only)**
+2. **Document Ingestion (REQUIRED - Each teammate must do this)**
    ```bash
-   # After services are running, ingest documentation
+   # After ResilientDB and backend are running, ingest documentation
    docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
    ```
-   This stores 129 chunks of ResilientDB documentation in the vector database.
+   
+   **⚠️ IMPORTANT:** Each teammate must run this on their own setup!
+   - Your teammate's ingestion stores docs in **their** local ResilientDB
+   - Your ingestion stored docs in **your** local ResilientDB
+   - Each person has their own separate ResilientDB instance
+   - This is a **one-time setup** per teammate (takes 2-5 minutes)
+   
+   **What it does:**
+   - Loads all files from `docs/` directory
+   - Loads GraphQL schema via introspection
+   - Chunks documents into smaller pieces
+   - Generates embeddings (Hugging Face)
+   - Stores ~100-130 chunks in **your local ResilientDB**
+   
+   **Expected output:**
+   ```
+   📚 Document Ingestion for RAG
+   ✅ Loaded X documents
+   ✅ GraphQL schema loaded
+   📊 Progress: 100/100 chunks (100%)
+   ✅ Ingestion completed successfully!
+   📦 129 document chunks are now available for RAG
+   ```
 
 ---
 
 ## ❓ Common Questions
 
-### **Q: Do I need to clone ResilientDB GraphQL separately?**
-**A: NO!** ✅
-- ResilientDB GraphQL is already included in the ResilientDB Docker image
-- The `setup-graphql.sh` script automatically sets it up
-- Location: `/app/ecosystem/graphql` inside the container
-- **You don't need to do anything** - it's all automated!
+### **Q: Do I need to set up ResilientDB separately first?**
+**A: ⚠️ RECOMMENDATION - Set up ResilientDB separately for reliability:**
+
+**The Problem:**
+- The `expolab/resdb` Docker image **should** include ResilientDB KV service
+- **BUT:** We're overriding the container's command to run `setup-graphql.sh`
+- This **might prevent** the KV service from starting automatically
+- The healthcheck tests port 18000, but if it fails, KV service isn't running
+
+**Recommended Approach (Most Reliable):**
+1. **Set up ResilientDB separately first** (outside Docker Compose)
+   - Follow ResilientDB setup instructions
+   - Start ResilientDB KV service on port 18000
+   - Verify it's running: `curl http://localhost:18000/v1/transactions/test`
+2. **Then use this project's Docker setup** for GraphQL and backend
+   - Comment out the `resilientdb` service in `docker-compose.dev.yml`
+   - Update `.env` to point to your existing ResilientDB: `RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql`
+   - Run `docker-compose up` for backend and GraphQL setup only
+
+**Alternative (If you want everything in Docker):**
+- Try the current setup first
+- Check if KV service starts: `curl http://localhost:18000/v1/transactions/test`
+- If it doesn't work, you'll need to set up ResilientDB separately anyway
+
+**How to Verify KV Service is Running:**
+```bash
+# Test if port 18000 is responding (KV service)
+curl http://localhost:18000/v1/transactions/test
+
+# Check what processes are running in the container
+docker-compose -f docker-compose.dev.yml exec resilientdb ps aux | grep -i resdb
+
+# Check the image's default entrypoint
+docker inspect expolab/resdb:amd64 | grep -A 10 "Entrypoint\|Cmd"
+```
+
+### **Q: Do I need to set up ResilientDB separately?**
+**A: It depends - we need to verify the image behavior:**
+- ✅ **ResilientDB KV service** - Already included in `expolab/resdb` Docker image
+  - Starts automatically when container starts
+  - Runs on port 18000
+  - No manual setup needed
+- ✅ **ResilientDB GraphQL** - Also included in the image
+  - Located at `/app/ecosystem/graphql` inside the container
+  - The `setup-graphql.sh` script sets it up (installs Python deps, fixes compatibility)
+  - Runs on port 5001
+
+**What happens:**
+1. Container starts → **ResilientDB KV service should start automatically** (from `expolab/resdb` image's default entrypoint)
+   - ⚠️ **If KV service doesn't start**, the image's entrypoint may need to be checked
+   - The healthcheck tests port 18000 to confirm KV service is running
+2. `setup-graphql.sh` runs → Sets up GraphQL server on top of KV service
+3. Both services run together in the same container
+
+**⚠️ Important Note:**
+- The `expolab/resdb` Docker image should include and start the ResilientDB KV service automatically
+- If the healthcheck fails (port 18000 not responding), the KV service may not be starting
+- Check the image documentation or logs to verify the KV service starts with the image
+- If needed, we may need to explicitly start the KV service in the docker-compose command
+
+**You don't need to:**
+- ❌ Clone ResilientDB separately
+- ❌ Install ResilientDB manually
+- ❌ Start KV service manually
+- ✅ Just run `docker-compose up` - everything is automated!
 
 ### **Q: What if I already have ResilientDB running?**
-**A:** You can skip the `resilientdb` service in docker-compose:
-- Comment out the `resilientdb` service in `docker-compose.dev.yml`
-- Update `RESILIENTDB_GRAPHQL_URL` in `.env` to point to your existing instance
+**A: ✅ RECOMMENDED APPROACH - Use your existing ResilientDB:**
+
+**Steps:**
+1. **Comment out the `resilientdb` service** in `docker-compose.dev.yml`:
+   ```yaml
+   # resilientdb:
+   #   image: expolab/resdb:${ARCH:-amd64}
+   #   ... (comment out entire service)
+   ```
+
+2. **Update `.env` file:**
+   ```env
+   # Use localhost since ResilientDB is running on your host machine
+   RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
+   ```
+
+3. **Start only the backend service:**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
+   ```
+
+**Benefits:**
+- ✅ More reliable (you control ResilientDB setup)
+- ✅ Avoids Docker networking issues
+- ✅ Easier to debug (ResilientDB logs separate)
+- ✅ Can use existing ResilientDB installation
 
 ### **Q: Do I need Docker credentials?**
 **A: NO!** ✅
@@ -185,10 +313,29 @@ curl http://localhost:5001/graphql
 ```
 
 ### **Q: How do I ingest documents?**
+**A: Each teammate must run this on their own setup:**
+
 ```bash
-# After services are running
+# After ResilientDB and backend services are running
 docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
 ```
+
+**Why each person needs to do this:**
+- ✅ Each teammate has their own local ResilientDB instance
+- ✅ Documents are stored in **your local ResilientDB**, not shared
+- ✅ This is a one-time setup (takes 2-5 minutes)
+- ✅ After ingestion, you'll have ~100-130 chunks stored locally
+
+**What gets stored:**
+- All files from `docs/` directory (GraphQL setup, KV service, HTTP server, etc.)
+- GraphQL schema information (via introspection)
+- Each chunk includes: text, embedding vector, metadata
+- Stored via GraphQL mutation: `postTransaction`
+
+**If ingestion fails:**
+- Check ResilientDB is running: `curl http://localhost:18000/v1/transactions/test`
+- Check GraphQL is accessible: `curl http://localhost:5001/graphql`
+- Check logs: `docker-compose -f docker-compose.dev.yml logs graphq-llm-backend`
 
 ### **Q: Can I develop locally without Docker?**
 **A:** Yes, but you'll need:
@@ -219,6 +366,12 @@ docker logs resilientdb
 ```
 
 **Common Issues:**
+- **ResilientDB KV service not starting:** Port 18000 not responding
+  - **This is the most common issue!** The `expolab/resdb` image should start KV service automatically
+  - Check logs: `docker-compose -f docker-compose.dev.yml logs resilientdb`
+  - Verify image entrypoint: `docker inspect expolab/resdb:amd64 | grep -A 5 Entrypoint`
+  - If KV service doesn't start, we may need to explicitly start it in docker-compose
+  - Solution: Check if image has a default command/entrypoint that starts KV service
 - **Port conflict:** Port 18000 or 5001 already in use
   - Solution: Stop conflicting services or change ports in `docker-compose.dev.yml`
 - **Permission issues:** Script not executable
@@ -358,25 +511,50 @@ docker-compose -f docker-compose.dev.yml logs -f
 ### Step 7: Test Document Ingestion (Full System Test)
 ```bash
 # Ingest documentation (this tests the full pipeline)
+# ⚠️ IMPORTANT: Each teammate must run this on their own setup
 docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
 ```
 
 **Expected Output:**
-- ✅ Documents loaded from `docs/` directory
-- ✅ Chunks created
-- ✅ Embeddings generated
-- ✅ Chunks stored in ResilientDB
-- ✅ Success message with chunk count
+- ✅ Documents loaded from `docs/` directory (6-10 files)
+- ✅ GraphQL schema loaded via introspection
+- ✅ Chunks created (~100-130 chunks total)
+- ✅ Embeddings generated (Hugging Face, 384 dimensions each)
+- ✅ Chunks stored in **your local ResilientDB** via GraphQL
+- ✅ Success message: "📦 X document chunks are now available for RAG"
+
+**What gets stored:**
+- Each chunk is stored as a transaction in ResilientDB
+- Contains: text content, embedding vector, source file, metadata
+- Stored via: GraphQL `postTransaction` mutation (primary) or HTTP API (fallback)
+- Location: Your local ResilientDB instance (not shared with teammates)
 
 ---
 
 ## 🎯 Next Steps After Setup
 
-1. **Ingest Documentation:**
+1. **Ingest Documentation (REQUIRED - Each teammate):**
    ```bash
    docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
    ```
-   This stores ResilientDB documentation in the vector database for RAG.
+   
+   **⚠️ IMPORTANT:** Each teammate must run this separately!
+   - Stores docs in **your local ResilientDB** (not shared)
+   - Takes 2-5 minutes (one-time setup)
+   - Stores ~100-130 chunks from `docs/` directory + GraphQL schema
+   - After this, RAG system can retrieve relevant documentation
+   
+   **What happens:**
+   1. Loads all `.md` files from `docs/` directory
+   2. Loads GraphQL schema via introspection
+   3. Chunks documents (max 512 tokens per chunk)
+   4. Generates embeddings using Hugging Face
+   5. Stores each chunk in ResilientDB via GraphQL mutation
+   
+   **Verify it worked:**
+   - Should see "✅ Ingestion completed successfully!"
+   - Should see chunk count (e.g., "📦 129 document chunks")
+   - If errors occur, check ResilientDB and GraphQL are running
 
 2. **Verify Services are Running:**
    ```bash
@@ -419,7 +597,4 @@ If you encounter issues:
 3. Check service health: `docker-compose ps`
 4. Verify environment variables are set correctly
 
----
-
-**Happy Coding! 🚀**
 
