@@ -41,7 +41,6 @@ ADMIN_PUBLIC_KEY=${admin_key_path}/admin.key.pub
 
 CERT_TOOLS_BIN=${base_path}/bazel-bin/tools/certificate_tools
 CONFIG_TOOLS_BIN=${base_path}/bazel-bin/tools/generate_region_config
-KEYGEN_BIN=${base_path}/bazel-bin/tools/key_generator_tools
 
 USERNAME=ubuntu
 BASE_PORT=${base_port}
@@ -52,8 +51,7 @@ echo "" > client.config
 echo "" > server.config
 
 bazel build //tools:certificate_tools
-bazel build //tools:key_generator_tools
-bazel build //tools:generate_region_config_cc
+bazel build //tools:generate_region_config
 
 idx=1
 tot=0
@@ -67,20 +65,11 @@ echo "node num:"$tot
 echo "base port:"${BASE_PORT}
 echo "client num:" ${CLIENT_NUM}
 
-# Ensure cert output directory exists and use it for node key generation
-mkdir -p ${output_cert_path}
-
-# Generate admin keypair (needed by certificate_tools)
-${KEYGEN_BIN} ${output_cert_path}/admin
-
 for ip in ${iplist[@]};
 do
   port=$((${BASE_PORT}+${idx}))
-  public_key=${output_cert_path}/node${idx}.key.pub 
+  public_key=${key_path}/node${idx}.key.pub 
   echo "get ip:"${ip}
-
-  # generate node key pair for this idx
-  ${KEYGEN_BIN} ${output_cert_path}/node${idx}
 
   # create public key
   # create server config
@@ -96,16 +85,7 @@ do
   idx=$(($idx+1))
 done
 
-TEMPLATE_JSON=${output_path}/server/server.config
-
-if [ -f "$TEMPLATE_JSON" ]; then
-  python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ${TEMPLATE_JSON}
-else
-  python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json
-fi
-
-mkdir -p ${output_path}/server
-cp server.config.json ${output_path}/server/server.json
+python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json 
 mv server.config.json ${output_path}/server/server.config
 mv client.config ${output_path}/interface/service.config
 echo "config done:" ${output_path}/server/server.config
