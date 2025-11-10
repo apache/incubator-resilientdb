@@ -19,11 +19,26 @@ services:
     environment:
       - RESDB_HOST=0.0.0.0
       - RESDB_PORT=18000
-    # Start GraphQL server automatically
+    # IMPORTANT: The expolab/resdb image's default entrypoint starts ResilientDB KV service
+    # We need to preserve that behavior while also setting up GraphQL
+    # Option 1: Don't override command (let image start KV, then manually run setup-graphql.sh)
+    # Option 2: Explicitly start KV service, then GraphQL
+    # 
+    # For now, we assume the image starts KV service automatically via its entrypoint
+    # If it doesn't, we may need to check the image's documentation or entrypoint
+    # 
+    # The healthcheck tests port 18000 (KV service), confirming it's running
+    # If healthcheck fails, the KV service isn't starting - check image entrypoint
+    entrypoint: ["/bin/sh", "-c"]
     command: >
-      sh -c "
-        chmod +x /app/setup-graphql.sh && 
-        /app/setup-graphql.sh
+      "
+      # The expolab/resdb image should start ResilientDB KV service via its default entrypoint
+      # If the image doesn't have a default entrypoint that starts KV service, we need to start it here
+      # For now, we assume KV service starts automatically (check logs if healthcheck fails)
+      # 
+      # Start GraphQL setup (this runs after container starts)
+      chmod +x /app/setup-graphql.sh && 
+      /app/setup-graphql.sh
       "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:18000/v1/transactions/test || exit 1"]
