@@ -16,18 +16,19 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-killall -9 kv_service
 
-SERVER_PATH=./bazel-bin/service/kv/kv_service
-SERVER_CONFIG=service/tools/config/server/server.config
-WORK_PATH=$PWD
-CERT_PATH=${WORK_PATH}/service/tools/data/cert/
-GRAFANA_PORT=8090
+iplist=(
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+127.0.0.1
+)
 
-bazel build //service/kv:kv_service --define enable_leveldb=True $@
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert 8090 > server0.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert 8091 > server1.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert 8092 > server2.log &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert 8093 > server3.log &
+WORKSPACE=$PWD
+CERT_PATH=$PWD/service/tools/data/cert/
+CONFIG_PATH=$PWD/service/tools/config/
+PORT_BASE=10000
+CLIENT_NUM=1
 
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert 8094 > client.log &
+./service/tools/config/generate_keys_and_certs.sh ${WORKSPACE} ${CERT_PATH} ${CERT_PATH} ${CONFIG_PATH} ${CERT_PATH} ${CLIENT_NUM} ${PORT_BASE} ${iplist[@]} 
