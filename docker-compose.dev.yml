@@ -6,6 +6,7 @@ services:
   # This service is optional if ResilientDB is already running
   resilientdb:
     image: expolab/resdb:${ARCH:-amd64}
+    platform: linux/arm64
     container_name: resilientdb
     ports:
       - "18000:18000"
