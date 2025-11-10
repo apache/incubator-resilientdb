@@ -26,11 +26,11 @@ services:
         /app/setup-graphql.sh
       "
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:18000/v1/transactions/test"]
+      test: ["CMD-SHELL", "curl -f http://localhost:18000/v1/transactions/test || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s  # Increased to allow GraphQL setup time
+      start_period: 60s  # Increased to allow GraphQL setup time (first run takes longer)
 
   # GraphQ-LLM Backend (Node.js/TypeScript)
   graphq-llm-backend:
@@ -43,7 +43,7 @@ services:
       - "9229:9229" # Debug port
     environment:
       # ResilientDB Configuration
-      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://localhost:5000/graphql}
+      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://resilientdb:5001/graphql}
       - RESILIENTDB_API_KEY=${RESILIENTDB_API_KEY:-}
       
       # Nexus Configuration (optional)
