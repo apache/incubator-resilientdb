@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "common/proto/signature_info.pb.h"
 #include "platform/proto/replica_info.pb.h"
 
@@ -51,6 +53,8 @@ class ResDBConfig {
   const std::vector<ReplicaInfo>& GetReplicaInfos() const;
 
   ResConfigData GetConfigData() const;
+  std::string GetConsensusProtocol() const;
+  void SetConsensusProtocol(const std::string& protocol);
 
   // The current replica infomation, including the binding urls(or ip,port).
   const ReplicaInfo& GetSelfInfo() const;

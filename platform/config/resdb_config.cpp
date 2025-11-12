@@ -108,6 +108,17 @@ CertificateInfo ResDBConfig::GetPublicKeyCertificateInfo() const {
 
 ResConfigData ResDBConfig::GetConfigData() const { return config_data_; }
 
+std::string ResDBConfig::GetConsensusProtocol() const {
+  if (config_data_.consensus_protocol().empty()) {
+    return "pbft";
+  }
+  return config_data_.consensus_protocol();
+}
+
+void ResDBConfig::SetConsensusProtocol(const std::string& protocol) {
+  config_data_.set_consensus_protocol(protocol);
+}
+
 const std::vector<ReplicaInfo>& ResDBConfig::GetReplicaInfos() const {
   return replicas_;
 }

@@ -57,6 +57,7 @@ message ResConfigData{
   optional int32 recovery_ckpt_time_s = 20;
   optional bool enable_resview = 23;
   optional bool enable_faulty_switch = 24;
+  optional string consensus_protocol = 25;
 
 // for hotstuff.
   optional bool use_chain_hotstuff = 9;
