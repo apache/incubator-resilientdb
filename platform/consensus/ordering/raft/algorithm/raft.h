@@ -37,17 +37,37 @@ class Raft : public common::ProtocolBase {
   Raft(int id, int f, int total_num, SignatureVerifier* verifier);
   ~Raft();
 
-  bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
-  bool ReceivePropose(std::unique_ptr<Transaction> txn);
-  bool ReceivePrepare(std::unique_ptr<Proposal> proposal);
-
+  bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
+  bool ReceivePropose(std::unique_ptr<AppendEntries> txn);
+  bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
  private:
   bool IsStop();
 
  private:
   std::mutex mutex_;
   std::map<std::string, std::set<int32_t> > received_;
-  std::map<std::string, std::unique_ptr<Transaction> > data_;
+  std::map<std::string, std::unique_ptr<AppendEntries> > data_; // log[]
+
+  std::vector<std::string> dataIndexMapping_;
+
+  // This is for everyone
+  // Most recent term it has seen
+  int currentTerm_;
+  // Id for vote in current Term
+  int votedFor_;
+
+  // Volatile on all servers
+  // Index of highest log entry it knows to be committed
+  int64_t commitIndex_;
+  // Index of highest log entry executed
+  int64_t lastApplied_;
+
+  // Only for leaders
+  // This keeps track of the next log entry to send to that replica
+  // Initialized to last log index + 1
+  std::vector<int> nextIndex_;
+  // This keeps track of the highest log entry it knows is executed on that replica
+  std::vector<int> matchIndex_;
 
   int64_t seq_;
   bool is_stop_;

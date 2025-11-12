@@ -48,8 +48,8 @@ Consensus::Consensus(const ResDBConfig& config,
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  if (request->user_type() == MessageType::Propose) {
-    std::unique_ptr<Transaction> txn = std::make_unique<Transaction>();
+  if (request->user_type() == MessageType::AppendEntriesMsg) {
+    std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
     if (!txn->ParseFromString(request->data())) {
       assert(1 == 0);
       LOG(ERROR) << "parse proposal fail";
@@ -57,21 +57,21 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     raft_->ReceivePropose(std::move(txn));
     return 0;
-  } else if (request->user_type() == MessageType::Prepare) {
-    std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
-    if (!proposal->ParseFromString(request->data())) {
+  } else if (request->user_type() == MessageType::AppendEntriesResponseMsg) {
+    std::unique_ptr<AppendEntriesResponse> AppendEntriesResponse = std::make_unique<resdb::raft::AppendEntriesResponse>();
+    if (!AppendEntriesResponse->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
       assert(1 == 0);
       return -1;
     }
-    raft_->ReceivePrepare(std::move(proposal));
+    raft_->ReceiveAppendEntriesResponse(std::move(AppendEntriesResponse));
     return 0;
   }
   return 0;
 }
 
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
-  std::unique_ptr<Transaction> txn = std::make_unique<Transaction>();
+  std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
   txn->set_data(request->data());
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
@@ -80,10 +80,10 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
 }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
-  return CommitMsgInternal(dynamic_cast<const Transaction&>(msg));
+  return CommitMsgInternal(dynamic_cast<const AppendEntries&>(msg));
 }
 
-int Consensus::CommitMsgInternal(const Transaction& txn) {
+int Consensus::CommitMsgInternal(const AppendEntries& txn) {
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_data(txn.data());
   request->set_seq(txn.seq());

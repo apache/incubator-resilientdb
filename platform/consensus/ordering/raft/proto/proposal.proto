@@ -21,26 +21,33 @@ syntax = "proto3";
 
 package resdb.raft;
 
-message Transaction{
+message AppendEntries{
   int32 id = 1;
-  bytes data = 2;
+  bytes data = 2;   // this can maybe work as entries but maybe not?
   bytes hash = 3;
   int32 proxy_id = 4;
   int32 proposer = 5;
   int64 uid = 6;
   int64 create_time = 7;
   int64 seq = 9;
+  int32 prevLogTerm = 10; // term of the most recent log (term corresponding to seq)
+  int64 leaderCommitIndex = 11; // leader sends out highest seq that is committed
+  int32 term = 12; // This should be a term for each entry, but assuming no failure at first
 }
 
-message Proposal {
-  bytes hash = 1;
-  int32 proposer = 2;
-  int64 seq =3 ;
+message AppendEntriesResponse {
+  int32 term = 1;
+  bool success = 2;
+  int32 id = 3;
+  int32 lastApplied = 4;
+  int32 nextEntry = 5;
 }
 
 enum MessageType {
   None = 0;
-  Propose = 1;
-  Prepare = 2;
+  AppendEntriesMsg = 1;
+  AppendEntriesResponseMsg = 2;
+  RequestVote = 3;
+  GiveVote = 4;
 }
 

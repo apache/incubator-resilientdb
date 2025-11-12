@@ -37,9 +37,7 @@ class Consensus : public common::Consensus {
   int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
-  int CommitMsgInternal(const Transaction& txn);
-
-  int Prepare(const Transaction& txn);
+  int CommitMsgInternal(const AppendEntries& txn);
 
  protected:
   std::unique_ptr<Raft> raft_;
