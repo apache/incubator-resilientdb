@@ -83,7 +83,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   auto prevSeq = txn->seq() - 1;
   // This should be the same as checking if it has an entry
   // with this prevLogIndex and term
-  if (prevSeq != -1 && 
+  if (prevSeq != 0 && 
     (prevSeq >= static_cast<int64_t>(data_.size()) ||
       txn->prevlogterm() != data_[dataIndexMapping_[prevSeq]]->term())) {
     appendEntriesResponse.set_success(false);
@@ -97,8 +97,9 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   int64_t seq = txn->seq();
   {
     std::unique_lock<std::mutex> lk(mutex_);
+    std::string hash = txn->hash();
     data_[txn->hash()] = std::move(txn);
-    dataIndexMapping_.push_back(txn->hash());
+    dataIndexMapping_.push_back(hash);
   }
   auto leaderCommit = txn->leadercommitindex();
   while (leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
