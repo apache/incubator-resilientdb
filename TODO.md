@@ -34,6 +34,7 @@
      - 覆盖 `GetPrimary`、`GetVersion`（映射为 leaderId / currentTerm）。
      - Heartbeat 使用 AppendEntries 空日志；必要时关掉基类 heartbeat 线程改用自定义调度。
    - 提供接口连接 RAFT 内核模块（log replication、state machine apply）。
+   - [x] 基础骨架已就位（请求分流、主领导/term 追踪、心跳线程接口、可注入回调）。
 
 5. **RAFT 内核组件**
    - **Key 前缀规范**：列出 PBFT 组件当前占用的 LevelDB key 空间（`checkpoint_manager`, `message_manager`, `recovery` 等），设计 `storage::PrefixAllocator` 或等价机制，确保 `raft_state_*`/`raft_log_*`/`raft_snapshot_*` 与旧前缀彻底隔离，并用单元测试覆盖冲突检测。
