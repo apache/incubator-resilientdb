@@ -14,9 +14,9 @@
    - 同步其它服务入口（contract、benchmark 工具等），至少在 TODO 里标明需统一。
    - 建立服务入口 checklist，逐个勾掉并在代码评审里验证都通过 `consensus_protocol` 分支：
      - [x] `service/kv/kv_service.cpp`
-     - [ ] `service/contract/contract_service.cpp`
-     - [ ] `service/utxo/utxo_service.cpp`
-     - [ ] `ecosystem/graphql/service/kv_service/kv_server.cpp`
+     - [x] `service/contract/contract_service.cpp`
+     - [x] `service/utxo/utxo_service.cpp`
+     - [x] `ecosystem/graphql/service/kv_service/kv_server.cpp`
      - [ ] 其它使用 `GenerateResDBServer`/`CustomGenerateResDBServer` 的 binary（benchmark、tools、demo）。
    - 在 CI 里新增 PBFT/RAFT config matrix（最少覆盖 kv/contract/utxo/GraphQL KV server），保证两种协议都能启动并跑冒烟测试。
    - 定义协议切换失败路径：配置声明 `raft` 但依赖缺失时，`server_factory` 和各服务入口必须记录致命日志、回退到 PBFT 或直接终止，避免进入半初始化状态。
