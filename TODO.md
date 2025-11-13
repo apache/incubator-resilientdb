@@ -13,7 +13,7 @@
    - `service/kv/kv_service.cpp`：读取配置后判断 `config->GetConsensusProtocol()`，`raft` 时调用 `CustomGenerateResDBServer<ConsensusManagerRaft>`，否则走现状。
    - 同步其它服务入口（contract、benchmark 工具等），至少在 TODO 里标明需统一。
    - 建立服务入口 checklist，逐个勾掉并在代码评审里验证都通过 `consensus_protocol` 分支：
-     - [ ] `service/kv/kv_service.cpp`
+     - [x] `service/kv/kv_service.cpp`
      - [ ] `service/contract/contract_service.cpp`
      - [ ] `service/utxo/utxo_service.cpp`
      - [ ] `ecosystem/graphql/service/kv_service/kv_server.cpp`

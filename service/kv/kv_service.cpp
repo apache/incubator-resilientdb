@@ -73,8 +73,11 @@ int main(int argc, char** argv) {
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
   LOG(INFO) << "db path:" << db_path;
 
-  auto server = GenerateResDBServer(
-      config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr);
+  const std::string consensus_protocol = config->GetConsensusProtocol();
+  LOG(INFO) << "consensus protocol: " << consensus_protocol;
+
+  auto server = GenerateResDBServerForProtocol(
+      consensus_protocol, config_file, private_key_file, cert_file,
+      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)));
   server->Run();
 }

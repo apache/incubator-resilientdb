@@ -19,11 +19,24 @@
 
 #pragma once
 
+#include <string>
+
 #include "executor/common/custom_query.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
 #include "platform/networkstrate/service_network.h"
+
+#if defined(__has_include)
+#if __has_include("platform/consensus/ordering/raft/consensus_manager_raft.h")
+#include "platform/consensus/ordering/raft/consensus_manager_raft.h"
+#define RESDB_HAS_RAFT 1
+#endif
+#endif
+
+#ifndef RESDB_HAS_RAFT
+#define RESDB_HAS_RAFT 0
+#endif
 
 namespace resdb {
 
@@ -46,10 +59,29 @@ class ServerFactory {
       std::unique_ptr<TransactionManager> executor,
       std::unique_ptr<CustomQuery> query_executor,
       std::function<void(ResDBConfig* config)> config_handler);
+
+  std::unique_ptr<ServiceNetwork> CreateResDBServerForProtocol(
+      const std::string& consensus_protocol, char* config_file,
+      char* private_key_file, char* cert_file,
+      std::unique_ptr<TransactionManager> executor, char* logging_dir,
+      std::function<void(ResDBConfig* config)> config_handler);
+
+  std::unique_ptr<ServiceNetwork> CreateResDBServerForProtocol(
+      const std::string& consensus_protocol, char* config_file,
+      char* private_key_file, char* cert_file,
+      std::unique_ptr<TransactionManager> executor,
+      std::unique_ptr<CustomQuery> query_executor,
+      std::function<void(ResDBConfig* config)> config_handler);
 };
 
 std::unique_ptr<ServiceNetwork> GenerateResDBServer(
     char* config_file, char* private_key_file, char* cert_file,
+    std::unique_ptr<TransactionManager> executor, char* logging_dir = nullptr,
+    std::function<void(ResDBConfig* config)> config_handler = nullptr);
+
+std::unique_ptr<ServiceNetwork> GenerateResDBServerForProtocol(
+    const std::string& consensus_protocol, char* config_file,
+    char* private_key_file, char* cert_file,
     std::unique_ptr<TransactionManager> executor, char* logging_dir = nullptr,
     std::function<void(ResDBConfig* config)> config_handler = nullptr);
 
