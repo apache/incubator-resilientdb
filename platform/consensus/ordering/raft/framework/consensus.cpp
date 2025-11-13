@@ -48,6 +48,7 @@ Consensus::Consensus(const ResDBConfig& config,
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
+  LOG(ERROR) << "Message type request->user_type(): " << request->user_type();
   if (request->user_type() == MessageType::AppendEntriesMsg) {
     LOG(ERROR) << "Received AppendEntriesMsg";
     std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
