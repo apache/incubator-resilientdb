@@ -25,6 +25,6 @@ OUTPUT=$(python3 "$PYTHON_SCRIPT" "$PROTOCOL" "$BATCH_SIZE")
 echo "returned command: $OUTPUT"
 
 # Run the returned string as a command
-# eval "$OUTPUT"
+eval "$OUTPUT"
 
 
