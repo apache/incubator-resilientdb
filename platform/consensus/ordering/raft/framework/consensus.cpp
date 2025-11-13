@@ -49,10 +49,11 @@ Consensus::Consensus(const ResDBConfig& config,
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   if (request->user_type() == MessageType::AppendEntriesMsg) {
+    LOG(ERROR) << "Received AppendEntriesMsg";
     std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
     if (!txn->ParseFromString(request->data())) {
-      assert(1 == 0);
       LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
       return -1;
     }
     raft_->ReceivePropose(std::move(txn));

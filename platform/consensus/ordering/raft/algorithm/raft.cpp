@@ -27,9 +27,54 @@
 namespace resdb {
 namespace raft {
 
+static std::string ToHex(const std::string& input, size_t max_len = 16) {
+  std::ostringstream oss;
+  oss << std::hex << std::setfill('0');
+  for (size_t i = 0; i < std::min(input.size(), max_len); ++i) {
+    oss << std::setw(2) << static_cast<unsigned>(static_cast<unsigned char>(input[i]));
+  }
+  return oss.str();
+}
+
+static void printAppendEntries(const std::unique_ptr<AppendEntries>& txn) {
+  if (!txn) {
+    LOG(INFO) << "AppendEntries: nullptr";
+    return;
+  }
+
+  LOG(INFO) << "=== AppendEntries ===";
+  LOG(INFO) << "id: " << txn->id();
+  LOG(INFO) << "term: " << txn->term();
+  LOG(INFO) << "seq: " << txn->seq();
+  LOG(INFO) << "prevLogTerm: " << txn->prevlogterm();
+  LOG(INFO) << "leaderCommitIndex: " << txn->leadercommitindex();
+  LOG(INFO) << "proxy_id: " << txn->proxy_id();
+  LOG(INFO) << "proposer: " << txn->proposer();
+  LOG(INFO) << "uid: " << txn->uid();
+  LOG(INFO) << "create_time: " << txn->create_time();
+
+  // bytes fields (print as hex or limited string to avoid binary garbage)
+  const std::string& data = txn->data();
+  const std::string& hash = txn->hash();
+
+  LOG(INFO) << "data size: " << data.size();
+  if (!data.empty()) {
+    LOG(INFO) << "data (first 32 bytes): "
+              << data.substr(0, std::min<size_t>(32, data.size()));
+  }
+
+  LOG(INFO) << "hash size: " << hash.size();
+  if (!hash.empty()) {
+    LOG(INFO) << "hash (hex first 16 bytes): "
+              << ToHex(hash);
+  }
+
+  LOG(INFO) << "=====================";
+}
+
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
-  LOG(ERROR) << "get proposal graph";
+  LOG(INFO) << "get proposal graph";
   id_ = id;
   total_num_ = total_num;
   f_ = f;
@@ -48,7 +93,8 @@ Raft::~Raft() { is_stop_ = true; }
 bool Raft::IsStop() { return is_stop_; }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
-  // LOG(ERROR)<<"recv txn:";
+  // LOG(INFO)<<"recv txn:";
+
   LOG(INFO) << "Received Transaction to primary id: " << id_;
   LOG(INFO) << "seq: " << seq_;
   txn->set_create_time(GetCurrentTime());
@@ -63,19 +109,27 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 
   // This should be a term for each entry, but assuming no failure at first
   txn->set_term(currentTerm_); 
-
+  LOG(INFO) << "Before";
+  printAppendEntries(txn);
+  LOG(INFO) << "After";
+  
   Broadcast(MessageType::AppendEntriesMsg, *txn);
   return true;
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   auto leader_id = txn->id();
+  auto leaderCommit = txn->leadercommitindex();
+  LOG(INFO) << "Received AppendEntries to replica id: " << id_;
+  LOG(INFO) << "static_cast<int64_t>(data_.size()): " << static_cast<int64_t>(data_.size());
+  printAppendEntries(txn);
   AppendEntriesResponse appendEntriesResponse;
   appendEntriesResponse.set_term(currentTerm_);
   appendEntriesResponse.set_id(id_);
   appendEntriesResponse.set_lastapplied(lastApplied_);
   appendEntriesResponse.set_nextentry(data_.size());
   if (txn->term() < currentTerm_) {
+    LOG(INFO) << "AppendEntriesMsg Fail1";
     appendEntriesResponse.set_success(false);
     SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
     return true;
@@ -86,41 +140,60 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   if (prevSeq != 0 && 
     (prevSeq >= static_cast<int64_t>(data_.size()) ||
       txn->prevlogterm() != data_[dataIndexMapping_[prevSeq]]->term())) {
+    LOG(INFO) << "AppendEntriesMsg Fail2";
+    LOG(INFO) << "prevSeq: " << prevSeq << " data size: " << static_cast<int64_t>(data_.size());
+    if (prevSeq < dataIndexMapping_.size()){
+      LOG(INFO) << "txn->prevlogterm(): " << txn->prevlogterm() 
+              << " last entry term: " << data_[dataIndexMapping_[prevSeq]]->term();
+    }
     appendEntriesResponse.set_success(false);
     SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
     return true;
   }
   // Implement an entry existing but with a different term
   // delete that entry and all after it
-
+  LOG(INFO) << "Before AppendEntriesMsg Added to Log";
   std::string hash = txn->hash();
   int64_t seq = txn->seq();
   {
     std::unique_lock<std::mutex> lk(mutex_);
     std::string hash = txn->hash();
+    LOG(INFO) << "Before adding to data";
     data_[txn->hash()] = std::move(txn);
+    LOG(INFO) << "After adding to data";
     dataIndexMapping_.push_back(hash);
   }
-  auto leaderCommit = txn->leadercommitindex();
+  LOG(INFO) << "AppendEntriesMsg Added to Log";
+  
+  LOG(INFO) << "leaderCommit: " << leaderCommit;
+  LOG(INFO) << "commitIndex_: " << commitIndex_;
+  LOG(INFO) << "lastApplied_: " << lastApplied_;
+  LOG(INFO) << "static_cast<int64_t>(data_.size()): " << static_cast<int64_t>(data_.size());
   while (leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
+    // assert(false);
+    LOG(INFO) << "AppendEntriesMsg Committing";
     std::unique_ptr<AppendEntries> txnToCommit = nullptr;
     txnToCommit = std::move(data_[dataIndexMapping_[lastApplied_]]);
     commit_(*txnToCommit);
     lastApplied_++;
   }
+  LOG(INFO) << "before commit index check";
   // I don't quite know if this needs to be conditional, but that's how the paper says it
   if (leaderCommit > commitIndex_)
     // not 100% certain if this second variable should be seq
     commitIndex_ = std::min(leaderCommit, seq);
 
+  LOG(INFO) << "after commit index check";
   appendEntriesResponse.set_lastapplied(lastApplied_);
   appendEntriesResponse.set_nextentry(data_.size());
   appendEntriesResponse.set_success(true);
+  LOG(INFO) << "Leader_id: " << leader_id;
   SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
   return true;
 }
 
 bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
+  LOG(INFO) << "ReceiveAppendEntriesResponse";
   auto followerId = response->id();
   if (response->success()) {
     nextIndex_[followerId] = response->nextentry();
