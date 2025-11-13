@@ -137,8 +137,8 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   auto prevSeq = txn->seq() - 1;
   // This should be the same as checking if it has an entry
   // with this prevLogIndex and term
-  if (prevSeq != 0 && 
-    (prevSeq >= static_cast<int64_t>(data_.size()) ||
+  if (prevSeq != 0 && prevSeq > static_cast<int64_t>(dataIndexMapping_.size()) &&
+    (prevSeq >= static_cast<int64_t>(dataIndexMapping_.size()) ||
       txn->prevlogterm() != data_[dataIndexMapping_[prevSeq]]->term())) {
     LOG(INFO) << "AppendEntriesMsg Fail2";
     LOG(INFO) << "prevSeq: " << prevSeq << " data size: " << static_cast<int64_t>(data_.size());
@@ -188,13 +188,17 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   appendEntriesResponse.set_nextentry(data_.size());
   appendEntriesResponse.set_success(true);
   LOG(INFO) << "Leader_id: " << leader_id;
-  SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
+  // SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
+  Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
   return true;
 }
 
 bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
+  if (id_ != 1)
+    return true;
   LOG(INFO) << "ReceiveAppendEntriesResponse";
   auto followerId = response->id();
+  LOG(INFO) << "followerId: " << followerId;
   if (response->success()) {
     nextIndex_[followerId] = response->nextentry();
     matchIndex_[followerId] = response->lastapplied();
