@@ -118,7 +118,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
-  auto leader_id = txn->id();
+  auto leader_id = txn->proposer();
   auto leaderCommit = txn->leadercommitindex();
   LOG(INFO) << "Received AppendEntries to replica id: " << id_;
   LOG(INFO) << "static_cast<int64_t>(data_.size()): " << static_cast<int64_t>(data_.size());
@@ -142,7 +142,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
       txn->prevlogterm() != data_[dataIndexMapping_[prevSeq]]->term())) {
     LOG(INFO) << "AppendEntriesMsg Fail2";
     LOG(INFO) << "prevSeq: " << prevSeq << " data size: " << static_cast<int64_t>(data_.size());
-    if (prevSeq < dataIndexMapping_.size()){
+    if (prevSeq < static_cast<int64_t>(dataIndexMapping_.size())){
       LOG(INFO) << "txn->prevlogterm(): " << txn->prevlogterm() 
               << " last entry term: " << data_[dataIndexMapping_[prevSeq]]->term();
     }
