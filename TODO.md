@@ -37,13 +37,13 @@
    - [x] 基础骨架已就位（请求分流、主领导/term 追踪、心跳线程接口、可注入回调）。
 
 5. **RAFT 内核组件**
-   - **Key 前缀规范**：列出 PBFT 组件当前占用的 LevelDB key 空间（`checkpoint_manager`, `message_manager`, `recovery` 等），设计 `storage::PrefixAllocator` 或等价机制，确保 `raft_state_*`/`raft_log_*`/`raft_snapshot_*` 与旧前缀彻底隔离，并用单元测试覆盖冲突检测。
-   - **日志结构**：实现 `RaftLog` 类，负责内存+持久层（复用 storage 接口，使用前缀区分：`raft_state_`, `raft_log_`, `raft_snapshot_`）。
+   - [x] **Key 前缀规范**：`storage::PrefixAllocator` 负责集中分配/检测前缀冲突，PBFT/RAFT 所有内部前缀（`pbft_*`, `raft_state_*`, `raft_log_*`, `raft_snapshot_*`）已注册，并通过单元测试验证不可重复占用。
+   - [x] **日志结构**：`RaftLog` 负责内存+持久层，提供 `Append`/`Truncate`/`CommitTo`/`LastLogIndex` 等接口，并以 `raft_log_*` 前缀持久化。
      - 支持 `Append`, `Truncate`, `CommitTo`, `LastLogIndex/Term`。
      - 快速加载 LevelDB 前缀以恢复。
-   - **持久化状态**：`RaftPersistentState` 记录 `currentTerm`, `votedFor`, `lastApplied`, `snapshot` 元信息。
-   - **快照管理**：`RaftSnapshotManager`，负责生成快照（从 `TransactionExecutor`/业务存储拉数据）并通过 `InstallSnapshot` 传播；落盘时与 PBFT 的 `checkpoint_manager` 保持互不干扰。
-   - **网络 RPC**：实现 `RaftRpc`，把 `AppendEntries/RequestVote/InstallSnapshot` 通过 `ReplicaCommunicator` 用 `TYPE_CUSTOM_CONSENSUS + user_type` 发送。
+   - [x] **持久化状态**：`RaftPersistentState` 负责序列化 `currentTerm`、`votedFor`、`lastApplied`、`commitIndex` 以及快照元信息。
+   - [x] **快照管理**：`RaftSnapshotManager` 负责按 chunk 写入/读取快照内容，使用专属前缀避免与 PBFT checkpoint 冲突。
+   - [x] **网络 RPC**：`RaftRpc` 封装 `AppendEntries/RequestVote/InstallSnapshot`，统一 `TYPE_CUSTOM_CONSENSUS + user_type` 嵌入和 `ReplicaCommunicator` 发送。
 
 6. **节点角色与状态机**
    - `RaftNode`（或等价类）管理角色转换（Follower/Leader/Candidate）：

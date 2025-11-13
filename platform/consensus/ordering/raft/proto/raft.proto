@@ -88,3 +88,11 @@ message InstallSnapshotResponse {
   uint32 responder_id = 3;
   uint64 applied_index = 4;
 }
+
+message PersistentState {
+  uint64 current_term = 1;
+  uint32 voted_for = 2;
+  uint64 commit_index = 3;
+  uint64 last_applied = 4;
+  SnapshotMetadata snapshot = 5;
+}

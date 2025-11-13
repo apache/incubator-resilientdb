@@ -30,7 +30,11 @@
 #include "executor/common/custom_query.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/raft/proto/raft.pb.h"
+#include "platform/consensus/ordering/raft/raft_log.h"
 #include "platform/consensus/ordering/raft/raft_message_type.h"
+#include "platform/consensus/ordering/raft/raft_persistent_state.h"
+#include "platform/consensus/ordering/raft/raft_rpc.h"
+#include "platform/consensus/ordering/raft/raft_snapshot_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -74,6 +78,15 @@ class ConsensusManagerRaft : public ConsensusManager {
 
   void UpdateLeadership(uint32_t leader_id, uint64_t term);
 
+  RaftLog* GetRaftLog() { return raft_log_.get(); }
+  RaftPersistentState* GetPersistentState() {
+    return persistent_state_.get();
+  }
+  RaftSnapshotManager* GetSnapshotManager() {
+    return snapshot_manager_.get();
+  }
+  RaftRpc* GetRpc() { return raft_rpc_.get(); }
+
  private:
   int HandleClientRequest(std::unique_ptr<Context> context,
                           std::unique_ptr<Request> request);
@@ -99,6 +112,11 @@ class ConsensusManagerRaft : public ConsensusManager {
   std::atomic<bool> heartbeat_running_{false};
   std::atomic<uint32_t> leader_id_{0};
   std::atomic<uint64_t> current_term_{0};
+
+  std::unique_ptr<RaftLog> raft_log_;
+  std::unique_ptr<RaftPersistentState> persistent_state_;
+  std::unique_ptr<RaftSnapshotManager> snapshot_manager_;
+  std::unique_ptr<RaftRpc> raft_rpc_;
 };
 
 }  // namespace resdb

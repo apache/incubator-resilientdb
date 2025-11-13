@@ -36,6 +36,26 @@ ConsensusManagerRaft::ConsensusManagerRaft(
   // RAFT owns its heartbeat cadence via AppendEntries, so disable the default
   // heartbeat thread provided by ConsensusManager.
   config_.SetHeartBeatEnabled(false);
+
+  Storage* storage =
+      transaction_manager_ ? transaction_manager_->GetStorage() : nullptr;
+  if (storage != nullptr) {
+    raft_log_ = std::make_unique<RaftLog>(storage);
+    auto status = raft_log_->LoadFromStorage();
+    if (!status.ok()) {
+      LOG(WARNING) << "Failed to load persisted RAFT log: " << status;
+    }
+    persistent_state_ = std::make_unique<RaftPersistentState>(storage);
+    status = persistent_state_->Load();
+    if (!status.ok()) {
+      LOG(WARNING) << "Failed to load persisted RAFT state: " << status;
+    }
+    snapshot_manager_ = std::make_unique<RaftSnapshotManager>(storage);
+  } else {
+    LOG(WARNING) << "Transaction manager storage unavailable; RAFT state will "
+                    "not be persisted.";
+  }
+  raft_rpc_ = std::make_unique<RaftRpc>(config_, GetBroadCastClient());
 }
 
 ConsensusManagerRaft::~ConsensusManagerRaft() { StopHeartbeatThread(); }
