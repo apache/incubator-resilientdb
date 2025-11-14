@@ -34,6 +34,7 @@
 ## Running the Indexing Project
 TODO
 
+\
 
 ## ResilientDB Installation
 Forked from [this repository](https://github.com/apache/incubator-resilientdb), for more complex setup instructions, please head there.
@@ -60,10 +61,13 @@ sudo sed -i 's/\r//g' ./service/tools/kv/server_tools/start_kv_service.sh
 
 If you're starting from step 1, you'll more likely than not run into bugs. Here are a list of ones we've come across and their fixes:
 
+\
 
 ## ResilientDB Installation Bugs
 ### Carriage returns & running shell files on Windows
 For Windows (and mac?) users, we need to make bash files friendly for your OS. To do this, we can just run a simple character replacement program on any shell files, `sed -i 's/\r//g' YOUR_SHELL_SCRIPT.sh`. We talk about doing this for INSTALL.sh and start_kv_service.sh in the Installation guide, but it will need to be done for any shell file you want to run. For issues with sed, instead run and `dos2unix YOUR_SHELL_SCRIPT.sh`
+
+\
 
 ### Socket Closed
 We found that this is likely an issue of WSL not being allocated enough resources.
@@ -79,12 +83,14 @@ processors=4
 
 (or as close as you can get, in accordance with your device's capabilities)
 
+\
 
 ### Missing Bazel Version
 This looks something like `(specified in /mnt/c/Users/username/Desktop/indexers-ECS265-Fall2025/.bazelversion), but it wasn't found in /usr/bin.`
 
 This goes away if you delete the .bazelversion in your `indexers-ECS265-Fall2025` folder. The file should no longer be there.
 
+\
 
 ### Invalid Filename Extension
 This looks something like `Ignoring file 'bazel.list ' in directory '/etc/apt/sources.list.d/' as it has an invalid filename extension`
@@ -93,6 +99,7 @@ This happens becuase bazel (the build tool used by ResDB) tries to save it's ver
 
 To fix this, go to the repository it listed `cd /etc/apt/sources.list.d`, and look at the files with `ls`. You should see two: `bazel.list` and another weirdly formatted one (it came out as `bazel.list^M` for me). Remove them both using `sudo rm`. You'll need to run INSTALL.sh again after this step.
 
+\
 
 ### Problems with /root/.cache/bazel
 Sometimes when running `start_kv_service.sh`, you may face this problem. It encompasses any errors with /.cache/bazel. We _think_ it's a side-effect of trying to run the script with the wrong version of gcc/g++, causing bazel to cache incorrect information, and use that information even when later operating with gcc/g++ versions.
@@ -101,11 +108,12 @@ First, from the top-level of your repo, run `bazel clean`. Then, remove the enti
 
 Typically, the /.cache/ is safe to delete from, but we don't understand it's function very well. If you have concerns, look into the purpose of the cache on your own time and determine your willingness to perform this step.
 
+\
 
 ### Using the right version of gcc and g++
 If the install script runs, but the start_kv service tool starts to display a ton of errors with what looks like c++ code, you most likely need to change the version of gcc/g++ that bazel is using.
 
-**Basic Fix**
+**Basic Fix**\
 Yoshiki found that gcc and g++ 12 work best with Resilient DB. If you're getting these errors, run the following commands:
 
 ```
@@ -117,7 +125,7 @@ bazel clean
 
 re-run the INSTALL script, then try to run the start_kv service
 
-**Advanced Fix**
+**Advanced Fix**\
 This alone didn't work for me, and I needed to tell my whole Ubuntu distribution to use gcc-12 and g++-12 by default.
 
 Run these commands to let your device know that version 12 is a usable version of gcc. Note that you need to run `sudo apt install gcc-12 g++-12` to get them on your device first.
