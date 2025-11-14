@@ -84,13 +84,22 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier)
   votedFor_ = -1;
   commitIndex_ = 0;
   lastApplied_ = 0;
-  nextIndex_.assign(total_num_, 0);
-  matchIndex_.assign(total_num_, 0);
+  nextIndex_.assign(total_num_ + 1, 0);
+  matchIndex_.assign(total_num_ + 1, 0);
 }
 
 Raft::~Raft() { is_stop_ = true; }
 
 bool Raft::IsStop() { return is_stop_; }
+
+void Raft::Dump() {
+  LOG(INFO) << "=== Replica Dump ===";
+  LOG(INFO) << "id_: " << id_;
+  LOG(INFO) << "currentTerm_: " << currentTerm_;
+  LOG(INFO) << "votedFor_: " << votedFor_;
+  LOG(INFO) << "commitIndex_: " << commitIndex_;
+  LOG(INFO) << "lastApplied_: " << lastApplied_;
+}
 
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
   // LOG(INFO)<<"recv txn:";
@@ -118,6 +127,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
+  Dump();
   auto leader_id = txn->proposer();
   auto leaderCommit = txn->leadercommitindex();
   LOG(INFO) << "Received AppendEntries to replica id: " << id_;
@@ -169,7 +179,9 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   LOG(INFO) << "commitIndex_: " << commitIndex_;
   LOG(INFO) << "lastApplied_: " << lastApplied_;
   LOG(INFO) << "static_cast<int64_t>(data_.size()): " << static_cast<int64_t>(data_.size());
-  while (leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
+  LOG(INFO) << "leaderCommit > commitIndex_: " << (leaderCommit > commitIndex_ ? "true" : "false");
+  LOG(INFO) << "lealastApplied_ + 1 <= static_cast<int64_t>(data_.size()) " << ((lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) ? "true" : "false");
+  while ((leaderCommit != 0) && leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
     // assert(false);
     LOG(INFO) << "AppendEntriesMsg Committing";
     std::unique_ptr<AppendEntries> txnToCommit = nullptr;
@@ -187,6 +199,8 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   appendEntriesResponse.set_lastapplied(lastApplied_);
   appendEntriesResponse.set_nextentry(data_.size());
   appendEntriesResponse.set_success(true);
+  appendEntriesResponse.set_hash(hash);
+  appendEntriesResponse.set_seq(seq);
   LOG(INFO) << "Leader_id: " << leader_id;
   // SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
   Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
@@ -200,6 +214,27 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> r
   auto followerId = response->id();
   LOG(INFO) << "followerId: " << followerId;
   if (response->success()) {
+    {
+      std::unique_lock<std::mutex> lk(mutex_);
+      received_[response->hash()].insert(response->id());
+      auto it = data_.find(response->hash());
+      if (it != data_.end()) {
+        LOG(INFO) << "Transaction: " << response->seq() <<  " has gotten " << received_[response->hash()].size() << " responses";
+        if (static_cast<int64_t>(received_[response->hash()].size()) >= f_ + 1) {
+          commitIndex_ = response->seq();
+
+          // pretty sure this should always be in order with no gaps
+          while (lastApplied_ + 1 <= static_cast<int64_t>(data_.size()) &&
+                  lastApplied_ <= commitIndex_) {
+            LOG(INFO) << "Leader Committing";
+            std::unique_ptr<AppendEntries> txnToCommit = nullptr;
+            txnToCommit = std::move(data_[dataIndexMapping_[lastApplied_]]);
+            commit_(*txnToCommit);
+            lastApplied_++;
+          }
+        }
+      }
+    }
     nextIndex_[followerId] = response->nextentry();
     matchIndex_[followerId] = response->lastapplied();
     return true;

@@ -41,6 +41,8 @@ message AppendEntriesResponse {
   int32 id = 3;
   int32 lastApplied = 4;
   int32 nextEntry = 5;
+  bytes hash = 6;
+  int64 seq = 7;
 }
 
 enum MessageType {

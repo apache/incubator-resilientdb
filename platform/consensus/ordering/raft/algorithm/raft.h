@@ -42,6 +42,7 @@ class Raft : public common::ProtocolBase {
   bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
  private:
   bool IsStop();
+  void Dump();
 
  private:
   std::mutex mutex_;
