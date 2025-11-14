@@ -202,7 +202,11 @@ void RaftNode::StartElection() {
       continue;
     }
     if (raft_rpc_) {
-      raft_rpc_->SendRequestVote(rpc, replica);
+      absl::Status status = raft_rpc_->SendRequestVote(rpc, replica);
+      if (!status.ok()) {
+        LOG(ERROR) << "Failed to send RequestVote to replica " << replica.id()
+                   << ": " << status;
+      }
     }
   }
   ResetElectionDeadline();
@@ -285,7 +289,11 @@ void RaftNode::BroadcastAppendEntries(bool send_all_entries) {
     }
 
     if (raft_rpc_) {
-      raft_rpc_->SendAppendEntries(rpc, replica);
+      absl::Status status = raft_rpc_->SendAppendEntries(rpc, replica);
+      if (!status.ok()) {
+        LOG(ERROR) << "Failed to send AppendEntries to replica "
+                   << replica.id() << ": " << status;
+      }
     }
   }
 }
@@ -309,9 +317,17 @@ void RaftNode::MaybeAdvanceCommitIndex() {
       commit_index_ = index;
     }
   }
-  raft_log_->CommitTo(commit_index_);
+  if (auto status = raft_log_->CommitTo(commit_index_); !status.ok()) {
+    LOG(ERROR) << "Failed to commit log to index " << commit_index_ << ": "
+               << status;
+    return;
+  }
   persistent_state_->SetCommitIndex(commit_index_);
-  persistent_state_->Store();
+  if (auto status = persistent_state_->Store(); !status.ok()) {
+    LOG(ERROR) << "Failed to persist commit index " << commit_index_ << ": "
+               << status;
+    return;
+  }
   ApplyEntries();
 }
 
@@ -340,7 +356,11 @@ void RaftNode::ApplyEntries() {
     lk.lock();
     last_applied_ = index;
     persistent_state_->SetLastApplied(last_applied_);
-    persistent_state_->Store();
+    if (auto status = persistent_state_->Store(); !status.ok()) {
+      LOG(ERROR) << "Failed to persist last applied index " << last_applied_
+                 << ": " << status;
+      return;
+    }
   }
 }
 
@@ -362,7 +382,12 @@ int RaftNode::HandleAppendEntriesRequest(
     response.set_responder_id(self_id_);
     response.set_conflict_index(raft_log_->LastLogIndex() + 1);
     if (auto replica = ReplicaById(envelope.sender_id()); replica && raft_rpc_) {
-      raft_rpc_->SendAppendEntriesResponse(response, *replica);
+      absl::Status status =
+          raft_rpc_->SendAppendEntriesResponse(response, *replica);
+      if (!status.ok()) {
+        LOG(ERROR) << "Failed to send negative AppendEntries response to "
+                   << replica->id() << ": " << status;
+      }
     }
     return 0;
   }
@@ -396,21 +421,31 @@ int RaftNode::HandleAppendEntriesRequest(
     if (request.leader_commit() > commit_index_) {
       commit_index_ = std::min(request.leader_commit(),
                                raft_log_->LastLogIndex());
-      raft_log_->CommitTo(commit_index_);
-      ApplyEntries();
+      absl::Status status = raft_log_->CommitTo(commit_index_);
+      if (!status.ok()) {
+        LOG(ERROR) << "Failed to commit follower log to " << commit_index_
+                   << ": " << status;
+      } else {
+        ApplyEntries();
+      }
     }
     response.set_match_index(raft_log_->LastLogIndex());
   }
 
   if (auto replica = ReplicaById(envelope.sender_id()); replica && raft_rpc_) {
-    raft_rpc_->SendAppendEntriesResponse(response, *replica);
+    absl::Status status =
+        raft_rpc_->SendAppendEntriesResponse(response, *replica);
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to send AppendEntries response to "
+                 << replica->id() << ": " << status;
+    }
   }
   return 0;
 }
 
 int RaftNode::HandleAppendEntriesResponse(
     const raft::AppendEntriesResponse& response) {
-  std::lock_guard<std::mutex> lk(state_mutex_);
+  std::unique_lock<std::mutex> lk(state_mutex_);
   if (response.term() > current_term_) {
     BecomeFollower(response.term(), 0);
     return 0;
@@ -458,7 +493,12 @@ int RaftNode::HandleRequestVoteRequest(
   }
 
   if (auto replica = ReplicaById(envelope.sender_id()); replica && raft_rpc_) {
-    raft_rpc_->SendRequestVoteResponse(response, *replica);
+    absl::Status status =
+        raft_rpc_->SendRequestVoteResponse(response, *replica);
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to send RequestVote response to "
+                 << replica->id() << ": " << status;
+    }
   }
   return 0;
 }
@@ -496,7 +536,12 @@ int RaftNode::HandleInstallSnapshotRequest(
   response.set_success(true);
   response.set_applied_index(request.metadata().last_included_index());
   if (auto replica = ReplicaById(envelope.sender_id()); replica && raft_rpc_) {
-    raft_rpc_->SendInstallSnapshotResponse(response, *replica);
+    absl::Status status =
+        raft_rpc_->SendInstallSnapshotResponse(response, *replica);
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to send InstallSnapshot response to "
+                 << replica->id() << ": " << status;
+    }
   }
   return 0;
 }
@@ -528,7 +573,8 @@ bool RaftNode::IsMajority(uint64_t match_index) const {
   int votes = 1;
   for (const auto& replica : replicas_) {
     if (replica.id() == self_id_) continue;
-    if (match_index_[replica.id()] >= match_index) {
+    auto it = match_index_.find(replica.id());
+    if (it != match_index_.end() && it->second >= match_index) {
       votes++;
     }
   }
@@ -545,7 +591,9 @@ void RaftNode::PersistTermAndVote() {
   }
   persistent_state_->SetCurrentTerm(current_term_);
   persistent_state_->SetVotedFor(voted_for_);
-  persistent_state_->Store();
+  if (auto status = persistent_state_->Store(); !status.ok()) {
+    LOG(ERROR) << "Failed to persist term/vote state: " << status;
+  }
 }
 
 }  // namespace resdb

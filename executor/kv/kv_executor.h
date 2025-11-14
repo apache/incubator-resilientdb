@@ -40,6 +40,7 @@ class KVExecutor : public TransactionManager {
       const std::string& request) override;
   std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& kv_request) override;
+  Storage* GetStorage() override { return storage_.get(); }
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
