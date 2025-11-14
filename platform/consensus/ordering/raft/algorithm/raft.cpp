@@ -181,7 +181,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   LOG(INFO) << "static_cast<int64_t>(data_.size()): " << static_cast<int64_t>(data_.size());
   LOG(INFO) << "leaderCommit > commitIndex_: " << (leaderCommit > commitIndex_ ? "true" : "false");
   LOG(INFO) << "lealastApplied_ + 1 <= static_cast<int64_t>(data_.size()) " << ((lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) ? "true" : "false");
-  while ((leaderCommit != 0) && leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
+  while ((leaderCommit != 0) && leaderCommit > lastApplied_ && lastApplied_ + 1 <= static_cast<int64_t>(data_.size())) {
     // assert(false);
     LOG(INFO) << "AppendEntriesMsg Committing";
     std::unique_ptr<AppendEntries> txnToCommit = nullptr;
