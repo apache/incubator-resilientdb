@@ -49,3 +49,44 @@ This looks something like `Ignoring file 'bazel.list ' in directory '/etc/apt/so
 I believe this happens becuase bazel (the build tool used by ResDB) tries to save it's version into the file `bazel.list\r`, accidentally adding a cairrage return to the end.
 
 To fix this, go to the repository it listed `cd /etc/apt/sources.list.d`, and look at the files with `ls`. You should see two: `bazel.list` and another weirdly formatted one (it came out as `bazel.list^M` for me). Remove them both using `sudo rm`.
+
+#### Using the right version of gcc and g++
+If the install script runs, but the start_kv service tool starts to display a ton of errors with what looks like c++ code, you most likely need to change the version of c++ that bazel is using.
+
+**Basic Fix**
+Yoshiki found that gcc and g++ 12 work best with Resilient DB. If you're getting these errors, run the following commands:
+
+```
+sudo apt install gcc-12 g++-12
+export CC=/usr/bin/gcc-12
+export CXX=/usr/bin/g++-12
+bazel clean
+```
+
+re-run the INSTALL script, then try to run the start_kv service
+
+**Advanced Fix**
+This alone didn't work for me, and I needed to tell my whole Ubuntu distribution to use gcc-12 and g++-12 by default.
+
+Run these commands to let your device know that version 12 is a usable version of gcc. Note that you need to run `sudo apt install gcc-12 g++-12` to get them on your device first.
+
+`sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 90`
+`sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 90`
+
+Note that the last two numbers (90) are an arbitrary priority value. You can set them to whatever you want.
+
+Now run both commands:
+
+`sudo update-alternatives --config gcc`
+`sudo update-alternatives --config g++`
+
+Both should bring up an list of allowed versions of gcc/g++, with a pointer pointing to your Ubuntu's default version of each. For both, select the number associated with version 12.
+
+Verify that you're now using version 12 for both:
+
+`gcc --version`
+`g++ --version`
+
+Re-running the INSTALL and kv_start scripts should work now.
+
+This took me a couple tries to get right, and mistakes with `update-alternatives` were tough to recover from. Uninstalling WSL/Ubuntu then reinstalling it fresh always gets a fresh version of gcc / g++ that works again. Note that this will remove everything in your _Ubuntu_ distro (not everything on your computer)
