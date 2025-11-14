@@ -57,10 +57,12 @@ cc_library(
 cc_library(
     name = "consensus_manager_raft",
     srcs = [
+        "raft_node.cpp",
         "consensus_manager_raft.cpp",
     ],
     hdrs = [
         "consensus_manager_raft.h",
+        "raft_node.h",
         "raft_message_type.h",
     ],
     deps = [

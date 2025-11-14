@@ -56,9 +56,36 @@ ConsensusManagerRaft::ConsensusManagerRaft(
                     "not be persisted.";
   }
   raft_rpc_ = std::make_unique<RaftRpc>(config_, GetBroadCastClient());
+
+  raft_node_ = std::make_unique<RaftNode>(
+      config_, this, transaction_manager_.get(), raft_log_.get(),
+      persistent_state_.get(), snapshot_manager_.get(), raft_rpc_.get());
+
+  SetClientRequestHandler(
+      [this](std::unique_ptr<Context> ctx, std::unique_ptr<Request> req) {
+        return raft_node_->HandleClientRequest(std::move(ctx),
+                                               std::move(req));
+      });
+
+  SetCustomConsensusHandler(
+      [this](std::unique_ptr<Context> ctx, std::unique_ptr<Request> req) {
+        return raft_node_->HandleConsensusMessage(std::move(ctx),
+                                                  std::move(req));
+      });
+
+  SetHeartbeatTask([this]() {
+    if (raft_node_) {
+      raft_node_->HeartbeatTick();
+    }
+  });
 }
 
-ConsensusManagerRaft::~ConsensusManagerRaft() { StopHeartbeatThread(); }
+ConsensusManagerRaft::~ConsensusManagerRaft() {
+  if (raft_node_) {
+    raft_node_->Stop();
+  }
+  StopHeartbeatThread();
+}
 
 int ConsensusManagerRaft::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
@@ -89,6 +116,9 @@ uint32_t ConsensusManagerRaft::GetVersion() {
 
 void ConsensusManagerRaft::Start() {
   ConsensusManager::Start();
+  if (raft_node_) {
+    raft_node_->Start();
+  }
   StartHeartbeatThread();
 }
 

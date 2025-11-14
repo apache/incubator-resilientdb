@@ -50,6 +50,7 @@
      - 计时器（选举、心跳），用 `absl::Time` 或 `std::chrono`。
      - 投票逻辑、日志一致性检查、commit index 推进。
      - 和 `TransactionExecutor` 协作：leader 将客户端请求写成日志条目，达到 quorum 后调用 `TransactionExecutor::Commit`。
+   - [x] `RaftNode` 骨架已实现（角色切换、选举/心跳线程、AppendEntries/RequestVote/InstallSnapshot 处理、日志复制、commit 推进并驱动 `TransactionManager`）。
 
 7. **恢复/快照集成**
    - 扩展 `platform/consensus/recovery/recovery.cpp`：`TYPE_CUSTOM_CONSENSUS` 分支根据 `user_type` 解析 RAFT 日志/快照。

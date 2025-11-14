@@ -30,6 +30,7 @@
 #include "executor/common/custom_query.h"
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/raft/proto/raft.pb.h"
+#include "platform/consensus/ordering/raft/raft_node.h"
 #include "platform/consensus/ordering/raft/raft_log.h"
 #include "platform/consensus/ordering/raft/raft_message_type.h"
 #include "platform/consensus/ordering/raft/raft_persistent_state.h"
@@ -117,6 +118,7 @@ class ConsensusManagerRaft : public ConsensusManager {
   std::unique_ptr<RaftPersistentState> persistent_state_;
   std::unique_ptr<RaftSnapshotManager> snapshot_manager_;
   std::unique_ptr<RaftRpc> raft_rpc_;
+  std::unique_ptr<RaftNode> raft_node_;
 };
 
 }  // namespace resdb

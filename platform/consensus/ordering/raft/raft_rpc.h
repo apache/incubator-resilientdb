@@ -37,15 +37,22 @@ class RaftRpc {
   absl::Status BroadcastAppendEntries(const raft::AppendEntriesRequest& request);
   absl::Status SendAppendEntries(const raft::AppendEntriesRequest& request,
                                  const ReplicaInfo& replica);
+  absl::Status SendAppendEntriesResponse(
+      const raft::AppendEntriesResponse& response, const ReplicaInfo& replica);
 
   absl::Status BroadcastRequestVote(const raft::RequestVoteRequest& request);
   absl::Status SendRequestVote(const raft::RequestVoteRequest& request,
                                const ReplicaInfo& replica);
+  absl::Status SendRequestVoteResponse(const raft::RequestVoteResponse& response,
+                                       const ReplicaInfo& replica);
 
   absl::Status BroadcastInstallSnapshot(
       const raft::InstallSnapshotRequest& request);
   absl::Status SendInstallSnapshot(
       const raft::InstallSnapshotRequest& request,
+      const ReplicaInfo& replica);
+  absl::Status SendInstallSnapshotResponse(
+      const raft::InstallSnapshotResponse& response,
       const ReplicaInfo& replica);
 
  private:
@@ -61,4 +68,3 @@ class RaftRpc {
 };
 
 }  // namespace resdb
-

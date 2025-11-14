@@ -37,6 +37,11 @@ absl::Status RaftRpc::SendAppendEntries(
   return Send(request, raft::RAFT_APPEND_ENTRIES_REQUEST, &replica);
 }
 
+absl::Status RaftRpc::SendAppendEntriesResponse(
+    const raft::AppendEntriesResponse& response, const ReplicaInfo& replica) {
+  return Send(response, raft::RAFT_APPEND_ENTRIES_RESPONSE, &replica);
+}
+
 absl::Status RaftRpc::BroadcastRequestVote(
     const raft::RequestVoteRequest& request) {
   return Send(request, raft::RAFT_REQUEST_VOTE_REQUEST, nullptr);
@@ -47,6 +52,11 @@ absl::Status RaftRpc::SendRequestVote(
   return Send(request, raft::RAFT_REQUEST_VOTE_REQUEST, &replica);
 }
 
+absl::Status RaftRpc::SendRequestVoteResponse(
+    const raft::RequestVoteResponse& response, const ReplicaInfo& replica) {
+  return Send(response, raft::RAFT_REQUEST_VOTE_RESPONSE, &replica);
+}
+
 absl::Status RaftRpc::BroadcastInstallSnapshot(
     const raft::InstallSnapshotRequest& request) {
   return Send(request, raft::RAFT_INSTALL_SNAPSHOT_REQUEST, nullptr);
@@ -55,6 +65,12 @@ absl::Status RaftRpc::BroadcastInstallSnapshot(
 absl::Status RaftRpc::SendInstallSnapshot(
     const raft::InstallSnapshotRequest& request, const ReplicaInfo& replica) {
   return Send(request, raft::RAFT_INSTALL_SNAPSHOT_REQUEST, &replica);
+}
+
+absl::Status RaftRpc::SendInstallSnapshotResponse(
+    const raft::InstallSnapshotResponse& response,
+    const ReplicaInfo& replica) {
+  return Send(response, raft::RAFT_INSTALL_SNAPSHOT_RESPONSE, &replica);
 }
 
 absl::Status RaftRpc::Send(const google::protobuf::Message& payload,
