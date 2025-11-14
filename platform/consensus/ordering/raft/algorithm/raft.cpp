@@ -202,8 +202,8 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   appendEntriesResponse.set_hash(hash);
   appendEntriesResponse.set_seq(seq);
   LOG(INFO) << "Leader_id: " << leader_id;
-  // SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
-  Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
+  SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
+  // Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
   return true;
 }
 
