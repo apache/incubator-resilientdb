@@ -45,7 +45,8 @@ ecosystem/
 │   └── orbit/                       # Orbit deployment tool
 └── tools/                           # Development and operational tools
     ├── resvault/                    # ResVault tool
-    └── create-resilient-app/        # App scaffolding tool
+    ├── create-resilient-app/        # App scaffolding tool
+    └── drawing-lib/                 # Drawing library tool
 ```
 
 ## Clone Without Ecosystem
