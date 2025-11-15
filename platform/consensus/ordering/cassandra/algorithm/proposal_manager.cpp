@@ -109,6 +109,20 @@ Block* ProposalManager::GetBlockSnap(const std::string& hash, int sender) {
   return it->second.get();
 }
 
+int ProposalManager::GetBlockNum(const std::string& hash, int sender) {
+  std::unique_lock<std::mutex> lk(p_mutex_);
+  auto it = pending_blocks_[sender].find(hash);
+  if (it == pending_blocks_[sender].end()) {
+    assert(1==0);
+  }
+  assert(it != pending_blocks_[sender].end());
+  const auto& block = it->second;
+  //LOG(ERROR)<<"get block: sender:"<<sender<<" id:"<<block->local_id()<<" removed";
+  int num = block->data().transaction_size();
+  LOG(ERROR)<<"get block: sender:"<<sender<<" id:"<<block->local_id()<<" trans num:"<<num;
+  return num;
+}
+
 std::unique_ptr<Block> ProposalManager::GetBlock(const std::string& hash,
                                                  int sender) {
   bool need_wait = false;
@@ -272,7 +286,7 @@ void ProposalManager::ObtainHistoryProposal(const Proposal* p,
     // LOG(ERROR)<<"Obtain next height:"<<height<<"
     // proposer:"<<next_p->header().proposer_id();
     //  LOG(ERROR)<<"ask height:"<<current_height<<" current height:"<<height;
-    if (current_height - height > 5) {
+    if (current_height - height > 105) {
       return;
     }
     if (v.find(std::make_pair(next_p->header().proposer_id(),
@@ -387,7 +401,7 @@ void ProposalManager::RemoveLocalProposal(const std::string& hash) {
 
 int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   std::map<std::pair<int, int>, std::unique_ptr<Proposal>> list;
-  //LOG(ERROR) << "verify resp proposal size:" << resp.proposal_size();
+  LOG(ERROR) << "verify resp proposal size:" << resp.proposal_size();
   for (auto& it : tmp_proposal_) {
     std::unique_ptr<Proposal> p = std::move(it.second);
     list[std::make_pair(p->header().height(), p->header().proposer_id())] =
@@ -397,8 +411,7 @@ int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   tmp_proposal_.clear();
 
   for (const Proposal& p : resp.proposal()) {
-    // LOG(ERROR)<<"verify resp proposal proposer:"<<p.header().proposer_id()<<"
-    // id:"<<p.header().proposal_id();
+    LOG(ERROR)<<"verify resp proposal proposer:"<<p.header().proposer_id()<<" id:"<<p.header().proposal_id();
     if (list.find(std::make_pair(p.header().height(),
                                  p.header().proposer_id())) != list.end()) {
       continue;
@@ -411,12 +424,11 @@ int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   while (!list.empty()) {
     auto it = list.begin();
     int ret = VerifyProposalHistory(it->second.get());
-    // LOG(ERROR)<<"verify propser:"<<it->second->header().proposer_id()<<"
-    // height:"<<it->second->header().height()<<" ret:"<<ret;
+     LOG(ERROR)<<"verify propser:"<<it->second->header().proposer_id()<<" height:"<<it->second->header().height()<<" ret:"<<ret;
     if (ret == 0) {
       ReleaseTmpProposal(*it->second);
-      //  LOG(ERROR)<<"proposal from:"<<it->second->header().proposer_id()
-      // <<" id:"<<it->second->header().proposal_id()<<" activate";
+        LOG(ERROR)<<"proposal from:"<<it->second->header().proposer_id()
+       <<" id:"<<it->second->header().proposal_id()<<" activate";
     } else {
       fail_list.push_back(std::move(it->second));
     }

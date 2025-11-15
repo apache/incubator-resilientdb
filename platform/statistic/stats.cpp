@@ -371,6 +371,10 @@ void Stats::MonitorGlobal() {
                                         last_commit_interval_time) /
                         (commit_interval_num - last_commit_interval_num) / 1000000.0
 
+            << " commit_txn :"
+                      << (commit_txn_time - last_commit_txn_time) 
+
+
               << " commit_txn latency :"
                  << static_cast<double>(commit_txn_time -
                                         last_commit_txn_time) /

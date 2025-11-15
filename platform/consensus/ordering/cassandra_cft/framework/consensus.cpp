@@ -31,7 +31,7 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
-namespace cassandra_cft {
+namespace cassandra {
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
@@ -42,18 +42,20 @@ Consensus::Consensus(const ResDBConfig& config,
   Init();
 
   start_ = 0;
+
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    cassandra_cft_ = std::make_unique<Cassandra>(
+    cassandra_ = std::make_unique<cassandra_recv::Cassandra>(
         config_.GetSelfInfo().id(), f,
-                                   total_replicas, config.GetConfigData().failure_mode());
+                                   total_replicas, config_.GetConfigData().block_size(), 
+                                   GetSignatureVerifier());
 
-    InitProtocol(cassandra_cft_.get());
+    InitProtocol(cassandra_.get());
 
 
-    cassandra_cft_->SetPrepareFunction([&](const Transaction& msg) { 
+    cassandra_->SetPrepareFunction([&](const Transaction& msg) { 
       return Prepare(msg); 
     });
   }
@@ -61,7 +63,26 @@ Consensus::Consensus(const ResDBConfig& config,
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   //LOG(ERROR)<<"receive commit:"<<request->type()<<" "<<MessageType_Name(request->user_type());
-  if (request->user_type() == MessageType::NewProposal) {
+  if (request->user_type() == MessageType::NewBlocks) {
+    std::unique_ptr<Block> block = std::make_unique<Block>();
+    if (!block->ParseFromString(request->data())) {
+      assert(1 == 0);
+      LOG(ERROR) << "parse proposal fail";
+      return -1;
+    }
+    cassandra_->ReceiveBlock(std::move(block));
+    return 0;
+  } else if (request->user_type() == MessageType::CMD_BlockACK) {
+    std::unique_ptr<BlockACK> block_ack = std::make_unique<BlockACK>();
+    if (!block_ack->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    cassandra_->ReceiveBlockACK(std::move(block_ack));
+    return 0;
+
+  } else if (request->user_type() == MessageType::NewProposal) {
     // LOG(ERROR)<<"receive proposal:";
     std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
     if (!proposal->ParseFromString(request->data())) {
@@ -69,10 +90,38 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       assert(1 == 0);
       return -1;
     }
-    if (!cassandra_cft_->ReceiveProposal(std::move(proposal))) {
+    if (!cassandra_->ReceiveProposal(std::move(proposal))) {
       return -1;
     }
     return 0;
+  } else if (request->user_type() == MessageType::CMD_BlockQuery) {
+    std::unique_ptr<BlockQuery> block = std::make_unique<BlockQuery>();
+    if (!block->ParseFromString(request->data())) {
+      assert(1 == 0);
+      LOG(ERROR) << "parse proposal fail";
+      return -1;
+    }
+    cassandra_->SendBlock(*block);
+    return 0;
+  } else if (request->user_type() == MessageType::CMD_ProposalQuery) {
+    std::unique_ptr<ProposalQuery> query =
+      std::make_unique<ProposalQuery>();
+    if (!query->ParseFromString(request->data())) {
+      assert(1 == 0);
+      LOG(ERROR) << "parse proposal fail";
+      return -1;
+    }
+    cassandra_->SendProposal(*query);
+  } else if (request->user_type() ==
+      MessageType::CMD_ProposalQueryResponse) {
+    std::unique_ptr<ProposalQueryResp> resp =
+      std::make_unique<ProposalQueryResp>();
+    if (!resp->ParseFromString(request->data())) {
+      assert(1 == 0);
+      LOG(ERROR) << "parse proposal fail";
+      return -1;
+    }
+    cassandra_->ReceiveProposalQueryResp(*resp);
   } 
   return 0;
 }
@@ -83,7 +132,7 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
   //LOG(ERROR)<<"receive txn";
-  return cassandra_cft_->ReceiveTransaction(std::move(txn));
+  return cassandra_->ReceiveTransaction(std::move(txn));
 }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
@@ -119,5 +168,5 @@ int Consensus::Prepare(const Transaction& txn) {
 }
 
 
-}  // namespace cassandra_cft
+}  // namespace cassandra
 }  // namespace resdb

@@ -33,9 +33,18 @@
 namespace resdb {
 namespace multipaxos {
 
+std::unique_ptr<MultiPaxosPerformanceManager> Consensus::GetPerformanceManager() {
+        return config_.IsPerformanceRunning()
+        ? std::make_unique<MultiPaxosPerformanceManager>(
+          config_, GetBroadCastClient(), GetSignatureVerifier())
+        : nullptr;
+}
+
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)) {
+
+  SetPerformanceManager(GetPerformanceManager());
 
   Init();
   failure_mode_ = config.GetConfigData().failure_mode();
@@ -47,7 +56,8 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key()
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
-    multipaxos_= std::make_unique<MultiPaxos>(config_.GetSelfInfo().id(), f, total_replicas, GetSignatureVerifier());
+    multipaxos_= std::make_unique<MultiPaxos>(config_.GetSelfInfo().id(), f, total_replicas, 
+    config_.GetConfigData().block_size(), GetSignatureVerifier());
     InitProtocol(multipaxos_.get());
   }
 }
@@ -87,6 +97,15 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       return -1;
     }
     //multipaxos_->ReceivePropose(std::move(p));
+  }
+  else if(request->user_type() == MessageType::Accept) {
+    std::unique_ptr<Proposal> p = std::make_unique<Proposal>();
+    if (!p->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    multipaxos_->ReceiveAccept(std::move(p));
   }
   else if(request->user_type() == MessageType::Learn) {
     std::unique_ptr<Proposal> p = std::make_unique<Proposal>();

@@ -17,7 +17,7 @@ namespace tusk {
 
 class Tusk : public common::ProtocolBase {
  public:
-  Tusk(int id, int f, int total_num, SignatureVerifier* verifier);
+  Tusk(int id, int f, int total_num, int block_size, SignatureVerifier* verifier);
   ~Tusk();
 
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);

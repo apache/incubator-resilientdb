@@ -67,8 +67,8 @@ cc_test(
 )
 
 cc_test(
-    name = "cassandra_cft_test",
-    srcs = ["cassandra_cft_test.cpp"],
+    name = "cassandra_test",
+    srcs = ["cassandra_test.cpp"],
     deps = [
         ":cassandra",
         "//common/test:test_main",

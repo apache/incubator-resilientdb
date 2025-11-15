@@ -49,7 +49,8 @@ Consensus::Consensus(const ResDBConfig& config,
           .type() != CertificateKeyInfo::CLIENT) {
     cassandra_ = std::make_unique<cassandra_recv::Cassandra>(
         config_.GetSelfInfo().id(), f,
-                                   total_replicas, GetSignatureVerifier());
+                                   total_replicas, config_.GetConfigData().block_size(), 
+                                   GetSignatureVerifier());
 
     InitProtocol(cassandra_.get());
 

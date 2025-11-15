@@ -1,7 +1,7 @@
 
 syntax = "proto3";
 
-package resdb.cassandra_cft;
+package resdb.cassandra;
 
 message Transaction{
   int32 id = 1;
@@ -29,18 +29,14 @@ message History {
   int32 id = 4;
 }
 
-message WeakProposal {
-  repeated bytes hash = 1;
-}
-
 message Proposal {
   Header header = 1;
-  repeated Transaction transactions = 2;
-  uint64 create_time = 3;
-  repeated NodeInfo node_info = 4;
-  repeated History history = 5;
-  int32 sender = 6;
-  NodeInfo vote = 7;
+  repeated History history = 2;
+  int32 nonce = 3;
+  repeated Transaction transactions = 4;
+  uint64 create_time = 5;
+  repeated Block block = 6;
+  repeated Block sub_block = 8;
 };
 
 enum MessageType {
@@ -117,8 +113,3 @@ message ProposalResponse {
   int32 leader = 2;
 }
 
-
-message NodeInfo {
-  int32 round = 1;
-  int32 proposer = 2;
-}

@@ -18,6 +18,11 @@ class ProposalGraph {
     commit_callback_ = func;
   }
 
+  inline void SetBlockNumCallBack(
+    std::function<int(const std::string& hash, int id, int sender)> func) {
+    num_callback_ = func;
+  }
+
   int AddProposal(const Proposal& proposal);
   void AddProposalOnly(const Proposal& proposal);
 
@@ -64,6 +69,7 @@ class ProposalGraph {
   void TryUpgradeHeight(int height);
 
   void Commit(const std::string& hash);
+  int GetBlockNum(const std::string& hash, int local_id, int proposer_id);
 
  private:
   Proposal latest_commit_;
@@ -76,6 +82,7 @@ class ProposalGraph {
   int current_height_;
   uint32_t f_;
   std::function<void(const Proposal&)> commit_callback_;
+  std::function<int(const std::string&id, int, int&)> num_callback_;
   std::map<int, std::set<int>> pending_header_;
   std::map<int, std::map<std::string, std::vector<std::unique_ptr<Proposal>>>>
       not_found_proposal_;
@@ -84,6 +91,7 @@ class ProposalGraph {
   int id_;
   std::map<std::string, Block> new_blocks_;
   int total_num_;
+  std::set<std::pair<int,int> > check_;
 };
 
 }  // namespace cassandra_recv

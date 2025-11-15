@@ -32,5 +32,6 @@ enum MessageType {
   Learn = 2;
   Query = 3;
   Redirect = 4;
+  Accept = 5;
 };
 

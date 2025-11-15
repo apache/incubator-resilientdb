@@ -31,7 +31,7 @@
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
-namespace cassandra_cft {
+namespace cassandra {
 
 class Consensus : public common::Consensus {
  public:
@@ -48,12 +48,12 @@ class Consensus : public common::Consensus {
   int Prepare(const Transaction& txn);
 
  protected:
-  std::unique_ptr<Cassandra> cassandra_cft_;
+  std::unique_ptr<cassandra_recv::Cassandra> cassandra_;
   Stats* global_stats_;
   int64_t start_;
   std::mutex mutex_;
   int send_num_[200];
 };
 
-}  // namespace cassandra_cft
+}  // namespace cassandra
 }  // namespace resdb

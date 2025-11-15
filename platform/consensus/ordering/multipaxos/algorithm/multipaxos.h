@@ -12,13 +12,14 @@ namespace multipaxos {
 
 class MultiPaxos: public common::ProtocolBase {
  public:
-  MultiPaxos(int id, int f, int total_num, SignatureVerifier* verifier );
+  MultiPaxos(int id, int f, int total_num, int block_size, SignatureVerifier* verifier );
   ~MultiPaxos();
 
   //  recv txn -> send block with links -> rec block ack -> send block with certs
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   bool ReceiveProposal(std::unique_ptr<Proposal> proposal);
   bool ReceiveLearn(std::unique_ptr<Proposal> proposal);
+    bool ReceiveAccept(std::unique_ptr<Proposal> proposal);
 
 
   private:
@@ -34,6 +35,8 @@ class MultiPaxos: public common::ProtocolBase {
     std::unique_ptr<Proposal> GetCommitData();
     bool Wait() ;
 
+  bool WaitPropose(int round);
+
 
  private:
   LockFreeQueue<Transaction> txns_;
@@ -48,12 +51,14 @@ class MultiPaxos: public common::ProtocolBase {
   std::mutex mutex_;
   std::map<int,  std::map<int, std::unique_ptr<Proposal>> > receive_;
 
-  std::mutex learn_mutex_;
+  std::mutex learn_mutex_, propose_mutex_;
   std::map<int,  std::set<int>> learn_receive_;
+  std::map<int,  std::set<int>> accept_receive_;
+  std::map<int, int> can_propose_;
 
   std::mutex n_mutex_;
   std::map<int, std::unique_ptr<Proposal> > commit_data_;
-  std::condition_variable vote_cv_;
+  std::condition_variable vote_cv_, propose_cv_;
   int start_seq_;
   int master_;
 };

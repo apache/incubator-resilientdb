@@ -21,7 +21,7 @@ echo "get cofigfile:"$config_file
 ${BAZEL_WORKSPACE_PATH}/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
 done
 
-sleep 60
+sleep 420
 
 echo "benchmark done"
 count=1

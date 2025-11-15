@@ -29,6 +29,7 @@
 #include "platform/consensus/execution/transaction_executor.h"
 #include "platform/consensus/ordering/multipaxos/algorithm/multipaxos.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
+#include "platform/consensus/ordering/multipaxos/framework/performance_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -45,6 +46,7 @@ class Consensus : public common::Consensus{
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const Transaction& txn);
 
+  std::unique_ptr<MultiPaxosPerformanceManager> GetPerformanceManager();
   private:
     std::unique_ptr<MultiPaxos> multipaxos_;
     bool failure_mode_ = false;

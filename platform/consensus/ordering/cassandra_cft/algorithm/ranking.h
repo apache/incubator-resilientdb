@@ -1,12 +1,14 @@
 #pragma once
 
 namespace resdb {
-namespace cassandra_cft {
+namespace cassandra {
+namespace cassandra_recv {
 
 class Ranking {
  public:
   int GetRank(int proposer_id);
 };
 
-}  // namespace cassandra_cft
+}  // namespace cassandra_recv
+}  // namespace cassandra
 }  // namespace resdb

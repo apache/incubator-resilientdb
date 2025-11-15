@@ -142,7 +142,7 @@ bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 
 void RCC::AsyncSend() {
 
-  int limit = 8;
+  int limit = 1000;
   bool start = false;
   int64_t last_time = 0;
 
@@ -264,11 +264,13 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
         status,
         [&](const google::protobuf::Message&, int received_count,
             std::atomic<TransactionStatue>* s) {
-          if (status == ProposalType::NewMsg || received_count >= 2 * f_ + 1) {
+          if (status == ProposalType::NewMsg || received_count >= total_num_) {
+          //if (status == ProposalType::NewMsg || received_count >= 2 * f_ + 1) {
             switch (status) {
               case ProposalType::NewMsg:
                 if (*s == TransactionStatue::None) {
                   *s = TransactionStatue::READY_PREPARE;
+                  //*s = TransactionStatue::READY_EXECUTE;
                   changed = true;
                 }
                 break;
@@ -407,6 +409,7 @@ void RCC::UpgradeState(Proposal* proposal) {
   switch (proposal->header().status()) {
     case ProposalType::NewMsg:
       proposal->mutable_header()->set_status(ProposalType::Prepared);
+      //proposal->mutable_header()->set_status(ProposalType::Ready_execute);
       return;
     case ProposalType::Prepared:
       proposal->mutable_header()->set_status(ProposalType::Commit);

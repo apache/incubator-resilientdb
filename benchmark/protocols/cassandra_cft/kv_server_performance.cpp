@@ -34,7 +34,7 @@
 #include "proto/kv/kv.pb.h"
 
 using namespace resdb;
-using namespace resdb::cassandra_cft;
+using namespace resdb::cassandra;
 using namespace resdb::storage;
 
 void ShowUsage() {

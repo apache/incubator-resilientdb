@@ -8,11 +8,12 @@
 #include "platform/statistic/stats.h"
 
 namespace resdb {
-namespace cassandra_cft {
+namespace cassandra {
+namespace cassandra_recv {
 
 class ProposalGraph {
  public:
-  ProposalGraph(int fault_num);
+  ProposalGraph(int fault_num, int id,int total_num);
   inline void SetCommitCallBack(std::function<void(const Proposal&)> func) {
     commit_callback_ = func;
   }
@@ -33,6 +34,7 @@ class ProposalGraph {
                                                      const std::string& hash);
 
   std::vector<Proposal*> GetNewProposals(int height);
+  std::vector<Block> GetNewBlocks();
 
  private:
   struct NodeInfo {
@@ -79,7 +81,12 @@ class ProposalGraph {
       not_found_proposal_;
   std::map<std::string, Proposal*> new_proposals_;
   Stats* global_stats_;
+  int id_;
+  std::map<std::string, Block> new_blocks_;
+  int total_num_;
+  int cft_;
 };
 
-}  // namespace cassandra_cft
+}  // namespace cassandra_recv
+}  // namespace cassandra
 }  // namespace resdb

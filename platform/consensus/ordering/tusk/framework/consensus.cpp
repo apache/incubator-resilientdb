@@ -46,7 +46,7 @@ TuskConsensus::TuskConsensus(const ResDBConfig& config,
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
     tusk_ = std::make_unique<Tusk>(config_.GetSelfInfo().id(), f,
-                                   total_replicas, GetSignatureVerifier());
+                                   total_replicas, config_.GetConfigData().block_size(), GetSignatureVerifier());
 
     tusk_->SetSingleCallFunc(
         [&](int type, const google::protobuf::Message& msg, int node_id) {

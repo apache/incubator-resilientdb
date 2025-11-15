@@ -46,6 +46,7 @@ message ResConfigData{
 
   optional int32 duplicate_check_frequency_useconds = 22;
   optional bool failure_mode = 23;
+  optional int32 block_size = 24;
 }
 
 message ReplicaStates {

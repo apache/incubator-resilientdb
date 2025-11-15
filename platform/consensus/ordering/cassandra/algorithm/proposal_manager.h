@@ -44,6 +44,8 @@ class ProposalManager {
 
   int VerifyProposal(const ProposalQueryResp& resp);
 
+  int GetBlockNum(const std::string& hash, int sender);
+
  private:
   void ObtainHistoryProposal(const Proposal* p,
                              std::set<std::pair<int, int>>& v,

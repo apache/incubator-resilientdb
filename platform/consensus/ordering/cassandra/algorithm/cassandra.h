@@ -18,7 +18,7 @@ namespace cassandra_recv {
 
 class Cassandra: public common::ProtocolBase {
  public:
-  Cassandra(int id, int f, int total_num, SignatureVerifier* verifier);
+  Cassandra(int id, int f, int total_num, int block_size, SignatureVerifier* verifier);
   ~Cassandra();
 
   void CheckBlock(const std::string& hash, int local_id);
@@ -36,7 +36,7 @@ class Cassandra: public common::ProtocolBase {
   void AskBlock(const Block& block);
   void SendBlock(const BlockQuery& block);
 
-  void AskProposal(const Proposal& proposal);
+  void AskProposal(const Proposal& proposal, bool is_pre = false);
   void SendProposal(const ProposalQuery& query);
   void ReceiveProposalQueryResp(const ProposalQueryResp& resp);
   void PrepareProposal(const Proposal& p);
