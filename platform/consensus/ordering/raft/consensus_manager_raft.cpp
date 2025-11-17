@@ -33,9 +33,8 @@ ConsensusManagerRaft::ConsensusManagerRaft(
     : ConsensusManager(config),
       transaction_manager_(std::move(executor)),
       query_executor_(std::move(query_executor)) {
-  // RAFT owns its heartbeat cadence via AppendEntries, so disable the default
-  // heartbeat thread provided by ConsensusManager.
-  config_.SetHeartBeatEnabled(false);
+  // Keep the base ConsensusManager heartbeat enabled so certificate exchange
+  // continues to work; RAFT's AppendEntries cadence is handled separately.
 
   Storage* storage =
       transaction_manager_ ? transaction_manager_->GetStorage() : nullptr;
