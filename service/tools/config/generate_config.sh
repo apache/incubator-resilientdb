@@ -89,4 +89,3 @@ python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json
 mv server.config.json ${output_path}/server/server.config
 mv client.config ${output_path}/interface/service.config
 echo "config done:" ${output_path}/server/server.config
-
