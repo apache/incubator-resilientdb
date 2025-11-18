@@ -1,21 +1,22 @@
 package(default_visibility = ["//visibility:public"])
 
-cc_binary(
-    name = "learner",
+cc_library(
+    name = "learner_lib",
     srcs = [
         "learner.cpp",
-        "learner_main.cpp",
-        "learner.h",
     ],
+    hdrs = ["learner.h"],
     deps = [
-        "//platform/config:resdb_config_utils",
-        "//common:comm",
-
-        "//platform/networkstrate:consensus_manager",
-        "//platform/networkstrate:replica_communicator",
-
+        "//common:json",
+        "//platform/common/network:tcp_socket",
         "//platform/proto:resdb_cc_proto",
-        "//platform/proto:replica_info_cc_proto",
     ],
 )
 
+cc_binary(
+    name = "learner",
+    srcs = ["learner_main.cpp"],
+    deps = [
+        ":learner_lib",
+    ],
+)

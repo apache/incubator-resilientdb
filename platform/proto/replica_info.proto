@@ -58,12 +58,16 @@ message ResConfigData{
   optional bool enable_resview = 23;
   optional bool enable_faulty_switch = 24;
 
-// for hotstuff.
+  // for hotstuff.
   optional bool use_chain_hotstuff = 9;
 
   optional int32 max_client_complaint_num = 21;
 
   optional int32 duplicate_check_frequency_useconds = 22;
+
+  // learner
+  optional int32 block_size = 33;
+  repeated ReplicaInfo learner_info = 34;
 }
 
 message ReplicaStates {

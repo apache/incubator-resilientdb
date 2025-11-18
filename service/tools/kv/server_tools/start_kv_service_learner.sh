@@ -23,11 +23,11 @@ SERVER_PATH=./bazel-bin/service/kv/kv_service
 SERVER_CONFIG=service/tools/config/server/server.config
 WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
-LEARNER_PATH=./bazel-bin/src/learner/learner
-LEARNER_CONFIG=$PWD/learner/learner.config
+LEARNER_PATH=./bazel-bin/platform/learner/learner
+LEARNER_CONFIG=$PWD/platform/learner/learner.config
 
 # start both builds
-bazel build //learner:learner $@
+bazel build //platform/learner:learner $@
 bazel build //service/kv:kv_service $@
 
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > logs/server0.log &

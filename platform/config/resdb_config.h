@@ -121,9 +121,11 @@ class ResDBConfig {
   uint32_t GetViewchangeCommitTimeout() const;
   void SetViewchangeCommitTimeout(uint64_t timeout_ms);
 
-  // learner block_size functions
+  // learner 
   int GetBlockSize() const { return block_size_; }
   void SetBlockSize(int bs) { block_size_ = bs; }
+  const std::vector<ReplicaInfo>& GetLearnerInfos() const;
+  void AddLearnerInfo(const ReplicaInfo&);
   
  private:
   ResConfigData config_data_;
@@ -154,6 +156,7 @@ class ResDBConfig {
 
   // learner
   uint32_t block_size_ = 100;
+  std::vector<ReplicaInfo> learners_;
 };
 
 }  // namespace resdb
