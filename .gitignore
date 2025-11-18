@@ -26,4 +26,5 @@ service/tools/config/server/server.config
 service/tools/config/interface/service.config
 service/tools/config/server.config
 service/tools/data/cert/*
+**/*AGENTS.md
 
