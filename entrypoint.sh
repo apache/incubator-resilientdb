@@ -31,6 +31,8 @@ if [ "$1" = "-w" ]; then
     watch -n 1 tail -n "$lines" logs/*.log
 elif [ "$1" = "-l" ]; then
     tail -f logs/learner.log
+elif [ "$1" = "-a" ]; then
+    tail -f logs/*.log
 else
     tail -f /dev/null
 fi
