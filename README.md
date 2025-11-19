@@ -29,7 +29,7 @@
 1. [Running the Indexing Project](#Running-the-Indexing-Project)
 2. [ResilientDB Installation](#ResilientDB-Installation)
 3. [ResilientDB Installation Bugs](#ResilientDB-Installation-Bugs)
-
+4. [How to Run ResDB-ORM](#How-to-Run-ResDB-ORM)
 
 ## Running the Indexing Project
 TODO
@@ -183,3 +183,55 @@ g++ --version
 Re-running the INSTALL and kv_start scripts should work now.
 
 This took me a couple tries to get right, and mistakes with `update-alternatives` were tough to recover from. Uninstalling WSL/Ubuntu then reinstalling it fresh always gets a fresh version of gcc / g++ that works again. Note that this will remove everything in your _Ubuntu_ distro (not everything on your computer)
+
+## How to Run ResDB-ORM
+
+To run ResDB-ORM, you must first start the backend services (**KV Service** and **GraphQL Server**) and then connect to them using **ResDB-ORM**.
+
+### Step 1: Start the KV Service
+Run the following script in your ResilientDB directory:
+```bash
+./service/tools/kv/server_tools/start_kv_service.sh
+```
+
+### Step 2: Start the GraphQL Server
+Open a new terminal tab, then setup and start the GraphQL server:
+(1) Clone the repository and navigate into it:
+```bash
+git clone [https://github.com/apache/incubator-resilientdb-graphql.git](https://github.com/apache/incubator-resilientdb-graphql.git)
+cd incubator-resilientdb-graphql
+```
+(2) Create and activate a virtual environment:
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+```
+(3) Build and run the service:
+```bash
+bazel build service/http_server:crow_service_main
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
+```
+***Important:*** Check the first line of the startup log and copy the displayed URL (e.g., ```http://0.0.0.0:18000```). You will need this for the configuration step.
+
+### Step 3: Clone ResDB-ORM repository and install dependencies:
+Open another new terminal tab to set up the ORM and verify the operation.
+```bash
+git clone [https://github.com/apache/incubator-resilientdb-ResDB-ORM.git](https://github.com/apache/incubator-resilientdb-ResDB-ORM.git)
+cd ResDB-ORM
+
+python3.10 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in the previous step.
+```yaml
+database:
+  db_root_url: <CROW_ENDPOINT>  
+```
+
+### Step 5: Run the test script to ensure everything is working correctly:
+```bash
+python tests/test.py
+```
