@@ -90,6 +90,33 @@ This looks something like `(specified in /mnt/c/Users/username/Desktop/indexers-
 
 This goes away if you delete the .bazelversion in your `indexers-ECS265-Fall2025` folder. The file should no longer be there.
 
+This project strictly requires **Bazel 6.0.0**. If you have accidentally upgraded to a newer version (e.g., via `apt upgrade`) and need to revert it manually, follow these steps:
+
+1.  **Remove the current Bazel version**
+    ```bash
+    sudo apt-get remove bazel
+    # If previously installed manually, remove the binary directly:
+    # sudo rm /usr/local/bin/bazel
+    ```
+
+2.  **Download Bazel 6.0.0**
+    ```bash
+    wget [https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64](https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64) -O bazel
+    ```
+
+3.  **Install to system path**
+    ```bash
+    chmod +x bazel
+    sudo mv bazel /usr/local/bin/bazel
+    ```
+
+4.  **Refresh shell cache and verify**
+    It is important to clear the shell's location cache so it finds the new binary.
+    ```bash
+    hash -r
+    bazel --version
+    # Output should be: bazel 6.0.0
+    ```
 \
 
 ### Invalid Filename Extension
