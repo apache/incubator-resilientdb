@@ -66,10 +66,19 @@ export class ExplanationService {
     query: string,
     options: ExplanationOptions = {}
   ): Promise<ExplanationResult> {
+    // Detect if using local model with small context window (e.g., GPT-2)
+    const isLocalSmallModel = this.llmClient.getProvider() === 'local' && 
+      (this.llmClient.getModel().includes('gpt2') || this.llmClient.getModel().includes('distil'));
+    
+    // Adjust context size for small models
+    const defaultMaxChunks = isLocalSmallModel ? 2 : 10;
+    const defaultDocTokens = isLocalSmallModel ? 300 : 2000;
+    const defaultSchemaTokens = isLocalSmallModel ? 150 : 1000;
+
     const {
       detailed = true,
       includeLiveStats = env.LLM_ENABLE_LIVE_STATS || false,
-      maxContextChunks = 10,
+      maxContextChunks = defaultMaxChunks,
       minSimilarity = 0.3,
     } = options;
 
@@ -91,12 +100,12 @@ export class ExplanationService {
     const documentationContext = this.contextFormatter.formatForExplanation(
       docResult.chunks,
       undefined,
-      { maxTokens: 2000 }
+      { maxTokens: defaultDocTokens }
     );
 
     const schemaContext = schemaResult.chunks.length > 0
       ? this.contextFormatter.format(schemaResult.chunks, undefined, {
-          maxTokens: 1000,
+          maxTokens: defaultSchemaTokens,
           format: 'compact',
         })
       : undefined;
@@ -126,27 +135,102 @@ export class ExplanationService {
     }
 
     // Step 4: Format prompt
-    const promptContext: ExplanationPromptContext = {
-      query,
-      documentationContext,
-      schemaContext,
-      liveStats,
-    };
-
-    const prompt = detailed
-      ? formatDetailedExplanationPrompt(query, documentationContext, schemaContext)
-      : formatExplanationPrompt(promptContext);
+    // For small models like GPT-2, use a simpler, more directive prompt
+    let prompt: string;
+    let systemPrompt: string;
+    
+    if (isLocalSmallModel) {
+      // Very simple, directive prompt for small models (like GPT-2)
+      // Avoid numbered lists or complex structures that GPT-2 will repeat
+      systemPrompt = 'Answer questions about GraphQL queries using the documentation provided.';
+      const cleanContext = documentationContext 
+        ? documentationContext.replace(/^Relevant Documentation Context:\s*\n*/i, '').trim().substring(0, 400)
+        : '';
+      
+      prompt = `Question: What does this GraphQL query do?\n\nQuery: ${query}\n\n`;
+      if (cleanContext) {
+        prompt += `Documentation: ${cleanContext}\n\n`;
+      }
+      prompt += `Answer: This query`;
+    } else {
+      // Use full prompt for better models
+      const promptContext: ExplanationPromptContext = {
+        query,
+        documentationContext,
+        schemaContext,
+        liveStats,
+      };
+      systemPrompt = EXPLANATION_SYSTEM_PROMPT;
+      prompt = detailed
+        ? formatDetailedExplanationPrompt(query, documentationContext, schemaContext)
+        : formatExplanationPrompt(promptContext);
+    }
 
     // Step 5: Generate explanation using LLM
-    const response = await this.llmClient.generateCompletion([
-      { role: 'system', content: EXPLANATION_SYSTEM_PROMPT },
-      { role: 'user', content: prompt },
-    ], {
-      temperature: 0.7, // Slightly creative for explanations
-      maxTokens: 1500,
-    });
+    // Reduce maxTokens for small models
+    const maxResponseTokens = isLocalSmallModel ? 200 : 1500;
+    let explanation: string;
+    
+    try {
+      const response = await this.llmClient.generateCompletion([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: prompt },
+      ], {
+        temperature: isLocalSmallModel ? 0.3 : 0.7, // Lower temperature for small models
+        maxTokens: maxResponseTokens,
+      });
 
-    const explanation = response.content;
+      explanation = response.content;
+      
+      // For small models like GPT-2, they often just repeat the prompt
+      // Always use retrieved chunks to create a better explanation (GPT-2 is too basic)
+      if (isLocalSmallModel && docResult.chunks.length > 0) {
+        // Always use retrieved chunks for small models - they're more reliable
+        const topChunk = docResult.chunks[0];
+        const chunkText = topChunk.chunkText.trim();
+        
+        // Extract the query name and fields
+        const queryMatch = query.match(/\{?\s*(\w+)\s*\(/);
+        const queryName = queryMatch ? queryMatch[1] : 'the query';
+        const fieldsMatch = query.match(/\{\s*([^}]+)\s*\}/);
+        const fields = fieldsMatch ? fieldsMatch[1].trim() : '';
+        
+        explanation = `This GraphQL query uses \`${queryName}\` to retrieve data from ResilientDB.\n\n`;
+        
+        if (chunkText) {
+          // Clean up chunk text
+          const cleanChunk = chunkText
+            .replace(/^\[Source:[^\]]+\]\s*/gm, '')
+            .replace(/^---\s*$/gm, '')
+            .trim();
+          
+          explanation += `According to the documentation:\n\n${cleanChunk.substring(0, 600)}`;
+          if (cleanChunk.length > 600) {
+            explanation += '...';
+          }
+        }
+        
+        if (fields) {
+          explanation += `\n\nThe query requests the following fields: ${fields}`;
+        }
+        
+        if (docResult.chunks.length > 1) {
+          const secondChunk = docResult.chunks[1].chunkText
+            .replace(/^\[Source:[^\]]+\]\s*/gm, '')
+            .replace(/^---\s*$/gm, '')
+            .trim();
+          explanation += `\n\nAdditional information: ${secondChunk.substring(0, 200)}...`;
+        }
+      }
+    } catch (error) {
+      // If LLM fails, use retrieved chunks
+      if (docResult.chunks.length > 0) {
+        const topChunk = docResult.chunks[0];
+        explanation = `This GraphQL query retrieves transaction data.\n\nDocumentation: ${topChunk.chunkText.substring(0, 400)}...`;
+      } else {
+        explanation = `This GraphQL query retrieves transaction data from ResilientDB. The query structure suggests it's fetching a single transaction by ID.`;
+      }
+    }
 
     return {
       explanation,

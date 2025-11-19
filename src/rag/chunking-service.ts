@@ -16,7 +16,7 @@ export interface DocumentChunk {
   metadata: {
     documentId: string;
     section?: string;
-    type: LoadedDocument['type'];
+    type: 'documentation' | 'schema' | 'example' | 'api';
     startChar?: number;
     endChar?: number;
   };
@@ -26,6 +26,25 @@ export class ChunkingService {
   private maxChunkSize: number; // in characters (approximate)
   private chunkOverlap: number; // in characters
   private tokensPerChar: number = 0.25; // approximate: 4 chars per token
+
+  /**
+   * Map document type to chunk metadata type
+   */
+  private mapDocumentTypeToChunkType(
+    docType: LoadedDocument['type']
+  ): 'documentation' | 'schema' | 'example' | 'api' {
+    switch (docType) {
+      case 'schema':
+        return 'schema';
+      case 'api':
+        return 'api';
+      case 'markdown':
+      case 'text':
+      case 'json':
+      default:
+        return 'documentation';
+    }
+  }
 
   constructor(options: {
     maxTokens?: number;
@@ -89,7 +108,7 @@ export class ChunkingService {
           chunkIndex,
           metadata: {
             documentId: document.id,
-            type: document.type,
+            type: this.mapDocumentTypeToChunkType(document.type),
             startChar: startIndex,
             endChar: endIndex,
             section: document.metadata.section,
@@ -193,7 +212,7 @@ export class ChunkingService {
           chunkIndex: index,
           metadata: {
             documentId: document.id,
-            type: document.type,
+            type: this.mapDocumentTypeToChunkType(document.type),
             section: section.title,
             startChar: section.start,
             endChar: section.end,

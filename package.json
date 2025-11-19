@@ -9,7 +9,13 @@
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
     "mcp-server": "tsx src/index.ts -- --mcp-server",
-    "ingest": "tsx ingest-docs.ts"
+    "http-api": "tsx src/index.ts -- --http-api",
+    "ingest": "tsx ingest-docs.ts",
+    "ingest:graphql": "tsx ingest-graphql-docs.ts",
+    "test:rag": "tsx test-rag.ts",
+    "test:rag:queries": "tsx test-rag-queries.ts",
+    "test:rag:accuracy": "tsx test-rag-accuracy.ts",
+    "test:nexus": "tsx test-nexus.ts"
   },
   "keywords": [
     "resilientdb",
@@ -25,6 +31,7 @@
     "@huggingface/inference": "^4.13.0",
     "@modelcontextprotocol/sdk": "^0.5.0",
     "axios": "^1.6.0",
+    "@xenova/transformers": "^2.6.0",
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",

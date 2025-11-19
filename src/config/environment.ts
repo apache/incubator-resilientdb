@@ -13,9 +13,10 @@ const envSchema = z.object({
   RESILIENTDB_RECIPIENT_PUBLIC_KEY: z.string().optional(),
 
   // Nexus Configuration
-  // NOTE: Nexus API endpoints not yet defined - these are placeholders
-  NEXUS_API_URL: z.string().url().optional(),
-  NEXUS_API_KEY: z.string().optional(),
+  // Nexus runs on port 3000 by default (Next.js app)
+  // API endpoint: POST /api/research/chat
+  NEXUS_API_URL: z.string().url().default('http://localhost:3000'),
+  NEXUS_API_KEY: z.string().optional(), // Optional - Nexus may not require API key
 
   // ResLens Configuration
   // NOTE: ResLens API endpoints not yet defined - these are placeholders
@@ -31,13 +32,14 @@ const envSchema = z.object({
   MCP_SERVER_HOST: z.string().default('localhost'),
 
   // LLM Configuration
-  LLM_PROVIDER: z.enum(['deepseek', 'openai', 'anthropic', 'huggingface']).default('deepseek'),
+  LLM_PROVIDER: z.enum(['deepseek', 'openai', 'anthropic', 'huggingface', 'local']).default('deepseek'),
   LLM_API_KEY: z.string().optional(),
   LLM_MODEL: z.string().default('deepseek-chat'),
   // Enable Live Stats access for LLM (requires ResLens Live Mode)
   LLM_ENABLE_LIVE_STATS: z.coerce.boolean().default(false),
   
-  // Embedding Provider Configuration (Hugging Face only)
+  // Embedding Provider Configuration
+  EMBEDDINGS_PROVIDER: z.enum(['huggingface', 'local']).default('huggingface'),
   HUGGINGFACE_API_KEY: z.string().optional(),
 
   // Database (optional)

@@ -1,6 +1,7 @@
 import { ResilientDBClient } from '../resilientdb/client';
 import { ResLensClient } from '../reslens/client';
 import { LiveStatsService } from '../services/live-stats-service';
+import { NexusIntegration } from '../nexus/integration';
 import { PipelineData, GraphQLQuery, QueryExecutionMetrics, SchemaContext } from '../types';
 
 /**
@@ -11,6 +12,7 @@ export class DataPipeline {
   private resilientDBClient: ResilientDBClient;
   private resLensClient: ResLensClient;
   private liveStatsService: LiveStatsService;
+  private nexusIntegration: NexusIntegration;
   private schemaCache?: SchemaContext;
   private schemaCacheExpiry?: Date;
 
@@ -18,6 +20,7 @@ export class DataPipeline {
     this.resilientDBClient = new ResilientDBClient();
     this.resLensClient = new ResLensClient();
     this.liveStatsService = new LiveStatsService();
+    this.nexusIntegration = new NexusIntegration();
   }
 
   /**
@@ -138,10 +141,12 @@ export class DataPipeline {
     resilientdb: boolean;
     reslens: boolean;
     liveStats: boolean;
+    nexus: boolean;
   }> {
-    const [reslensHealth, liveStatsHealth] = await Promise.allSettled([
+    const [reslensHealth, liveStatsHealth, nexusHealth] = await Promise.allSettled([
       this.resLensClient.healthCheck(),
       this.liveStatsService.checkAvailability(),
+      this.nexusIntegration.checkConnection(),
     ]);
 
     // ResilientDB health check via schema introspection
@@ -159,6 +164,8 @@ export class DataPipeline {
         reslensHealth.status === 'fulfilled' ? reslensHealth.value : false,
       liveStats:
         liveStatsHealth.status === 'fulfilled' ? liveStatsHealth.value : false,
+      nexus:
+        nexusHealth.status === 'fulfilled' ? nexusHealth.value.connected : false,
     };
   }
 

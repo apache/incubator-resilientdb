@@ -1,588 +1,610 @@
-# 🚀 Team Setup Guide - GraphQ-LLM
+# 🚀 Complete Team Setup Guide - GraphQ-LLM with Nexus Integration
 
-## ⚡ Quick Verification (After Setup)
-
-**Run this to check if everything works:**
-```bash
-# Quick check - all in one command
-./verify-setup.sh
-
-# Or manually check:
-docker-compose -f docker-compose.dev.yml ps
-curl http://localhost:3001/health
-curl http://localhost:5001/graphql -X POST -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'
-```
-
-**See full verification steps below** → [Verification & Testing](#-verification--testing)
+**Purpose:** This guide will help you replicate the exact working setup from scratch. Follow each step in order.
 
 ---
 
-## Quick Start (5 Minutes)
+## 📋 Prerequisites Checklist
 
-### Prerequisites
-- **ResilientDB set up and running** (see "ResilientDB Setup" section below)
-- Docker and Docker Compose installed
-- Git (to clone the repository)
-- Node.js 18+ (optional, for local development)
+Before starting, ensure you have:
 
-### Step 0: Set Up ResilientDB (Required First)
-**⚠️ IMPORTANT:** You need ResilientDB running before starting this project.
+- [ ] **Docker** and **Docker Compose** installed
+- [ ] **Git** installed
+- [ ] **Node.js 18+** installed (for local development)
+- [ ] **PostgreSQL** with pgvector (we'll set this up with Docker)
+- [ ] **Hugging Face API Key** (optional but recommended for model downloads)
+  - Get it from: https://huggingface.co/settings/tokens
 
-**Option A: Set up ResilientDB separately (Recommended)**
-1. Follow ResilientDB setup instructions from official docs
-2. Start ResilientDB KV service on port 18000
-3. Verify it's running: `curl http://localhost:18000/v1/transactions/test`
-4. Then proceed to Step 1 below
+---
 
-**Option B: Try Docker setup (May not work)**
-- The `expolab/resdb` image should start KV service, but we're overriding the command
-- Try Step 3 below, then verify KV service is running
-- If port 18000 doesn't respond, you'll need to set up ResilientDB separately (Option A)
+## 🎯 Step-by-Step Setup (Follow in Order)
 
-### Step 1: Clone the Repository
+### **Step 1: Clone the Repository**
+
 ```bash
+# Clone the GraphQ-LLM repository
 git clone <repository-url>
 cd graphq-llm
 ```
 
-### Step 2: Set Up Environment Variables
-Create a `.env` file in the project root:
+**Verify:** You should see files like `package.json`, `src/`, `docs/`, etc.
+
+---
+
+### **Step 2: Install Dependencies**
+
 ```bash
-# Copy example 
-cp .env.example .env  
+# Install all Node.js dependencies
+npm install
 ```
 
-Required environment variables:
+**Expected output:** All packages will be installed, including:
+- `@xenova/transformers` (for local LLM and embeddings)
+- `@huggingface/inference` (for Hugging Face API)
+- `@modelcontextprotocol/sdk` (for MCP server)
+- All other dependencies
+
+**Time:** 2-5 minutes
+
+---
+
+### **Step 3: Create Environment File**
+
+Create a `.env` file in the `graphq-llm` directory:
+
+```bash
+cd /path/to/graphq-llm
+touch .env
+```
+
+Copy this exact configuration into `.env`:
+
 ```env
+# GraphQ-LLM Environment Variables
+
 # ResilientDB Configuration
-# Use 'resilientdb' hostname when running in Docker, 'localhost' for local development
-RESILIENTDB_GRAPHQL_URL=http://resilientdb:5001/graphql
+# For local development (ResilientDB running on host):
+RESILIENTDB_GRAPHQL_URL=http://localhost:18000/graphql
+# For Docker (ResilientDB in container):
+# RESILIENTDB_GRAPHQL_URL=http://resilientdb:5001/graphql
 
-# LLM Configuration (choose one provider)
-LLM_PROVIDER=openai  # or anthropic, deepseek, huggingface
-LLM_API_KEY=your-api-key-here
-LLM_MODEL=gpt-3.5-turbo  # or model of your choice
+# Nexus Configuration
+NEXUS_API_URL=http://localhost:3000
+NEXUS_API_KEY=
 
-# Hugging Face (for embeddings - optional but recommended)
-HUGGINGFACE_API_KEY=your-huggingface-key-here  # Optional for higher rate limits
+# ResLens Configuration (Live Mode - optional)
+RESLENS_LIVE_MODE=false
+RESLENS_POLL_INTERVAL=5000
 
-# ResLens (optional - for Live Mode)
-RESLENS_API_URL=http://localhost:8080/api  # Optional
-RESLENS_API_KEY=your-reslens-key  # Optional
-RESLENS_LIVE_MODE=false  # Set to true when ResLens middleware is set up
+# MCP Server Configuration
+MCP_SERVER_PORT=3001
+MCP_SERVER_HOST=localhost
+
+# LLM Configuration
+# Using local LLM (Xenova/gpt2) - no API key needed
+LLM_PROVIDER=local
+LLM_API_KEY=
+LLM_MODEL=Xenova/gpt2
+LLM_ENABLE_LIVE_STATS=false
+
+# Embedding Configuration
+# Using local embeddings (Xenova/all-MiniLM-L6-v2) - no API key needed
+EMBEDDINGS_PROVIDER=local
+# Optional: Hugging Face API key for downloading models
+HUGGINGFACE_API_KEY=your_huggingface_key_here
+
+# Logging
+LOG_LEVEL=info
 ```
 
-### Step 3: Start Docker Services
+**Important:** Replace `your_huggingface_key_here` with your actual Hugging Face API key (optional but recommended).
+
+---
+
+### **Step 4: Set Up ResilientDB**
+
+#### **Option A: Using Docker (Recommended)**
+
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
-```
+# Start ResilientDB using Docker Compose
+docker-compose -f docker-compose.dev.yml up -d resilientdb
 
-That's it! 🎉
-
-**What happens automatically:**
-- ✅ ResilientDB container starts **first**
-- ✅ **ResilientDB KV service starts automatically** (from `expolab/resdb` image)
-  - KV service runs on port 18000
-  - This is the core database service
-- ✅ GraphQL server setup runs (`setup-graphql.sh`)
-  - Installs Python dependencies
-  - Fixes Python 3.8 compatibility issues
-  - Starts GraphQL server on port 5001
-- ✅ Health check confirms ResilientDB KV service is ready (port 18000)
-- ✅ **Then** backend service starts (waits for ResilientDB to be healthy)
-- ✅ Backend connects to ResilientDB GraphQL using service name `resilientdb:5001`
-- ✅ All services are networked together via Docker's internal network
-
-**Important:** The `expolab/resdb` Docker image already includes:
-- ResilientDB KV service (the database itself)
-- ResilientDB GraphQL code (we just set it up and start it)
-- No separate ResilientDB installation needed!
-
-**Wait for services to be healthy** (about 60-120 seconds for first run):
-```bash
-# Check service status
+# Wait for ResilientDB to be healthy (60-120 seconds)
+# Check status
 docker-compose -f docker-compose.dev.yml ps
 
-# Watch logs in real-time
-docker-compose -f docker-compose.dev.yml logs -f resilientdb
-```
-
-**⚠️ Important:** First startup takes longer (60-120 seconds) because:
-- Docker image needs to be pulled (if not cached)
-- Python dependencies need to be installed
-- GraphQL server needs to start
-- Health checks need to pass
-
-**If ResilientDB doesn't start:**
-1. Check logs: `docker-compose -f docker-compose.dev.yml logs resilientdb`
-2. Verify ports aren't in use: `lsof -i :18000 -i :5001`
-3. Try restarting: `docker-compose -f docker-compose.dev.yml restart resilientdb`
-
----
-
-## 🔍 What's Automated vs Manual
-
-### ✅ **Fully Automated (No Action Needed):**
-
-1. **ResilientDB GraphQL Setup**
-   - ✅ Python dependencies installation
-   - ✅ Python 3.8 compatibility fixes
-   - ✅ GraphQL server startup
-   - ✅ Port configuration (5001)
-   
-2. **Docker Networking**
-   - ✅ All services connected automatically
-   - ✅ Service discovery configured
-
-3. **Code Reloading**
-   - ✅ Live updates when you edit code
-   - ✅ No need to restart containers
-
-### 📋 **Manual Steps (One-Time Setup):**
-
-1. **Environment Variables**
-   - ☐ Create `.env` file
-   - ☐ Add API keys (LLM, optional: Hugging Face, ResLens)
-
-2. **Document Ingestion (REQUIRED - Each teammate must do this)**
-   ```bash
-   # After ResilientDB and backend are running, ingest documentation
-   docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
-   ```
-   
-   **⚠️ IMPORTANT:** Each teammate must run this on their own setup!
-   - Your teammate's ingestion stores docs in **their** local ResilientDB
-   - Your ingestion stored docs in **your** local ResilientDB
-   - Each person has their own separate ResilientDB instance
-   - This is a **one-time setup** per teammate (takes 2-5 minutes)
-   
-   **What it does:**
-   - Loads all files from `docs/` directory
-   - Loads GraphQL schema via introspection
-   - Chunks documents into smaller pieces
-   - Generates embeddings (Hugging Face)
-   - Stores ~100-130 chunks in **your local ResilientDB**
-   
-   **Expected output:**
-   ```
-   📚 Document Ingestion for RAG
-   ✅ Loaded X documents
-   ✅ GraphQL schema loaded
-   📊 Progress: 100/100 chunks (100%)
-   ✅ Ingestion completed successfully!
-   📦 129 document chunks are now available for RAG
-   ```
-
----
-
-## ❓ Common Questions
-
-### **Q: Do I need to set up ResilientDB separately first?**
-**A: ⚠️ RECOMMENDATION - Set up ResilientDB separately for reliability:**
-
-**The Problem:**
-- The `expolab/resdb` Docker image **should** include ResilientDB KV service
-- **BUT:** We're overriding the container's command to run `setup-graphql.sh`
-- This **might prevent** the KV service from starting automatically
-- The healthcheck tests port 18000, but if it fails, KV service isn't running
-
-**Recommended Approach (Most Reliable):**
-1. **Set up ResilientDB separately first** (outside Docker Compose)
-   - Follow ResilientDB setup instructions
-   - Start ResilientDB KV service on port 18000
-   - Verify it's running: `curl http://localhost:18000/v1/transactions/test`
-2. **Then use this project's Docker setup** for GraphQL and backend
-   - Comment out the `resilientdb` service in `docker-compose.dev.yml`
-   - Update `.env` to point to your existing ResilientDB: `RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql`
-   - Run `docker-compose up` for backend and GraphQL setup only
-
-**Alternative (If you want everything in Docker):**
-- Try the current setup first
-- Check if KV service starts: `curl http://localhost:18000/v1/transactions/test`
-- If it doesn't work, you'll need to set up ResilientDB separately anyway
-
-**How to Verify KV Service is Running:**
-```bash
-# Test if port 18000 is responding (KV service)
+# Verify ResilientDB KV service is running
 curl http://localhost:18000/v1/transactions/test
 
-# Check what processes are running in the container
-docker-compose -f docker-compose.dev.yml exec resilientdb ps aux | grep -i resdb
-
-# Check the image's default entrypoint
-docker inspect expolab/resdb:amd64 | grep -A 10 "Entrypoint\|Cmd"
+# Verify GraphQL server is running
+curl -X POST http://localhost:5001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ __typename }"}'
 ```
 
-### **Q: Do I need to set up ResilientDB separately?**
-**A: It depends - we need to verify the image behavior:**
-- ✅ **ResilientDB KV service** - Already included in `expolab/resdb` Docker image
-  - Starts automatically when container starts
-  - Runs on port 18000
-  - No manual setup needed
-- ✅ **ResilientDB GraphQL** - Also included in the image
-  - Located at `/app/ecosystem/graphql` inside the container
-  - The `setup-graphql.sh` script sets it up (installs Python deps, fixes compatibility)
-  - Runs on port 5001
+**Expected:** Both commands should return responses (may be errors, but connection should work).
 
-**What happens:**
-1. Container starts → **ResilientDB KV service should start automatically** (from `expolab/resdb` image's default entrypoint)
-   - ⚠️ **If KV service doesn't start**, the image's entrypoint may need to be checked
-   - The healthcheck tests port 18000 to confirm KV service is running
-2. `setup-graphql.sh` runs → Sets up GraphQL server on top of KV service
-3. Both services run together in the same container
+#### **Option B: Use Existing ResilientDB**
 
-**⚠️ Important Note:**
-- The `expolab/resdb` Docker image should include and start the ResilientDB KV service automatically
-- If the healthcheck fails (port 18000 not responding), the KV service may not be starting
-- Check the image documentation or logs to verify the KV service starts with the image
-- If needed, we may need to explicitly start the KV service in the docker-compose command
+If you already have ResilientDB running:
 
-**You don't need to:**
-- ❌ Clone ResilientDB separately
-- ❌ Install ResilientDB manually
-- ❌ Start KV service manually
-- ✅ Just run `docker-compose up` - everything is automated!
-
-### **Q: What if I already have ResilientDB running?**
-**A: ✅ RECOMMENDED APPROACH - Use your existing ResilientDB:**
-
-**Steps:**
-1. **Comment out the `resilientdb` service** in `docker-compose.dev.yml`:
-   ```yaml
-   # resilientdb:
-   #   image: expolab/resdb:${ARCH:-amd64}
-   #   ... (comment out entire service)
-   ```
-
-2. **Update `.env` file:**
+1. **Comment out the `resilientdb` service** in `docker-compose.dev.yml`
+2. **Update `.env`** to point to your existing ResilientDB:
    ```env
-   # Use localhost since ResilientDB is running on your host machine
    RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
    ```
 
-3. **Start only the backend service:**
+---
+
+### **Step 5: Start GraphQ-LLM Backend**
+
+#### **Option A: Using Docker (Recommended)**
+
+```bash
+# Start the backend service
+docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
+
+# Check logs (wait for "Server listening" message)
+docker-compose -f docker-compose.dev.yml logs -f graphq-llm-backend
+
+# In another terminal, verify backend is running
+curl http://localhost:3001/health
+```
+
+**Expected response:**
+```json
+{"status":"ok","service":"graphq-llm-api"}
+```
+
+**Note:** First startup takes 30-60 seconds as it downloads the local LLM model (`Xenova/gpt2`).
+
+#### **Option B: Using Local Node.js**
+
+```bash
+# Set environment variables
+export LLM_PROVIDER=local
+export LLM_MODEL=Xenova/gpt2
+export EMBEDDINGS_PROVIDER=local
+export HUGGINGFACE_API_KEY=your_key_here  # Optional
+
+# Start HTTP API server
+npm run http-api
+```
+
+The server will start on port 3001. Check logs for "Server listening" message.
+
+---
+
+### **Step 6: Ingest Documentation (REQUIRED)**
+
+**⚠️ IMPORTANT:** Each teammate must run this on their own setup! This stores docs in your local ResilientDB.
+
+```bash
+# If using Docker
+docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest:graphql
+
+# If using local Node.js
+npm run ingest:graphql
+```
+
+**What this does:**
+- Loads all GraphQL documentation from `docs/` directory
+- Chunks documents into smaller pieces
+- Generates embeddings (using local model or Hugging Face)
+- Stores chunks in ResilientDB
+
+**Expected output:**
+```
+📚 GraphQL-only Ingestion
+✅ Loaded X docs from docs/graphql-official
+✅ Loaded X docs from docs/graphql-spec
+✅ Loaded X docs from docs/community-guides
+🚀 Ingesting X GraphQL-specific documents...
+📊 Progress: 100/100 chunks (100%)
+✅ GraphQL ingestion complete!
+Documents processed: X/X
+Chunks stored: X
+```
+
+**Time:** 5-10 minutes (depending on system and embedding provider)
+
+**Verify:** Check logs for "Chunks stored: X" (should be 100+ chunks).
+
+---
+
+### **Step 7: Set Up Nexus (Separate Repository)**
+
+Nexus is a separate Next.js application. Follow these steps:
+
+**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+
+#### **7.1: Clone Nexus Repository**
+
+```bash
+# Navigate to your workspace (outside graphq-llm)
+cd /path/to/workspace
+
+# Clone Nexus (if you don't have it)
+git clone https://github.com/ResilientApp/nexus.git
+cd nexus
+```
+
+**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+
+#### **7.2: Install Nexus Dependencies**
+
+```bash
+npm install
+```
+
+#### **7.3: Set Up PostgreSQL with pgvector**
+
+**Using Docker (Recommended):**
+
+```bash
+# Start PostgreSQL with pgvector
+docker run -d \
+  --name nexus-postgres \
+  -e POSTGRES_USER=nexus \
+  -e POSTGRES_PASSWORD=nexus \
+  -e POSTGRES_DB=nexus \
+  -p 5432:5432 \
+  pgvector/pgvector:pg14
+
+# Wait for PostgreSQL to be ready (10-20 seconds)
+sleep 15
+
+# Verify PostgreSQL is running
+docker ps | grep nexus-postgres
+```
+
+**Alternative: Using Supabase (Cloud)**
+
+1. Go to https://supabase.com
+2. Create a free account
+3. Create a new project
+4. Get your connection string from Project Settings → Database
+
+#### **7.4: Configure Nexus Environment Variables**
+
+Create a `.env` file in the `nexus` directory:
+
+```bash
+cd /path/to/nexus
+touch .env
+```
+
+Add this configuration:
+
+```env
+# Nexus Environment Variables
+
+# Database Configuration
+# For Docker PostgreSQL:
+DATABASE_URL=postgres://nexus:nexus@localhost:5432/nexus
+# For Supabase:
+# DATABASE_URL=postgres://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT].supabase.co:5432/postgres
+
+# Embedding Configuration
+EMBEDDING_DIM=384  # For sentence-transformers/all-MiniLM-L6-v2
+
+# API Keys (Optional but recommended)
+DEEPSEEK_API_KEY=your_deepseek_key_here
+GEMINI_API_KEY=your_gemini_key_here
+LLAMA_CLOUD_API_KEY=your_llamacloud_key_here
+
+# Supabase Configuration (if using Supabase for vector store)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# GraphQ-LLM Backend URL (REQUIRED for GraphQL Tutor)
+GRAPHQ_LLM_API_URL=http://localhost:3001
+# Or use NEXT_PUBLIC_ prefix for client-side access:
+NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001
+```
+
+**How to get API keys:**
+- **DeepSeek:** https://www.deepseek.com/ → Sign up → Get API key
+- **Gemini:** https://makersuite.google.com/app/apikey → Get API key
+- **LlamaCloud:** https://cloud.llamaindex.ai/ → Sign up → Get API key
+- **Supabase:** From your Supabase project dashboard
+
+**Note:** API keys are optional - Nexus will work without them, but some features may be limited.
+
+#### **7.5: Set Up Nexus Database Schema**
+
+```bash
+# If using Docker PostgreSQL, run migrations
+# (Check Nexus repository for migration commands)
+# Usually something like:
+npm run db:migrate
+# or
+npx prisma migrate dev
+```
+
+#### **7.6: Add GraphQ-LLM Integration to Nexus (REQUIRED)**
+
+**⚠️ IMPORTANT:** This step adds the GraphQL Tutor UI and API routes to Nexus.
+
+**📋 Quick Reference:** See `NEXUS_UI_EXTENSION_GUIDE.md` in the GraphQ-LLM repository for complete code.
+
+**Files to create in Nexus:**
+
+1. **Create API Route:** `src/app/api/graphql-tutor/analyze/route.ts`
+   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 1 for complete code
+
+2. **Create Main Page:** `src/app/graphql-tutor/page.tsx`
+   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 2 for complete code
+
+3. **Create Components:**
+   - `src/app/graphql-tutor/components/tutor-panel.tsx` (Section 3)
+   - `src/app/graphql-tutor/components/explanation-panel.tsx` (Section 4)
+   - `src/app/graphql-tutor/components/optimization-panel.tsx` (Section 5)
+   - `src/app/graphql-tutor/components/efficiency-display.tsx` (Section 6)
+
+4. **Update Home Page:** `src/app/page.tsx`
+   - Add navigation link to `/graphql-tutor`
+   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 7
+
+5. **Install Dependencies:**
    ```bash
-   docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
+   cd /path/to/nexus
+   npm install lucide-react
    ```
 
-**Benefits:**
-- ✅ More reliable (you control ResilientDB setup)
-- ✅ Avoids Docker networking issues
-- ✅ Easier to debug (ResilientDB logs separate)
-- ✅ Can use existing ResilientDB installation
+**Quick Copy-Paste Method:**
+1. Open `NEXUS_UI_EXTENSION_GUIDE.md` from the GraphQ-LLM repository
+2. Copy each section's code
+3. Create the corresponding file in Nexus
+4. Paste the code
 
-### **Q: Do I need Docker credentials?**
-**A: NO!** ✅
-- All Docker images are public
-- No authentication required
-- Just run `docker-compose up`
+#### **7.7: Start Nexus**
 
-### **Q: What ports are used?**
-- **18000:** ResilientDB KV service
-- **5001:** ResilientDB GraphQL server
-- **3001:** GraphQ-LLM backend API
-- **9229:** Node.js debug port (optional)
-
-### **Q: How does `http://resilientdb:5001/graphql` work?**
-**A:** Docker Compose automatically creates a network where services can find each other by name:
-- ✅ `resilientdb` is the service name in `docker-compose.dev.yml`
-- ✅ Docker's internal DNS resolves `resilientdb` to the container's IP
-- ✅ The backend waits for ResilientDB to be healthy before starting (see `depends_on` in docker-compose)
-- ✅ This only works **inside** the Docker network, not from your host machine
-- ✅ From your host machine, use `http://localhost:5001/graphql`
-
-**Why not `localhost`?**
-- Inside Docker containers, `localhost` refers to the container itself, not other containers
-- Service names like `resilientdb` are resolved by Docker's DNS to the correct container IP
-- This is how containers communicate with each other in Docker Compose
-
-### **Q: How do I verify everything is working?**
 ```bash
-# Check service health
-docker-compose -f docker-compose.dev.yml ps
+# Start Nexus development server
+npm run dev
+```
+
+Nexus will start on `http://localhost:3000`.
+
+**Verify Nexus is running:**
+```bash
+curl http://localhost:3000/api/research/documents
+```
+
+---
+
+### **Step 8: Verify Everything Works**
+
+#### **8.1: Test GraphQ-LLM Backend**
+
+```bash
+# Test health endpoint
+curl http://localhost:3001/health
+
+# Test explanation endpoint
+curl -X POST http://localhost:3001/api/explanations/explain \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ getTransaction(id: \"123\") { asset } }"}'
+```
+
+**Expected:** Should return JSON with explanation including documentation context.
+
+#### **8.2: Test Nexus Integration**
+
+```bash
+# Test Nexus API route that proxies to GraphQ-LLM
+curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ getTransaction(id: \"123\") { asset } }"}'
+```
+
+**Expected:** Should return JSON with explanation, optimizations, and efficiency data.
+
+#### **8.3: Test Nexus UI**
+
+1. Open browser: `http://localhost:3000/graphql-tutor`
+2. Enter a GraphQL query: `{ getTransaction(id: "123") { asset } }`
+3. Click "Analyze Query"
+4. You should see:
+   - **Explanation tab:** Explanation with documentation context
+   - **Optimization tab:** Optimization suggestions
+   - **Efficiency tab:** Efficiency score and metrics
+
+**Test with these queries:** See `TEST_QUERIES.md` for 10 example queries.
+
+---
+
+## ✅ Verification Checklist
+
+After completing all steps, verify:
+
+- [ ] GraphQ-LLM HTTP API responds: `curl http://localhost:3001/health`
+- [ ] ResilientDB GraphQL is accessible: `curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
+- [ ] Documents ingested: Check logs for "Chunks stored: X" (should be 100+)
+- [ ] Nexus is running: `curl http://localhost:3000/api/research/documents`
+- [ ] Nexus UI accessible: Open `http://localhost:3000/graphql-tutor`
+- [ ] Explanation endpoint works: Test via Nexus UI or direct API call
+- [ ] RAG retrieval works: Explanations include documentation context from ResilientDB
+
+---
+
+## 🔧 Current Configuration Summary
+
+### **GraphQ-LLM Configuration:**
+- **LLM Provider:** `local` (using `Xenova/gpt2`)
+- **Embeddings Provider:** `local` (using `Xenova/all-MiniLM-L6-v2`)
+- **HTTP API Port:** `3001`
+- **ResilientDB GraphQL URL:** `http://localhost:18000/graphql` (or `http://resilientdb:5001/graphql` in Docker)
+
+### **Nexus Configuration:**
+- **Port:** `3000`
+- **Database:** PostgreSQL with pgvector (Docker or Supabase)
+- **GraphQ-LLM Backend:** `http://localhost:3001`
+
+### **Integration:**
+- GraphQ-LLM HTTP API: `http://localhost:3001`
+- Nexus API Route: `http://localhost:3000/api/graphql-tutor/analyze`
+- Nexus proxies requests to GraphQ-LLM backend
+
+---
+
+## 🐛 Troubleshooting
+
+### **Issue: GraphQ-LLM HTTP API not starting**
+
+**Check:**
+```bash
+# Check if port 3001 is in use
+lsof -i :3001
 
 # Check logs
 docker-compose -f docker-compose.dev.yml logs graphq-llm-backend
-docker-compose -f docker-compose.dev.yml logs resilientdb
+# or if running locally
+tail -f /tmp/graphq-llm-http.log
+```
 
-# Test the backend health endpoint (from your host machine)
+**Solution:**
+- Kill process on port 3001: `pkill -f "npm run http-api"`
+- Restart the service
+
+### **Issue: Local LLM model not downloading**
+
+**Check:**
+```bash
+# Check Hugging Face cache
+ls -la ~/.cache/huggingface/
+
+# Clear cache and retry
+rm -rf ~/.cache/huggingface/
+```
+
+**Solution:**
+- Ensure `HUGGINGFACE_API_KEY` is set in `.env` (optional but helps with downloads)
+- Wait for model download (first time takes 5-10 minutes)
+- Check internet connection
+
+### **Issue: Nexus not connecting to GraphQ-LLM**
+
+**Check:**
+```bash
+# Verify GraphQ-LLM is running
 curl http://localhost:3001/health
 
-# Test ResilientDB GraphQL (from your host machine)
-curl http://localhost:5001/graphql
+# Check Nexus environment variables
+cat /path/to/nexus/.env | grep GRAPHQ_LLM
 ```
 
-### **Q: How do I ingest documents?**
-**A: Each teammate must run this on their own setup:**
+**Solution:**
+- Ensure `GRAPHQ_LLM_API_URL=http://localhost:3001` is set in Nexus `.env`
+- Or set `NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001`
+- Restart Nexus after changing `.env`
 
+### **Issue: No documents retrieved in explanations**
+
+**Check:**
 ```bash
-# After ResilientDB and backend services are running
-docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
-```
-
-**Why each person needs to do this:**
-- ✅ Each teammate has their own local ResilientDB instance
-- ✅ Documents are stored in **your local ResilientDB**, not shared
-- ✅ This is a one-time setup (takes 2-5 minutes)
-- ✅ After ingestion, you'll have ~100-130 chunks stored locally
-
-**What gets stored:**
-- All files from `docs/` directory (GraphQL setup, KV service, HTTP server, etc.)
-- GraphQL schema information (via introspection)
-- Each chunk includes: text, embedding vector, metadata
-- Stored via GraphQL mutation: `postTransaction`
-
-**If ingestion fails:**
-- Check ResilientDB is running: `curl http://localhost:18000/v1/transactions/test`
-- Check GraphQL is accessible: `curl http://localhost:5001/graphql`
-- Check logs: `docker-compose -f docker-compose.dev.yml logs graphq-llm-backend`
-
-### **Q: Can I develop locally without Docker?**
-**A:** Yes, but you'll need:
-- ResilientDB running locally (or use Docker just for ResilientDB)
-- Node.js 18+ installed
-- Run `npm install` and `npm run dev`
-
----
-
-## 🛠️ Troubleshooting
-
-### **Issue: ResilientDB container not starting**
-```bash
-# Check ResilientDB logs for errors
-docker-compose -f docker-compose.dev.yml logs resilientdb
-
-# Check if container is running
-docker-compose -f docker-compose.dev.yml ps resilientdb
-
-# Check if GraphQL server is running inside container
-docker-compose -f docker-compose.dev.yml exec resilientdb ps aux | grep python
-
-# Check GraphQL server logs
-docker-compose -f docker-compose.dev.yml exec resilientdb tail -f /tmp/graphql.log
-
-# If container fails to start, check Docker logs
-docker logs resilientdb
-```
-
-**Common Issues:**
-- **ResilientDB KV service not starting:** Port 18000 not responding
-  - **This is the most common issue!** The `expolab/resdb` image should start KV service automatically
-  - Check logs: `docker-compose -f docker-compose.dev.yml logs resilientdb`
-  - Verify image entrypoint: `docker inspect expolab/resdb:amd64 | grep -A 5 Entrypoint`
-  - If KV service doesn't start, we may need to explicitly start it in docker-compose
-  - Solution: Check if image has a default command/entrypoint that starts KV service
-- **Port conflict:** Port 18000 or 5001 already in use
-  - Solution: Stop conflicting services or change ports in `docker-compose.dev.yml`
-- **Permission issues:** Script not executable
-  - Solution: `chmod +x setup-graphql.sh` before starting
-- **GraphQL directory missing:** `/app/ecosystem/graphql` doesn't exist
-  - Solution: Check if ResilientDB image includes GraphQL (should be in `expolab/resdb` image)
-- **Python dependencies fail:** Installation errors
-  - Solution: Check logs for specific package errors, may need to update `setup-graphql.sh`
-
-### **Issue: Backend can't connect to ResilientDB**
-- ✅ **IMPORTANT:** In Docker, use `http://resilientdb:5001/graphql` (service name), NOT `http://localhost:5001/graphql`
-- ✅ Check `RESILIENTDB_GRAPHQL_URL` in `.env` - should be `http://resilientdb:5001/graphql` for Docker
-- ✅ Verify ResilientDB container is healthy: `docker-compose -f docker-compose.dev.yml ps`
-- ✅ Check network connectivity: `docker network ls` and verify `graphq-llm-network` exists
-- ✅ Test connection from backend container:
-  ```bash
-  docker-compose -f docker-compose.dev.yml exec graphq-llm-backend curl http://resilientdb:5001/graphql
-  ```
-
-### **Issue: Port already in use**
-- Change ports in `docker-compose.dev.yml`
-- Or stop conflicting services
-
-### **Issue: Code changes not reflecting**
-- ✅ Ensure volume mounts are correct in `docker-compose.dev.yml`
-- ✅ Check if `npm run dev` is running (should auto-reload)
-- ✅ Restart backend: `docker-compose restart graphq-llm-backend`
-
----
-
-## 📦 What's Included
-
-### **Services:**
-1. **ResilientDB** (`resilientdb`)
-   - KV service (port 18000)
-   - GraphQL server (port 5001) - auto-configured
-   - Persistent data volume
-
-2. **GraphQ-LLM Backend** (`graphq-llm-backend`)
-   - Node.js/TypeScript application
-   - MCP server (port 3001)
-   - Live code reloading
-   - Health checks
-
-### **Optional (Commented Out):**
-- **ResLens Middleware** - Uncomment when ready for Live Mode
-
----
-
-## ✅ Verification & Testing
-
-### Step 1: Check Container Status
-```bash
-# Check if all containers are running and healthy
-docker-compose -f docker-compose.dev.yml ps
-```
-
-**Expected Output:**
-- `resilientdb` - Status: `Up (healthy)`
-- `graphq-llm-backend` - Status: `Up (healthy)` or `Up`
-
-### Step 2: Test ResilientDB KV Service
-```bash
-# Test from your host machine
-curl http://localhost:18000/v1/transactions/test
-
-# Or test from inside the container
-docker-compose -f docker-compose.dev.yml exec resilientdb curl http://localhost:18000/v1/transactions/test
-```
-
-**Expected:** Should return a response (may be an error, but connection should work)
-
-### Step 3: Test ResilientDB GraphQL Server
-```bash
-# Test GraphQL endpoint from your host machine
-curl -X POST http://localhost:5001/graphql \
+# Verify documents were ingested
+# Check ResilientDB for chunks
+curl -X POST http://localhost:18000/graphql \
   -H "Content-Type: application/json" \
-  -d '{"query": "{ __typename }"}'
-
-# Or test introspection
-curl -X POST http://localhost:5001/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query": "query IntrospectionQuery { __schema { queryType { name } } }"}'
+  -d '{"query": "{ transactions(limit: 5) { id } }"}'
 ```
 
-**Expected:** Should return JSON with GraphQL schema information
+**Solution:**
+- Re-run document ingestion: `npm run ingest:graphql`
+- Check that `docs/` directory has GraphQL documentation files
+- Verify ingestion completed successfully (check logs)
 
-### Step 4: Test Backend Health Endpoint
+### **Issue: PostgreSQL connection failed (Nexus)**
+
+**Check:**
 ```bash
-# Test backend health check
-curl http://localhost:3001/health
+# Verify PostgreSQL is running
+docker ps | grep nexus-postgres
+
+# Test connection
+psql postgres://nexus:nexus@localhost:5432/nexus -c "SELECT 1"
 ```
 
-**Expected:** Should return JSON with health status:
-```json
-{
-  "status": "healthy",
-  "services": {
-    "resilientdb": true,
-    "embedding": true,
-    "vectorStore": true
-  }
-}
-```
+**Solution:**
+- Start PostgreSQL: `docker start nexus-postgres`
+- Check `DATABASE_URL` in Nexus `.env` file
+- Wait 15-20 seconds after starting PostgreSQL before starting Nexus
 
-### Step 5: Test Backend → ResilientDB Connection
-```bash
-# Test if backend can reach ResilientDB from inside the container
-docker-compose -f docker-compose.dev.yml exec graphq-llm-backend curl http://resilientdb:5001/graphql
+### **Issue: Nexus UI components not rendering**
 
-# Or test with a GraphQL query
-docker-compose -f docker-compose.dev.yml exec graphq-llm-backend curl -X POST http://resilientdb:5001/graphql \
-  -H "Content-Type: application/json" \
-  -d '{"query": "{ __typename }"}'
-```
+**Check:**
+- Verify all component files are created in correct locations
+- Check browser console for errors
+- Verify shadcn/ui components are installed
 
-**Expected:** Should return GraphQL response (proves Docker networking works)
-
-### Step 6: Check Logs for Errors
-```bash
-# Check ResilientDB logs
-docker-compose -f docker-compose.dev.yml logs resilientdb | tail -50
-
-# Check backend logs
-docker-compose -f docker-compose.dev.yml logs graphq-llm-backend | tail -50
-
-# Watch logs in real-time
-docker-compose -f docker-compose.dev.yml logs -f
-```
-
-**What to look for:**
-- ✅ No error messages
-- ✅ "GraphQL server started" in ResilientDB logs
-- ✅ "Server started" or similar in backend logs
-- ✅ No connection refused errors
-
-### Step 7: Test Document Ingestion (Full System Test)
-```bash
-# Ingest documentation (this tests the full pipeline)
-# ⚠️ IMPORTANT: Each teammate must run this on their own setup
-docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
-```
-
-**Expected Output:**
-- ✅ Documents loaded from `docs/` directory (6-10 files)
-- ✅ GraphQL schema loaded via introspection
-- ✅ Chunks created (~100-130 chunks total)
-- ✅ Embeddings generated (Hugging Face, 384 dimensions each)
-- ✅ Chunks stored in **your local ResilientDB** via GraphQL
-- ✅ Success message: "📦 X document chunks are now available for RAG"
-
-**What gets stored:**
-- Each chunk is stored as a transaction in ResilientDB
-- Contains: text content, embedding vector, source file, metadata
-- Stored via: GraphQL `postTransaction` mutation (primary) or HTTP API (fallback)
-- Location: Your local ResilientDB instance (not shared with teammates)
+**Solution:**
+- Ensure all files from `NEXUS_UI_EXTENSION_GUIDE.md` are created
+- Install missing dependencies: `npm install lucide-react`
+- Restart Nexus: `npm run dev`
 
 ---
 
-## 🎯 Next Steps After Setup
+## 🎯 Quick Start Commands (Copy-Paste)
 
-1. **Ingest Documentation (REQUIRED - Each teammate):**
-   ```bash
-   docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
-   ```
-   
-   **⚠️ IMPORTANT:** Each teammate must run this separately!
-   - Stores docs in **your local ResilientDB** (not shared)
-   - Takes 2-5 minutes (one-time setup)
-   - Stores ~100-130 chunks from `docs/` directory + GraphQL schema
-   - After this, RAG system can retrieve relevant documentation
-   
-   **What happens:**
-   1. Loads all `.md` files from `docs/` directory
-   2. Loads GraphQL schema via introspection
-   3. Chunks documents (max 512 tokens per chunk)
-   4. Generates embeddings using Hugging Face
-   5. Stores each chunk in ResilientDB via GraphQL mutation
-   
-   **Verify it worked:**
-   - Should see "✅ Ingestion completed successfully!"
-   - Should see chunk count (e.g., "📦 129 document chunks")
-   - If errors occur, check ResilientDB and GraphQL are running
+For team members who want to get started quickly:
 
-2. **Verify Services are Running:**
-   ```bash
-   # Check all services
-   docker-compose -f docker-compose.dev.yml ps
-   
-   # Check ResilientDB logs
-   docker-compose -f docker-compose.dev.yml logs resilientdb
-   
-   # Check backend logs
-   docker-compose -f docker-compose.dev.yml logs graphq-llm-backend
-   ```
+```bash
+# 1. Clone and install
+git clone <repo-url> && cd graphq-llm && npm install
 
----
+# 2. Create .env file (copy configuration from Step 3 above)
+touch .env
+# Edit .env with your configuration
 
-## 💡 Benefits of This Setup
+# 3. Start ResilientDB
+docker-compose -f docker-compose.dev.yml up -d resilientdb
 
-✅ **Consistent Environment:** Everyone gets the same setup  
-✅ **No Manual Configuration:** GraphQL setup is automated  
-✅ **Live Updates:** Code changes reflect immediately  
-✅ **Isolated:** Each developer has their own containers  
-✅ **Easy Cleanup:** `docker-compose down` removes everything  
-✅ **Team Collaboration:** Shared Docker configuration  
+# 4. Wait for ResilientDB (60-120 seconds)
+sleep 60
+
+# 5. Start GraphQ-LLM backend
+docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
+
+# 6. Wait for backend (30-60 seconds)
+sleep 30
+
+# 7. Ingest documents (REQUIRED - each teammate must do this)
+docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest:graphql
+
+# 8. Set up Nexus (separate repository)
+cd /path/to/workspace
+git clone https://github.com/ResilientApp/nexus.git && cd nexus && npm install
+
+# 9. Set up PostgreSQL for Nexus
+docker run -d --name nexus-postgres \
+  -e POSTGRES_USER=nexus -e POSTGRES_PASSWORD=nexus \
+  -e POSTGRES_DB=nexus -p 5432:5432 pgvector/pgvector:pg14
+
+# 10. Create Nexus .env file (copy configuration from Step 7.4 above)
+touch .env
+# Edit .env with your configuration
+
+# 11. Add GraphQ-LLM integration to Nexus
+# Follow Step 7.6 and use NEXUS_UI_EXTENSION_GUIDE.md
+
+# 12. Start Nexus
+npm run dev
+
+# 13. Test integration
+curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ getTransaction(id: \"123\") { asset } }"}'
+```
 
 ---
 
 ## 📚 Additional Resources
 
+- **Nexus Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+- **Nexus UI Extension:** See `NEXUS_UI_EXTENSION_GUIDE.md` (complete code for all Nexus files)
+- **Test Queries:** See `TEST_QUERIES.md` (10 example queries to test the tutor)
 - **Project Status:** See `FINAL_PHASES_AND_STEPS.md`
 - **Integration Details:** See `WHY_INTEGRATE_RESLENS_NEXUS.md`
 - **ResilientDB Docs:** See `docs/` directory (ingested for RAG)
@@ -592,9 +614,60 @@ docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest
 ## 🆘 Need Help?
 
 If you encounter issues:
-1. Check the troubleshooting section above
-2. Review logs: `docker-compose logs <service-name>`
-3. Check service health: `docker-compose ps`
-4. Verify environment variables are set correctly
 
+1. **Check logs:**
+   ```bash
+   # GraphQ-LLM logs
+   docker-compose -f docker-compose.dev.yml logs graphq-llm-backend
+   
+   # Nexus logs (in Nexus directory)
+   npm run dev  # Check terminal output
+   ```
 
+2. **Verify environment variables:**
+   - GraphQ-LLM `.env` file
+   - Nexus `.env` file
+
+3. **Check service health:**
+   ```bash
+   # GraphQ-LLM
+   curl http://localhost:3001/health
+   
+   # Nexus
+   curl http://localhost:3000/api/research/documents
+   
+   # ResilientDB
+   curl http://localhost:18000/v1/transactions/test
+   ```
+
+4. **Review troubleshooting section above**
+
+---
+
+## ✅ Success Criteria
+
+You've successfully set up the project when:
+
+1. ✅ GraphQ-LLM HTTP API is running on port 3001
+2. ✅ ResilientDB is running and accessible
+3. ✅ Documents are ingested (check logs for chunk count - should be 100+)
+4. ✅ Nexus is running on port 3000
+5. ✅ Nexus UI shows GraphQL Tutor page at `http://localhost:3000/graphql-tutor`
+6. ✅ Query analysis works in Nexus UI
+7. ✅ Explanations include documentation context from ResilientDB
+
+**Congratulations! You're now at the same stage as the current setup! 🎉**
+
+---
+
+## 📝 Notes for Team Members
+
+- **Each teammate must run document ingestion separately** - docs are stored in your local ResilientDB
+- **Nexus UI extensions must be added manually** - see `NEXUS_UI_EXTENSION_GUIDE.md`
+- **First startup takes longer** - models need to be downloaded (5-10 minutes)
+- **Environment variables are critical** - double-check `.env` files in both GraphQ-LLM and Nexus
+- **Test with provided queries** - see `TEST_QUERIES.md` for 10 example queries
+
+---
+
+**Ready to start? Begin with Step 1! 🚀**

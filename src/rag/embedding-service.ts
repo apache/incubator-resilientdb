@@ -1,6 +1,8 @@
 import { HfInference } from '@huggingface/inference';
 import env from '../config/environment';
 
+type LocalPipeline = (input: string | string[], options?: Record<string, unknown>) => Promise<any>;
+
 // Direct HTTP API calls using the Inference API endpoint
 // This bypasses the SDK's Inference Providers feature which requires special permissions
 async function fetchEmbeddingDirect(
@@ -74,26 +76,38 @@ export class EmbeddingService {
   private hfClient: HfInference | null = null;
   private model: string;
   private dimension: number;
+  private provider: 'huggingface' | 'local';
+  private localPipelinePromise?: Promise<LocalPipeline>;
 
   constructor() {
-    // Hugging Face - use API key if available, otherwise use public access
-    // We'll use direct HTTP API calls instead of SDK to avoid Inference Providers issues
-    // The hfClient is kept for compatibility but we'll use fetchEmbeddingDirect instead
-    if (env.HUGGINGFACE_API_KEY) {
-      this.hfClient = new HfInference(env.HUGGINGFACE_API_KEY);
-    } else {
-      this.hfClient = new HfInference();
-    }
-    // Use sentence-transformers model optimized for embeddings
-    // This model works well with feature extraction pipeline
     this.model = 'sentence-transformers/all-MiniLM-L6-v2';
     this.dimension = 384;
+    this.provider = env.EMBEDDINGS_PROVIDER;
+
+    if (this.provider === 'local') {
+      this.localPipelinePromise = this.initLocalPipeline();
+    } else {
+      if (env.HUGGINGFACE_API_KEY) {
+        this.hfClient = new HfInference(env.HUGGINGFACE_API_KEY);
+      } else {
+        this.hfClient = new HfInference();
+      }
+    }
+  }
+
+  private async initLocalPipeline(): Promise<LocalPipeline> {
+    const transformers = await import('@xenova/transformers');
+    const pipeline = await transformers.pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    return pipeline;
   }
 
   /**
    * Check if the embedding service is available
    */
   isAvailable(): boolean {
+    if (this.provider === 'local') {
+      return true;
+    }
     return this.hfClient !== null;
   }
 
@@ -109,7 +123,32 @@ export class EmbeddingService {
     }
 
     const trimmedText = text.trim();
+    if (this.provider === 'local') {
+      return this.generateEmbeddingLocal(trimmedText);
+    }
     return this.generateEmbeddingHuggingFace(trimmedText);
+  }
+
+  private async generateEmbeddingLocal(text: string): Promise<number[]> {
+    if (!this.localPipelinePromise) {
+      this.localPipelinePromise = this.initLocalPipeline();
+    }
+    const pipeline = await this.localPipelinePromise;
+    const output = await pipeline(text, {
+      pooling: 'mean',
+      normalize: true,
+    });
+    // output.data may be typed array
+    if (Array.isArray(output)) {
+      return output[0] as number[];
+    }
+    if (output && Array.isArray(output.data)) {
+      return output.data as number[];
+    }
+    if (output?.data instanceof Float32Array) {
+      return Array.from(output.data);
+    }
+    throw new Error('Failed to generate embedding locally');
   }
 
   /**
@@ -208,9 +247,23 @@ export class EmbeddingService {
     const embeddings: number[][] = new Array(texts.length).fill(null);
     const errors: string[] = [];
 
-    // Hugging Face batch processing
-    // Note: Hugging Face API handles batching automatically
-    for (let i = 0; i < validTexts.length; i += batchSize) {
+    if (this.provider === 'local') {
+      for (const item of validTexts) {
+        try {
+          embeddings[item.index] = await this.generateEmbeddingLocal(item.text);
+        } catch (error) {
+          errors.push(
+            `Local embedding failed for chunk ${item.index + 1}: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          );
+          embeddings[item.index] = [];
+        }
+      }
+    } else {
+      // Hugging Face batch processing
+      // Note: Hugging Face API handles batching automatically
+      for (let i = 0; i < validTexts.length; i += batchSize) {
       const batch = validTexts.slice(i, i + batchSize);
       const batchTexts = batch.map(({ text }) => text);
 
@@ -261,6 +314,7 @@ export class EmbeddingService {
         errors.push(`Batch ${i / batchSize + 1}: ${errorMsg}`);
         console.error(`Failed to process batch ${i / batchSize + 1}:`, errorMsg);
       }
+      }
     }
 
     if (errors.length > 0 && errors.length === Math.ceil(validTexts.length / batchSize)) {
@@ -295,8 +349,8 @@ export class EmbeddingService {
   /**
    * Get the current provider
    */
-  getProvider(): 'huggingface' {
-    return 'huggingface';
+  getProvider(): 'huggingface' | 'local' {
+    return this.provider;
   }
 
   /**
