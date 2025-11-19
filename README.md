@@ -225,7 +225,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in the previous step.
+### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in Step 2.
 ```yaml
 database:
   db_root_url: <CROW_ENDPOINT>  
