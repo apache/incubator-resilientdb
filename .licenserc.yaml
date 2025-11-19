@@ -6,6 +6,13 @@ header:
   paths-ignore:
     - '.*'
     - '.**/*'
+    - "ecosystem/**/.gitignore"
+    - "ecosystem/**/.npmrc"
+    - "ecosystem/**/.prettierignore"
+    - "ecosystem/**/.prettierrc"
+    - "ecosystem/**/.bazelrc"
+    - "ecosystem/**/.licenserc.yaml"
+    - "ecosystem/**/dev/.rat-excludes"
     - '**/*.sol'
     - CNAME
     - DISCLAIMER
