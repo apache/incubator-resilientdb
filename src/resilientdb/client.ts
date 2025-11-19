@@ -215,5 +215,36 @@ export class ResilientDBClient {
   getEndpoint(): string {
     return env.RESILIENTDB_GRAPHQL_URL;
   }
+
+  /**
+   * Check connection health to ResilientDB
+   * Returns connection status and basic info
+   */
+  async checkConnection(): Promise<{
+    connected: boolean;
+    endpoint: string;
+    error?: string;
+    responseTime?: number;
+  }> {
+    const startTime = Date.now();
+    try {
+      // Simple introspection query to test connection
+      const testQuery = `{ __typename }`;
+      await this.client.request(testQuery);
+      const responseTime = Date.now() - startTime;
+      
+      return {
+        connected: true,
+        endpoint: env.RESILIENTDB_GRAPHQL_URL,
+        responseTime,
+      };
+    } catch (error) {
+      return {
+        connected: false,
+        endpoint: env.RESILIENTDB_GRAPHQL_URL,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
 }
 

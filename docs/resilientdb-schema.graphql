@@ -1,0 +1,45 @@
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+"""Indicates an Input Object is a OneOf Input Object."""
+directive @oneOf on INPUT_OBJECT
+
+type CommitTransaction {
+  id: String!
+}
+
+scalar JSONScalar
+
+type Mutation {
+  postTransaction(data: PrepareAsset!): CommitTransaction!
+}
+
+input PrepareAsset {
+  operation: String!
+  amount: Int!
+  signerPublicKey: String!
+  signerPrivateKey: String!
+  recipientPublicKey: String!
+  asset: JSONScalar!
+}
+
+type Query {
+  getTransaction(id: ID!): RetrieveTransaction!
+}
+
+type RetrieveTransaction {
+  id: String!
+  version: String!
+  amount: Int!
+  uri: String!
+  type: String!
+  publicKey: String!
+  operation: String!
+  metadata: String
+  asset: JSONScalar!
+  signerPublicKey: String!
+}
+

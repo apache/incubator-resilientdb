@@ -180,9 +180,11 @@ export class RetrievalService {
     query: string,
     options: Omit<RetrievalOptions, 'type'> = {}
   ): Promise<RetrievalResult> {
+    // Don't filter by type - retrieve all chunks and let similarity filtering handle it
+    // This handles both old chunks with 'markdown' type and new chunks with 'documentation' type
     return this.retrieve(query, {
       ...options,
-      type: 'documentation',
+      // type: 'documentation', // Removed to include 'markdown' chunks from old ingestion
       minSimilarity: options.minSimilarity ?? 0.3,
     });
   }

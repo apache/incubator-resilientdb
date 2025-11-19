@@ -1,0 +1,62 @@
+import { Cards } from '../../components/cards'
+
+# GraphQL Best Practices
+
+The GraphQL specification is intentionally silent on a handful of important issues facing APIs such as dealing with the network, authorization, and pagination. This doesn't mean that there aren't solutions for these issues when using GraphQL, just that they're outside the description about what GraphQL _is_ and instead just common practice.
+
+The articles in this section should not be taken as gospel, and in some cases may rightfully be ignored in favor of some other approach. Some articles introduce some of the philosophy developed within Facebook around designing and deploying GraphQL services, while others are more tactical suggestions for solving common problems like serving over HTTP and performing authorization.
+
+<Cards
+  items={[
+    {
+      title: "Thinking in Graphs",
+      link: "/learn/thinking-in-graphs/",
+      description: "Model your business domain as a graph",
+    },
+    {
+      title: "Serving over HTTP",
+      link: "/learn/serving-over-http/",
+      description: "Handle GraphQL requests on HTTP servers",
+    },
+    {
+      title: "Authorization",
+      link: "/learn/authorization/",
+      description: "Delegate authorization logic to the business logic layer",
+    },
+    {
+      title: "Pagination",
+      link: "/learn/pagination/",
+      description: "Allow clients to traverse lists of objects with a consistent field pagination model",
+    },
+    {
+      title: "Schema Design",
+      link: "/learn/schema-design/",
+      description: "Design and evolve a type system over time without versions",
+    },
+    {
+      title: "Global Object Identification",
+      link: "/learn/global-object-identification/",
+      description: "Consistent object access enables simple caching and object lookups",
+        },
+    {
+      title: "Caching",
+      link: "/learn/caching/",
+      description: "Provide Object Identifiers so clients can build rich caches",
+    },
+    {
+      title: "Performance",
+      link: "/learn/performance/",
+      description: "Optimize the execution and delivery of GraphQL responses",
+    },
+    {
+      title: "Security",
+      link: "/learn/security/",
+      description: "Protect GraphQL APIs from malicious operations",
+    },
+    {
+      title: "Common Errors",
+      link: "/learn/debug-errors/",
+      description: "Learn about common `graphql-http` errors and how to debug them.",
+    }
+  ]}
+/>

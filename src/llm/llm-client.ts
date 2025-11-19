@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { HfInference } from '@huggingface/inference';
 import { getLLMConfig, isLLMAvailable } from '../config/llm';
+import env from '../config/environment';
 
 /**
  * LLM Client
@@ -35,14 +36,17 @@ export interface LLMOptions {
   liveStats?: Record<string, unknown>; // Live stats from ResLens (if enabled)
 }
 
+type LocalGenerationPipeline = (prompt: string, options?: Record<string, unknown>) => Promise<any>;
+
 export class LLMClient {
   private openaiClient: OpenAI | null = null;
   private anthropicClient: Anthropic | null = null;
   private huggingfaceClient: HfInference | null = null;
-  private provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface';
+  private provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface' | 'local';
   private model: string;
   private enableLiveStats: boolean;
   private huggingfaceApiKey?: string;
+  private localPipelinePromise?: Promise<LocalGenerationPipeline>;
 
   constructor() {
     const config = getLLMConfig();
@@ -68,6 +72,9 @@ export class LLMClient {
         this.huggingfaceApiKey = config.apiKey;
         this.huggingfaceClient = new HfInference(config.apiKey);
       }
+    } else if (this.provider === 'local') {
+      this.huggingfaceApiKey = config.apiKey || env.HUGGINGFACE_API_KEY;
+      this.localPipelinePromise = this.initLocalPipeline();
     }
   }
 
@@ -75,6 +82,9 @@ export class LLMClient {
    * Check if LLM client is available
    */
   isAvailable(): boolean {
+    if (this.provider === 'local') {
+      return true;
+    }
     return isLLMAvailable() && (
       this.openaiClient !== null || 
       this.anthropicClient !== null ||
@@ -125,6 +135,8 @@ export class LLMClient {
         return this.generateAnthropicCompletion(enhancedMessages, options);
       } else if (this.provider === 'huggingface') {
         return this.generateHuggingFaceCompletion(enhancedMessages, options);
+      } else if (this.provider === 'local') {
+        return this.generateLocalCompletion(enhancedMessages, options);
       } else {
         throw new Error(`Unsupported LLM provider: ${this.provider}`);
       }
@@ -328,6 +340,78 @@ export class LLMClient {
       
       throw new Error(`Hugging Face API error: ${errorMessage}`);
     }
+  }
+
+  /**
+   * Initialize local text-generation pipeline
+   */
+  private async initLocalPipeline(): Promise<LocalGenerationPipeline> {
+    if (this.huggingfaceApiKey) {
+      if (!process.env.HF_TOKEN) {
+        process.env.HF_TOKEN = this.huggingfaceApiKey;
+      }
+      if (!process.env.HF_HUB_READ_TOKEN) {
+        process.env.HF_HUB_READ_TOKEN = this.huggingfaceApiKey;
+      }
+    }
+
+    const transformers = await import('@xenova/transformers');
+    const pipeline = await transformers.pipeline('text-generation', this.model);
+    return pipeline;
+  }
+
+  /**
+   * Generate completion using local @xenova/transformers pipeline
+   */
+  private async generateLocalCompletion(
+    messages: LLMMessage[],
+    options: LLMOptions
+  ): Promise<LLMResponse> {
+    if (!this.localPipelinePromise) {
+      this.localPipelinePromise = this.initLocalPipeline();
+    }
+    const pipeline = await this.localPipelinePromise;
+
+    let prompt = '';
+    for (const msg of messages) {
+      if (msg.role === 'system') {
+        prompt += `System: ${msg.content}\n\n`;
+      } else if (msg.role === 'user') {
+        prompt += `User: ${msg.content}\n\n`;
+      } else if (msg.role === 'assistant') {
+        prompt += `Assistant: ${msg.content}\n\n`;
+      }
+    }
+    prompt += 'Assistant:';
+
+    const generated = await pipeline(prompt, {
+      max_new_tokens: options.maxTokens ?? 400,
+      temperature: options.temperature ?? 0.7,
+      return_full_text: false,
+    });
+
+    let generatedText = '';
+    if (Array.isArray(generated) && generated.length > 0) {
+      generatedText = generated[0].generated_text || generated[0].output_text || '';
+    } else if (generated && typeof generated === 'object') {
+      generatedText =
+        (generated as Record<string, unknown>).generated_text as string ||
+        (generated as Record<string, unknown>).output_text as string ||
+        '';
+    }
+
+    const promptTokens = Math.ceil(prompt.length / 4);
+    const completionTokens = Math.ceil(generatedText.length / 4);
+
+    return {
+      content: generatedText.trim(),
+      model: this.model,
+      usage: {
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+      },
+    };
   }
 
   /**

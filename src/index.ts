@@ -9,6 +9,7 @@ import { MCPServer } from './mcp/server';
 import { DataPipeline } from './pipeline/data-pipeline';
 import { ResilientDBHTTPWrapper } from './resilientdb/http-wrapper';
 import { LiveStatsService } from './services/live-stats-service';
+import { HTTPServer } from './api/http-server';
 import env from './config/environment';
 
 async function main() {
@@ -20,6 +21,23 @@ async function main() {
     console.log('Starting MCP Server...');
     const mcpServer = new MCPServer();
     await mcpServer.start();
+    return;
+  }
+
+  // Check if running as HTTP API server
+  if (process.argv.includes('--http-api')) {
+    console.log('Starting HTTP API Server...');
+    const httpServer = new HTTPServer(env.MCP_SERVER_PORT);
+    await httpServer.start();
+    // Keep server running
+    process.on('SIGINT', async () => {
+      await httpServer.stop();
+      process.exit(0);
+    });
+    process.on('SIGTERM', async () => {
+      await httpServer.stop();
+      process.exit(0);
+    });
     return;
   }
 
@@ -50,7 +68,8 @@ async function main() {
   const health = await pipeline.healthCheck();
   console.log(`ResilientDB: ${health.resilientdb ? '✓' : '✗'}`);
   console.log(`ResLens: ${health.reslens ? '✓' : '✗'}`);
-  console.log(`Live Stats: ${health.liveStats ? '✓' : '✗'}\n`);
+  console.log(`Live Stats: ${health.liveStats ? '✓' : '✗'}`);
+  console.log(`Nexus: ${health.nexus ? '✓' : '✗'}\n`);
 
   if (!health.resilientdb) {
     console.warn(
@@ -58,24 +77,44 @@ async function main() {
     );
   }
 
+  if (!health.nexus) {
+    console.warn(
+      'Info: Nexus integration not available. Set NEXUS_API_URL to enable Nexus features.'
+    );
+  }
+
+  // Start HTTP API server for Nexus integration
+  httpServerInstance = new HTTPServer(env.MCP_SERVER_PORT);
+  await httpServerInstance.start();
+  console.log('');
+
   console.log('GraphQ-LLM service initialized.');
   console.log('Available modes:');
   console.log('  - MCP Server: npm run dev -- --mcp-server');
-  console.log('  - Standalone: npm run dev');
+  console.log('  - HTTP API: npm run dev -- --http-api');
+  console.log('  - Standalone: npm run dev (includes HTTP API)');
   console.log('\nConfiguration:');
   console.log(`  ResilientDB: ${env.RESILIENTDB_GRAPHQL_URL}`);
+  console.log(`  Nexus: ${env.NEXUS_API_URL || 'Not configured'}`);
   console.log(`  MCP Server: ${env.MCP_SERVER_HOST}:${env.MCP_SERVER_PORT}`);
   console.log(`  Log Level: ${env.LOG_LEVEL}\n`);
 }
 
-// Handle graceful shutdown
-process.on('SIGINT', () => {
+// Handle graceful shutdown (for standalone mode)
+let httpServerInstance: HTTPServer | null = null;
+process.on('SIGINT', async () => {
   console.log('\nShutting down GraphQ-LLM...');
+  if (httpServerInstance) {
+    await httpServerInstance.stop();
+  }
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on('SIGTERM', async () => {
   console.log('\nShutting down GraphQ-LLM...');
+  if (httpServerInstance) {
+    await httpServerInstance.stop();
+  }
   process.exit(0);
 });
 
