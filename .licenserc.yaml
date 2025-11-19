@@ -16,6 +16,7 @@ header:
     - 'third_party/loc_script/src/index.js'
     - '**/*.json'
     - '**/*.config'
+    - '**/*.conf'
 
 
 
