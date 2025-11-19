@@ -206,16 +206,12 @@ int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message) {
 
 int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                      const ReplicaInfo& replica_info) {
-  return SendSingleMessage(message, replica_info);
-
-  if (is_use_long_conn_) {
-    std::string data = NetChannel::GetRawMessageString(message, verifier_);
-    BroadcastData broadcast_data;
-    broadcast_data.add_data()->swap(data);
-    return SendMessageFromPool(broadcast_data, {replica_info});
-  } else {
+  // Learners/clients aren't part of the replica pool, so send directly on the
+  // configured port instead of the long-connection (+10000) channel.
+  if (!IsInPool(replica_info)) {
     return SendMessageInternal(message, {replica_info});
   }
+  return SendSingleMessage(message, replica_info);
 }
 
 int ReplicaCommunicator::SendBatchMessage(

@@ -5,7 +5,8 @@ header:
 
   paths-ignore:
     - '.*'
-    - '.**/**'
+    - '.**/*'
+    - "ecosystem/**/.*"
     - '**/*.sol'
     - CNAME
     - DISCLAIMER
@@ -14,6 +15,9 @@ header:
     - 'dev/.rat-excludes'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
+    - '**/*.json'
+    - '**/*.config'
+    - '**/*.conf'
 
 
 

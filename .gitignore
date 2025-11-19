@@ -4,13 +4,13 @@ scripts/deploy/config_out/
 deploy/kv_server/output/
 .idea/
 .vscode/
-.DS_Store
+**/*.DS_Store
 bazel-*
-*.log
+**/*.log
 *.bak
 venv
 sdk_validator/venv
-__pycache__
+**/*__pycache__
 MODULE.*
 apache_release
 *.out.*
@@ -21,3 +21,5 @@ resdb/
 100*_db/
 gmon.out
 .history/
+**/*AGENTS.md
+

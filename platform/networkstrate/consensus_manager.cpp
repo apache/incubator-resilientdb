@@ -47,6 +47,11 @@ ConsensusManager::ConsensusManager(const ResDBConfig& config)
         config_.GetPrivateKey(), config_.GetPublicKeyCertificateInfo());
   }
   bc_client_ = GetReplicaClient(config_.GetReplicaInfos(), true);
+
+  // Add learners
+  for (const auto& learner : config_.GetLearnerInfos()) {
+    AddNewClient(learner);
+  }
 }
 
 ConsensusManager::~ConsensusManager() {

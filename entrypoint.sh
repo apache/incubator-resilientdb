@@ -19,5 +19,20 @@
 # under the License.
 #
 
-./service/tools/kv/server_tools/start_kv_service.sh
-tail -f /dev/null
+./service/tools/kv/server_tools/start_kv_service_learner.sh
+
+if [[ "$2" =~ ^[0-9]+$ ]]; then
+    lines=$2
+else
+    lines=2
+fi
+
+if [ "$1" = "-w" ]; then
+    watch -n 1 tail -n "$lines" logs/*.log
+elif [ "$1" = "-l" ]; then
+    tail -f logs/learner.log
+elif [ "$1" = "-a" ]; then
+    tail -f logs/*.log
+else
+    tail -f /dev/null
+fi
