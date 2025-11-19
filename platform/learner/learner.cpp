@@ -63,7 +63,7 @@ void Learner::Run() {
     while (is_running_.load()) {
         auto client = server.Accept();
         if (!client) {
-        continue;
+            continue;
         }
         std::thread(&Learner::HandleClient, this, std::move(client)).detach();
     }
@@ -76,17 +76,17 @@ void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
         size_t len = 0;
         int ret = socket->Recv(&buffer, &len);
         if (ret <= 0) {
-        if (buffer != nullptr) {
-            free(buffer);
-        }
-        break;
+            if (buffer != nullptr) {
+                free(buffer);
+            }
+            break;
         }
 
         std::string payload(static_cast<char*>(buffer), len);
         free(buffer);
         ProcessBroadcast(payload);
     }
-    std::cout << "[Learner] replica disconnected" << std::endl;
+    // std::cout << "[Learner] replica disconnected" << std::endl;
 }
 
 void Learner::ProcessBroadcast(const std::string& payload) const {
@@ -109,6 +109,12 @@ void Learner::ProcessBroadcast(const std::string& payload) const {
         last_seq_.store(request.seq());
         last_sender_.store(request.sender_id());
         last_payload_bytes_.store(request.data().size());
+        resdb::BatchUserResponse batch_response;
+        if (batch_response.ParseFromString(request.data())) {
+            total_sets_.fetch_add(batch_response.set_count());
+            total_reads_.fetch_add(batch_response.read_count());
+            total_deletes_.fetch_add(batch_response.delete_count());
+        }
         return;
     }
 
@@ -121,8 +127,16 @@ void Learner::ProcessBroadcast(const std::string& payload) const {
 }
 
 void Learner::MetricsLoop() const {
+    uint64_t last_messages = 0;
+    uint64_t last_bytes = 0;
     while (is_running_.load()) {
-        PrintMetrics();
+        uint64_t current_messages = total_messages_.load();
+        uint64_t current_bytes = total_bytes_.load();
+        if (current_messages != last_messages || current_bytes != last_bytes) {
+            PrintMetrics();
+            last_messages = current_messages;
+            last_bytes = current_bytes;
+        }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
@@ -130,6 +144,9 @@ void Learner::MetricsLoop() const {
 void Learner::PrintMetrics() const {
     std::cout << "[Learner] broadcasts=" << total_messages_.load()
         << " bytes=" << total_bytes_.load()
+        << " sets=" << total_sets_.load()
+        << " reads=" << total_reads_.load()
+        << " deletes=" << total_deletes_.load()
         << " last_type=" << last_type_.load()
         << " last_seq=" << last_seq_.load()
         << " sender=" << last_sender_.load()

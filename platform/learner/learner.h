@@ -32,6 +32,9 @@ private:
     std::atomic<bool> is_running_{false};
     mutable std::atomic<uint64_t> total_messages_{0};
     mutable std::atomic<uint64_t> total_bytes_{0};
+    mutable std::atomic<uint64_t> total_sets_{0};
+    mutable std::atomic<uint64_t> total_reads_{0};
+    mutable std::atomic<uint64_t> total_deletes_{0};
     mutable std::atomic<int> last_type_{-1};
     mutable std::atomic<int64_t> last_seq_{0};
     mutable std::atomic<int> last_sender_{-1};

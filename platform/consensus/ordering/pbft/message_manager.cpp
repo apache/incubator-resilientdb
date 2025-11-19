@@ -22,6 +22,7 @@
 #include <glog/logging.h>
 
 #include "common/utils/utils.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -48,6 +49,39 @@ MessageManager::MessageManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             resp_msg->set_primary_id(GetCurrentPrimary());
+            uint64_t set_cnt = 0;
+            uint64_t read_cnt = 0;
+            uint64_t delete_cnt = 0;
+            BatchUserRequest batch_request;
+            if (batch_request.ParseFromString(request->data())) {
+              for (const auto& user_req : batch_request.user_requests()) {
+                resdb::KVRequest kv_request;
+                if (!kv_request.ParseFromString(user_req.request().data())) {
+                  continue;
+                }
+                switch (kv_request.cmd()) {
+                  case resdb::KVRequest::SET:
+                  case resdb::KVRequest::SET_WITH_VERSION:
+                    ++set_cnt;
+                    break;
+                  case resdb::KVRequest::GET:
+                  case resdb::KVRequest::GETALLVALUES:
+                  case resdb::KVRequest::GETRANGE:
+                  case resdb::KVRequest::GET_WITH_VERSION:
+                  case resdb::KVRequest::GET_ALL_ITEMS:
+                  case resdb::KVRequest::GET_KEY_RANGE:
+                  case resdb::KVRequest::GET_HISTORY:
+                  case resdb::KVRequest::GET_TOP:
+                    ++read_cnt;
+                    break;
+                  default:
+                    break;
+                }
+              }
+            }
+            resp_msg->set_set_count(set_cnt);
+            resp_msg->set_read_count(read_cnt);
+            resp_msg->set_delete_count(delete_cnt);
             if (transaction_executor_->NeedResponse() &&
                 resp_msg->proxy_id() != 0) {
               queue_.Push(std::move(resp_msg));
