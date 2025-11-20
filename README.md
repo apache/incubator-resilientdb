@@ -101,7 +101,7 @@ This project strictly requires **Bazel 6.0.0**. If you have accidentally upgrade
 
 2.  **Download Bazel 6.0.0**
     ```bash
-    wget [https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64](https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64) -O bazel
+    wget https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64 -O bazel
     ```
 
 3.  **Install to system path**
