@@ -216,7 +216,7 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/s
 Open another new terminal tab to set up the ORM and verify the operation.
 ```bash
 git clone https://github.com/apache/incubator-resilientdb-ResDB-ORM.git
-cd ResDB-ORM
+cd incubator-resilientdb-ResDB-ORM
 
 python3.10 -m venv venv
 source venv/bin/activate
