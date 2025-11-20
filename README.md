@@ -201,7 +201,7 @@ Open a new terminal tab, then setup and start the GraphQL server:
 git clone https://github.com/apache/incubator-resilientdb-graphql.git
 cd incubator-resilientdb-graphql
 ```
-(2) Create and activate a virtual environment:
+(2) Create a virtual environment:
 ```bash
 python3.10 -m venv venv
 ```
