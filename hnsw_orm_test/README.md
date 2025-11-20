@@ -8,7 +8,7 @@ Add something...
 - search.py: A client CLI tool to perform semantic search using the generated index.
 
 ## Prerequisites
-- ResilientDB KV Service must be running. Ensure you can access http://localhost:18000 (or your configured port).
+- ResilientDB KV Service must be running. Ensure you can access your configured port.
 - Python 3.10
 - ResDB-ORM Virtual Environment
 
