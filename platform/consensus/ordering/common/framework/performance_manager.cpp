@@ -93,7 +93,6 @@ int PerformanceManager::StartEval() {
       eval_ready_promise_.set_value(true);
     }
   }
-  LOG(WARNING) << "start eval done";
   return 0;
 }
 
