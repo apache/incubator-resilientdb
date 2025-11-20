@@ -154,7 +154,16 @@ LOG_LEVEL=info
 
 ---
 
-### **Step 4: Set Up ResilientDB**
+### **Step 4: Set Up ResilientDB and GraphQL Server**
+
+**What is the GraphQL Server?**
+- ResilientDB has two services:
+  1. **KV Service** (port 18000) - Key-value storage
+  2. **GraphQL Server** (port 5001) - GraphQL API for querying/storing data
+- The GraphQL server is **required** for storing and retrieving document chunks
+- It's a Python Flask application that provides GraphQL mutations and queries
+
+**⚠️ Important:** You do NOT need to clone the separate GraphQL repository (`https://github.com/apache/incubator-resilientdb-graphql`). The GraphQL server code is already included in the ResilientDB Docker image (`expolab/resdb`), and the `setup-graphql.sh` script automatically sets it up. The separate repository is only for reference or manual setup outside Docker.
 
 #### **Option A: Using Docker (Recommended)**
 
@@ -163,28 +172,101 @@ LOG_LEVEL=info
 docker-compose -f docker-compose.dev.yml up -d resilientdb
 
 # Wait for ResilientDB to be healthy (60-120 seconds)
+# The setup-graphql.sh script runs automatically in the container
 # Check status
 docker-compose -f docker-compose.dev.yml ps
 
 # Verify ResilientDB KV service is running
 curl http://localhost:18000/v1/transactions/test
 
-# Verify GraphQL server is running
+# Verify GraphQL server is running (IMPORTANT - this must work!)
 curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
   -d '{"query": "{ __typename }"}'
 ```
 
-**Expected:** Both commands should return responses (may be errors, but connection should work).
+**Expected:** 
+- KV service should return a response (may be an error, but connection works)
+- GraphQL server should return `{"data":{"__typename":"Query"}}` or similar
 
-#### **Option B: Use Existing ResilientDB**
+**If GraphQL server is not running:**
+```bash
+# Check container logs
+docker-compose -f docker-compose.dev.yml logs resilientdb
 
-If you already have ResilientDB running:
+# The setup-graphql.sh script should run automatically
+# If it fails, you may need to set up ResilientDB manually (see Option B)
+```
+
+#### **Option B: Manual Setup (If Docker doesn't work)**
+
+If Docker setup fails or you want to set up manually:
+
+1. **Set up ResilientDB KV Service:**
+   - Follow ResilientDB documentation: https://github.com/apache/incubator-resilientdb
+   - Ensure KV service is running on port 18000
+
+2. **Set up GraphQL Server:**
+
+   **Option B.1: Using ResilientDB Main Repository (Recommended)**
+   ```bash
+   # Clone ResilientDB main repository
+   git clone https://github.com/apache/incubator-resilientdb.git
+   cd incubator-resilientdb/ecosystem/graphql
+   
+   # Copy setup-graphql.sh from graphq-llm repository
+   # Or manually install dependencies:
+   pip install flask flask-cors ariadne base58 cryptography pysha3 \
+       cryptoconditions python-rapidjson strawberry-graphql
+   
+   # Fix the tx_Dict typo (if present)
+   sed -i 's/tx_Dict/tx_dict/g' resdb_driver/transaction.py
+   
+   # Start the GraphQL server
+   python3 app.py
+   # Server should start on port 5001
+   ```
+
+   **Option B.2: Using Standalone GraphQL Repository (Alternative)**
+   ```bash
+   # Clone the standalone GraphQL repository
+   git clone https://github.com/apache/incubator-resilientdb-graphql.git
+   cd incubator-resilientdb-graphql
+   
+   # Follow the repository's README for setup
+   # Install dependencies as per repository instructions
+   # Start the server
+   python3 app.py
+   ```
+   
+   **Note:** The standalone repository (Option B.2) is a separate implementation. The main ResilientDB repository (Option B.1) is recommended as it matches what's in the Docker image.
+
+3. **Verify GraphQL Server:**
+   ```bash
+   curl -X POST http://localhost:5001/graphql \
+     -H "Content-Type: application/json" \
+     -d '{"query": "{ __typename }"}'
+   ```
+
+4. **Update `.env`** to point to your ResilientDB:
+   ```env
+   RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
+   ```
+
+#### **Option C: Use Existing ResilientDB**
+
+If you already have ResilientDB with GraphQL server running:
 
 1. **Comment out the `resilientdb` service** in `docker-compose.dev.yml`
 2. **Update `.env`** to point to your existing ResilientDB:
    ```env
    RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
+   ```
+3. **Verify GraphQL server is accessible:**
+   ```bash
+   curl -X POST http://localhost:5001/graphql \
+     -H "Content-Type: application/json" \
+     -d '{"query": "{ __typename }"}'
    ```
 
 ---
@@ -286,6 +368,8 @@ cd nexus
 **Repository Link:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
 
 **Verify:** You should see a Next.js project structure with `package.json`, `src/`, `app/`, etc.
+
+**Note:** You do NOT need to clone the ResilientDB GraphQL repository separately. The GraphQL server is included in the ResilientDB Docker image and is set up automatically via `setup-graphql.sh` script.
 
 #### **7.2: Install Nexus Dependencies**
 
@@ -532,7 +616,10 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 After completing all steps, verify:
 
 - [ ] GraphQ-LLM HTTP API responds: `curl http://localhost:3001/health`
-- [ ] ResilientDB GraphQL is accessible: `curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
+- [ ] ResilientDB KV service is running: `curl http://localhost:18000/v1/transactions/test`
+- [ ] **ResilientDB GraphQL server is running** (REQUIRED): `curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
+  - Should return: `{"data":{"__typename":"Query"}}` or similar
+  - If this fails, document ingestion and RAG will not work!
 - [ ] Documents ingested: Check logs for "Chunks stored: X" (should be 100+)
 - [ ] Nexus is running: `curl http://localhost:3000/api/research/documents`
 - [ ] Nexus UI accessible: Open `http://localhost:3000/graphql-tutor`
@@ -613,21 +700,43 @@ cat /path/to/nexus/.env | grep GRAPHQ_LLM
 - Or set `NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001`
 - Restart Nexus after changing `.env`
 
+### **Issue: GraphQL Server not running**
+
+**Check:**
+```bash
+# Verify GraphQL server is running
+curl -X POST http://localhost:5001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ __typename }"}'
+```
+
+**Solution:**
+- If using Docker: Check container logs: `docker-compose -f docker-compose.dev.yml logs resilientdb`
+- The `setup-graphql.sh` script should run automatically in Docker
+- If it fails, check that Python dependencies are installed
+- GraphQL server must be running on port 5001 for document ingestion to work
+
 ### **Issue: No documents retrieved in explanations**
 
 **Check:**
 ```bash
-# Verify documents were ingested
-# Check ResilientDB for chunks
-curl -X POST http://localhost:18000/graphql \
+# Verify GraphQL server is running first
+curl -X POST http://localhost:5001/graphql \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{ __typename }"}'
+
+# Verify documents were ingested via GraphQL
+curl -X POST http://localhost:5001/graphql \
   -H "Content-Type: application/json" \
   -d '{"query": "{ transactions(limit: 5) { id } }"}'
 ```
 
 **Solution:**
+- **First:** Ensure GraphQL server is running (see issue above)
 - Re-run document ingestion: `npm run ingest:graphql`
 - Check that `docs/` directory has GraphQL documentation files
 - Verify ingestion completed successfully (check logs)
+- If GraphQL server is not running, ingestion will fail
 
 ### **Issue: PostgreSQL connection failed (Nexus)**
 
@@ -720,7 +829,8 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 ### **Repositories:**
 - **GraphQ-LLM Repository:** Replace `<repository-url>` with your actual repository URL
 - **Nexus Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
-- **ResilientDB Repository:** [https://github.com/apache/incubator-resilientdb](https://github.com/apache/incubator-resilientdb) (for reference)
+- **ResilientDB Main Repository:** [https://github.com/apache/incubator-resilientdb](https://github.com/apache/incubator-resilientdb) (for reference - contains GraphQL server in `ecosystem/graphql/`)
+- **ResilientDB GraphQL Repository (Standalone):** [https://github.com/apache/incubator-resilientdb-graphql](https://github.com/apache/incubator-resilientdb-graphql) (for reference only - not needed if using Docker)
 
 ### **Documentation Files (in GraphQ-LLM repository):**
 - **Nexus UI Extension Guide:** `NEXUS_UI_EXTENSION_GUIDE.md` (complete code for all Nexus integration files)
