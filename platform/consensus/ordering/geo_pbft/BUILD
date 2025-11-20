@@ -62,7 +62,7 @@ cc_test(
         "//common/test:test_main",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/execution:mock_geo_global_executor",
-        "//platform/consensus/execution:mock_transaction_executor_impl",
+        #"//platform/consensus/execution:mock_transaction_executor_impl",
         "//platform/networkstrate:mock_replica_communicator",
     ],
 )

@@ -1,0 +1,67 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+syntax = "proto3";
+
+package resdb.raft;
+
+message AppendEntries{
+  int32 id = 1;
+  bytes data = 2;   // this can maybe work as entries but maybe not?
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  int64 uid = 6;
+  int64 create_time = 7;
+  int64 seq = 9;
+  int32 prevLogTerm = 10; // term of the most recent log (term corresponding to seq)
+  int64 leaderCommitIndex = 11; // leader sends out highest seq that is committed
+  int32 term = 12; // This should be a term for each entry, but assuming no failure at first
+}
+
+message AppendEntriesResponse {
+  int32 term = 1;
+  bool success = 2;
+  int32 id = 3;
+  int32 lastApplied = 4;
+  int32 nextEntry = 5;
+  bytes hash = 6;
+  int64 seq = 7;
+}
+
+message RequestVote {
+  int64 term = 1;
+  int32 candidateId = 2;
+  int64 lastLogIndex = 3;
+  int64 lastLogTerm = 4;
+}
+
+message RequestVoteResponse {
+  int64 term = 1;
+  bool voteGranted = 2;
+}
+
+enum MessageType {
+  None = 0;
+  AppendEntriesMsg = 1;
+  AppendEntriesResponseMsg = 2;
+  RequestVoteMsg = 3;
+  RequestVoteResponseMsg = 4;
+}
+

@@ -38,8 +38,6 @@ Consensus::Consensus(const ResDBConfig& config,
             ResponseMsg(*resp_msg);
           },
           nullptr, std::move(executor))) {
-  LOG(INFO) << "is running is performance mode:"
-            << config_.IsPerformanceRunning();
   is_stop_ = false;
   global_stats_ = Stats::GetGlobalStats();
 }
@@ -98,6 +96,7 @@ int Consensus::Broadcast(int type, const google::protobuf::Message& msg) {
   Request request;
   msg.SerializeToString(request.mutable_data());
   request.set_type(Request::TYPE_CUSTOM_CONSENSUS);
+  LOG(ERROR) << "Sending custom consensus Broadcast";
   request.set_user_type(type);
   request.set_sender_id(config_.GetSelfInfo().id());
 
@@ -110,6 +109,7 @@ int Consensus::SendMsg(int type, const google::protobuf::Message& msg,
   Request request;
   msg.SerializeToString(request.mutable_data());
   request.set_type(Request::TYPE_CUSTOM_CONSENSUS);
+  LOG(ERROR) << "Sending custom consensus message";
   request.set_user_type(type);
   request.set_sender_id(config_.GetSelfInfo().id());
   replica_communicator_->SendMessage(request, node_id);

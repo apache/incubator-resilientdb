@@ -178,7 +178,6 @@ void TransactionExecutor::OrderMessage() {
         // << " next seq:" << next_execute_seq_;
         continue;
       }
-
       AddNewData(std::move(message));
     }
 
@@ -325,7 +324,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   // LOG(ERROR)<<" CF = :"<<(cf==1)<<" uid:"<<uid;
 
-  if (duplicate_manager_ && batch_request_p) {	      
+  if (duplicate_manager_ && batch_request_p) { 
     duplicate_manager_->AddExecuted(batch_request_p->hash(), batch_request_p->seq());		    
   }
 

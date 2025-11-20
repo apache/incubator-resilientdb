@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,12 +16,28 @@
 # under the License.
 #
 
-protocol=pbft
-export server=//benchmark/protocols/$protocol:kv_server_performance
-export service_tools=//benchmark/protocols/$protocol:kv_service_tools
-export TEMPLATE_PATH=$PWD/config/$protocol.config
-export performance=true
+package(default_visibility = ["//visibility:private"])
 
-#export TEMPLATE_PATH=$PWD/config/pbft.config
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
-./performance_local/run_performance.sh $*
+cc_binary(
+    name = "kv_server_performance",
+    srcs = ["kv_server_performance.cpp"],
+    deps = [
+        "//chain/storage:memory_db",
+        "//executor/kv:kv_executor",
+        "//platform/config:resdb_config_utils",
+        "//platform/consensus/ordering/raft/framework:consensus",
+        "//service/utils:server_factory",
+    ],
+)
+
+cc_binary(
+    name = "kv_service_tools",
+    srcs = ["kv_service_tools.cpp"],
+    deps = [
+        "//common/proto:signature_info_cc_proto",
+        "//interface/kv:kv_client",
+        "//platform/config:resdb_config_utils",
+    ],
+)
