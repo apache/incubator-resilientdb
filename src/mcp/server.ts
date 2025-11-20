@@ -300,6 +300,8 @@ Suggestion: Review the tool description for required parameters.`,
       }
 
       try {
+        // Type assertion: args is guaranteed to exist for tools that require it
+        const toolArgs = args as Record<string, unknown> | undefined;
         switch (name) {
           case 'check_connection': {
             const health = await this.resilientDBClient.checkConnection();
@@ -314,7 +316,12 @@ Suggestion: Review the tool description for required parameters.`,
           }
 
           case 'execute_graphql_query': {
-            const queryString = args.query as string;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const queryString = toolArgs.query as string;
             if (!queryString || typeof queryString !== 'string') {
               return {
                 content: [
@@ -336,8 +343,8 @@ Suggestion: Check your query syntax and ensure it's a valid GraphQL query.`,
             }
             const query: GraphQLQuery = {
               query: queryString,
-              variables: args.variables as Record<string, unknown> | undefined,
-              operationName: args.operationName as string | undefined,
+              variables: toolArgs?.variables as Record<string, unknown> | undefined,
+              operationName: toolArgs?.operationName as string | undefined,
             };
             const result = await this.resilientDBClient.executeQuery(query);
             return {
@@ -363,7 +370,12 @@ Suggestion: Check your query syntax and ensure it's a valid GraphQL query.`,
           }
 
           case 'get_query_metrics': {
-            const queryId = args.queryId as string;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const queryId = toolArgs.queryId as string;
             if (!queryId) {
               return {
                 content: [
@@ -415,7 +427,12 @@ Suggestion: Verify the query ID or check if ResLens is properly configured.`,
           }
 
           case 'validate_query': {
-            const query = args.query as string;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const query = toolArgs.query as string;
             const validation = await this.resilientDBClient.validateQuery(query);
             return {
               content: [
@@ -428,9 +445,14 @@ Suggestion: Verify the query ID or check if ResLens is properly configured.`,
           }
 
           case 'estimate_query_efficiency': {
-            const query = args.query as string;
-            const includeSimilarQueries = args.includeSimilarQueries as boolean | undefined ?? true;
-            const useLiveStats = args.useLiveStats as boolean | undefined ?? false;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const query = toolArgs.query as string;
+            const includeSimilarQueries = toolArgs.includeSimilarQueries as boolean | undefined ?? true;
+            const useLiveStats = toolArgs.useLiveStats as boolean | undefined ?? false;
             
             const estimate = await this.efficiencyEstimator.estimateEfficiency(query, {
               includeSimilarQueries,
@@ -448,7 +470,7 @@ Suggestion: Verify the query ID or check if ResLens is properly configured.`,
           }
 
           case 'get_live_stats': {
-            const queryPattern = args.queryPattern as string | undefined;
+            const queryPattern = toolArgs?.queryPattern as string | undefined;
             const stats = this.liveStatsService.getLiveStats();
             
             // If query pattern provided, filter stats
@@ -478,9 +500,14 @@ Suggestion: Verify the query ID or check if ResLens is properly configured.`,
           }
 
           case 'explain_query': {
-            const query = args.query as string;
-            const detailed = args.detailed as boolean | undefined ?? false;
-            const includeLiveStats = args.includeLiveStats as boolean | undefined ?? false;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const query = toolArgs.query as string;
+            const detailed = toolArgs.detailed as boolean | undefined ?? false;
+            const includeLiveStats = toolArgs.includeLiveStats as boolean | undefined ?? false;
             
             const explanation = await this.explanationService.explain(
               query,
@@ -501,8 +528,13 @@ Suggestion: Verify the query ID or check if ResLens is properly configured.`,
           }
 
           case 'optimize_query': {
-            const query = args.query as string;
-            const includeSimilarQueries = args.includeSimilarQueries as boolean | undefined ?? true;
+            if (!toolArgs) {
+              return {
+                content: [{ type: 'text', text: 'Error: Missing arguments' }],
+              };
+            }
+            const query = toolArgs.query as string;
+            const includeSimilarQueries = toolArgs.includeSimilarQueries as boolean | undefined ?? true;
             
             const optimization = await this.optimizationService.optimize(
               query,

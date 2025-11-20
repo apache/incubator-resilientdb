@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { HfInference } from '@huggingface/inference';
 import { getLLMConfig, isLLMAvailable } from '../config/llm';
 import env from '../config/environment';
@@ -41,8 +42,9 @@ type LocalGenerationPipeline = (prompt: string, options?: Record<string, unknown
 export class LLMClient {
   private openaiClient: OpenAI | null = null;
   private anthropicClient: Anthropic | null = null;
+  private geminiClient: GoogleGenerativeAI | null = null;
   private huggingfaceClient: HfInference | null = null;
-  private provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface' | 'local';
+  private provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface' | 'local' | 'gemini';
   private model: string;
   private enableLiveStats: boolean;
   private huggingfaceApiKey?: string;
@@ -68,6 +70,8 @@ export class LLMClient {
         this.anthropicClient = new Anthropic({
           apiKey: config.apiKey,
         });
+      } else if (this.provider === 'gemini') {
+        this.geminiClient = new GoogleGenerativeAI(config.apiKey);
       } else if (this.provider === 'huggingface') {
         this.huggingfaceApiKey = config.apiKey;
         this.huggingfaceClient = new HfInference(config.apiKey);
@@ -88,6 +92,7 @@ export class LLMClient {
     return isLLMAvailable() && (
       this.openaiClient !== null || 
       this.anthropicClient !== null ||
+      this.geminiClient !== null ||
       this.huggingfaceClient !== null
     );
   }
@@ -133,6 +138,8 @@ export class LLMClient {
         return this.generateOpenAICompletion(enhancedMessages, options);
       } else if (this.provider === 'anthropic') {
         return this.generateAnthropicCompletion(enhancedMessages, options);
+      } else if (this.provider === 'gemini') {
+        return this.generateGeminiCompletion(enhancedMessages, options);
       } else if (this.provider === 'huggingface') {
         return this.generateHuggingFaceCompletion(enhancedMessages, options);
       } else if (this.provider === 'local') {
@@ -231,6 +238,85 @@ export class LLMClient {
         completionTokens: response.usage.output_tokens,
         totalTokens: response.usage.input_tokens + response.usage.output_tokens,
       } : undefined,
+    };
+  }
+
+  /**
+   * Generate completion using Google Gemini API
+   */
+  private async generateGeminiCompletion(
+    messages: LLMMessage[],
+    options: LLMOptions
+  ): Promise<LLMResponse> {
+    if (!this.geminiClient) {
+      throw new Error('Gemini client not initialized');
+    }
+
+    // Get the model
+    const model = this.geminiClient.getGenerativeModel({ 
+      model: this.model,
+      generationConfig: {
+        temperature: options.temperature ?? 0.7,
+        maxOutputTokens: options.maxTokens,
+      },
+    });
+
+    // Separate system message from conversation
+    const systemMessages = messages.filter(m => m.role === 'system');
+    const systemMessage = systemMessages.length > 0 
+      ? systemMessages.map(m => m.content).join('\n\n')
+      : '';
+    
+    const conversationMessages = messages.filter(m => m.role !== 'system');
+
+    // Build chat history for multi-turn conversations
+    const history: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+    for (let i = 0; i < conversationMessages.length - 1; i++) {
+      const msg = conversationMessages[i];
+      history.push({
+        role: msg.role === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }],
+      });
+    }
+
+    // Get the last message (user's current question)
+    const lastMessage = conversationMessages[conversationMessages.length - 1];
+    
+    let result;
+    if (history.length > 0) {
+      // Use chat session for multi-turn conversations
+      const chat = model.startChat({
+        history: history,
+        systemInstruction: systemMessage || undefined,
+      });
+      result = await chat.sendMessage(lastMessage.content);
+    } else {
+      // Use simple generateContent for single-turn
+      let prompt = lastMessage.content;
+      if (systemMessage) {
+        prompt = `${systemMessage}\n\n${prompt}`;
+      }
+      result = await model.generateContent(prompt);
+    }
+
+    const response = await result.response;
+    const text = response.text();
+
+    // Get token usage if available
+    const usageMetadata = response.usageMetadata;
+    const promptTokens = usageMetadata?.promptTokenCount ?? Math.ceil(
+      messages.map(m => m.content).join('\n').length / 4
+    );
+    const completionTokens = usageMetadata?.candidatesTokenCount ?? Math.ceil(text.length / 4);
+
+    return {
+      content: text,
+      model: this.model,
+      usage: {
+        promptTokens,
+        completionTokens,
+        totalTokens: promptTokens + completionTokens,
+      },
     };
   }
 

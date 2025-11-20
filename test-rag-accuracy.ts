@@ -10,7 +10,6 @@
  */
 
 import { RetrievalService } from './src/rag/retrieval-service';
-import { ContextFormatter } from './src/rag/context-formatter';
 import { ExplanationService } from './src/llm/explanation-service';
 import { ResilientDBHTTPWrapper } from './src/resilientdb/http-wrapper';
 
@@ -60,9 +59,6 @@ process.stdout.write = function(chunk: any, encoding?: any, cb?: any): boolean {
   }
   return originalStdoutWrite(chunk, encoding, cb);
 };
-
-// Keep formatter for fallback
-const formatter = new ContextFormatter();
 
 interface AccuracyTest {
   query: string;
@@ -218,51 +214,11 @@ async function testQueryAccuracy() {
       let answer = '';
       if (llmAvailable) {
         try {
-          // Use ExplanationService to generate a proper synthesized answer
-          // Format context from retrieved chunks
-          const context = formatter.formatForExplanation(result.chunks, result.scores, {
-            maxTokens: 2000,
-            includeMetadata: false,
+          const explanation = await explanationService.explain(test.query, {
+            maxContextChunks: 5,
           });
-          
-          // Remove the "Relevant Documentation Context:" header
-          const cleanContext = context.replace(/^Relevant Documentation Context:\s*\n*/i, '').trim();
-          
-          // Create a more directive prompt for answering the question
-          const prompt = `Answer this specific question about GraphQL using ONLY relevant information from the documentation below.
-
-Question: ${test.query}
-
-Documentation:
-${cleanContext}
-
-CRITICAL RULES:
-- Answer ONLY what is asked in the question - do not include unrelated information
-- If asked about "mutations" - ONLY mention mutations, do not mention queries or other topics
-- If asked about "variables" - ONLY discuss variables, do not mention mutations or other topics
-- If asked about "queries" - ONLY discuss queries, do not mention mutations or other topics
-- Extract and list specific names, functions, mutations, queries, and fields ONLY if they are relevant to the question
-- Include complete code examples from the documentation ONLY if they are relevant to the question
-- NEVER say "the documentation does not provide" - instead extract what IS in the documentation
-- Be direct and focused - do not add information that doesn't answer the specific question
-- If the documentation doesn't have relevant information for the question, say so clearly`;
-          
-          // Use LLM directly to answer the question
-          const llmClient = (explanationService as any).llmClient;
-          const response = await llmClient.generateCompletion([
-            { 
-              role: 'system', 
-              content: 'You answer questions precisely using only relevant information from the documentation. You do NOT include unrelated information. If asked about mutations, you only mention mutations. If asked about variables, you only discuss variables. Stay focused on the specific question asked.' 
-            },
-            { role: 'user', content: prompt },
-          ], {
-            temperature: 0.2, // Very low temperature for factual extraction
-            maxTokens: 2000, // Increased for complete answers
-          });
-          
-          answer = response.content;
+          answer = explanation.explanation.trim();
         } catch (error) {
-          // Fallback to raw chunks if LLM fails
           console.log(`   ⚠️  LLM synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
           const topChunk = result.chunks[0];
           answer = topChunk ? topChunk.chunkText.trim() : 'No relevant information found.';
@@ -361,50 +317,11 @@ async function testSpecificQueries() {
       
       if (llmAvailable) {
         try {
-          // Use ExplanationService to generate a proper synthesized answer
-          const context = formatter.formatForExplanation(result.chunks, result.scores, {
-            maxTokens: 2000,
-            includeMetadata: false,
+          const explanation = await explanationService.explain(test.query, {
+            maxContextChunks: 5,
           });
-          
-          // Remove the "Relevant Documentation Context:" header
-          const cleanContext = context.replace(/^Relevant Documentation Context:\s*\n*/i, '').trim();
-          
-          // Create a more directive prompt for answering the question
-          const prompt = `Answer this specific question about GraphQL using ONLY relevant information from the documentation below.
-
-Question: ${test.query}
-
-Documentation:
-${cleanContext}
-
-CRITICAL RULES:
-- Answer ONLY what is asked in the question - do not include unrelated information
-- If asked about "mutations" - ONLY mention mutations, do not mention queries or other topics
-- If asked about "variables" - ONLY discuss variables, do not mention mutations or other topics
-- If asked about "queries" - ONLY discuss queries, do not mention mutations or other topics
-- Extract and list specific names, functions, mutations, queries, and fields ONLY if they are relevant to the question
-- Include complete code examples from the documentation ONLY if they are relevant to the question
-- NEVER say "the documentation does not provide" - instead extract what IS in the documentation
-- Be direct and focused - do not add information that doesn't answer the specific question
-- If the documentation doesn't have relevant information for the question, say so clearly`;
-          
-          // Use LLM directly to answer the question
-          const llmClient = (explanationService as any).llmClient;
-          const response = await llmClient.generateCompletion([
-            { 
-              role: 'system', 
-              content: 'You answer questions precisely using only relevant information from the documentation. You do NOT include unrelated information. If asked about mutations, you only mention mutations. If asked about variables, you only discuss variables. Stay focused on the specific question asked.' 
-            },
-            { role: 'user', content: prompt },
-          ], {
-            temperature: 0.2, // Very low temperature for factual extraction
-            maxTokens: 2000, // Increased for complete answers
-          });
-          
-          answer = response.content;
+          answer = explanation.explanation.trim();
         } catch (error) {
-          // Fallback to raw chunks if LLM fails
           console.log(`   ⚠️  LLM synthesis failed: ${error instanceof Error ? error.message : String(error)}`);
           const topChunk = result.chunks[0];
           answer = topChunk ? topChunk.chunkText.trim() : 'No relevant information found.';
