@@ -80,7 +80,7 @@ def main():
                     with open(config.MAPPING_PATH, 'w') as f:
                         json.dump(docs_mapping, f, indent=2)
                         
-                    print(f"✅ Index updated at {config.INDEX_PATH}")
+                    print(f"Index updated at {config.INDEX_PATH}")
                     last_count = current_count
                     
                     # Free memory (Important)
