@@ -29,7 +29,9 @@ namespace raft {
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
-    : common::Consensus(config, std::move(executor)) {
+    : common::Consensus(config, std::move(executor)),
+    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)) {
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
@@ -42,7 +44,11 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
     raft_ = std::make_unique<Raft>(config_.GetSelfInfo().id(), f, total_replicas,
-                                 GetSignatureVerifier());
+                                 GetSignatureVerifier(), leader_election_manager_.get());
+
+    leader_election_manager_->SetRaft(raft_.get());
+    leader_election_manager_->MayStart();
+    
     InitProtocol(raft_.get());
   }
 }
@@ -91,7 +97,6 @@ int Consensus::CommitMsgInternal(const AppendEntries& txn) {
   request->set_seq(txn.seq());
   request->set_uid(txn.uid());
   request->set_proxy_id(txn.proxy_id());
-
   transaction_executor_->Commit(std::move(request));
   return 0;
 }

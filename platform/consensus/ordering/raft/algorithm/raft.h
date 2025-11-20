@@ -28,24 +28,34 @@
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 #include "platform/statistic/stats.h"
+#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 
 namespace resdb {
 namespace raft {
 
+enum class Role { FOLLOWER, CANDIDATE, LEADER };
+
 class Raft : public common::ProtocolBase {
  public:
-  Raft(int id, int f, int total_num, SignatureVerifier* verifier);
+  Raft(int id, int f, int total_num,
+    SignatureVerifier* verifier,
+    LeaderElectionManager* leaderelection_manager);
   ~Raft();
 
   bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
   bool ReceivePropose(std::unique_ptr<AppendEntries> txn);
   bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
+
+  raft::Role GetRoleSnapshot() const;
+  void StartElection();
+  void SendHeartBeat();
+
  private:
   bool IsStop();
   void Dump();
 
  private:
-  std::mutex mutex_;
+  mutable std::mutex mutex_;
   std::map<std::string, std::set<int32_t> > received_;
   std::map<std::string, std::unique_ptr<AppendEntries> > data_; // log[]
 
@@ -69,11 +79,16 @@ class Raft : public common::ProtocolBase {
   std::vector<int> nextIndex_;
   // This keeps track of the highest log entry it knows is executed on that replica
   std::vector<int> matchIndex_;
+  Role role_; // Protected by raft_mutex_
+  int LeaderId; // Protected by raft_mutex_
 
   int64_t seq_;
   bool is_stop_;
   SignatureVerifier* verifier_;
+  LeaderElectionManager* leader_election_manager_;
   Stats* global_stats_;
+  
+  
 };
 
 }  // namespace raft

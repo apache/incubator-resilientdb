@@ -23,6 +23,7 @@
 
 #include "common/crypto/signature_verifier.h"
 #include "common/utils/utils.h"
+#include "platform/proto/resdb.pb.h"
 
 namespace resdb {
 namespace raft {
@@ -72,9 +73,13 @@ static void printAppendEntries(const std::unique_ptr<AppendEntries>& txn) {
   LOG(INFO) << "=====================";
 }
 
-Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier)
-    : ProtocolBase(id, f, total_num), verifier_(verifier) {
-  LOG(INFO) << "get proposal graph";
+Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
+  LeaderElectionManager* leaderelection_manager)
+    : ProtocolBase(id, f, total_num), 
+    verifier_(verifier),
+    leader_election_manager_(leaderelection_manager),
+    role_(raft::Role::FOLLOWER) {
+  LOG(ERROR) << "get proposal graph";
   id_ = id;
   total_num_ = total_num;
   f_ = f;
@@ -247,6 +252,87 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> r
   // send message
   assert(false);
   return true;
+}
+
+raft::Role Raft::GetRoleSnapshot() const {
+  std::lock_guard<std::mutex> lk(mutex_);
+  return role_;
+}
+
+// TODO SET LASTLOGINDEX AND LASTLOGTERM UPON MERGE
+// Called from LeaderElectionManager::StartElection when timeout
+void Raft::StartElection() {
+  LOG(INFO) << "JIM -> " << __FUNCTION__;
+  uint64_t currentTerm;
+  int candidateId;
+  uint64_t lastLogIndex;
+  uint64_t lastLogTerm;
+  bool roleChanged = false;
+
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (role_ == raft::Role::LEADER) {
+      LOG(WARNING) << __FUNCTION__ << ": Leader tried to start election";
+      return;
+    }
+    if (role_ == raft::Role::FOLLOWER) {
+      LOG(INFO) << __FUNCTION__ << ": FOLLOWER->CANDIDATE";
+      role_ = raft::Role::CANDIDATE;
+      roleChanged = true;
+    }
+    currentTerm_++;
+    votedFor_ = id_;
+
+    currentTerm = currentTerm_;
+    candidateId = id_;
+
+    // TODO
+    lastLogIndex = 0;
+    lastLogTerm = 0;
+  }
+  if (roleChanged) {
+    leader_election_manager_->OnRoleChange();
+  }
+
+  RequestVote requestVote;
+  requestVote.set_term(currentTerm);
+  requestVote.set_candidateid(candidateId);
+  requestVote.set_lastlogindex(lastLogIndex);
+  requestVote.set_lastlogterm(lastLogTerm);
+  Broadcast(MessageType::RequestVoteMsg, requestVote);
+}
+
+// TODO
+// ON MERGE FIX VALUES
+void Raft::SendHeartBeat() {
+  LOG(INFO) << "JIM -> " << __FUNCTION__;
+  uint64_t currentTerm;
+  int leaderId = id_;
+  uint64_t prevLogIndex;
+  uint64_t prevLogTerm;
+  std::string entries;
+  uint64_t leaderCommit;
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (role_ != raft::Role::LEADER) {
+      LOG(WARNING) << __FUNCTION__ << ": Non-Leader tried to start HeartBeat";
+      return;
+    }
+    currentTerm = currentTerm_;
+    prevLogIndex = 0;
+    prevLogTerm = 0;
+    entries = "";
+    leaderCommit = 0;  
+  }
+  AppendEntries appendEntries;
+  appendEntries.set_term(currentTerm);
+  appendEntries.set_proposer(leaderId);
+  appendEntries.set_leadercommitindex(prevLogIndex); // wrong function
+  appendEntries.set_prevlogterm(prevLogTerm);
+  appendEntries.set_data(entries);
+  appendEntries.set_leadercommitindex(leaderCommit);
+  // TODO Need to make sure leader no-ops their own heartbeats
+  Broadcast(MessageType::AppendEntriesMsg, appendEntries);
 }
 
 }  // namespace raft

@@ -20,8 +20,14 @@ package(default_visibility = ["//platform/consensus/ordering/raft:__subpackages_
 
 cc_library(
     name = "raft",
-    srcs = ["raft.cpp"],
-    hdrs = ["raft.h"],
+    srcs = [
+        "raft.cpp",
+        "leaderelection_manager.cpp",
+    ],
+    hdrs = [
+        "raft.h",
+        "leaderelection_manager.h",
+    ],
     deps = [
         "//common:comm",
         "//common/crypto:signature_verifier",
@@ -29,5 +35,9 @@ cc_library(
         "//platform/consensus/ordering/common/algorithm:protocol_base",
         "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
         "//platform/statistic:stats",
+        "//platform/config:resdb_config",
+        "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/proto:viewchange_message_cc_proto",
     ],
 )
