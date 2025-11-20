@@ -24,7 +24,7 @@ To see the system in action, you need to run the scripts in a specific order usi
 
 ***REMINDER: Activate the venv in BOTH terminals!***
 
-Terminal 1: Start the Indexer
+### Terminal 1: Start the Indexer
 This process needs to run continuously to monitor the blockchain and update the index.
 
 ```Bash
@@ -36,8 +36,8 @@ source ~/ResDB-ORM/venv/bin/activate
 ```
 ***Keep this terminal open!***
 
-## Terminal 2: Insert Data & Search
-### Step 1: Populate Data
+### Terminal 2: Insert Data & Search
+#### Step 1: Populate Data
 Run this script to write sample documents into ResilientDB.
 ```Bash
 # 1. Activate venv
@@ -47,7 +47,7 @@ source ~/ResDB-ORM/venv/bin/activate
 (venv) python populate.py
 ```
 
-### Step 2: Perform Search
+#### Step 2: Perform Search
 Once the indexer confirms the update, you can search the data.
 ```Bash
 (venv) python search.py
