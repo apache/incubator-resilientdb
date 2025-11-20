@@ -101,7 +101,7 @@ This project strictly requires **Bazel 6.0.0**. If you have accidentally upgrade
 
 2.  **Download Bazel 6.0.0**
     ```bash
-    wget [https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64](https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64) -O bazel
+    wget https://github.com/bazelbuild/bazel/releases/download/6.0.0/bazel-6.0.0-linux-x86_64 -O bazel
     ```
 
 3.  **Install to system path**
@@ -198,13 +198,12 @@ Run the following script in your ResilientDB directory:
 Open a new terminal tab, then setup and start the GraphQL server:
 (1) Clone the repository and navigate into it:
 ```bash
-git clone [https://github.com/apache/incubator-resilientdb-graphql.git](https://github.com/apache/incubator-resilientdb-graphql.git)
+git clone https://github.com/apache/incubator-resilientdb-graphql.git
 cd incubator-resilientdb-graphql
 ```
-(2) Create and activate a virtual environment:
+(2) Create a virtual environment:
 ```bash
 python3.10 -m venv venv
-source venv/bin/activate
 ```
 (3) Build and run the service:
 ```bash
@@ -216,13 +215,14 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/s
 ### Step 3: Clone ResDB-ORM repository and install dependencies:
 Open another new terminal tab to set up the ORM and verify the operation.
 ```bash
-git clone [https://github.com/apache/incubator-resilientdb-ResDB-ORM.git](https://github.com/apache/incubator-resilientdb-ResDB-ORM.git)
-cd ResDB-ORM
+git clone https://github.com/apache/incubator-resilientdb-ResDB-ORM.git
+cd incubator-resilientdb-ResDB-ORM
 
 python3.10 -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
+pip install resdb-orm
 ```
 
 ### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in Step 2.
