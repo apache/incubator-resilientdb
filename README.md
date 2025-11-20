@@ -198,7 +198,7 @@ Run the following script in your ResilientDB directory:
 Open a new terminal tab, then setup and start the GraphQL server:
 (1) Clone the repository and navigate into it:
 ```bash
-git clone [https://github.com/apache/incubator-resilientdb-graphql.git](https://github.com/apache/incubator-resilientdb-graphql.git)
+git clone https://github.com/apache/incubator-resilientdb-graphql.git
 cd incubator-resilientdb-graphql
 ```
 (2) Create and activate a virtual environment:
@@ -216,7 +216,7 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/s
 ### Step 3: Clone ResDB-ORM repository and install dependencies:
 Open another new terminal tab to set up the ORM and verify the operation.
 ```bash
-git clone [https://github.com/apache/incubator-resilientdb-ResDB-ORM.git](https://github.com/apache/incubator-resilientdb-ResDB-ORM.git)
+git clone https://github.com/apache/incubator-resilientdb-ResDB-ORM.git
 cd ResDB-ORM
 
 python3.10 -m venv venv
