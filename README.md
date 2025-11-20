@@ -204,7 +204,6 @@ cd incubator-resilientdb-graphql
 (2) Create and activate a virtual environment:
 ```bash
 python3.10 -m venv venv
-source venv/bin/activate
 ```
 (3) Build and run the service:
 ```bash
