@@ -61,6 +61,6 @@ Enter a query like blockchain consensus or vector search. The system will return
 - Determinism: The indexer forces OMP_NUM_THREADS=1 to guarantee that all replicas build the exact same HNSW graph structure.
 
 ## Troubleshooting
-- ModuleNotFoundError: If you see this error, you likely forgot to activate the virtual environment. Run source ~/ResDB-ORM/venv/bin/activate.
+- ModuleNotFoundError: If you see this error, you likely forgot to activate the virtual environment. Run source ```~/ResDB-ORM/venv/bin/activate```.
 - process Killed / OOM: If your process gets killed, ensure you are not running indexer.py and search.py simultaneously if your memory is limited (< 8GB). Stop the indexer (Ctrl+C) before running the search.
-- Connection Error: Ensure ResilientDB is running (./start_kv_service.sh).
+- Connection Error: Ensure ResilientDB is running (```./start_kv_service.sh```).
