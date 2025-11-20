@@ -32,7 +32,7 @@ const envSchema = z.object({
   MCP_SERVER_HOST: z.string().default('localhost'),
 
   // LLM Configuration
-  LLM_PROVIDER: z.enum(['deepseek', 'openai', 'anthropic', 'huggingface', 'local']).default('deepseek'),
+  LLM_PROVIDER: z.enum(['deepseek', 'openai', 'anthropic', 'huggingface', 'local', 'gemini']).default('deepseek'),
   LLM_API_KEY: z.string().optional(),
   LLM_MODEL: z.string().default('deepseek-chat'),
   // Enable Live Stats access for LLM (requires ResLens Live Mode)

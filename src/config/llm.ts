@@ -9,7 +9,7 @@ const HUGGINGFACE_API_KEY = env.HUGGINGFACE_API_KEY;
  * Centralized configuration for LLM providers
  */
 export interface LLMConfig {
-  provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface' | 'local';
+  provider: 'deepseek' | 'openai' | 'anthropic' | 'huggingface' | 'local' | 'gemini';
   apiKey?: string;
   model: string;
   enableLiveStats: boolean;
@@ -33,7 +33,9 @@ export function getLLMConfig(): LLMConfig {
         ? 'meta-llama/Meta-Llama-3-8B-Instruct'
         : env.LLM_PROVIDER === 'local'
           ? 'Xenova/distilgpt2'
-          : 'deepseek-chat'
+          : env.LLM_PROVIDER === 'gemini'
+            ? 'gemini-2.5-flash-lite'
+            : 'deepseek-chat'
     ),
     enableLiveStats: env.LLM_ENABLE_LIVE_STATS,
   };

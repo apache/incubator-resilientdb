@@ -124,6 +124,8 @@ export class ResilientDBVectorStore {
   /**
    * Store a document chunk in ResilientDB as an asset
    */
+  private chunkIndexId: string | null = null; // ID of the transaction storing all chunk IDs
+
   async storeChunk(chunk: {
     chunkText: string;
     embedding: number[];
@@ -163,10 +165,8 @@ export class ResilientDBVectorStore {
       const recipientPublicKey = env.RESILIENTDB_RECIPIENT_PUBLIC_KEY || signerPublicKey;
 
       // GraphQL format: asset needs to be passed as JSON string for JSONScalar
-      // The JSONScalar expects a string representation, not an object
-      const graphqlAsset = JSON.stringify({
-        data: chunkData,
-      });
+      // resdb_driver.prepare() expects asset to have a 'data' key, so wrap it
+      const graphqlAsset = JSON.stringify({ data: chunkData });
 
       const result = await this.client.executeQuery<{
         postTransaction?: {
@@ -187,7 +187,7 @@ export class ResilientDBVectorStore {
             signerPublicKey: signerPublicKey,
             signerPrivateKey: signerPrivateKey,
             recipientPublicKey: recipientPublicKey,
-            asset: graphqlAsset, // Pass as JSON string for JSONScalar
+            asset: graphqlAsset, // Pass as JSON string
           },
         },
       });
@@ -202,12 +202,18 @@ export class ResilientDBVectorStore {
       const errorMsg = graphqlError instanceof Error ? graphqlError.message : String(graphqlError);
       
       try {
-        // Extract base URL from GraphQL URL (e.g., http://localhost:5001/graphql -> http://localhost:5001)
+        // Extract base URL from GraphQL URL and convert to KV URL (port 18000)
         let resilientDBUrl = env.RESILIENTDB_GRAPHQL_URL.replace('/graphql', '');
-        // Try HTTP wrapper on 18001 if available
-        if (resilientDBUrl.includes(':5001')) {
-          resilientDBUrl = resilientDBUrl.replace(':5001', ':18001');
-        }
+      // Convert GraphQL port (5001) to HTTP wrapper port (18001)
+      // We created a simple HTTP wrapper that uses resdb_driver
+      if (resilientDBUrl.includes(':5001')) {
+        resilientDBUrl = resilientDBUrl.replace(':5001', ':18001');
+      } else if (resilientDBUrl.includes(':18000')) {
+        resilientDBUrl = resilientDBUrl.replace(':18000', ':18001');
+      } else if (!resilientDBUrl.includes(':18001') && !resilientDBUrl.includes(':5001')) {
+        // If no port, add 18001
+        resilientDBUrl = resilientDBUrl.replace(/:\d+$/, '') + ':18001';
+      }
         const httpApiUrl = `${resilientDBUrl}/v1/transactions/commit`;
         
         const response = await fetch(httpApiUrl, {
@@ -250,16 +256,23 @@ export class ResilientDBVectorStore {
     timestamp?: string;
   }>> {
     try {
-      // Extract base URL from GraphQL URL (e.g., http://localhost:18000/graphql -> http://localhost:18000)
+      // Extract base URL from GraphQL URL
+      // ResilientDB KV is on port 18000, GraphQL is on 5001
+      // The GraphQL URL is like: http://graphql-nexus-resilientdb:5001/graphql
+      // We need: http://graphql-nexus-resilientdb:18000
       const graphqlUrl = new URL(env.RESILIENTDB_GRAPHQL_URL);
-      let baseUrl = `${graphqlUrl.protocol}//${graphqlUrl.host}`;
+      const hostname = graphqlUrl.hostname; // e.g., "graphql-nexus-resilientdb" or "localhost"
+      const protocol = graphqlUrl.protocol; // e.g., "http:"
       
-      // Try HTTP wrapper on 18001 if available (where chunks are actually stored)
-      if (baseUrl.includes(':5001')) {
-        baseUrl = baseUrl.replace(':5001', ':18001');
-      } else if (baseUrl.includes(':18000') && !baseUrl.includes(':18001')) {
-        baseUrl = baseUrl.replace(':18000', ':18001');
-      }
+      // Use port 18001 for HTTP wrapper (bypasses broken GraphQL)
+      // The HTTP wrapper uses resdb_driver to access ResilientDB KV directly
+      const baseUrl = `${protocol}//${hostname}:18001`;
+      
+      console.log(`[VectorStore] Attempting HTTP API retrieval from: ${baseUrl}`);
+      
+      // Try to access ResilientDB KV directly via the resdb_driver Python library
+      // This is a workaround when GraphQL isn't available
+      // The KV service stores data that can be accessed via HTTP
       
       // First, get list of all transaction IDs
       const listUrl = `${baseUrl}/v1/transactions`;
@@ -338,6 +351,55 @@ export class ResilientDBVectorStore {
     // Discover the actual schema first
     await this.discoverSchema();
 
+    // First, try to get chunk IDs from the index
+    try {
+      if (this.chunkIndexId) {
+        const indexTx = await this.client.executeQuery<{ getTransaction?: { asset: unknown } }>({
+          query: `query GetIndex($id: ID!) { getTransaction(id: $id) { asset } }`,
+          variables: { id: this.chunkIndexId },
+        });
+        if (indexTx?.getTransaction?.asset && typeof indexTx.getTransaction.asset === 'object') {
+          const indexData = indexTx.getTransaction.asset as { chunkIds?: string[] };
+          if (indexData.chunkIds && Array.isArray(indexData.chunkIds)) {
+            // Retrieve chunks by their IDs
+            const chunks: DocumentChunk[] = [];
+            for (const chunkId of indexData.chunkIds.slice(0, limit)) {
+              try {
+                const tx = await this.client.executeQuery<{ getTransaction?: { asset: unknown } }>({
+                  query: `query GetChunk($id: ID!) { getTransaction(id: $id) { asset } }`,
+                  variables: { id: chunkId },
+                });
+                const txData = tx?.getTransaction;
+                if (txData?.asset && typeof txData.asset === 'object') {
+                  const asset = txData.asset as Record<string, unknown>;
+                  if (asset.type === 'DocumentChunk') {
+                    chunks.push({
+                      id: asset.id as string || chunkId,
+                      chunkText: asset.chunkText as string,
+                      embedding: asset.embedding as number[],
+                      source: asset.source as string,
+                      chunkIndex: (asset.chunkIndex as number) ?? 0,
+                      metadata: (asset.metadata as DocumentChunk['metadata']) || {
+                        documentId: '',
+                        type: 'documentation',
+                      },
+                    });
+                  }
+                }
+              } catch {
+                continue; // Skip invalid chunks
+              }
+            }
+            if (chunks.length > 0) {
+              return chunks;
+            }
+          }
+        }
+      }
+    } catch {
+      // Index not available, fall through to other methods
+    }
+
     // Try discovered query first, then fallback patterns
     const queriesToTry: Array<{
       name: string;
@@ -349,7 +411,20 @@ export class ResilientDBVectorStore {
       // Use discovered query name
       const query = this.queryName;
       
+      // Try getAllTransactions first if available
       queriesToTry.push(
+        {
+          name: 'getAllTransactions (new)',
+          query: `
+            query GetAllChunks($limit: Int) {
+              getAllTransactions(limit: $limit) {
+                id
+                asset
+              }
+            }
+          `,
+          variables: { limit },
+        },
         {
           name: `${query} (pattern 1)`,
           query: `

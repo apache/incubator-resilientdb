@@ -56,6 +56,9 @@ for f in resdb_driver/*.py; do
     fi
 done
 
+# Fix legacy tx_Dict typo that breaks GraphQL mutations
+sed -i 's/tx_Dict/tx_dict/g' resdb_driver/transaction.py 2>/dev/null || true
+
 # Install compatible versions
 echo "📦 Installing compatible package versions..."
 python3 -m pip install --quiet 'click>=7.0,<8.0' 'strawberry-graphql==0.69.0' 2>&1 | grep -v "^$" || true

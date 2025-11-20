@@ -1,6 +1,30 @@
 # 🚀 Complete Team Setup Guide - GraphQ-LLM with Nexus Integration
 
-**Purpose:** This guide will help you replicate the exact working setup from scratch. Follow each step in order.
+**Purpose:** This guide will help you replicate the exact working setup from scratch. Follow each step in order to reach the current state of the project.
+
+---
+
+## 🔗 Quick Reference - Repository Links
+
+### **Repositories to Clone:**
+1. **GraphQ-LLM** (this repository)
+   - Replace `<repository-url>` with your actual GraphQ-LLM repository URL
+   - Contains: Main application code, Docker configs, documentation
+
+2. **Nexus** (separate repository - must be cloned)
+   - **URL:** https://github.com/ResilientApp/nexus.git
+   - **Purpose:** Next.js frontend application
+   - **Note:** Requires modifications (see Step 7.6)
+
+3. **ResilientDB** (reference only - using Docker image)
+   - **URL:** https://github.com/apache/incubator-resilientdb
+   - **Note:** We use the Docker image `expolab/resdb`, not cloning the repo
+
+### **Key Documentation Files (in GraphQ-LLM repository):**
+- `NEXUS_UI_EXTENSION_GUIDE.md` - Complete code for Nexus integration (Step 7.6)
+- `TEST_QUERIES.md` - Example queries for testing
+- `FINAL_PHASES_AND_STEPS.md` - Project status and progress
+- `WHY_INTEGRATE_RESLENS_NEXUS.md` - Integration rationale
 
 ---
 
@@ -12,22 +36,44 @@ Before starting, ensure you have:
 - [ ] **Git** installed
 - [ ] **Node.js 18+** installed (for local development)
 - [ ] **PostgreSQL** with pgvector (we'll set this up with Docker)
-- [ ] **Hugging Face API Key** (optional but recommended for model downloads)
+
+---
+
+## 🔑 Required API Keys
+
+Before starting, gather these API keys (some are optional but recommended):
+
+### **Required:**
+- **Gemini API Key** (for LLM - currently using `gemini-2.5-flash-lite`)
+  - Get it from: https://makersuite.google.com/app/apikey
+  - Create a new API key and copy it
+
+### **Optional but Recommended:**
+- **Hugging Face API Key** (for faster model downloads)
   - Get it from: https://huggingface.co/settings/tokens
+  - Create a new token with read access
+
+### **Optional (for Nexus features):**
+- **DeepSeek API Key** - https://www.deepseek.com/ → Sign up → Get API key
+- **LlamaCloud API Key** - https://cloud.llamaindex.ai/ → Sign up → Get API key
+- **Supabase** (if using cloud PostgreSQL) - https://supabase.com → Create project
 
 ---
 
 ## 🎯 Step-by-Step Setup (Follow in Order)
 
-### **Step 1: Clone the Repository**
+### **Step 1: Clone GraphQ-LLM Repository**
 
 ```bash
 # Clone the GraphQ-LLM repository
+# Replace <repository-url> with your actual repository URL
 git clone <repository-url>
 cd graphq-llm
 ```
 
-**Verify:** You should see files like `package.json`, `src/`, `docs/`, etc.
+**Repository:** Replace `<repository-url>` with your GraphQ-LLM repository URL.
+
+**Verify:** You should see files like `package.json`, `src/`, `docs/`, `docker-compose.dev.yml`, etc.
 
 ---
 
@@ -81,23 +127,30 @@ MCP_SERVER_PORT=3001
 MCP_SERVER_HOST=localhost
 
 # LLM Configuration
-# Using local LLM (Xenova/gpt2) - no API key needed
-LLM_PROVIDER=local
-LLM_API_KEY=
-LLM_MODEL=Xenova/gpt2
+# Using Gemini (recommended) or local LLM
+LLM_PROVIDER=gemini
+LLM_API_KEY=your_gemini_api_key_here
+LLM_MODEL=gemini-2.5-flash-lite
 LLM_ENABLE_LIVE_STATS=false
+
+# Alternative: Using local LLM (no API key needed, but lower quality)
+# LLM_PROVIDER=local
+# LLM_API_KEY=
+# LLM_MODEL=Xenova/gpt2
 
 # Embedding Configuration
 # Using local embeddings (Xenova/all-MiniLM-L6-v2) - no API key needed
 EMBEDDINGS_PROVIDER=local
-# Optional: Hugging Face API key for downloading models
+# Optional: Hugging Face API key for faster model downloads
 HUGGINGFACE_API_KEY=your_huggingface_key_here
 
 # Logging
 LOG_LEVEL=info
 ```
 
-**Important:** Replace `your_huggingface_key_here` with your actual Hugging Face API key (optional but recommended).
+**Important:** 
+- Replace `your_gemini_api_key_here` with your actual Gemini API key (required for LLM)
+- Replace `your_huggingface_key_here` with your actual Hugging Face API key (optional but recommended for faster model downloads)
 
 ---
 
@@ -214,22 +267,25 @@ Chunks stored: X
 
 ### **Step 7: Set Up Nexus (Separate Repository)**
 
-Nexus is a separate Next.js application. Follow these steps:
+Nexus is a separate Next.js application that needs to be cloned and modified. Follow these steps:
 
-**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
 
 #### **7.1: Clone Nexus Repository**
 
 ```bash
 # Navigate to your workspace (outside graphq-llm)
+# You can clone it in the same parent directory as graphq-llm
 cd /path/to/workspace
 
-# Clone Nexus (if you don't have it)
+# Clone Nexus repository
 git clone https://github.com/ResilientApp/nexus.git
 cd nexus
 ```
 
-**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+**Repository Link:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
+
+**Verify:** You should see a Next.js project structure with `package.json`, `src/`, `app/`, etc.
 
 #### **7.2: Install Nexus Dependencies**
 
@@ -288,9 +344,12 @@ DATABASE_URL=postgres://nexus:nexus@localhost:5432/nexus
 # Embedding Configuration
 EMBEDDING_DIM=384  # For sentence-transformers/all-MiniLM-L6-v2
 
-# API Keys (Optional but recommended)
-DEEPSEEK_API_KEY=your_deepseek_key_here
+# API Keys (Optional but recommended for Nexus features)
+# Get Gemini API key: https://makersuite.google.com/app/apikey
 GEMINI_API_KEY=your_gemini_key_here
+# Get DeepSeek API key: https://www.deepseek.com/
+DEEPSEEK_API_KEY=your_deepseek_key_here
+# Get LlamaCloud API key: https://cloud.llamaindex.ai/
 LLAMA_CLOUD_API_KEY=your_llamacloud_key_here
 
 # Supabase Configuration (if using Supabase for vector store)
@@ -304,12 +363,14 @@ NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001
 ```
 
 **How to get API keys:**
+- **Gemini (Recommended):** https://makersuite.google.com/app/apikey → Create API key → Copy and paste
 - **DeepSeek:** https://www.deepseek.com/ → Sign up → Get API key
-- **Gemini:** https://makersuite.google.com/app/apikey → Get API key
 - **LlamaCloud:** https://cloud.llamaindex.ai/ → Sign up → Get API key
-- **Supabase:** From your Supabase project dashboard
+- **Supabase:** From your Supabase project dashboard (if using cloud PostgreSQL)
 
-**Note:** API keys are optional - Nexus will work without them, but some features may be limited.
+**Note:** 
+- Gemini API key is recommended for best LLM performance
+- Other API keys are optional - Nexus will work without them, but some features may be limited
 
 #### **7.5: Set Up Nexus Database Schema**
 
@@ -324,39 +385,90 @@ npx prisma migrate dev
 
 #### **7.6: Add GraphQ-LLM Integration to Nexus (REQUIRED)**
 
-**⚠️ IMPORTANT:** This step adds the GraphQL Tutor UI and API routes to Nexus.
+**⚠️ IMPORTANT:** This step adds the GraphQL Tutor UI and API routes to Nexus. This is a critical integration step.
 
-**📋 Quick Reference:** See `NEXUS_UI_EXTENSION_GUIDE.md` in the GraphQ-LLM repository for complete code.
+**📋 Reference Guide:** 
+- **Location:** `NEXUS_UI_EXTENSION_GUIDE.md` in the GraphQ-LLM repository
+- **Path:** `/path/to/graphq-llm/NEXUS_UI_EXTENSION_GUIDE.md`
+- **Link:** See the file in your cloned GraphQ-LLM repository
 
-**Files to create in Nexus:**
+**What you need to do:**
 
-1. **Create API Route:** `src/app/api/graphql-tutor/analyze/route.ts`
-   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 1 for complete code
+1. **Open the guide:**
+   ```bash
+   # From your workspace, open the guide
+   cat /path/to/graphq-llm/NEXUS_UI_EXTENSION_GUIDE.md
+   # Or open it in your editor
+   ```
 
-2. **Create Main Page:** `src/app/graphql-tutor/page.tsx`
-   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 2 for complete code
+2. **Create the following files in Nexus:**
 
-3. **Create Components:**
-   - `src/app/graphql-tutor/components/tutor-panel.tsx` (Section 3)
-   - `src/app/graphql-tutor/components/explanation-panel.tsx` (Section 4)
-   - `src/app/graphql-tutor/components/optimization-panel.tsx` (Section 5)
-   - `src/app/graphql-tutor/components/efficiency-display.tsx` (Section 6)
+   **a. API Route** (create directory first):
+   ```bash
+   mkdir -p src/app/api/graphql-tutor/analyze
+   ```
+   - **File:** `src/app/api/graphql-tutor/analyze/route.ts`
+   - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 1
 
-4. **Update Home Page:** `src/app/page.tsx`
-   - Add navigation link to `/graphql-tutor`
-   - See `NEXUS_UI_EXTENSION_GUIDE.md` Section 7
+   **b. Main Page** (create directory first):
+   ```bash
+   mkdir -p src/app/graphql-tutor/components
+   ```
+   - **File:** `src/app/graphql-tutor/page.tsx`
+   - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 2
 
-5. **Install Dependencies:**
+   **c. Components** (create in the components directory):
+   - **File:** `src/app/graphql-tutor/components/tutor-panel.tsx`
+     - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 3
+   - **File:** `src/app/graphql-tutor/components/explanation-panel.tsx`
+     - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 4
+   - **File:** `src/app/graphql-tutor/components/optimization-panel.tsx`
+     - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 5
+   - **File:** `src/app/graphql-tutor/components/efficiency-display.tsx`
+     - **Code:** Copy from `NEXUS_UI_EXTENSION_GUIDE.md` Section 6
+
+   **d. Update Home Page:**
+   - **File:** `src/app/page.tsx` (modify existing file)
+   - **Code:** Add navigation link from `NEXUS_UI_EXTENSION_GUIDE.md` Section 7
+
+3. **Install Required Dependencies:**
    ```bash
    cd /path/to/nexus
    npm install lucide-react
    ```
 
-**Quick Copy-Paste Method:**
-1. Open `NEXUS_UI_EXTENSION_GUIDE.md` from the GraphQ-LLM repository
-2. Copy each section's code
-3. Create the corresponding file in Nexus
-4. Paste the code
+**Step-by-Step Copy-Paste Method:**
+
+1. Navigate to your GraphQ-LLM repository:
+   ```bash
+   cd /path/to/graphq-llm
+   ```
+
+2. Open `NEXUS_UI_EXTENSION_GUIDE.md` in your editor or view it:
+   ```bash
+   cat NEXUS_UI_EXTENSION_GUIDE.md
+   # Or use: code NEXUS_UI_EXTENSION_GUIDE.md
+   ```
+
+3. For each section in the guide:
+   - Copy the code block
+   - Navigate to Nexus directory: `cd /path/to/nexus`
+   - Create the file in the specified location
+   - Paste the code
+   - Save the file
+
+4. Verify all files are created:
+   ```bash
+   cd /path/to/nexus
+   ls -la src/app/api/graphql-tutor/analyze/route.ts
+   ls -la src/app/graphql-tutor/page.tsx
+   ls -la src/app/graphql-tutor/components/tutor-panel.tsx
+   ls -la src/app/graphql-tutor/components/explanation-panel.tsx
+   ls -la src/app/graphql-tutor/components/optimization-panel.tsx
+   ls -la src/app/graphql-tutor/components/efficiency-display.tsx
+   ```
+
+**All files should exist after this step!**
 
 #### **7.7: Start Nexus**
 
@@ -432,7 +544,8 @@ After completing all steps, verify:
 ## 🔧 Current Configuration Summary
 
 ### **GraphQ-LLM Configuration:**
-- **LLM Provider:** `local` (using `Xenova/gpt2`)
+- **LLM Provider:** `gemini` (using `gemini-2.5-flash-lite`)
+- **LLM API Key:** Required (get from https://makersuite.google.com/app/apikey)
 - **Embeddings Provider:** `local` (using `Xenova/all-MiniLM-L6-v2`)
 - **HTTP API Port:** `3001`
 - **ResilientDB GraphQL URL:** `http://localhost:18000/graphql` (or `http://resilientdb:5001/graphql` in Docker)
@@ -551,7 +664,8 @@ psql postgres://nexus:nexus@localhost:5432/nexus -c "SELECT 1"
 For team members who want to get started quickly:
 
 ```bash
-# 1. Clone and install
+# 1. Clone and install GraphQ-LLM
+# Replace <repo-url> with your actual GraphQ-LLM repository URL
 git clone <repo-url> && cd graphq-llm && npm install
 
 # 2. Create .env file (copy configuration from Step 3 above)
@@ -587,7 +701,8 @@ touch .env
 # Edit .env with your configuration
 
 # 11. Add GraphQ-LLM integration to Nexus
-# Follow Step 7.6 and use NEXUS_UI_EXTENSION_GUIDE.md
+# Follow Step 7.6 above - copy files from NEXUS_UI_EXTENSION_GUIDE.md
+# Location: /path/to/graphq-llm/NEXUS_UI_EXTENSION_GUIDE.md
 
 # 12. Start Nexus
 npm run dev
@@ -602,12 +717,24 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 
 ## 📚 Additional Resources
 
-- **Nexus Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus)
-- **Nexus UI Extension:** See `NEXUS_UI_EXTENSION_GUIDE.md` (complete code for all Nexus files)
-- **Test Queries:** See `TEST_QUERIES.md` (10 example queries to test the tutor)
-- **Project Status:** See `FINAL_PHASES_AND_STEPS.md`
-- **Integration Details:** See `WHY_INTEGRATE_RESLENS_NEXUS.md`
-- **ResilientDB Docs:** See `docs/` directory (ingested for RAG)
+### **Repositories:**
+- **GraphQ-LLM Repository:** Replace `<repository-url>` with your actual repository URL
+- **Nexus Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
+- **ResilientDB Repository:** [https://github.com/apache/incubator-resilientdb](https://github.com/apache/incubator-resilientdb) (for reference)
+
+### **Documentation Files (in GraphQ-LLM repository):**
+- **Nexus UI Extension Guide:** `NEXUS_UI_EXTENSION_GUIDE.md` (complete code for all Nexus integration files)
+- **Test Queries:** `TEST_QUERIES.md` (10 example queries to test the tutor)
+- **Project Status:** `FINAL_PHASES_AND_STEPS.md` (overall project progress)
+- **Integration Details:** `WHY_INTEGRATE_RESLENS_NEXUS.md` (why these integrations are needed)
+- **ResilientDB Docs:** `docs/` directory (documentation ingested for RAG)
+
+### **API Key Resources:**
+- **Gemini API Key:** https://makersuite.google.com/app/apikey
+- **Hugging Face Token:** https://huggingface.co/settings/tokens
+- **DeepSeek API Key:** https://www.deepseek.com/
+- **LlamaCloud API Key:** https://cloud.llamaindex.ai/
+- **Supabase:** https://supabase.com
 
 ---
 
@@ -662,11 +789,28 @@ You've successfully set up the project when:
 
 ## 📝 Notes for Team Members
 
+### **Critical Steps:**
 - **Each teammate must run document ingestion separately** - docs are stored in your local ResilientDB
-- **Nexus UI extensions must be added manually** - see `NEXUS_UI_EXTENSION_GUIDE.md`
+- **Nexus UI extensions must be added manually** - follow Step 7.6 and use `NEXUS_UI_EXTENSION_GUIDE.md`
+- **Gemini API key is required** - get it from https://makersuite.google.com/app/apikey
+
+### **Important Reminders:**
 - **First startup takes longer** - models need to be downloaded (5-10 minutes)
 - **Environment variables are critical** - double-check `.env` files in both GraphQ-LLM and Nexus
 - **Test with provided queries** - see `TEST_QUERIES.md` for 10 example queries
+- **Nexus must be cloned separately** - it's a different repository from GraphQ-LLM
+- **All Nexus integration files must be created** - see Step 7.6 for complete list
+
+### **What Gets Modified:**
+- **GraphQ-LLM:** No modifications needed (just clone and configure)
+- **Nexus:** Requires adding 6 new files (see Step 7.6):
+  1. `src/app/api/graphql-tutor/analyze/route.ts`
+  2. `src/app/graphql-tutor/page.tsx`
+  3. `src/app/graphql-tutor/components/tutor-panel.tsx`
+  4. `src/app/graphql-tutor/components/explanation-panel.tsx`
+  5. `src/app/graphql-tutor/components/optimization-panel.tsx`
+  6. `src/app/graphql-tutor/components/efficiency-display.tsx`
+  7. Modify `src/app/page.tsx` (add navigation link)
 
 ---
 

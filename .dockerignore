@@ -30,7 +30,8 @@ Thumbs.db
 
 # Documentation (not needed in container)
 *.md
-docs/
+# But allow docs/ for ingestion
+!docs/
 
 # Test files
 **/*.test.ts
@@ -41,6 +42,12 @@ test-*.sh
 # Scripts (not needed in production container)
 scripts/
 *.sh
+# But allow these specific scripts for database container
+!healthcheck.sh
+!healthcheck-all.sh
+!healthcheck-unified.sh
+!init-postgres.sh
+!setup-graphql.sh
 
 # Docker files
 Dockerfile*
