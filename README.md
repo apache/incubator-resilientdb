@@ -222,6 +222,7 @@ python3.10 -m venv venv
 source venv/bin/activate
 
 pip install -r requirements.txt
+pip install resdb-orm
 ```
 
 ### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in Step 2.
