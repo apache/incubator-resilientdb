@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include "common/utils/utils.h"
+#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 
 namespace resdb {
 namespace raft {
@@ -73,6 +74,26 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       return -1;
     }
     raft_->ReceiveAppendEntriesResponse(std::move(AppendEntriesResponse));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::RequestVoteMsg) {
+    std::unique_ptr<RequestVote> rv = std::make_unique<resdb::raft::RequestVote>();
+    if (!rv->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveRequestVote(std::move(rv));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::RequestVoteResponseMsg) {
+    std::unique_ptr<RequestVoteResponse> rvr = std::make_unique<resdb::raft::RequestVoteResponse>();
+    if (!rvr->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveRequestVoteResponse(std::move(rvr));
     return 0;
   }
   return 0;

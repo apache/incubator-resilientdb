@@ -20,6 +20,9 @@
 #include "platform/consensus/ordering/raft/algorithm/raft.h"
 
 #include <glog/logging.h>
+#include <algorithm>
+#include <cstdint>
+#include <memory>
 
 #include "common/crypto/signature_verifier.h"
 #include "common/utils/utils.h"
@@ -90,9 +93,16 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   commitIndex_ = 0;
   lastApplied_ = 0;
 
-  AppendEntries ae = 
+  AppendEntries ae;
+  ae.set_leaderid(0);
+  ae.set_prevlogindex(0);
+  ae.set_prevlogterm(0);
+  ae.set_leadercommitindex(0);
+  ae.set_term(0);
+  const std::string key = "7622832959";
+  logIndexMapping_.push_back(key);
+  log_[key] = std::make_unique<AppendEntries>(ae);
 
-  dataIndexMapping_[0]
   nextIndex_.assign(total_num_ + 1, 0);
   matchIndex_.assign(total_num_ + 1, 0);
 }
@@ -136,7 +146,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
-  if (txn->proposer() == id_) { 
+  if (txn->leaderid() == id_) { 
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
     return false;
   }
@@ -265,6 +275,7 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> r
 
 
 void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
+  LOG(INFO) << "JIM -> " << __FUNCTION__;
   int rvSender = rv->candidateid();
   uint64_t rvTerm = rv->term();
 
@@ -277,56 +288,72 @@ void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
     return;
   }
 
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": before lock";
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
     // If their term is higher than ours, we accept new term, reset votedFor
     // and convert to follower
-    if (rvTerm > currentTerm_) {
-      currentTerm_ = rvTerm;
-      votedFor_ = -1;
-      if (role_ != raft::Role::FOLLOWER) {
-        role_ = raft::Role::FOLLOWER;
-        roleChanged = true;
-      }
+    TermRelation tr = TermCheckLocked(rvTerm);
+    if (tr == TermRelation::STALE) {
+      term = currentTerm_;
+      return;
     }
-/*
-Raft determines which of two logs is more up-to-date
-by comparing the index and term of the last entries in the
-logs. If the logs have last entries with different terms, then
-the log with the later term is more up-to-date. If the logs
-end with the same term, then whichever log is longer is
-more up-to-date
-*/
+    else if (tr == TermRelation::NEW) { roleChanged = DemoteSelfLocked(rvTerm); }
     // Then we continue voting process
     term = currentTerm_;
-    uint64_t lastLogTerm = data_[dataIndexMapping_.back()]->term();
-    if (rvTerm < currentTerm_) { return; }
+    uint64_t lastLogTerm = getPrevLogTermLocked();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": prev terms at least equal";
     if (rv->lastlogterm() < lastLogTerm) { return; }
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": prev log terms at least equal";
     if (rv->lastlogterm() == lastLogTerm 
-        && rv->lastlogindex() < dataIndexMapping_.size() - 1) { return; }
+        && rv->lastlogindex() < getPrevLogIndexLocked()) { return; }
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": candidate is valid";
     if (votedFor_ == -1 || votedFor_ == rvSender) {
       votedFor_ = rvSender;
       voteGranted = true;
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": voted for " << rvSender;
     }
   }();
-
-  if (roleChanged) {
-    leader_election_manager_->OnRoleChange();
-  }
-
-  if (voteGranted) {
-    leader_election_manager_->OnHeartBeat();
-  }
+  if (roleChanged) { leader_election_manager_->OnRoleChange(); }
+  if (voteGranted) { leader_election_manager_->OnHeartBeat(); }
 
   RequestVoteResponse rvr;
   rvr.set_term(term);
+  rvr.set_voterid(id_);
   rvr.set_votegranted(voteGranted);
   SendMessage(MessageType::RequestVoteResponseMsg, rvr, rvSender);
 }
 
 void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) {
+  uint64_t term = rvr->term();
+  int voterId = rvr->voterid();
+  bool votedYes = rvr->votegranted();
+  bool demoted = false;
+  bool elected = false;
+  int votesNeeded = total_num_ - f_;
 
-
+  [&]() {
+    std::lock_guard<std::mutex> lk(mutex_);
+    TermRelation tr = TermCheckLocked(term);
+    if (tr == TermRelation::STALE) { return; }
+    else if (tr == TermRelation::NEW) { 
+      demoted = DemoteSelfLocked(term);
+      return;
+    }
+    if (role_ != Role::CANDIDATE) { return; }
+    if (!votedYes) { return; }
+    bool dupe = (std::find(votes_.begin(), votes_.end(), voterId) != votes_.end());
+    if (dupe) { return; }
+    votes_.push_back(voterId);
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Replica " << voterId << " voted for me. Votes: " << votes_.size() << "/" << votesNeeded;
+    if (votes_.size() >= votesNeeded) {
+      elected = true;
+      role_ = Role::LEADER;
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": CANDIDATE -> LEADER";
+    }
+  }();
+    if (demoted || elected) { leader_election_manager_->OnRoleChange(); }
+    if (elected) { SendHeartBeat(); }
 }
 
 raft::Role Raft::GetRoleSnapshot() const {
@@ -334,7 +361,6 @@ raft::Role Raft::GetRoleSnapshot() const {
   return role_;
 }
 
-// TODO SET LASTLOGINDEX AND LASTLOGTERM UPON MERGE
 // Called from LeaderElectionManager::StartElection when timeout
 void Raft::StartElection() {
   LOG(INFO) << "JIM -> " << __FUNCTION__;
@@ -357,13 +383,13 @@ void Raft::StartElection() {
     }
     currentTerm_++;
     votedFor_ = id_;
+    votes_.clear();
+    votes_.push_back(id_);
 
     currentTerm = currentTerm_;
     candidateId = id_;
-
-    // TODO
-    lastLogIndex = 0;
-    lastLogTerm = 0;
+    lastLogIndex = getPrevLogIndexLocked();
+    lastLogTerm = getPrevLogTermLocked();
   }
   if (roleChanged) {
     leader_election_manager_->OnRoleChange();
@@ -394,20 +420,55 @@ void Raft::SendHeartBeat() {
       return;
     }
     currentTerm = currentTerm_;
-    prevLogIndex = 0;
-    prevLogTerm = 0;
+    prevLogIndex = getPrevLogIndexLocked();
+    prevLogTerm = getPrevLogTermLocked();
     entries = "";
-    leaderCommit = 0;  
+    leaderCommit = 0;  // TODO
   }
   AppendEntries appendEntries;
   appendEntries.set_term(currentTerm);
   appendEntries.set_leaderid(leaderId);
-  appendEntries.set_leadercommitindex(prevLogIndex); // wrong function
+  appendEntries.set_prevlogindex(prevLogIndex);
   appendEntries.set_prevlogterm(prevLogTerm);
   appendEntries.set_entries(entries);
-  appendEntries.set_leadercommitindex(leaderCommit);
-  // TODO Need to make sure leader no-ops their own heartbeats
+  appendEntries.set_leadercommitindex(leaderCommit); // TODO
   Broadcast(MessageType::AppendEntriesMsg, appendEntries);
+}
+
+// requires raft mutex to be held
+// returns true if demoted
+bool Raft::DemoteSelfLocked(uint64_t term) {
+  currentTerm_ = term;
+  votedFor_ = -1;
+  if (role_ != raft::Role::FOLLOWER) {
+    role_ = raft::Role::FOLLOWER;
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted to FOLLOWER";
+    return true;
+  }
+  return false;
+}
+
+// requires raft mutex to be held
+TermRelation Raft::TermCheckLocked(uint64_t term) const {
+  if (term < currentTerm_) { return TermRelation::STALE; }
+  else if (term == currentTerm_) { return TermRelation::CURRENT; }
+  else { return TermRelation::NEW; }
+}
+
+// requires raft mutex to be held
+uint64_t Raft::getPrevLogIndexLocked() const {
+  return logIndexMapping_.size() - 1;
+}
+
+// requires raft mutex to be held
+uint64_t Raft::getPrevLogTermLocked() const {
+  if (logIndexMapping_.empty()) { return 0; }
+  const std::string& key = logIndexMapping_.back();
+  auto it = log_.find(key);
+  if (it == log_.end() || !it->second) {
+    LOG(FATAL) << __FUNCTION__ << ": inconsistency found between log vector and log map";
+  }
+  return it->second->term();
 }
 
 }  // namespace raft

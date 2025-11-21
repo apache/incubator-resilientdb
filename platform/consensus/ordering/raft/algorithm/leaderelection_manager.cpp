@@ -167,7 +167,7 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
       continue; 
     }
     else if (res == Waited::HEARTBEAT) {
-      LOG(INFO) << __FUNCTION__ << ": Heartbeat received within " << timeout_ms_ << " ms";
+      LOG(INFO) << __FUNCTION__ << ": Heartbeat received within " << timeout_ms_.load() << " ms";
       if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {
         // A leader receiving a heartbeat would be unusual but not impossible.
         LOG(WARNING) << __FUNCTION__ << " Received Heartbeat as LEADER";
@@ -175,6 +175,7 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
       continue;
     }
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in timeout section";
+    LOG(INFO) << __FUNCTION__ << ": Heartbeat timed out after " << timeout_ms_.load() << " ms";
     // Only gets here if timeout expired.
     // Leaders send a new heartbeat.
     if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {

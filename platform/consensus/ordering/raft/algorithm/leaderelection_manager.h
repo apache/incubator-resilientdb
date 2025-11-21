@@ -64,7 +64,7 @@ class LeaderElectionManager {
   std::atomic<bool> started_;
   std::atomic<bool> stop_;
   std::thread server_checking_timeout_thread_;
-  uint64_t timeout_ms_;
+  std::atomic<uint64_t> timeout_ms_;
   uint64_t timeout_min_ms;
   uint64_t timeout_max_ms;
   uint64_t heartbeat_timer_;

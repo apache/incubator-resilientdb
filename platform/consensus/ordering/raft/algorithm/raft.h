@@ -34,6 +34,7 @@ namespace resdb {
 namespace raft {
 
 enum class Role { FOLLOWER, CANDIDATE, LEADER };
+enum class TermRelation { STALE, CURRENT, NEW };
 
 class Raft : public common::ProtocolBase {
  public:
@@ -54,6 +55,10 @@ class Raft : public common::ProtocolBase {
   void SendHeartBeat();
 
  private:
+  TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
+  bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
+  uint64_t getPrevLogIndexLocked() const; // Must be called under mutex
+  uint64_t getPrevLogTermLocked() const; // Must be called under mutex
   bool IsStop();
   void Dump();
 
@@ -84,6 +89,7 @@ class Raft : public common::ProtocolBase {
   std::vector<int> matchIndex_; // Protected by raft_mutex_
   Role role_; // Protected by raft_mutex_
   int LeaderId; // Protected by raft_mutex_
+  std::vector<int> votes_; // Protected by raft_mutex_
 
   int64_t prevLogIndex_;
   bool is_stop_;

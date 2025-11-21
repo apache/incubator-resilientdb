@@ -53,7 +53,8 @@ message RequestVote {
 
 message RequestVoteResponse {
   int64 term = 1;
-  bool voteGranted = 2;
+  int32 voterId = 2;
+  bool voteGranted = 3;
 }
 
 enum MessageType {
