@@ -48,6 +48,18 @@ std::string get(std::string key, std::string config_path) {
   }
 }
 
+std::string get_ro(std::string key, std::string config_path) {
+  ResDBConfig config = GenerateResDBConfig(config_path);
+  config.SetClientTimeoutMs(100000);
+  KVClient client(config);
+  auto result_ptr = client.GetReadOnly(key);
+  if (result_ptr) {
+    return *result_ptr;
+  } else {
+    return "";
+  }
+}
+
 bool set(std::string key, std::string value, std::string config_path) {
   ResDBConfig config = GenerateResDBConfig(config_path);
   config.SetClientTimeoutMs(100000);
@@ -62,5 +74,6 @@ bool set(std::string key, std::string value, std::string config_path) {
 
 PYBIND11_MODULE(pybind_kv, m) {
   m.def("get", &get, "A function that gets a value from the key-value store");
+  m.def("get_readonly", &get_ro, "A function that gets a value from the key-value store with no tracking");
   m.def("set", &set, "A function that sets a value in the key-value store");
 }
