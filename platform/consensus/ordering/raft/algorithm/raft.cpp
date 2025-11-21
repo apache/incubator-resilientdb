@@ -23,6 +23,7 @@
 
 #include "common/crypto/signature_verifier.h"
 #include "common/utils/utils.h"
+#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 #include "platform/proto/resdb.pb.h"
 
 namespace resdb {
@@ -76,9 +77,9 @@ static void printAppendEntries(const std::unique_ptr<AppendEntries>& txn) {
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   LeaderElectionManager* leaderelection_manager)
     : ProtocolBase(id, f, total_num), 
+    role_(raft::Role::FOLLOWER),
     verifier_(verifier),
-    leader_election_manager_(leaderelection_manager),
-    role_(raft::Role::FOLLOWER) {
+    leader_election_manager_(leaderelection_manager) {
   LOG(ERROR) << "get proposal graph";
   id_ = id;
   total_num_ = total_num;
@@ -89,6 +90,10 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   votedFor_ = -1;
   commitIndex_ = 0;
   lastApplied_ = 0;
+
+  AppendEntries ae = 
+
+  dataIndexMapping_[0]
   nextIndex_.assign(total_num_ + 1, 0);
   matchIndex_.assign(total_num_ + 1, 0);
 }
@@ -132,6 +137,10 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
+  if (txn->proposer() == id_) { 
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
+    return false;
+  }
   Dump();
   auto leader_id = txn->proposer();
   auto leaderCommit = txn->leadercommitindex();
@@ -207,6 +216,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   appendEntriesResponse.set_hash(hash);
   appendEntriesResponse.set_seq(seq);
   LOG(INFO) << "Leader_id: " << leader_id;
+  leader_election_manager_->OnHeartBeat();
   SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
   // Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
   return true;
@@ -252,6 +262,72 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> r
   // send message
   assert(false);
   return true;
+}
+
+
+void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
+  int rvSender = rv->candidateid();
+  uint64_t rvTerm = rv->term();
+
+  uint64_t term;
+  bool voteGranted = false;
+  bool roleChanged = false;
+
+  if (rvSender == id_) { 
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
+    return;
+  }
+
+  [&]() {
+    std::lock_guard<std::mutex> lk(mutex_);
+    // If their term is higher than ours, we accept new term, reset votedFor
+    // and convert to follower
+    if (rvTerm > currentTerm_) {
+      currentTerm_ = rvTerm;
+      votedFor_ = -1;
+      if (role_ != raft::Role::FOLLOWER) {
+        role_ = raft::Role::FOLLOWER;
+        roleChanged = true;
+      }
+    }
+/*
+Raft determines which of two logs is more up-to-date
+by comparing the index and term of the last entries in the
+logs. If the logs have last entries with different terms, then
+the log with the later term is more up-to-date. If the logs
+end with the same term, then whichever log is longer is
+more up-to-date
+*/
+    // Then we continue voting process
+    term = currentTerm_;
+    uint64_t lastLogTerm = data_[dataIndexMapping_.back()]->term();
+    if (rvTerm < currentTerm_) { return; }
+    if (rv->lastlogterm() < lastLogTerm) { return; }
+    if (rv->lastlogterm() == lastLogTerm 
+        && rv->lastlogindex() < dataIndexMapping_.size() - 1) { return; }
+    if (votedFor_ == -1 || votedFor_ == rvSender) {
+      votedFor_ = rvSender;
+      voteGranted = true;
+    }
+  }();
+
+  if (roleChanged) {
+    leader_election_manager_->OnRoleChange();
+  }
+
+  if (voteGranted) {
+    leader_election_manager_->OnHeartBeat();
+  }
+
+  RequestVoteResponse rvr;
+  rvr.set_term(term);
+  rvr.set_votegranted(voteGranted);
+  SendMessage(MessageType::RequestVoteResponseMsg, rvr, rvSender);
+}
+
+void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) {
+
+
 }
 
 raft::Role Raft::GetRoleSnapshot() const {

@@ -45,6 +45,9 @@ class Raft : public common::ProtocolBase {
   bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
   bool ReceivePropose(std::unique_ptr<AppendEntries> txn);
   bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
+  void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
+  void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
+
 
   raft::Role GetRoleSnapshot() const;
   void StartElection();
@@ -63,22 +66,22 @@ class Raft : public common::ProtocolBase {
 
   // This is for everyone
   // Most recent term it has seen
-  int currentTerm_;
+  int currentTerm_; // Protected by raft_mutex_
   // Id for vote in current Term
-  int votedFor_;
+  int votedFor_; // Protected by raft_mutex_
 
   // Volatile on all servers
   // Index of highest log entry it knows to be committed
-  int64_t commitIndex_;
+  int64_t commitIndex_; // Protected by raft_mutex_
   // Index of highest log entry executed
-  int64_t lastApplied_;
+  int64_t lastApplied_; // Protected by raft_mutex_
 
   // Only for leaders
   // This keeps track of the next log entry to send to that replica
   // Initialized to last log index + 1
-  std::vector<int> nextIndex_;
+  std::vector<int> nextIndex_; // Protected by raft_mutex_
   // This keeps track of the highest log entry it knows is executed on that replica
-  std::vector<int> matchIndex_;
+  std::vector<int> matchIndex_; // Protected by raft_mutex_
   Role role_; // Protected by raft_mutex_
   int LeaderId; // Protected by raft_mutex_
 
