@@ -3,7 +3,7 @@ from pathlib import Path
 
 # --- Environment Settings ---
 # Path to the ResDB-ORM configuration file (Auto-detection)
-RESDB_CONFIG_PATH = Path.home() / "ResDB-ORM" / "config.yaml"
+RESDB_CONFIG_PATH = Path.home() / "incubator-resilientdb-ResDB-ORM" / "config.yaml"
 if not RESDB_CONFIG_PATH.exists():
     potential_local_path = Path("config.yaml").resolve()
     if potential_local_path.exists():
@@ -28,6 +28,6 @@ INDEX_PATH = BASE_DIR / "resdb.leann"
 MAPPING_PATH = BASE_DIR / "id_mapping.json"
 
 # Polling interval (seconds)
-POLL_INTERVAL = 5
+POLL_INTERVAL = 15
 
 print(f"Config: Using model '{MODEL_NAME}' at {BASE_DIR}")
