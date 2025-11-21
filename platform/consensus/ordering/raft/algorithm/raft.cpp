@@ -122,7 +122,7 @@ void Raft::Dump() {
 
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
   // LOG(INFO)<<"recv txn:";
-
+  return false;
   LOG(INFO) << "Received Transaction to primary id: " << id_;
   LOG(INFO) << "prevLogIndex: " << prevLogIndex_;
   txn->set_create_time(GetCurrentTime());
@@ -150,6 +150,8 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
     return false;
   }
+  leader_election_manager_->OnHeartBeat();
+  return false;
   Dump();
   auto leader_id = txn->leaderid();
   auto leaderCommit = txn->leadercommitindex();

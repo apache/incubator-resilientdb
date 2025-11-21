@@ -37,7 +37,7 @@ AsyncReplicaClient::~AsyncReplicaClient() {}
 
 int AsyncReplicaClient::SendMessage(const std::string& data) {
   queue_.Push(std::make_unique<std::string>(data));
-  LOG(ERROR) << "About to send";
+  
   if (!in_process_.load()) {
     bool old_value = false;
     if (in_process_.compare_exchange_strong(old_value, true,
@@ -50,7 +50,7 @@ int AsyncReplicaClient::SendMessage(const std::string& data) {
 }
 
 void AsyncReplicaClient::OnSendNewMessage() {
-  LOG(ERROR) << "OnSendNewMessage()";
+  
   std::unique_ptr<std::string> data = queue_.Pop(0);
   if (data == nullptr || data->empty()) {
     in_process_ = false;
@@ -62,7 +62,7 @@ void AsyncReplicaClient::OnSendNewMessage() {
 }
 
 void AsyncReplicaClient::OnSendMessage() {
-  LOG(ERROR) << "OnSendMessage(), status: " << status_;
+  
   if (status_ == 0) {
     data_size_ = pending_data_->size();
     sending_data_size_ = sizeof(data_size_);
