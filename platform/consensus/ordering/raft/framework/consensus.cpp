@@ -80,7 +80,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
 
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
-  txn->set_data(request->data());
+  txn->set_entries(request->data());
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
   txn->set_uid(request->uid());
@@ -93,8 +93,8 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
 
 int Consensus::CommitMsgInternal(const AppendEntries& txn) {
   std::unique_ptr<Request> request = std::make_unique<Request>();
-  request->set_data(txn.data());
-  request->set_seq(txn.seq());
+  request->set_data(txn.entries());
+  request->set_seq(txn.prevlogindex());
   request->set_uid(txn.uid());
   request->set_proxy_id(txn.proxy_id());
   transaction_executor_->Commit(std::move(request));

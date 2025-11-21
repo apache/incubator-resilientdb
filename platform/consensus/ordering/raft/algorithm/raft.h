@@ -60,9 +60,9 @@ class Raft : public common::ProtocolBase {
  private:
   mutable std::mutex mutex_;
   std::map<std::string, std::set<int32_t> > received_;
-  std::map<std::string, std::unique_ptr<AppendEntries> > data_; // log[]
+  std::map<std::string, std::unique_ptr<AppendEntries> > log_; // log[]
 
-  std::vector<std::string> dataIndexMapping_;
+  std::vector<std::string> logIndexMapping_;
 
   // This is for everyone
   // Most recent term it has seen
@@ -85,7 +85,7 @@ class Raft : public common::ProtocolBase {
   Role role_; // Protected by raft_mutex_
   int LeaderId; // Protected by raft_mutex_
 
-  int64_t seq_;
+  int64_t prevLogIndex_;
   bool is_stop_;
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;
