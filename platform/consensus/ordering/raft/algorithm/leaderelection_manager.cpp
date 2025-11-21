@@ -35,9 +35,9 @@ LeaderElectionManager::LeaderElectionManager(const ResDBConfig& config)
       raft_(nullptr),
       started_(false),
       stop_(false),
-      timeout_min_ms(1000),
-      timeout_max_ms(2000),
-      heartbeat_timer_(100),
+      timeout_min_ms(150),
+      timeout_max_ms(300),
+      heartbeat_timer_(50),
       heartbeat_count_(0),
       role_epoch_(0),
       known_role_epoch_(0) {
@@ -174,7 +174,6 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
       }
       continue;
     }
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in timeout section";
     
     // Only gets here if timeout expired.
     // Leaders send a new heartbeat.
