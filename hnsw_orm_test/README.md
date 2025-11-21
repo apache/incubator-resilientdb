@@ -1,4 +1,4 @@
-# ResilientDB x LEANN Vector Search Integration
+# ResilientDB x LEANN Vector Search Integration (This does not reflect latest version. I will update it by Sunday.)
 Add something...
 
 ## File Structure
