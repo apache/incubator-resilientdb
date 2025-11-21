@@ -50,9 +50,9 @@
     "preview": "Mitochondria are the powerhouse of the cell."
   },
   {
-    "resdb_id": "0e8ff673d774b53106c1ed1ab0b9dd39d5ec30957535f0e2e8cbcd12ee2b9ee1",
+    "resdb_id": "94261b3f300d544b5b0c2c15166b09ea611cb1be9a9e1e41635357402fbb6c38",
     "original_key": "doc14",
-    "preview": "UC Davis is known for its agricultural studies."
+    "preview": "Update completed! Doc14 was already updated."
   },
   {
     "resdb_id": "6b1d447ead2694c9fd880062bd8fd4f1650a71a3295f88ff138e62e577de705d",
@@ -103,5 +103,10 @@
     "resdb_id": "306b6e702acaf5301d7e386f46a7a4bdbbe13be3948f6fb5b99d4297db937213",
     "original_key": "batch_4",
     "preview": "Data D"
+  },
+  {
+    "resdb_id": "e51bae79bd0517816da26e15d3dbbc47baf07884677f8117e7b5fbbc3f8c1af7",
+    "original_key": "batch_6",
+    "preview": "Data R is update"
   }
 ]

@@ -19,12 +19,10 @@ class SafeResDBORM(ResDBORM):
             return []
 
 def main():
-    # Limit parallelism for deterministic behavior
     os.environ["OMP_NUM_THREADS"] = "1"
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     print(f"Indexer Service Started. Model: {config.MODEL_NAME}")
-    print(f"Output Index: {config.INDEX_PATH}")
     
     db = SafeResDBORM(config_path=str(config.RESDB_CONFIG_PATH))
     last_tx_count = 0
@@ -34,7 +32,6 @@ def main():
             all_txs = db.read_all()
             current_count = len(all_txs)
 
-            # Start processing if transaction count increased
             if current_count > last_tx_count:
                 print(f"\n[Change Detected] {last_tx_count} -> {current_count} transactions.")
                 
@@ -51,6 +48,7 @@ def main():
                         
                         ts = float(data.get('timestamp', 0))
                         key = data.get('original_key')
+                        # operationフィールドがない場合は 'upsert' (強制上書き) として扱う
                         op = data.get('operation', 'upsert')
                         text = data.get('text', '')
                         
@@ -62,17 +60,32 @@ def main():
                 # 2. Sort by timestamp
                 events.sort(key=lambda x: x['ts'])
 
-                # 3. Replay state
+                # 3. Replay state (Filtering Logic)
                 active_docs = {}
                 for ev in events:
-                    if ev['op'] == 'delete':
-                        if ev['key'] in active_docs:
-                            del active_docs[ev['key']]
+                    key = ev['key']
+                    op = ev['op']
+                    
+                    if op == 'delete':
+                        if key in active_docs:
+                            del active_docs[key]
+                    elif op == 'update':
+                        # キーが存在する場合のみ更新する
+                        if key in active_docs:
+                            active_docs[key] = {
+                                "text": ev['text'],
+                                "resdb_id": ev['id'],
+                                "original_key": key
+                            }
+                        else:
+                            # 存在しないキーへのupdateは無視し、ログを出す
+                            print(f"Warning: Ignored 'update' for non-existent key: '{key}'")
                     else:
-                        active_docs[ev['key']] = {
+                        # 'add' や 'upsert' は無条件で保存（新規作成または上書き）
+                        active_docs[key] = {
                             "text": ev['text'],
                             "resdb_id": ev['id'],
-                            "original_key": ev['key']
+                            "original_key": key
                         }
 
                 # 4. Build index
@@ -80,21 +93,15 @@ def main():
                 if valid_docs:
                     print(f"Rebuilding index for {len(valid_docs)} documents...")
                     
-                    # --- Start timing ---
                     start_time = time.time()
-                    
                     builder = LeannBuilder(backend_name="hnsw", model=config.MODEL_NAME)
                     for d in valid_docs:
                         builder.add_text(d['text'])
                     
-                    # Save index
                     builder.build_index(str(config.INDEX_PATH))
                     
-                    # --- End timing ---
-                    end_time = time.time()
-                    elapsed_time = end_time - start_time
+                    elapsed_time = time.time() - start_time
                     
-                    # Save mapping
                     mapping_data = [{
                         "resdb_id": d['resdb_id'],
                         "original_key": d['original_key'],
@@ -104,15 +111,13 @@ def main():
                     with open(config.MAPPING_PATH, 'w') as f:
                         json.dump(mapping_data, f, indent=2)
                         
-                    print(f"Index updated successfully at {time.ctime()}")
-                    print(f"Time taken: {elapsed_time:.4f} seconds") # Display time taken here
+                    print(f"Index updated. Time: {elapsed_time:.4f}s")
                 else:
                     print("Index cleared (no active documents).")
                     with open(config.MAPPING_PATH, 'w') as f:
                         json.dump([], f)
 
                 last_tx_count = current_count
-                
                 if 'builder' in locals(): del builder
                 gc.collect()
 
