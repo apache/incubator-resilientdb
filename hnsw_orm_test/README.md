@@ -62,7 +62,7 @@ id_mapping.json: Metadata linking search result IDs to the original keys (origin
 manage_data.py is an interface that allows users to insert and manipulate data in ResilientDB from the command line. It is not just a simple HTTP client; it possesses pre-check functions to maintain data integrity.
 
 ### 2.1 Overview
-CRUD Operations: Supports adding (add), updating (update), and deleting (delete) data.
+Operations: Supports adding (add), updating (update), and deleting (delete) data.
 
 Soft Validation: Includes a feature to check if the target key exists in the database before performing modification operations (update/delete) and issues a warning if it does not.
 
