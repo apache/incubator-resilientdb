@@ -48,7 +48,7 @@ def main():
                         
                         ts = float(data.get('timestamp', 0))
                         key = data.get('original_key')
-                        # operationフィールドがない場合は 'upsert' (強制上書き) として扱う
+                        # If the operation field is missing, it is treated as 'upsert' (forced overwrite).
                         op = data.get('operation', 'upsert')
                         text = data.get('text', '')
                         
@@ -70,7 +70,7 @@ def main():
                         if key in active_docs:
                             del active_docs[key]
                     elif op == 'update':
-                        # キーが存在する場合のみ更新する
+                        # Reload if the key exists
                         if key in active_docs:
                             active_docs[key] = {
                                 "text": ev['text'],
@@ -78,10 +78,10 @@ def main():
                                 "original_key": key
                             }
                         else:
-                            # 存在しないキーへのupdateは無視し、ログを出す
+                            # Ignore updates to non-existent keys and log them.
                             print(f"Warning: Ignored 'update' for non-existent key: '{key}'")
                     else:
-                        # 'add' や 'upsert' は無条件で保存（新規作成または上書き）
+                        # 'add' saves unconditionally
                         active_docs[key] = {
                             "text": ev['text'],
                             "resdb_id": ev['id'],

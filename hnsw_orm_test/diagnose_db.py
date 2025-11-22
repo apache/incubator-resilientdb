@@ -7,7 +7,7 @@ import config
 def diagnose():
     print("=== ResilientDB Diagnosis Tool ===")
     
-    # 1. 設定ファイルからURLを取得
+    # 1. Get URL from config file
     try:
         with open(config.RESDB_CONFIG_PATH, 'r') as f:
             conf = yaml.safe_load(f)
@@ -17,7 +17,7 @@ def diagnose():
         print(f"Error loading config: {e}")
         return
 
-    # 2. 全データ取得のエンドポイントを叩く
+    # 2. Hit the endpoint to get all the data
     target_endpoint = f"{url}/v1/transactions"
     print(f"Requesting: {target_endpoint} ...")
     
@@ -25,7 +25,7 @@ def diagnose():
         response = requests.get(target_endpoint)
         print(f"Status Code: {response.status_code}")
         
-        # 生のレスポンス内容を表示
+        # Show raw response content
         content = response.text
         print(f"Raw Response Length: {len(content)}")
         print(f"Raw Response Preview (first 500 chars):\n{content[:500]}")
@@ -35,12 +35,12 @@ def diagnose():
             print("Check if ResilientDB is running and if data was actually persisted.")
             return
 
-        # JSONデコードを試行
+        # Attempt to decode JSON
         try:
             data = response.json()
             print(f"\nSuccess! Parsed JSON with {len(data)} records.")
             
-            # doc1 があるか簡易チェック
+            # Simple check if doc1 exists
             found_keys = []
             for tx in data:
                 try:
