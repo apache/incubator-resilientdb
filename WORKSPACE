@@ -180,6 +180,19 @@ http_archive(
     strip_prefix = "leveldb-1.23",
     url = "https://github.com/google/leveldb/archive/refs/tags/1.23.zip",
 )
+http_archive(
+    name = "duckdb",
+    urls = [
+        # pick one version and stick to it
+        "https://github.com/duckdb/duckdb/releases/download/v1.4.0/libduckdb-src.zip",
+    ],
+    # This zip is just flat: duckdb.cpp, duckdb.hpp, duckdb.h at the root.
+    # So no strip_prefix is needed.
+    build_file = "//third_party:duckdb.BUILD",
+    # Optional: you can add sha256 once Bazel prints it for you.
+    # sha256 = "<FILL_ME_FROM_BAZEL_ERROR>",
+)
+
 
 bind(
     name = "snappy",
@@ -256,3 +269,4 @@ http_archive(
     strip_prefix = "asio-asio-1-26-0",
     url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
 )
+
