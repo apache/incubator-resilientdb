@@ -1,4 +1,4 @@
-# ResilientDB x LEANN Vector Search Integration 
+# ResilientDB x LEANN Vector Search Integration (Under construction)
 This document explains the internal logic and specifications of indexer.py (a resident index construction service) and manage_data.py (a CLI tool for data manipulation), which are core components for keeping data on ResilientDB in a vector-searchable state.
 
 ## 1. Indexer Service (indexer.py)
