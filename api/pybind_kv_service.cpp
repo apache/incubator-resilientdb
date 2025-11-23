@@ -74,6 +74,6 @@ bool set(std::string key, std::string value, std::string config_path) {
 
 PYBIND11_MODULE(pybind_kv, m) {
   m.def("get", &get, "A function that gets a value from the key-value store");
-  m.def("get_readonly", &get_ro, "A function that gets a value from the key-value store with no tracking");
+  m.def("get_value_readonly", &get_ro, "A function that gets a value from the key-value store with no tracking");
   m.def("set", &set, "A function that sets a value in the key-value store");
 }

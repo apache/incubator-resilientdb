@@ -43,6 +43,7 @@ class KVExecutor : public TransactionManager {
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
+  std::string GetReadOnly(const std::string& key);
   std::string GetAllValues();
   std::string GetRange(const std::string& min_key, const std::string& max_key);
 
