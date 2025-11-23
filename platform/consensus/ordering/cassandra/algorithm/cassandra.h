@@ -69,6 +69,8 @@ class Cassandra: public common::ProtocolBase {
 
   bool ProcessProposal(std::unique_ptr<Proposal> proposal);
 
+  bool Checklimit(int low, int hight, int proposer);
+
  private:
   std::unique_ptr<ProposalGraph> graph_;
   LockFreeQueue<Transaction> txns_;

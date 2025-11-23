@@ -248,6 +248,11 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
 
     proposal->mutable_header()->set_prehash(last->header().hash());
     *proposal->mutable_history() = last->history();
+    //*proposal->mutable_pre_p() = *last;
+    //proposal->set_pre_s(graph_->GetProposalState(last->header().hash()));
+    //LOG(ERROR) << "get last proposal, proposer:" << last->header().proposer_id()
+               //<< " id:" << last->header().proposal_id()
+               //<<" add pre_s:"<<proposal->pre_s();
   }
 
   
@@ -256,8 +261,9 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
     for(auto block : ps) {
       auto sub_block = proposal->add_sub_block();
       *sub_block = block;
+      //LOG(ERROR)<<" proposal sub block:"<<sub_block->local_id()<<" txn size:"<<sub_block->data().transaction_size();
     }
-    //LOG(ERROR)<<" proposal sub block size:"<<proposal->sub_block_size();
+    LOG(ERROR)<<" proposal sub block size:"<<proposal->sub_block_size();
   }
 
   proposal->mutable_header()->set_proposer_id(id_);
@@ -409,9 +415,10 @@ int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   }
 
   tmp_proposal_.clear();
+  return 0;
 
   for (const Proposal& p : resp.proposal()) {
-    LOG(ERROR)<<"verify resp proposal proposer:"<<p.header().proposer_id()<<" id:"<<p.header().proposal_id();
+    //LOG(ERROR)<<"verify resp proposal proposer:"<<p.header().proposer_id()<<" id:"<<p.header().proposal_id();
     if (list.find(std::make_pair(p.header().height(),
                                  p.header().proposer_id())) != list.end()) {
       continue;
@@ -424,11 +431,11 @@ int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   while (!list.empty()) {
     auto it = list.begin();
     int ret = VerifyProposalHistory(it->second.get());
-     LOG(ERROR)<<"verify propser:"<<it->second->header().proposer_id()<<" height:"<<it->second->header().height()<<" ret:"<<ret;
+     //LOG(ERROR)<<"verify propser:"<<it->second->header().proposer_id()<<" height:"<<it->second->header().height()<<" ret:"<<ret;
     if (ret == 0) {
       ReleaseTmpProposal(*it->second);
-        LOG(ERROR)<<"proposal from:"<<it->second->header().proposer_id()
-       <<" id:"<<it->second->header().proposal_id()<<" activate";
+        //LOG(ERROR)<<"proposal from:"<<it->second->header().proposer_id()
+       //<<" id:"<<it->second->header().proposal_id()<<" activate";
     } else {
       fail_list.push_back(std::move(it->second));
     }

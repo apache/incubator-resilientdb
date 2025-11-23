@@ -71,6 +71,25 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
    LOG(ERROR) << "add proposal height:" << proposal.header().height()
              << " current height:" << current_height_<<" from:"<<proposal.header().proposer_id()<<" proposal id:"<<proposal.header().proposal_id();
   assert(current_height_ >= latest_commit_.header().height());
+
+  {
+    int cur_h = proposal.header().height();
+    for(int i = 0; i <3 && proposal.history_size()>=3; ++i){
+      const auto& sub_history = proposal.history(i);
+      std::string sub_hash = sub_history.hash();
+      auto sub_node_it = node_info_.find(sub_hash);
+      if(sub_node_it == node_info_.end()){
+        continue;
+      }
+      LOG(ERROR)<<" history node :"<<sub_node_it->second->proposal.header().proposer_id()
+        <<" height:"<<sub_node_it->second->proposal.header().height()
+        <<" hash:"<<sub_hash;
+      assert(cur_h == sub_node_it->second->proposal.header().height()+1);
+      cur_h--;
+    }
+  }
+
+
   /*
   if (proposal.header().height() < current_height_) {
     LOG(ERROR) << "height not match:" << current_height_
@@ -105,25 +124,28 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
   if (!VerifyParent(proposal)) {
     LOG(ERROR) << "verify parent fail:" << proposal.header().proposer_id()
                << " id:" << proposal.header().proposal_id();
+
+    g_[proposal.header().prehash()].push_back(proposal.header().hash());
+    auto np = std::make_unique<NodeInfo>(proposal);
+    //new_proposals_[proposal.header().hash()] = &np->proposal;
+    // LOG(ERROR)<<"add proposal proposer:"<<proposal.header().proposer_id()<<"
+    // id:"<<proposal.header().proposal_id()<<"
+    // hash:"<<Encode(proposal.header().hash());
+    node_info_[proposal.header().hash()] = std::move(np);
+    last_node_[proposal.header().height()].insert(proposal.header().hash());
+
     // assert(1==0);
     return 2;
   }
 
-   //LOG(ERROR)<<"history size:"<<proposal.history_size();
+  LOG(ERROR)<<"history size:"<<proposal.history_size();
+   /*
   for (const auto& history : proposal.history()) {
     std::string hash = history.hash();
     auto node_it = node_info_.find(hash);
     assert(node_it != node_info_.end());
-    /*
-    if (node_it == node_info_.end()) {
-      LOG(ERROR) << " history node not found";
-      return false;
-    }
-    else {
-      LOG(ERROR)<<"find history";
-    }
-    */
   }
+  */
 
   //LOG(ERROR)<<" proposal history:"<<proposal.history_size();
   if(proposal.history_size()>0){
@@ -149,18 +171,26 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
     }
 
     int num = 0;
+    int cur_h = proposal.header().height();
     for(int i = 0; i <3 && proposal.history_size()>=3; ++i){
       const auto& sub_history = proposal.history(i);
       std::string sub_hash = sub_history.hash();
       auto sub_node_it = node_info_.find(sub_hash);
-      //LOG(ERROR)<<" state:"<<node_it->second->state;
-      if (node_it->second->state != ProposalState::PoR) {
+      if(sub_node_it == node_info_.end()){
+        continue;
+      }
+      LOG(ERROR)<<" state:"<<sub_node_it->second->state<<" node:"<<sub_node_it->second->proposal.header().proposer_id()
+      <<" height:"<<sub_node_it->second->proposal.header().height();
+      assert(cur_h == sub_node_it->second->proposal.header().height()+1);
+      cur_h--;
+    // LOG(ERROR)<<"proposal:("<<node_it->second->proposal.header().proposer_id()
+      if (sub_node_it->second->state != ProposalState::PoR) {
         break;
       }
       num++;
     }
   
-    //LOG(ERROR)<<"get num:"<<num; 
+    LOG(ERROR)<<"get num:"<<num; 
     if(num == 3) {
       const auto& sub_history = proposal.history(2);
       std::string sub_hash = sub_history.hash();
@@ -219,9 +249,7 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
     g_[proposal.header().prehash()].push_back(proposal.header().hash());
     auto np = std::make_unique<NodeInfo>(proposal);
     //new_proposals_[proposal.header().hash()] = &np->proposal;
-    // LOG(ERROR)<<"add proposal proposer:"<<proposal.header().proposer_id()<<"
-    // id:"<<proposal.header().proposal_id()<<"
-    // hash:"<<Encode(proposal.header().hash());
+    LOG(ERROR)<<"add proposal proposer:"<<proposal.header().proposer_id()<<" id:"<<proposal.header().proposal_id()<<" hash:"<<Encode(proposal.header().hash());
     node_info_[proposal.header().hash()] = std::move(np);
     last_node_[proposal.header().height()].insert(proposal.header().hash());
   }
@@ -441,33 +469,46 @@ void ProposalGraph::UpdateHistory(Proposal* proposal) {
 
   for (int i = 0; i < 3 && !hash.empty(); ++i) {
     auto node_it = node_info_.find(hash);
+    if(node_it == node_info_.end()){
+      break;
+    }
     auto his = proposal->add_history();
     his->set_hash(hash);
     his->set_state(node_it->second->state);
     his->set_sender(node_it->second->proposal.header().proposer_id());
     his->set_id(node_it->second->proposal.header().proposal_id());
     hash = node_it->second->proposal.header().prehash();
+    LOG(ERROR)<<" get his proposer:"<<node_it->second->proposal.header().proposer_id()<<" height:"<<node_it->second->proposal.header().height();
   }
 }
 
 Proposal* ProposalGraph::GetStrongestProposal() {
-  // LOG(ERROR) << "get strong proposal from height:" << current_height_;
+  LOG(ERROR) << "get strong proposal from height:" << current_height_;
   if (last_node_.find(current_height_) == last_node_.end()) {
     LOG(ERROR) << "no data:" << current_height_;
     return nullptr;
   }
 
+  //LOG(ERROR)<<" node size:"<<last_node_[current_height_].size();
   NodeInfo* sp = nullptr;
   for (const auto& last_hash : last_node_[current_height_]) {
+    if(node_info_.find(last_hash) == node_info_.end()){
+      continue;
+    }
     NodeInfo* node_info = node_info_[last_hash].get();
+    assert(node_info->proposal.header().height() == current_height_);
     if (sp == nullptr || Compare(*sp, *node_info)) {
       sp = node_info;
     }
   }
+  assert(sp != nullptr);
 
   LOG(ERROR)<<" last node size:"<<last_node_[current_height_].size()<<" height:"<<current_height_<<" get strong from:"<<sp->proposal.header().proposer_id();
 
   for (const auto& last_hash : last_node_[current_height_]) {
+    if(node_info_.find(last_hash) == node_info_.end()){
+      continue;
+    }
     NodeInfo* node_info = node_info_[last_hash].get();
   //  LOG(ERROR)<<" node info:"<<node_info->proposal.header().proposer_id()<<" sub blocks:"<<node_info->proposal.sub_block_size();
 
@@ -475,7 +516,7 @@ Proposal* ProposalGraph::GetStrongestProposal() {
       continue;
     }
 
-//    LOG(ERROR)<<" node info:"<<node_info->proposal.header().proposer_id()<<" sub blocks:"<<node_info->proposal.sub_block_size()<<" node state:"<<node_info->state;
+    //LOG(ERROR)<<" node info:"<<node_info->proposal.header().proposer_id()<<" sub blocks:"<<node_info->proposal.sub_block_size()<<" node state:"<<node_info->state;
     if(node_info->state == ProposalState::PoR) {
       assert(node_info->proposal.header().proposer_id() == sp->proposal.header().proposer_id());
       for(auto sub_block : node_info->proposal.sub_block()){ 
@@ -485,7 +526,32 @@ Proposal* ProposalGraph::GetStrongestProposal() {
       }
       continue;
     }
-    
+
+    //LOG(ERROR)<<"get sub block size:"<<node_info->proposal.sub_block_size();
+    for(auto sub_block : node_info->proposal.sub_block()){ 
+      new_blocks_[sub_block.hash()] = sub_block;
+    }
+    //LOG(ERROR)<<" new blocks:"<<new_blocks_.size();
+
+
+    std::string pre_prehash = node_info->proposal.header().prehash();
+    if(node_info_.find(pre_prehash) != node_info_.end()){
+      NodeInfo* pre_node_info = node_info_[pre_prehash].get();
+      //LOG(ERROR)<<" pre node info:"<<pre_node_info->proposal.header().proposer_id()
+      //<<" pre node state:"<<pre_node_info->state;
+
+      if(pre_node_info->state == ProposalState::PoR 
+          && pre_node_info->proposal.header().proposer_id() == id_) {
+        for(auto sub_block : pre_node_info->proposal.sub_block()){ 
+          if(new_blocks_.find(sub_block.hash()) != new_blocks_.end()){
+            //LOG(ERROR)<<" remove new blocks:"<<sub_block.local_id(); 
+            new_blocks_.erase(new_blocks_.find(sub_block.hash()));
+          }
+        }
+      }
+    }
+
+    /*
     if(node_info->proposal.header().proposer_id() == sp->proposal.header().proposer_id()) {
       continue;
     }
@@ -493,16 +559,18 @@ Proposal* ProposalGraph::GetStrongestProposal() {
     if(sp == node_info) {
       continue;
     }
+    */
 
-//    LOG(ERROR)<<"get sub block size:"<<node_info->proposal.sub_block_size();
-    for(auto sub_block : node_info->proposal.sub_block()){ 
-      new_blocks_[sub_block.hash()] = sub_block;
+        /*
+    if(node_info_.find(last_hash) != node_info_.end()){
+      node_info_.erase(node_info_.find(last_hash));
     }
-    node_info_.erase(node_info_.find(last_hash));
+    */
   }
 
 
 
+  LOG(ERROR)<<" update his";
   UpdateHistory(&sp->proposal);
    //LOG(ERROR) << "get strong proposal from height:" << current_height_ << " ->("
    //          << sp->proposal.header().proposer_id() << ","
@@ -537,14 +605,14 @@ int ProposalGraph::CompareState(const ProposalState& state1,
 
 // p1 < p2
 bool ProposalGraph::Compare(const NodeInfo& p1, const NodeInfo& p2) {
-  //LOG(ERROR) << "proposer:" << p1.proposal.header().proposer_id() << " "
-  //           << p2.proposal.header().proposer_id()
-  //          << "height:" << p1.proposal.header().height() << " "
-  //          << p2.proposal.header().height()
-  //          <<" state:"<< p1.state<<" "<<p2.state
-  //          <<" hash cmp:"<< (p1.proposal.header().hash() < p2.proposal.header().hash())
-  //          <<" cmp num:" << Cmp(p1.proposal.header().proposer_id(), p2.proposal.header().proposer_id())
-  //          <<" sub block:" << p1.proposal.sub_block_size() <<" "<< p2.proposal.sub_block_size();
+  LOG(ERROR) << "proposer:" << p1.proposal.header().proposer_id() << " "
+             << p2.proposal.header().proposer_id()
+            << "height:" << p1.proposal.header().height() << " "
+            << p2.proposal.header().height()
+            <<" state:"<< p1.state<<" "<<p2.state
+           <<" hash cmp:"<< (p1.proposal.header().hash() < p2.proposal.header().hash())
+           <<" cmp num:" << Cmp(p1.proposal.header().proposer_id(), p2.proposal.header().proposer_id())
+           <<" sub block:" << p1.proposal.sub_block_size() <<" "<< p2.proposal.sub_block_size();
   if (p1.proposal.header().height() != p2.proposal.header().height()) {
     return p1.proposal.header().height() < p2.proposal.header().height();
   }
@@ -554,10 +622,18 @@ bool ProposalGraph::Compare(const NodeInfo& p1, const NodeInfo& p2) {
     return CompareState(p1.state, p2.state) < 0;
   }
 
+  if(150<=p1.proposal.header().height()&&p1.proposal.header().height()<=250) {
+    int h = (p1.proposal.header().height())%2;
+    if ( h == 0) h = 2;
+    return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
+  }
+
   int h = (p1.proposal.header().height())%total_num_;
   if ( h == 0) h = total_num_;
-  //LOG(ERROR)<<" check height cmp:"<<abs(p1.proposal.header().proposer_id() - h )<<" "<<abs(p2.proposal.header().proposer_id() - h);
-  //return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
+  //LOG(ERROR)<<" check height :"<<h<<" cmp:"<<abs(p1.proposal.header().proposer_id() - h )<<" "<<abs(p2.proposal.header().proposer_id() - h);
+  //if (p1.proposal.header().height() <= 120 && 220 <= proposal.header().height()) {
+    return abs(p1.proposal.header().proposer_id() - h ) > abs(p2.proposal.header().proposer_id() - h);
+  //}
 
   if (abs(p1.proposal.sub_block_size() - p2.proposal.sub_block_size()) > 5) {
     //return p1.proposal.sub_block_size() < p2.proposal.sub_block_size();

@@ -37,6 +37,8 @@ message Proposal {
   uint64 create_time = 5;
   repeated Block block = 6;
   repeated Block sub_block = 8;
+  Proposal pre_p = 9;
+  optional int32 pre_s = 10;
 };
 
 enum MessageType {

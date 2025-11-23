@@ -165,6 +165,7 @@ void Stats::MonitorGlobal() {
   uint64_t last_block_size_num = 0, last_block_size = 0;
 
   while (!stop_) {
+  monitor_sleep_time_ = 1;
     sleep(monitor_sleep_time_);
     time += monitor_sleep_time_;
     seq_fail = seq_fail_;
