@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <semaphore.h>
+#include <chrono>
 
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/execution/system_info.h"
@@ -69,6 +69,7 @@ class LeaderElectionManager {
   uint64_t timeout_max_ms;
   uint64_t heartbeat_timer_;
   uint64_t heartbeat_count_; // Protected by cv_mutex_
+  //std::chrono::steady_clock::time_point last_heartbeat_time_;
   uint64_t role_epoch_; // Protected by cv_mutex_
   uint64_t known_role_epoch_; // Protected by cv_mutex_
   std::mutex cv_mutex_;

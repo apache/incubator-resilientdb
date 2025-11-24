@@ -32,7 +32,7 @@ Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)),
     leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)) {
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
@@ -55,9 +55,8 @@ Consensus::Consensus(const ResDBConfig& config,
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  LOG(ERROR) << "Message type request->user_type(): " << request->user_type();
   if (request->user_type() == MessageType::AppendEntriesMsg) {
-    LOG(ERROR) << "Received AppendEntriesMsg";
+    //LOG(ERROR) << "Received AppendEntriesMsg";
     std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
     if (!txn->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";

@@ -23,6 +23,7 @@
 #include <map>
 #include <queue>
 #include <thread>
+#include <chrono>
 
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
@@ -60,7 +61,6 @@ class Raft : public common::ProtocolBase {
   uint64_t getPrevLogIndexLocked() const; // Must be called under mutex
   uint64_t getPrevLogTermLocked() const; // Must be called under mutex
   bool IsStop();
-  void Dump();
 
  private:
   mutable std::mutex mutex_;
@@ -90,6 +90,9 @@ class Raft : public common::ProtocolBase {
   Role role_; // Protected by raft_mutex_
   int LeaderId; // Protected by raft_mutex_
   std::vector<int> votes_; // Protected by raft_mutex_
+  uint64_t heartBeatsSentThisTerm_; // Protected by raft_mutex_
+  std::chrono::steady_clock::time_point last_ae_time_;
+  std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by raft_mutex_
 
   int64_t prevLogIndex_;
   bool is_stop_;

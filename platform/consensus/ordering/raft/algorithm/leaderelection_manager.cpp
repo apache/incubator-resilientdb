@@ -20,6 +20,7 @@
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include <glog/logging.h>
+#include <chrono>
 
 #include "common/utils/utils.h"
 #include "platform/proto/viewchange_message.pb.h"
@@ -39,10 +40,11 @@ LeaderElectionManager::LeaderElectionManager(const ResDBConfig& config)
       timeout_max_ms(300),
       heartbeat_timer_(50),
       heartbeat_count_(0),
+      //last_heartbeat_time_(std::chrono::steady_clock::now()),
       role_epoch_(0),
       known_role_epoch_(0) {
   global_stats_ = Stats::GetGlobalStats();
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager constructor";
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager constructor";
 }
 
 LeaderElectionManager::~LeaderElectionManager() {
@@ -55,7 +57,7 @@ LeaderElectionManager::~LeaderElectionManager() {
 }
 
 void LeaderElectionManager::MayStart() {
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart";
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart";
   bool expected = false;
     if (!started_.compare_exchange_strong(expected, true)) {
         return;
@@ -65,13 +67,13 @@ void LeaderElectionManager::MayStart() {
           .public_key()
           .public_key_info()
           .type() == CertificateKeyInfo::CLIENT) {
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart, Client conditional";
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart, Client conditional";
     LOG(ERROR) << "client type not process view change";
     return;
   }
 
   if (config_.GetConfigData().enable_viewchange()) {
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart, viewchange is enabled";
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart, viewchange is enabled";
     server_checking_timeout_thread_ =
         std::thread(&LeaderElectionManager::MonitoringElectionTimeout, this);
   }
@@ -82,17 +84,22 @@ void LeaderElectionManager::SetRaft(raft::Raft* raft) {
 }
 
 void LeaderElectionManager::OnHeartBeat() {
+    //auto now = std::chrono::steady_clock::now();
+    //std::chrono::steady_clock::duration delta;
   {
-    LOG(INFO) << "JIM -> " << __FUNCTION__;
     std::lock_guard<std::mutex> lk(cv_mutex_);
     heartbeat_count_++;
+    //delta = now - last_heartbeat_time_;
+    //last_heartbeat_time_ = now;
   }
   cv_.notify_all();
+  //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat received after " << ms << "ms";
 }
 
 void LeaderElectionManager::OnRoleChange() {
   {
-    LOG(INFO) << "JIM -> " << __FUNCTION__;
+    //LOG(INFO) << "JIM -> " << __FUNCTION__;
     std::lock_guard<std::mutex> lk(cv_mutex_);
     role_epoch_++;
   }
@@ -106,7 +113,7 @@ uint64_t LeaderElectionManager::RandomInt(uint64_t min, uint64_t max) {
 }
 
 Waited LeaderElectionManager::LeaderWait() {
-  LOG(INFO) << "JIM -> " << __FUNCTION__;
+  //LOG(INFO) << "JIM -> " << __FUNCTION__;
   std::unique_lock<std::mutex> lk(cv_mutex_);
   if (known_role_epoch_ != role_epoch_) {
     known_role_epoch_ = role_epoch_;
@@ -126,7 +133,7 @@ Waited LeaderElectionManager::LeaderWait() {
 }
 
 Waited LeaderElectionManager::Wait() {
-  LOG(INFO) << "JIM -> " << __FUNCTION__;
+  //LOG(INFO) << "JIM -> " << __FUNCTION__;
   const uint64_t timeout_ms = RandomInt(timeout_min_ms, timeout_max_ms);
   timeout_ms_ = timeout_ms;
   std::unique_lock<std::mutex> lk(cv_mutex_);
@@ -154,20 +161,30 @@ Waited LeaderElectionManager::Wait() {
 // Causes leaders to Heartbeat.
 // Causes followers and candidates to start an election if no heartbeat received.
 void LeaderElectionManager::MonitoringElectionTimeout() {
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": thread entered the function";
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": thread entered the function";
   while (!stop_.load()) {
     raft::Role role = raft_->GetRoleSnapshot();
     Waited res;
-    if (role == raft::Role::LEADER) { res = LeaderWait(); }
-    else { res = Wait(); }
-
+    std::chrono::steady_clock::time_point wait_start_time_ = std::chrono::steady_clock::now();
+    bool leader = false;
+    if (role == raft::Role::LEADER) { 
+      res = LeaderWait(); 
+      leader = true;
+    }
+    else { 
+      res = Wait(); 
+    }
+    std::chrono::steady_clock::time_point wait_end_time_ = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration delta = wait_end_time_ - wait_start_time_;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+    LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
     if (res == Waited::STOPPED) { break; }
     else if (res == Waited::ROLE_CHANGE) {
       LOG(INFO) << __FUNCTION__ << ": Role change detected";
       continue; 
     }
     else if (res == Waited::HEARTBEAT) {
-      LOG(INFO) << __FUNCTION__ << ": Heartbeat received within " << timeout_ms_.load() << " ms";
+      LOG(INFO) << __FUNCTION__ << ": Heartbeat received within window";
       if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {
         // A leader receiving a heartbeat would be unusual but not impossible.
         LOG(WARNING) << __FUNCTION__ << " Received Heartbeat as LEADER";

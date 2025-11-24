@@ -32,66 +32,23 @@
 namespace resdb {
 namespace raft {
 
-static std::string ToHex(const std::string& input, size_t max_len = 16) {
-  std::ostringstream oss;
-  oss << std::hex << std::setfill('0');
-  for (size_t i = 0; i < std::min(input.size(), max_len); ++i) {
-    oss << std::setw(2) << static_cast<unsigned>(static_cast<unsigned char>(input[i]));
-  }
-  return oss.str();
-}
-
-static void printAppendEntries(const std::unique_ptr<AppendEntries>& txn) {
-  if (!txn) {
-    LOG(INFO) << "AppendEntries: nullptr";
-    return;
-  }
-
-  LOG(INFO) << "=== AppendEntries ===";
-  LOG(INFO) << "term: " << txn->term();
-  LOG(INFO) << "prevLogIndex: " << txn->prevlogindex();
-  LOG(INFO) << "prevLogTerm: " << txn->prevlogterm();
-  LOG(INFO) << "leaderCommitIndex: " << txn->leadercommitindex();
-  LOG(INFO) << "proxy_id: " << txn->proxy_id();
-  LOG(INFO) << "leaderId: " << txn->leaderid();
-  LOG(INFO) << "uid: " << txn->uid();
-  LOG(INFO) << "create_time: " << txn->create_time();
-
-  // bytes fields (print as hex or limited string to avoid binary garbage)
-  const std::string& entries = txn->entries();
-  const std::string& hash = txn->hash();
-
-  LOG(INFO) << "entries size: " << entries.size();
-  if (!entries.empty()) {
-    LOG(INFO) << "entries (first 32 bytes): "
-              << entries.substr(0, std::min<size_t>(32, entries.size()));
-  }
-
-  LOG(INFO) << "hash size: " << hash.size();
-  if (!hash.empty()) {
-    LOG(INFO) << "hash (hex first 16 bytes): "
-              << ToHex(hash);
-  }
-
-  LOG(INFO) << "=====================";
-}
-
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   LeaderElectionManager* leaderelection_manager)
     : ProtocolBase(id, f, total_num), 
     role_(raft::Role::FOLLOWER),
     verifier_(verifier),
     leader_election_manager_(leaderelection_manager) {
-  LOG(ERROR) << "get proposal graph";
   id_ = id;
   total_num_ = total_num;
-  f_ = f;
+  f_ = (total_num-1)/2;
   is_stop_ = false;
   prevLogIndex_ = 0;
   currentTerm_ = 0;
   votedFor_ = -1;
   commitIndex_ = 0;
   lastApplied_ = 0;
+  last_ae_time_ = std::chrono::steady_clock::now();
+  last_heartbeat_time_ = std::chrono::steady_clock::now();
 
   AppendEntries ae;
   ae.set_leaderid(0);
@@ -111,15 +68,6 @@ Raft::~Raft() { is_stop_ = true; }
 
 bool Raft::IsStop() { return is_stop_; }
 
-void Raft::Dump() {
-  LOG(INFO) << "=== Replica Dump ===";
-  LOG(INFO) << "id_: " << id_;
-  LOG(INFO) << "currentTerm_: " << currentTerm_;
-  LOG(INFO) << "votedFor_: " << votedFor_;
-  LOG(INFO) << "commitIndex_: " << commitIndex_;
-  LOG(INFO) << "lastApplied_: " << lastApplied_;
-}
-
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
   // LOG(INFO)<<"recv txn:";
   return false;
@@ -137,27 +85,31 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
 
   // This should be a term for each entry, but assuming no failure at first
   txn->set_term(currentTerm_); 
-  LOG(INFO) << "Before";
-  printAppendEntries(txn);
-  LOG(INFO) << "After";
   
   Broadcast(MessageType::AppendEntriesMsg, *txn);
   return true;
 }
 
 bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
-  if (txn->leaderid() == id_) { 
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
-    return false;
-  }
+  if (txn->leaderid() == id_) { return false; }
   uint64_t term;
   bool success = false;
   bool demoted = false;
   TermRelation tr;
+  Role initialRole;
+
+  auto now = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::duration delta;
+  delta = now - last_ae_time_;
+  last_ae_time_ = now;
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": AE received after " << ms << "ms";
   {
+    initialRole = role_;
     std::lock_guard<std::mutex> lk(mutex_);
     tr = TermCheckLocked(txn->term());
     if (tr == TermRelation::NEW) { demoted = DemoteSelfLocked(txn->term()); }
+    else if (role_ == Role::CANDIDATE && tr == TermRelation::CURRENT) { demoted = DemoteSelfLocked(txn->term()); }
     if (tr != TermRelation::STALE) {
       uint64_t i = txn->prevlogindex();
       if (i < logIndexMapping_.size()) {
@@ -167,8 +119,12 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     }
     term = currentTerm_;
   }
-  if (demoted) { leader_election_manager_->OnRoleChange(); }
-  if (tr != TermRelation::STALE) { leader_election_manager_->OnHeartBeat(); }
+  if (demoted) { 
+    leader_election_manager_->OnRoleChange();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
+                << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
+  }
+  if (success) { leader_election_manager_->OnHeartBeat(); }
     AppendEntriesResponse aer;
     aer.set_term(term);
     aer.set_success(success);
@@ -176,148 +132,45 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded failure"; }
     SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
   return false;
-
-  Dump();
-  auto leader_id = txn->leaderid();
-  auto leaderCommit = txn->leadercommitindex();
-  LOG(INFO) << "Received AppendEntries to replica id: " << id_;
-  LOG(INFO) << "static_cast<int64_t>(log_.size()): " << static_cast<int64_t>(log_.size());
-  printAppendEntries(txn);
-  AppendEntriesResponse appendEntriesResponse;
-  appendEntriesResponse.set_term(currentTerm_);
-  appendEntriesResponse.set_id(id_);
-  appendEntriesResponse.set_lastapplied(lastApplied_);
-  appendEntriesResponse.set_nextentry(log_.size());
-  if (txn->term() < currentTerm_) {
-    LOG(INFO) << "AppendEntriesMsg Fail1";
-    appendEntriesResponse.set_success(false);
-    SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
-    return true;
-  }
-  auto prevprevLogIndex = txn->prevlogindex() - 1;
-  // This should be the same as checking if it has an entry
-  // with this prevLogIndex and term
-  if (prevprevLogIndex != 0 && prevprevLogIndex > static_cast<int64_t>(logIndexMapping_.size()) &&
-    (prevprevLogIndex >= static_cast<int64_t>(logIndexMapping_.size()) ||
-      txn->prevlogterm() != log_[logIndexMapping_[prevprevLogIndex]]->term())) {
-    LOG(INFO) << "AppendEntriesMsg Fail2";
-    LOG(INFO) << "prevprevLogIndex: " << prevprevLogIndex << " entries size: " << static_cast<int64_t>(log_.size());
-    if (prevprevLogIndex < static_cast<int64_t>(logIndexMapping_.size())){
-      LOG(INFO) << "txn->prevlogterm(): " << txn->prevlogterm() 
-              << " last entry term: " << log_[logIndexMapping_[prevprevLogIndex]]->term();
-    }
-    appendEntriesResponse.set_success(false);
-    SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
-    return true;
-  }
-  // Implement an entry existing but with a different term
-  // delete that entry and all after it
-  LOG(INFO) << "Before AppendEntriesMsg Added to Log";
-  std::string hash = txn->hash();
-  int64_t prevLogIndex = txn->prevlogindex();
-  {
-    std::unique_lock<std::mutex> lk(mutex_);
-    std::string hash = txn->hash();
-    LOG(INFO) << "Before adding to entries";
-    log_[txn->hash()] = std::move(txn);
-    LOG(INFO) << "After adding to entries";
-    logIndexMapping_.push_back(hash);
-  }
-  LOG(INFO) << "AppendEntriesMsg Added to Log";
-  
-  LOG(INFO) << "leaderCommit: " << leaderCommit;
-  LOG(INFO) << "commitIndex_: " << commitIndex_;
-  LOG(INFO) << "lastApplied_: " << lastApplied_;
-  LOG(INFO) << "static_cast<int64_t>(log_.size()): " << static_cast<int64_t>(log_.size());
-  LOG(INFO) << "leaderCommit > commitIndex_: " << (leaderCommit > commitIndex_ ? "true" : "false");
-  LOG(INFO) << "lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) " << ((lastApplied_ + 1 <= static_cast<int64_t>(log_.size())) ? "true" : "false");
-  while (leaderCommit > lastApplied_ && lastApplied_ + 1 <= static_cast<int64_t>(log_.size())) {
-    // assert(false);
-    LOG(INFO) << "AppendEntriesMsg Committing";
-    std::unique_ptr<AppendEntries> txnToCommit = nullptr;
-    txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
-    commit_(*txnToCommit);
-    lastApplied_++;
-  }
-  LOG(INFO) << "before commit index check";
-  // I don't quite know if this needs to be conditional, but that's how the paper says it
-  if (leaderCommit > commitIndex_)
-    // not 100% certain if this second variable should be prevLogIndex
-    commitIndex_ = std::min(leaderCommit, prevLogIndex);
-
-  LOG(INFO) << "after commit index check";
-  appendEntriesResponse.set_lastapplied(lastApplied_);
-  appendEntriesResponse.set_nextentry(log_.size());
-  appendEntriesResponse.set_success(true);
-  appendEntriesResponse.set_hash(hash);
-  appendEntriesResponse.set_prevlogindex(prevLogIndex);
-  LOG(INFO) << "Leader_id: " << leader_id;
-  leader_election_manager_->OnHeartBeat();
-  SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
-  // Broadcast(MessageType::AppendEntriesResponseMsg, appendEntriesResponse);
-  return true;
 }
 
 bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
-  if (id_ != 1)
-    return true;
-  LOG(INFO) << "ReceiveAppendEntriesResponse";
-  auto followerId = response->id();
-  LOG(INFO) << "followerId: " << followerId;
-  if (response->success()) {
-    {
-      std::unique_lock<std::mutex> lk(mutex_);
-      received_[response->hash()].insert(response->id());
-      auto it = log_.find(response->hash());
-      if (it != log_.end()) {
-        LOG(INFO) << "Transaction: " << response->prevlogindex() <<  " has gotten " << received_[response->hash()].size() << " responses";
-        if (static_cast<int64_t>(received_[response->hash()].size()) >= f_ + 1) {
-          commitIndex_ = response->prevlogindex();
-
-          // pretty sure this should always be in order with no gaps
-          while (lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) &&
-                  lastApplied_ <= commitIndex_) {
-            LOG(INFO) << "Leader Committing";
-            std::unique_ptr<AppendEntries> txnToCommit = nullptr;
-            txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
-            commit_(*txnToCommit);
-            lastApplied_++;
-          }
-        }
-      }
-    }
-    nextIndex_[followerId] = response->nextentry();
-    matchIndex_[followerId] = response->lastapplied();
-    return true;
+uint64_t term;
+bool demoted = false;
+TermRelation tr;
+Role initialRole;
+{
+  initialRole = role_;
+  std::lock_guard<std::mutex> lk(mutex_);
+  tr = TermCheckLocked(response->term());
+  if (tr == TermRelation::NEW) { demoted = DemoteSelfLocked(response->term()); }
+  term = currentTerm_;
+}
+  if (demoted) {
+    leader_election_manager_->OnRoleChange();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
+                << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
   }
-  
-  // handling for if leader is out of date and term is wrong
-
-  // handling for if term is correct, but follower is just out of date
-  --nextIndex_[followerId];
-  // send message
-  assert(false);
-  return true;
+  return false;
 }
 
 
 void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
-  LOG(INFO) << "JIM -> " << __FUNCTION__;
   int rvSender = rv->candidateid();
   uint64_t rvTerm = rv->term();
 
   uint64_t term;
   bool voteGranted = false;
-  bool roleChanged = false;
-  int votedFor;
+  bool demoted = false;
+  bool validCandidate = false;
+  int votedFor = -1;
+  Role initialRole;
 
-  if (rvSender == id_) { 
-    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": discarding message from self";
-    return;
-  }
+  if (rvSender == id_) { return; }
 
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
+    initialRole = role_;
     // If their term is higher than ours, we accept new term, reset votedFor
     // and convert to follower
     TermRelation tr = TermCheckLocked(rvTerm);
@@ -325,7 +178,7 @@ void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
       term = currentTerm_;
       return;
     }
-    else if (tr == TermRelation::NEW) { roleChanged = DemoteSelfLocked(rvTerm); }
+    else if (tr == TermRelation::NEW) { demoted = DemoteSelfLocked(rvTerm); }
     // Then we continue voting process
     term = currentTerm_;
     votedFor = votedFor_;
@@ -335,18 +188,27 @@ void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
     //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": prev log terms at least equal";
     if (rv->lastlogterm() == lastLogTerm 
         && rv->lastlogindex() < getPrevLogIndexLocked()) { return; }
+    validCandidate = true;
     //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": candidate is valid";
     if (votedFor_ == -1 || votedFor_ == rvSender) {
       votedFor_ = rvSender;
       voteGranted = true;
     }
   }();
-  if (roleChanged) { leader_election_manager_->OnRoleChange(); }
-  if (voteGranted) { 
+  if (demoted) { 
+    leader_election_manager_->OnRoleChange();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
+              << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
+  }
+  if (voteGranted) {
     leader_election_manager_->OnHeartBeat(); 
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": voted for " << rvSender<< " on term " << term;
   }
-  else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": did not vote for " << rvSender<< " on term " << term << ". I already voted for " << votedFor; }
+  else if (validCandidate) { 
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": did not vote for "
+              << rvSender<< " on term " << term << ". I already voted for " << votedFor
+              << ((votedFor == id_) ? " (myself)" : "");
+  }
 
   RequestVoteResponse rvr;
   rvr.set_term(term);
@@ -362,9 +224,11 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
   bool demoted = false;
   bool elected = false;
   int votesNeeded = total_num_ - f_;
+  Role initialRole;
 
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
+    initialRole = role_;
     TermRelation tr = TermCheckLocked(term);
     if (tr == TermRelation::STALE) { return; }
     else if (tr == TermRelation::NEW) { 
@@ -377,14 +241,18 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
     if (dupe) { return; }
     votes_.push_back(voterId);
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Replica " << voterId << " voted for me. Votes: " 
-              << votes_.size() << "/" << votesNeeded << "in term " << currentTerm_;
+              << votes_.size() << "/" << votesNeeded << " in term " << currentTerm_;
     if (votes_.size() >= votesNeeded) {
       elected = true;
       role_ = Role::LEADER;
-      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": CANDIDATE -> LEADER on term " << currentTerm_;
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": CANDIDATE->LEADER on term " << currentTerm_;
     }
   }();
     if (demoted || elected) { leader_election_manager_->OnRoleChange(); }
+    if (demoted) {
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
+                << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
+    }
     if (elected) { SendHeartBeat(); }
 }
 
@@ -412,13 +280,13 @@ void Raft::StartElection() {
       role_ = raft::Role::CANDIDATE;
       roleChanged = true;
     }
-    heartBeatsSentThisTerm_ 0;
+    heartBeatsSentThisTerm_ = 0;
     currentTerm_++;
     votedFor_ = id_;
     votes_.clear();
     votes_.push_back(id_);
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": I voted for myself. Votes: " 
-              << votes_.size() << "/" << (total_num_ - f_) << "in term " << currentTerm_;
+              << votes_.size() << "/" << (total_num_ - f_) << " in term " << currentTerm_;
 
     currentTerm = currentTerm_;
     candidateId = id_;
@@ -437,7 +305,7 @@ void Raft::StartElection() {
   Broadcast(MessageType::RequestVoteMsg, requestVote);
 }
 
-// TODO
+// TODOjim
 // ON MERGE FIX VALUES
 void Raft::SendHeartBeat() {
   uint64_t currentTerm;
@@ -447,6 +315,10 @@ void Raft::SendHeartBeat() {
   std::string entries;
   uint64_t leaderCommit;
   uint64_t heartBeatNum;
+
+  auto now = std::chrono::steady_clock::now();
+  std::chrono::steady_clock::duration delta;
+
   {
     std::lock_guard<std::mutex> lk(mutex_);
     if (role_ != raft::Role::LEADER) {
@@ -460,7 +332,12 @@ void Raft::SendHeartBeat() {
     prevLogTerm = getPrevLogTermLocked();
     entries = "";
     leaderCommit = 0;  // TODO
+
+    delta = now - last_heartbeat_time_;
+    last_heartbeat_time_ = now;
   }
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat sent after " << ms << "ms";
   AppendEntries appendEntries;
   appendEntries.set_term(currentTerm);
   appendEntries.set_leaderid(leaderId);
@@ -470,7 +347,7 @@ void Raft::SendHeartBeat() {
   appendEntries.set_leadercommitindex(leaderCommit); // TODO
   Broadcast(MessageType::AppendEntriesMsg, appendEntries);
 
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": ";
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat " << heartBeatNum << " for term " << currentTerm;
 }
 
 // requires raft mutex to be held
@@ -480,7 +357,7 @@ bool Raft::DemoteSelfLocked(uint64_t term) {
   votedFor_ = -1;
   if (role_ != raft::Role::FOLLOWER) {
     role_ = raft::Role::FOLLOWER;
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted to FOLLOWER";
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted to FOLLOWER";
     return true;
   }
   return false;
