@@ -124,6 +124,40 @@ TEST_F(CheckPointManagerTest, SendCheckPoint) {
   LOG(ERROR) << "done";
 }
 
+TEST_F(CheckPointManagerTest, latestSeqCheckpointInRecovery) {
+  auto done = std::make_shared<std::promise<void>>();
+  std::future<void> done_future = done->get_future();
+  
+  std::unique_ptr<TransactionManager> trmanager = std::make_unique<TransactionManager>(false, true);
+  std::unique_ptr<SystemInfo> system_info = std::make_unique<SystemInfo>(config_);
+  std::unique_ptr<TransactionExecutor> exe = std::make_unique<TransactionExecutor>(
+    config_,
+    [done, count = std::make_shared<std::atomic<int>>(0)](std::unique_ptr<Request> /*req*/,
+                                                        std::unique_ptr<BatchUserResponse> /*resp*/) {
+    // count 6 requests (0..5). Adjust logic to what's “done” for you.
+      if (++(*count) >= 5) {
+        done->set_value();
+      }
+    },
+    system_info.get(), std::move(trmanager));
+  CheckPointManager manager(config_, &replica_communicator_, nullptr);
+  manager.SetExecutor(exe.get());
+
+  //execute once
+  
+  for (int i = 0; i <= 4; ++i) {
+    std::unique_ptr<Request> request = std::make_unique<Request>();
+    request->set_seq(i);
+    exe->Commit(std::move(request));
+  }
+  std::unique_ptr<Request> request = std::make_unique<Request>();
+  request->set_seq(5);
+  request->set_is_recovery(true);
+  exe->Commit(std::move(request));
+  done_future.wait();
+}
+
+
 TEST_F(CheckPointManagerTest, SendCheckPointOnce) {
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();
