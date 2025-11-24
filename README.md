@@ -197,7 +197,7 @@ To run ResDB-ORM, you must first start the backend services (**KV Service** and 
 
 Running **ResDB-ORM** will always involve starting the **KV Service** and **GraphQL Server** as mentioned above. However, a few things must be done to create the environment first.
 
-Note that all commands in this section are executed from the top-level indexers-ECS265-Fall2025 directory. You will never need to `cd` into any subdirectory.
+Note that all commands in this section are executed from the top-level indexers-ECS265-Fall2025 directory. You will never need to `cd` into any subdirectory until the 5th step, running the test code.
 
 ### Step 1: Start the KV Service
 Run the following script in your top-level indexers-ECS265-Fall2025 directory:
@@ -209,8 +209,8 @@ Reciving one or more `nohup: redirecting stderr to stdout` messages indicates th
 ### Step 2: Start the GraphQL Server
 (1) Run the following script in your top-level indexers-ECS265-Fall2025 directory:
 ```bash
-bazel build ./ecosystem/graphql/service/http_server:crow_service_main
-bazel-bin/service/http_server/crow_service_main ./ecosystem/graphql/service/tools/config/interface/service.config ./ecosystem/graphql/service/http_server/server_config.config
+bazel build --package_path=./ecosystem/graphql //service/http_server:crow_service_main
+bazel-bin/service/http_server/crow_service_main ecosystem/graphql/service/tools/config/interface/service.config ecosystem/graphql/service/http_server/server_config.config
 ```
 The first command may take some time to run.
 
@@ -225,10 +225,13 @@ database:
   db_root_url: <CROW_ENDPOINT>  
 ```
 
+More likely than not, it will be `http://0.0.0.0:18000` for you too, and that will match what is currently in the config file.
+
 ### Step 4 Create the Python Virtual Environment
 GraphQL requires python packages, so we use a virtual environment to run them (though in practice, these packages could be/may already be installed globally). Note that while we create this virtual environment at the top-level, it operates excusively on ResDB-orm and *could* be placed in there instead.
 
 Open a new terminal tab, then setup and start the GraphQL server:
+
 (1) Create a virtual environment:
 ```bash
 python3.10 -m venv venv
@@ -239,14 +242,16 @@ source venv/bin/activate
 ```
 (3) install the necessary packages (may take awhile):
 ```bash
-pip install -r ./ecosystem/sdk/redb-orm/requirements.txt
+pip install -r ./ecosystem/sdk/resdb-orm/requirements.txt
 pip install resdb-orm
 ```
 
 The first install command may take some time to run. Your terminal will be free when it's done.
 
 ### Step 5: Run the test script to ensure everything is working correctly:
+To run the ResDB-orm test code, you need to change into the resdb-orm directory:
 ```bash
+cd ./ecosystem/sdk/resdb-orm
 python tests/test.py
 ```
 
@@ -254,7 +259,7 @@ python tests/test.py
 As long as the setup is successful, you will only need to run these two commands to spin up the **KV Service** and **GraphQL Server** in the future:
 ```bash
 ./service/tools/kv/server_tools/start_kv_service.sh
-bazel-bin/service/http_server/crow_service_main ./ecosystem/graphql/service/tools/config/interface/service.config ./ecosystem/graphql/service/http_server/server_config.config
+bazel-bin/service/http_server/crow_service_main ecosystem/graphql/service/tools/config/interface/service.config ecosystem/graphql/service/http_server/server_config.config
 ```
 
 Note that each of these commands will prevent input on the terminal you run them in.
