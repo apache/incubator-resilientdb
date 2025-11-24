@@ -1,0 +1,10 @@
+Apache ResilientDB (Incubating)
+Copyright 2023-2025 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+The `.mdx` files under the `/content` directory are documentation sources.
+These files do not contain per-file license headers due to technical limitations
+of the MDX format. However, they are part of this distribution and are
+licensed under the Apache License, Version 2.0.

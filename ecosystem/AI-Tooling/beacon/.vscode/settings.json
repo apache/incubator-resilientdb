@@ -1,0 +1,4 @@
+{
+    "prettier.configPath": ".prettierrc.mjs",
+    "search.useParentIgnoreFiles": true
+}

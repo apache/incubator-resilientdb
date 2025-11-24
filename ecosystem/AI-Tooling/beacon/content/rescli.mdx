@@ -1,0 +1,138 @@
+---
+title: 'ResCLI'
+description: 'Command-line interface for managing ResDB instances'
+---
+
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Tabs, TabsList, TabsTab, TabsPanel, Code, Alert } from '@mantine/core'
+import { IconInfoCircle } from '@tabler/icons-react'
+
+# ResCLI
+
+ResCLI is a command-line interface for managing ResDB instances and Python SDK instances. It provides functionalities to create, delete, view, and manage instances in a simple and efficient way.
+
+## Installation
+
+To use ResCLI, you can download the binary from the Releases page on GitHub.
+
+1. Go to the Releases page
+2. Download the latest release for your operating system (e.g., `res-cli-linux` for Linux)
+3. Make the downloaded binary executable:
+
+```bash
+chmod +x res-cli
+```
+
+## Usage
+
+Once installed and configured, you can use res-cli to perform various actions related to ResDB and Python SDK instances. Run the CLI with the following command:
+
+```bash
+./res-cli
+```
+
+## Commands
+
+<Tabs defaultValue="auth">
+  <TabsList>
+    <TabsTab value="auth">Authentication</TabsTab>
+    <TabsTab value="instance">Instance Management</TabsTab>
+  </TabsList>
+
+  <TabsPanel value="auth">
+    <Box my="md">
+      <Alert icon={<IconInfoCircle size={16} />} title="Authentication Commands" color="blue">
+        These commands help you manage your ResCLI authentication.
+      </Alert>
+
+      <Tabs defaultValue="login">
+        <TabsList>
+          <TabsTab value="login">Login</TabsTab>
+          <TabsTab value="logout">Logout</TabsTab>
+          <TabsTab value="whoami">Current User</TabsTab>
+        </TabsList>
+
+        <TabsPanel value="login">
+          Logs in to the specified user account.
+
+          ```bash
+          ./res-cli --login
+          # Enter email and password when prompted
+          ```
+        </TabsPanel>
+
+        <TabsPanel value="logout">
+          Logs out from the current user account.
+
+          ```bash
+          ./res-cli --logout
+          ```
+        </TabsPanel>
+
+        <TabsPanel value="whoami">
+          Displays the currently logged-in user.
+
+          ```bash
+          ./res-cli --whoami
+          ```
+        </TabsPanel>
+      </Tabs>
+    </Box>
+  </TabsPanel>
+
+  <TabsPanel value="instance">
+    <Box my="md">
+      <Alert icon={<IconInfoCircle size={16} />} title="Instance Management Commands" color="blue">
+        These commands help you manage your ResDB and Python SDK instances.
+      </Alert>
+
+      <Tabs defaultValue="create">
+        <TabsList>
+          <TabsTab value="create">Create</TabsTab>
+          <TabsTab value="view">View</TabsTab>
+          <TabsTab value="delete">Delete</TabsTab>
+        </TabsList>
+
+        <TabsPanel value="create">
+          Creates a new ResDB or Python SDK instance.
+
+          ```bash
+          ./res-cli --create <type>
+          ```
+        </TabsPanel>
+
+        <TabsPanel value="view">
+          Displays details about running instances.
+
+          ```bash
+          ./res-cli --view-instances
+          ```
+        </TabsPanel>
+
+        <TabsPanel value="delete">
+          Deletes a running ResDB or Python SDK instance.
+
+          ```bash
+          ./res-cli --delete <instance_id>
+          ```
+        </TabsPanel>
+      </Tabs>
+    </Box>
+  </TabsPanel>
+</Tabs>
+
+For more detailed information about each command, run `./res-cli --help` or `./res-cli <command> --help`.
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResCLI Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-ResCLI"
+    labels={['user-feedback', 'documentation', 'rescli']}
+    title="Questions or Feedback about ResCLI?"
+  />
+</Box> 
