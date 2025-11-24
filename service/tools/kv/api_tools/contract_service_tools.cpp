@@ -32,6 +32,23 @@ using resdb::GenerateResDBConfig;
 using resdb::ResDBConfig;
 using resdb::contract::ContractClient;
 
+bool IsValidAddress(const std::string& address) {
+    if (address.length() != 42) {
+        return false;
+    }
+
+    if (address.substr(0, 2) != "0x") {
+        return false;
+    }
+
+    for (size_t i = 2; i < address.length(); ++i) {
+        if (!std::isxdigit(address[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void ShowUsage() {
   printf(
       "<cmd> -c <config> -m <caller address> -n <contract name> -p <contact "
@@ -149,6 +166,11 @@ int main(int argc, char** argv) {
     contract_address = GetValue(js, "owner_address");
     params = GetValue(js, "init_params");
 
+    if (!IsValidAddress(contract_address)) {
+        printf("ERROR: Invalid owner address format: %s\n", contract_address.c_str());
+        return 1;
+    }
+
     printf("contract path %s cmd %s contract name %s caller_address %s init params %s\n", contract_path.c_str(), cmd.c_str(), contract_name.c_str(), contract_address.c_str(), params.c_str());
 
     std::vector<std::string> init_params;
@@ -163,6 +185,16 @@ int main(int argc, char** argv) {
     func_name = GetValue(js, "func_name");
     params = GetValue(js, "params");
 
+    if (!IsValidAddress(caller_address)) {
+        printf("ERROR: Invalid caller address format: %s\n", caller_address.c_str());
+        return 1;
+    }
+
+    if (!IsValidAddress(contract_address)) {
+        printf("ERROR: Invalid contract address format: %s\n", contract_address.c_str());
+        return 1;
+    }
+
     printf(
         "execute\n caller address:%s\n contract address: %s\n func: %s\n "
         "params:%s\n",
@@ -176,11 +208,24 @@ int main(int argc, char** argv) {
   }
   else if (cmd == "get_balance") {
     std::string address = GetValue(js, "address");
+
+    // Validate address format
+    if (!IsValidAddress(address)) {
+        printf("ERROR: Invalid address format: %s\n", address.c_str());
+        return 1;
+    }
+
     auto balance_or = client.GetBalance(address);
     printf("get address %s balance %s\n", address.c_str(), (*balance_or).c_str());
   } else if (cmd == "set_balance") {
     std::string address = GetValue(js, "address");
     std::string balance = GetValue(js, "balance");
+
+    // Validate address format
+    if (!IsValidAddress(address)) {
+        printf("ERROR: Invalid address format: %s\n", address.c_str());
+        return 1;
+    }
     printf("address %s balance %s\n", address.c_str(), balance.c_str());
     auto ret = client.SetBalance(address, balance);
     printf("set address %s balance %s ret %s\n", address.c_str(), balance.c_str(), (*ret).c_str());
