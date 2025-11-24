@@ -193,50 +193,70 @@ This took me a couple tries to get right, and mistakes with `update-alternatives
 
 To run ResDB-ORM, you must first start the backend services (**KV Service** and **GraphQL Server**) and then connect to them using **ResDB-ORM**.
 
+### First Time Setup
+
+Running **ResDB-ORM** will always involve starting the **KV Service** and **GraphQL Server** as mentioned above. However, a few things must be done to create the environment first.
+
+Note that all commands in this section are executed from the top-level indexers-ECS265-Fall2025 directory. You will never need to `cd` into any subdirectory.
+
 ### Step 1: Start the KV Service
-Run the following script in your ResilientDB directory:
+Run the following script in your top-level indexers-ECS265-Fall2025 directory:
 ```bash
 ./service/tools/kv/server_tools/start_kv_service.sh
 ```
+Reciving one or more `nohup: redirecting stderr to stdout` messages indicates that the service is running. Note that this may take over control of your WSL instance. Do not close out of the terminal, instead continue on a new terminal.
 
 ### Step 2: Start the GraphQL Server
-Open a new terminal tab, then setup and start the GraphQL server:
-(1) Clone the repository and navigate into it:
+(1) Run the following script in your top-level indexers-ECS265-Fall2025 directory:
 ```bash
-git clone https://github.com/apache/incubator-resilientdb-graphql.git
-cd incubator-resilientdb-graphql
+bazel build ./ecosystem/graphql/service/http_server:crow_service_main
+bazel-bin/service/http_server/crow_service_main ./ecosystem/graphql/service/tools/config/interface/service.config ./ecosystem/graphql/service/http_server/server_config.config
 ```
-(2) Create a virtual environment:
-```bash
-python3.10 -m venv venv
-```
-(3) Build and run the service:
-```bash
-bazel build service/http_server:crow_service_main
-bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
-```
-***Important:*** Check the first line of the startup log and copy the displayed URL (e.g., ```http://0.0.0.0:18000```). You will need this for the configuration step.
+The first command may take some time to run.
 
-### Step 3: Clone ResDB-ORM repository and install dependencies:
-Open another new terminal tab to set up the ORM and verify the operation.
-```bash
-git clone https://github.com/apache/incubator-resilientdb-ResDB-ORM.git
-cd incubator-resilientdb-ResDB-ORM
+Reciving one or more `[INFO    ]` messages indicates that the service is running. Note that this may take over control of your WSL instance. Do not close out of the terminal, instead continue on a new terminal.
 
-python3.10 -m venv venv
-source venv/bin/activate
+(2) After running bazel-bin, you should recieve a message with the format `[INFO    ] Crow/1.0 server is running at http://0.0.0.0:18000 using ~ threads`. Copy and save the URL (in this case `http://0.0.0.0:18000`) for the next step.
 
-pip install -r requirements.txt
-pip install resdb-orm
-```
-
-### Step 4: Open ```config.yaml``` and update the db_root_url with the GraphQL Server URL you copied in Step 2.
+### Step 3 Open ```config.yaml``` and Update the db_root_url with the GraphQL Server URL you Copied in Step 2.
+Open the file `indexers-ECS265-Fall2025/ecosystem/sdk/resdb-orm/config.yaml`, it will be a small config file. Replace `<CROW_ENDPOINT>` with the exact url you copied above like this:
 ```yaml
 database:
   db_root_url: <CROW_ENDPOINT>  
 ```
 
+### Step 4 Create the Python Virtual Environment
+GraphQL requires python packages, so we use a virtual environment to run them (though in practice, these packages could be/may already be installed globally). Note that while we create this virtual environment at the top-level, it operates excusively on ResDB-orm and *could* be placed in there instead.
+
+Open a new terminal tab, then setup and start the GraphQL server:
+(1) Create a virtual environment:
+```bash
+python3.10 -m venv venv
+```
+(2) activate the virtual environment:
+```bash
+source venv/bin/activate
+```
+(3) install the necessary packages (may take awhile):
+```bash
+pip install -r ./ecosystem/sdk/redb-orm/requirements.txt
+pip install resdb-orm
+```
+
+The first install command may take some time to run. Your terminal will be free when it's done.
+
 ### Step 5: Run the test script to ensure everything is working correctly:
 ```bash
 python tests/test.py
 ```
+
+### Step 6+: Re-Running ResdDB-orm in the future
+As long as the setup is successful, you will only need to run these two commands to spin up the **KV Service** and **GraphQL Server** in the future:
+```bash
+./service/tools/kv/server_tools/start_kv_service.sh
+bazel-bin/service/http_server/crow_service_main ./ecosystem/graphql/service/tools/config/interface/service.config ./ecosystem/graphql/service/http_server/server_config.config
+```
+
+Note that each of these commands will prevent input on the terminal you run them in.
+
+To interact with ResDB-orm, spin up the python instance running it: `source venv/bin/activate`. To leave this Python environment and return to bash, just type `deactivate`.
