@@ -1,0 +1,351 @@
+---
+title: 'Using ResilientDB GraphQL'
+description: 'Proxy to interact with ResilientDB through REST APIs and GraphQL'
+---
+
+import { RESILIENTDB_GRAPHQL_EXAMPLE_TEMPLATES } from '@/app/lib/constants'
+import { Callout } from 'nextra/components'
+
+# ResilientDB GraphQL
+
+ResilientDB GraphQL is a proxy or gateway that provides multiple ways to interact with ResilientDB. This gateway offers both REST API and GraphQL interfaces, allowing developers to choose their preferred method of interaction.
+
+## Overview
+
+ResilientDB GraphQL serves as a bridge between your applications and the ResilientDB blockchain network. It provides:
+
+- REST API endpoints for traditional HTTP-based interactions
+- GraphQL interface for flexible, query-based data access
+
+## REST API Usage
+
+The REST API provides a straightforward way to interact with ResilientDB using standard HTTP methods.
+
+### Create Transaction
+
+#### Set Transaction by Key-Value Pair
+```bash
+# Set a transaction by a id (key) and its value
+curl --location 'https://crow.resilientdb.com/v1/transactions/commit' \
+--header 'Content-Type: application/json' \
+--data '{
+    "id": "key_test",
+    "value": "value_test"
+}'
+```
+
+<Callout type="info">
+  This curl command can be directly imported into Postman. In Postman, you can:
+  1. Click "Import" and paste the curl command
+  2. Use the "Code" button to generate equivalent code in TypeScript, Python, or other languages
+  3. Save the request to a collection for future use
+</Callout>
+
+#### Response Examples
+
+<Callout type="success">
+  Success Response (201 Created):
+  ```raw
+    id: key_test
+  ```
+</Callout>
+
+<Callout type="error">
+  Error Response (400 Bad Request):
+  ```raw
+    Invalid transaction format
+  ```
+
+  Unavailable Service (503 Service Unavailable):
+  ```raw
+    Service Unavailable
+  ```
+</Callout>
+
+### GET Transaction
+
+#### Get Transaction by Key
+```bash
+# Get a transaction by key
+curl --location 'https://crow.resilientdb.com/v1/transactions/key_test'
+```
+
+#### Response Examples
+
+<Callout type="success">
+  Success Response (200 OK):
+  ```json
+  {
+    "id": "key",
+    "value": "value"
+  }
+  ```
+
+  If key is not found, it will return an empty object.
+  ```json
+  {}
+  ```
+</Callout>
+
+<Callout type="error">
+  Unavailable Service (503 Service Unavailable):
+  ```raw
+    Service Unavailable
+  ```
+</Callout>
+
+## GraphQL Usage
+
+The GraphQL interface provides a more flexible way to query and mutate data in ResilientDB.Access the GraphQL Playground at [GraphQL Playground](https://cloud.resilientdb.com/graphql) to interactively explore and test queries.
+
+<Callout type="info">
+  The GraphQL Playground is a great tool for testing queries and mutations before implementing them in your code.
+</Callout>
+
+### Create Transaction
+
+```graphql
+mutation Test($data: PrepareAsset!) {
+  postTransaction(data: $data) {
+    id
+  }
+}
+```
+
+#### Variables
+```json
+{
+  "data": {
+    "operation": "CREATE",
+    "amount": 1,
+    "signerPublicKey": "YOUR_SIGNER_PUBLIC_KEY",
+    "signerPrivateKey": "YOUR_SIGNER_PRIVATE_KEY",
+    "recipientPublicKey": "YOUR_RECIPIENT_PUBLIC_KEY",
+    "asset": {
+      "data": {
+        "drawingId": "drawing_testing_random_seed",
+        "color": "#000000",
+        "lineWidth": 5,
+        "pathData": [{"x": 292, "y": 126}],
+        "timestamp": 1746736411543,
+        "user": "appleseed|1746736304144",
+        "brushStyle": "round",
+        "order": 1746736411543
+      }
+    }
+  }
+}
+```
+
+
+### GET Transaction by ID
+
+```graphql
+query GetTx($id: ID!) {
+  getTransaction(id: $id) {
+    id
+    version
+    amount
+    uri
+    type
+    publicKey
+    operation
+    metadata
+    asset
+    signerPublicKey
+  }
+}
+```
+
+#### Variables
+```json
+{
+  "id": "transaction_id"
+}
+```
+
+#### Python Example
+```python
+from pyodide.http import pyfetch
+import json
+
+# GraphQL endpoint
+url = "https://cloud.resilientdb.com/graphql"
+
+# Query and variables
+query = """
+query GetTx($id: ID!) {
+    getTransaction(id: $id) {
+        id
+        version
+        amount
+        uri
+        type
+        publicKey
+        operation
+        metadata
+        asset
+        signerPublicKey
+    }
+}
+"""
+
+variables = {
+    "id": "6358ee73fb6bf5c659676ccc8476ebb6ea738b47a101661697ef379e5ea0212b"
+}
+
+# Prepare the payload
+payload = {
+    "query": query,
+    "variables": variables
+}
+
+# Make the request
+response = pyfetch(
+    url,
+    method="POST",
+    headers={"Content-Type": "application/json"},
+    body=json.dumps(payload)
+)
+
+# Print the response
+print(response.json())
+```
+
+#### Response Examples
+
+<Callout type="success">
+  Success Response (200 OK):
+  ```json
+  {
+    "data": {
+      "getTransaction": {
+        "id": "6358ee73fb6bf5c659676ccc8476ebb6ea738b47a101661697ef379e5ea0212b",
+        "version": "2.0",
+        "amount": "1",
+        "uri": "",
+        "type": "CREATE",
+        "publicKey": "YOUR_PUBLIC_KEY",
+        "operation": "CREATE",
+        "metadata": null,
+        "asset": {
+          "data": {
+            "drawingId": "drawing_testing_random_seed",
+            "color": "#000000",
+            "lineWidth": 5,
+            "pathData": [{"x": 292, "y": 126}],
+            "timestamp": 1746736411543,
+            "user": "appleseed|1746736304144",
+            "brushStyle": "round",
+            "order": 1746736411543
+          }
+        },
+        "signerPublicKey": "YOUR_SIGNER_PUBLIC_KEY"
+      }
+    }
+  }
+  ```
+</Callout>
+
+<Callout type="error">
+  Error Response (404 Not Found):
+  ```json
+  {
+    "errors": [
+      {
+        "message": "Transaction not found",
+        "path": ["getTransaction"]
+      }
+    ]
+  }
+  ```
+</Callout>
+
+<Callout type="warning">
+  Never share your private keys. Always use environment variables or secure key management systems to store sensitive credentials.
+</Callout>
+
+#### Response Examples
+
+<Callout type="success">
+  Success Response (200 OK):
+  ```json
+  {
+    "data": {
+      "postTransaction": {
+        "id": "transaction_id"
+      }
+    }
+  }
+  ```
+</Callout>
+
+<Callout type="error">
+  Error Response (400 Bad Request):
+  ```json
+  {
+    "errors": [
+      {
+        "message": "Invalid input",
+        "path": ["postTransaction"]
+      }
+    ]
+  }
+  ```
+</Callout>
+
+## API Reference Summary
+
+### REST Endpoints
+
+- `GET /v1/transactions/{id}`: Get a single transaction
+- `POST /v1/transactions/commit`: Create a new transaction
+
+### GraphQL Operations
+
+#### Queries
+- `getTransaction(id: ID!)`: Get a single transaction
+
+#### Mutations
+- `postTransaction(data: PrepareAsset!)`: Create a transaction
+
+
+## Playground
+
+Try out the examples in our interactive playground. You can experiment with both REST API and GraphQL operations.
+
+<PythonPlayground templates={RESILIENTDB_GRAPHQL_EXAMPLE_TEMPLATES} />
+
+<Callout type="info">
+  The playground provides a safe environment to test your code. All examples are pre-configured with the correct endpoints and authentication.
+</Callout>
+
+## Best Practices
+
+1. **Error Handling**
+   - Always implement proper error handling
+   - Check response status codes
+   - Handle network errors gracefully
+
+2. **Transaction Management**
+   - Use appropriate transaction types
+   - Validate data before sending
+   - Keep track of transaction IDs
+
+3. **Security**
+   - Never expose private keys
+   - Use environment variables for sensitive data
+   - Implement proper authentication
+
+## Next Steps
+
+Ready to set up ResilientDB GraphQL on your system? Check out the [Setup Guide](/docs/resilientdb_graphql/setup) for detailed installation instructions.
+
+## Contributing
+
+We welcome contributions! Please see our [README](https://github.com/apache/incubator-resilientdb-graphql/blob/main/README.md) for more details.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/apache/incubator-resilientdb-graphql/blob/main/LICENSE) file for details.
+
