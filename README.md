@@ -46,14 +46,19 @@ Hey all, Steven here, this is the quickstart guide to getting ResDB up and runni
 2. (Windows only) ResilientDB uses bash shell commands (.sh extension), which windows doesn't support natively. Fortunately, Windows 11 and most versions of Windows 10 have an easy to use subsystem for Linux, WSL. Link on how to setup [here](https://learn.microsoft.com/en-us/windows/wsl/install).
 After installing WSL, you can open a bash terminal by running the program `Ubuntu`. This will open from the profile of your newly created User for WSL, but you can still access to your Windows files in windows via `cd ~/../../mnt`, which should navigate you to the location of your C/D drive.
 
-3. (Windows only?) There's a mismatch between the way Windows and Linux ends lines in files, in short, on Windows machines the shell scripts will all have an unnecessary `\r` (carriage return) character at the end of all shell files. This _will_ cause problems with execution of these files. Use the sed command (at the top-level of the cloned repo) to remove the extraneous characters:
+3. (Windows only?) There's a mismatch between the way Windows and Linux ends lines in files, in short, on Windows machines the shell scripts will all have an unnecessary `\r` (carriage return) character at the end of all shell files. This _will_ cause problems with execution of these files. Use the sed command (at the top-level of the cloned repo) to remove the extraneous characters of the install file:
 
 ```
 sudo sed -i 's/\r//g' INSTALL.sh
-sudo sed -i 's/\r//g' ./service/tools/kv/server_tools/start_kv_service.sh
 ```
 
-4. Navigate to the project folder and run `sudo sh INSTALL.sh`
+Unfortunately, this is a problem with every shell file in the repository. To fix this, we added a script that will recursively remove the CR from every file in the repo before running install:
+
+```
+sudo sh WSL_INSTALL.sh
+```
+
+4. Navigate to the project folder and run `sudo sh INSTALL.sh` (unless you've already run WSL_INSTALL)
 
 5. To start the k/v store, run `./service/tools/kv/server_tools/start_kv_service.sh`
 
