@@ -56,6 +56,10 @@ class KVExecutor : public TransactionManager {
   void GetHistory(const std::string& key, int min_key, int max_key,
                   Items* items);
   void GetTopHistory(const std::string& key, int top_number, Items* items);
+  // NEW: 5.1 – executor-level hook for SQL requests.
+  // For now it's a stub that just returns a string; later it will
+  // forward to a DuckDB-backed storage implementation.
+  std::string ExecuteSql(const std::string& sql_query);
 
  private:
   std::unique_ptr<TransactionManager> contract_manager_;
