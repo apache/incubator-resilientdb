@@ -197,8 +197,6 @@ To run ResDB-ORM, you must first start the backend services (**KV Service** and 
 
 Running **ResDB-ORM** will always involve starting the **KV Service** and **GraphQL Server** as mentioned above. However, a few things must be done to create the environment first.
 
-Note that all commands in this section are executed from the top-level indexers-ECS265-Fall2025 directory. You will never need to `cd` into any subdirectory until the 5th step, running the test code.
-
 ### Step 1: Start the KV Service
 Run the following script in your top-level indexers-ECS265-Fall2025 directory:
 ```bash
@@ -207,10 +205,11 @@ Run the following script in your top-level indexers-ECS265-Fall2025 directory:
 Reciving one or more `nohup: redirecting stderr to stdout` messages indicates that the service is running. Note that this may take over control of your WSL instance. Do not close out of the terminal, instead continue on a new terminal.
 
 ### Step 2: Start the GraphQL Server
-(1) Run the following script in your top-level indexers-ECS265-Fall2025 directory:
+(1) Run the following script in your ecosystem/graphql directory:
 ```bash
-bazel build --package_path=./ecosystem/graphql //service/http_server:crow_service_main
-bazel-bin/service/http_server/crow_service_main ecosystem/graphql/service/tools/config/interface/service.config ecosystem/graphql/service/http_server/server_config.config
+cd ./ecosystem/graphql
+bazel build /service/http_server:crow_service_main
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
 ```
 The first command may take some time to run.
 
