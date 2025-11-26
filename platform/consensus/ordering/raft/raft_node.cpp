@@ -27,6 +27,7 @@
 #include "absl/status/statusor.h"
 #include "executor/common/transaction_manager.h"
 #include "glog/logging.h"
+#include "interface/rdbc/net_channel.h"
 #include "platform/consensus/ordering/raft/consensus_manager_raft.h"
 
 namespace resdb {
@@ -78,43 +79,114 @@ void RaftNode::Stop() {
   }
 }
 
-int RaftNode::HandleClientRequest(std::unique_ptr<Context> context,
-                                  std::unique_ptr<Request> request) {
-  std::unique_lock<std::mutex> lk(state_mutex_);
-  if (role_ != Role::kLeader) {
-    if (context && context->client) {
-      LOG(WARNING) << "[RAFT] Rejecting client request at node " << self_id_
-                   << " (not leader, current leader=" << leader_id_
-                   << ") type=" << request->type()
-                   << " user_type=" << request->user_type();
-    }
+int RaftNode::ForwardClientRequestToLeader(std::unique_ptr<Context> context,
+                                           std::unique_ptr<Request> request,
+                                           uint32_t leader_id) {
+  if (leader_id == 0) {
+    LOG(WARNING) << "[RAFT] NODE " << self_id_
+                 << " cannot forward client request: leader is unknown.";
     return -1;
   }
 
-  LOG(ERROR) << "[RAFT] HandleClientRequest at leader node " << self_id_
-             << " term=" << current_term_
-             << " log_last_index=" << raft_log_->LastLogIndex()
-             << " request_type=" << request->type()
-             << " user_type=" << request->user_type()
-             << " data_size=" << request->data().size();
-
-  raft::LogEntry entry;
-  entry.set_term(current_term_);
-  entry.set_index(raft_log_->LastLogIndex() + 1);
-  *entry.mutable_request() = *request;
-
-  absl::Status status = raft_log_->Append({entry});
-  if (!status.ok()) {
-    LOG(ERROR) << "Failed to append RAFT log entry: " << status;
-    return -2;
+  auto replica = ReplicaById(leader_id);
+  if (!replica.has_value()) {
+    LOG(WARNING) << "[RAFT] NODE " << self_id_
+                 << " cannot forward client request: leader_id=" << leader_id
+                 << " not found in replica map.";
+    return -1;
   }
 
-  pending_requests_[entry.index()] =
-      PendingRequest{std::move(context), std::move(request)};
+  const ReplicaInfo& leader = *replica;
+  LOG(ERROR) << "[RAFT] NODE " << self_id_
+             << " forwarding client request to leader " << leader.id() << " ("
+             << leader.ip() << ":" << leader.port()
+             << ") type=" << request->type()
+             << " user_type=" << request->user_type()
+             << " need_response=" << request->need_response();
 
-  match_index_[self_id_] = entry.index();
-  next_index_[self_id_] = entry.index() + 1;
-  lk.unlock();
+  NetChannel forward_channel(leader.ip(), leader.port());
+  forward_channel.SetRecvTimeout(config_.GetClientTimeoutMs());
+
+  int send_rc = forward_channel.SendRawMessage(*request);
+  if (send_rc != 0) {
+    LOG(ERROR) << "[RAFT] NODE " << self_id_
+               << " failed to forward client request to leader "
+               << leader.id() << " rc=" << send_rc;
+    return -1;
+  }
+
+  if (!request->need_response()) {
+    // Fire-and-forget write: rely on leader to commit and respond to the
+    // originating client connection only if requested. Old APIs do not wait
+    // for a response.
+    return 0;
+  }
+
+  std::string resp_data;
+  int recv_rc = forward_channel.RecvRawMessageData(&resp_data);
+  if (recv_rc < 0) {
+    LOG(ERROR) << "[RAFT] NODE " << self_id_
+               << " failed to receive response from leader " << leader.id()
+               << " rc=" << recv_rc;
+    return -1;
+  }
+
+  if (context && context->client) {
+    int client_rc = context->client->SendRawMessageData(resp_data);
+    if (client_rc != 0) {
+      LOG(ERROR) << "[RAFT] NODE " << self_id_
+                 << " failed to send forwarded response to client rc="
+                 << client_rc;
+      return client_rc;
+    }
+  }
+  return 0;
+}
+
+int RaftNode::HandleClientRequest(std::unique_ptr<Context> context,
+                                  std::unique_ptr<Request> request) {
+  {
+    std::unique_lock<std::mutex> lk(state_mutex_);
+    if (role_ != Role::kLeader) {
+      uint32_t leader_id = leader_id_;
+      if (context && context->client) {
+        LOG(WARNING) << "[RAFT] NODE " << self_id_
+                     << " received client request while not leader"
+                     << " (current leader=" << leader_id
+                     << ") type=" << request->type()
+                     << " user_type=" << request->user_type()
+                     << " need_response=" << request->need_response();
+      }
+      lk.unlock();
+      return ForwardClientRequestToLeader(std::move(context),
+                                          std::move(request), leader_id);
+    }
+
+    LOG(ERROR) << "[RAFT] HandleClientRequest at leader node " << self_id_
+               << " term=" << current_term_
+               << " log_last_index=" << raft_log_->LastLogIndex()
+               << " request_type=" << request->type()
+               << " user_type=" << request->user_type()
+               << " data_size=" << request->data().size();
+
+    raft::LogEntry entry;
+    entry.set_term(current_term_);
+    entry.set_index(raft_log_->LastLogIndex() + 1);
+    *entry.mutable_request() = *request;
+
+    absl::Status status = raft_log_->Append({entry});
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to append RAFT log entry: " << status;
+      return -2;
+    }
+
+    pending_requests_[entry.index()] =
+        PendingRequest{std::move(context), std::move(request)};
+
+    match_index_[self_id_] = entry.index();
+    next_index_[self_id_] = entry.index() + 1;
+  }
+
   BroadcastAppendEntries(/*send_all_entries=*/true);
   return 0;
 }

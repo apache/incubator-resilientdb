@@ -60,6 +60,12 @@ class RaftNode {
                              std::unique_ptr<Request> request);
   void HeartbeatTick();
 
+  // Forward a client request received on a follower to the current leader.
+  // Returns 0 on success, negative on failure.
+  int ForwardClientRequestToLeader(std::unique_ptr<Context> context,
+                                   std::unique_ptr<Request> request,
+                                   uint32_t leader_id);
+
  private:
   enum class Role { kFollower, kCandidate, kLeader };
 
