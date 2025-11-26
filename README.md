@@ -208,7 +208,7 @@ Reciving one or more `nohup: redirecting stderr to stdout` messages indicates th
 (1) Run the following script in your ecosystem/graphql directory:
 ```bash
 cd ./ecosystem/graphql
-bazel build /service/http_server:crow_service_main
+bazel build service/http_server:crow_service_main
 bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
 ```
 The first command may take some time to run.
