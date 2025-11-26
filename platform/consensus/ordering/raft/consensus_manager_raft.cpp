@@ -180,6 +180,10 @@ int ConsensusManagerRaft::HandleCustomConsensus(
                << request->user_type();
     return -1;
   }
+  LOG(ERROR) << "[RAFT_RPC] NODE " << config_.GetSelfInfo().id()
+             << " received custom consensus message user_type="
+             << request->user_type()
+             << " from sender=" << request->sender_id();
   if (consensus_message_handler_) {
     return consensus_message_handler_(std::move(context), std::move(request));
   }
@@ -211,10 +215,15 @@ void ConsensusManagerRaft::HeartbeatLoop() {
   while (heartbeat_running_) {
     lk.unlock();
     if (heartbeat_task_) {
+      LOG(ERROR) << "[RAFT] NODE " << config_.GetSelfInfo().id()
+                 << " HeartbeatLoop tick, current_leader="
+                 << leader_id_.load() << " term=" << current_term_.load();
       heartbeat_task_();
     }
     lk.lock();
-    heartbeat_cv_.wait_for(lk, std::chrono::milliseconds(500), [this]() {
+    // Use a shorter heartbeat interval than the minimum election timeout so
+    // that a healthy leader can keep followers from starting elections.
+    heartbeat_cv_.wait_for(lk, std::chrono::milliseconds(200), [this]() {
       return !heartbeat_running_;
     });
   }

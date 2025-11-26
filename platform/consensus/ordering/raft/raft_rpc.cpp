@@ -79,6 +79,16 @@ absl::Status RaftRpc::Send(const google::protobuf::Message& payload,
     return absl::FailedPreconditionError("communicator is null");
   }
   Request envelope = BuildEnvelope(user_type, payload);
+  uint32_t self_id = config_.GetSelfInfo().id();
+  if (replica == nullptr) {
+    LOG(ERROR) << "[RAFT_RPC] NODE " << self_id
+               << " broadcasting RAFT message user_type=" << user_type;
+  } else {
+    LOG(ERROR) << "[RAFT_RPC] NODE " << self_id
+               << " sending RAFT message user_type=" << user_type
+               << " to replica " << replica->id() << " ("
+               << replica->ip() << ":" << replica->port() << ")";
+  }
   int rc = 0;
   if (replica == nullptr) {
     communicator_->BroadCast(envelope);
@@ -86,6 +96,9 @@ absl::Status RaftRpc::Send(const google::protobuf::Message& payload,
     rc = communicator_->SendMessage(envelope, *replica);
   }
   if (rc != 0) {
+    LOG(ERROR) << "[RAFT_RPC] NODE " << self_id
+               << " failed to send RAFT RPC user_type=" << user_type
+               << " rc=" << rc;
     return absl::InternalError("failed to send RAFT RPC");
   }
   return absl::OkStatus();

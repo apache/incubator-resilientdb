@@ -78,7 +78,10 @@ class RaftNode {
   void BroadcastAppendEntries(bool send_all_entries);
   void MaybeAdvanceCommitIndex();
   void ApplyEntries();
-  void ApplyEntry(uint64_t index, const raft::LogEntry& entry);
+  // Apply a committed log entry to the state machine and return the
+  // serialized response (if any) from the TransactionManager.
+  std::unique_ptr<std::string> ApplyEntry(uint64_t index,
+                                          const raft::LogEntry& entry);
 
   int HandleAppendEntriesRequest(const Request& envelope,
                                  const raft::AppendEntriesRequest& request);
