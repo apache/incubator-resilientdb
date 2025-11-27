@@ -52,7 +52,7 @@ std::unique_ptr<std::string> KVClient::GetReadOnly(const std::string& key) {
   request.set_cmd(KVRequest::GET_READ_ONLY);
   request.set_key(key);
   KVResponse response;
-  int ret = SendRequest(request, &response);
+  int ret = SendReadOnlyRequest(request, &response);
   if (ret != 0) {
     LOG(ERROR) << "send request fail, ret:" << ret;
     return nullptr;
