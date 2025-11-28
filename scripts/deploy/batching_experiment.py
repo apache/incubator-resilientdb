@@ -21,7 +21,7 @@ def generate_config(
     tpcc_enabled = False,
     network_delay_num =  0,
     mean_network_delay = 0,
-    timer_length = 100): 
+    timer_length = 0): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
@@ -93,7 +93,7 @@ def main():
     batch_size = args.batch_size
 
     command, config_path, max_process_txn = get_experiment_command_and_config_and_maxprocesstxn(protocol)
-    generate_config(config_path = config_path, clientBatchNum = batch_size)
+    generate_config(config_path = config_path, clientBatchNum = batch_size, max_process_txn = max_process_txn)
 
     command = command + " ./config/performance.conf"
 

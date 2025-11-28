@@ -21,9 +21,13 @@ HS_2 = {
 }
 
 HS_1 = {
-    2: ThroughputLatency(449, 0.719953),
-    3: ThroughputLatency(278, 1.240168),
+   # 2: ThroughputLatency(449, 0.719953),
+    2: ThroughputLatency(103.57894736842105, 3.0429666666666666),
+#    3: ThroughputLatency(278, 1.240168),
+    3: ThroughputLatency(0, 0),
     4: ThroughputLatency(192, 1.711321),
+    4: ThroughputLatency(192, 1.711321),
+    5: ThroughputLatency(184, 1.840360),
     5: ThroughputLatency(184, 1.840360),
 }
 

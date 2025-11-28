@@ -21,7 +21,7 @@ def generate_config(
     tpcc_enabled = False,
     network_delay_num =  0,
     mean_network_delay = 0,
-    timer_length = 100): 
+    timer_length = 0): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
@@ -102,13 +102,13 @@ def generate_performance_server_conf(region_number, output_file = "./config/perf
         for filepath, k in input_file_dict.items():
             with open(filepath, "r") as infile: 
                 for i, line in enumerate(infile):
-                    if i >= k:  # One more line for one client
+                    if i >= k:
                         break
                     outfile.write(line)
         outfile.write("\n")
         with open("./config/us-east-1-machines", "r") as infile: 
                 for i, line in enumerate(infile):
-                    if i == 1 + input_file_dict["./config/us-east-1-machines"]:  # One more line for one client
+                    if i == input_file_dict["./config/us-east-1-machines"]:  # One more line for one client
                         outfile.write(line)
                         break
         outfile.write(")\n\nclient_num=1\nkey="+ssh_key)
