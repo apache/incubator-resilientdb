@@ -58,4 +58,11 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "duckdb",
+    deps = [
+        "@duckdb//:duckdb",
+    ],
+)
+
 
