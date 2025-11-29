@@ -155,94 +155,51 @@ export class ResilientDBVectorStore {
       },
     };
 
-    // Use GraphQL as primary method (as per project requirements)
-    // GraphQL is the main interface for ResilientDB per the proposal
+    // Use HTTP REST API as primary method to bypass GraphQL fulfill() issues
+    // The KV service on port 18000 provides a simple key-value interface
     try {
-      await this.discoverSchema();
+      // Extract base URL and convert to KV service URL (port 18000)
+      let resilientDBUrl = env.RESILIENTDB_GRAPHQL_URL.replace('/graphql', '');
       
-      const signerPublicKey = env.RESILIENTDB_SIGNER_PUBLIC_KEY || 'default_signer_public_key';
-      const signerPrivateKey = env.RESILIENTDB_SIGNER_PRIVATE_KEY || 'default_signer_private_key';
-      const recipientPublicKey = env.RESILIENTDB_RECIPIENT_PUBLIC_KEY || signerPublicKey;
-
-      // GraphQL format: asset needs to be passed as JSON string for JSONScalar
-      // resdb_driver.prepare() expects asset to have a 'data' key, so wrap it
-      const graphqlAsset = JSON.stringify({ data: chunkData });
-
-      const result = await this.client.executeQuery<{
-        postTransaction?: {
-          id: string;
-        };
-      }>({
-        query: `
-          mutation StoreChunk($data: PrepareAsset!) {
-            postTransaction(data: $data) {
-              id
-            }
-          }
-        `,
-        variables: {
-          data: {
-            operation: 'CREATE',
-            amount: 1,
-            signerPublicKey: signerPublicKey,
-            signerPrivateKey: signerPrivateKey,
-            recipientPublicKey: recipientPublicKey,
-            asset: graphqlAsset, // Pass as JSON string
-          },
-        },
-      });
-
-      if (result.postTransaction?.id) {
-        return result.postTransaction.id;
-      }
-      
-      return chunkId;
-    } catch (graphqlError) {
-      // If GraphQL fails, try HTTP REST API as fallback
-      const errorMsg = graphqlError instanceof Error ? graphqlError.message : String(graphqlError);
-      
-      try {
-        // Extract base URL from GraphQL URL and convert to KV URL (port 18000)
-        let resilientDBUrl = env.RESILIENTDB_GRAPHQL_URL.replace('/graphql', '');
-      // Convert GraphQL port (5001) to HTTP wrapper port (18001)
-      // We created a simple HTTP wrapper that uses resdb_driver
+      // Convert to HTTP wrapper port (18001) - 18000 is gRPC KV service
       if (resilientDBUrl.includes(':5001')) {
         resilientDBUrl = resilientDBUrl.replace(':5001', ':18001');
       } else if (resilientDBUrl.includes(':18000')) {
         resilientDBUrl = resilientDBUrl.replace(':18000', ':18001');
-      } else if (!resilientDBUrl.includes(':18001') && !resilientDBUrl.includes(':5001')) {
-        // If no port, add 18001
+      } else if (!resilientDBUrl.includes(':18001')) {
+        // If no port specified, assume localhost and add port 18001
         resilientDBUrl = resilientDBUrl.replace(/:\d+$/, '') + ':18001';
       }
-        const httpApiUrl = `${resilientDBUrl}/v1/transactions/commit`;
-        
-        const response = await fetch(httpApiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: chunkId,
-            value: chunkData,
-          }),
-        });
+      
+      const httpApiUrl = `${resilientDBUrl}/v1/transactions/commit`;
+      
+      // Use simple KV format: {"id": "...", "value": {...}}
+      const response = await fetch(httpApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: chunkId,
+          value: chunkData,
+        }),
+      });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
-
-        const result = await response.json();
-        return result.id || chunkId;
-      } catch (httpError) {
-        // Both methods failed
-        throw new Error(
-          `Failed to store chunk in ResilientDB via both GraphQL and HTTP API.\n` +
-          `GraphQL Error: ${errorMsg}\n` +
-          `HTTP Error: ${httpError instanceof Error ? httpError.message : String(httpError)}\n` +
-          `Please verify ResilientDB GraphQL is running and accessible at ${env.RESILIENTDB_GRAPHQL_URL}`
-        );
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
+
+      const result = await response.json();
+      return result.id || chunkId;
+    } catch (httpError) {
+      // HTTP API failed, log the error and throw
+      const errorMsg = httpError instanceof Error ? httpError.message : String(httpError);
+      throw new Error(
+        `Failed to store chunk in ResilientDB via HTTP API.\n` +
+        `HTTP Error: ${errorMsg}\n` +
+        `Please verify ResilientDB KV service is running and accessible at ${env.RESILIENTDB_GRAPHQL_URL.replace('/graphql', '').replace(':5001', ':18000')}`
+      );
     }
   }
 

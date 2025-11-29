@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { IngestionPipeline } from './src/rag/ingestion-pipeline';
 import { DocumentLoader, LoadedDocument } from './src/rag/document-loader';
+import { ResilientDBHTTPWrapper } from './src/resilientdb/http-wrapper';
 
 async function loadDirectoryIfExists(
   loader: DocumentLoader,
@@ -40,6 +41,20 @@ async function loadFileIfExists(
 async function ingestGraphQLDocs() {
   console.log('📚 GraphQL-only Ingestion');
   console.log('============================\n');
+
+  // Start HTTP wrapper for ResilientDB on port 18001 (18000 is KV service gRPC)
+  // The KV service is gRPC, so we need the HTTP wrapper for REST API access
+  console.log('🔧 Starting ResilientDB HTTP wrapper on port 18001...\n');
+  const httpWrapper = new ResilientDBHTTPWrapper(18001);
+  try {
+    await httpWrapper.start();
+    console.log('✅ ResilientDB HTTP API available at http://localhost:18001\n');
+    // Update the URL to use the HTTP wrapper port
+    process.env.RESILIENTDB_GRAPHQL_URL = 'http://localhost:18001/graphql';
+  } catch (error) {
+    console.log('⚠️  HTTP wrapper not started:', (error as Error).message);
+    console.log('⚠️  Will try to use existing server\n');
+  }
 
   // Ensure ResilientDB GraphQL endpoint is set (defaults to local dev port 5001)
   if (!process.env.RESILIENTDB_GRAPHQL_URL) {

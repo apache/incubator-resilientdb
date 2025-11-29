@@ -110,9 +110,10 @@ Copy this exact configuration into `.env`:
 
 # ResilientDB Configuration
 # For local development (ResilientDB running on host):
-RESILIENTDB_GRAPHQL_URL=http://localhost:18000/graphql
+RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
 # For Docker (ResilientDB in container):
 # RESILIENTDB_GRAPHQL_URL=http://resilientdb:5001/graphql
+# Note: GraphQL server runs on port 5001 (KV service is on port 18000)
 
 # Nexus Configuration
 NEXUS_API_URL=http://localhost:3000
@@ -122,9 +123,12 @@ NEXUS_API_KEY=
 RESLENS_LIVE_MODE=false
 RESLENS_POLL_INTERVAL=5000
 
-# MCP Server Configuration
+# HTTP API Server Configuration (for GraphQ-LLM Backend)
+# This is the HTTP API server that Nexus connects to (not the MCP server)
 MCP_SERVER_PORT=3001
 MCP_SERVER_HOST=localhost
+# Note: MCP_SERVER_PORT is used by the HTTP API backend service
+# The MCP server itself uses stdio transport and runs as a separate service
 
 # LLM Configuration
 # Using Gemini (recommended) or local LLM
@@ -271,12 +275,14 @@ If you already have ResilientDB with GraphQL server running:
 
 ---
 
-### **Step 5: Start GraphQ-LLM Backend**
+### **Step 5: Start GraphQ-LLM Backend (HTTP API Server)**
+
+The GraphQ-LLM backend runs as an HTTP API server that provides REST endpoints for Nexus integration. It runs separately from the MCP server.
 
 #### **Option A: Using Docker (Recommended)**
 
 ```bash
-# Start the backend service
+# Start the HTTP API backend service
 docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
 
 # Check logs (wait for "Server listening" message)
@@ -291,7 +297,10 @@ curl http://localhost:3001/health
 {"status":"ok","service":"graphq-llm-api"}
 ```
 
-**Note:** First startup takes 30-60 seconds as it downloads the local LLM model (`Xenova/gpt2`).
+**Note:** 
+- First startup takes 30-60 seconds as it downloads the local LLM model (`Xenova/gpt2`)
+- This service runs the HTTP API on port 3001 for Nexus integration
+- The MCP server is a separate service (see Step 5.1)
 
 #### **Option B: Using Local Node.js**
 
@@ -307,6 +316,56 @@ npm run http-api
 ```
 
 The server will start on port 3001. Check logs for "Server listening" message.
+
+---
+
+### **Step 5.1: Start MCP Server (Optional - for MCP Client Integration)**
+
+The MCP (Model Context Protocol) Server provides secure two-way communication between ResilientDB and AI tools. It uses stdio transport for communication with MCP clients and runs as a **separate Docker service** from the HTTP API backend.
+
+**Important:** The MCP server and HTTP API backend are now separate services:
+- **HTTP API Backend** (Step 5): Runs on port 3001, provides REST endpoints for Nexus
+- **MCP Server** (Step 5.1): Uses stdio transport, runs as a separate container for MCP client integration
+
+#### **Option A: Using Docker (Recommended)**
+
+```bash
+# Start the MCP server service (separate from HTTP API backend)
+docker-compose -f docker-compose.dev.yml up -d graphq-llm-mcp-server
+
+# Check logs
+docker-compose -f docker-compose.dev.yml logs -f graphq-llm-mcp-server
+
+# Check status of all services
+docker-compose -f docker-compose.dev.yml ps
+```
+
+**Expected output:**
+```
+MCP Server started and listening on stdio
+Live Stats Service: Enabled/Disabled
+```
+
+**Note:** 
+- The MCP server uses stdio transport (stdin/stdout), so it doesn't expose HTTP ports
+- It's designed to be spawned as a subprocess by MCP clients
+- The container keeps stdin/stdout open for communication
+- It shares the same environment variables as the backend service
+- Both services can run simultaneously (they're independent)
+
+#### **Option B: Using Local Node.js**
+
+```bash
+# Set environment variables (same as backend)
+export RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
+export LLM_PROVIDER=deepseek
+export LLM_API_KEY=your_key_here
+
+# Start MCP server
+npm run mcp-server
+```
+
+**Note:** MCP servers using stdio transport are typically invoked by MCP clients as child processes. Running it standalone allows you to test it directly. In Docker, it runs as a separate container that can be started/stopped independently.
 
 ---
 
@@ -616,6 +675,7 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 After completing all steps, verify:
 
 - [ ] GraphQ-LLM HTTP API responds: `curl http://localhost:3001/health`
+- [ ] (Optional) GraphQ-LLM MCP Server is running: `docker-compose -f docker-compose.dev.yml ps graphq-llm-mcp-server`
 - [ ] ResilientDB KV service is running: `curl http://localhost:18000/v1/transactions/test`
 - [ ] **ResilientDB GraphQL server is running** (REQUIRED): `curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
   - Should return: `{"data":{"__typename":"Query"}}` or similar
@@ -634,8 +694,14 @@ After completing all steps, verify:
 - **LLM Provider:** `gemini` (using `gemini-2.5-flash-lite`)
 - **LLM API Key:** Required (get from https://makersuite.google.com/app/apikey)
 - **Embeddings Provider:** `local` (using `Xenova/all-MiniLM-L6-v2`)
-- **HTTP API Port:** `3001`
-- **ResilientDB GraphQL URL:** `http://localhost:18000/graphql` (or `http://resilientdb:5001/graphql` in Docker)
+- **HTTP API Backend Port:** `3001` (for Nexus integration)
+- **MCP Server:** Separate service using stdio transport (no HTTP port)
+- **ResilientDB GraphQL URL:** `http://localhost:5001/graphql` (or `http://resilientdb:5001/graphql` in Docker)
+
+### **Docker Services:**
+- **ResilientDB:** Ports 18000 (KV service) and 5001 (GraphQL server)
+- **GraphQ-LLM Backend:** Port 3001 (HTTP API for Nexus)
+- **GraphQ-LLM MCP Server:** Separate service (stdio transport, no HTTP port)
 
 ### **Nexus Configuration:**
 - **Port:** `3000`
@@ -643,9 +709,10 @@ After completing all steps, verify:
 - **GraphQ-LLM Backend:** `http://localhost:3001`
 
 ### **Integration:**
-- GraphQ-LLM HTTP API: `http://localhost:3001`
+- GraphQ-LLM HTTP API: `http://localhost:3001` (for Nexus)
+- GraphQ-LLM MCP Server: Separate service (for MCP client integration)
 - Nexus API Route: `http://localhost:3000/api/graphql-tutor/analyze`
-- Nexus proxies requests to GraphQ-LLM backend
+- Nexus proxies requests to GraphQ-LLM HTTP API backend
 
 ---
 
@@ -787,8 +854,11 @@ docker-compose -f docker-compose.dev.yml up -d resilientdb
 # 4. Wait for ResilientDB (60-120 seconds)
 sleep 60
 
-# 5. Start GraphQ-LLM backend
+# 5. Start GraphQ-LLM HTTP API backend
 docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
+
+# 5.1. (Optional) Start MCP Server for MCP client integration
+docker-compose -f docker-compose.dev.yml up -d graphq-llm-mcp-server
 
 # 6. Wait for backend (30-60 seconds)
 sleep 30
@@ -867,14 +937,20 @@ If you encounter issues:
 
 3. **Check service health:**
    ```bash
-   # GraphQ-LLM
+   # GraphQ-LLM HTTP API Backend
    curl http://localhost:3001/health
+   
+   # GraphQ-LLM MCP Server (check container status)
+   docker-compose -f docker-compose.dev.yml ps graphq-llm-mcp-server
    
    # Nexus
    curl http://localhost:3000/api/research/documents
    
-   # ResilientDB
+   # ResilientDB KV Service
    curl http://localhost:18000/v1/transactions/test
+   
+   # ResilientDB GraphQL Server
+   curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'
    ```
 
 4. **Review troubleshooting section above**
@@ -886,12 +962,13 @@ If you encounter issues:
 You've successfully set up the project when:
 
 1. ✅ GraphQ-LLM HTTP API is running on port 3001
-2. ✅ ResilientDB is running and accessible
-3. ✅ Documents are ingested (check logs for chunk count - should be 100+)
-4. ✅ Nexus is running on port 3000
-5. ✅ Nexus UI shows GraphQL Tutor page at `http://localhost:3000/graphql-tutor`
-6. ✅ Query analysis works in Nexus UI
-7. ✅ Explanations include documentation context from ResilientDB
+2. ✅ (Optional) GraphQ-LLM MCP Server is running (for MCP client integration)
+3. ✅ ResilientDB is running and accessible (KV service on 18000, GraphQL on 5001)
+4. ✅ Documents are ingested (check logs for chunk count - should be 100+)
+5. ✅ Nexus is running on port 3000
+6. ✅ Nexus UI shows GraphQL Tutor page at `http://localhost:3000/graphql-tutor`
+7. ✅ Query analysis works in Nexus UI
+8. ✅ Explanations include documentation context from ResilientDB
 
 **Congratulations! You're now at the same stage as the current setup! 🎉**
 
