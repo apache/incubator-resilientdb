@@ -32,9 +32,27 @@
 4. [How to Run ResDB-ORM](#How-to-Run-ResDB-ORM)
 
 ## Running the Indexing Project
-TODO
+All user-facing code for this project is located in `ecosystem/sdk/vector-indexing`. As long as the **KV Service** and **GraphQL Server** are running, executing the python code directly through the command line will work - nothing needs to be built beforehand. This does need to be run with a python instance with the ResDB-orm package installed (we reccoment using a virtual environment)
 
-\
+The project acts as a wrapper around the KV Service - (string) values added using our tools will save them to ResilientDB *in addition* to generating vector embeddings for those values (Embeddings are also saved in resilientDB). We then offer the ability to search for the k_closest embeddings based on an input value
+
+### Adding a Value
+From `ecosystem/sdk/vector-indexing`, run the command
+
+```bash
+python vector_add.py --value <your_string>
+```
+- Flag `--value`: must be immediately followed by the value a user wishes to save. Omitting this flag will prevent the program from running. Duplicate values cannot be saved.
+
+### Searching Across Embeddings
+This is the main functionality of our project - the ability to search for the most similar values based on their embeddings. From `ecosystem/sdk/vector-indexing`, run the command
+
+```bash
+python vector_get.py --value <your_string> --k_matches <your_integer>
+```
+- Flag `--value`: must be immediately followed by the value a user wishes to perform a similarity search for. Either this flag, or `--show_all` must be used - omitting both will prevent the program from running.
+- Flag `--k_matches`: must immediately be followed by the k-most-similar matches to `--value` that a user wishes to retrieve. If this flag is omitted, a default of 1 will be used.
+- Flag `--show_all`: does not require a second arguement. It will list every value that has been added to this instance of ResDB that has a correlated vector embedding. Using this arguement will override the other two flags completely.
 
 ## ResilientDB Installation
 Forked from [this repository](https://github.com/apache/incubator-resilientdb), for more complex setup instructions, please head there.
