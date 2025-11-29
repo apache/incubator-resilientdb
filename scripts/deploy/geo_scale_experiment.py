@@ -21,7 +21,7 @@ def generate_config(
     tpcc_enabled = False,
     network_delay_num =  0,
     mean_network_delay = 0,
-    timer_length = 0): 
+    timer_length = 100): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
@@ -76,23 +76,23 @@ def generate_performance_server_conf(region_number, output_file = "./config/perf
     input_file_dict = dict()
     if region_number == 2:
         input_file_dict["./config/us-east-1-machines"] = 16
-        input_file_dict["./config/ap-east-1-machines"] = 16
+        input_file_dict["./config/eu-west-2-machines"] = 16
     
     elif region_number == 3:
         input_file_dict["./config/us-east-1-machines"] = 11
-        input_file_dict["./config/ap-east-1-machines"] = 11
-        input_file_dict["./config/eu-west-2-machines"] = 10
+        input_file_dict["./config/eu-west-2-machines"] = 11
+        input_file_dict["./config/ap-east-1-machines"] = 10
 
     elif region_number == 4:
         input_file_dict["./config/us-east-1-machines"] = 8
-        input_file_dict["./config/ap-east-1-machines"] = 8
         input_file_dict["./config/eu-west-2-machines"] = 8
+        input_file_dict["./config/ap-east-1-machines"] = 8
         input_file_dict["./config/sa-east-1-machines"] = 8
     
     elif region_number == 5:
         input_file_dict["./config/us-east-1-machines"] = 7
-        input_file_dict["./config/ap-east-1-machines"] = 7
-        input_file_dict["./config/eu-west-2-machines"] = 6
+        input_file_dict["./config/eu-west-2-machines"] = 7
+        input_file_dict["./config/ap-east-1-machines"] = 6
         input_file_dict["./config/sa-east-1-machines"] = 6
         input_file_dict["./config/eu-central-2-machines"] = 6
 

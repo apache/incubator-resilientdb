@@ -462,7 +462,7 @@ Use the following script, replacing `protocol_name`, `num_faulty_leaders`, and `
 
 `num_faulty_leaders`: one of `[0, 1, 4, 7, 10]`
 
-`timer_length`: for HS-1-SLOT: one of `[10, 100]`; for others: `[100]`
+`timer_length`: for HS-1-SLOT: one of `[10, 100]`; for others: `[10]`
 
 
 #### Step 3: Collect Throughput and Latency Data

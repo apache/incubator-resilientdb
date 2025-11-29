@@ -1,5 +1,1 @@
-ssh: connect to host 30.0.2.63 port 22: Connection timed out
-lost connection
-
-
-n: No such file or directory
+/home/ubuntu/incubator-resilientdb/service/contract/benchmark/data/smallbank.json: No such file or directory

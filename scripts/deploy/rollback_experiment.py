@@ -21,7 +21,7 @@ def generate_config(
     tpcc_enabled = False,
     network_delay_num =  0,
     mean_network_delay = 0,
-    timer_length = 0): 
+    timer_length = 10): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
@@ -97,7 +97,7 @@ def main():
 
     command = command + " ./config/performance.conf"
 
-    generate_performance_server_conf(region_number)
+    generate_performance_server_conf(31)
 
     print(f"{command}")
 

@@ -153,6 +153,8 @@ if __name__ == '__main__':
 
     max_tps, avg_tps = cal_tps(tps, len(files))
     max_lat, avg_lat = cal_lat(lat, len(files)/2)
+    print(avg_tps)
+    print(avg_lat)
     # max_lat3, avg_lat3 = cal_lat3(lat3, len(files)/2)
     # max_lat2, avg_lat2 = cal_lat2(lat2, len(files)/2)
     # max_lat4, avg_lat4 = cal_lat4(lat4, len(files)/2)
