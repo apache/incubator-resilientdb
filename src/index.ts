@@ -96,7 +96,7 @@ async function main() {
   console.log('\nConfiguration:');
   console.log(`  ResilientDB: ${env.RESILIENTDB_GRAPHQL_URL}`);
   console.log(`  Nexus: ${env.NEXUS_API_URL || 'Not configured'}`);
-  console.log(`  MCP Server: ${env.MCP_SERVER_HOST}:${env.MCP_SERVER_PORT}`);
+  console.log(`  HTTP API Server: ${env.MCP_SERVER_HOST}:${env.MCP_SERVER_PORT}`);
   console.log(`  Log Level: ${env.LOG_LEVEL}\n`);
 }
 

@@ -21,8 +21,8 @@ const envSchema = z.object({
   // ResLens Configuration
   // NOTE: ResLens API endpoints not yet defined - these are placeholders
   // Currently using local in-memory storage, so API key is NOT needed
-  RESLENS_API_URL: z.string().url().optional(),
-  RESLENS_API_KEY: z.string().optional(), // NOT NEEDED - only for future API integration
+  RESLENS_API_URL: z.string().url().optional().or(z.literal('').transform(() => undefined)),
+  RESLENS_API_KEY: z.string().optional().or(z.literal('').transform(() => undefined)), // NOT NEEDED - only for future API integration
   // Live Mode: Enable real-time stats polling for LLM access
   RESLENS_LIVE_MODE: z.coerce.boolean().default(false),
   RESLENS_POLL_INTERVAL: z.coerce.number().default(5000), // milliseconds
