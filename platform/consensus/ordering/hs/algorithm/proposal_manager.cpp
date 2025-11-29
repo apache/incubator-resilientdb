@@ -132,11 +132,12 @@ std::vector<std::unique_ptr<Proposal>> ProposalManager::AddProposal(std::unique_
     //LOG(ERROR)<<"get father view:"<<father->header().view();
     fafather = GetProposal(father->header().prehash());
     lock_qc_ = father->header().qc();
-    if(fafather != nullptr && fafather->header().view() == father->header().view() - 1){
+    // if(fafather != nullptr && fafather->header().view() == father->header().view() - 1){
+    if(fafather != nullptr && (fafather->header().view() == father->header().view() - 1 || fork_tail_num_ > 0)){
      // LOG(ERROR)<<"get fafather view:"<<fafather->header().view();
       fafafather = GetProposal(fafather->header().prehash());
+      // if(fafafather != nullptr && fafafather->header().view() == fafather->header().view() - 1){
       if(fafafather != nullptr && fafafather->header().view() == fafather->header().view() - 1){
-      //  LOG(ERROR)<<"commit fafafather view:"<<fafafather->header().view();
         auto fetched_proposal = FetchProposal(fafather->header().prehash());
           while (fetched_proposal) {
             auto got_proposal = fetched_proposal.get();
