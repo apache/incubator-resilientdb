@@ -59,6 +59,8 @@ class Storage {
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
 
+  virtual std::string ExecuteSQL(const std::string& sql_string) = 0;
+
   virtual bool Flush() { return true; };
 
   virtual uint64_t GetLastCheckpoint() { return 0; }
