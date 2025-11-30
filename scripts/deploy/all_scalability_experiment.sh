@@ -1,7 +1,7 @@
 #!/bin/bash
 
 protocols=("HS" "HS-2" "HS-1" "HS-1-SLOT")
-replica_numbers=(32 64)
+replica_numbers=(4 16 32 64)
 
 for replica_number in "${replica_numbers[@]}"; do
     ./start_us_east_1_instances.sh ${replica_number}
