@@ -21,8 +21,9 @@ python3 -m pip install --upgrade pip --quiet 2>&1 | grep -v "^$" || true
 
 # Install Python dependencies
 echo "📚 Installing Python dependencies..."
+# Install compatible versions from the start to avoid conflicts
 python3 -m pip install --quiet \
-    requests flask flask-cors ariadne base58 cryptography pysha3 \
+    requests base58 cryptography pysha3 \
     cryptoconditions python-rapidjson 2>&1 | grep -v "^$" || true
 
 # Fix Python 3.8 compatibility issues in resdb_driver
@@ -61,7 +62,71 @@ sed -i 's/tx_Dict/tx_dict/g' resdb_driver/transaction.py 2>/dev/null || true
 
 # Install compatible versions
 echo "📦 Installing compatible package versions..."
-python3 -m pip install --quiet 'click>=7.0,<8.0' 'strawberry-graphql==0.69.0' 2>&1 | grep -v "^$" || true
+# strawberry-graphql 0.69.0 requires click<8.0,>=7.0 and graphql-core
+# Flask 2.0.3 works with click<8.0
+# Install compatible versions together to avoid conflicts
+python3 -m pip install --quiet --force-reinstall \
+    'click==7.1.2' \
+    'strawberry-graphql==0.69.0' \
+    'flask==2.0.3' \
+    'werkzeug==2.0.3' \
+    'flask-cors==3.0.10' \
+    'graphql-core==3.1.6' 2>&1 | grep -v "^$" || true
+
+# Fix app.py to use port 5001 instead of 8000
+echo "🔧 Configuring GraphQL server to use port 5001..."
+sed -i 's/app.run(port="8000")/app.run(host="0.0.0.0", port=5001)/' app.py 2>/dev/null || true
+
+# Fix JSONScalar.parse_value to handle string inputs
+echo "🔧 Fixing JSONScalar.parse_value to parse JSON strings..."
+python3 << 'PYEOF'
+import re
+
+with open('app.py', 'r') as f:
+    content = f.read()
+
+# Update JSONScalar.parse_value
+old_pattern = r'(@staticmethod\s+def parse_value\(value: Any\) -> Any:\s+return value  # Accept JSON as is)'
+new_method = '''@staticmethod
+    def parse_value(value: Any) -> Any:
+        import json
+        # If value is a string, parse it as JSON
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except (json.JSONDecodeError, TypeError):
+                return value
+        # If value is already a dict/list, return as is
+        return value  # Accept JSON as is'''
+
+content = re.sub(old_pattern, new_method, content, flags=re.MULTILINE)
+
+# Update postTransaction to handle string assets
+old_post = r'(def postTransaction\(self, data: PrepareAsset\) -> CommitTransaction:\s+prepared_token_tx = db\.transactions\.prepare\(\s+operation=data\.operation,\s+signers=data\.signerPublicKey,\s+recipients=\[\(\[data\.recipientPublicKey\], data\.amount\)\],\s+asset=data\.asset,\s+\))'
+new_post = '''def postTransaction(self, data: PrepareAsset) -> CommitTransaction:
+        # Ensure asset is a dict (JSONScalar might pass it as string)
+        asset = data.asset
+        if isinstance(asset, str):
+            import json
+            try:
+                asset = json.loads(asset)
+            except (json.JSONDecodeError, TypeError):
+                pass  # Keep as-is if parsing fails
+        
+        prepared_token_tx = db.transactions.prepare(
+            operation=data.operation,
+            signers=data.signerPublicKey,
+            recipients=[([data.recipientPublicKey], data.amount)],
+            asset=asset,
+        )'''
+
+content = re.sub(old_post, new_post, content, flags=re.MULTILINE | re.DOTALL)
+
+with open('app.py', 'w') as f:
+    f.write(content)
+
+print('✅ Fixed JSONScalar and postTransaction')
+PYEOF
 
 echo ""
 echo "✅ GraphQL setup complete!"

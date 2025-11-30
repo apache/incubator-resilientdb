@@ -1,11 +1,10 @@
-version: '3.8'
-
 services:
   # ResilientDB Database
   # Note: Using existing ResilientDB setup from start-resilientdb.sh
   # This service is optional if ResilientDB is already running
   resilientdb:
-    image: expolab/resdb:${ARCH:-amd64}
+    image: expolab/resdb:amd64
+    platform: linux/amd64
     # Platform should match ARCH variable - remove if you want Docker to auto-detect
     # For ARM64: set ARCH=arm64 in .env or export ARCH=arm64
     # For AMD64: leave ARCH unset or set ARCH=amd64 (default)
@@ -22,24 +21,16 @@ services:
     environment:
       - RESDB_HOST=0.0.0.0
       - RESDB_PORT=18000
-    # ⚠️ IMPORTANT: This configuration may prevent ResilientDB KV service from starting
-    # The expolab/resdb image's default entrypoint should start the KV service automatically,
-    # but we're overriding it to run setup-graphql.sh. This might prevent KV service startup.
-    # 
-    # RECOMMENDED: Set up ResilientDB separately first (see TEAM_SETUP.md for details)
-    # Then comment out this service and use your existing ResilientDB instance.
-    # 
-    # If you want to try this setup:
-    # 1. Start containers: docker-compose up -d
-    # 2. Verify KV service: curl http://localhost:18000/v1/transactions/test
-    # 3. If it fails, set up ResilientDB separately (see TEAM_SETUP.md)
-    # 
-    # The healthcheck tests port 18000 (KV service) - if it fails, KV service isn't running
-    # Note: Use default entrypoint which starts KV service
-    # GraphQL setup can be done manually after container starts
-    # Remove entrypoint override to use default
-    # entrypoint: ["/bin/sh", "-c"]
-    # command: "tail -f /dev/null"
+    # Start KV service first using default entrypoint, then setup GraphQL server
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "
+      cd /app && ./entrypoint.sh > /tmp/entrypoint.log 2>&1 &
+      sleep 15 &&
+      chmod +x /app/setup-graphql.sh 2>/dev/null || true &&
+      /app/setup-graphql.sh > /tmp/setup.log 2>&1 &
+      tail -f /dev/null
+      "
     healthcheck:
       # Check if KV service processes are running instead of HTTP endpoint
       # The HTTP endpoint on 18000 may not be immediately available
@@ -95,7 +86,7 @@ services:
       - NODE_OPTIONS=--inspect=0.0.0.0:9229
     depends_on:
       resilientdb:
-        condition: service_healthy
+        condition: service_started
     networks:
       - graphq-llm-network
     volumes:
@@ -106,9 +97,9 @@ services:
       - ./tsconfig.json:/app/tsconfig.json
       # Mount docs directory for document ingestion
       - ./docs:/app/docs
-      # Exclude node_modules from volume mount
-      - /app/node_modules
-    command: sh -c "npm install && npm run dev -- --http-api"
+      # Exclude node_modules from volume mount (use named volume)
+      - graphq-llm-node-modules:/app/node_modules
+    command: sh -c "npm install --legacy-peer-deps && npm run dev -- --http-api"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
@@ -166,9 +157,9 @@ services:
       - ./tsconfig.json:/app/tsconfig.json
       # Mount docs directory for RAG
       - ./docs:/app/docs
-      # Exclude node_modules from volume mount
-      - /app/node_modules
-    command: sh -c "npm install && npm run mcp-server"
+      # Exclude node_modules from volume mount (use named volume)
+      - graphq-llm-node-modules:/app/node_modules
+    command: sh -c "npm install --legacy-peer-deps && npm run mcp-server"
     restart: unless-stopped
     # Note: MCP server uses stdio transport, so it doesn't expose HTTP ports
     # Health check is not applicable for stdio-based services
@@ -206,4 +197,6 @@ networks:
 volumes:
   resilientdb-data:
     name: resilientdb-data
+  graphq-llm-node-modules:
+    name: graphq-llm-node-modules
 
