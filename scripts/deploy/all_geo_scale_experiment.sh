@@ -12,10 +12,6 @@ workloads=("ycsb" "tpcc")
 sleep 30
 
 for workload in "${workloads[@]}"; do
-    rm -rf ./plot_data/geo_scale_${workload}_throughput
-    rm -rf ./plot_data/geo_scale_${workload}_latency
-    mkdir -p ./plot_data/geo_scale_${workload}_throughput
-    mkdir -p ./plot_data/geo_scale_${workload}_latency
     for num_region in "${num_regions[@]}"; do
         for protocol in "${protocols[@]}"; do
             ./geo_scale_experiment.sh ${protocol} ${num_region} ${workload}

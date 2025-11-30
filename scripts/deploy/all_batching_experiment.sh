@@ -1,14 +1,9 @@
 #!/bin/bash
 
 protocols=("HS" "HS-2" "HS-1" "HS-1-SLOT")
-batchings=(100 500 1000 5000 10000)
+batchings=(100 1000 2000 5000 10000)
 ./start_us_east_1_instances.sh 32
 sleep 30
-
-rm -rf ./plot_data/batching_throughput
-rm -rf ./plot_data/batching_latency
-mkdir -p ./plot_data/batching_throughput
-mkdir -p ./plot_data/batching_latency
 
 for batching in "${batchings[@]}"; do
 
@@ -21,8 +16,6 @@ for batching in "${batchings[@]}"; do
 done
 
 ./stop_us_east_1_instances.sh
-rm -rf ./latex_plot_data/batching_throughput.data
-rm -rf ./latex_plot_data/batching_latency.data
 
 echo "n HS HS-2 HS-1 HS-1-SLOT" > ./latex_plot_data/batching_throughput.data
 echo "n HS HS-2 HS-1 HS-1-SLOT" > ./latex_plot_data/batching_latency.data

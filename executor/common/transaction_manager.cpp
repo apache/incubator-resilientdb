@@ -25,7 +25,7 @@ namespace resdb {
 
 TransactionManager::TransactionManager(bool is_out_of_order, bool need_response)
     : is_out_of_order_(is_out_of_order), need_response_(need_response) {
-      // tpcc_executor_ = std::make_unique<TpccExecutor>();
+      tpcc_executor_ = std::make_unique<TpccExecutor>();
     }
 
 bool TransactionManager::IsOutOfOrder() { return is_out_of_order_; }

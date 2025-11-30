@@ -348,6 +348,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       if (config_.IsTpccEnabled()) {
+        LOG(ERROR)  << "TPCC Enabled";
         response = transaction_manager_->ExecuteTPCCBatch(*batch_request_p);
       } else {
         response = transaction_manager_->ExecuteBatch(*batch_request_p);

@@ -4,11 +4,6 @@ protocols=("HS" "HS-2" "HS-1" "HS-1-SLOT")
 network_delays=(1 5 50 500)
 num_impacted=(0 10 11 20 21 31)
 
-rm -rf ./plot_data/network_delay_throughput
-rm -rf ./plot_data/network_delay_latency
-mkdir -p ./plot_data/network_delay_throughput
-mkdir -p ./plot_data/network_delay_latency
-
 ./start_us_east_1_instances.sh 31
 sleep 30
 
