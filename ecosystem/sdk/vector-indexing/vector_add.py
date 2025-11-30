@@ -15,13 +15,14 @@ from resdb_orm.orm import ResDBORM
 import hnsw_library
 from leann import LeannBuilder
 
-# Global variables
+# Global Variables
 WORKING_DIR = Path("./").resolve()
 db = ResDBORM()
 
 # - - - - - - - - - SECTION 1: Init and data cleaning - - - - - - - - - >
 # This entire file is only ever intended to run from a CLI
 if __name__ == "__main__":
+    # Input Variable
     value_to_add = ''
 
     # Parse the value that the user is requesting to add
@@ -37,7 +38,7 @@ if __name__ == "__main__":
 
 # - - - - - - - - - SECTION 2: Retrieve HNSW data or create if it doesnt exist - - - - - - - - - >
     embedding_keys: Dict[str, Any] = {}
-    hnsw_text_entries = [value_to_add]
+    hnsw_text_entries = []
     file_saved_directory = Path(WORKING_DIR / "saved_data")
     file_embedding_keys = str(WORKING_DIR / "saved_data/embedding_keys.json")
 
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         passages_return_item = hnsw_library.get_record(key)
         passages_return_data = passages_return_item["data"]
         datapointToText = lambda dataPoint: dataPoint['text']
-        hnsw_value_list = list(map(datapointToText, passages_return_data))
+        hnsw_text_entries = list(map(datapointToText, passages_return_data))
 
         # This file also contains the saved VALUES, check to make sure we aren't re-saving the same data
         if value_to_add in hnsw_text_entries:
@@ -112,7 +113,7 @@ if __name__ == "__main__":
         with open(file_embedding_keys, 'w') as file:
             json.dump(embedding_keys, file)
     except Exception as e:
-        print("Unsuccessful write: {e}")
+        print(f"Unsuccessful write: {e}")
         print("Critical Error - the above error prevents the program from saving locally the keys necessary to track embedding data")
         print('This prevents the program from using these embeddings in the future. Consequently, terminating...')
         sys.exit()
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     file_temporary_storage = str(WORKING_DIR / "saved_data/temp/temp.leann")
 
     # Leann is extremely noisy, prevent standard output to the console while it runs
-    sys.stdout = os.devnull
+    # sys.stdout = os.devnull # TODO
 
     # Create the temp directory if it doesn't exist
     if not os.path.exists(file_temporary_directory):
@@ -135,7 +136,7 @@ if __name__ == "__main__":
     builder.build_index(file_temporary_storage)
 
     # Restore standard output to the console
-    sys.stdout = sys.__stderr__
+    # sys.stdout = sys.__stdout__ # TODO
 
 # - - - - - - - - - SECTION 4: Save the new embeddings - - - - - - - - - >
     # Embedding information using this library is split across 5 files. The next chunk of code saves each of
@@ -153,7 +154,8 @@ if __name__ == "__main__":
                 content = file.read()
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
-            print("Unsuccessful save: {e}")
+            print(pairing)
+            print(f"Unsuccessful save: {e}")
             print("Critical Error - the above error completely prevents this embedding from saving to ResDB")
             print("this likely has ruined the entire embedding system. Please try to add your value again. If you face")
             print("the same error, delete all your saved data by deleting `vector-indexing/saved_data` and start fresh.")
@@ -168,7 +170,7 @@ if __name__ == "__main__":
             content = file.read()
             _ = hnsw_library.put_record(key, content)
     except Exception as e:
-        print("Unsuccessful save: {e}")
+        print(f"Unsuccessful save: {e}")
         print("Critical Error - the above error completely prevents this embedding from saving to ResDB")
         print("this likely has ruined the entire embedding system. Please try to add your value again. If you face")
         print("the same error, delete all your saved data by deleting `vector-indexing/saved_data` and start fresh.")
@@ -182,7 +184,7 @@ if __name__ == "__main__":
             content = json.load(file)
             _ =hnsw_library.put_record(key, content)
     except Exception as e:
-        print("Unsuccessful save: {e}")
+        print(f"Unsuccessful save: {e}")
         print("Critical Error - the above error completely prevents this embedding from saving to ResDB")
         print("this likely has ruined the entire embedding system. Please try to add your value again. If you face")
         print("the same error, delete all your saved data by deleting `vector-indexing/saved_data` and start fresh.")
@@ -200,7 +202,7 @@ if __name__ == "__main__":
                 content.append(json.loads(line))
             _ = hnsw_library.put_record(key, content)
     except Exception as e:
-        print("Unsuccessful save: {e}")
+        print(f"Unsuccessful save: {e}")
         print("Critical Error - the above error completely prevents this embedding from saving to ResDB")
         print("this likely has ruined the entire embedding system. Please try to add your value again. If you face")
         print("the same error, delete all your saved data by deleting `vector-indexing/saved_data` and start fresh.")
