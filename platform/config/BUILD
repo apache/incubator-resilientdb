@@ -31,8 +31,10 @@ cc_library(
 cc_test(
     name = "resdb_config_test",
     srcs = ["resdb_config_test.cpp"],
+    timeout = "short",
     deps = [
         ":resdb_config",
+        ":resdb_config_utils",
         "//common/test:test_main",
     ],
 )
