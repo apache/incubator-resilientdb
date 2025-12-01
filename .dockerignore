@@ -1,0 +1,32 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Distribution / packaging
+*.egg-info/
+build/
+dist/
+
+# Git and other VCS
+.git/
+.gitignore
+
+# Editor files
+*.swp
+*.swo
+*.bak
+*.tmp
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets (if you’re using .env for API keys etc.)
+.env
