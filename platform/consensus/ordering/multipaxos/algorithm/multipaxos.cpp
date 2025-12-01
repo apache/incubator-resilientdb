@@ -12,7 +12,7 @@ MultiPaxos::MultiPaxos(int id, int f, int total_num, int block_size, SignatureVe
 
     LOG(ERROR)<<"id:"<<id<<" f:"<<f<<" total:"<<total_num_;
 
-    proposal_manager_ = std::make_unique<ProposalManager>(id, 2*f_+1, verifier);
+    proposal_manager_ = std::make_unique<ProposalManager>(id, f_+1, verifier);
     send_thread_ = std::thread(&MultiPaxos::AsyncSend, this);
     commit_thread_ = std::thread(&MultiPaxos::AsyncCommit, this);
     commit_seq_thread_ = std::thread(&MultiPaxos::AsyncCommitSeq, this);
@@ -53,7 +53,7 @@ void MultiPaxos::AsyncSend() {
     std::unique_ptr<Proposal> proposal =  nullptr;
     {
       proposal = proposal_manager_ -> GenerateProposal(txns);
-      LOG(ERROR)<<"propose view:"<<proposal->header().view()<<" current round:"<<round<<" block size:"<<txns.size();
+      //LOG(ERROR)<<"propose view:"<<proposal->header().view()<<" current round:"<<round<<" block size:"<<txns.size();
     }
     broadcast_call_(MessageType::Propose, *proposal);
   }
@@ -132,7 +132,7 @@ void MultiPaxos::AsyncCommitSeq() {
     int proposer = data->header().proposer();
     int round = data->header().view();
     int proposal_seq = data->header().proposal_id();
-    LOG(ERROR)<<" commit proposer:"<<proposer<< " round:"<<round<<" seq:"<<proposal_seq;
+    //LOG(ERROR)<<" commit proposer:"<<proposer<< " round:"<<round<<" seq:"<<proposal_seq;
     for(Transaction& txn : *data->mutable_transactions()){
       txn.set_id(seq++);
       Commit(txn);
@@ -167,10 +167,15 @@ bool MultiPaxos::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
   int proposer = proposal->sender();
   int seq = proposal->header().proposal_id();
 
+  if(!((proposer <= total_num_-f_) && (id_ <=total_num_-f_)
+        || (proposer  > total_num_-f_ && id_ >total_num_-f_))) {
+    return true;
+  }
+
   bool done = false;
   {
     std::unique_lock<std::mutex> lk(mutex_);
-    LOG(ERROR)<<"recv proposal from:"<<proposer<<" round:"<<round<<" seq:"<<seq;
+    //LOG(ERROR)<<"recv proposal from:"<<proposer<<" round:"<<round<<" seq:"<<seq;
     receive_[round][proposer] = std::move(proposal);
     done = true;
   }
@@ -207,9 +212,10 @@ bool MultiPaxos::ReceiveAccept(std::unique_ptr<Proposal> proposal) {
 
   std::unique_lock<std::mutex> lk(propose_mutex_);
   accept_receive_[round].insert(sender);
-  LOG(ERROR)<<"RECEIVE proposer accept:"<<round<<" size:"<<accept_receive_[round].size()
-    <<" proposer:"<<proposer<<" sender:"<<sender;
+  //LOG(ERROR)<<"RECEIVE proposer accept:"<<round<<" size:"<<accept_receive_[round].size()
+   // <<" proposer:"<<proposer<<" sender:"<<sender;
   if(accept_receive_[round].size() == f_+1){
+    //LOG(ERROR)<<" ====== bc =======";
     Broadcast(MessageType::Learn, *proposal);
 
     can_propose_[round+1] = true;
@@ -219,6 +225,10 @@ bool MultiPaxos::ReceiveAccept(std::unique_ptr<Proposal> proposal) {
 }
 
 bool MultiPaxos::ReceiveLearn(std::unique_ptr<Proposal> proposal) {
+  int round = proposal->header().view();
+  int sender = proposal->sender();
+  int proposer = proposal->header().proposer();
+//LOG(ERROR)<<" receive learn:"<<round;
   commit_q_.Push(std::move(proposal));
   return true;
 }

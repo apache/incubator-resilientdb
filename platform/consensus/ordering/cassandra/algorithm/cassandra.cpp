@@ -5,6 +5,7 @@
 #include "common/crypto/signature_verifier.h"
 #include "common/utils/utils.h"
 
+
 namespace resdb {
 namespace cassandra {
 namespace cassandra_recv {
@@ -17,7 +18,7 @@ Cassandra::Cassandra(int id, int f, int total_num, int block_size, SignatureVeri
   total_num_ = total_num;
   f_ = f;
   is_stop_ = false;
-  timeout_ms_ = 1000;
+  timeout_ms_ = 100;
   //timeout_ms_ = 60000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
@@ -168,7 +169,7 @@ void Cassandra::AsyncCommit() {
       }
     }
     LOG(ERROR)<<" commit done:"<<txn_num<<" proposer:"<<p->header().proposer_id()<<" height:"<<p->header().height();
-    global_stats_->AddCommitTxn(txn_num);
+    //global_stats_->AddCommitTxn(txn_num);
   }
 
 }
@@ -469,9 +470,8 @@ bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
                  << " pre id:" << pre_p->header().proposal_id();
     }
 
-  /*
-
-    if(proposal->header().height() >=250 && proposal->header().height() <300){
+#ifdef NOPOA
+    if(proposal->header().height() >=850 && proposal->header().height() <1350){
       if(Checklimit(0, f_, proposal->header().proposer_id())
           || Checklimit(f_+1, 2*f_,proposal->header().proposer_id())
           || Checklimit(2*f_+1, 3*f_,proposal->header().proposer_id())
@@ -479,24 +479,34 @@ bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
         return true;
       }
     }
-    */
+    #endif
 
-    if(proposal->header().height() >=150 && proposal->header().height() <200){
+  #ifdef GOTPOA
+    if(proposal->header().height() >=850 && proposal->header().height() <1350){
         if(!((proposal->header().proposer_id() <= 2*f_ && id_ <=2*f_)
         || (proposal->header().proposer_id() > 2*f_ && id_ >2*f_))) {
           return true;
         }
       }
-   
+      #endif
 
-   /*
-    if(proposal->header().height() >=250 && proposal->header().height() <350){
+
+  #ifdef GOTPOR
+    if(proposal->header().height() >=150 && proposal->header().height() <250){
         if(!((proposal->header().proposer_id() <= 2*f_+1 && id_ <=2*f_+1)
         || (proposal->header().proposer_id() > 2*f_+1 && id_ >2*f_+1))) {
           return true;
         }
       }
-      */
+    #endif
+
+/*
+    if(!((proposal->header().proposer_id() <= 2*f_+1 && id_ <=2*f_+1)
+          || (proposal->header().proposer_id() > 2*f_+1 && id_ >2*f_+1))) {
+      return true;
+    }
+    */
+
 
     /*
       if(proposal->header().height() >=200 && proposal->header().height() <205){
@@ -551,12 +561,16 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
       AskProposal(proposal);
       //assert(1==0);
     }
+  #ifdef GOPOA
     else {
+  #endif
       return false;
+  #ifdef GOPOA
     }
+  #endif
   }
 
-  LOG(ERROR)<<" proposal blocks:"<<proposal.block_size();
+  //LOG(ERROR)<<" proposal blocks:"<<proposal.block_size();
   for (const Block& block : proposal.block()) {
     bool ret = false;;
     for(int i = 0; i< 5; ++i){
@@ -612,7 +626,7 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
       //LOG(ERROR) << "can vote:";
     }
   }
-   LOG(ERROR)<<"recv done";
+   //LOG(ERROR)<<"recv done";
 
   std::vector<std::unique_ptr<Proposal>> future_g = graph_->GetNotFound(
       proposal.header().height() + 1, proposal.header().hash());

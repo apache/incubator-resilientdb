@@ -415,7 +415,9 @@ int ProposalManager::VerifyProposal(const ProposalQueryResp& resp) {
   }
 
   tmp_proposal_.clear();
+  #ifdef GOPOA
   return 0;
+  #endif
 
   for (const Proposal& p : resp.proposal()) {
     //LOG(ERROR)<<"verify resp proposal proposer:"<<p.header().proposer_id()<<" id:"<<p.header().proposal_id();

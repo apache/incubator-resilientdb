@@ -150,19 +150,30 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
       const auto& sub_history = proposal.history(i);
       std::string sub_hash = sub_history.hash();
       auto sub_node_it = node_info_.find(sub_hash);
-      //LOG(ERROR)<<" state:"<<node_it->second->state;
-      if (node_it->second->state != ProposalState::PoR) {
+      if(sub_node_it == node_info_.end()){
+        continue;
+      }
+      LOG(ERROR)<<" state:"<<sub_node_it->second->state<<" node:"<<sub_node_it->second->proposal.header().proposer_id()
+      <<" height:"<<sub_node_it->second->proposal.header().height();
+      if (sub_node_it->second->state != ProposalState::PoR) {
         break;
       }
       num++;
     }
   
     
-    //LOG(ERROR)<<"get num:"<<num; 
+    LOG(ERROR)<<"get num:"<<num; 
     if(num == need_num) {
       const auto& sub_history = proposal.history(need_num-1);
       std::string sub_hash = sub_history.hash();
-      Commit(sub_hash);
+
+      auto sub_node_it = node_info_.find(sub_hash);
+      if(sub_node_it != node_info_.end()){
+        //LOG(ERROR)<<" state:"<<node_it->second->state;
+        if (sub_node_it->second->state != ProposalState::Committed) {
+          Commit(sub_hash);
+        }
+      }
     }
   }
 
@@ -241,11 +252,11 @@ return;
 }
 
 int ProposalGraph::CheckState(NodeInfo* node_info, ProposalState state) {
-   //LOG(ERROR) << "node: (" << node_info->proposal.header().proposer_id() <<
-   //","
-    //         << node_info->proposal.header().proposal_id()
-     //        << ") state:" << node_info->state
-      //       << " vote num:" << node_info->votes[ProposalState::New].size();
+   LOG(ERROR) << "node: (" << node_info->proposal.header().proposer_id() <<
+   ","
+             << node_info->proposal.header().proposal_id()
+             << ") state:" << node_info->state
+             << " vote num:" << node_info->votes[ProposalState::New].size();
 
   if(cft_){
     if(node_info->votes[ProposalState::New].size() >= f_ + 1) {
@@ -267,11 +278,11 @@ int ProposalGraph::CheckState(NodeInfo* node_info, ProposalState state) {
     }
   }
   node_info->state = state;
-  //LOG(ERROR) << "node: (" << node_info->proposal.header().proposer_id() <<
-  // ","
-  //           << node_info->proposal.header().proposal_id()
-  //           << ") get state:" << node_info->state
-  //           << " vote num:" << node_info->votes[ProposalState::New].size();
+  LOG(ERROR) << "node: (" << node_info->proposal.header().proposer_id() <<
+   ","
+             << node_info->proposal.header().proposal_id()
+             << ") get state:" << node_info->state
+             << " vote num:" << node_info->votes[ProposalState::New].size();
 
 
   return true;
@@ -445,7 +456,7 @@ Proposal* ProposalGraph::GetStrongestProposal() {
     }
   }
 
-  //LOG(ERROR)<<" last node size:"<<last_node_[current_height_].size()<<" height:"<<current_height_<<" from:"<<sp->proposal.header().proposer_id();
+  LOG(ERROR)<<" last node size:"<<last_node_[current_height_].size()<<" height:"<<current_height_<<" from:"<<sp->proposal.header().proposer_id();
 
   for (const auto& last_hash : last_node_[current_height_]) {
     NodeInfo* node_info = node_info_[last_hash].get();

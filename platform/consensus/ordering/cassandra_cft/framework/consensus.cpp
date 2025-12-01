@@ -37,7 +37,7 @@ Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)){
   int total_replicas = config_.GetReplicaNum();
-  int f = (total_replicas - 1) / 3;
+  int f = (total_replicas - 1) / 2;
 
   Init();
 

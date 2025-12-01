@@ -11,17 +11,19 @@ Tusk::Tusk(int id, int f, int total_num, int block_size, SignatureVerifier* veri
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   limit_count_ = 2 * f + 1;
   batch_size_ = block_size;
-  proposal_manager_ = std::make_unique<ProposalManager>(id, total_num);
-  //proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
+  //proposal_manager_ = std::make_unique<ProposalManager>(id, total_num);
+  proposal_manager_ = std::make_unique<ProposalManager>(id, limit_count_);
 
   execute_id_ = 1;
   start_ = 0;
   queue_size_ = 0;
 
+  if(id<=2*f+1){
   send_thread_ = std::thread(&Tusk::AsyncSend, this);
   commit_thread_ = std::thread(&Tusk::AsyncCommit, this);
   execute_thread_ = std::thread(&Tusk::AsyncExecute, this);
   cert_thread_ = std::thread(&Tusk::AsyncProcessCert, this);
+  }
 
   global_stats_ = Stats::GetGlobalStats();
 
@@ -138,11 +140,13 @@ void Tusk::AsyncCommit() {
     for (int r = previous_round + 2; r <= round; r += 2) {
       int leader = GetLeader(r);
       const Proposal * req = nullptr;
+      int num = 0;
       while(!IsStop()){
         req = proposal_manager_->GetRequest(r, leader);
         // req:"<<(req==nullptr);
-        if (req == nullptr) {
-          //LOG(ERROR)<<" get leader:"<<leader<<" round:"<<r<<" not exit";
+        if (req == nullptr && num < 10) {
+          LOG(ERROR)<<" get leader:"<<leader<<" round:"<<r<<" not exit";
+          num++;
           //usleep(1000);
           std::unique_lock<std::mutex> lk(mutex_);
           vote_cv_.wait_for(lk, std::chrono::microseconds(100),
@@ -151,6 +155,9 @@ void Tusk::AsyncCommit() {
           continue;
         }
         break;
+      }
+      if(req == nullptr){
+        continue;
       }
       //LOG(ERROR)<<" get leader:"<<leader<<" round:"<<r<<" delay:"<<(GetCurrentTime() - req->header().create_time());
       int reference_num = proposal_manager_->GetReferenceNum(*req);
@@ -327,6 +334,13 @@ bool Tusk::ReceiveBlock(std::unique_ptr<Proposal> proposal) {
    // sleep(10);
   }
   */
+
+  if(!(id_ <= limit_count_ && proposal->header().proposer_id() <= limit_count_)){
+  //LOG(ERROR) << "recv block from " << proposal->header().proposer_id()
+   //          << " round:" << proposal->header().round();
+   // sleep(10);
+   return true;
+  }
   
       std::unique_lock<std::mutex> lk(check_block_mutex_);
   {
@@ -348,7 +362,7 @@ void Tusk::ReceiveBlockACK(std::unique_ptr<Metadata> metadata) {
   int sender = metadata->sender();
   std::unique_lock<std::mutex> lk(txn_mutex_);
   received_num_[hash][sender] = std::move(metadata);
-  //LOG(ERROR) << "recv block ack from:" << sender << " num:" << received_num_[hash].size()<<" round:"<<round;
+  LOG(ERROR) << "recv block ack from:" << sender << " num:" << received_num_[hash].size()<<" round:"<<round;
   if (received_num_[hash].size() == limit_count_) {
     Certificate cert;
     for (auto& it : received_num_[hash]) {

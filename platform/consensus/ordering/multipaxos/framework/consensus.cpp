@@ -47,10 +47,10 @@ Consensus::Consensus(const ResDBConfig& config,
   SetPerformanceManager(GetPerformanceManager());
 
   Init();
-  failure_mode_ = config.GetConfigData().failure_mode();
+  //failure_mode_ = config.GetConfigData().failure_mode();
 
   int total_replicas = config_.GetReplicaNum();
-  int f = (total_replicas - 1) / 3;
+  int f = (total_replicas - 1) / 2;
 
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()

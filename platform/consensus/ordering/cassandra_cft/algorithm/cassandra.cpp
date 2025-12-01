@@ -17,8 +17,8 @@ Cassandra::Cassandra(int id, int f, int total_num, int block_size, SignatureVeri
   total_num_ = total_num;
   f_ = f;
   is_stop_ = false;
-  //timeout_ms_ = 10000;
-  timeout_ms_ = 60000;
+  timeout_ms_ = 1600;
+  //timeout_ms_ = 60000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
   batch_size_ = block_size;
@@ -432,7 +432,19 @@ void Cassandra::ReceiveProposalQueryResp(const ProposalQueryResp& resp) {
 bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
   // std::unique_lock<std::mutex> lk(g_mutex_);
   {
-    //LOG(ERROR)<<"recv proposal, height:"<<proposal->header().height()<<" block size:"<<proposal->block_size();
+    LOG(ERROR)<<"recv proposal, height:"<<proposal->header().height()<<" block size:"<<proposal->block_size()
+      << "from :"
+                 << proposal->header().proposer_id()
+                 <<" id:"<<id_
+                 <<" f:"<<f_
+                 <<" pass:"<< (((proposal->header().proposer_id() <= total_num_-f_) && (id_ <=total_num_-f_))
+          || ((proposal->header().proposer_id() > total_num_-f_) && (id_ >total_num_-f_)));
+
+    if(!((proposal->header().proposer_id() <= total_num_-f_) && (id_ <=total_num_-f_)
+          || (proposal->header().proposer_id() > total_num_-f_ && id_ >total_num_-f_))) {
+      return true;
+    }
+
     std::unique_lock<std::mutex> lk(mutex_);
   
     for(const auto& block : proposal->block()){
@@ -440,13 +452,15 @@ bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
       proposal_manager_->AddBlock(std::move(new_block));
     }
 
-    //LOG(ERROR)<<"add block done";
-    const Proposal* pre_p =
-        graph_->GetProposalInfo(proposal->header().prehash());
+    LOG(ERROR)<<"add block done:"<<proposal->block_size();
+    const Proposal* pre_p = nullptr;
+    if(proposal->header().prehash().size()>0){
+      pre_p = graph_->GetProposalInfo(proposal->header().prehash());
+    }
     if (pre_p == nullptr) {
-     // LOG(ERROR) << "receive proposal from :"
-      //           << proposal->header().proposer_id()
-       //          << " id:" << proposal->header().proposal_id() << "no pre:";
+      LOG(ERROR) << "receive proposal from :"
+                 << proposal->header().proposer_id()
+                 << " id:" << proposal->header().proposal_id() << "no pre:";
        if(!proposal->header().prehash().empty()) {
          if (proposal->header().height() > graph_->GetCurrentHeight()) {
            future_proposal_[proposal->header().height()].push_back(
@@ -456,11 +470,11 @@ bool Cassandra::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
        }
       assert(proposal->header().prehash().empty());
     } else {
-      //LOG(ERROR) << "receive proposal from :"
-      //           << proposal->header().proposer_id()
-      //           << " id:" << proposal->header().proposal_id()
-      //           << " pre:" << pre_p->header().proposer_id()
-      //           << " pre id:" << pre_p->header().proposal_id();
+      LOG(ERROR) << "receive proposal from :"
+                 << proposal->header().proposer_id()
+                 << " id:" << proposal->header().proposal_id()
+                 << " pre:" << pre_p->header().proposer_id()
+                 << " pre id:" << pre_p->header().proposal_id();
     }
 
     /*
@@ -505,7 +519,7 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
     return false;
   }
 
-  //LOG(ERROR)<<" proposal blocks:"<<proposal.block_size();
+  LOG(ERROR)<<" proposal blocks:"<<proposal.block_size();
   for (const Block& block : proposal.block()) {
     bool ret = false;;
     for(int i = 0; i< 5; ++i){
@@ -548,11 +562,11 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
 
   received_num_[proposal.header().height()].insert(
       proposal.header().proposer_id());
-  //LOG(ERROR) << "received current height:" << graph_->GetCurrentHeight()
-  //           << " proposal height:" << proposal.header().height()
-  //           << " num:" << received_num_[graph_->GetCurrentHeight()].size()
-  //           << " from:" << proposal.header().proposer_id()
-  //           << " last vote:" << last_vote_;
+  LOG(ERROR) << "received current height:" << graph_->GetCurrentHeight()
+             << " proposal height:" << proposal.header().height()
+             << " num:" << received_num_[graph_->GetCurrentHeight()].size()
+             << " from:" << proposal.header().proposer_id()
+             << " last vote:" << last_vote_;
   if (received_num_[graph_->GetCurrentHeight()].size() == total_num_) {
     if (last_vote_ < graph_->GetCurrentHeight()) {
       last_vote_ = graph_->GetCurrentHeight();
