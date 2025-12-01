@@ -85,5 +85,46 @@ int TransactionConstructor::SendRequest(
   }
   return -1;
 }
+// NEW: Send a read-only request. If learner nodes are configured, route the
+// request to a learner; otherwise fall back to a regular replica.
+
+int TransactionConstructor::SendReadOnlyRequest(
+    const google::protobuf::Message& message, Request::Type type) {
+  const auto& learners = config_.GetLearnerInfos();
+  if (!learners.empty()) {
+    NetChannel::SetDestReplicaInfo(learners[0]);
+  } else {
+    NetChannel::SetDestReplicaInfo(config_.GetReplicaInfos()[0]);
+  }
+
+  return NetChannel::SendRequest(message, type, false);
+}
+
+// NEW: Send a read-only request and wait for a response. Routed to learners
+// when available, with fallback to replicas.
+int TransactionConstructor::SendReadOnlyRequest(
+    const google::protobuf::Message& message,
+    google::protobuf::Message* response, Request::Type type) {
+  const auto& learners = config_.GetLearnerInfos();
+  if (!learners.empty()) {
+    NetChannel::SetDestReplicaInfo(learners[0]);
+  } else {
+    NetChannel::SetDestReplicaInfo(config_.GetReplicaInfos()[0]);
+  }
+
+  int ret = NetChannel::SendRequest(message, type, true);
+  if (ret == 0) {
+    std::string resp_str;
+    int recv_ret = NetChannel::RecvRawMessageData(&resp_str);
+    if (recv_ret >= 0) {
+      if (!response->ParseFromString(resp_str)) {
+        LOG(ERROR) << "parse response fail:" << resp_str.size();
+        return -2;
+      }
+      return 0;
+    }
+  }
+  return -1;
+}
 
 }  // namespace resdb

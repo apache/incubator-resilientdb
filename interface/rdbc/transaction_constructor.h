@@ -39,7 +39,15 @@ class TransactionConstructor : public NetChannel {
   int SendRequest(const google::protobuf::Message& message,
                   google::protobuf::Message* response,
                   Request::Type type = Request::TYPE_CLIENT_REQUEST);
+                  
+  // NEW: Send read-only request (routed to learners if available).
+  int SendReadOnlyRequest(const google::protobuf::Message& message,
+                  Request::Type type = Request::TYPE_CLIENT_REQUEST);
 
+  // NEW: Send read-only request and wait for a response.
+  int SendReadOnlyRequest(const google::protobuf::Message& message,
+                  google::protobuf::Message* response,
+                  Request::Type type = Request::TYPE_CLIENT_REQUEST);
  private:
   absl::StatusOr<std::string> GetResponseData(const Response& response);
 
