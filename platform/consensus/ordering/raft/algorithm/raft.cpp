@@ -124,7 +124,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
   }
-  if (success) { leader_election_manager_->OnHeartBeat(); }
+  if (tr != TermRelation::STALE) { leader_election_manager_->OnHeartBeat(); }
     AppendEntriesResponse aer;
     aer.set_term(term);
     aer.set_success(success);
@@ -202,7 +202,7 @@ void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
   }
   if (voteGranted) {
     leader_election_manager_->OnHeartBeat(); 
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": voted for " << rvSender<< " on term " << term;
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": voted for " << rvSender<< " in term " << term;
   }
   else if (validCandidate) { 
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": did not vote for "
@@ -245,7 +245,7 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
     if (votes_.size() >= votesNeeded) {
       elected = true;
       role_ = Role::LEADER;
-      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": CANDIDATE->LEADER on term " << currentTerm_;
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": CANDIDATE->LEADER in term " << currentTerm_;
     }
   }();
     if (demoted || elected) { leader_election_manager_->OnRoleChange(); }
@@ -276,7 +276,6 @@ void Raft::StartElection() {
       return;
     }
     if (role_ == raft::Role::FOLLOWER) {
-      LOG(INFO) << __FUNCTION__ << ": FOLLOWER->CANDIDATE";
       role_ = raft::Role::CANDIDATE;
       roleChanged = true;
     }
@@ -295,6 +294,7 @@ void Raft::StartElection() {
   }
   if (roleChanged) {
     leader_election_manager_->OnRoleChange();
+    LOG(INFO) << __FUNCTION__ << ": FOLLOWER->CANDIDATE in term " << currentTerm;
   }
 
   RequestVote requestVote;

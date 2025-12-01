@@ -21,6 +21,7 @@
 #include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include <glog/logging.h>
 #include <chrono>
+#include <thread>
 
 #include "common/utils/utils.h"
 #include "platform/proto/viewchange_message.pb.h"
@@ -36,8 +37,8 @@ LeaderElectionManager::LeaderElectionManager(const ResDBConfig& config)
       raft_(nullptr),
       started_(false),
       stop_(false),
-      timeout_min_ms(150),
-      timeout_max_ms(300),
+      timeout_min_ms(800),
+      timeout_max_ms(1600),
       heartbeat_timer_(50),
       heartbeat_count_(0),
       //last_heartbeat_time_(std::chrono::steady_clock::now()),
@@ -73,7 +74,7 @@ void LeaderElectionManager::MayStart() {
   }
 
   if (config_.GetConfigData().enable_viewchange()) {
-    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": in LeaderElectionManager MayStart, viewchange is enabled";
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Starting MonitoringElectionTimeout thread.";
     server_checking_timeout_thread_ =
         std::thread(&LeaderElectionManager::MonitoringElectionTimeout, this);
   }
@@ -161,7 +162,6 @@ Waited LeaderElectionManager::Wait() {
 // Causes leaders to Heartbeat.
 // Causes followers and candidates to start an election if no heartbeat received.
 void LeaderElectionManager::MonitoringElectionTimeout() {
-  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": thread entered the function";
   while (!stop_.load()) {
     raft::Role role = raft_->GetRoleSnapshot();
     Waited res;
@@ -180,7 +180,7 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
     LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
     if (res == Waited::STOPPED) { break; }
     else if (res == Waited::ROLE_CHANGE) {
-      LOG(INFO) << __FUNCTION__ << ": Role change detected";
+      //LOG(INFO) << __FUNCTION__ << ": Role change detected";
       continue; 
     }
     else if (res == Waited::HEARTBEAT) {
