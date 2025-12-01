@@ -169,6 +169,7 @@ http_archive(
     sha256 = "91844808532e5ce316b3c010929493c0244f3d37593afd6de04f71821d5136d9",
     strip_prefix = "zlib-1.2.12",
     urls = [
+        "https://zlib.net/fossils/zlib-1.2.12.tar.gz",
         "https://storage.googleapis.com/bazel-mirror/zlib.net/zlib-1.2.12.tar.gz",
     ],
 )
@@ -269,4 +270,3 @@ http_archive(
     strip_prefix = "asio-asio-1-26-0",
     url = "https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-26-0.zip",
 )
-

@@ -40,9 +40,10 @@ void ShowUsage() {
       "--config: config path\n"
       "--cmd "
       "set/get/set_with_version/get_with_version/get_key_range/"
-      "get_key_range_with_version/get_top/get_history\n"
+      "get_key_range_with_version/get_top/get_history/sql\n"
       "--key key\n"
       "--value value, if cmd is a get operation\n"
+      "--sql SQL text, if cmd is sql\n"
       "--version version of the value, if cmd is vesion based\n"
       "--min_key the min key if cmd is get_key_range\n"
       "--max_key the max key if cmd is get_key_range\n"
@@ -65,6 +66,7 @@ static struct option long_options[] = {
     {"min_key", required_argument, NULL, 'y'},
     {"max_key", required_argument, NULL, 'Y'},
     {"top", required_argument, NULL, 't'},
+    {"sql", required_argument, NULL, 'q'},
 };
 
 void OldAPI(char** argv) {
@@ -124,6 +126,7 @@ int main(int argc, char** argv) {
   int min_version = -1, max_version = -1;
   std::string min_key, max_key;
   std::string value;
+  std::string sql;
   std::string client_config_file;
   int top = 0;
   char c;
@@ -170,6 +173,9 @@ int main(int argc, char** argv) {
         break;
       case 't':
         top = strtoull(optarg, NULL, 10);
+        break;
+      case 'q':
+        sql = optarg;
         break;
       case 'h':
         ShowUsage();
@@ -273,6 +279,17 @@ int main(int argc, char** argv) {
     } else {
       printf("getrange value fail, min key = %s, max key = %s\n",
              min_key.c_str(), max_key.c_str());
+    }
+  } else if (cmd == "sql") {
+    if (sql.empty()) {
+      ShowUsage();
+      return 0;
+    }
+    auto res = client.ExecuteSQL(sql);
+    if (res != nullptr) {
+      printf("SQL result:\n%s\n", res->c_str());
+    } else {
+      printf("SQL query failed\n");
     }
   } else {
     ShowUsage();

@@ -54,7 +54,8 @@ class Storage {
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
 
-  virtual std::string ExecuteSQL(const std::string& sql_string) = 0;
+  // Default no-op SQL execution for non-SQL backends.
+  virtual std::string ExecuteSQL(const std::string& sql_string) { return ""; }
 
   virtual bool Flush() { return true; };
 };
