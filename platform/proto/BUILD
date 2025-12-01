@@ -37,6 +37,7 @@ proto_library(
     name = "replica_info_proto",
     srcs = ["replica_info.proto"],
     deps = [
+        "//chain/storage/proto:duckdb_config_proto",
         "//chain/storage/proto:leveldb_config_proto",
         "//common/proto:signature_info_proto",
     ],
@@ -53,6 +54,7 @@ python_proto_library(
     name = "replica_info_py_proto",
     protos = [
         ":replica_info_proto",
+        "//chain/storage/proto:duckdb_config_proto",
         "//chain/storage/proto:leveldb_config_proto",
     ],
     deps = [
