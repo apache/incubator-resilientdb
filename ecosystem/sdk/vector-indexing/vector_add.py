@@ -122,12 +122,12 @@ if __name__ == "__main__":
     file_temporary_directory = Path(WORKING_DIR / "saved_data/temp")
     file_temporary_storage = str(WORKING_DIR / "saved_data/temp/temp.leann")
 
-    # Leann is extremely noisy, prevent standard output to the console while it runs
-    # sys.stdout = os.devnull # TODO
-
     # Create the temp directory if it doesn't exist
     if not os.path.exists(file_temporary_directory):
         file_temporary_directory.mkdir()
+
+    # Leann is extremely noisy, prevent standard output to the console while it runs
+    # sys.stdout = os.devnull # TODO
 
     # Construct the HNSW Tree (creates the 5 files referenced below, saved to a temporary folder)
     builder = LeannBuilder(backend_name="hnsw")
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # Embedding information using this library is split across 5 files. The next chunk of code saves each of
     #   these files as a kv store value in ResDB, storing text data as a string, and JSON data as a Dict or Dict[]
 
-    # (2/5) Create embedding information for the txt passages file, which are Win-1252 byte data
+    # (2/5) Create embedding information for the txt passages file, which are latin-1 byte data
     for pairing in [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
         key = embedding_keys[pairing[1]]
         try:
-            with open(fileName, 'r', encoding='Windows-1252') as file:
+            with open(fileName, 'r', encoding='latin-1') as file:
                 content = file.read()
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
@@ -165,7 +165,6 @@ if __name__ == "__main__":
     fileName = str(WORKING_DIR / "saved_data/temp/temp.ids.txt")
     key = embedding_keys["temp_ids_txt"]
     try:
-        print(fileName)
         with open(fileName, 'r', encoding='ascii') as file:
             content = file.read()
             _ = hnsw_library.put_record(key, content)

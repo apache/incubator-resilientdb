@@ -77,28 +77,16 @@ if __name__ == "__main__":
         os.exit()
                 
 # - - - - - - - - - SECTION 3: Save the embedding data to temporary files - - - - - - - - - >
-    # TODO: The error handling for all 4 of these blocks isnt well thoguht out
-    #   It's correct, but it was just copied from vector_add
-    # Most of these aren't looped due to the way they're decoded (literally the "encoding" param)
-    #   restructuring this to not loop over these 1-item arrays will make the code a lot more readable
-    embedding_data = [
-        ("temp.ids.txt", "temp_ids_txt")
-    ]
-    for pairing in embedding_data:        
-        fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
-        key = embedding_keys[pairing[1]]
-        file_content = (hnsw_library.get_record(key))["data"]
+    file_temporary_directory = Path(WORKING_DIR / "saved_data/temp")
 
-        try:
-            with open(fileName, 'w', encoding="ascii") as file:
-                file.write(file_content)
+    # Create the temp directory if it doesn't exist
+    if not os.path.exists(file_temporary_directory):
+        file_temporary_directory.mkdir()
 
-        # TODO: Consider what this error actually means and handle it correctly
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    # Embedding information using this library is split across 5 files. The next chunk of code retrieves
+    #   each file from ResDB, temporarily saving it
 
-
-
+    # (2/5) Save embedding information for the untyped files, which are latin-1 byte data
     embedding_data = [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
@@ -106,90 +94,106 @@ if __name__ == "__main__":
     for pairing in embedding_data:        
         fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
         key = embedding_keys[pairing[1]]
-        file_content = (hnsw_library.get_record(key))["data"]
-
+        file_return_item = hnsw_library.get_record(key)
+        file_return_data = file_return_item["data"]
         try:
-            with open(fileName, 'w', encoding="Windows-1252") as file:
-                file.write(file_content)
-
-        # TODO: Consider what this error actually means and handle it correctly
+            with open(fileName, 'w', encoding="latin-1") as file:
+                file.write(file_return_data)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"Unsuccessful ResDB retrieval for untyped file: {e}")
+            print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
+            print("This likely has ruined the entire embedding system. If you face the same error, delete all your saved")
+            print("data by deleting `vector-indexing/saved_data` and start fresh.")
+            print("Terminating...")
+            sys.exit()
+    # (3/5) Save embedding information for the ID text file, which is ascii data       
+    fileName = str(WORKING_DIR / "saved_data/temp/temp.ids.txt")
+    key = embedding_keys["temp_ids_txt"]
+    file_return_item = hnsw_library.get_record(key)
+    file_return_data = file_return_item["data"]
+    try:
+        with open(fileName, 'w', encoding="ascii") as file:
+            file.write(file_return_data)
+    except Exception as e:
+        print(f"Unsuccessful ResDB retrieval for text file: {e}")
+        print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
+        print("This likely has ruined the entire embedding system. If you face the same error, delete all your saved")
+        print("data by deleting `vector-indexing/saved_data` and start fresh.")
+        print("Terminating...")
+        sys.exit()
+    # (4/5) Save embedding information for the json file
+    fileName = str(WORKING_DIR / "saved_data/temp/temp.leann.meta.json")
+    key = embedding_keys["temp_leann_meta_json"]
+    file_return_item = hnsw_library.get_record(key)
+    file_return_data = file_return_item["data"]
+    try:
+        with open(fileName, 'w') as file:
+            json.dump(file_return_data, file)
+    except Exception as e:
+        print(f"Unsuccessful ResDB retrieval for json file: {e}")
+        print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
+        print("This likely has ruined the entire embedding system. If you face the same error, delete all your saved")
+        print("data by deleting `vector-indexing/saved_data` and start fresh.")
+        print("Terminating...")
+        sys.exit()
+    # (5/5) Save embedding information for the jsonLine file
+    fileName = str(WORKING_DIR / "saved_data/temp/temp.leann.passages.jsonl")
 
+    # Since each json object is on a new line (it's a jsonl file), we append instead of overwriting
+    # So we must force the file to delete/recreate to avoid appending over old data
+    filePath = Path(fileName)
+    if filePath.is_file():
+        os.remove(fileName)
+    key = embedding_keys["temp_leann_passages_json"]
+    file_return_item = hnsw_library.get_record(key)
+    file_return_data: List[Dict[str, Any]] = file_return_item["data"]
 
-    embedding_data = [
-        ("temp.leann.meta.json", "temp_leann_meta_json")
-    ]
-
-    for pairing in embedding_data:        
-        fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
-        key = embedding_keys[pairing[1]]
-        file_content = (hnsw_library.get_record(key))["data"]
-
-        try:
-            with open(fileName, 'w') as file:
-                json.dump(file_content, file)
-
-        # TODO: Consider what this error actually means and handle it correctly
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-
-    embedding_data = [
-        ("temp.leann.passages.jsonl", "temp_leann_passages_json")
-    ]
-    for pairing in embedding_data:
-        fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
-
-        # Since each json object is on a new line (it's a jsonl file), we append instead of overwriting
-        # So, we must force the file to delete/recreate to avoid appending over old data
-        filePath = Path(fileName)
-        if filePath.is_file():
-            os.remove(fileName)
-        key = embedding_keys[pairing[1]]
-        file_content: List[Dict[str, Any]] = (hnsw_library.get_record(key))["data"]
-
-        try:
-            with open(fileName, 'a') as file:
-                for i, line in enumerate(file_content):
-                    json.dump(line, file)
-                    if i != (len(file_content) - 1):
-                        file.write("\n")
-
-        # TODO: Consider what this error actually means and handle it correctly
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    # Delimit each json object with lines, instead of just as entires in a list
+    try:
+        with open(fileName, 'a') as file:
+            for i, line in enumerate(file_return_data):
+                json.dump(line, file)
+                if i != (len(file_return_data) - 1):
+                    file.write("\n")
+    except Exception as e:
+        print(f"Unsuccessful ResDB retrieval for jsonLine file: {e}")
+        print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
+        print("This likely has ruined the entire embedding system. If you face the same error, delete all your saved")
+        print("data by deleting `vector-indexing/saved_data` and start fresh.")
+        print("Terminating...")
+        sys.exit()
 
 # - - - - - - - - - SECTION 4: Re-Construct the HNSW data structure (leann searcher) - - - - - - - - - >
-    # TODO: Rethink the name of this and the input variables
-    k_searches = sys.maxsize if return_all else k_matches
-    # TODO: Suppress outputs from leann algorithms, they flood the console
+    total_searches = sys.maxsize if return_all else k_matches
+
+    # Leann is extremely noisy, prevent standard output to the console while it runs
+    # sys.stdout = os.devnull # TODO
+
     file_temporary_storage = str(WORKING_DIR / "saved_data/temp/temp.leann")
     searcher = LeannSearcher(file_temporary_storage)
-    results = searcher.search(search_value, top_k=k_searches)
+    results = searcher.search(search_value, top_k=total_searches)
+
+    # Restore standard output to the console
+    # sys.stdout = sys.__stdout__ # TODO
 
     # Print results to the console
     for i, line in enumerate(results):
-        # TODO: There's probably a faster way to just merge this into the formatting instead of if/else
         if return_all:
             print(f"{i+1}. {line.text}")
         else:
             print(f"{i+1}. {line.text} // (similarity score: {line.score})")
 
 # - - - - - - - - - SECTION 5: Cleanup: Remove temporary files - - - - - - - - - >
-    # TODO: Ultimately remove (and at the start of this file, create) the whole temp directory
-    # Remove all temporarily created files
+    # Remove all temporary files created during HNSW Tree Search
     for temp_file_path in ["temp.ids.txt", "temp.index", "temp.leann.passages.idx",
         "temp.leann.meta.json", "temp.leann.passages.jsonl"]:
         fileName = str(WORKING_DIR / "saved_data/temp/" / temp_file_path)
-
         try:
             os.remove(fileName)
-        # TODO: These are non-critical errors, but do this better
-        except FileNotFoundError:
-            print(f"Error: The file was not found.")
-            # TODO: Figure out when this happens (if sudo venv/activate is enough) and warn the user appropriately
-        except PermissionError:
-            print("Permission error when deleting files in your temp directory")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"Error - A problem occurred while deleting temporary data: {e}")
+            print("This is non-critical. It is reccomended you delete the folder `vector-indexing/saved_data/temp` to save space")
+
+    # Remove the whole temp directory
+    if os.path.exists(file_temporary_directory):
+        file_temporary_directory.rmdir()
