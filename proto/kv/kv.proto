@@ -74,5 +74,6 @@ message KVResponse {
     ValueInfo value_info = 3;
     Items items = 4;
     bytes smart_contract_response = 10;
+    // NEW: response payload for SQL commands
+    string sql_response = 11;
 }
-

@@ -2,6 +2,7 @@
 
 #include <glog/logging.h>
 
+#include <exception>
 #include <memory>
 #include <string>
 
@@ -45,21 +46,36 @@ void ResQL::CreateDB(const DuckDBInfo& config) {
 }
 
 std::string ResQL::ExecuteSQL(const std::string& sql_string){
-    conn_ = std::make_unique<duckdb::Connection> (*db_);
-    auto result = conn_->Query(sql_string);
-
-    if (!result) {
-        LOG(ERROR) << "Query returned nullptr";
-        return "";
+    if (sql_string.empty()) {
+        return "Error: empty SQL query";
     }
 
-    if (result->HasError()) {
-        LOG(ERROR) << "SQL Error: " << result->GetError();
-    } else {
-        LOG(INFO) << "SQL Result:\n" << result->ToString();
+    if (!db_) {
+        LOG(ERROR) << "DuckDB is not initialized";
+        return "Error: database not initialized";
     }
 
-    return result->ToString();
+    try {
+        conn_ = std::make_unique<duckdb::Connection> (*db_);
+        auto result = conn_->Query(sql_string);
+
+        if (!result) {
+            LOG(ERROR) << "Query returned nullptr";
+            return "Error: query returned no result";
+        }
+
+        if (result->HasError()) {
+            LOG(ERROR) << "SQL Error: " << result->GetError();
+            return "Error: " + result->GetError();
+        }
+
+        std::string response = result->ToString();
+        LOG(INFO) << "SQL Result:\n" << response;
+        return response;
+    } catch (const std::exception& e) {
+        LOG(ERROR) << "SQL execution threw: " << e.what();
+        return std::string("Error: ") + e.what();
+    }
 }
 
 }  // namespace storage
