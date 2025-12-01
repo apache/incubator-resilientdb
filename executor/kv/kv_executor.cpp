@@ -48,6 +48,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::GET_READ_ONLY) {
+    kv_response.set_value(GetReadOnly(kv_request.key()));
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
@@ -99,6 +101,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+  } else if (kv_request.cmd() == KVRequest::GET_READ_ONLY) {
+    kv_response.set_value(GetReadOnly(kv_request.key()));
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {
@@ -141,6 +145,12 @@ void KVExecutor::Set(const std::string& key, const std::string& value) {
 
 std::string KVExecutor::Get(const std::string& key) {
   LOG(ERROR)<<" get key:"<<key;
+  return storage_->GetValue(key);
+}
+
+std::string KVExecutor::GetReadOnly(const std::string& key) {
+  LOG(ERROR)<<" get read only key:"<<key;
+  // TODO(@prasad, @amey): route this to learner/read-only cache instead of storage_
   return storage_->GetValue(key);
 }
 

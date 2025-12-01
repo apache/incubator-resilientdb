@@ -58,6 +58,16 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
       break;
     }
   }
+
+  //NEW: populate Learners_ from config_data
+  for (const auto& region : config_data.region()) {
+    if (region.region_id() == config_data.self_region_id()) {
+      for (const auto& learner : region.learner_info()) {
+        learners_.push_back(learner);
+      }
+    }
+  }
+
   if (config_data_.view_change_timeout_ms() == 0) {
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
@@ -95,6 +105,17 @@ void ResDBConfig::SetConfigData(const ResConfigData& config_data) {
       break;
     }
   }
+  // NEW: keep Learners_ in sync with config_data_
+  learners_.clear();
+  for (const auto& region : config_data.region()) {
+    if (region.region_id() == config_data.self_region_id()) {
+      for (const auto& learner : region.learner_info()) {
+        learners_.push_back(learner);
+      }
+      break;
+    }
+  }
+  
   if (config_data_.view_change_timeout_ms() == 0) {
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
