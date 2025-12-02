@@ -51,9 +51,7 @@ class ResDBConfig {
   const std::vector<ReplicaInfo>& GetReplicaInfos() const;
 
   // NEW: Access Learner Nodes
-  const std::vector<ReplicaInfo>& GetLearnerInfos() const {
-    return learners_;
-  }
+  const std::vector<ReplicaInfo>& GetLearnerInfos() const;
 
   // NEW: Add Learner Node
   void AddLearnerInfo(const ReplicaInfo& info) {
@@ -140,9 +138,6 @@ class ResDBConfig {
  private:
   ResConfigData config_data_;
   std::vector<ReplicaInfo> replicas_;
-
-  // NEW: Learner nodes for read only fast path
-  std::vector<ReplicaInfo> learners_;
   
   ReplicaInfo self_info_;
   const KeyInfo private_key_;
