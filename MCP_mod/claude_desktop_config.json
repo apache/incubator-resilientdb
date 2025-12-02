@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "resdb": {
+      "command": "/Users/vikhas/.local/bin/uv",
+      "args": [
+        "--directory",
+        "/Users/vikhas/Documents/projects/mcp_sample/MCP-resilentdb",
+        "run",
+        "mcp.py"
+      ],
+      "env": {
+        "RESDB_HOST": "127.0.0.1"
+      }
+    }
+  }
+}
