@@ -54,9 +54,7 @@ class ResDBConfig {
   const std::vector<ReplicaInfo>& GetLearnerInfos() const;
 
   // NEW: Add Learner Node
-  void AddLearnerInfo(const ReplicaInfo& info) {
-    learners_.push_back(info);
-  }
+  void AddLearnerInfo(const ReplicaInfo& info);
 
   ResConfigData GetConfigData() const;
 
