@@ -38,6 +38,10 @@ void ResQL::CreateDB(const DuckDBInfo& config) {
     db_config.SetOption("max_memory", duckdb::Value(config.max_memory()));
   }
 
+  LOG(INFO) << "Initializing DuckDB at "
+            << (db_path.empty() ? "in-memory" : db_path)
+            << " (autoload/autoinstall extensions enabled)";
+
   if (db_path.empty()) {
     db_ = std::make_unique<duckdb::DuckDB>(nullptr, &db_config);
   } else {
@@ -56,6 +60,7 @@ std::string ResQL::ExecuteSQL(const std::string& sql_string){
     }
 
     try {
+        LOG(INFO) << "Executing SQL: " << sql_string;
         conn_ = std::make_unique<duckdb::Connection> (*db_);
         auto result = conn_->Query(sql_string);
 
@@ -70,6 +75,8 @@ std::string ResQL::ExecuteSQL(const std::string& sql_string){
         }
 
         std::string response = result->ToString();
+        LOG(INFO) << "SQL succeeded. Rows: " << result->RowCount()
+                  << " Cols: " << result->ColumnCount();
         LOG(INFO) << "SQL Result:\n" << response;
         return response;
     } catch (const std::exception& e) {
