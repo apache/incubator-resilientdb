@@ -326,7 +326,7 @@ int Commitment::PostProcessExecutedMsg() {
     uint64_t read_cnt = batch_resp->read_count();
     uint64_t delete_cnt = batch_resp->delete_count();
 
-    if (request.seq % 50 == 0) {
+    if (request.seq() % 50 == 0) {
         std::vector<std::unique_ptr<Request>> reqs_to_learner = message_manager_->getLearnerUpdateRequests();
     }
 

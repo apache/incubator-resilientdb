@@ -50,16 +50,6 @@ class ResDBConfig {
   // Each replica infomation, including the binding urls(or ip,port).
   const std::vector<ReplicaInfo>& GetReplicaInfos() const;
 
-  // NEW: Access Learner Nodes
-  const std::vector<ReplicaInfo>& GetLearnerInfos() const {
-    return learners_;
-  }
-
-  // NEW: Add Learner Node
-  void AddLearnerInfo(const ReplicaInfo& info) {
-    learners_.push_back(info);
-  }
-
   ResConfigData GetConfigData() const;
 
   // The current replica infomation, including the binding urls(or ip,port).
@@ -142,7 +132,7 @@ class ResDBConfig {
   std::vector<ReplicaInfo> replicas_;
 
   // NEW: Learner nodes for read only fast path
-  std::vector<ReplicaInfo> learners_;
+  // std::vector<ReplicaInfo> learners_;
   
   ReplicaInfo self_info_;
   const KeyInfo private_key_;
