@@ -47,6 +47,19 @@ std::unique_ptr<std::string> KVClient::Get(const std::string& key) {
   return std::make_unique<std::string>(response.value());
 }
 
+std::unique_ptr<std::string> KVClient::GetReadOnly(const std::string& key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET_READ_ONLY);
+  request.set_key(key);
+  KVResponse response;
+  int ret = SendReadOnlyRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<std::string>(response.value());
+}
+
 std::unique_ptr<std::string> KVClient::GetAllValues() {
   KVRequest request;
   request.set_cmd(KVRequest::GETALLVALUES);

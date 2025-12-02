@@ -34,6 +34,7 @@ message KVRequest {
         GET_KEY_RANGE = 8;
         GET_HISTORY = 9;
         GET_TOP = 10;
+        GET_READ_ONLY = 11;
     }
     CMD cmd = 1;
     string key = 2;

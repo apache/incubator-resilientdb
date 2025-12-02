@@ -34,6 +34,9 @@ message ReplicaInfo {
 message RegionInfo {
   repeated ReplicaInfo replica_info = 1;
   int32 region_id = 2;
+
+// NEW: Learner nodes for read-only routing
+  repeated ReplicaInfo learner_info = 3;
 }
 
 message ResConfigData{
