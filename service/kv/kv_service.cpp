@@ -17,20 +17,13 @@
  * under the License.
  */
 
-#include <gflags/gflags.h>
 #include <glog/logging.h>
-
-#include <algorithm>
-#include <cctype>
 
 #include "chain/storage/memory_db.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
-#ifdef ENABLE_DUCKDB
-#include "chain/storage/duckdb.h"
-#endif
 #ifdef ENABLE_LEVELDB
 #include "chain/storage/leveldb.h"
 #endif
@@ -38,53 +31,21 @@
 using namespace resdb;
 using namespace resdb::storage;
 
-DEFINE_string(storage_backend, "memory",
-              "Storage backend to use: memory|leveldb|duckdb");
-
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
-  std::string backend = FLAGS_storage_backend;
-  std::transform(backend.begin(), backend.end(), backend.begin(),
-                 [](unsigned char c) { return std::tolower(c); });
-#ifdef ENABLE_DUCKDB
-  if (backend == "duckdb") {
-    DuckDBInfo duckdb_cfg;
-    if (config_data.has_duckdb_info()) {
-      duckdb_cfg = config_data.duckdb_info();
-    }
-    if (!duckdb_cfg.has_path()) {
-      duckdb_cfg.set_path(db_path);
-    }
-    LOG(INFO) << "use duckdb storage at " << duckdb_cfg.path();
-    return NewResQL(db_path, duckdb_cfg);
-  }
-#else
-  if (backend == "duckdb") {
-    LOG(FATAL) << "DuckDB backend requested but binary is not built with "
-                  "DuckDB. Rebuild with --define enable_duckdb=True.";
-  }
-#endif
 #ifdef ENABLE_LEVELDB
-  if (backend == "leveldb") {
-    LOG(INFO) << "use leveldb storage.";
-    return NewResLevelDB(db_path, config_data.leveldb_info());
-  }
-#else
-  if (backend == "leveldb") {
-    LOG(FATAL) << "LevelDB backend requested but binary is not built with "
-                  "LevelDB. Rebuild with --define enable_leveldb=True.";
-  }
+  LOG(INFO) << "use leveldb storage.";
+  return NewResLevelDB(db_path, config_data.leveldb_info());
 #endif
   LOG(INFO) << "use memory storage.";
   return NewMemoryDB();
 }
 
 int main(int argc, char** argv) {
-  google::ParseCommandLineFlags(&argc, &argv, true);
   if (argc < 4) {
     ShowUsage();
     exit(0);
