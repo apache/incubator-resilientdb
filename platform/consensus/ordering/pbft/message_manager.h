@@ -112,6 +112,9 @@ class MessageManager {
 
   LockFreeCollectorPool* GetCollectorPool();
 
+  // function to retrieved stored learner updates
+  std::vector<std::unique_ptr<Request>> getLearnerUpdateRequests();
+
  private:
   bool IsValidMsg(const Request& request);
 
@@ -139,6 +142,8 @@ class MessageManager {
 
   std::mutex lct_lock_;
   std::map<uint64_t, uint64_t> last_committed_time_;
+
+  std::vector<std::unique_ptr<Request>> learner_update_requests_;
 };
 
 }  // namespace resdb

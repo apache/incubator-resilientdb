@@ -44,3 +44,11 @@ def get_value(key: str or int or float, config_path: str = current_dir + "/ip_ad
     :return: A string of the key's corresponding value.
     """
     return pybind_kv.get(str(key), os.path.abspath(config_path))
+
+def get_value_readonly(key: str | int | float, config_path: str = current_dir + "/ip_address.config") -> str:
+    """
+    :param key: The key of the value you want to get in key value pair.
+    :param config_path: Default is connect to the main chain, users can specify the path to connect to their local blockchain without tracking the read.
+    :return: A string of the key's corresponding value.
+    """
+    return pybind_kv.get_value_readonly(str(key), os.path.abspath(config_path))
