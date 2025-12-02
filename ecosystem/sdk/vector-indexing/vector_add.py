@@ -143,7 +143,7 @@ if __name__ == "__main__":
     # Embedding information using this library is split across 5 files. The next chunk of code saves each of
     #   these files as a kv store value in ResDB, storing text data as a string, and JSON data as a Dict or Dict[]
 
-    # (2/5) Create embedding information for the txt passages file, which are latin-1 byte data
+    # (2/5) Create embedding information for the txt passages file, which are raw byte data
     for pairing in [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")

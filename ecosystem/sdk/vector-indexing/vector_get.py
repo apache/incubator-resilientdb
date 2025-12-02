@@ -59,13 +59,16 @@ if __name__ == "__main__":
             k_matches = 1
         
 # - - - - - - - - - SECTION 2: Retrieve keys to HNSW data - - - - - - - - - >
+    file_saved_directory = Path(WORKING_DIR / "saved_data")
     file_embedding_keys = str(WORKING_DIR / "saved_data/embedding_keys.json")
+    file_embedding_keys_path = Path(WORKING_DIR / "saved_data/embedding_keys.json")
     embedding_keys: Dict[str, Any] = {}
 
     # Retrieve the keys saving the location of embedding data
     try:
         # We direct this to except instead of a typical if/else to avoid rewriting the same line of code
-        if (not os.path.exists(file_embedding_keys)): raise FileNotFoundError()
+        if (not os.path.exists(file_saved_directory)): raise FileNotFoundError()
+        if (not file_embedding_keys_path.is_file()): raise FileNotFoundError()
         with open(file_embedding_keys, 'r') as file:
             embedding_keys = json.load(file)
     except FileNotFoundError:
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     # Embedding information using this library is split across 5 files. The next chunk of code retrieves
     #   each file from ResDB, temporarily saving it
 
-    # (2/5) Save embedding information for the untyped files, which are latin-1 byte data
+    # (2/5) Save embedding information for the untyped files, which are raw byte data
     embedding_data = [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
