@@ -1,4 +1,38 @@
-build --cxxopt='-std=c++17' --copt=-O3 --jobs=40
-#build --action_env=PYTHON_BIN_PATH="/usr/bin/python3.10"
-#build --action_env=PYTHON_LIB_PATH="/usr/include/python3.10"
+# ============================================
+# Bazel Configuration for MacBook Air M4
+# ============================================
 
+# Architecture settings for Apple Silicon
+build --cpu=darwin_arm64
+build --host_cpu=darwin_arm64
+
+# M4 specific optimizations
+build --copt=-march=armv8.6-a
+build --copt=-O3
+build --copt=-DNDEBUG
+
+# C++ standard
+build --cxxopt=-std=c++17
+build --cxxopt=-stdlib=libc++
+
+# OpenSSL configuration for Apple Silicon
+build --action_env=OPENSSL_ROOT_DIR=/opt/homebrew/opt/openssl@3
+build --action_env=OPENSSL_INCLUDE_DIR=/opt/homebrew/opt/openssl@3/include
+build --action_env=OPENSSL_LIB_DIR=/opt/homebrew/opt/openssl@3/lib
+
+# Compiler warnings
+build --cxxopt=-Wno-deprecated-declarations
+build --cxxopt=-Wno-unused-parameter
+build --cxxopt=-Wno-unused-variable
+
+# Performance settings (adjust for M4's 8 cores: 4P + 4E)
+build --jobs=6
+build --local_cpu_resources=6
+
+# Build output
+build --verbose_failures
+build --compilation_mode=opt
+
+# Test settings
+test --test_output=errors
+test --test_timeout=300

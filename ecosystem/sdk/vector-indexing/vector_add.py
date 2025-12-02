@@ -1,6 +1,6 @@
 """
 Filename: vector_add.py
-Author(s) / Contrubtor(s): Steven Shoemaker / Regan Yang, Ritesh Patro, Yoshiki Yamaguchi, Tiching Kao
+Author(s) / Contributor(s): Steven Shoemaker / Regan Yang, Ritesh Patro, Yoshiki Yamaguchi, Tiching Kao
 Date: 2025-Fall
 Description: (Indexers project) Run to save value to ResDB and generate a vector embedding for it
 """
@@ -32,7 +32,7 @@ if __name__ == "__main__":
         if(sys.argv[i] == '--value'  and (i + 1 != len(sys.argv))):
             value_to_add = sys.argv[i + 1]
             break
-    
+
     if value_to_add == '':
         print("Critical Error - the program requires an arguement in the form of `--value stringToSave`")
         sys.exit()
@@ -143,7 +143,8 @@ if __name__ == "__main__":
     # Embedding information using this library is split across 5 files. The next chunk of code saves each of
     #   these files as a kv store value in ResDB, storing text data as a string, and JSON data as a Dict or Dict[]
 
-    # (2/5) Create embedding information for the txt passages file, which are raw byte data
+
+    # (2/5) Create embedding information for the txt passages file, which are latin-1 byte data
     for pairing in [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
@@ -151,9 +152,11 @@ if __name__ == "__main__":
         fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
         key = embedding_keys[pairing[1]]
         try:
+            # **CORRECTED LINE: Open in binary read mode ('rb')**
             with open(fileName, 'rb') as file:
-                binary_content = file.read()
-                content = base64.b64encode(binary_content).decode('utf-8')
+                content_bytes = file.read()
+                # Decode the bytes to a latin-1 string for ResDB storage
+                content = content_bytes.decode('latin-1')
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
             print(pairing)

@@ -1,6 +1,6 @@
 """
 Filename: vector_get.py
-Author(s) / Contrubtor(s): Steven Shoemaker / Regan Yang, Ritesh Patro, Yoshiki Yamaguchi, Tiching Kao
+Author(s) / Contributor(s): Steven Shoemaker / Regan Yang, Ritesh Patro, Yoshiki Yamaguchi, Tiching Kao
 Date: 2025-Fall
 Description: (Indexers project) Run to search ResDB for the embeddings k-closest to input string
 """
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         if k_matches <= 0:
             print('No or invalid arguement provided for --k_matches. Defaulting to finding one single most similar value')
             k_matches = 1
-        
+
 # - - - - - - - - - SECTION 2: Retrieve keys to HNSW data - - - - - - - - - >
     file_saved_directory = Path(WORKING_DIR / "saved_data")
     file_embedding_keys = str(WORKING_DIR / "saved_data/embedding_keys.json")
@@ -74,12 +74,12 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("Critical Error - The file listing key embeddings does not exist. Please add a vector value before trying to retrieve similar values")
         print("Terminating...")
-        os.exit()
+        sys.exit()
     except Exception as e:
         print(f"Critical Error - {e}")
         print("There is no protocol for handling this error, but it is known it will prevent retrieval of embedding data. Terminating...")
-        os.exit()
-                
+        sys.exit()
+
 # - - - - - - - - - SECTION 3: Save the embedding data to temporary files - - - - - - - - - >
     file_temporary_directory = Path(WORKING_DIR / "saved_data/temp")
 
@@ -95,15 +95,18 @@ if __name__ == "__main__":
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
     ]
-    for pairing in embedding_data:        
+    for pairing in embedding_data:
         fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
         key = embedding_keys[pairing[1]]
         file_return_item = hnsw_library.get_record(key)
         file_return_data = file_return_item["data"]
         try:
+            # Encode the latin-1 string back to bytes
+            content_bytes = file_return_data.encode("latin-1")
+
+            # **CRITICAL FIX: Open in binary write mode ('wb')**
             with open(fileName, 'wb') as file:
-                binary_content = base64.b64decode(file_return_data)
-                file.write(binary_content)
+                file.write(content_bytes) # Write the raw bytes
         except Exception as e:
             print(f"Unsuccessful ResDB retrieval for untyped file: {e}")
             print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
@@ -111,7 +114,7 @@ if __name__ == "__main__":
             print("data by deleting `vector-indexing/saved_data` and start fresh.")
             print("Terminating...")
             sys.exit()
-    # (3/5) Save embedding information for the ID text file, which is ascii data       
+    # (3/5) Save embedding information for the ID text file, which is ascii data
     fileName = str(WORKING_DIR / "saved_data/temp/temp.ids.txt")
     key = embedding_keys["temp_ids_txt"]
     file_return_item = hnsw_library.get_record(key)
