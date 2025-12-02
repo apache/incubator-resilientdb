@@ -183,6 +183,13 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
     return true;
   }
+// testing  purpose (will remove later )
+  if (id_ == 2) {
+    LOG(INFO) << "TEST: Forcing AppendEntries Failure on follower " << id_;
+    appendEntriesResponse.set_success(false);
+    SendMessage(MessageType::AppendEntriesResponseMsg, appendEntriesResponse, leader_id);
+    return true;
+  }
   // Implement an entry existing but with a different term
   // delete that entry and all after it
   LOG(INFO) << "Before AppendEntriesMsg Added to Log";
@@ -231,25 +238,75 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   return true;
 }
 
+
+//=====================================================
+// bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
+//   if (id_ != 1)
+//     return true;
+//   LOG(INFO) << "ReceiveAppendEntriesResponse";
+//   auto followerId = response->id();
+//   LOG(INFO) << "followerId: " << followerId;
+//   if (response->success()) {
+//     {
+//       std::unique_lock<std::mutex> lk(mutex_);
+//       received_[response->hash()].insert(response->id());
+//       auto it = log_.find(response->hash());
+//       if (it != log_.end()) {
+//         LOG(INFO) << "Transaction: " << response->prevlogindex() <<  " has gotten " << received_[response->hash()].size() << " responses";
+//         if (static_cast<int64_t>(received_[response->hash()].size()) >= f_ + 1) {
+//           commitIndex_ = response->prevlogindex();
+
+//           // pretty sure this should always be in order with no gaps
+//           while (lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) &&
+//                   lastApplied_ <= commitIndex_) {
+//             LOG(INFO) << "Leader Committing";
+//             std::unique_ptr<AppendEntries> txnToCommit = nullptr;
+//             txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
+//             commit_(*txnToCommit);
+//             lastApplied_++;
+//           }
+//         }
+//       }
+//     }
+//     nextIndex_[followerId] = response->nextentry();
+//     matchIndex_[followerId] = response->lastapplied();
+//     return true;
+//   }
+  
+//   // handling for if leader is out of date and term is wrong
+
+//   // handling for if term is correct, but follower is just out of date
+//   --nextIndex_[followerId];
+//   // send message
+//   assert(false);
+//   return true;
+// }
+//=====================UNTOUCHED================================
+
 bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
   if (id_ != 1)
     return true;
+
   LOG(INFO) << "ReceiveAppendEntriesResponse";
   auto followerId = response->id();
   LOG(INFO) << "followerId: " << followerId;
+
+  // ===================== SUCCESS CASE =====================
   if (response->success()) {
     {
       std::unique_lock<std::mutex> lk(mutex_);
       received_[response->hash()].insert(response->id());
       auto it = log_.find(response->hash());
       if (it != log_.end()) {
-        LOG(INFO) << "Transaction: " << response->prevlogindex() <<  " has gotten " << received_[response->hash()].size() << " responses";
+        LOG(INFO) << "Transaction: " << response->prevlogindex()
+                  << " has gotten " << received_[response->hash()].size()
+                  << " responses";
         if (static_cast<int64_t>(received_[response->hash()].size()) >= f_ + 1) {
           commitIndex_ = response->prevlogindex();
 
           // pretty sure this should always be in order with no gaps
           while (lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) &&
-                  lastApplied_ <= commitIndex_) {
+                 lastApplied_ <= commitIndex_) {
             LOG(INFO) << "Leader Committing";
             std::unique_ptr<AppendEntries> txnToCommit = nullptr;
             txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
@@ -263,15 +320,80 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> r
     matchIndex_[followerId] = response->lastapplied();
     return true;
   }
-  
-  // handling for if leader is out of date and term is wrong
 
-  // handling for if term is correct, but follower is just out of date
-  --nextIndex_[followerId];
-  // send message
-  assert(false);
+  // ===================== FAILURE CASE =====================
+  // (term-mismatch leader demotion is TODO; here we handle follower being out-of-date)
+
+  LOG(INFO) << "AppendEntriesResponse indicates FAILURE from follower " << followerId;
+
+  {
+    std::unique_lock<std::mutex> lk(mutex_);
+
+    // Move nextIndex one step back, but don't go below 1
+    if (nextIndex_[followerId] > 1) {
+      --nextIndex_[followerId];
+    } else {
+      nextIndex_[followerId] = 1;
+    }
+
+    int resendIndex = nextIndex_[followerId];
+    LOG(INFO) << "Updated nextIndex_ for follower " << followerId
+              << " to " << resendIndex;
+
+    // Check that we actually have an entry at this index
+    if (resendIndex < 0 ||
+        resendIndex >= static_cast<int>(logIndexMapping_.size())) {
+      LOG(INFO) << "No log entry at index " << resendIndex
+                << " to resend; logIndexMapping_.size() = "
+                << logIndexMapping_.size();
+      return true;
+    }
+
+    const std::string& key = logIndexMapping_[resendIndex];
+    auto it = log_.find(key);
+    if (it == log_.end() || !it->second) {
+      LOG(WARNING) << "Log entry missing in map for key at index "
+                   << resendIndex;
+      return true;
+    }
+
+    // Build a new AppendEntries message based on the stored log entry
+    AppendEntries resend;
+    resend.CopyFrom(*(it->second));  // copies hash, entries, uid, proxy_id, etc.
+
+    // Make sure RAFT fields are consistent with our current state
+    resend.set_term(currentTerm_);
+    resend.set_leaderid(id_);
+
+    // prevLogIndex = index immediately before resendIndex
+    int64_t prevIdx = (resendIndex == 0 ? 0 : resendIndex - 1);
+    resend.set_prevlogindex(prevIdx);
+
+    // prevLogTerm = term of the entry at prevIdx (or 0 if none)
+    uint64_t prevTerm = 0;
+    if (prevIdx >= 0 && prevIdx < static_cast<int64_t>(logIndexMapping_.size())) {
+      const std::string& prevKey = logIndexMapping_[prevIdx];
+      auto itPrev = log_.find(prevKey);
+      if (itPrev != log_.end() && itPrev->second) {
+        prevTerm = itPrev->second->term();
+      }
+    }
+    resend.set_prevlogterm(prevTerm);
+
+    // leaderCommitIndex
+    resend.set_leadercommitindex(commitIndex_);
+
+    LOG(INFO) << "Resending AppendEntries for index " << resendIndex
+              << " (prevIdx=" << prevIdx
+              << ", prevTerm=" << prevTerm
+              << ") to follower " << followerId;
+
+    SendMessage(MessageType::AppendEntriesMsg, resend, followerId);
+  }
+
   return true;
 }
+
 
 
 void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
