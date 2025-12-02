@@ -10,6 +10,7 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, Any
+import base64
 # ResDB & HNSW imports
 from resdb_orm.orm import ResDBORM
 import hnsw_library
@@ -150,8 +151,9 @@ if __name__ == "__main__":
         fileName = str(WORKING_DIR / "saved_data/temp/" / pairing[0])
         key = embedding_keys[pairing[1]]
         try:
-            with open(fileName, 'r', encoding='latin-1') as file:
-                content = file.read()
+            with open(fileName, 'rb') as file:
+                binary_content = file.read()
+                content = base64.b64encode(binary_content).decode('utf-8')
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
             print(pairing)

@@ -10,6 +10,7 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, List, Any
+import base64
 # ResDB & HNSW imports
 from resdb_orm.orm import ResDBORM
 import hnsw_library
@@ -97,8 +98,9 @@ if __name__ == "__main__":
         file_return_item = hnsw_library.get_record(key)
         file_return_data = file_return_item["data"]
         try:
-            with open(fileName, 'w', encoding="latin-1") as file:
-                file.write(file_return_data)
+            with open(fileName, 'wb') as file:
+                binary_content = base64.b64decode(file_return_data)
+                file.write(binary_content)
         except Exception as e:
             print(f"Unsuccessful ResDB retrieval for untyped file: {e}")
             print("Critical Error - the above error indicates that a file used for vector embeddings is improperly saved")
