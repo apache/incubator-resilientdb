@@ -69,9 +69,9 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
   } else if (kv_request.cmd() == KVRequest::SQL) {
-    // NEW: SQL handling for TransactionManager path
-    std::string result = ExecuteSql(kv_request.sql_query());
-    kv_response.set_value(result);
+    std::string result = ExecuteSQL(kv_request.sql_query());
+    kv_response.set_sql_response(result);
+    kv_response.set_value(result);  // keep legacy field populated
   }
   else if(!kv_request.smart_contract_request().empty()){
     std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
@@ -124,9 +124,9 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
   }  else if (kv_request.cmd() == KVRequest::SQL) {
-    // NEW: SQL handling for raw ExecuteData path
-    std::string result = ExecuteSql(kv_request.sql_query());
-    kv_response.set_value(result);
+    std::string result = ExecuteSQL(kv_request.sql_query());
+    kv_response.set_sql_response(result);
+    kv_response.set_value(result);  // keep legacy field populated
   }
   else if(!kv_request.smart_contract_request().empty()){
     std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
@@ -219,19 +219,14 @@ void KVExecutor::GetTopHistory(const std::string& key, int top_number,
   }
 }
 
-std::string KVExecutor::ExecuteSql(const std::string& sql_query) {
+std::string KVExecutor::ExecuteSQL(const std::string& sql_query) {
   // Basic validation: SQL commands should carry a query string.
   if (sql_query.empty()) {
     LOG(ERROR) << "SQL command received with empty sql_query";
     return "Error: empty SQL query";
   }
 
-  // 5.1 behavior:
-  // We only wire the executor so it recognizes SQL; we do NOT execute it yet.
-  // Later (5.3/5.4), this will call a DuckDB-backed storage method, e.g.:
-  //   return storage_->ExecuteSql(sql_query);
-
-  return "SQL execution not implemented yet (executor wiring only)";
+  return storage_->ExecuteSQL(sql_query);
 }
 
 
