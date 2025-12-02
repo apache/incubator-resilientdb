@@ -42,7 +42,8 @@ class Learner {
 private:
     static LearnerConfig LoadConfig(const std::string& config_path);
     void HandleClient(std::unique_ptr<resdb::Socket> socket) const;
-    void ProcessBroadcast(const std::string& payload) const;
+    // Returns true if the connection should remain open, false if it should be closed.
+    bool ProcessBroadcast(const std::string& payload) const;
     void MetricsLoop() const;
     void PrintMetrics() const;
 

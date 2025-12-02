@@ -32,6 +32,7 @@
 #include "platform/common/network/socket.h"
 #include "platform/common/network/tcp_socket.h"
 #include "platform/proto/resdb.pb.h"
+#include "proto/kv/kv.pb.h"
 
 namespace {
 
@@ -103,21 +104,29 @@ void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
 
         std::string payload(static_cast<char*>(buffer), len);
         free(buffer);
-        ProcessBroadcast(payload);
+        if (!ProcessBroadcast(payload)) {
+            break;
+        }
     }
     // std::cout << "[Learner] replica disconnected" << std::endl;
 }
 
-void Learner::ProcessBroadcast(const std::string& payload) const {
+bool Learner::ProcessBroadcast(const std::string& payload) const {
     resdb::ResDBMessage envelope;
     if (!envelope.ParseFromString(payload)) {
+        resdb::KVRequest kv_request;
+        if (kv_request.ParseFromString(payload)) {
+            std::cout << "[Learner] received read-only request for key '"
+                      << kv_request.key() << "' (no response yet)" << std::endl;
+            return false;
+        }
         ++total_messages_;
         total_bytes_.fetch_add(payload.size());
         last_type_.store(-1);
         last_seq_.store(0);
         last_sender_.store(-1);
         last_payload_bytes_.store(payload.size());
-        return;
+        return true;
     }
 
     resdb::Request request;
@@ -134,7 +143,7 @@ void Learner::ProcessBroadcast(const std::string& payload) const {
             total_reads_.fetch_add(batch_response.read_count());
             total_deletes_.fetch_add(batch_response.delete_count());
         }
-        return;
+        return true;
     }
 
     ++total_messages_;
@@ -143,6 +152,7 @@ void Learner::ProcessBroadcast(const std::string& payload) const {
     last_seq_.store(0);
     last_sender_.store(-1);
     last_payload_bytes_.store(envelope.data().size());
+    return true;
 }
 
 void Learner::MetricsLoop() const {

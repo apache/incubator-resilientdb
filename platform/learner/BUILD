@@ -29,6 +29,7 @@ cc_library(
         "//common:json",
         "//platform/common/network:tcp_socket",
         "//platform/proto:resdb_cc_proto",
+        "//proto/kv:kv_cc_proto",
     ],
 )
 

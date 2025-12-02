@@ -19,6 +19,8 @@
 
 #pragma once
 #include <semaphore.h>
+#include <optional>
+#include <memory>
 
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/lock_free_collector_pool.h"
@@ -82,6 +84,7 @@ class ResponseManager {
   void ResponseTimer(std::string hash);
   void MonitoringClientTimeOut();
   std::unique_ptr<Request> GetTimeOutRequest(std::string hash);
+  bool ForwardReadOnlyToLearner(Context* context, Request* user_request);
 
  private:
   ResDBConfig config_;
@@ -104,6 +107,7 @@ class ResponseManager {
   sem_t request_sent_signal_;
   uint64_t highest_seq_;
   uint64_t highest_seq_primary_id_;
+  std::optional<ReplicaInfo> learner_info_;
 };
 
 }  // namespace resdb
