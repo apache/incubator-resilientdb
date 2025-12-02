@@ -30,6 +30,7 @@
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 #include "platform/statistic/stats.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
+#include "platform/networkstrate/replica_communicator.h"
 
 namespace resdb {
 namespace raft {
@@ -41,7 +42,9 @@ class Raft : public common::ProtocolBase {
  public:
   Raft(int id, int f, int total_num,
     SignatureVerifier* verifier,
-    LeaderElectionManager* leaderelection_manager);
+    LeaderElectionManager* leaderelection_manager,
+    ReplicaCommunicator* replica_communicator
+  );
   ~Raft();
 
   bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
@@ -99,6 +102,8 @@ class Raft : public common::ProtocolBase {
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;
   Stats* global_stats_;
+
+  ReplicaCommunicator* replica_communicator_;
   
   
 };

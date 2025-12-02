@@ -45,7 +45,8 @@ Consensus::Consensus(const ResDBConfig& config,
           .public_key_info()
           .type() != CertificateKeyInfo::CLIENT) {
     raft_ = std::make_unique<Raft>(config_.GetSelfInfo().id(), f, total_replicas,
-                                 GetSignatureVerifier(), leader_election_manager_.get());
+                                 GetSignatureVerifier(), leader_election_manager_.get(),
+                                replica_communicator_);
 
     leader_election_manager_->SetRaft(raft_.get());
     leader_election_manager_->MayStart();
@@ -93,6 +94,17 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       return -1;
     }
     raft_->ReceiveRequestVoteResponse(std::move(rvr));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::DirectToLeaderMsg) {
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In DirectToLeader";
+    std::unique_ptr<DirectToLeader> dtl = std::make_unique<resdb::raft::DirectToLeader>();
+    if (!dtl->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    performance_manager_->SetPrimary(dtl->leaderid());
     return 0;
   }
   return 0;

@@ -57,11 +57,17 @@ message RequestVoteResponse {
   bool voteGranted = 3;
 }
 
+message DirectToLeader {
+  int64 term = 1;
+  int32 leaderId = 2;
+}
+
 enum MessageType {
   None = 0;
   AppendEntriesMsg = 1;
   AppendEntriesResponseMsg = 2;
   RequestVoteMsg = 3;
   RequestVoteResponseMsg = 4;
+  DirectToLeaderMsg = 5;
 }
 

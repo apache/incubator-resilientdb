@@ -68,6 +68,10 @@ PerformanceManager::~PerformanceManager() {
 }
 
 int PerformanceManager::GetPrimary() { return primary_; }
+void PerformanceManager::SetPrimary(int id) {
+  primary_ = id;
+  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": primary updated to " << primary_;
+}
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();

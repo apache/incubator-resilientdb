@@ -33,11 +33,12 @@ namespace resdb {
 namespace raft {
 
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
-  LeaderElectionManager* leaderelection_manager)
+  LeaderElectionManager* leaderelection_manager, ReplicaCommunicator* replica_communicator)
     : ProtocolBase(id, f, total_num), 
     role_(raft::Role::FOLLOWER),
     verifier_(verifier),
-    leader_election_manager_(leaderelection_manager) {
+    leader_election_manager_(leaderelection_manager),
+    replica_communicator_(replica_communicator) {
   id_ = id;
   total_num_ = total_num;
   f_ = (total_num-1)/2;
@@ -69,8 +70,17 @@ Raft::~Raft() { is_stop_ = true; }
 bool Raft::IsStop() { return is_stop_; }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
+
+  LOG(INFO) << "JIM -> " << __FUNCTION__;
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    if (role_ != Role::LEADER) { 
+      LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Replica is not leader, returning early";
+      return false; }
+  }
+
+  LOG(INFO) << "JIM -> " << __FUNCTION__;
   // LOG(INFO)<<"recv txn:";
-  return false;
   LOG(INFO) << "Received Transaction to primary id: " << id_;
   LOG(INFO) << "prevLogIndex: " << prevLogIndex_;
   txn->set_create_time(GetCurrentTime());
@@ -125,35 +135,116 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
   }
   if (tr != TermRelation::STALE) { leader_election_manager_->OnHeartBeat(); }
-    AppendEntriesResponse aer;
-    aer.set_term(term);
-    aer.set_success(success);
-    if (success) { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded success"; }
-    else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded failure"; }
-    SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
-  return false;
+  AppendEntriesResponse aer;
+  aer.set_term(term);
+  aer.set_success(success);
+  aer.set_id(id_);
+  if (success) { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded success"; }
+  else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded failure"; }
+  SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
+  //return false;
+
+  // Implement an entry existing but with a different term
+  // delete that entry and all after it
+  LOG(INFO) << "Before AppendEntriesMsg Added to Log";
+  std::string hash = txn->hash();
+  int64_t prevLogIndex = txn->prevlogindex();
+  {
+    std::unique_lock<std::mutex> lk(mutex_);
+    std::string hash = txn->hash();
+    LOG(INFO) << "Before adding to entries";
+    log_[txn->hash()] = std::move(txn);
+    LOG(INFO) << "After adding to entries";
+    logIndexMapping_.push_back(hash);
+    lastApplied_++;
+  }
+  auto leaderCommit = txn->leadercommitindex();
+  LOG(INFO) << "AppendEntriesMsg Added to Log";
+  LOG(INFO) << "leaderCommit: " << leaderCommit;
+  LOG(INFO) << "commitIndex_: " << commitIndex_;
+  LOG(INFO) << "lastApplied_: " << lastApplied_;
+  LOG(INFO) << "static_cast<int64_t>(log_.size()): " << static_cast<int64_t>(log_.size());
+  LOG(INFO) << "leaderCommit > commitIndex_: " << (leaderCommit > commitIndex_ ? "true" : "false");
+  LOG(INFO) << "lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) " << ((lastApplied_ + 1 <= static_cast<int64_t>(log_.size())) ? "true" : "false");
+  while (leaderCommit > commitIndex_ && lastApplied_ + 1 <= static_cast<int64_t>(log_.size())) {
+    // assert(false);
+    LOG(INFO) << "AppendEntriesMsg Committing";
+    std::unique_ptr<AppendEntries> txnToCommit = nullptr;
+    txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
+    commit_(*txnToCommit);
+    lastApplied_++;
+  }
+  LOG(INFO) << "before commit index check";
+  // I don't quite know if this needs to be conditional, but that's how the paper says it
+  if (leaderCommit > commitIndex_)
+    // not 100% certain if this second variable should be prevLogIndex
+    commitIndex_ = std::min(leaderCommit, prevLogIndex);
+
+  LOG(INFO) << "after commit index check";
+  aer.set_lastapplied(lastApplied_);
+  aer.set_nextentry(log_.size());
+  aer.set_success(true);
+  aer.set_hash(hash);
+  aer.set_prevlogindex(prevLogIndex);
+  LOG(INFO) << "Leader_id: " << txn->leaderid();
+  leader_election_manager_->OnHeartBeat();
+  SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
+  return true;
 }
 
-bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response) {
+bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer) {
 uint64_t term;
 bool demoted = false;
 TermRelation tr;
 Role initialRole;
-{
-  initialRole = role_;
-  std::lock_guard<std::mutex> lk(mutex_);
-  tr = TermCheckLocked(response->term());
-  if (tr == TermRelation::NEW) { demoted = DemoteSelfLocked(response->term()); }
-  term = currentTerm_;
-}
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    initialRole = role_;
+    tr = TermCheckLocked(aer->term());
+    if (tr == TermRelation::NEW) { demoted = DemoteSelfLocked(aer->term()); }
+    term = currentTerm_;
+  }
   if (demoted) {
     leader_election_manager_->OnRoleChange();
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from " 
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
+    return false;
   }
-  return false;
-}
+  else if (aer->success()) {
+    {
+      std::unique_lock<std::mutex> lk(mutex_);
+      received_[aer->hash()].insert(aer->id());
+      auto it = log_.find(aer->hash());
+      if (it != log_.end()) {
+        LOG(INFO) << "Transaction: " << aer->prevlogindex() <<  " has gotten " << received_[aer->hash()].size() << " responses";
+        if (static_cast<int64_t>(received_[aer->hash()].size()) >= f_ + 1) {
+          commitIndex_ = aer->prevlogindex();
 
+          // pretty sure this should always be in order with no gaps
+          while (lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) &&
+                  lastApplied_ <= commitIndex_) {
+            LOG(INFO) << "Leader Committing";
+            std::unique_ptr<AppendEntries> txnToCommit = nullptr;
+            txnToCommit = std::move(log_[logIndexMapping_[lastApplied_]]);
+            commit_(*txnToCommit);
+            lastApplied_++;
+          }
+        }
+      }
+    }
+    nextIndex_[aer->id()] = aer->nextentry();
+    matchIndex_[aer->id()] = aer->lastapplied();
+    return true;
+  }
+
+  // handling for if leader is out of date and term is wrong
+
+  // handling for if term is correct, but follower is just out of date
+  --nextIndex_[aer->id()];
+  // send message
+  assert(false);
+  return true;
+}
 
 void Raft::ReceiveRequestVote(std::unique_ptr<RequestVote> rv) {
   int rvSender = rv->candidateid();
@@ -348,6 +439,16 @@ void Raft::SendHeartBeat() {
   Broadcast(MessageType::AppendEntriesMsg, appendEntries);
 
   LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat " << heartBeatNum << " for term " << currentTerm;
+
+  // Also ping client proxies that this is the leader
+  DirectToLeader dtl;
+  dtl.set_term(currentTerm);
+  dtl.set_leaderid(id_);
+  for (const auto& client : replica_communicator_->GetClientReplicas()) {
+    int id = client.id();
+    SendMessage(DirectToLeaderMsg, dtl, id);
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": DirectToLeader sent to " << id;
+  }
 }
 
 // requires raft mutex to be held

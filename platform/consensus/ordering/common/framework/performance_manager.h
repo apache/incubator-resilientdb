@@ -39,6 +39,7 @@ class PerformanceManager {
   virtual ~PerformanceManager();
 
   int StartEval();
+  void SetPrimary(int id);
 
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
