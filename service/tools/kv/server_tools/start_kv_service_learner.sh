@@ -17,15 +17,24 @@
 # under the License.
 #
 killall -9 kv_service
+killall -9 learner
 
 SERVER_PATH=./bazel-bin/service/kv/kv_service
 SERVER_CONFIG=service/tools/config/server/server.config
 WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
+LEARNER_PATH=./bazel-bin/platform/learner/learner
+LEARNER_CONFIG=$PWD/platform/learner/learner.config
 
+# start both builds
+bazel build //platform/learner:learner $@
 bazel build //service/kv:kv_service $@
+
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > logs/server0.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > logs/server1.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert > logs/server2.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert > logs/server3.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert > logs/client.log &
+
+# learner
+nohup $LEARNER_PATH -config $LEARNER_CONFIG > logs/learner.log &

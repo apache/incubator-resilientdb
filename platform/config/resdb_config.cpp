@@ -58,16 +58,14 @@ ResDBConfig::ResDBConfig(const ResConfigData& config_data,
       break;
     }
   }
-
-  //NEW: populate Learners_ from config_data
-  for (const auto& region : config_data.region()) {
-    if (region.region_id() == config_data.self_region_id()) {
-      for (const auto& learner : region.learner_info()) {
-        learners_.push_back(learner);
-      }
-    }
+  learners_.clear();
+  for (const auto& learner : config_data_.learner_info()) {
+    learners_.push_back(learner);
   }
-
+  
+  if (config_data_.block_size() > 0) {
+    block_size_ = config_data_.block_size();
+  }
   if (config_data_.view_change_timeout_ms() == 0) {
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
@@ -105,20 +103,25 @@ void ResDBConfig::SetConfigData(const ResConfigData& config_data) {
       break;
     }
   }
-  // NEW: keep Learners_ in sync with config_data_
   learners_.clear();
-  for (const auto& region : config_data.region()) {
-    if (region.region_id() == config_data.self_region_id()) {
-      for (const auto& learner : region.learner_info()) {
-        learners_.push_back(learner);
-      }
-      break;
-    }
+  for (const auto& learner : config_data_.learner_info()) {
+    learners_.push_back(learner);
   }
-  
+  if (config_data_.block_size() > 0) {
+    block_size_ = config_data_.block_size();
+  }
   if (config_data_.view_change_timeout_ms() == 0) {
     config_data_.set_view_change_timeout_ms(viewchange_commit_timeout_ms_);
   }
+}
+
+const std::vector<ReplicaInfo>& ResDBConfig::GetLearnerInfos() const {
+  return learners_;
+}
+
+void ResDBConfig::AddLearnerInfo(const ReplicaInfo& learner) {
+  *config_data_.add_learner_info() = learner;
+  learners_.push_back(learner);
 }
 
 KeyInfo ResDBConfig::GetPrivateKey() const { return private_key_; }

@@ -131,6 +131,9 @@ message BatchUserResponse {
   uint64 local_id = 7;
   bytes hash = 8;
   int32 primary_id = 9;
+  uint64 set_count = 10;
+  uint64 read_count = 11;
+  uint64 delete_count = 12;
 }
 
 message HeartBeatInfo{
@@ -206,4 +209,3 @@ message QueryResponse {
 message CustomQueryResponse {
   bytes resp_str = 1;
 }
-
