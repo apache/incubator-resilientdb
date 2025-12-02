@@ -24,12 +24,24 @@ This guide helps you verify that all dockerized services are running and communi
    - Network: `graphq-llm-network`
    - Connects to: ResilientDB via `http://resilientdb:5001/graphql`
 
+4. ✅ **ResLens Middleware** - Query statistics API for ResLens
+   - Container: `reslens-middleware`
+   - Ports: `3003` (HTTP API)
+   - Network: `graphq-llm-network`
+   - Connects to: ResilientDB via `http://resilientdb:18000` and `http://resilientdb:5001`
+   - Provides: Query statistics storage and retrieval endpoints
+
 ### **External Services (Not Dockerized in dev):**
-4. ⚠️ **Nexus** - Next.js frontend application
+5. ⚠️ **Nexus** - Next.js frontend application
    - Runs: Locally with `npm run dev` (port 3000)
    - Connects to: GraphQ-LLM Backend via `http://localhost:3001`
+   - Connects to: ResLens Middleware via `http://localhost:3003` (for query statistics)
 
-**Note:** Nexus is NOT dockerized in `docker-compose.dev.yml` but runs separately. It connects to the dockerized backend via exposed ports.
+6. ⚠️ **ResLens Frontend** - Vite frontend application
+   - Runs: Locally with `npm run dev` (port 5173)
+   - Connects to: ResLens Middleware via `http://localhost:3003/api/v1`
+
+**Note:** Nexus and ResLens Frontend are NOT dockerized in `docker-compose.dev.yml` but run separately. They connect to the dockerized services via exposed ports.
 
 ---
 
@@ -48,12 +60,14 @@ NAME                    STATUS
 resilientdb             Up X minutes (healthy)
 graphq-llm-backend      Up X minutes (healthy)
 graphq-llm-mcp-server   Up X minutes
+reslens-middleware      Up X minutes (healthy)
 ```
 
 **✅ Success Criteria:**
-- All three services show "Up" status
+- All four services show "Up" status
 - ResilientDB shows "healthy"
 - GraphQ-LLM Backend shows "healthy"
+- ResLens Middleware shows "healthy"
 - MCP Server shows "Up" (may show "unhealthy" - that's OK, it uses stdio)
 
 ---
@@ -142,7 +156,85 @@ docker-compose -f docker-compose.dev.yml logs graphq-llm-backend | grep -i resil
 
 ---
 
-### **Step 4: Test MCP Server**
+### **Step 4: Test ResLens Middleware**
+
+#### **4.1: Test Health Endpoint**
+
+```bash
+# Test middleware health endpoint
+curl http://localhost:3003/api/v1/healthcheck
+```
+
+**Expected Response:**
+```json
+{"status":"UP","service":"reslens-middleware"}
+```
+
+**✅ Success Criteria:** Returns health status
+
+#### **4.2: Test Query Statistics Storage**
+
+```bash
+# Store a test query statistic
+curl -X POST http://localhost:3003/api/v1/queryStats/store \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "{ getTransaction(id: \"test\") { id } }",
+    "efficiency": {"score": 85, "complexity": "low"},
+    "explanation": "Test explanation",
+    "optimizations": ["Use indexes"],
+    "timestamp": "2024-01-01T00:00:00Z"
+  }'
+```
+
+**Expected Response:**
+```json
+{"success":true,"id":"query_...","message":"Query statistics stored successfully"}
+```
+
+**✅ Success Criteria:** Returns success with an ID
+
+#### **4.3: Test Query Statistics Retrieval**
+
+```bash
+# Retrieve stored query statistics
+curl http://localhost:3003/api/v1/queryStats?limit=10
+```
+
+**Expected Response:**
+```json
+{"success":true,"data":[...]}
+```
+
+**✅ Success Criteria:** Returns list of stored query statistics
+
+#### **4.4: Test Aggregated Statistics**
+
+```bash
+# Get aggregated statistics
+curl http://localhost:3003/api/v1/queryStats/aggregated
+```
+
+**Expected Response:**
+```json
+{"success":true,"data":{...}}
+```
+
+**✅ Success Criteria:** Returns aggregated statistics
+
+#### **4.5: Test Middleware Connection to ResilientDB (Internal)**
+
+```bash
+# Test from middleware container that it can reach ResilientDB
+docker-compose -f docker-compose.dev.yml exec reslens-middleware \
+  curl http://resilientdb:18000/v1/transactions/test
+```
+
+**✅ Success Criteria:** Returns response - proves middleware can communicate with ResilientDB
+
+---
+
+### **Step 5: Test MCP Server**
 
 #### **4.1: Check MCP Server Container Status**
 
@@ -184,9 +276,9 @@ docker-compose -f docker-compose.dev.yml exec graphq-llm-mcp-server \
 
 ---
 
-### **Step 5: Test Nexus Connection to GraphQ-LLM Backend**
+### **Step 6: Test Nexus Connection to GraphQ-LLM Backend**
 
-#### **5.1: Verify Nexus Is Running**
+#### **6.1: Verify Nexus Is Running**
 
 ```bash
 # Check if Nexus is running (should be running locally, not in Docker)
@@ -195,7 +287,7 @@ curl http://localhost:3000/api/research/documents
 
 **✅ Success Criteria:** Returns response (even if empty array)
 
-#### **5.2: Test Nexus API Route That Calls GraphQ-LLM Backend**
+#### **6.2: Test Nexus API Route That Calls GraphQ-LLM Backend**
 
 ```bash
 # Test Nexus API route that proxies to GraphQ-LLM
@@ -218,7 +310,7 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 - Response includes explanation, optimizations, and efficiency data
 - No errors connecting to GraphQ-LLM backend
 
-#### **5.3: Verify Nexus Environment Configuration**
+#### **6.3: Verify Nexus Environment Configuration**
 
 Check that Nexus has the correct backend URL configured:
 
@@ -236,16 +328,29 @@ NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001
 
 **✅ Success Criteria:** Points to `http://localhost:3001` (the dockerized backend)
 
+#### **6.4: Test Nexus Connection to ResLens Middleware**
+
+```bash
+# Test that Nexus can send query statistics to middleware
+# This happens automatically when analyzing queries in Nexus
+# You can verify by checking middleware logs:
+docker-compose -f docker-compose.dev.yml logs reslens-middleware | grep "Stored query statistics"
+```
+
+**✅ Success Criteria:** Middleware logs show query statistics being stored from Nexus
+
 ---
 
-### **Step 6: End-to-End Test - Full Communication Chain**
+### **Step 7: End-to-End Test - Full Communication Chain**
 
-#### **6.1: Test Complete Flow**
+#### **7.1: Test Complete Flow**
 
 1. **Nexus UI** → `http://localhost:3000/graphql-tutor`
 2. **Nexus API** → `http://localhost:3001` (GraphQ-LLM Backend)
 3. **GraphQ-LLM Backend** → `http://resilientdb:5001/graphql` (ResilientDB)
 4. **ResilientDB** → Returns data
+5. **Nexus API** → `http://localhost:3003/api/v1/queryStats/store` (ResLens Middleware)
+6. **ResLens Frontend** → `http://localhost:3003/api/v1/queryStats` (ResLens Middleware)
 
 ```bash
 # Simulate the full chain
@@ -272,10 +377,11 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 docker network inspect graphq-llm-network
 ```
 
-**Expected:** Should show all three containers connected:
+**Expected:** Should show all four containers connected:
 - `resilientdb`
 - `graphq-llm-backend`
 - `graphq-llm-mcp-server`
+- `reslens-middleware`
 
 **✅ Success Criteria:** All containers are connected to the same network
 
@@ -302,15 +408,21 @@ curl -X POST http://localhost:3001/api/explanations/explain \
   -H "Content-Type: application/json" \
   -d '{"query": "{ __typename }"}'
 
-# 5. Check MCP server logs
+# 5. Test ResLens Middleware health
+curl http://localhost:3003/api/v1/healthcheck
+
+# 6. Test ResLens Middleware query stats
+curl http://localhost:3003/api/v1/queryStats?limit=5
+
+# 7. Check MCP server logs
 docker-compose -f docker-compose.dev.yml logs graphq-llm-mcp-server | tail -5
 
-# 6. Test Nexus backend connection (if Nexus is running)
+# 8. Test Nexus backend connection (if Nexus is running)
 curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
   -H "Content-Type: application/json" \
   -d '{"query": "{ __typename }"}'
 
-# 7. Check Docker network
+# 9. Check Docker network
 docker network inspect graphq-llm-network | grep -A 5 "Containers"
 ```
 
@@ -339,6 +451,21 @@ docker network inspect graphq-llm-network | grep -A 5 "Containers"
 2. Test GraphQL server: `curl -X POST http://localhost:5001/graphql ...`
 3. Check backend logs: `docker-compose -f docker-compose.dev.yml logs graphq-llm-backend`
 
+### **Issue 4: ResLens Middleware Can't Connect**
+
+**Check:**
+1. Is middleware running? `docker-compose -f docker-compose.dev.yml ps reslens-middleware`
+2. Test health endpoint: `curl http://localhost:3003/api/v1/healthcheck`
+3. Check middleware logs: `docker-compose -f docker-compose.dev.yml logs reslens-middleware`
+4. Verify port 3003 is not blocked: `lsof -i:3003`
+
+### **Issue 5: Nexus Can't Send Query Statistics to Middleware**
+
+**Check:**
+1. Is middleware running? `curl http://localhost:3003/api/v1/healthcheck`
+2. Check Nexus `.env` has `RESLENS_MIDDLEWARE_URL=http://localhost:3003`
+3. Check middleware logs for incoming requests: `docker-compose -f docker-compose.dev.yml logs reslens-middleware | grep "queryStats"`
+
 ---
 
 ## 🎯 Success Summary
@@ -348,9 +475,13 @@ All services are communicating correctly when:
 - ✅ ResilientDB responds to GraphQL queries
 - ✅ GraphQ-LLM Backend health check passes
 - ✅ GraphQ-LLM Backend can query ResilientDB
+- ✅ ResLens Middleware health check passes
+- ✅ ResLens Middleware can store and retrieve query statistics
+- ✅ ResLens Middleware can reach ResilientDB (internal network)
 - ✅ MCP Server is running (logs show "started")
 - ✅ MCP Server can reach ResilientDB (internal network)
 - ✅ Nexus can call GraphQ-LLM Backend API
+- ✅ Nexus can send query statistics to ResLens Middleware
 - ✅ All containers are on the same Docker network
 
 ---

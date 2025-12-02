@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
+// Load .env file, but environment variables from Docker/system will override .env values
+// This ensures Docker environment variables take precedence
 dotenv.config();
 
 const envSchema = z.object({

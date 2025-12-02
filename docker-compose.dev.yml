@@ -21,11 +21,25 @@ services:
     environment:
       - RESDB_HOST=0.0.0.0
       - RESDB_PORT=18000
-    # Start KV service first using default entrypoint, then setup GraphQL server
+    # ⚠️ IMPORTANT: This configuration may prevent ResilientDB KV service from starting
+    # The expolab/resdb image's default entrypoint should start the KV service automatically,
+    # but we're overriding it to run setup-graphql.sh. This might prevent KV service startup.
+    # 
+    # RECOMMENDED: Set up ResilientDB separately first (see TEAM_SETUP.md for details)
+    # Then comment out this service and use your existing ResilientDB instance.
+    # 
+    # If you want to try this setup:
+    # 1. Start containers: docker-compose up -d
+    # 2. Verify KV service: curl http://localhost:18000/v1/transactions/test
+    # 3. If it fails, set up ResilientDB separately (see TEAM_SETUP.md)
+    # 
+    # The healthcheck tests port 18000 (KV service) - if it fails, KV service isn't running
+    # Use default entrypoint to start KV service, then setup GraphQL
     entrypoint: ["/bin/sh", "-c"]
     command: >
       "
-      cd /app && ./entrypoint.sh > /tmp/entrypoint.log 2>&1 &
+      cd /app &&
+      ./entrypoint.sh > /tmp/entrypoint.log 2>&1 &
       sleep 15 &&
       chmod +x /app/setup-graphql.sh 2>/dev/null || true &&
       /app/setup-graphql.sh > /tmp/setup.log 2>&1 &
@@ -51,7 +65,7 @@ services:
       - "9229:9229" # Debug port
     environment:
       # ResilientDB Configuration
-      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://resilientdb:5001/graphql}
+      - RESILIENTDB_GRAPHQL_URL=http://resilientdb:5001/graphql
       - RESILIENTDB_API_KEY=${RESILIENTDB_API_KEY:-}
       
       # Nexus Configuration (optional)
@@ -97,9 +111,11 @@ services:
       - ./tsconfig.json:/app/tsconfig.json
       # Mount docs directory for document ingestion
       - ./docs:/app/docs
-      # Exclude node_modules from volume mount (use named volume)
-      - graphq-llm-node-modules:/app/node_modules
-    command: sh -c "npm install --legacy-peer-deps && npm run dev -- --http-api"
+      # Exclude node_modules from volume mount
+      - /app/node_modules
+      # Don't mount .env file - use environment variables from docker-compose instead
+      # - ./.env:/app/.env
+    command: sh -c "npm install && npm run dev -- --http-api"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
@@ -119,7 +135,7 @@ services:
     tty: true         # Allocate a pseudo-TTY
     environment:
       # ResilientDB Configuration
-      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://resilientdb:5001/graphql}
+      - RESILIENTDB_GRAPHQL_URL=http://resilientdb:5001/graphql
       - RESILIENTDB_SIGNER_PUBLIC_KEY=${RESILIENTDB_SIGNER_PUBLIC_KEY:-}
       - RESILIENTDB_SIGNER_PRIVATE_KEY=${RESILIENTDB_SIGNER_PRIVATE_KEY:-}
       - RESILIENTDB_RECIPIENT_PUBLIC_KEY=${RESILIENTDB_RECIPIENT_PUBLIC_KEY:-}
@@ -165,29 +181,96 @@ services:
     # Health check is not applicable for stdio-based services
     # The server will run until terminated via stdin
 
-  # ResLens Middleware (Optional - for live performance monitoring)
-  # Uncomment and configure when ResLens Middleware is available
-  # See RESLENS_DOCKER_SETUP.md for full setup instructions
-  #
-  # reslens-middleware:
-  #   image: # ResLens Middleware image from https://github.com/apache/incubator-resilientdb-ResLens-Middleware
-  #   container_name: reslens-middleware
-  #   ports:
-  #     - "4040:4040"  # Pyroscope UI
-  #     - "9256:9256"  # Process Exporter metrics
-  #     - "8080:8080"  # Middleware HTTP API (adjust port as needed)
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock:ro
-  #   networks:
-  #     - graphq-llm-network
-  #   environment:
-  #     - RESDB_HOST=resilientdb
-  #     - RESDB_PORT=18000
-  #   depends_on:
-  #     resilientdb:
-  #       condition: service_healthy
-  #   # Note: Requires elevated privileges for eBPF profiling
-  #   # privileged: true  # Uncomment if needed for Pyroscope
+  # ResLens Middleware (for Query Statistics API)
+  # Provides API endpoints for storing and retrieving GraphQL query statistics
+  reslens-middleware:
+    build:
+      context: ./reslens-middleware
+      dockerfile: Dockerfile
+    container_name: reslens-middleware
+    ports:
+      - "3003:3003"  # Middleware HTTP API for query statistics
+    networks:
+      - graphq-llm-network
+    environment:
+      - PORT=3003
+      - CPP_STATS_API_BASE_URL=http://resilientdb:18000
+      - CPP_TRANSACTIONS_API_BASE_URL=http://resilientdb:5001
+      - PYROSCOPE_SERVER_URL=http://localhost:4040
+      - PROMETHEUS_URL=http://localhost:9090
+      - NODE_EXPORTER_BASE_URL=http://localhost:9100
+      - PROCESS_EXPORTER_BASE_URL=http://localhost:9256
+      - EXPLORER_BASE_URL=http://resilientdb:18000
+    depends_on:
+      resilientdb:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3003/api/v1/healthcheck', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ResLens Frontend (Local copy from ../ResLens)
+  reslens-frontend:
+    build:
+      context: ./reslens-frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1
+    container_name: reslens-frontend
+    ports:
+      - "3000:3000"  # ResLens frontend (Note: May conflict with Nexus on port 3000)
+    networks:
+      - graphq-llm-network
+    environment:
+      - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1
+      - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://reslens-middleware:3003/api/v1
+    depends_on:
+      reslens-middleware:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Nexus Frontend (Local copy from ../nexus)
+  nexus-frontend:
+    build:
+      context: ./nexus-frontend
+      dockerfile: Dockerfile
+      args:
+        - GRAPHQ_LLM_API_URL=http://graphq-llm-backend:3001
+        - RESLENS_MIDDLEWARE_URL=http://reslens-middleware:3003
+    container_name: nexus-frontend
+    ports:
+      - "3002:3002"  # Nexus frontend (port 3002 to avoid conflict with ResLens on 3000)
+    networks:
+      - graphq-llm-network
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - HOSTNAME=0.0.0.0
+      - GRAPHQ_LLM_API_URL=http://graphq-llm-backend:3001
+      - NEXT_PUBLIC_GRAPHQ_LLM_API_URL=http://localhost:3001
+      - RESLENS_MIDDLEWARE_URL=http://reslens-middleware:3003
+      - DATABASE_URL=${DATABASE_URL:-postgres://nexus:nexus@postgres:5432/nexus}
+    depends_on:
+      graphq-llm-backend:
+        condition: service_healthy
+      reslens-middleware:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 networks:
   graphq-llm-network:
