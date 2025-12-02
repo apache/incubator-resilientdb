@@ -322,6 +322,23 @@ int Commitment::PostProcessExecutedMsg() {
     // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
+    uint64_t set_cnt = batch_resp->set_count();
+    uint64_t read_cnt = batch_resp->read_count();
+    uint64_t delete_cnt = batch_resp->delete_count();
+
+    if (request.seq % 50 == 0) {
+        std::vector<std::unique_ptr<Request>> reqs_to_learner = message_manager_->getLearnerUpdateRequests();
+    }
+
+    // Also mirror the executed request to every learner so they can consume
+    // the committed stream.
+    for (const auto& learner : config_.GetLearnerInfos()) {
+      LOG(ERROR) << "Forward commit to learner id " << learner.id()
+                 << " seq " << request.seq()
+                 << " set=" << set_cnt << " read=" << read_cnt
+                 << " delete=" << delete_cnt;
+      replica_communicator_->SendMessage(request, learner.id());
+    }
   }
   return 0;
 }

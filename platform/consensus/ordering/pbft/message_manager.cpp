@@ -48,6 +48,14 @@ MessageManager::MessageManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             resp_msg->set_primary_id(GetCurrentPrimary());
+
+            // copying request for learner update sake
+            auto request_copy = std::unique_ptr<Request>(request->New());
+            request_copy->CopyFrom(*request);
+
+            // adds request to the vector of requests waiting to be sent to learners
+            learner_update_requests_.push_back(std::move(request_copy));
+
             if (transaction_executor_->NeedResponse() &&
                 resp_msg->proxy_id() != 0) {
               queue_.Push(std::move(resp_msg));
@@ -288,6 +296,10 @@ void MessageManager::SendResponse(std::unique_ptr<Request> request) {
 
 LockFreeCollectorPool* MessageManager::GetCollectorPool() {
   return collector_pool_.get();
+}
+
+std::vector<std::unique_ptr<Request>> MessageManager::getLearnerUpdateRequests() {
+    return std::move(learner_update_requests_);
 }
 
 }  // namespace resdb
