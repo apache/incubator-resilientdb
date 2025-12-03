@@ -1,4 +1,5 @@
 # /// script
+# requires-python = ">=3.10"
 # dependencies = [
 #     "mcp",
 #     "httpx",
@@ -20,6 +21,9 @@ import httpx
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from mcp.server.fastmcp import FastMCP
+import time
+import functools
+
 
 # Configure logging
 logging.basicConfig(
@@ -885,7 +889,54 @@ client = ResDBClient(config)
 contract_client = ResContractClient(config)
 mcp = FastMCP("resdb")
 
+def monitor_tool(func):
+    """
+    Decorator to monitor MCP tool execution and send data to ResLens middleware.
+    """
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        start_time = time.time()
+        tool_name = func.__name__
+        result = None
+        error = None
+        
+        try:
+            result = await func(*args, **kwargs)
+            return result
+        except Exception as e:
+            error = str(e)
+            raise e
+        finally:
+            duration = time.time() - start_time
+            
+            # Prepare log data
+            log_data = {
+                "tool": tool_name,
+                "args": kwargs, # FastMCP passes args as kwargs usually
+                "result": str(result) if result else str(error),
+                "timestamp": datetime.now().isoformat(),
+                "duration": duration
+            }
+            
+            # Send to middleware asynchronously (fire and forget)
+            try:
+                # We use httpx to send the data. 
+                # Since we are in an async function, we can await it, 
+                # but to avoid slowing down the tool, we might want to just log errors if it fails.
+                async with httpx.AsyncClient() as client:
+                    await client.post(
+                        "http://localhost:3000/api/v1/mcp/prompts", 
+                        json=log_data,
+                        timeout=0.5 # Short timeout to not block
+                    )
+            except Exception as e:
+                # Just log locally if middleware is down, don't break the tool
+                logger.warning(f"Failed to send monitoring data to ResLens: {e}")
+
+    return wrapper
+
 @mcp.tool()
+@monitor_tool
 async def commit_transaction(id: str, value: str) -> str:
     """
     Commit a transaction to ResilientDB.
@@ -901,6 +952,7 @@ async def commit_transaction(id: str, value: str) -> str:
         return f"Failed to commit transaction: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def get_transaction(id: str) -> str:
     """
     Retrieve a transaction from ResilientDB by its ID.
@@ -917,6 +969,7 @@ async def get_transaction(id: str) -> str:
         return f"Error fetching transaction: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def introspect_graphql() -> str:
     """
     Introspect the ResilientDB GraphQL schema to see available types.
@@ -929,6 +982,7 @@ async def introspect_graphql() -> str:
         return f"Failed to fetch schema: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def compile_contract(sol_path: str, output_name: str) -> str:
     """
     Compile a Solidity smart contract.
@@ -944,6 +998,7 @@ async def compile_contract(sol_path: str, output_name: str) -> str:
         return f"Compilation failed: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def deploy_contract(config_path: str, contract_path: str, name: str, 
                          arguments: str, owner_address: str) -> str:
     """
@@ -963,6 +1018,7 @@ async def deploy_contract(config_path: str, contract_path: str, name: str,
         return f"Deployment failed: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def execute_contract(config_path: str, sender_address: str, 
                           contract_address: str, function_name: str, 
                           arguments: str) -> str:
@@ -983,6 +1039,7 @@ async def execute_contract(config_path: str, sender_address: str,
         return f"Execution failed: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def create_account(config_path: str) -> str:
     """
     Create a new ResilientDB account.
@@ -997,6 +1054,7 @@ async def create_account(config_path: str) -> str:
         return f"Account creation failed: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def check_replicas_status() -> str:
     """
     Check the status of ResilientDB contract service replicas.
@@ -1025,6 +1083,7 @@ async def check_replicas_status() -> str:
         return f"Error checking replica status: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def start_replicas() -> str:
     """
     Start or restart the ResilientDB contract service replica cluster.
@@ -1041,6 +1100,7 @@ async def start_replicas() -> str:
         return f"Error starting replicas: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def get_server_logs(server_id: int = 0, lines: int = 50) -> str:
     """
     Get recent log entries from a specific replica server.
@@ -1062,6 +1122,7 @@ async def get_server_logs(server_id: int = 0, lines: int = 50) -> str:
         return f"Error reading server logs: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def get_client_logs(lines: int = 50) -> str:
     """
     Get recent log entries from the client proxy.
@@ -1078,6 +1139,7 @@ async def get_client_logs(lines: int = 50) -> str:
         return f"Error reading client logs: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def validate_config(config_path: str) -> str:
     """
     Validate a ResilientDB configuration file.
@@ -1106,6 +1168,7 @@ async def validate_config(config_path: str) -> str:
         return f"Error validating config: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def health_check() -> str:
     """
     Perform a comprehensive health check of all ResilientDB system components.
@@ -1170,6 +1233,7 @@ async def health_check() -> str:
         return f"Error performing health check: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def list_all_accounts() -> str:
     """
     List all accounts found on the ResilientDB blockchain.
@@ -1195,6 +1259,7 @@ async def list_all_accounts() -> str:
         return f"Error listing accounts: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def get_transaction_history(
     limit: int = 50,
     tx_type: str = None,
@@ -1240,6 +1305,7 @@ async def get_transaction_history(
 
 
 @mcp.tool()
+@monitor_tool
 async def search_logs(query: str, server_id: int = None, lines: int = 100) -> str:
     """
     Search for a text pattern in the server logs.
@@ -1256,6 +1322,7 @@ async def search_logs(query: str, server_id: int = None, lines: int = 100) -> st
         return f"Error searching logs: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def benchmark_throughput(num_tx: int = 100) -> str:
     """
     Benchmark system throughput by sending a batch of transactions.
@@ -1281,6 +1348,7 @@ async def benchmark_throughput(num_tx: int = 100) -> str:
         return f"Error running benchmark: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def get_consensus_metrics() -> str:
     """
     Get internal consensus metrics from the system logs.
@@ -1302,6 +1370,7 @@ async def get_consensus_metrics() -> str:
         return f"Error getting consensus metrics: {str(e)}"
 
 @mcp.tool()
+@monitor_tool
 async def archive_logs() -> str:
     """
     Archive all current log files to a ZIP file.
