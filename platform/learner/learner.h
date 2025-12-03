@@ -22,6 +22,12 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <unordered_set>
+#include <vector>
+
+#include "chain/storage/storage.h"
+#include "proto/kv/kv.pb.h"
+#include "platform/proto/replica_info.pb.h"
 
 namespace resdb {
 class Socket;
@@ -32,6 +38,8 @@ struct LearnerConfig {
     std::string ip = "127.0.0.1";
     int port = 0;
     int block_size = 0;
+    std::string db_path;
+    std::vector<resdb::ReplicaInfo> replicas;
 };
 
 class Learner {
@@ -43,9 +51,13 @@ private:
     static LearnerConfig LoadConfig(const std::string& config_path);
     void HandleClient(std::unique_ptr<resdb::Socket> socket) const;
     // Returns true if the connection should remain open, false if it should be closed.
-    bool ProcessBroadcast(const std::string& payload) const;
+    bool ProcessBroadcast(resdb::Socket* socket,
+                          const std::string& payload) const;
+    bool HandleReadOnlyRequest(resdb::Socket* socket,
+                               const resdb::KVRequest& request) const;
     void MetricsLoop() const;
     void PrintMetrics() const;
+    void InitializeStorage();
 
 private:
     LearnerConfig config_;
@@ -60,4 +72,6 @@ private:
     mutable std::atomic<int> last_sender_{-1};
     mutable std::atomic<size_t> last_payload_bytes_{0};
     mutable std::thread metrics_thread_;
+    mutable std::unique_ptr<resdb::Storage> storage_;
+    std::unordered_set<std::string> known_keys_;
 };

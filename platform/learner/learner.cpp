@@ -27,8 +27,10 @@
 #include <string>
 #include <thread>
 
+#include <glog/logging.h>
 #include <nlohmann/json.hpp>
 
+#include "chain/storage/leveldb.h"
 #include "platform/common/network/socket.h"
 #include "platform/common/network/tcp_socket.h"
 #include "platform/proto/resdb.pb.h"
@@ -50,6 +52,22 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
     config.ip = config_json.value("ip", config.ip);
     config.port = config_json.value("port", 0);
     config.block_size = config_json.value("block_size", 0);
+    config.db_path = config_json.value("db_path", "");
+    if (config.db_path.empty() && config.port > 0) {
+        config.db_path = std::to_string(config.port) + "_db/";
+    }
+
+    if (config_json.contains("replicas") && config_json["replicas"].is_array()) {
+        for (const auto& replica_json : config_json["replicas"]) {
+            resdb::ReplicaInfo replica_info;
+            replica_info.set_id(replica_json.value("id", 0));
+            replica_info.set_ip(replica_json.value("ip", "127.0.0.1"));
+            replica_info.set_port(replica_json.value("port", 0));
+            if (replica_info.port() != 0) {
+                config.replicas.push_back(replica_info);
+            }
+        }
+    }
 
     if (config.port <= 0) {
         throw std::runtime_error("Learner config must include a valid port");
@@ -63,7 +81,9 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
 }  // namespace
 
 Learner::Learner(const std::string& config_path)
-    : config_(LoadConfig(config_path)) {}
+    : config_(LoadConfig(config_path)) {
+    InitializeStorage();
+}
 
 LearnerConfig Learner::LoadConfig(const std::string& config_path) {
     const std::string path = config_path.empty() ? DefaultConfigPath() : config_path;
@@ -104,20 +124,32 @@ void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
 
         std::string payload(static_cast<char*>(buffer), len);
         free(buffer);
-        if (!ProcessBroadcast(payload)) {
+        if (!ProcessBroadcast(socket.get(), payload)) {
             break;
         }
     }
     // std::cout << "[Learner] replica disconnected" << std::endl;
 }
 
-bool Learner::ProcessBroadcast(const std::string& payload) const {
+bool Learner::ProcessBroadcast(resdb::Socket* socket,
+                               const std::string& payload) const {
     resdb::ResDBMessage envelope;
     if (!envelope.ParseFromString(payload)) {
         resdb::KVRequest kv_request;
         if (kv_request.ParseFromString(payload)) {
-            std::cout << "[Learner] received read-only request for key '"
-                      << kv_request.key() << "' (no response yet)" << std::endl;
+            if (HandleReadOnlyRequest(socket, kv_request)) {
+                LOG(INFO) << "[Learner] served read-only key '" << kv_request.key()
+                          << "' from local snapshot";
+                return false;
+            }
+            LOG(INFO) << "[Learner] no cached value for key '"
+                      << kv_request.key() << "', letting replica handle";
+            ++total_messages_;
+            total_bytes_.fetch_add(payload.size());
+            last_type_.store(kv_request.cmd());
+            last_seq_.store(0);
+            last_sender_.store(-1);
+            last_payload_bytes_.store(payload.size());
             return false;
         }
         ++total_messages_;
@@ -131,6 +163,18 @@ bool Learner::ProcessBroadcast(const std::string& payload) const {
 
     resdb::Request request;
     if (request.ParseFromString(envelope.data())) {
+        resdb::KVRequest kv_request;
+        if (kv_request.ParseFromString(request.data()) &&
+            kv_request.cmd() == resdb::KVRequest::GET_READ_ONLY) {
+            if (HandleReadOnlyRequest(socket, kv_request)) {
+                LOG(INFO) << "[Learner] served read-only key '" << kv_request.key()
+                          << "' from local snapshot";
+                return false;
+            }
+            LOG(INFO) << "[Learner] no cached value for key '"
+                      << kv_request.key() << "', letting replica handle";
+        }
+
         ++total_messages_;
         total_bytes_.fetch_add(payload.size());
         last_type_.store(request.type());
@@ -170,6 +214,39 @@ void Learner::MetricsLoop() const {
     }
 }
 
+bool Learner::HandleReadOnlyRequest(resdb::Socket* socket,
+                                    const resdb::KVRequest& request) const {
+    if (request.cmd() != resdb::KVRequest::GET_READ_ONLY || storage_ == nullptr) {
+        return false;
+    }
+
+    if (known_keys_.find(request.key()) == known_keys_.end()) {
+        return false;
+    }
+
+    std::string value = storage_->GetValue(request.key());
+    if (value.empty()) {
+        return false;
+    }
+
+    resdb::KVResponse response;
+    response.set_key(request.key());
+    response.set_value(value);
+
+    std::string resp_str;
+    if (!response.SerializeToString(&resp_str)) {
+        LOG(ERROR) << "[Learner] failed to serialize KVResponse";
+        return false;
+    }
+
+    if (socket->Send(resp_str) < 0) {
+        LOG(ERROR) << "[Learner] failed to send read-only response";
+        return false;
+    }
+
+    return true;
+}
+
 void Learner::PrintMetrics() const {
     std::cout << "[Learner] broadcasts=" << total_messages_.load()
         << " bytes=" << total_bytes_.load()
@@ -181,5 +258,23 @@ void Learner::PrintMetrics() const {
         << " sender=" << last_sender_.load()
         << " payload=" << last_payload_bytes_.load() << "B"
         << " (listening on " << config_.ip << ":" << config_.port
-        << ", block_size=" << config_.block_size << ")" << std::endl;
+        << ", block_size=" << config_.block_size
+        << ", db_path=" << config_.db_path << ")" << std::endl;
+}
+
+void Learner::InitializeStorage() {
+    if (config_.db_path.empty()) {
+        config_.db_path = std::to_string(config_.port) + "_db/";
+    }
+    storage_ = resdb::storage::NewResLevelDB(config_.db_path);
+    if (!storage_) {
+        throw std::runtime_error("Learner failed to initialize storage at " +
+                                 config_.db_path);
+    }
+    known_keys_.clear();
+    storage_->SetValue("test", "from learner db");
+    storage_->Flush();
+    known_keys_.insert("test");
+    LOG(INFO) << "[Learner] Initialized local DB at " << config_.db_path
+              << " with test key";
 }

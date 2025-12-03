@@ -75,11 +75,7 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
 
-  if (config_.GetPublicKeyCertificateInfo()
-              .public_key()
-              .public_key_info()
-              .type() == CertificateKeyInfo::CLIENT &&
-      !config_.GetLearnerInfos().empty()) {
+  if (!config_.GetLearnerInfos().empty()) {
     learner_info_ = config_.GetLearnerInfos()[0];
   }
 }
@@ -463,7 +459,7 @@ bool ResponseManager::ForwardReadOnlyToLearner(Context* context,
     return false;
   }
 
-  if (context->client->SendRawMessage(learner_response) != 0) {
+  if (context->client->SendRawMessageData(learner_resp) != 0) {
     return false;
   }
   return true;

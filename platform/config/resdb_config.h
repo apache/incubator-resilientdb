@@ -159,7 +159,7 @@ class ResDBConfig {
   uint32_t client_batch_num_ = 100;
 
   // learner
-  uint32_t block_size_ = 100;
+  uint32_t block_size_ = 10;
   std::vector<ReplicaInfo> learners_;
 };
 
