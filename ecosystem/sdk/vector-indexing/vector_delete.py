@@ -11,6 +11,7 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, Any, List
+import base64
 # ResDB & HNSW imports
 from resdb_orm.orm import ResDBORM
 import hnsw_library
