@@ -129,10 +129,10 @@ std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
   std::string ip;
   int port;
   while (infile >> id >> ip >> port) {
-    if(id == "//") {
+    if(id == 0) {
       continue;
     }
-    if(id.size()==0) {
+    if(ip.size()==0) {
       continue;
     }
     replicas.push_back(GenerateReplicaInfo(id, ip, port));
