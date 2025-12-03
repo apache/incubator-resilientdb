@@ -40,4 +40,9 @@ std::unique_ptr<ResDBConfig> GenerateResDBConfig(
     std::optional<ConfigGenFunc> = std::nullopt);
 
 ResDBConfig GenerateResDBConfig(const std::string& config_file);
+
+
+ResConfigData ReadConfigFromFile(const std::string& file_name);
+
 }  // namespace resdb
+
