@@ -91,6 +91,17 @@ message Request {
     bytes data_hash = 26;
 }
 
+message RequestBatch {
+  repeated Request requests = 1;
+}
+
+message LearnerUpdate {
+    repeated uint32 data = 1;
+    bytes block_hash = 2;
+    uint64 seq = 3;
+    uint32 sender_id = 4;
+}
+
 // The response message containing response
 message ResponseData {
     bytes data = 1;

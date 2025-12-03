@@ -23,6 +23,8 @@
 #include <unistd.h>
 
 #include "common/utils/utils.h"
+#include "common/crypto/hash.h"
+
 #include "platform/consensus/ordering/pbft/transaction_utils.h"
 
 namespace resdb {
@@ -326,25 +328,117 @@ int Commitment::PostProcessExecutedMsg() {
     uint64_t read_cnt = batch_resp->read_count();
     uint64_t delete_cnt = batch_resp->delete_count();
 
-    if (request.seq() % 50 == 0) {
-        std::vector<std::unique_ptr<Request>> reqs_to_learner = message_manager_->getLearnerUpdateRequests();
+    // send an update to learners after every block size execution
+    if (request.seq() % config_.GetBlockSize() == 0) {
+        SendUpdateToLearners(request.seq());
     }
 
-    // Also mirror the executed request to every learner so they can consume
-    // the committed stream.
-    for (const auto& learner : config_.GetLearnerInfos()) {
-      LOG(ERROR) << "Forward commit to learner id " << learner.id()
-                 << " seq " << request.seq()
-                 << " set=" << set_cnt << " read=" << read_cnt
-                 << " delete=" << delete_cnt;
-      replica_communicator_->SendMessage(request, learner.id());
-    }
+    // // Also mirror the executed request to every learner so they can consume
+    // // the committed stream.
+    // for (const auto& learner : config_.GetLearnerInfos()) {
+    //   LOG(ERROR) << "Forward commit to learner id " << learner.id()
+    //              << " seq " << request.seq()
+    //              << " set=" << set_cnt << " read=" << read_cnt
+    //              << " delete=" << delete_cnt;
+    //   replica_communicator_->SendMessage(request, learner.id());
+    // }
   }
   return 0;
 }
 
 DuplicateManager* Commitment::GetDuplicateManager() {
   return duplicate_manager_.get();
+}
+
+void Commitment::SendUpdateToLearners(int seq_num) {
+    
+    // get stored requests from message manager
+    std::vector<std::unique_ptr<Request>> reqs_to_learner = message_manager_->getLearnerUpdateRequests();
+
+    std::string raw_data;
+    
+    // adds all requests into one batch variable
+    RequestBatch batch;
+    for (const auto& r : reqs_to_learner) {
+        *batch.add_requests()->Swap(r.get());
+    }
+
+    // turn the entire batch variable into string
+    batch.SerializeToString(&raw_data);
+
+    // generate hash of entire batch
+    str::string block_hash = CalculateSHA256Hash(raw_data);
+
+    // generate correct row of Vandermode matrix
+    A_i = gen_A_row(config_.GetSelfInfo().id());
+
+    // perform message distribution algorithm
+    vector<uint32_t> F_i;
+
+    uint32_t iter = 0;
+    uint32_t c_ik = 0;
+    for (int d = 0; d < raw_data.size(); d++) { // data MUST BE A MULTIPLE OF m
+        c_ik = (c_ik + A_i[iter] * raw_data[d]) % p;
+
+        iter++;
+        if (iter == m) {
+            F_i.push_back(c_ik);
+            
+            c_ik = 0;
+            iter = 0;
+        }
+    }
+
+    // add data to learner update message and send it
+    LearnerUpdate learnerUpdate;
+    learnerUpdate.mutable_data()->Reserve(static_cast<int>(F_i.size()));
+    for (uint32_t v : F_i) {
+        learnerUpdate.add_data(v);
+    }
+    learnerUpdate.set_block_hash(block_hash);
+    learnerUpdate.set_seq(seq_num);
+    learnerUpdate.set_sender_id(config_.GetSelfInfo().id());
+
+    for (const auto& learner : config_.GetLearnerInfos()) {
+        replica_communicator_->SendMessage(learnerUpdate, learner.id());
+    }
+    
+}
+
+vector<uint16_t> Commitment::gen_A_row() { 
+    
+    int n = config_.GetReplicaNum();
+    int m = config_.GetMinClientReceiveNum();
+    int p = 257;
+
+    vector<uint16_t> A_i(m);
+
+    int i = config_.GetSelfInfo().id();
+
+    for (int j = 0; j < m; j++) {
+
+        int exp = j;
+        int base = i;
+        int mod = p;
+        int result = 1;
+
+        while (exp > 0) {
+            if (exp & 1) {
+                result = (result * base) % mod;
+            }
+
+            base = (base * base) % mod;
+            exp >>= 1;
+        }
+
+        A[j] = result;
+
+    }
+
+    return A;
+
+}
+
 }
 
 }  // namespace resdb
