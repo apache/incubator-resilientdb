@@ -317,8 +317,8 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_type(Request::TYPE_RESPONSE);
     request.set_sender_id(config_.GetSelfInfo().id());
     request.set_current_view(batch_resp->current_view());
-   request.set_proxy_id(batch_resp->proxy_id());
-   request.set_primary_id(batch_resp->primary_id());
+    request.set_proxy_id(batch_resp->proxy_id());
+    request.set_primary_id(batch_resp->primary_id());
     // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
@@ -333,7 +333,7 @@ int Commitment::PostProcessExecutedMsg() {
     // Also mirror the executed request to every learner so they can consume
     // the committed stream.
     for (const auto& learner : config_.GetLearnerInfos()) {
-      LOG(ERROR) << "Forward commit to learner id " << learner.id()
+      LOG(INFO) << "Forward commit to learner id " << learner.id()
                  << " seq " << request.seq()
                  << " set=" << set_cnt << " read=" << read_cnt
                  << " delete=" << delete_cnt;
