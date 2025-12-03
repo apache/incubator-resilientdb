@@ -52,8 +52,8 @@ PerformanceManager::PerformanceManager(
   total_num_ = 0;
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
-  primary_ = id_ % replica_num_;
-  if (primary_ == 0) primary_ = replica_num_;
+  primary_.store(id_ % replica_num_);
+  if (primary_ == 0) primary_.store(replica_num_);
   local_id_ = 1;
   sum_ = 0;
 }
@@ -67,10 +67,16 @@ PerformanceManager::~PerformanceManager() {
   }
 }
 
-int PerformanceManager::GetPrimary() { return primary_; }
+int PerformanceManager::GetPrimary() { return primary_.load(); }
+
 void PerformanceManager::SetPrimary(int id) {
-  primary_ = id;
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": primary updated to " << primary_;
+  int curr_primary = primary_.load();
+  while (id != curr_primary) {
+    if (primary_.compare_exchange_strong(curr_primary, id)) {
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": primary updated to " << id;
+    return;
+    }
+  }  
 }
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
@@ -88,15 +94,17 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 100000000; ++i) {
-    std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
-    queue_item->context = nullptr;
-    queue_item->user_request = GenerateUserRequest();
-    batch_queue_.Push(std::move(queue_item));
-    if (i == 2000000) {
-      eval_ready_promise_.set_value(true);
+  std::thread([&](){
+    for (int i = 0; i < 100000000; ++i) {
+      std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
+      queue_item->context = nullptr;
+      queue_item->user_request = GenerateUserRequest();
+      batch_queue_.Push(std::move(queue_item));
+      if (i == 2000000) {
+        eval_ready_promise_.set_value(true);
+      }
     }
-  }
+}).detach();
   return 0;
 }
 
@@ -273,6 +281,7 @@ int PerformanceManager::DoBatch(
 
 void PerformanceManager::SendMessage(const Request& request) {
   replica_communicator_->SendMessage(request, GetPrimary());
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Sent to replica " << GetPrimary();
 }
 
 }  // namespace common

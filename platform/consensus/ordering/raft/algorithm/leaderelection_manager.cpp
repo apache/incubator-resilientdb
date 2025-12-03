@@ -37,9 +37,9 @@ LeaderElectionManager::LeaderElectionManager(const ResDBConfig& config)
       raft_(nullptr),
       started_(false),
       stop_(false),
-      timeout_min_ms(800),
-      timeout_max_ms(1600),
-      heartbeat_timer_(50),
+      timeout_min_ms(1200),
+      timeout_max_ms(2400),
+      heartbeat_timer_(100),
       heartbeat_count_(0),
       //last_heartbeat_time_(std::chrono::steady_clock::now()),
       role_epoch_(0),
@@ -74,7 +74,7 @@ void LeaderElectionManager::MayStart() {
   }
 
   if (config_.GetConfigData().enable_viewchange()) {
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Starting MonitoringElectionTimeout thread.";
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Starting MonitoringElectionTimeout thread.";
     server_checking_timeout_thread_ =
         std::thread(&LeaderElectionManager::MonitoringElectionTimeout, this);
   }
@@ -165,19 +165,19 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
   while (!stop_.load()) {
     raft::Role role = raft_->GetRoleSnapshot();
     Waited res;
-    std::chrono::steady_clock::time_point wait_start_time_ = std::chrono::steady_clock::now();
-    bool leader = false;
+    //std::chrono::steady_clock::time_point wait_start_time_ = std::chrono::steady_clock::now();
+    //bool leader = false;
     if (role == raft::Role::LEADER) { 
       res = LeaderWait(); 
-      leader = true;
+      //leader = true;
     }
     else { 
       res = Wait(); 
     }
-    std::chrono::steady_clock::time_point wait_end_time_ = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::duration delta = wait_end_time_ - wait_start_time_;
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-    LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
+    //std::chrono::steady_clock::time_point wait_end_time_ = std::chrono::steady_clock::now();
+    //std::chrono::steady_clock::duration delta = wait_end_time_ - wait_start_time_;
+    //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+    //LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
     if (res == Waited::STOPPED) { break; }
     else if (res == Waited::ROLE_CHANGE) {
       //LOG(INFO) << __FUNCTION__ << ": Role change detected";

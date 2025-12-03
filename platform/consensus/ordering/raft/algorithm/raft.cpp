@@ -70,8 +70,6 @@ Raft::~Raft() { is_stop_ = true; }
 bool Raft::IsStop() { return is_stop_; }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
-
-  LOG(INFO) << "JIM -> " << __FUNCTION__;
   {
     std::lock_guard<std::mutex> lk(mutex_);
     if (role_ != Role::LEADER) { 
@@ -79,7 +77,6 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
       return false; }
   }
 
-  LOG(INFO) << "JIM -> " << __FUNCTION__;
   // LOG(INFO)<<"recv txn:";
   LOG(INFO) << "Received Transaction to primary id: " << id_;
   LOG(INFO) << "prevLogIndex: " << prevLogIndex_;
@@ -108,12 +105,12 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
   TermRelation tr;
   Role initialRole;
 
-  auto now = std::chrono::steady_clock::now();
-  std::chrono::steady_clock::duration delta;
-  delta = now - last_ae_time_;
-  last_ae_time_ = now;
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": AE received after " << ms << "ms";
+  //auto now = std::chrono::steady_clock::now();
+  //std::chrono::steady_clock::duration delta;
+  //delta = now - last_ae_time_;
+  //last_ae_time_ = now;
+  //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": AE received after " << ms << "ms";
   {
     initialRole = role_;
     std::lock_guard<std::mutex> lk(mutex_);
@@ -135,20 +132,14 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
   }
   if (tr != TermRelation::STALE) { leader_election_manager_->OnHeartBeat(); }
-  AppendEntriesResponse aer;
-  aer.set_term(term);
-  aer.set_success(success);
-  aer.set_id(id_);
-  if (success) { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded success"; }
-  else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded failure"; }
-  SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
-  //return false;
 
   // Implement an entry existing but with a different term
   // delete that entry and all after it
   LOG(INFO) << "Before AppendEntriesMsg Added to Log";
   std::string hash = txn->hash();
   int64_t prevLogIndex = txn->prevlogindex();
+  auto leaderCommit = txn->leadercommitindex();
+  auto leaderId = txn->leaderid();
   {
     std::unique_lock<std::mutex> lk(mutex_);
     std::string hash = txn->hash();
@@ -158,7 +149,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     logIndexMapping_.push_back(hash);
     lastApplied_++;
   }
-  auto leaderCommit = txn->leadercommitindex();
+  
   LOG(INFO) << "AppendEntriesMsg Added to Log";
   LOG(INFO) << "leaderCommit: " << leaderCommit;
   LOG(INFO) << "commitIndex_: " << commitIndex_;
@@ -180,15 +171,22 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> txn) {
     // not 100% certain if this second variable should be prevLogIndex
     commitIndex_ = std::min(leaderCommit, prevLogIndex);
 
+  
   LOG(INFO) << "after commit index check";
+  AppendEntriesResponse aer;
+  aer.set_term(term);
+  aer.set_success(success);
+  aer.set_id(id_);
   aer.set_lastapplied(lastApplied_);
   aer.set_nextentry(log_.size());
   aer.set_success(true);
   aer.set_hash(hash);
   aer.set_prevlogindex(prevLogIndex);
-  LOG(INFO) << "Leader_id: " << txn->leaderid();
+  LOG(INFO) << "Leader_id: " << leaderId;
   leader_election_manager_->OnHeartBeat();
-  SendMessage(MessageType::AppendEntriesResponseMsg, aer, txn->leaderid());
+  SendMessage(MessageType::AppendEntriesResponseMsg, aer, leaderId);
+  if (success) { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded success"; }
+  else { LOG(INFO) << "JIM -> " << __FUNCTION__ << ": responded failure"; }
   return true;
 }
 
@@ -428,7 +426,7 @@ void Raft::SendHeartBeat() {
     last_heartbeat_time_ = now;
   }
   auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat sent after " << ms << "ms";
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat sent after " << ms << "ms";
   AppendEntries appendEntries;
   appendEntries.set_term(currentTerm);
   appendEntries.set_leaderid(leaderId);
@@ -438,7 +436,7 @@ void Raft::SendHeartBeat() {
   appendEntries.set_leadercommitindex(leaderCommit); // TODO
   Broadcast(MessageType::AppendEntriesMsg, appendEntries);
 
-  LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat " << heartBeatNum << " for term " << currentTerm;
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat " << heartBeatNum << " for term " << currentTerm;
 
   // Also ping client proxies that this is the leader
   DirectToLeader dtl;
@@ -447,7 +445,7 @@ void Raft::SendHeartBeat() {
   for (const auto& client : replica_communicator_->GetClientReplicas()) {
     int id = client.id();
     SendMessage(DirectToLeaderMsg, dtl, id);
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": DirectToLeader sent to " << id;
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": DirectToLeader " << id_ << " sent to proxy " << id;
   }
 }
 

@@ -89,7 +89,7 @@ class PerformanceManager {
   std::mutex response_lock_[response_set_size_];
   int replica_num_;
   int id_;
-  int primary_;
+  std::atomic<int> primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
 };

@@ -97,7 +97,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     return 0;
   }
   else if (request->user_type() == MessageType::DirectToLeaderMsg) {
-    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In DirectToLeader";
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In DirectToLeader";
     std::unique_ptr<DirectToLeader> dtl = std::make_unique<resdb::raft::DirectToLeader>();
     if (!dtl->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
@@ -116,8 +116,8 @@ int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
   txn->set_hash(request->hash());
   txn->set_proxy_id(request->proxy_id());
   txn->set_uid(request->uid());
-  return raft_->ReceiveTransaction(std::move(txn));
-}
+    return raft_->ReceiveTransaction(std::move(txn));
+  }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   return CommitMsgInternal(dynamic_cast<const AppendEntries&>(msg));
