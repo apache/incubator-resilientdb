@@ -32,9 +32,8 @@ CERT_PATH=${WORK_PATH}/service/tools/data/cert/
 
 # Always enable DuckDB with a default path per node.
 DEFAULT_DUCKDB_PATH=/tmp
-EXTRA_FLAGS="--enable_duckdb --logtostderr=1"
-# Send glog output to stderr so it lands in the nohup logs.
-export GLOG_logtostderr=1
+EXTRA_FLAGS="--enable_duckdb"
+
 
 # No additional flag parsing; DuckDB is always enabled.
 bazel build //service/kv:kv_service
