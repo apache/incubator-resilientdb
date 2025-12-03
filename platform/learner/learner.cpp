@@ -35,6 +35,7 @@
 #include "platform/common/network/tcp_socket.h"
 #include "platform/proto/resdb.pb.h"
 #include "proto/kv/kv.pb.h"
+#include "platform/statistic/stats.h"
 
 namespace {
 
@@ -83,6 +84,7 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
 Learner::Learner(const std::string& config_path)
     : config_(LoadConfig(config_path)) {
     InitializeStorage();
+    resdb::Stats::GetGlobalStats()->Stop();
 }
 
 LearnerConfig Learner::LoadConfig(const std::string& config_path) {
@@ -110,7 +112,7 @@ void Learner::Run() {
 }
 
 void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
-    std::cout << "[Learner] replica connected" << std::endl;
+    // std::cout << "[Learner] replica connected" << std::endl;
     while (true) {
         void* buffer = nullptr;
         size_t len = 0;
@@ -138,12 +140,9 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
         resdb::KVRequest kv_request;
         if (kv_request.ParseFromString(payload)) {
             if (HandleReadOnlyRequest(socket, kv_request)) {
-                LOG(INFO) << "[Learner] served read-only key '" << kv_request.key()
-                          << "' from local snapshot";
+                LOG(INFO) << "served read-only key=" << kv_request.key();
                 return false;
             }
-            LOG(INFO) << "[Learner] no cached value for key '"
-                      << kv_request.key() << "', letting replica handle";
             ++total_messages_;
             total_bytes_.fetch_add(payload.size());
             last_type_.store(kv_request.cmd());
@@ -163,18 +162,6 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
 
     resdb::Request request;
     if (request.ParseFromString(envelope.data())) {
-        resdb::KVRequest kv_request;
-        if (kv_request.ParseFromString(request.data()) &&
-            kv_request.cmd() == resdb::KVRequest::GET_READ_ONLY) {
-            if (HandleReadOnlyRequest(socket, kv_request)) {
-                LOG(INFO) << "[Learner] served read-only key '" << kv_request.key()
-                          << "' from local snapshot";
-                return false;
-            }
-            LOG(INFO) << "[Learner] no cached value for key '"
-                      << kv_request.key() << "', letting replica handle";
-        }
-
         ++total_messages_;
         total_bytes_.fetch_add(payload.size());
         last_type_.store(request.type());
@@ -248,18 +235,15 @@ bool Learner::HandleReadOnlyRequest(resdb::Socket* socket,
 }
 
 void Learner::PrintMetrics() const {
-    std::cout << "[Learner] broadcasts=" << total_messages_.load()
-        << " bytes=" << total_bytes_.load()
-        << " sets=" << total_sets_.load()
-        << " reads=" << total_reads_.load()
-        << " deletes=" << total_deletes_.load()
-        << " last_type=" << last_type_.load()
-        << " last_seq=" << last_seq_.load()
-        << " sender=" << last_sender_.load()
-        << " payload=" << last_payload_bytes_.load() << "B"
-        << " (listening on " << config_.ip << ":" << config_.port
-        << ", block_size=" << config_.block_size
-        << ", db_path=" << config_.db_path << ")" << std::endl;
+    LOG(INFO) << "msgs=" << total_messages_.load()
+              << " bytes=" << total_bytes_.load()
+              << " sets=" << total_sets_.load()
+              << " reads=" << total_reads_.load()
+              << " deletes=" << total_deletes_.load()
+              << " last_type=" << last_type_.load()
+              << " last_seq=" << last_seq_.load()
+              << " sender=" << last_sender_.load()
+              << " payload=" << last_payload_bytes_.load() << "B";
 }
 
 void Learner::InitializeStorage() {
@@ -275,6 +259,6 @@ void Learner::InitializeStorage() {
     storage_->SetValue("test", "from learner db");
     storage_->Flush();
     known_keys_.insert("test");
-    LOG(INFO) << "[Learner] Initialized local DB at " << config_.db_path
-              << " with test key";
+    VLOG(1) << "[Learner] Initialized local DB at " << config_.db_path
+            << " with test key";
 }
