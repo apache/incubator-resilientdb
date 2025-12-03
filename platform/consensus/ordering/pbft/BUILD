@@ -45,6 +45,8 @@ cc_library(
         ":lock_free_collector_pool",
         ":transaction_utils",
         "//platform/networkstrate:replica_communicator",
+        "//interface/rdbc:net_channel",
+        "//proto/kv:kv_cc_proto",
     ],
 )
 

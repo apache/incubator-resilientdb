@@ -22,6 +22,8 @@
 #include <glog/logging.h>
 
 #include "common/utils/utils.h"
+#include "interface/rdbc/net_channel.h"
+#include "proto/kv/kv.pb.h"
 
 namespace resdb {
 
@@ -72,6 +74,10 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
   }
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
+
+  if (!config_.GetLearnerInfos().empty()) {
+    learner_info_ = config_.GetLearnerInfos()[0];
+  }
 }
 
 ResponseManager::~ResponseManager() {
@@ -102,6 +108,10 @@ std::vector<std::unique_ptr<Context>> ResponseManager::FetchContextList(
 
 int ResponseManager::NewUserRequest(std::unique_ptr<Context> context,
                                     std::unique_ptr<Request> user_request) {
+  if (ForwardReadOnlyToLearner(context.get(), user_request.get())) {
+    return 0;
+  }
+
   if (!user_request->need_response()) {
     context->client = nullptr;
   }
@@ -406,5 +416,52 @@ void ResponseManager::MonitoringClientTimeOut() {
       }
     }
   }
+}
+
+bool ResponseManager::ForwardReadOnlyToLearner(Context* context,
+                                               Request* user_request) {
+  if (!learner_info_.has_value() || context == nullptr ||
+      context->client == nullptr || user_request == nullptr) {
+    return false;
+  }
+  if (user_request->type() != Request::TYPE_CLIENT_REQUEST) {
+    return false;
+  }
+
+  KVRequest kv_request;
+  if (!kv_request.ParseFromString(user_request->data())) {
+    return false;
+  }
+  if (kv_request.cmd() != KVRequest::GET_READ_ONLY) {
+    return false;
+  }
+
+  NetChannel learner_channel(learner_info_->ip(), learner_info_->port());
+  learner_channel.SetRecvTimeout(100000);  // 100ms
+
+  std::string payload;
+  if (!kv_request.SerializeToString(&payload)) {
+    return false;
+  }
+
+  if (learner_channel.SendRawMessageData(payload) != 0) {
+    return false;
+  }
+
+  // Await learner response; if nothing returns, fall back to PBFT.
+  std::string learner_resp;
+  if (learner_channel.RecvRawMessageData(&learner_resp) <= 0) {
+    return false;
+  }
+
+  KVResponse learner_response;
+  if (!learner_response.ParseFromString(learner_resp)) {
+    return false;
+  }
+
+  if (context->client->SendRawMessageData(learner_resp) != 0) {
+    return false;
+  }
+  return true;
 }
 }  // namespace resdb
