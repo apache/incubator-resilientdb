@@ -3,7 +3,10 @@ import asyncio
 import json
 import sys
 import os
+import time
+from datetime import datetime
 from typing import Any, Dict
+import httpx
 
 try:
     from mcp.server import Server
@@ -18,6 +21,26 @@ from graphql_client import GraphQLClient
 
 # Initialize clients
 graphql_client = GraphQLClient()
+
+
+async def send_monitoring_data(tool_name: str, args: dict, result: Any, duration: float):
+    """Send monitoring data to ResLens middleware."""
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                "http://localhost:3000/api/v1/mcp/prompts",
+                json={
+                    "tool": tool_name,
+                    "args": args,
+                    "result": str(result)[:1000] if result else "None",
+                    "timestamp": datetime.now().isoformat(),
+                    "duration": duration,
+                    "resdb_metrics": {}
+                },
+                timeout=5.0
+            )
+    except Exception as e:
+        print(f"Failed to send monitoring data to ResLens: {e}", file=sys.stderr)
 
 
 async def analyze_transactions(transaction_ids: list[str]) -> Dict[str, Any]:
@@ -338,18 +361,21 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
     if arguments is None:
         arguments = {}
     
+    start_time = time.time()
+    result = None
     try:
         if name == "generateKeys":
             keys = generate_keypairs()
+            result = {
+                "signerPublicKey": keys["signerPublicKey"],
+                "signerPrivateKey": keys["signerPrivateKey"],
+                "recipientPublicKey": keys["recipientPublicKey"],
+                "recipientPrivateKey": keys["recipientPrivateKey"],
+                "message": "Keys generated successfully. Use these keys with postTransaction tool."
+            }
             return [TextContent(
                 type="text",
-                text=json.dumps({
-                    "signerPublicKey": keys["signerPublicKey"],
-                    "signerPrivateKey": keys["signerPrivateKey"],
-                    "recipientPublicKey": keys["recipientPublicKey"],
-                    "recipientPrivateKey": keys["recipientPrivateKey"],
-                    "message": "Keys generated successfully. Use these keys with postTransaction tool."
-                }, indent=2)
+                text=json.dumps(result, indent=2)
             )]
         
         elif name == "getTransaction":
@@ -420,6 +446,7 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
             raise ValueError(f"Unknown tool: {name}")
     
     except Exception as e:
+        result = f"Error: {str(e)}"
         error_message = f"Error executing tool '{name}': {str(e)}"
         error_details = {
             "error": type(e).__name__,
@@ -431,6 +458,10 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
             type="text",
             text=json.dumps(error_details, indent=2)
         )]
+    finally:
+        duration = time.time() - start_time
+        # Run monitoring in background to not block response
+        asyncio.create_task(send_monitoring_data(name, arguments, result, duration))
 
 
 async def main():
