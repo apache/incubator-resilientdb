@@ -1,5 +1,4 @@
 # /// script
-# requires-python = ">=3.10"
 # dependencies = [
 #     "mcp",
 #     "httpx",
@@ -1387,4 +1386,3 @@ async def archive_logs() -> str:
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
-
