@@ -39,9 +39,7 @@ message AppendEntriesResponse {
   bool success = 2;
   int32 id = 3;
   uint64 lastApplied = 4;
-  uint64 nextEntry = 5;
-  bytes hash = 6;
-  uint64 prevLogIndex = 7;
+  uint64 lastLogIndex = 5;
 }
 
 message RequestVote {

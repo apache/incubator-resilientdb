@@ -19,8 +19,11 @@
 
 #pragma once
 
+#include <sys/types.h>
+#include <cstdint>
 #include <deque>
 #include <map>
+#include <memory>
 #include <queue>
 #include <thread>
 #include <chrono>
@@ -61,51 +64,38 @@ class Raft : public common::ProtocolBase {
  private:
   TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
   bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
-  uint64_t getPrevLogIndexLocked() const; // Must be called under mutex
-  uint64_t getPrevLogTermLocked() const; // Must be called under mutex
+  uint64_t getLastLogTermLocked() const; // Must be called under mutex
   bool IsStop();
 
  private:
   mutable std::mutex mutex_;
-  std::map<std::string, std::set<int32_t> > received_;
-  std::map<std::string, std::unique_ptr<AppendEntries> > log_; // log[]
+  
+  // Persistent state on all servers:
+  uint64_t currentTerm_; // Protected by mutex_
+  int votedFor_; // Protected by mutex_
+  std::vector<std::unique_ptr<AppendEntries>> log_; // Protected by mutex_
 
-  std::vector<std::string> logIndexMapping_;
+  // Volatile state on leaders:
+  std::vector<uint64_t> nextIndex_; // Protected by mutex_
+  std::vector<uint64_t> matchIndex_; // Protected by mutex_
+  uint64_t heartBeatsSentThisTerm_; // Protected by mutex_
 
-  // This is for everyone
-  // Most recent term it has seen
-  uint64_t currentTerm_; // Protected by raft_mutex_
-  // Id for vote in current Term
-  int votedFor_; // Protected by raft_mutex_
-
-  // Volatile on all servers
-  // Index of highest log entry it knows to be committed
-  uint64_t commitIndex_; // Protected by raft_mutex_
-  // Index of highest log entry executed
-  uint64_t lastApplied_; // Protected by raft_mutex_
-
-  // Only for leaders
-  // This keeps track of the next log entry to send to that replica
-  // Initialized to last log index + 1
-  std::vector<int> nextIndex_; // Protected by raft_mutex_
-  // This keeps track of the highest log entry it knows is executed on that replica
-  std::vector<int> matchIndex_; // Protected by raft_mutex_
-  Role role_; // Protected by raft_mutex_
-  int LeaderId; // Protected by raft_mutex_
-  std::vector<int> votes_; // Protected by raft_mutex_
-  uint64_t heartBeatsSentThisTerm_; // Protected by raft_mutex_
+  // Volatile state on all servers:
+  uint64_t commitIndex_; // Protected by mutex_
+  uint64_t lastApplied_; // Protected by mutex_
+  Role role_; // Protected by mutex_
+  int LeaderId; // Protected by mutex_
+  std::vector<int> votes_; // Protected by mutex_
   std::chrono::steady_clock::time_point last_ae_time_;
-  std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by raft_mutex_
+  std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
 
-  uint64_t prevLogIndex_;
+  uint64_t lastLogIndex_;
   bool is_stop_;
+  const uint64_t quorum_;
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;
   Stats* global_stats_;
-
   ReplicaCommunicator* replica_communicator_;
-  
-  
 };
 
 }  // namespace raft

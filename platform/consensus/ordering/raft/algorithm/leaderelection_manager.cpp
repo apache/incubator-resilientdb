@@ -184,7 +184,7 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
       continue; 
     }
     else if (res == Waited::HEARTBEAT) {
-      LOG(INFO) << __FUNCTION__ << ": Heartbeat received within window";
+      //LOG(INFO) << __FUNCTION__ << ": Heartbeat received within window";
       if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {
         // A leader receiving a heartbeat would be unusual but not impossible.
         LOG(WARNING) << __FUNCTION__ << " Received Heartbeat as LEADER";
