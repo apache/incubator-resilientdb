@@ -20,6 +20,105 @@ from graphql_client import GraphQLClient
 graphql_client = GraphQLClient()
 
 
+async def analyze_transactions(transaction_ids: list[str]) -> Dict[str, Any]:
+    """
+    Analyze a set of transactions and compute summary statistics.
+    
+    Args:
+        transaction_ids: List of transaction IDs to analyze
+        
+    Returns:
+        Dictionary with summary statistics and raw transaction data
+    """
+    transactions = []
+    errors = []
+    
+    # Fetch all transactions
+    for tx_id in transaction_ids:
+        try:
+            result = await graphql_client.get_transaction(tx_id)
+            # Extract the actual transaction data from GraphQL response
+            tx_data = result.get("getTransaction", {})
+            if tx_data:
+                transactions.append(tx_data)
+        except Exception as e:
+            errors.append({
+                "transactionId": tx_id,
+                "error": str(e)
+            })
+    
+    if not transactions:
+        return {
+            "summary": {
+                "total": 0,
+                "successful": 0,
+                "failed": len(errors),
+                "message": "No transactions could be retrieved"
+            },
+            "transactions": [],
+            "errors": errors
+        }
+    
+    # Compute statistics
+    total = len(transactions)
+    amounts = []
+    operations = {}
+    types = set()
+    signers = set()
+    public_keys = set()
+    
+    for tx in transactions:
+        # Collect amounts
+        if "amount" in tx and tx["amount"] is not None:
+            try:
+                amounts.append(int(tx["amount"]))
+            except (ValueError, TypeError):
+                pass
+        
+        # Count operations
+        op = tx.get("operation", "UNKNOWN")
+        operations[op] = operations.get(op, 0) + 1
+        
+        # Collect types
+        if "type" in tx and tx["type"]:
+            types.add(str(tx["type"]))
+        
+        # Collect signers
+        if "signerPublicKey" in tx and tx["signerPublicKey"]:
+            signers.add(str(tx["signerPublicKey"]))
+        
+        # Collect public keys
+        if "publicKey" in tx and tx["publicKey"]:
+            public_keys.add(str(tx["publicKey"]))
+    
+    # Build summary
+    summary = {
+        "total": total,
+        "successful": len(transactions),
+        "failed": len(errors),
+        "byOperation": operations,
+        "distinctTypes": list(types),
+        "distinctSigners": len(signers),
+        "distinctPublicKeys": len(public_keys)
+    }
+    
+    # Add amount statistics if available
+    if amounts:
+        summary["amountStats"] = {
+            "min": min(amounts),
+            "max": max(amounts),
+            "average": sum(amounts) / len(amounts),
+            "total": sum(amounts),
+            "count": len(amounts)
+        }
+    
+    return {
+        "summary": summary,
+        "transactions": transactions,
+        "errors": errors
+    }
+
+
 def _setup_resilientdb_path() -> str:
     """Setup path to ResilientDB resdb_driver for key generation."""
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -181,6 +280,25 @@ async def handle_list_tools() -> list[Tool]:
             }
         ),
         Tool(
+            name="analyzeTransactions",
+            description="Analyze a set of transactions by their IDs and compute summary statistics. Returns summary with counts by operation type, amount statistics (min/max/average), distinct types, signers, and public keys. Also returns raw transaction data and any errors encountered. Useful for understanding transaction patterns and identifying outliers.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "transactionIds": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of transaction IDs to analyze (maximum 20 transactions recommended).",
+                        "minItems": 1,
+                        "maxItems": 20
+                    }
+                },
+                "required": ["transactionIds"]
+            }
+        ),
+        Tool(
             name="get",
             description="Retrieves a value from ResilientDB by key using HTTP REST API (Crow server on port 18000).",
             inputSchema={
@@ -261,6 +379,21 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
                 "asset": arguments["asset"]
             }
             result = await graphql_client.post_transaction(data)
+            return [TextContent(
+                type="text",
+                text=json.dumps(result, indent=2)
+            )]
+        
+        elif name == "analyzeTransactions":
+            transaction_ids = arguments.get("transactionIds", [])
+            if not transaction_ids:
+                raise ValueError("transactionIds list cannot be empty")
+            
+            # Limit to 20 transactions to avoid performance issues
+            if len(transaction_ids) > 20:
+                transaction_ids = transaction_ids[:20]
+            
+            result = await analyze_transactions(transaction_ids)
             return [TextContent(
                 type="text",
                 text=json.dumps(result, indent=2)

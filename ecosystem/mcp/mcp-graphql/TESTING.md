@@ -47,10 +47,10 @@ Replace `YOUR_TRANSACTION_ID` with an actual asset transaction ID from Resilient
 
 ### Test postTransaction Mutation
 
-You'll need to generate cryptographic keys first. For testing, you can use the ResilientDB key generation tools or create keys manually.
+You can still test the underlying GraphQL mutation directly with **manually provided keys**:
 
 ```bash
-# Post a new asset transaction
+# Post a new asset transaction (manual keys)
 curl -X POST http://localhost:8000/graphql \
   -H "Content-Type: application/json" \
   -d '{
@@ -70,7 +70,11 @@ curl -X POST http://localhost:8000/graphql \
   }'
 ```
 
-Replace the placeholder keys with actual cryptographic keys.
+Replace the placeholder keys with actual cryptographic keys (for example, generated via the GraphQL repo’s key tools or `generate_keys_utility.py` in this project).
+
+When using the **MCP server via Claude**, you normally **do not need to generate keys manually**:
+- The `generateKeys` MCP tool can be called explicitly to get signer/recipient keypairs.
+- The `postTransaction` MCP tool will **auto-generate keys** if they are not provided in the arguments.
 
 ### Inspect GraphQL Schema
 
