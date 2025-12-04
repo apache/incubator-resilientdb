@@ -100,6 +100,7 @@ message LearnerUpdate {
     bytes block_hash = 2;
     uint64 seq = 3;
     uint32 sender_id = 4;
+    uint32 excess_bytes = 5;
 }
 
 // The response message containing response

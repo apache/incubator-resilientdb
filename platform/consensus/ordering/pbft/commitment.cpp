@@ -375,6 +375,12 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     // perform message distribution algorithm
     std::vector<uint32_t> F_i;
 
+    uint32_t excess_bytes = 0;
+    while (raw_data.size() % 257 != 0) {
+        raw_data += "0";
+        excess_bytes++;
+    }
+
     uint32_t iter = 0;
     uint32_t c_ik = 0;
     for (int d = 0; d < raw_data.size(); d++) { // data MUST BE A MULTIPLE OF m
@@ -398,6 +404,7 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     learnerUpdate.set_block_hash(block_hash);
     learnerUpdate.set_seq(seq_num);
     learnerUpdate.set_sender_id(config_.GetSelfInfo().id());
+    learnerUpdate.set_excess_bytes(excess_bytes);
 
     for (const auto& learner : config_.GetLearnerInfos()) {
         replica_communicator_->SendMessage(learnerUpdate, learner.id());

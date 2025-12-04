@@ -37,6 +37,7 @@
 #include "platform/proto/resdb.pb.h"
 #include "proto/kv/kv.pb.h"
 #include "platform/statistic/stats.h"
+#include "common/crypto/hash.h"
 
 namespace {
 
@@ -69,6 +70,8 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
                 config.replicas.push_back(replica_info);
             }
         }
+        config.total_replicas = config.replicas.size();
+        config.min_needed = (config.total_replicas - 1) / 3 + 1;
     }
 
     if (config.port <= 0) {
@@ -112,7 +115,7 @@ void Learner::Run() {
     }
 }
 
-void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
+void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) {
     // std::cout << "[Learner] replica connected" << std::endl;
     while (true) {
         void* buffer = nullptr;
@@ -135,7 +138,7 @@ void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
 }
 
 bool Learner::ProcessBroadcast(resdb::Socket* socket,
-                               const std::string& payload) const {    
+                               const std::string& payload) {    
 
     resdb::ResDBMessage envelope;
     if (!envelope.ParseFromString(payload)) {
@@ -164,7 +167,6 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
         return true;
     }
 
-    LOG(INFO) << "HERE 2";
     resdb::LearnerUpdate request;
     if (request.ParseFromString(envelope.data())) {
 
@@ -175,6 +177,7 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
         LOG(INFO) << "HASH: " << request.block_hash();
         LOG(INFO) << "SEQ: " << request.seq();
         LOG(INFO) << "S_ID: " << request.sender_id();
+        LOG(INFO) << "excess_bytes: " << request.excess_bytes();
 
         HandleLearnerUpdate(request);
 
@@ -204,11 +207,12 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
 
 void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
 
-    std::string block_hash = request.block_hash();
-    int seq = request.seq();
-    int sender_id = request.sender_id();
+    std::string block_hash = learnerUpdate.block_hash();
+    int c_seq = learnerUpdate.seq();
+    int sender_id = learnerUpdate.sender_id();
+    int excess_bytes = learnerUpdate.excess_bytes();
 
-    int blockIndex = seq / config_.block_size() - 1;
+    int blockIndex = c_seq / config_.block_size - 1;
 
     // fill sequence status with "havent started" if variable doesnt exist yet
     while (sequence_status.size() < blockIndex + 1) {
@@ -216,17 +220,18 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
     }
     
     switch (sequence_status[blockIndex]) {
-        case 0:
+        case 0: {
             hashCounts.push_back(std::tuple(blockIndex, block_hash, 1));
             learnerUpdates.push_back(learnerUpdate);
             sequence_status[blockIndex] = 1;
 
-            if (1 >= TEMP_VAR_MIN_NEEDED) {
+            if (1 >= config_.min_needed) {
                 sequence_status[blockIndex] = 2;
             }
 
             break;
-        case 1:
+        }
+        case 1: {
             learnerUpdates.push_back(learnerUpdate);
 
             std::tuple<int, std::string, int> *curr_hc = nullptr;
@@ -244,52 +249,207 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
                 curr_hc = &hashCounts.back();
             }
 
-            if (std::get<2>(curr_hc) >= TEMP_VAR_MIN_NEEDED) {
+            if (std::get<2>(*curr_hc) >= config_.min_needed) {
                 sequence_status[blockIndex] = 2;
             }
             break;
-
-        case 2:
+        }
+        case 2: {
             std::tuple<int, std::string, int> *valid_hc = nullptr;
             for (std::tuple<int, std::string, int>& hc : hashCounts) {
                 if (std::get<0>(hc) != blockIndex) continue;
 
-                if (std::get<2>(hc) >= TEMP_VAR_MIN_NEEDED) {
+                if (std::get<2>(hc) >= config_.min_needed) {
                     valid_hc = &hc;
                     break;
                 }
             }
 
-            if (std::get<1>(valid_hc) == block_hash) {
+            if (std::get<1>(*valid_hc) == block_hash) {
 
                 std::vector<resdb::LearnerUpdate> lus;
                 for (resdb::LearnerUpdate lu : learnerUpdates) {
-                    if (lu.block_hash == block_hash) {
+                    if (lu.block_hash() == block_hash) {
                         lus.push_back(lu);
                     }
                 }
 
-                vector<bool> choice(lus.size(), false);
-                for (int i = 0; i < TEMP_VAR_MIN_NEEDED-1; i++) {
+                lus.push_back(learnerUpdate);
+
+                std::vector<bool> choice(lus.size(), false);
+                for (int i = 0; i < config_.min_needed; i++) {
                     choice[i] = true;
                 }
 
                 while (GetNextCombination(choice)) {
+                    if (!choice[choice.size()-1]) continue; // include the current received message
 
-                    
+                    std::vector<int> inds;
+                    std::vector<int> rep_ids;
+                    for (int i = 0; i < choice.size(); i++) {
+                        if (choice[i]) {
+                            inds.push_back(i);
+                            rep_ids.push_back(lus[i].sender_id());
+                        }
+                    }
+
+                    std::vector<std::vector<uint16_t>> A = gen_A(rep_ids);
+
+                    std::vector<std::vector<uint16_t>> Ainv = invertMatrix(A, 257);
+
+                    std::string raw_bytes;
+                    for (auto i_iter = 0; i_iter < learnerUpdate.data().size(); i_iter++) { // iterate through each block of m bytes
+                        
+                        for (auto b_iter = 0; b_iter < config_.min_needed; b_iter++) { // iterate through each byte
+
+                            uint32_t mid = 0;
+                            for (int m_iter = 0; m_iter < config_.min_needed; m_iter++) { // do dot product
+
+                                mid = (mid + Ainv[b_iter][m_iter] * lus[inds[m_iter]].data()[i_iter]) % 257;
+
+                            }
+
+                            raw_bytes += (char)mid;
+
+                        }
+
+                    }
+
+                    for (int i = 0; i < excess_bytes; i++) {
+                        raw_bytes.pop_back();
+                    }
+
+                    std::string final_hash = resdb::utils::CalculateSHA256Hash(raw_bytes);
+
+                    if (final_hash == block_hash) { // we have reconstructed the batch
+                        LOG(INFO) << "RECONSTRUCTED" << c_seq;
+
+                        resdb::RequestBatch batch;
+                        if (batch.ParseFromArray(raw_bytes.data(), static_cast<int>(raw_bytes.size()))) {
+                            std::vector<resdb::Request> out;
+                            for (int i = 0; i < batch.requests_size(); ++i) {
+                                out.push_back(batch.requests(i)); // copies each Request
+                                LOG(INFO) << out[i].seq();
+                            }
+                            
+                        }
+
+                        sequence_status[blockIndex] = 3;
+                    }                  
 
                 }
 
             }
-
             break;
-
-
-    }
+        }
+    
+        }
 
 }
 
-bool Learner::GetNextCombination(vector<bool> &choice) {
+uint32_t Learner::modpow(uint32_t a, uint32_t e, uint32_t p) {
+    uint32_t r = 1;
+    while (e > 0) {
+        if (e & 1) r = (r * a) % p;
+        a = (a * a) % p;
+        e >>= 1;
+    }
+    return r;
+}
+
+uint32_t Learner::modinv(uint32_t x, uint32_t p) {
+    return modpow(x, p - 2, p);
+}
+
+std::vector<std::vector<uint16_t>> Learner::invertMatrix(std::vector<std::vector<uint16_t>> A, int p) {
+    int n = A.size();
+
+    // Form augmented matrix [A | I]
+    std::vector<std::vector<int32_t>> aug(n, std::vector<int32_t>(2*n));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            aug[i][j] = A[i][j] % p;
+
+            aug[i][n+j] = 0;
+            if (i == j) aug[i][n+j] = 1;
+        }
+            
+    }
+
+    // Gauss-Jordan
+    for (int col = 0; col < n; col++) {
+
+        // Find pivot row
+        int pivot = col;
+        while (pivot < n && aug[pivot][col] == 0) pivot++;
+        if (pivot == n) throw std::runtime_error("Matrix is not invertible mod p");
+
+        swap(aug[col], aug[pivot]);
+
+        // Normalize pivot row
+        int32_t inv = modinv(aug[col][col], p);
+        for (int j = 0; j < 2*n; j++)
+            aug[col][j] = (aug[col][j] * inv) % p;
+
+        // Eliminate other rows
+        for (int i = 0; i < n; i++) {
+            if (i == col) continue;
+            int32_t factor = aug[i][col];
+            for (int j = 0; j < 2*n; j++) {
+                int32_t temp = (aug[i][j] - factor * aug[col][j]) % p;
+                if (temp < 0) temp += p;
+                aug[i][j] = temp;
+            }
+        }
+
+    }
+
+    // Extract inverse matrix
+    std::vector<std::vector<uint16_t>> invA(n, std::vector<uint16_t>(n));
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            invA[i][j] = aug[i][n+j];
+
+    return invA;
+}
+
+std::vector<std::vector<uint16_t>> Learner::gen_A(std::vector<int> inds) { 
+    
+    int n = inds.size();
+    int m = config_.min_needed;
+    int p = 257;
+
+    std::vector<std::vector<uint16_t>> A(n,std::vector<uint16_t>(m));
+
+    for (int i = 0; i < n; i++) {
+
+        for (int j = 0; j < m; j++) {
+
+            int exp = j;
+            int base = inds[i];
+            int mod = p;
+            int result = 1;
+
+            while (exp > 0) {
+                if (exp & 1) {
+                    result = (result * base) % mod;
+                }
+
+                base = (base * base) % mod;
+                exp >>= 1;
+            }
+
+            A[i][j] = result;
+
+        }
+
+    }
+
+    return A;
+
+}
+
+bool Learner::GetNextCombination(std::vector<bool> &choice) {
     int stage = 0;
     int counter = 0;
     for (int i = choice.size() - 1; i >= 0; i--) {

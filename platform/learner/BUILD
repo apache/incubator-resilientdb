@@ -32,6 +32,7 @@ cc_library(
         "//platform/proto:resdb_cc_proto",
         "//proto/kv:kv_cc_proto",
         "@com_github_google_glog//:glog",
+        "//common/crypto:hash",
     ],
 )
 
