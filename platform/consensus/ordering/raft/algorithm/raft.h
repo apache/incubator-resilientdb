@@ -74,15 +74,15 @@ class Raft : public common::ProtocolBase {
 
   // This is for everyone
   // Most recent term it has seen
-  int currentTerm_; // Protected by raft_mutex_
+  uint64_t currentTerm_; // Protected by raft_mutex_
   // Id for vote in current Term
   int votedFor_; // Protected by raft_mutex_
 
   // Volatile on all servers
   // Index of highest log entry it knows to be committed
-  int64_t commitIndex_; // Protected by raft_mutex_
+  uint64_t commitIndex_; // Protected by raft_mutex_
   // Index of highest log entry executed
-  int64_t lastApplied_; // Protected by raft_mutex_
+  uint64_t lastApplied_; // Protected by raft_mutex_
 
   // Only for leaders
   // This keeps track of the next log entry to send to that replica
@@ -97,7 +97,7 @@ class Raft : public common::ProtocolBase {
   std::chrono::steady_clock::time_point last_ae_time_;
   std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by raft_mutex_
 
-  int64_t prevLogIndex_;
+  uint64_t prevLogIndex_;
   bool is_stop_;
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;
