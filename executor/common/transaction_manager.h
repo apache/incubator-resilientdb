@@ -37,14 +37,18 @@ class TransactionManager {
   TransactionManager(bool is_out_of_order = false, bool need_response = true);
   virtual ~TransactionManager() = default;
 
-  virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
-      const BatchUserRequest& request);
+  std::unique_ptr<BatchUserResponse> ExecuteBatchWithSeq(uint64_t seq, const BatchUserRequest& request);
+
+  virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(const BatchUserRequest& request);
 
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request);
 
+  std::vector<std::unique_ptr<std::string>> ExecuteBatchDataWithSeq(
+      uint64_t seq, const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
   std::vector<std::unique_ptr<std::string>> ExecuteBatchData(
       const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
+
   virtual std::unique_ptr<std::string> ExecuteData(const std::string& request);
 
   bool IsOutOfOrder();
@@ -58,6 +62,7 @@ class TransactionManager {
       const std::string& data);
   virtual std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& request);
+  uint64_t seq_ = 0;
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

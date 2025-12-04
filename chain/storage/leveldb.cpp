@@ -93,6 +93,64 @@ ResLevelDB::~ResLevelDB() {
   }
 }
 
+int ResLevelDB::SetValueWithSeq(const std::string& key,
+                                    const std::string& value, uint64_t seq) {
+  std::string value_str = GetValue(key);
+  ValueHistory history;
+  if (!history.ParseFromString(value_str)) {
+    LOG(ERROR) << "old_value parse fail";
+    return -2;
+  }
+
+  uint64_t last_seq = 0;
+  if (history.value_size() > 0) {
+    last_seq = history.value(history.value_size() - 1).seq();
+  }
+
+  if (last_seq > seq) {
+    LOG(ERROR) << "seq is small, last:" <<  last_seq << " new seq:" << seq;
+    return -2;
+  }
+
+  Value* new_value = history.add_value();
+  new_value->set_value(value);
+  new_value->set_seq(seq);
+
+  while(history.value_size()>max_history_) {
+    history.mutable_value()->erase(history.mutable_value()->begin());
+  }
+
+  LOG(ERROR)<<" set value, string:"<<key<<" seq:"<<seq;
+  history.SerializeToString(&value_str);
+  return SetValue(key, value_str);
+}
+
+std::pair<std::string, uint64_t> ResLevelDB::GetValueWithSeq(
+    const std::string& key, uint64_t seq) {
+  std::string value_str = GetValue(key);
+  ValueHistory history;
+  if (!history.ParseFromString(value_str)) {
+    LOG(ERROR) << "old_value parse fail";
+    return std::make_pair("", 0);
+  }
+  if (history.value_size() == 0) {
+    return std::make_pair("", 0);
+  }
+  if (seq > 0) {
+    for (int i = history.value_size() - 1; i >= 0; --i) {
+      if (history.value(i).seq() == seq) {
+        return std::make_pair(history.value(i).value(),
+                              history.value(i).seq());
+      }
+    }
+    return std::make_pair("", 0);
+  }
+  int last_idx = history.value_size() - 1;
+  return std::make_pair(history.value(last_idx).value(),
+                        history.value(last_idx).seq());
+}
+
+
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
   if (block_cache_) {
     block_cache_->Put(key, value);
@@ -131,21 +189,6 @@ std::string ResLevelDB::GetValue(const std::string& key) {
 
   UpdateMetrics();
   return value;
-}
-
-std::string ResLevelDB::GetAllValues(void) {
-  std::string values = "[";
-  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
-  bool first_iteration = true;
-  for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    if (!first_iteration) values.append(",");
-    first_iteration = false;
-    values.append(it->value().ToString());
-  }
-  values.append("]");
-
-  delete it;
-  return values;
 }
 
 std::string ResLevelDB::GetRange(const std::string& min_key,
@@ -242,6 +285,29 @@ std::pair<std::string, int> ResLevelDB::GetValueWithVersion(
   return std::make_pair(history.value(last_idx).value(),
                         history.value(last_idx).version());
 }
+
+// Return a map of <key, <value, version>>
+std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> ResLevelDB::GetAllItemsWithSeq() {
+  std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> resp;
+
+  leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    ValueHistory history;
+    if (!history.ParseFromString(it->value().ToString()) ||
+        history.value_size() == 0) {
+      LOG(ERROR) << "old_value parse fail";
+      continue;
+    }
+    LOG(ERROR)<<"history value size:"<<history.value_size();
+    for(auto value: history.value()) {
+      resp[it->key().ToString()].push_back(std::make_pair(value.value(), value.seq()));
+    }
+  }
+  delete it;
+
+  return resp;
+}
+
 
 // Return a map of <key, <value, version>>
 std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetAllItems() {

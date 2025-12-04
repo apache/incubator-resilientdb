@@ -135,16 +135,17 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  LOG(ERROR)<<" set key:"<<key;
-  storage_->SetValue(key, value);
+  storage_->SetValueWithSeq(key, value, seq_);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
   LOG(ERROR)<<" get key:"<<key;
-  return storage_->GetValue(key);
+  return storage_->GetValueWithSeq(key,0).first;
 }
 
-std::string KVExecutor::GetAllValues() { return storage_->GetAllValues(); }
+std::string KVExecutor::GetAllValues() { 
+  return ""; 
+}
 
 // Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,
@@ -165,14 +166,7 @@ void KVExecutor::GetWithVersion(const std::string& key, int version,
 }
 
 void KVExecutor::GetAllItems(Items* items) {
-  const std::map<std::string, std::pair<std::string, int>>& ret =
-      storage_->GetAllItems();
-  for (auto it : ret) {
-    Item* item = items->add_item();
-    item->set_key(it.first);
-    item->mutable_value_info()->set_value(it.second.first);
-    item->mutable_value_info()->set_version(it.second.second);
-  }
+  return;
 }
 
 void KVExecutor::GetKeyRange(const std::string& min_key,

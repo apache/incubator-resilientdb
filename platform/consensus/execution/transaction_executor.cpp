@@ -246,7 +246,7 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   std::unique_ptr<BatchUserResponse> response;
    global_stats_->GetTransactionDetails(batch_request);
   if (transaction_manager_) {
-    response = transaction_manager_->ExecuteBatch(batch_request);
+    response = transaction_manager_->ExecuteBatchWithSeq(request->seq(), batch_request);
   }
 
   // global_stats_->IncTotalRequest(batch_request.user_requests_size());
@@ -291,7 +291,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   global_stats_->GetTransactionDetails(*batch_request_p);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
-      response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      response = transaction_manager_->ExecuteBatchWithSeq(request->seq(), *batch_request_p);
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
@@ -308,10 +308,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
       WaitForExecute(request->seq());
 	    if(data_p->empty() || (*data_p)[0] == nullptr){
-		    response = transaction_manager_->ExecuteBatch(*batch_request_p);
+		    response = transaction_manager_->ExecuteBatchWithSeq(request->seq(), *batch_request_p);
 	    }
 	    else {
-		    response_v = transaction_manager_->ExecuteBatchData(*data_p);
+		    response_v = transaction_manager_->ExecuteBatchDataWithSeq(request->seq(), *data_p);
 	    }
       FinishExecute(request->seq());
 
