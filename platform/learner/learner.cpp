@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <tuple>
 
 #include <glog/logging.h>
 #include <nlohmann/json.hpp>
@@ -134,9 +135,12 @@ void Learner::HandleClient(std::unique_ptr<resdb::Socket> socket) const {
 }
 
 bool Learner::ProcessBroadcast(resdb::Socket* socket,
-                               const std::string& payload) const {
+                               const std::string& payload) const {    
+
     resdb::ResDBMessage envelope;
     if (!envelope.ParseFromString(payload)) {
+
+        LOG(INFO) << "HERE 1";
         resdb::KVRequest kv_request;
         if (kv_request.ParseFromString(payload)) {
             if (HandleReadOnlyRequest(socket, kv_request)) {
@@ -160,20 +164,32 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
         return true;
     }
 
-    resdb::Request request;
+    LOG(INFO) << "HERE 2";
+    resdb::LearnerUpdate request;
     if (request.ParseFromString(envelope.data())) {
+
+        if (request.sender_id() == 0) return true;
+
+        LOG(INFO) << "FFFFFFFFFFFFFFFFFFFFFFFFF";
+        // LOG(INFO) << "DATA: " << request.data();
+        LOG(INFO) << "HASH: " << request.block_hash();
+        LOG(INFO) << "SEQ: " << request.seq();
+        LOG(INFO) << "S_ID: " << request.sender_id();
+
+        HandleLearnerUpdate(request);
+
         ++total_messages_;
-        total_bytes_.fetch_add(payload.size());
-        last_type_.store(request.type());
-        last_seq_.store(request.seq());
-        last_sender_.store(request.sender_id());
-        last_payload_bytes_.store(request.data().size());
-        resdb::BatchUserResponse batch_response;
-        if (batch_response.ParseFromString(request.data())) {
-            total_sets_.fetch_add(batch_response.set_count());
-            total_reads_.fetch_add(batch_response.read_count());
-            total_deletes_.fetch_add(batch_response.delete_count());
-        }
+        // total_bytes_.fetch_add(payload.size());
+        // last_type_.store(request.type());
+        // last_seq_.store(request.seq());
+        // last_sender_.store(request.sender_id());
+        // last_payload_bytes_.store(request.data().size());
+        // resdb::BatchUserResponse batch_response;
+        // if (batch_response.ParseFromString(request.data())) {
+        //     total_sets_.fetch_add(batch_response.set_count());
+        //     total_reads_.fetch_add(batch_response.read_count());
+        //     total_deletes_.fetch_add(batch_response.delete_count());
+        // }
         return true;
     }
 
@@ -184,6 +200,128 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
     last_sender_.store(-1);
     last_payload_bytes_.store(envelope.data().size());
     return true;
+}
+
+void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
+
+    std::string block_hash = request.block_hash();
+    int seq = request.seq();
+    int sender_id = request.sender_id();
+
+    int blockIndex = seq / config_.block_size() - 1;
+
+    // fill sequence status with "havent started" if variable doesnt exist yet
+    while (sequence_status.size() < blockIndex + 1) {
+        sequence_status.push_back(0);
+    }
+    
+    switch (sequence_status[blockIndex]) {
+        case 0:
+            hashCounts.push_back(std::tuple(blockIndex, block_hash, 1));
+            learnerUpdates.push_back(learnerUpdate);
+            sequence_status[blockIndex] = 1;
+
+            if (1 >= TEMP_VAR_MIN_NEEDED) {
+                sequence_status[blockIndex] = 2;
+            }
+
+            break;
+        case 1:
+            learnerUpdates.push_back(learnerUpdate);
+
+            std::tuple<int, std::string, int> *curr_hc = nullptr;
+            for (std::tuple<int, std::string, int>& hc : hashCounts) {
+                if (std::get<0>(hc) != blockIndex) continue;
+
+                if (std::get<1>(hc) == block_hash) {
+                    curr_hc = &hc;
+                    break;
+                }
+            }
+
+            if (curr_hc == nullptr) {
+                hashCounts.push_back(std::tuple<int, std::string, int>(blockIndex, block_hash, 1));
+                curr_hc = &hashCounts.back();
+            }
+
+            if (std::get<2>(curr_hc) >= TEMP_VAR_MIN_NEEDED) {
+                sequence_status[blockIndex] = 2;
+            }
+            break;
+
+        case 2:
+            std::tuple<int, std::string, int> *valid_hc = nullptr;
+            for (std::tuple<int, std::string, int>& hc : hashCounts) {
+                if (std::get<0>(hc) != blockIndex) continue;
+
+                if (std::get<2>(hc) >= TEMP_VAR_MIN_NEEDED) {
+                    valid_hc = &hc;
+                    break;
+                }
+            }
+
+            if (std::get<1>(valid_hc) == block_hash) {
+
+                std::vector<resdb::LearnerUpdate> lus;
+                for (resdb::LearnerUpdate lu : learnerUpdates) {
+                    if (lu.block_hash == block_hash) {
+                        lus.push_back(lu);
+                    }
+                }
+
+                vector<bool> choice(lus.size(), false);
+                for (int i = 0; i < TEMP_VAR_MIN_NEEDED-1; i++) {
+                    choice[i] = true;
+                }
+
+                while (GetNextCombination(choice)) {
+
+                    
+
+                }
+
+            }
+
+            break;
+
+
+    }
+
+}
+
+bool Learner::GetNextCombination(vector<bool> &choice) {
+    int stage = 0;
+    int counter = 0;
+    for (int i = choice.size() - 1; i >= 0; i--) {
+        if (stage == 0) {
+            if (choice[i] == 1) {
+                stage = 1;
+                counter = 1;
+                choice[i] = 0;
+            }
+        } else if (stage == 1) {
+            if (choice[i] == 1) {
+                counter++;
+                choice[i] = 0;
+            } else {
+                stage = 2;
+            }
+        } else if (stage == 2) {
+            if (choice[i] = 1) {
+                choice[i] = 0;
+                counter++;
+
+                while (counter > 0) {
+                    choice[i+counter] = 1;
+                    counter--;
+                }
+
+                stage = 3;
+            }
+        }
+    }
+
+    return stage == 3;
 }
 
 void Learner::MetricsLoop() const {

@@ -24,6 +24,7 @@
 #include <thread>
 #include <unordered_set>
 #include <vector>
+#include <tuple>
 
 #include "chain/storage/storage.h"
 #include "proto/kv/kv.pb.h"
@@ -59,6 +60,8 @@ private:
     void PrintMetrics() const;
     void InitializeStorage();
 
+    void HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate);
+
 private:
     LearnerConfig config_;
     std::atomic<bool> is_running_{false};
@@ -74,4 +77,8 @@ private:
     mutable std::thread metrics_thread_;
     mutable std::unique_ptr<resdb::Storage> storage_;
     std::unordered_set<std::string> known_keys_;
+
+    std::vector<int> sequence_status; // 0 = not started, 1 = unknown valid hash, 2 = known valid hash, 3 = completed
+    std::vector<resdb::LearnerUpdate> learnerUpdates;
+    std::vector<std::tuble<int, std::string, int>> hashCounts;
 };

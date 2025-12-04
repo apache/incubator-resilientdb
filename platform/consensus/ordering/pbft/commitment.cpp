@@ -360,28 +360,28 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     // adds all requests into one batch variable
     RequestBatch batch;
     for (const auto& r : reqs_to_learner) {
-        *batch.add_requests()->Swap(r.get());
+        batch.add_requests()->Swap(r.get());
     }
 
     // turn the entire batch variable into string
     batch.SerializeToString(&raw_data);
 
     // generate hash of entire batch
-    str::string block_hash = CalculateSHA256Hash(raw_data);
+    std::string block_hash = resdb::utils::CalculateSHA256Hash(raw_data);
 
     // generate correct row of Vandermode matrix
-    A_i = gen_A_row(config_.GetSelfInfo().id());
+    std::vector<uint16_t> A_i = gen_A_row();
 
     // perform message distribution algorithm
-    vector<uint32_t> F_i;
+    std::vector<uint32_t> F_i;
 
     uint32_t iter = 0;
     uint32_t c_ik = 0;
     for (int d = 0; d < raw_data.size(); d++) { // data MUST BE A MULTIPLE OF m
-        c_ik = (c_ik + A_i[iter] * raw_data[d]) % p;
+        c_ik = (c_ik + A_i[iter] * raw_data[d]) % 257;
 
         iter++;
-        if (iter == m) {
+        if (iter == A_i.size()) {
             F_i.push_back(c_ik);
             
             c_ik = 0;
@@ -405,13 +405,13 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     
 }
 
-vector<uint16_t> Commitment::gen_A_row() { 
+std::vector<uint16_t> Commitment::gen_A_row() { 
     
     int n = config_.GetReplicaNum();
     int m = config_.GetMinClientReceiveNum();
     int p = 257;
 
-    vector<uint16_t> A_i(m);
+    std::vector<uint16_t> A_i(m);
 
     int i = config_.GetSelfInfo().id();
 
@@ -431,11 +431,11 @@ vector<uint16_t> Commitment::gen_A_row() {
             exp >>= 1;
         }
 
-        A[j] = result;
+        A_i[j] = result;
 
     }
 
-    return A;
+    return A_i;
 
 }
 

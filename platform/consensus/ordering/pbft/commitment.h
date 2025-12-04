@@ -60,8 +60,8 @@ class Commitment {
   virtual int PostProcessExecutedMsg();
 
   // distributed message functions
-  vector<uint16_t> Commitment::gen_A_row();
-  vector<uint16_t> Commitment::SendUpdateToLearners(int seq_num);
+  std::vector<uint16_t> gen_A_row();
+  void SendUpdateToLearners(int seq_num);
 
  protected:
   ResDBConfig config_;
