@@ -44,6 +44,51 @@ def _setup_resilientdb_path() -> str:
     )
 
 
+def _setup_sha3_shim():
+    """Setup sha3 module shim using Python's built-in hashlib for Python 3.11+."""
+    import hashlib
+    import sys
+    from types import ModuleType
+    
+    class SHA3_256:
+        """SHA3-256 hash implementation using Python's built-in hashlib."""
+        
+        def __init__(self, data=None):
+            """Initialize SHA3-256 hash object."""
+            self._hash = hashlib.sha3_256()
+            if data is not None:
+                if isinstance(data, str):
+                    data = data.encode('utf-8')
+                self._hash.update(data)
+        
+        def update(self, data):
+            """Update the hash with additional data."""
+            if isinstance(data, str):
+                data = data.encode('utf-8')
+            self._hash.update(data)
+        
+        def hexdigest(self):
+            """Return the hexadecimal digest of the hash."""
+            return self._hash.hexdigest()
+        
+        def digest(self):
+            """Return the binary digest of the hash."""
+            return self._hash.digest()
+    
+    # Create a factory function that returns instances
+    def sha3_256(data=None):
+        """Factory function for SHA3-256 hash objects."""
+        return SHA3_256(data)
+    
+    # Create a fake sha3 module and inject it into sys.modules
+    sha3_module = ModuleType('sha3')
+    sha3_module.sha3_256 = sha3_256
+    
+    # Only inject if sha3 is not already available
+    if 'sha3' not in sys.modules:
+        sys.modules['sha3'] = sha3_module
+
+
 def generate_keypairs() -> Dict[str, str]:
     """
     Generate Ed25519 keypairs for ResilientDB transactions.
@@ -53,6 +98,8 @@ def generate_keypairs() -> Dict[str, str]:
     """
     try:
         _setup_resilientdb_path()
+        # Setup sha3 shim before importing crypto (which imports sha3)
+        _setup_sha3_shim()
         from crypto import generate_keypair
     except ImportError as e:
         raise ImportError(
@@ -267,4 +314,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
