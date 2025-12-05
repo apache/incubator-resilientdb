@@ -47,6 +47,16 @@ void ResQL::CreateDB(const DuckDBInfo& config) {
   } else {
     db_ = std::make_unique<duckdb::DuckDB>(db_path, &db_config);
   }
+
+  // Ensure extension auto-install/load is enabled at the connection level too.
+  try {
+    duckdb::Connection init_conn(*db_);
+    init_conn.Query("SET autoload_known_extensions=1");
+    init_conn.Query("SET autoinstall_known_extensions=1");
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Failed to set DuckDB extension auto-load/install flags: "
+               << e.what();
+  }
 }
 
 std::string ResQL::ExecuteSQL(const std::string& sql_string){

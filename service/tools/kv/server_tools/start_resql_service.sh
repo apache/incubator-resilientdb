@@ -38,6 +38,16 @@ EXTRA_FLAGS="--enable_duckdb"
 # No additional flag parsing; DuckDB is always enabled.
 bazel build //service/kv:kv_service
 
+for port in {20001..20005}; do
+    DIR="${WORK_PATH}/${port}_db"
+    if [ ! -d "$DIR" ]; then
+        echo "Creating directory $DIR"
+        mkdir -p "$DIR"
+    else
+        echo "Directory $DIR already exists. Skipping."
+    fi
+done
+
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert $EXTRA_FLAGS > server0.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert $EXTRA_FLAGS > server1.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert $EXTRA_FLAGS > server2.log 2>&1 &
