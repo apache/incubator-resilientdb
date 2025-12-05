@@ -102,7 +102,7 @@ if __name__ == "__main__":
         file_return_data = file_return_item["data"]
         try:
             # Encode the latin-1 string back to bytes
-            content_bytes = file_return_data.encode("latin-1")
+            content_bytes = base64.b64decode(file_return_data)
 
             # **CRITICAL FIX: Open in binary write mode ('wb')**
             with open(fileName, 'wb') as file:
