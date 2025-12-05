@@ -102,7 +102,8 @@ if __name__ == "__main__":
         file_return_data = file_return_item["data"]
         try:
             # Encode the base64 string back to bytes
-            content_bytes = base64.b64encode(binary_content).decode('utf-8')
+            content_bytes = file.read()
+            content = base64.b64encode(content_bytes).decode('utf-8')
 
             # **CRITICAL FIX: Open in binary write mode ('wb')**
             with open(fileName, 'wb') as file:

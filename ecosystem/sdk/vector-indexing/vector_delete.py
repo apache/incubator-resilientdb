@@ -59,7 +59,7 @@ def rebuild_and_save_index(embedding_keys: Dict[str, Any], hnsw_text_entries: Li
             with open(fileName, 'rb') as file:
                 content_bytes = file.read()
                 # Decode the bytes to a base64 string for ResDB storage
-                content = base64.b64encode(binary_content).decode('utf-8')
+                content = base64.b64encode(content_bytes).decode('utf-8')
                 hnsw_library.put_record(key, content)
         except Exception as e:
             print(f"Critical Save Error (2/5 - {pairing[0]}): {e}")

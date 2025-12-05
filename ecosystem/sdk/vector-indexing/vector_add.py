@@ -156,7 +156,7 @@ if __name__ == "__main__":
             with open(fileName, 'rb') as file:
                 content_bytes = file.read()
                 # Decode the bytes to a base64 string for ResDB storage
-                content = base64.b64encode(binary_content).decode('utf-8')
+                content = base64.b64encode(content_bytes).decode('utf-8')
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
             print(pairing)
