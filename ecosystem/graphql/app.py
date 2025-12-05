@@ -18,6 +18,8 @@
 #
 #
 
+import tempfile
+import os
 from resdb_driver import Resdb
 from resdb_driver.crypto import generate_keypair
 
@@ -35,20 +37,12 @@ from typing import Optional, List, Any
 from flask import Flask
 from flask_cors import CORS
 
+from json_scalar import JSONScalar 
+
 app = Flask(__name__)
 CORS(app) # This will enable CORS for all routes
 
 from strawberry.flask.views import GraphQLView
-
-@strawberry.scalar(description="Custom JSON scalar")
-class JSONScalar:
-    @staticmethod
-    def serialize(value: Any) -> Any:
-        return value  # Directly return the JSON object
-
-    @staticmethod
-    def parse_value(value: Any) -> Any:
-        return value  # Accept JSON as is
 
 @strawberry.type
 class RetrieveTransaction:
@@ -94,6 +88,30 @@ class Query:
             asset=data["asset"]
         )
         return payload
+    
+    @strawberry.field
+    def count_cats(self) -> str:
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+
+            #Write to file
+            lines = ["cat", "cat", "cat", "mouse", "cat"]
+            for line in lines:
+                tmp_file.write(line + "\n")
+
+        # Count number of cats
+        cat_count = 0
+        with open(tmp_path, "r") as f:
+            for line in f:
+                if "cat" in line.strip():
+                    cat_count += 1
+
+        #Delete temporary file
+        os.remove(tmp_path)
+
+        #return number of cats
+        return f'The word "cat" appears {cat_count} times'
 
 @strawberry.type
 class Mutation:
