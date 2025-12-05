@@ -18,9 +18,11 @@ except ImportError:
 
 from config import Config
 from graphql_client import GraphQLClient
+from rescontract_client import ResContractClient
 
 # Initialize clients
 graphql_client = GraphQLClient()
+rescontract_client = ResContractClient()
 
 
 async def send_monitoring_data(tool_name: str, args: dict, result: Any, duration: float):
@@ -351,6 +353,252 @@ async def handle_list_tools() -> list[Tool]:
                 },
                 "required": ["key", "value"]
             }
+        ),
+        # Smart Contract Tools
+        Tool(
+            name="introspectGraphQL",
+            description="Introspect the ResilientDB GraphQL schema to see available types and operations.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="compileContract",
+            description="Compile a Solidity smart contract to JSON format.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "sol_path": {
+                        "type": "string",
+                        "description": "Path to the .sol file."
+                    },
+                    "output_name": {
+                        "type": "string",
+                        "description": "Name of the output .json file."
+                    }
+                },
+                "required": ["sol_path", "output_name"]
+            }
+        ),
+        Tool(
+            name="deployContract",
+            description="Deploy a smart contract to ResilientDB.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "config_path": {
+                        "type": "string",
+                        "description": "Path to the client configuration file."
+                    },
+                    "contract_path": {
+                        "type": "string",
+                        "description": "Path to the compiled contract JSON file."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the contract."
+                    },
+                    "arguments": {
+                        "type": "string",
+                        "description": "Constructor parameters (comma-separated)."
+                    },
+                    "owner_address": {
+                        "type": "string",
+                        "description": "The address of the contract owner."
+                    }
+                },
+                "required": ["config_path", "contract_path", "name", "arguments", "owner_address"]
+            }
+        ),
+        Tool(
+            name="executeContract",
+            description="Execute a function on a deployed smart contract.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "config_path": {
+                        "type": "string",
+                        "description": "Path to the client configuration file."
+                    },
+                    "sender_address": {
+                        "type": "string",
+                        "description": "The address of the sender executing the function."
+                    },
+                    "contract_address": {
+                        "type": "string",
+                        "description": "The address of the deployed contract."
+                    },
+                    "function_name": {
+                        "type": "string",
+                        "description": "Name of the function to execute (including parameter types, e.g., 'transfer(address,uint256)')."
+                    },
+                    "arguments": {
+                        "type": "string",
+                        "description": "Arguments to pass to the function (comma-separated)."
+                    }
+                },
+                "required": ["config_path", "sender_address", "contract_address", "function_name", "arguments"]
+            }
+        ),
+        Tool(
+            name="createAccount",
+            description="Create a new ResilientDB account for smart contract operations.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "config_path": {
+                        "type": "string",
+                        "description": "Path to the client configuration file."
+                    }
+                },
+                "required": ["config_path"]
+            }
+        ),
+        Tool(
+            name="checkReplicasStatus",
+            description="Check the status of ResilientDB contract service replicas. Returns information about how many of the 5 required replicas are currently running.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="startReplicas",
+            description="Start or restart the ResilientDB contract service replica cluster. WARNING: This will wipe the existing blockchain state.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="getServerLogs",
+            description="Get recent log entries from a specific replica server.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "server_id": {
+                        "type": "integer",
+                        "description": "The server ID (0-3 for server0.log through server3.log). Default is 0."
+                    },
+                    "lines": {
+                        "type": "integer",
+                        "description": "Number of recent log lines to retrieve. Default is 50."
+                    }
+                },
+                "required": []
+            }
+        ),
+        Tool(
+            name="getClientLogs",
+            description="Get recent log entries from the client proxy.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "lines": {
+                        "type": "integer",
+                        "description": "Number of recent log lines to retrieve. Default is 50."
+                    }
+                },
+                "required": []
+            }
+        ),
+        Tool(
+            name="validateConfig",
+            description="Validate a ResilientDB configuration file. Checks for file existence, correct format, valid addresses, valid ports, and other configuration errors.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "config_path": {
+                        "type": "string",
+                        "description": "Absolute path to the configuration file to validate."
+                    }
+                },
+                "required": ["config_path"]
+            }
+        ),
+        Tool(
+            name="healthCheck",
+            description="Perform a comprehensive health check of all ResilientDB system components. Checks replicas, REST API, GraphQL API, and network latency.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="listAllAccounts",
+            description="List all accounts found on the ResilientDB blockchain. Parses server logs to find all created accounts and their activity levels.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="getTransactionHistory",
+            description="Query transaction history from the ResilientDB blockchain. Parses server logs to extract DEPLOY and EXECUTE transactions with filtering options.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of transactions to return. Default is 50."
+                    },
+                    "tx_type": {
+                        "type": "string",
+                        "description": "Filter by transaction type: 'DEPLOY' or 'EXECUTE'. Optional."
+                    },
+                    "address": {
+                        "type": "string",
+                        "description": "Filter by account address (shows transactions involving this address). Optional."
+                    }
+                },
+                "required": []
+            }
+        ),
+        Tool(
+            name="searchLogs",
+            description="Search for a text pattern in the server logs.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The text string to search for (e.g., 'Error', 'TransactionID')."
+                    },
+                    "server_id": {
+                        "type": "integer",
+                        "description": "Optional server ID (0-3) to search only one log. If omitted, searches all logs."
+                    },
+                    "lines": {
+                        "type": "integer",
+                        "description": "Maximum number of matching lines to return. Default is 100."
+                    }
+                },
+                "required": ["query"]
+            }
+        ),
+        Tool(
+            name="getConsensusMetrics",
+            description="Get internal consensus metrics from the system logs. Extracts the current View Number, Sequence Number, and Primary Replica ID.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        ),
+        Tool(
+            name="archiveLogs",
+            description="Archive all current log files to a ZIP file. Creates a timestamped ZIP file containing server0-3.log, client.log, and configuration files.",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
         )
     ]
 
@@ -395,6 +643,21 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
                 arguments["signerPrivateKey"] = keys["signerPrivateKey"]
                 arguments["recipientPublicKey"] = keys["recipientPublicKey"]
             
+            # Process asset - ensure it has 'data' field
+            asset = arguments["asset"]
+            if isinstance(asset, str):
+                try:
+                    asset = json.loads(asset)
+                except json.JSONDecodeError:
+                    pass  # Keep as string if not valid JSON
+            
+            # If asset is a dict but doesn't have 'data' field, wrap it
+            if isinstance(asset, dict) and "data" not in asset:
+                asset = {"data": asset}
+            elif not isinstance(asset, dict):
+                # If it's still a string or other type, wrap it in data
+                asset = {"data": asset}
+            
             # Build PrepareAsset from individual arguments
             data = {
                 "operation": arguments["operation"],
@@ -402,7 +665,7 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
                 "signerPublicKey": arguments["signerPublicKey"],
                 "signerPrivateKey": arguments["signerPrivateKey"],
                 "recipientPublicKey": arguments["recipientPublicKey"],
-                "asset": arguments["asset"]
+                "asset": asset
             }
             result = await graphql_client.post_transaction(data)
             return [TextContent(
@@ -440,6 +703,220 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
             return [TextContent(
                 type="text",
                 text=json.dumps(result, indent=2)
+            )]
+        
+        # Smart Contract Tools
+        elif name == "introspectGraphQL":
+            query = "{ __schema { types { name } } }"
+            result = await graphql_client.execute_query(query)
+            return [TextContent(
+                type="text",
+                text=json.dumps(result, indent=2)
+            )]
+        
+        elif name == "compileContract":
+            sol_path = arguments["sol_path"]
+            output_name = arguments["output_name"]
+            result = rescontract_client.compile_solidity(sol_path, output_name)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "output": result}, indent=2)
+            )]
+        
+        elif name == "deployContract":
+            config_path = arguments["config_path"]
+            contract_path = arguments["contract_path"]
+            name = arguments["name"]
+            arguments_str = arguments.get("arguments", "")
+            owner_address = arguments["owner_address"]
+            result = rescontract_client.deploy_contract(config_path, contract_path, name, arguments_str, owner_address)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "output": result}, indent=2)
+            )]
+        
+        elif name == "executeContract":
+            config_path = arguments["config_path"]
+            sender_address = arguments["sender_address"]
+            contract_address = arguments["contract_address"]
+            function_name = arguments["function_name"]
+            arguments_str = arguments.get("arguments", "")
+            result = rescontract_client.execute_contract(config_path, sender_address, contract_address, function_name, arguments_str)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "output": result}, indent=2)
+            )]
+        
+        elif name == "createAccount":
+            config_path = arguments["config_path"]
+            result = rescontract_client.create_account(config_path)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "output": result}, indent=2)
+            )]
+        
+        elif name == "checkReplicasStatus":
+            status = rescontract_client.check_replica_status()
+            response = f"{status['message']}\n\n"
+            if status['count'] > 0:
+                response += "Running processes:\n"
+                for i, detail in enumerate(status['details'], 1):
+                    detail_short = detail[:150] + "..." if len(detail) > 150 else detail
+                    response += f"{i}. {detail_short}\n"
+            if not status['running']:
+                response += "\n⚠️ System is NOT ready for operations. Use startReplicas tool to start the cluster."
+            else:
+                response += "\n✅ System is ready for contract operations."
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": status, "message": response}, indent=2)
+            )]
+        
+        elif name == "startReplicas":
+            result = rescontract_client.start_replica_cluster()
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "output": result, "warning": "The blockchain state has been reset. You will need to create new accounts and redeploy contracts."}, indent=2)
+            )]
+        
+        elif name == "getServerLogs":
+            server_id = arguments.get("server_id", 0)
+            lines = arguments.get("lines", 50)
+            if server_id < 0 or server_id > 3:
+                raise ValueError(f"server_id must be between 0 and 3. Got: {server_id}")
+            log_file = f"server{server_id}.log"
+            result = rescontract_client.get_logs(log_file, lines)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"log_file": log_file, "lines": lines, "content": result}, indent=2)
+            )]
+        
+        elif name == "getClientLogs":
+            lines = arguments.get("lines", 50)
+            result = rescontract_client.get_logs("client.log", lines)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"log_file": "client.log", "lines": lines, "content": result}, indent=2)
+            )]
+        
+        elif name == "validateConfig":
+            config_path = arguments["config_path"]
+            result = rescontract_client.validate_config(config_path)
+            return [TextContent(
+                type="text",
+                text=json.dumps(result, indent=2)
+            )]
+        
+        elif name == "healthCheck":
+            health = rescontract_client.health_check()
+            status_emoji = {
+                "healthy": "✅",
+                "degraded": "⚠️",
+                "down": "❌"
+            }
+            overall_emoji = status_emoji.get(health["overall_status"], "❓")
+            report = f"🏥 ResilientDB Health Check Report\n\n"
+            report += f"Overall Status: {overall_emoji} {health['overall_status'].upper()}\n\n"
+            report += "📊 Components:\n"
+            rep = health["replicas"]
+            rep_emoji = status_emoji.get(rep["status"], "❓")
+            report += f"  {rep_emoji} Replicas: {rep['message']}\n"
+            rest = health["rest_api"]
+            rest_emoji = status_emoji.get(rest["status"], "❓")
+            if rest["status"] == "healthy":
+                report += f"  {rest_emoji} REST API: Responding ({rest['url']}) - {rest['latency_ms']}ms\n"
+            else:
+                report += f"  {rest_emoji} REST API: Down ({rest['url']}) - {rest.get('error', 'Unknown error')}\n"
+            gql = health["graphql_api"]
+            gql_emoji = status_emoji.get(gql["status"], "❓")
+            if gql["status"] == "healthy":
+                report += f"  {gql_emoji} GraphQL API: Responding ({gql['url']}) - {gql['latency_ms']}ms\n"
+            else:
+                report += f"  {gql_emoji} GraphQL API: Down ({gql['url']}) - {gql.get('error', 'Unknown error')}\n"
+            if health["overall_status"] != "healthy":
+                report += "\n💡 Recommendations:\n"
+                if health["replicas"]["status"] != "healthy":
+                    report += "  • Start replicas using the startReplicas tool\n"
+                if health["rest_api"]["status"] != "healthy":
+                    report += "  • Check if ResilientDB REST service is running on port 18000\n"
+                if health["graphql_api"]["status"] != "healthy":
+                    report += "  • Check if ResilientDB GraphQL service is running on port 8000\n"
+            return [TextContent(
+                type="text",
+                text=json.dumps({"health": health, "report": report}, indent=2)
+            )]
+        
+        elif name == "listAllAccounts":
+            accounts = rescontract_client.list_all_accounts()
+            if not accounts:
+                response = "No accounts found in the system logs.\n\nCreate an account using the createAccount tool."
+            else:
+                response = f"👥 ResilientDB Accounts ({len(accounts)} total)\n\n"
+                for i, acc in enumerate(accounts, 1):
+                    response += f"{i}. {acc['address']}\n"
+                    response += f"   Created: {acc['created']}\n"
+                    response += f"   Activity: {acc['activity_count']} log entries\n\n"
+            return [TextContent(
+                type="text",
+                text=json.dumps({"accounts": accounts, "message": response}, indent=2)
+            )]
+        
+        elif name == "getTransactionHistory":
+            limit = arguments.get("limit", 50)
+            tx_type = arguments.get("tx_type")
+            address = arguments.get("address")
+            transactions = rescontract_client.get_transaction_history(limit, tx_type, address)
+            if not transactions:
+                response = "📜 No transactions found matching the criteria.\n\nTransactions will appear here after deploying contracts or executing functions."
+            else:
+                response = f"📜 Transaction History ({len(transactions)} transactions"
+                if tx_type:
+                    response += f", type={tx_type}"
+                if address:
+                    response += f", address={address[:10]}..."
+                response += ")\n\n"
+                for i, tx in enumerate(transactions, 1):
+                    if tx["type"] == "DEPLOY":
+                        response += f"{i}. [DEPLOY] {tx['timestamp']}\n"
+                        response += f"   Caller: {tx['caller']}\n"
+                        response += f"   Contract: {tx['contract_name']}\n\n"
+                    elif tx["type"] == "EXECUTE":
+                        response += f"{i}. [EXECUTE] {tx['timestamp']}\n"
+                        response += f"   Caller: {tx['caller']}\n"
+                        response += f"   Contract: {tx['contract_address']}\n"
+                        response += f"   Function: {tx['function']}\n\n"
+            return [TextContent(
+                type="text",
+                text=json.dumps({"transactions": transactions, "message": response}, indent=2)
+            )]
+        
+        elif name == "searchLogs":
+            query = arguments["query"]
+            server_id = arguments.get("server_id")
+            lines = arguments.get("lines", 100)
+            result = rescontract_client.search_logs(query, server_id, lines)
+            return [TextContent(
+                type="text",
+                text=json.dumps({"query": query, "results": result}, indent=2)
+            )]
+        
+        elif name == "getConsensusMetrics":
+            metrics = rescontract_client.get_consensus_metrics()
+            report = f"📊 Consensus Metrics\n\n"
+            report += f"👑 Primary Replica: {metrics['primary_id']}\n"
+            report += f"👀 Current View: {metrics['view']}\n"
+            report += f"🔢 Sequence Number: {metrics['sequence']}\n"
+            report += f"🟢 Active Replicas: {metrics['active_replicas']}/5\n"
+            return [TextContent(
+                type="text",
+                text=json.dumps({"metrics": metrics, "report": report}, indent=2)
+            )]
+        
+        elif name == "archiveLogs":
+            archive_path = rescontract_client.archive_logs()
+            return [TextContent(
+                type="text",
+                text=json.dumps({"status": "success", "archive_path": archive_path, "message": f"📦 Logs archived successfully!\n\nLocation: {archive_path}"}, indent=2)
             )]
         
         else:
