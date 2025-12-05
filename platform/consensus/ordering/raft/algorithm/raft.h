@@ -51,25 +51,24 @@ class Raft : public common::ProtocolBase {
   ~Raft();
 
   bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
-  bool ReceivePropose(std::unique_ptr<AppendEntries> txn);
+  bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> txn);
   bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
   void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
   void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
-
 
   raft::Role GetRoleSnapshot() const;
   void StartElection();
   void SendHeartBeat();
 
  private:
+  mutable std::mutex mutex_;
+
   TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
   bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
   uint64_t getLastLogTermLocked() const; // Must be called under mutex
   bool IsStop();
+  bool IsDuplicateLogEntry(const std::string& hash) const; // Must be called under mutex
 
- private:
-  mutable std::mutex mutex_;
-  
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
@@ -79,6 +78,7 @@ class Raft : public common::ProtocolBase {
   std::vector<uint64_t> nextIndex_; // Protected by mutex_
   std::vector<uint64_t> matchIndex_; // Protected by mutex_
   uint64_t heartBeatsSentThisTerm_; // Protected by mutex_
+  uint64_t lastLogIndex_; // Protected by mutex_
 
   // Volatile state on all servers:
   uint64_t commitIndex_; // Protected by mutex_
@@ -89,7 +89,6 @@ class Raft : public common::ProtocolBase {
   std::chrono::steady_clock::time_point last_ae_time_;
   std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
 
-  uint64_t lastLogIndex_;
   bool is_stop_;
   const uint64_t quorum_;
   SignatureVerifier* verifier_;

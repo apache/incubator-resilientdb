@@ -37,10 +37,10 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
     : ProtocolBase(id, f, total_num),
     currentTerm_(0),
     votedFor_(-1),
+    lastLogIndex_(0),
     commitIndex_(0),
     lastApplied_(0),
     role_(raft::Role::FOLLOWER),
-    lastLogIndex_(0),
     is_stop_(false),
     quorum_((total_num/2) + 1),
     verifier_(verifier),
@@ -102,7 +102,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
   }
 
   //LOG(INFO) << "Received Transaction to primary id: " << id_;
-  ae.set_create_time(GetCurrentTime());
+  ae.set_create_time(GetCurrentTime()); // TODO: figure this out
   ae.set_leaderid(id_);
   ae.set_prevlogindex(prevLogIndex);
   ae.set_prevlogterm(prevLogTerm);
@@ -114,7 +114,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<AppendEntries> txn) {
   return true;
 }
 
-bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> ae) {
+bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
   if (ae->leaderid() == id_) { return false; }
   uint64_t term;
   bool success = false;
@@ -161,7 +161,7 @@ bool Raft::ReceivePropose(std::unique_ptr<AppendEntries> ae) {
       //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": This is a heartbeat, should not append";
     }
     // common case
-    uint64_t prevCommitIndex = commitIndex_;
+    //uint64_t prevCommitIndex = commitIndex_;
     if (leaderCommit > commitIndex_) {
        commitIndex_ = std::min(leaderCommit, lastLogIndex_);
        //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Raised commitIndex_ from "

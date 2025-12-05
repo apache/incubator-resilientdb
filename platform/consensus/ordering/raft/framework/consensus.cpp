@@ -64,7 +64,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       assert(1 == 0);
       return -1;
     }
-    raft_->ReceivePropose(std::move(txn));
+    raft_->ReceiveAppendEntries(std::move(txn));
     return 0;
   } else if (request->user_type() == MessageType::AppendEntriesResponseMsg) {
     std::unique_ptr<AppendEntriesResponse> AppendEntriesResponse = std::make_unique<resdb::raft::AppendEntriesResponse>();
