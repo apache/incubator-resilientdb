@@ -130,13 +130,11 @@ int Consensus::ConsensusCommit(std::unique_ptr<Context> context,
       if (config_.IsPerformanceRunning()) {
         return performance_manager_->StartEval();
       }
-      break;
     case Request::TYPE_RESPONSE:
       if (config_.IsPerformanceRunning()) {
         return performance_manager_->ProcessResponseMsg(std::move(context),
                                                         std::move(request));
       }
-      break;
     case Request::TYPE_NEW_TXNS: {
       return ProcessNewTransaction(std::move(request));
     }

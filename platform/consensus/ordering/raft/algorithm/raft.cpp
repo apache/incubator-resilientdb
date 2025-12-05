@@ -87,6 +87,9 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       prevLogTerm = getLastLogTermLocked();
       leaderCommit = commitIndex_;
 
+      // assign seq number as log index for the request or executing transactions fails.
+      req->set_seq(lastLogIndex_ + 1);
+
       // append new transaction to log
       auto entry = std::make_unique<LogEntry>();
       entry->term = currentTerm_;
@@ -193,16 +196,6 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     commit_(*e);
   }
 
-  /*
-  LOG(INFO) << "AppendEntriesMsg Added to Log";
-  LOG(INFO) << "leaderCommit: " << leaderCommit;
-  LOG(INFO) << "commitIndex_: " << commitIndex_;
-  LOG(INFO) << "lastApplied_: " << lastApplied_;
-  LOG(INFO) << "static_cast<int64_t>(log_.size()): " << static_cast<int64_t>(log_.size());
-  LOG(INFO) << "leaderCommit > commitIndex_: " << (leaderCommit > commitIndex_ ? "true" : "false");
-  LOG(INFO) << "lastApplied_ + 1 <= static_cast<int64_t>(log_.size()) " << ((lastApplied_ + 1 <= static_cast<int64_t>(log_.size())) ? "true" : "false");
-  */
-
   AppendEntriesResponse aer;
   aer.set_term(term);
   aer.set_success(success);
@@ -246,8 +239,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
 
       // Need to check the lastReplicatedIndex contains entry from current term
       if (lastReplicatedIndex > commitIndex_ && log_[lastReplicatedIndex]->term == currentTerm_) {
-        LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Raised commitIndex_ from "
-                 << commitIndex_ << " to " << lastReplicatedIndex;
+        //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Raised commitIndex_ from "
+        //         << commitIndex_ << " to " << lastReplicatedIndex;
         commitIndex_ = lastReplicatedIndex;
       }
 
@@ -265,8 +258,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       }
 
       uint64_t resendIndex = nextIndex_[aer->id()];
-      LOG(INFO) << "Updated nextIndex_ for follower " << aer->id()
-                << " to " << resendIndex;
+      //LOG(INFO) << "Updated nextIndex_ for follower " << aer->id()
+      //          << " to " << resendIndex;
 
       // Check that we actually have an entry at this index
       if (resendIndex == 0 || resendIndex > lastLogIndex_) {
@@ -288,10 +281,10 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       resend.set_leadercommitindex(commitIndex_);
       resending = true;
 
-      LOG(INFO) << "Resending AppendEntries for index " << resendIndex
-                << " (prevIdx=" << prevIdx
-                << ", prevTerm=" << prevTerm
-                << ") to follower " << aer->id();
+    //  LOG(INFO) << "Resending AppendEntries for index " << resendIndex
+    //            << " (prevIdx=" << prevIdx
+    //            << ", prevTerm=" << prevTerm
+    //            << ") to follower " << aer->id();
     }
   }();
   if (demoted) {

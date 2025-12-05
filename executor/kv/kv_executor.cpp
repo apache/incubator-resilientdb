@@ -135,7 +135,8 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  LOG(ERROR)<<" set key:"<<key;
+  // JIM
+  //LOG(ERROR)<<" set key:"<<key;
   storage_->SetValue(key, value);
 }
 

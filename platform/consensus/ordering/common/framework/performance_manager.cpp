@@ -182,9 +182,10 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    LOG(ERROR) << "receive current:" << GetCurrentTime()
-               << " create time:" << create_time << " run time:" << run_time
-               << " local id:" << batch_response.local_id();
+    // JIM
+    //LOG(ERROR) << "receive current:" << GetCurrentTime()
+    //           << " create time:" << create_time << " run time:" << run_time
+    //           << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
   }
   send_num_--;

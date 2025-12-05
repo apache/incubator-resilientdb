@@ -21,17 +21,6 @@ syntax = "proto3";
 
 package resdb.raft;
 
-message Transaction{
-  int32 id = 1;
-  bytes data = 2;
-  bytes hash = 3;
-  int32 proxy_id = 4;
-  int32 proposer = 5;
-  int64 uid = 6;
-  int64 create_time = 7;
-  int64 seq = 9;
-}
-
 message Entry {
   uint64 term = 1;
   bytes command = 2;
