@@ -599,6 +599,21 @@ async def handle_list_tools() -> list[Tool]:
                 "properties": {},
                 "required": []
             }
+        ),
+        Tool(
+            name="benchmarkThroughput",
+            description="Benchmark system throughput by sending a batch of transactions via HTTP REST API (key-value operations). Returns metrics including TPS (transactions per second), latency statistics (min/avg/max), success rate, and duration. Useful for performance testing and capacity planning.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "num_tx": {
+                        "type": "integer",
+                        "description": "Number of transactions to send for benchmarking. Default is 100.",
+                        "default": 100
+                    }
+                },
+                "required": []
+            }
         )
     ]
 
@@ -917,6 +932,16 @@ async def handle_call_tool(name: str, arguments: dict[str, Any] | None) -> list[
             return [TextContent(
                 type="text",
                 text=json.dumps({"status": "success", "archive_path": archive_path, "message": f"📦 Logs archived successfully!\n\nLocation: {archive_path}"}, indent=2)
+            )]
+        
+        elif name == "benchmarkThroughput":
+            num_tx = arguments.get("num_tx", 100)
+            if num_tx < 1 or num_tx > 10000:
+                raise ValueError("num_tx must be between 1 and 10000")
+            result = await rescontract_client.benchmark_throughput(num_tx)
+            return [TextContent(
+                type="text",
+                text=json.dumps(result, indent=2)
             )]
         
         else:

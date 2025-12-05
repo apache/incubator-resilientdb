@@ -4,6 +4,7 @@ import subprocess
 import json
 import tempfile
 import logging
+import asyncio
 from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
@@ -614,4 +615,91 @@ class ResContractClient:
             return archive_path
         except Exception as e:
             raise Exception(f"Failed to create archive: {e}")
+
+    async def benchmark_throughput(self, num_tx: int = 100) -> Dict[str, Any]:
+        """
+        Benchmark system throughput by sending a batch of transactions via HTTP REST API.
+        
+        Returns metrics including TPS and latency.
+        
+        Args:
+            num_tx: Number of transactions to send (default: 100)
+            
+        Returns:
+            Dictionary with benchmark metrics
+        """
+        import httpx
+        import uuid
+        import time
+        from config import Config
+        
+        http_url = Config.HTTP_URL
+        start_time = time.time()
+        successful = 0
+        failed = 0
+        latencies = []
+        
+        # Create tasks for concurrent execution
+        async def send_transaction(tx_id: str, value: str):
+            """Send a single transaction and return (success, latency)."""
+            tx_start = time.time()
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        f"{http_url}/v1/transactions/commit",
+                        json={"id": tx_id, "value": value},
+                        headers={"Content-Type": "application/json"}
+                    )
+                    response.raise_for_status()
+                    latency = (time.time() - tx_start) * 1000  # Convert to ms
+                    return True, latency
+            except Exception as e:
+                logger.error(f"Transaction {tx_id} failed: {e}")
+                latency = (time.time() - tx_start) * 1000
+                return False, latency
+        
+        # Execute in batches to avoid overwhelming the client/network
+        batch_size = 50
+        tasks = []
+        
+        for i in range(num_tx):
+            tx_id = f"bench-{uuid.uuid4()}"
+            value = f"bench-val-{i}"
+            tasks.append(send_transaction(tx_id, value))
+        
+        # Process in batches
+        for i in range(0, len(tasks), batch_size):
+            batch = tasks[i:i+batch_size]
+            results = await asyncio.gather(*batch, return_exceptions=True)
+            
+            for res in results:
+                if isinstance(res, Exception):
+                    failed += 1
+                else:
+                    success, latency = res
+                    if success:
+                        successful += 1
+                        latencies.append(latency)
+                    else:
+                        failed += 1
+                    
+        end_time = time.time()
+        duration = end_time - start_time
+        tps = successful / duration if duration > 0 else 0
+        
+        avg_latency = sum(latencies) / len(latencies) if latencies else 0
+        min_latency = min(latencies) if latencies else 0
+        max_latency = max(latencies) if latencies else 0
+        
+        return {
+            "total_transactions": num_tx,
+            "successful": successful,
+            "failed": failed,
+            "duration_seconds": round(duration, 2),
+            "tps": round(tps, 2),
+            "latency_avg_ms": round(avg_latency, 2),
+            "latency_min_ms": round(min_latency, 2),
+            "latency_max_ms": round(max_latency, 2),
+            "success_rate": round((successful / num_tx) * 100, 2) if num_tx > 0 else 0
+        }
 

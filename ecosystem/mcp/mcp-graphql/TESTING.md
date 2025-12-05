@@ -47,10 +47,10 @@ Replace `YOUR_TRANSACTION_ID` with an actual asset transaction ID from Resilient
 
 ### Test postTransaction Mutation
 
-You can still test the underlying GraphQL mutation directly with **manually provided keys**:
+You'll need to generate cryptographic keys first. For testing, you can use the ResilientDB key generation tools or create keys manually.
 
 ```bash
-# Post a new asset transaction (manual keys)
+# Post a new asset transaction
 curl -X POST http://localhost:8000/graphql \
   -H "Content-Type: application/json" \
   -d '{
