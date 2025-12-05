@@ -101,9 +101,8 @@ if __name__ == "__main__":
         file_return_item = hnsw_library.get_record(key)
         file_return_data = file_return_item["data"]
         try:
-            # Encode the base64 string back to bytes
-            content_bytes = file.read()
-            content = base64.b64encode(content_bytes).decode('utf-8')
+            # Encode the latin-1 string back to bytes
+            content_bytes = file_return_data.encode("latin-1")
 
             # **CRITICAL FIX: Open in binary write mode ('wb')**
             with open(fileName, 'wb') as file:

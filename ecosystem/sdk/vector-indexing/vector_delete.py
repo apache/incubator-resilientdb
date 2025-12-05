@@ -11,7 +11,6 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, Any, List
-import base64
 # ResDB & HNSW imports
 from resdb_orm.orm import ResDBORM
 import hnsw_library
@@ -58,8 +57,8 @@ def rebuild_and_save_index(embedding_keys: Dict[str, Any], hnsw_text_entries: Li
             # **CRITICAL FIX:** Open in binary read mode ('rb')
             with open(fileName, 'rb') as file:
                 content_bytes = file.read()
-                # Decode the bytes to a base64 string for ResDB storage
-                content = base64.b64encode(content_bytes).decode('utf-8')
+                # Decode the bytes to a latin-1 string for ResDB storage
+                content = content_bytes.decode('latin-1')
                 hnsw_library.put_record(key, content)
         except Exception as e:
             print(f"Critical Save Error (2/5 - {pairing[0]}): {e}")

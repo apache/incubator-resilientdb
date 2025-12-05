@@ -144,7 +144,7 @@ if __name__ == "__main__":
     #   these files as a kv store value in ResDB, storing text data as a string, and JSON data as a Dict or Dict[]
 
 
-    # (2/5) Create embedding information for the txt passages file, which are base64 byte data
+    # (2/5) Create embedding information for the txt passages file, which are latin-1 byte data
     for pairing in [
         ("temp.leann.passages.idx", "temp_leann_passages_txt"),
         ("temp.index", "temp_index_txt")
@@ -155,8 +155,8 @@ if __name__ == "__main__":
             # **CORRECTED LINE: Open in binary read mode ('rb')**
             with open(fileName, 'rb') as file:
                 content_bytes = file.read()
-                # Decode the bytes to a base64 string for ResDB storage
-                content = base64.b64encode(content_bytes).decode('utf-8')
+                # Decode the bytes to a latin-1 string for ResDB storage
+                content = content_bytes.decode('latin-1')
                 _ = hnsw_library.put_record(key, content)
         except Exception as e:
             print(pairing)
