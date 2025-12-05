@@ -26,10 +26,15 @@ const createApiInstance = (baseURL: string) => {
     });
 };
 
-const middlewareApi = createApiInstance(import.meta.env.VITE_MIDDLEWARE_BASE_URL);
-const middlewareSecondaryApi = createApiInstance(import.meta.env.VITE_MIDDLEWARE_SECONDARY_BASE_URL);
+// Default to localhost:3003 if env var is not set
+const middlewareBaseUrl = import.meta.env.VITE_MIDDLEWARE_BASE_URL || "http://localhost:3003/api/v1";
+const middlewareSecondaryBaseUrl = import.meta.env.VITE_MIDDLEWARE_SECONDARY_BASE_URL || "http://localhost:3003/api/v1";
 
-console.log(import.meta.env.VITE_MIDDLEWARE_SECONDARY_BASE_URL);
+console.log("Middleware Base URL:", middlewareBaseUrl);
+console.log("Middleware Secondary Base URL:", middlewareSecondaryBaseUrl);
+
+const middlewareApi = createApiInstance(middlewareBaseUrl);
+const middlewareSecondaryApi = createApiInstance(middlewareSecondaryBaseUrl);
 
 export {
     middlewareApi, 

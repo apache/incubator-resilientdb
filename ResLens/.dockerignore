@@ -4,9 +4,10 @@ npm-debug.log
 .gitignore
 .env.local
 .env.*.local
+dist
 .DS_Store
 *.log
 coverage
 .vscode
 .idea
-tmp
+

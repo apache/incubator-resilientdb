@@ -185,7 +185,7 @@ services:
   # Provides API endpoints for storing and retrieving GraphQL query statistics
   reslens-middleware:
     build:
-      context: ./reslens-middleware
+      context: ./ResLens-Middleware/middleware
       dockerfile: Dockerfile
     container_name: reslens-middleware
     ports:
@@ -212,27 +212,25 @@ services:
       retries: 3
       start_period: 10s
 
-  # ResLens Frontend (Local copy from ../ResLens)
+  # ResLens Frontend (Local copy from ResLens directory)
   reslens-frontend:
     build:
-      context: ./reslens-frontend
+      context: ./ResLens
       dockerfile: Dockerfile
       args:
-        - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1
+        - VITE_MIDDLEWARE_BASE_URL=http://localhost:3003/api/v1
+        - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://localhost:3003/api/v1
     container_name: reslens-frontend
     ports:
-      - "3000:3000"  # ResLens frontend (Note: May conflict with Nexus on port 3000)
+      - "5173:80"  # ResLens frontend (mapped to port 5173 to match local dev)
     networks:
       - graphq-llm-network
-    environment:
-      - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1
-      - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://reslens-middleware:3003/api/v1
     depends_on:
       reslens-middleware:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
