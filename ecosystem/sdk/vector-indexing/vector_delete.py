@@ -169,7 +169,8 @@ if __name__ == "__main__":
         print(f"Error: '{value_to_delete}' not found in the indexed entries. Nothing deleted.")
         # NOTE: Even if nothing is deleted, this still proceeds to rebuild and save, which
         # is necessary to fix the corruption caused by prior runs of vector_add.py
-        pass
+        # pass
+        sys.exit()
     else:
         # Create the new list of entries, excluding the one to delete
         current_text_entries = [text for text in current_text_entries if text != value_to_delete]
