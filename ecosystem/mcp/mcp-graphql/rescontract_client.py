@@ -20,10 +20,17 @@ class ResContractClient:
             repo_root: Root directory of ResilientDB repository. If None, auto-detects.
         """
         if repo_root is None:
-            # Auto-detect: go up from mcp-graphql to incubator-resilientdb root
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            # From ecosystem/mcp/mcp-graphql/ to root
-            repo_root = os.path.abspath(os.path.join(script_dir, '../../..'))
+            # Check environment variable first
+            env_root = os.getenv("RESILIENTDB_ROOT")
+            if env_root and os.path.exists(env_root):
+                repo_root = env_root
+                logger.info(f"Using ResilientDB root from environment: {repo_root}")
+            else:
+                # Auto-detect: go up from mcp-graphql to incubator-resilientdb root
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                # From ecosystem/mcp/mcp-graphql/ to root
+                repo_root = os.path.abspath(os.path.join(script_dir, '../../..'))
+                logger.info(f"Auto-detected ResilientDB root: {repo_root}")
         
         self.repo_root = repo_root
         self.rescontract_cmd = "rescontract"

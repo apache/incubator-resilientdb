@@ -21,8 +21,14 @@ from graphql_client import GraphQLClient
 from rescontract_client import ResContractClient
 
 # Initialize clients
+import logging
+logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+logger = logging.getLogger("mcp-server")
+logger.info("Starting ResilientDB MCP Server...")
+
 graphql_client = GraphQLClient()
 rescontract_client = ResContractClient()
+logger.info("Clients initialized")
 
 
 async def send_monitoring_data(tool_name: str, args: dict, result: Any, duration: float):
