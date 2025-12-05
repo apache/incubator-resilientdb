@@ -31,6 +31,7 @@
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
@@ -41,6 +42,11 @@ namespace raft {
 enum class Role { FOLLOWER, CANDIDATE, LEADER };
 enum class TermRelation { STALE, CURRENT, NEW };
 
+struct LogEntry {
+  uint64_t term;
+  std::string command;
+};
+
 class Raft : public common::ProtocolBase {
  public:
   Raft(int id, int f, int total_num,
@@ -50,9 +56,9 @@ class Raft : public common::ProtocolBase {
   );
   ~Raft();
 
-  bool ReceiveTransaction(std::unique_ptr<AppendEntries> txn);
-  bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> txn);
-  bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> response);
+  bool ReceiveTransaction(std::unique_ptr<Request> req);
+  bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae);
+  bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer);
   void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
   void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
 
@@ -68,11 +74,12 @@ class Raft : public common::ProtocolBase {
   uint64_t getLastLogTermLocked() const; // Must be called under mutex
   bool IsStop();
   bool IsDuplicateLogEntry(const std::string& hash) const; // Must be called under mutex
+  std::vector<std::unique_ptr<Request>> PrepareCommitLocked();
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
-  std::vector<std::unique_ptr<AppendEntries>> log_; // Protected by mutex_
+  std::vector<std::unique_ptr<LogEntry>> log_; // Protected by mutex_
 
   // Volatile state on leaders:
   std::vector<uint64_t> nextIndex_; // Protected by mutex_
@@ -91,6 +98,11 @@ class Raft : public common::ProtocolBase {
 
   bool is_stop_;
   const uint64_t quorum_;
+
+  // for limiting AppendEntries batch sizing
+  static constexpr size_t maxBytes = 64 * 1024;
+  static constexpr size_t maxEntries = 16;
+  
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;
   Stats* global_stats_;

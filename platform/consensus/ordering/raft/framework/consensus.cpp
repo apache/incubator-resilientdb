@@ -24,6 +24,7 @@
 
 #include "common/utils/utils.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/proto/resdb.pb.h"
 
 namespace resdb {
 namespace raft {
@@ -109,27 +110,34 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   }
   return 0;
 }
-
+/*
+message BatchUserRequest {
+  message UserRequest {
+    Request request = 1;
+    SignatureInfo signature = 2;
+    int32 id = 3;
+  };
+  repeated UserRequest user_requests = 1;
+  uint64 createtime = 2;
+  uint64 local_id = 3;
+  uint64 seq = 4;
+  Certs committed_certs= 5;
+  bytes hash = 6;
+  int32 proxy_id = 7;
+}
+*/
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
-  std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
-  txn->set_entries(request->data());
-  txn->set_hash(request->hash());
-  txn->set_proxy_id(request->proxy_id());
-  txn->set_uid(request->uid());
-    return raft_->ReceiveTransaction(std::move(txn));
+    return raft_->ReceiveTransaction(std::move(request));
   }
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
-  return CommitMsgInternal(dynamic_cast<const AppendEntries&>(msg));
-}
-
-int Consensus::CommitMsgInternal(const AppendEntries& txn) {
-  std::unique_ptr<Request> request = std::make_unique<Request>();
-  request->set_data(txn.entries());
-  request->set_seq(txn.prevlogindex());
-  request->set_uid(txn.uid());
-  request->set_proxy_id(txn.proxy_id());
-  transaction_executor_->Commit(std::move(request));
+  auto* req = dynamic_cast<const Request*>(&msg);
+  if (!req) {
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Failed to cast Message to Request";
+    return -1;
+  }
+  auto execReq = std::make_unique<Request>(*req);
+  transaction_executor_->Commit(std::move(execReq));
   return 0;
 }
 

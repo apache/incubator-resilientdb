@@ -21,24 +21,35 @@ syntax = "proto3";
 
 package resdb.raft;
 
+message Transaction{
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  int64 uid = 6;
+  int64 create_time = 7;
+  int64 seq = 9;
+}
+
+message Entry {
+  uint64 term = 1;
+  bytes command = 2;
+}
+
 message AppendEntries{
-  bytes entries = 1;   // this can maybe work as entries but maybe not?
-  bytes hash = 2;
-  int32 proxy_id = 3;
-  int32 leaderId = 4;
-  int64 uid = 5;
-  int64 create_time = 6;
-  uint64 prevLogIndex = 7;
-  uint64 prevLogTerm = 8; // term of the most recent log (term corresponding to seq)
-  uint64 leaderCommitIndex = 9; // leader sends out highest seq that is committed
-  uint64 term = 10; // This should be a term for each entry, but assuming no failure at first
+  uint64 term = 1;
+  int32 leaderId = 2;
+  uint64 prevLogIndex = 3;
+  uint64 prevLogTerm = 4;
+  repeated Entry entries = 5;
+  uint64 leaderCommitIndex = 6;
 }
 
 message AppendEntriesResponse {
   uint64 term = 1;
   bool success = 2;
   int32 id = 3;
-  uint64 lastApplied = 4;
   uint64 lastLogIndex = 5;
 }
 
@@ -51,8 +62,8 @@ message RequestVote {
 
 message RequestVoteResponse {
   uint64 term = 1;
-  int32 voterId = 2;
-  bool voteGranted = 3;
+  bool voteGranted = 2;
+  int32 voterId = 3;
 }
 
 message DirectToLeader {
