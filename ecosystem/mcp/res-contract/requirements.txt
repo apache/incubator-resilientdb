@@ -1,0 +1,3 @@
+mcp
+httpx
+gql[aiohttp]
