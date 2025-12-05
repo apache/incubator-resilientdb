@@ -66,13 +66,28 @@ Raft::~Raft() { is_stop_ = true; }
 
 bool Raft::IsStop() { return is_stop_; }
 
+void Raft::CreateAndSendAppendEntries(std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit, std::string cmd) {
+  for (int i = 1; i <= total_num_; ++i) {
+    AppendEntries ae;
+    ae.set_term(term);
+    ae.set_leaderid(id_);
+    ae.set_prevlogindex(nextIndexCopy[i] - 1);
+    ae.set_prevlogterm(prevLogTerm);
+    auto* e = ae.add_entries();
+    e->set_term(term);
+    e->set_command(cmd); 
+    ae.set_leadercommitindex(leaderCommit); 
+    SendMessage(MessageType::AppendEntriesMsg, ae, i);
+  }
+}
+
 bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   uint64_t term;
   uint64_t prevLogIndex;
   uint64_t prevLogTerm;
   uint64_t leaderCommit;
   std::string cmd;
-  AppendEntries ae;
+  std::vector<uint64_t> nextIndexCopy = nextIndex_;
   {
     std::lock_guard<std::mutex> lk(mutex_);
     if (role_ != Role::LEADER) {
@@ -108,21 +123,14 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       lastLogIndex_++;
       nextIndex_[id_] = lastLogIndex_ + 1;
       matchIndex_[id_] = lastLogIndex_;
+      nextIndexCopy[id_] = nextIndex_[id_];
   }
 
   //LOG(INFO) << "Received Transaction to primary id: " << id_;
-  ae.set_term(term);
-  ae.set_leaderid(id_);
-  ae.set_prevlogindex(prevLogIndex);
-  ae.set_prevlogterm(prevLogTerm);
-  auto* e = ae.add_entries();
-  e->set_term(term);
-  e->set_command(cmd); 
-  ae.set_leadercommitindex(leaderCommit);
-  
   // Broadcast probably shouldnt be happening here.
   // Ideally a loop is sending AEs to followers based on index feedback
-  Broadcast(MessageType::AppendEntriesMsg, ae);
+  // Broadcast(MessageType::AppendEntriesMsg, ae);
+  CreateAndSendAppendEntries(nextIndexCopy, term, prevLogTerm, leaderCommit, cmd);
   return true;
 }
 
@@ -256,7 +264,6 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       } else {
         nextIndex_[aer->id()] = 1;
       }
-
       uint64_t resendIndex = nextIndex_[aer->id()];
       //LOG(INFO) << "Updated nextIndex_ for follower " << aer->id()
       //          << " to " << resendIndex;
