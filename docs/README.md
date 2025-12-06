@@ -332,5 +332,3 @@ Whether you're a GraphQL beginner or an experienced developer looking to optimiz
 ---
 
 *For detailed setup instructions, troubleshooting, and advanced configuration, see the complete documentation in the repository.*
-
-You can follow our progress on [GitHub here](#).
