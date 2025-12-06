@@ -4,7 +4,7 @@
 set -e
 
 NEXUS_DIR="./nexus"
-NEXUS_REPO="https://github.com/ResilientApp/nexus.git"
+NEXUS_REPO="https://github.com/sophiequynn/nexus.git"
 
 echo "🔍 Checking for Nexus directory..."
 

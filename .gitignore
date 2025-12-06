@@ -18,6 +18,9 @@ dist/
 *.swo
 *~
 
+# External repositories (cloned locally for Docker builds)
+nexus/
+
 # Logs
 logs/
 *.log

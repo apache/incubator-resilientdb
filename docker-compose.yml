@@ -75,7 +75,7 @@ services:
 
   # Nexus (Next.js Application)
   # NOTE: Nexus must be cloned first. Run: ./setup-nexus.sh
-  # Or manually: git clone https://github.com/ResilientApp/nexus.git ./nexus
+  # Or manually: git clone https://github.com/sophiequynn/nexus.git ./nexus
   nexus:
     build:
       context: ./nexus
