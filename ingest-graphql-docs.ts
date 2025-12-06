@@ -44,19 +44,23 @@ async function ingestGraphQLDocs() {
 
   // Start HTTP wrapper for ResilientDB on port 18001 (18000 is KV service gRPC)
   // The KV service is gRPC, so we need the HTTP wrapper for REST API access
+  // Note: The HTTP wrapper is ONLY for KV storage. GraphQL operations still need port 5001.
   console.log('🔧 Starting ResilientDB HTTP wrapper on port 18001...\n');
   const httpWrapper = new ResilientDBHTTPWrapper(18001);
   try {
     await httpWrapper.start();
     console.log('✅ ResilientDB HTTP API available at http://localhost:18001\n');
-    // Update the URL to use the HTTP wrapper port
-    process.env.RESILIENTDB_GRAPHQL_URL = 'http://localhost:18001/graphql';
+    // Note: We do NOT change RESILIENTDB_GRAPHQL_URL here because:
+    // 1. The HTTP wrapper (port 18001) only provides REST KV endpoints, not GraphQL
+    // 2. Schema introspection requires the actual GraphQL server (port 5001)
+    // 3. The vector store automatically converts GraphQL URL to HTTP wrapper for storage
   } catch (error) {
     console.log('⚠️  HTTP wrapper not started:', (error as Error).message);
     console.log('⚠️  Will try to use existing server\n');
   }
 
   // Ensure ResilientDB GraphQL endpoint is set (defaults to local dev port 5001)
+  // This is needed for schema introspection during ingestion
   if (!process.env.RESILIENTDB_GRAPHQL_URL) {
     process.env.RESILIENTDB_GRAPHQL_URL = 'http://localhost:5001/graphql';
   }

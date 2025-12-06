@@ -5,7 +5,8 @@ dotenv.config();
 
 const envSchema = z.object({
   // ResilientDB Configuration
-  RESILIENTDB_GRAPHQL_URL: z.string().url().default('http://localhost:18000/graphql'),
+  // GraphQL server runs on port 5001 (KV service is on port 18000)
+  RESILIENTDB_GRAPHQL_URL: z.string().url().default('http://localhost:5001/graphql'),
   RESILIENTDB_API_KEY: z.string().optional(),
   // Default keys for transactions (can be overridden)
   RESILIENTDB_SIGNER_PUBLIC_KEY: z.string().optional(),
