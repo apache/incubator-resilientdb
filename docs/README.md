@@ -133,6 +133,7 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
 - **Node.js 18+** - For local development (optional)
 - **Gemini API Key** - For LLM capabilities (get from [Google AI Studio](https://makersuite.google.com/app/apikey))
 - **Nexus Repository** - Separate Next.js frontend (use the forked version with GraphQ-LLM integration: [sophiequynn/nexus](https://github.com/sophiequynn/nexus))
+- **ResLens Repositories** - Optional performance monitoring (use forked versions: [sophiequynn/incubator-resilientdb-ResLens](https://github.com/sophiequynn/incubator-resilientdb-ResLens) and [sophiequynn/incubator-resilientdb-ResLens-Middleware](https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware))
 
 ### Quick Start
 
@@ -151,7 +152,17 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
    RESILIENTDB_GRAPHQL_URL=http://localhost:5001/graphql
    ```
 
-3. **Start Services with Docker**
+3. **Clone ResLens Forks (Optional - for performance monitoring)**
+   ```bash
+   # Clone ResLens Frontend
+   git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens.git ResLens
+   
+   # Clone ResLens Middleware
+   git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware.git ResLens-Middleware
+   ```
+   **Note:** These forks include Dockerfile and configuration updates for GraphQ-LLM integration.
+
+4. **Start Services with Docker**
    ```bash
    # Start ResilientDB (database + GraphQL server)
    docker-compose -f docker-compose.dev.yml up -d resilientdb
@@ -163,13 +174,13 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
    docker-compose -f docker-compose.dev.yml up -d reslens-middleware reslens-frontend
    ```
 
-4. **Ingest Documentation**
+5. **Ingest Documentation**
    ```bash
    npm run ingest:graphql
    # This loads all GraphQL docs into ResilientDB for RAG
    ```
 
-5. **Set Up Nexus Frontend**
+6. **Set Up Nexus Frontend**
    - Clone the forked Nexus repository (includes GraphQ-LLM integration):
      ```bash
      git clone https://github.com/sophiequynn/nexus.git
@@ -179,7 +190,7 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
    - **Note:** This fork already includes all GraphQ-LLM integration files - no manual setup needed!
    - Start with `npm run dev`
 
-6. **Access the Tool**
+7. **Access the Tool**
    - Open `http://localhost:3000/graphql-tutor` in your browser
    - Start querying or asking questions!
 
@@ -257,13 +268,22 @@ Complete setup instructions are available in:
 - **QUERY_TUTOR_EXAMPLES.md** - Example queries and questions
 - **NEXUS_UI_EXTENSION_GUIDE.md** - Frontend integration guide (reference only - fork already includes integration)
 
-### 📦 Nexus Fork Information
+### 📦 Fork Information
 
-GraphQ-LLM uses a forked version of Nexus that includes the GraphQL Tutor integration:
+GraphQ-LLM uses forked versions of external repositories that include GraphQ-LLM-specific modifications:
+
+#### **Nexus Fork**
 - **Fork Repository:** [sophiequynn/nexus](https://github.com/sophiequynn/nexus)
 - **Original Repository:** [ResilientApp/nexus](https://github.com/ResilientApp/nexus)
 - **Integration Status:** The fork includes all GraphQ-LLM UI components and API routes
 - **Setup:** Simply clone the fork - no additional modifications needed!
+
+#### **ResLens Forks**
+- **ResLens Frontend Fork:** [sophiequynn/incubator-resilientdb-ResLens](https://github.com/sophiequynn/incubator-resilientdb-ResLens)
+- **ResLens Middleware Fork:** [sophiequynn/incubator-resilientdb-ResLens-Middleware](https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware)
+- **Original Repository:** [Apache ResLens](https://github.com/apache/incubator-resilientdb-ResLens)
+- **Integration Status:** Forks include Dockerfile updates, additional routes (CpuPage, MemoryPage, QueryStats), and improved configuration
+- **Setup:** Clone both forks - Docker Compose will use them automatically via absolute paths
 
 ---
 
@@ -329,6 +349,7 @@ Comprehensive explanation with examples, documentation references, and links to 
 - [ ] Clone forked Nexus repository (`https://github.com/sophiequynn/nexus`)
 - [ ] Install Nexus dependencies (`npm install`)
 - [ ] Configure Nexus `.env` file (see `TEAM_SETUP.md`)
+- [ ] (Optional) Clone ResLens forks for performance monitoring
 - [ ] Start Nexus frontend (`npm run dev`)
 - [ ] Access `http://localhost:3000/graphql-tutor`
 - [ ] Start querying!
