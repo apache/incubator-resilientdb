@@ -178,7 +178,7 @@ services:
   # See DOCKER_RESLENS_SETUP.md for full setup instructions
   reslens-middleware:
     build:
-      context: ./ResLens-Middleware/middleware
+      context: /Users/sophiequynn/ResLens-Middleware/middleware
       dockerfile: Dockerfile
     container_name: reslens-middleware
     ports:
@@ -209,7 +209,7 @@ services:
   # ResLens Frontend (Optional - for performance monitoring UI)
   reslens-frontend:
     build:
-      context: ./ResLens
+      context: /Users/sophiequynn/ResLens
       dockerfile: Dockerfile
       args:
         - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1

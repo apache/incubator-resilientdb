@@ -1,9 +1,0 @@
-{
-    "name": "pyroscope-service",
-    "version": "1.0.0",
-    "main": "connect_pyroscope.js",
-    "scripts": {
-      "start": "node connect_pyroscope.js"
-    },
-    "dependencies": {}
-  }

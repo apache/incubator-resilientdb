@@ -20,6 +20,16 @@
    - **URL:** https://github.com/apache/incubator-resilientdb
    - **Note:** We use the Docker image `expolab/resdb`, not cloning the repo
 
+4. **ResLens Frontend** (separate repository - optional)
+   - **URL:** https://github.com/sophiequynn/incubator-resilientdb-ResLens.git
+   - **Purpose:** Performance monitoring dashboard UI
+   - **Note:** Forked from Apache ResLens project
+
+5. **ResLens Middleware** (separate repository - optional)
+   - **URL:** https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware.git
+   - **Purpose:** Performance monitoring API server
+   - **Note:** Forked from Apache ResLens project
+
 ### **Key Documentation Files (in GraphQ-LLM repository):**
 - `NEXUS_UI_EXTENSION_GUIDE.md` - Complete code for Nexus integration (Step 7.6)
 - `TEST_QUERIES.md` - Example queries for testing
@@ -374,6 +384,8 @@ npm run mcp-server
 
 ResLens provides real-time performance monitoring and profiling for ResilientDB, including CPU and memory metrics, flame graphs, and call stack analysis. Both ResLens Middleware and Frontend are now dockerized and can be started with Docker Compose.
 
+**Note:** ResLens repositories should be cloned separately as forks (see Quick Reference section above). The Docker Compose configuration uses absolute paths to your fork directories.
+
 **What is ResLens?**
 - **ResLens Middleware**: Node.js Express API server that aggregates performance data from ResilientDB
 - **ResLens Frontend**: React/Vite web application for visualizing performance metrics
@@ -392,6 +404,8 @@ ResLens provides real-time performance monitoring and profiling for ResilientDB,
   - Container port 80 mapped to host port 5173
 
 #### **Option A: Using Docker (Recommended)**
+
+**Prerequisites:** Ensure you have cloned the ResLens forks (see Quick Reference section above). The Docker Compose configuration expects ResLens repositories at `/Users/YOUR_USERNAME/ResLens` and `/Users/YOUR_USERNAME/ResLens-Middleware`.
 
 ```bash
 # Start ResLens Middleware (required for Frontend)

@@ -3,10 +3,10 @@
 
 set -e
 
-# Configuration - CHANGE THESE!
-GITHUB_USERNAME="sophiequynn"  # Replace with your GitHub username
-RESLENS_FRONTEND_FORK="MemLens"  # Your fork name (default: MemLens)
-RESLENS_MIDDLEWARE_FORK="MemLens-middleware"  # Your fork name (default: MemLens-middleware)
+# Configuration
+GITHUB_USERNAME="sophiequynn"
+RESLENS_FRONTEND_FORK="incubator-resilientdb-ResLens"
+RESLENS_MIDDLEWARE_FORK="incubator-resilientdb-ResLens-Middleware"
 
 BASE_DIR="/Users/${GITHUB_USERNAME}"
 GRAPHQ_LLM_DIR="/Users/${GITHUB_USERNAME}/graphq-llm"
@@ -16,7 +16,7 @@ echo "🔧 Setting Up ResLens Forks"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Check if forks exist
+# Fork URLs
 FRONTEND_FORK_URL="https://github.com/${GITHUB_USERNAME}/${RESLENS_FRONTEND_FORK}.git"
 MIDDLEWARE_FORK_URL="https://github.com/${GITHUB_USERNAME}/${RESLENS_MIDDLEWARE_FORK}.git"
 
@@ -35,7 +35,7 @@ if [ ! -d "${BASE_DIR}/ResLens" ]; then
     cd "${BASE_DIR}"
     git clone "${FRONTEND_FORK_URL}" ResLens
     cd ResLens
-    git remote add upstream https://github.com/Bismanpal-Singh/MemLens.git 2>/dev/null || echo "   Upstream already exists"
+    git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens.git 2>/dev/null || echo "   Upstream already exists"
     echo "   ✅ ResLens Frontend cloned"
 else
     echo "   ✅ ResLens Frontend directory already exists"
@@ -43,12 +43,12 @@ else
     if [ -d ".git" ]; then
         echo "   Updating remotes..."
         git remote set-url origin "${FRONTEND_FORK_URL}" 2>/dev/null || git remote add origin "${FRONTEND_FORK_URL}"
-        git remote add upstream https://github.com/Bismanpal-Singh/MemLens.git 2>/dev/null || echo "   Upstream already exists"
+        git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens.git 2>/dev/null || echo "   Upstream already exists"
     else
         echo "   ⚠️  Not a git repository - initializing..."
         git init
         git remote add origin "${FRONTEND_FORK_URL}"
-        git remote add upstream https://github.com/Bismanpal-Singh/MemLens.git
+        git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens.git
     fi
 fi
 
@@ -66,7 +66,7 @@ if [ ! -d "${BASE_DIR}/ResLens-Middleware" ]; then
     cd "${BASE_DIR}"
     git clone "${MIDDLEWARE_FORK_URL}" ResLens-Middleware
     cd ResLens-Middleware
-    git remote add upstream https://github.com/harish876/MemLens-middleware.git 2>/dev/null || echo "   Upstream already exists"
+    git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens-Middleware.git 2>/dev/null || echo "   Upstream already exists"
     echo "   ✅ ResLens Middleware cloned"
 else
     echo "   ✅ ResLens Middleware directory already exists"
@@ -74,12 +74,12 @@ else
     if [ -d ".git" ]; then
         echo "   Updating remotes..."
         git remote set-url origin "${MIDDLEWARE_FORK_URL}" 2>/dev/null || git remote add origin "${MIDDLEWARE_FORK_URL}"
-        git remote add upstream https://github.com/harish876/MemLens-middleware.git 2>/dev/null || echo "   Upstream already exists"
+        git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens-Middleware.git 2>/dev/null || echo "   Upstream already exists"
     else
         echo "   ⚠️  Not a git repository - initializing..."
         git init
         git remote add origin "${MIDDLEWARE_FORK_URL}"
-        git remote add upstream https://github.com/harish876/MemLens-middleware.git
+        git remote add upstream https://github.com/apache/incubator-resilientdb-ResLens-Middleware.git
     fi
 fi
 
