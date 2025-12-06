@@ -384,13 +384,15 @@ npm run mcp-server
 
 ResLens provides real-time performance monitoring and profiling for ResilientDB, including CPU and memory metrics, flame graphs, and call stack analysis. Both ResLens Middleware and Frontend are now dockerized and can be started with Docker Compose.
 
-**Important:** ResLens repositories must be cloned separately as forks (see Quick Reference section above). The Docker Compose configuration uses absolute paths to your fork directories. The forks include GraphQ-LLM-specific modifications:
-- **ResLens Frontend:** Dockerfile, updated package.json, additional routes (CpuPage, MemoryPage, QueryStats)
-- **ResLens Middleware:** Dockerfile updates, queryStats routes, improved .dockerignore
+**Important:** ResLens repositories must be cloned separately as forks (see Quick Reference section above). The Docker Compose configuration uses absolute paths to your fork directories. 
 
 **Fork URLs:**
 - Frontend: https://github.com/sophiequynn/incubator-resilientdb-ResLens.git
 - Middleware: https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware.git
+
+**Fork Modifications:** The forks include GraphQ-LLM-specific modifications:
+- **ResLens Frontend:** Dockerfile (multi-stage build), updated package.json (name, dependencies), additional routes (CpuPage, MemoryPage, QueryStats), updated components
+- **ResLens Middleware:** Dockerfile updates, queryStats routes and controller, improved .dockerignore
 
 **What is ResLens?**
 - **ResLens Middleware**: Node.js Express API server that aggregates performance data from ResilientDB
