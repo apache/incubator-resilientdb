@@ -12,9 +12,9 @@
    - Contains: Main application code, Docker configs, documentation
 
 2. **Nexus** (separate repository - must be cloned)
-   - **URL:** https://github.com/ResilientApp/nexus.git
+   - **URL:** https://github.com/sophiequynn/nexus.git
    - **Purpose:** Next.js frontend application
-   - **Note:** Requires modifications (see Step 7.6)
+   - **Note:** This fork includes GraphQ-LLM integration (see Step 7.6 for details)
 
 3. **ResilientDB** (reference only - using Docker image)
    - **URL:** https://github.com/apache/incubator-resilientdb
@@ -624,7 +624,7 @@ Chunks stored: X
 
 Nexus is a separate Next.js application that needs to be cloned and modified. Follow these steps:
 
-**Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
+**Repository:** [https://github.com/sophiequynn/nexus](https://github.com/sophiequynn/nexus.git)
 
 #### **7.1: Clone Nexus Repository**
 
@@ -633,12 +633,14 @@ Nexus is a separate Next.js application that needs to be cloned and modified. Fo
 # You can clone it in the same parent directory as graphq-llm
 cd /path/to/workspace
 
-# Clone Nexus repository
-git clone https://github.com/ResilientApp/nexus.git
+# Clone Nexus repository (fork with GraphQ-LLM integration)
+git clone https://github.com/sophiequynn/nexus.git
 cd nexus
 ```
 
-**Repository Link:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
+**Repository Link:** [https://github.com/sophiequynn/nexus](https://github.com/sophiequynn/nexus.git)
+
+**Note:** This fork already includes all GraphQ-LLM integration files. No manual modifications needed!
 
 **Verify:** You should see a Next.js project structure with `package.json`, `src/`, `app/`, etc.
 
