@@ -1094,7 +1094,7 @@ docker-compose -f docker-compose.dev.yml exec graphq-llm-backend npm run ingest:
 
 # 8. Set up Nexus (separate repository)
 cd /path/to/workspace
-git clone https://github.com/ResilientApp/nexus.git && cd nexus && npm install
+git clone https://github.com/sophiequynn/nexus.git && cd nexus && npm install
 
 # 9. Set up PostgreSQL for Nexus
 docker run -d --name nexus-postgres \
@@ -1124,7 +1124,7 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 
 ### **Repositories:**
 - **GraphQ-LLM Repository:** Replace `<repository-url>` with your actual repository URL
-- **Nexus Repository:** [https://github.com/ResilientApp/nexus](https://github.com/ResilientApp/nexus.git)
+- **Nexus Repository:** [https://github.com/sophiequynn/nexus](https://github.com/sophiequynn/nexus.git)
 - **ResilientDB Main Repository:** [https://github.com/apache/incubator-resilientdb](https://github.com/apache/incubator-resilientdb) (for reference - contains GraphQL server in `ecosystem/graphql/`)
 - **ResilientDB GraphQL Repository (Standalone):** [https://github.com/apache/incubator-resilientdb-graphql](https://github.com/apache/incubator-resilientdb-graphql) (for reference only - not needed if using Docker)
 
