@@ -19,7 +19,7 @@
 # under the License.
 #
 
-# ./service/tools/kv/server_tools/generate_config.sh
+./service/tools/kv/server_tools/generate_config.sh
 ./service/tools/kv/server_tools/start_kv_service_learner.sh
 
 if [[ "$2" =~ ^[0-9]+$ ]]; then

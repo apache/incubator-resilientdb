@@ -69,7 +69,7 @@ private:
     uint32_t modinv(uint32_t x, uint32_t p);
     std::vector<std::vector<uint16_t>> invertMatrix(std::vector<std::vector<uint16_t>> A, int p);
     std::vector<std::vector<uint16_t>> gen_A(std::vector<int> inds);
-    bool GetNextCombination(std::vector<bool> &choice);
+    bool GetNextCombination(std::vector<bool> &choice, bool first);
 
 private:
     LearnerConfig config_;
