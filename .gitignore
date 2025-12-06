@@ -20,6 +20,8 @@ dist/
 
 # External repositories (cloned locally for Docker builds)
 nexus/
+ResLens/
+ResLens-Middleware/
 
 # Logs
 logs/
