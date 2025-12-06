@@ -6,29 +6,6 @@
 
 **Tags:** #ResilientDB, #GraphQL, #AI, #LLM, #Blockchain
 
-# GraphQ-LLM: An AI Query Tutor for ResilientDB
-
-Developing blockchain applications can be daunting. While tools like **ResilientDB** offer robust infrastructure, the learning curve for writing efficient GraphQL queries remains a barrier for many developers. 
-
-The existing AI tools, such as the Nexus model, are limited—they are "document-centric," meaning they can read documentation but can't see what is actually happening inside the database.
-
-**Enter GraphQ-LLM.**
-
-Our team is building an AI Query Tutor that goes beyond static documentation. By integrating a Large Language Model (LLM) directly with ResilientDB's execution metrics, we are building a tool that doesn't just tell you *how* to write a query, but predicts *how efficiently* it will run.
-
-## The Problem: Data Silos
-Currently, developers have to switch contexts constantly. They look at documentation in one window, write code in another, and check performance metrics in a third. 
-* **Nexus (Existing):** Limited to document interaction.
-* **The Goal:** Novel interactions with the inner workings of ResilientDB GraphQL.
-
-## The Solution: The Model Context Protocol (MCP)
-The core innovation of GraphQ-LLM is the **Model Context Protocol (MCP) server**. 
-
-We are designing this server to securely and bi-directionally connect ResilientDB data sources with AI tools. This breaks down the barriers that silo data. instead of a generic AI, GraphQ-LLM will utilize:
-1.  **ResLens:** For capturing GraphQL queries and execution metrics.
-2.  **RAG (Retrieval-Augmented Generation):** To draw on documentation and schema info.
-3.  **MCP Server:** To route context data (smart contracts, wallet info, transaction status) to the AI.
-
 # GraphQ-LLM: AI-Powered GraphQL Query Tutor for ResilientDB
 
 ## Introduction
