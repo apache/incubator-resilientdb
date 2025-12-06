@@ -345,7 +345,7 @@ GraphQ-LLM bridges the gap between complex GraphQL documentation and practical q
 
 Whether you're a GraphQL beginner or an experienced developer looking to optimize queries, GraphQ-LLM offers the insights and recommendations you need to write better, faster, and more efficient queries for ResilientDB.
 
-**Ready to get started?** Follow the complete setup guide in `TEAM_SETUP.md` (which includes instructions for cloning the forked Nexus repository) and begin exploring the power of AI-assisted GraphQL development!
+**Ready to get started?** Follow the complete setup guide in `TEAM_SETUP.md` and begin exploring the power of AI-assisted GraphQL development!
 
 ---
 
