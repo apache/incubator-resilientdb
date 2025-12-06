@@ -25,6 +25,7 @@
 - `TEST_QUERIES.md` - Example queries for testing
 - `FINAL_PHASES_AND_STEPS.md` - Project status and progress
 - `WHY_INTEGRATE_RESLENS_NEXUS.md` - Integration rationale
+- `TEST_DOCKER_SERVICES.md` - Comprehensive testing guide for all Docker services
 
 ---
 
@@ -369,6 +370,219 @@ npm run mcp-server
 
 ---
 
+### **Step 5.2: Start ResLens Services (Optional - for Performance Monitoring)**
+
+ResLens provides real-time performance monitoring and profiling for ResilientDB, including CPU and memory metrics, flame graphs, and call stack analysis. Both ResLens Middleware and Frontend are now dockerized and can be started with Docker Compose.
+
+**What is ResLens?**
+- **ResLens Middleware**: Node.js Express API server that aggregates performance data from ResilientDB
+- **ResLens Frontend**: React/Vite web application for visualizing performance metrics
+- **Purpose**: Monitor and optimize ResilientDB performance with real-time metrics
+
+**Architecture:**
+- **ResLens Middleware** (`ResLens-Middleware/middleware/Dockerfile`):
+  - Single-stage production build using Node.js 18 Alpine
+  - Production dependencies only
+  - Go installed for pprof tool (if needed)
+  - Health check endpoint on port 3003
+- **ResLens Frontend** (`ResLens/Dockerfile`):
+  - Multi-stage build: Node.js 20 Alpine → Build Vite app → Nginx Alpine
+  - Static files served via Nginx with SPA routing
+  - Gzip compression and static asset caching enabled
+  - Container port 80 mapped to host port 5173
+
+#### **Option A: Using Docker (Recommended)**
+
+```bash
+# Start ResLens Middleware (required for Frontend)
+docker-compose -f docker-compose.dev.yml up -d reslens-middleware
+
+# Wait for middleware to be healthy (30-60 seconds)
+sleep 30
+
+# Start ResLens Frontend (depends on Middleware)
+docker-compose -f docker-compose.dev.yml up -d reslens-frontend
+
+# Check status of all services
+docker-compose -f docker-compose.dev.yml ps
+
+# Check logs
+docker-compose -f docker-compose.dev.yml logs -f reslens-middleware reslens-frontend
+```
+
+**Expected output:**
+- ResLens Middleware: Running on port 3003
+- ResLens Frontend: Running on port 5173 (mapped from container port 80)
+
+**Verify ResLens is running:**
+```bash
+# Test Middleware health endpoint
+curl http://localhost:3003/api/v1/healthcheck
+
+# Test Frontend (should return HTML)
+curl http://localhost:5173
+
+# Check service status
+docker-compose -f docker-compose.dev.yml ps reslens-middleware reslens-frontend
+```
+
+**Expected responses:**
+- Middleware: `{"status":"UP"}` or similar JSON response
+- Frontend: HTML page content (should start with `<!DOCTYPE html>`)
+
+**Access ResLens UI:**
+- Open browser: `http://localhost:5173`
+- You should see the ResLens dashboard for performance monitoring
+
+#### **Option B: Build Images First (If Needed)**
+
+If the images don't exist yet, build them:
+
+```bash
+# Build ResLens Middleware image
+docker-compose -f docker-compose.dev.yml build reslens-middleware
+
+# Build ResLens Frontend image
+docker-compose -f docker-compose.dev.yml build reslens-frontend
+
+# Then start services (Option A above)
+docker-compose -f docker-compose.dev.yml up -d reslens-middleware reslens-frontend
+```
+
+**Note:** 
+- First build may take 5-10 minutes as it installs dependencies
+- ResLens Frontend depends on ResLens Middleware - start middleware first
+- ResLens Middleware depends on ResilientDB - ensure ResilientDB is running (Step 4)
+- ResLens services are optional but recommended for performance monitoring
+
+#### **Configuration**
+
+ResLens services use these default configurations in `docker-compose.dev.yml`:
+
+- **ResLens Middleware:**
+  - Port: `3003`
+  - Connects to: `http://resilientdb:18000` (ResilientDB KV service)
+  - Health check: `http://localhost:3003/api/v1/healthcheck`
+  
+  **Runtime Environment Variables** (can be set in docker-compose):
+  - `PORT`: Server port (default: 3003)
+  - `CPP_STATS_API_BASE_URL`: ResilientDB stats API (default: `http://resilientdb:18000`)
+  - `CPP_TRANSACTIONS_API_BASE_URL`: ResilientDB transactions API (default: `http://resilientdb:18000`)
+  - `PYROSCOPE_SERVER_URL`: Pyroscope server URL (optional)
+  - `PROMETHEUS_URL`: Prometheus server URL (optional)
+  - `NODE_EXPORTER_BASE_URL`: Node exporter URL (optional)
+  - `PROCESS_EXPORTER_BASE_URL`: Process exporter URL (optional)
+  - `EXPLORER_BASE_URL`: Explorer API URL (optional)
+
+- **ResLens Frontend:**
+  - Port: `5173` (host) → `80` (container)
+  - Connects to: `http://reslens-middleware:3003/api/v1` (Middleware API)
+  - Health check: `http://localhost:5173`
+  
+  **Build-time Environment Variables** (set during `docker build`):
+  - `VITE_MIDDLEWARE_BASE_URL`: URL to middleware API (default: `http://reslens-middleware:3003/api/v1`)
+  - `VITE_MIDDLEWARE_SECONDARY_BASE_URL`: Secondary middleware URL (optional)
+
+**Networking:**
+Both services are on the `graphq-llm-network` Docker network, allowing them to communicate with:
+- ResilientDB (via service name `resilientdb`)
+- GraphQ-LLM Backend (via service name `graphq-llm-backend`)
+- Each other (via service names `reslens-middleware` and `reslens-frontend`)
+
+**To customize:** Edit `docker-compose.dev.yml` environment variables for ResLens services.
+
+#### **Troubleshooting ResLens**
+
+**Issue: ResLens Middleware not starting**
+```bash
+# Check logs
+docker-compose -f docker-compose.dev.yml logs reslens-middleware
+
+# Verify ResilientDB is running
+docker-compose -f docker-compose.dev.yml ps resilientdb
+
+# Check if port 3003 is in use
+lsof -i:3003
+```
+
+**Issue: ResLens Frontend can't connect to Middleware**
+```bash
+# Verify middleware is running
+curl http://localhost:3003/api/v1/healthcheck
+
+# Check network connectivity
+docker-compose -f docker-compose.dev.yml exec reslens-frontend wget -O- http://reslens-middleware:3003/api/v1/healthcheck
+
+# Check middleware logs
+docker-compose -f docker-compose.dev.yml logs reslens-middleware
+```
+
+**Issue: Port conflicts (3003 or 5173 already in use)**
+```bash
+# Find process using port
+lsof -i:3003
+lsof -i:5173
+
+# Option 1: Kill the process
+kill -9 <PID>
+
+# Option 2: Change ports in docker-compose.dev.yml
+# Edit ports section:
+#   ports:
+#     - "3004:3003"  # Change host port
+#     - "5174:80"    # Change host port
+```
+
+**Issue: Build failures**
+```bash
+# Clear build cache and rebuild
+docker-compose -f docker-compose.dev.yml build --no-cache reslens-middleware reslens-frontend
+
+# Check if package-lock.json exists (required for npm ci)
+ls ResLens-Middleware/middleware/package-lock.json
+ls ResLens/package-lock.json
+
+# If missing, generate them (run from project root)
+cd ResLens-Middleware/middleware && npm install && cd ../..
+cd ResLens && npm install && cd ..
+```
+
+#### **Viewing Logs and Managing Services**
+
+```bash
+# View logs for both services
+docker-compose -f docker-compose.dev.yml logs -f reslens-middleware reslens-frontend
+
+# View logs for individual services
+docker-compose -f docker-compose.dev.yml logs -f reslens-middleware
+docker-compose -f docker-compose.dev.yml logs -f reslens-frontend
+
+# Stop services
+docker-compose -f docker-compose.dev.yml stop reslens-middleware reslens-frontend
+
+# Remove services (keeps images)
+docker-compose -f docker-compose.dev.yml rm reslens-middleware reslens-frontend
+
+# Remove services and images
+docker-compose -f docker-compose.dev.yml down reslens-middleware reslens-frontend
+```
+
+#### **Development vs Production**
+
+**Development (Local):**
+- Run services locally with `npm run dev` / `npm start` in the respective directories
+- Hot reload enabled
+- Easier debugging with direct file access
+
+**Production (Docker):**
+- Optimized builds
+- Static file serving via Nginx for Frontend
+- Production dependencies only
+- Health checks enabled
+- Better resource management
+
+---
+
 ### **Step 6: Ingest Documentation (REQUIRED)**
 
 **⚠️ IMPORTANT:** Each teammate must run this on their own setup! This stores docs in your local ResilientDB.
@@ -680,6 +894,9 @@ After completing all steps, verify:
 - [ ] **ResilientDB GraphQL server is running** (REQUIRED): `curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
   - Should return: `{"data":{"__typename":"Query"}}` or similar
   - If this fails, document ingestion and RAG will not work!
+- [ ] (Optional) ResLens Middleware is running: `curl http://localhost:3003/api/v1/healthcheck`
+  - Should return: `{"status":"UP"}` or similar JSON response
+- [ ] (Optional) ResLens Frontend is accessible: `curl http://localhost:5173` or open `http://localhost:5173` in browser
 - [ ] Documents ingested: Check logs for "Chunks stored: X" (should be 100+)
 - [ ] Nexus is running: `curl http://localhost:3000/api/research/documents`
 - [ ] Nexus UI accessible: Open `http://localhost:3000/graphql-tutor`
@@ -702,6 +919,8 @@ After completing all steps, verify:
 - **ResilientDB:** Ports 18000 (KV service) and 5001 (GraphQL server)
 - **GraphQ-LLM Backend:** Port 3001 (HTTP API for Nexus)
 - **GraphQ-LLM MCP Server:** Separate service (stdio transport, no HTTP port)
+- **ResLens Middleware:** Port 3003 (performance monitoring API) - Optional
+- **ResLens Frontend:** Port 5173 (performance monitoring UI) - Optional
 
 ### **Nexus Configuration:**
 - **Port:** `3000`
@@ -860,6 +1079,11 @@ docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
 # 5.1. (Optional) Start MCP Server for MCP client integration
 docker-compose -f docker-compose.dev.yml up -d graphq-llm-mcp-server
 
+# 5.2. (Optional) Start ResLens services for performance monitoring
+docker-compose -f docker-compose.dev.yml up -d reslens-middleware
+sleep 30  # Wait for middleware to be healthy
+docker-compose -f docker-compose.dev.yml up -d reslens-frontend
+
 # 6. Wait for backend (30-60 seconds)
 sleep 30
 
@@ -905,6 +1129,7 @@ curl -X POST http://localhost:3000/api/graphql-tutor/analyze \
 ### **Documentation Files (in GraphQ-LLM repository):**
 - **Nexus UI Extension Guide:** `NEXUS_UI_EXTENSION_GUIDE.md` (complete code for all Nexus integration files)
 - **Test Queries:** `TEST_QUERIES.md` (10 example queries to test the tutor)
+- **Docker Services Testing:** `TEST_DOCKER_SERVICES.md` (comprehensive testing guide for all Docker services including ResLens)
 - **Project Status:** `FINAL_PHASES_AND_STEPS.md` (overall project progress)
 - **Integration Details:** `WHY_INTEGRATE_RESLENS_NEXUS.md` (why these integrations are needed)
 - **ResilientDB Docs:** `docs/` directory (documentation ingested for RAG)
@@ -951,6 +1176,12 @@ If you encounter issues:
    
    # ResilientDB GraphQL Server
    curl -X POST http://localhost:5001/graphql -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'
+   
+   # ResLens Middleware (Optional)
+   curl http://localhost:3003/api/v1/healthcheck
+   
+   # ResLens Frontend (Optional)
+   curl http://localhost:5173
    ```
 
 4. **Review troubleshooting section above**
@@ -964,11 +1195,12 @@ You've successfully set up the project when:
 1. ✅ GraphQ-LLM HTTP API is running on port 3001
 2. ✅ (Optional) GraphQ-LLM MCP Server is running (for MCP client integration)
 3. ✅ ResilientDB is running and accessible (KV service on 18000, GraphQL on 5001)
-4. ✅ Documents are ingested (check logs for chunk count - should be 100+)
-5. ✅ Nexus is running on port 3000
-6. ✅ Nexus UI shows GraphQL Tutor page at `http://localhost:3000/graphql-tutor`
-7. ✅ Query analysis works in Nexus UI
-8. ✅ Explanations include documentation context from ResilientDB
+4. ✅ (Optional) ResLens services are running (Middleware on 3003, Frontend on 5173)
+5. ✅ Documents are ingested (check logs for chunk count - should be 100+)
+6. ✅ Nexus is running on port 3000
+7. ✅ Nexus UI shows GraphQL Tutor page at `http://localhost:3000/graphql-tutor`
+8. ✅ Query analysis works in Nexus UI
+9. ✅ Explanations include documentation context from ResilientDB
 
 **Congratulations! You're now at the same stage as the current setup! 🎉**
 
