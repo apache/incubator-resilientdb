@@ -1,9 +1,7 @@
----
 **Title:** GraphQ-LLM: Building an AI Query Tutor for ResilientDB
 **Authors:** Aayusha Hadke, Celine John Philip, Sandhya Ghanathe, Sophie Quynn, Theodore Pan
 **Project:** ECS 265 DDS Mid-term Progress Report
 **Tags:** #ResilientDB, #GraphQL, #AI, #LLM, #Blockchain
----
 
 # GraphQ-LLM: An AI Query Tutor for ResilientDB
 
