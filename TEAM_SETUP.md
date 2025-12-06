@@ -413,7 +413,20 @@ ResLens provides real-time performance monitoring and profiling for ResilientDB,
 
 #### **Option A: Using Docker (Recommended)**
 
-**Prerequisites:** Ensure you have cloned the ResLens forks (see Quick Reference section above). The Docker Compose configuration expects ResLens repositories at `/Users/YOUR_USERNAME/ResLens` and `/Users/YOUR_USERNAME/ResLens-Middleware`.
+**Prerequisites:** 
+1. Clone the ResLens forks (see Quick Reference section above):
+   ```bash
+   # Clone ResLens Frontend fork
+   cd /path/to/workspace
+   git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens.git ResLens
+   
+   # Clone ResLens Middleware fork
+   git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware.git ResLens-Middleware
+   ```
+
+2. Update `docker-compose.dev.yml` paths if your forks are in a different location (default: `/Users/YOUR_USERNAME/ResLens` and `/Users/YOUR_USERNAME/ResLens-Middleware`).
+
+**Note:** The forks include all GraphQ-LLM modifications - no additional setup needed!
 
 ```bash
 # Start ResLens Middleware (required for Frontend)
