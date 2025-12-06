@@ -1095,7 +1095,13 @@ docker-compose -f docker-compose.dev.yml up -d graphq-llm-backend
 # 5.1. (Optional) Start MCP Server for MCP client integration
 docker-compose -f docker-compose.dev.yml up -d graphq-llm-mcp-server
 
-# 5.2. (Optional) Start ResLens services for performance monitoring
+# 5.2. (Optional) Clone ResLens forks and start services
+cd /path/to/workspace
+git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens.git ResLens
+git clone https://github.com/sophiequynn/incubator-resilientdb-ResLens-Middleware.git ResLens-Middleware
+
+# Start ResLens services (Docker Compose will use absolute paths from docker-compose.dev.yml)
+cd /path/to/graphq-llm
 docker-compose -f docker-compose.dev.yml up -d reslens-middleware
 sleep 30  # Wait for middleware to be healthy
 docker-compose -f docker-compose.dev.yml up -d reslens-frontend
