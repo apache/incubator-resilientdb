@@ -252,10 +252,22 @@ Together, these tools provide a complete development and monitoring experience f
 ## 📚 Documentation & Resources
 
 Complete setup instructions are available in:
-- **TEAM_SETUP.md** - Step-by-step setup guide
+- **TEAM_SETUP.md** - Step-by-step setup guide (includes Nexus fork setup)
 - **TEST_DOCKER_SERVICES.md** - Service verification guide
 - **QUERY_TUTOR_EXAMPLES.md** - Example queries and questions
-- **NEXUS_UI_EXTENSION_GUIDE.md** - Frontend integration guide
+- **NEXUS_UI_EXTENSION_GUIDE.md** - Frontend integration guide (reference only - fork already includes integration)
+- **SETUP_NEXUS_FORK.md** - Guide for setting up your own Nexus fork (optional)
+
+### 📦 Nexus Fork Information
+
+GraphQ-LLM uses a forked version of Nexus that includes the GraphQL Tutor integration:
+- **Fork Repository:** [sophiequynn/nexus](https://github.com/sophiequynn/nexus)
+- **Original Repository:** [ResilientApp/nexus](https://github.com/ResilientApp/nexus)
+- **Integration Status:** The fork includes all GraphQ-LLM UI components and API routes
+- **Setup:** Simply clone the fork - no additional modifications needed!
+
+**For your own fork:**
+If you want to create your own fork with GraphQ-LLM integration, see `SETUP_NEXUS_FORK.md` for detailed instructions.
 
 ---
 
