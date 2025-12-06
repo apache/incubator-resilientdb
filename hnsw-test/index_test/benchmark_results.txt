@@ -1,0 +1,64 @@
+
+
+========================================
+BENCHMARK RUN: 2025-12-05 20:00:24.201759
+File: hnsw-test/index_test/val_100mb.txt | Iterations: 5
+========================================
+Iteration 1: 18.2446s | 5.48 MB/s
+Iteration 2: 17.7338s | 5.64 MB/s
+Iteration 3: 12.0109s | 8.33 MB/s
+Iteration 4: 12.1792s | 8.21 MB/s
+Iteration 5: 11.7862s | 8.48 MB/s
+
+----------------------------------------
+SUMMARY:
+Average Time:       14.3909 seconds
+Average Throughput: 7.23 MB/s
+----------------------------------------
+
+========================================
+BENCHMARK RUN: 2025-12-05 20:03:50.255545
+File: hnsw-test/index_test/val_100mb.txt | Iterations: 5
+========================================
+Iteration 1: 12.2164s | 8.19 MB/s
+Iteration 2: 11.8955s | 8.41 MB/s
+Iteration 3: 12.3887s | 8.07 MB/s
+Iteration 4: 13.6550s | 7.32 MB/s
+Iteration 5: 11.7795s | 8.49 MB/s
+
+----------------------------------------
+SUMMARY:
+Average Time:       12.3870 seconds
+Average Throughput: 8.10 MB/s
+----------------------------------------
+
+========================================
+BENCHMARK RUN: 2025-12-05 20:41:15.569589
+File: hnsw-test/index_test/val_150mb.txt | Iterations: 5
+========================================
+Iteration 1: 29.0940s | 5.16 MB/s
+Iteration 2: 28.9977s | 5.17 MB/s
+Iteration 3: 25.4595s | 5.89 MB/s
+Iteration 4: 24.7560s | 6.06 MB/s
+Iteration 5: 24.7177s | 6.07 MB/s
+
+----------------------------------------
+SUMMARY:
+Average Time:       26.6050 seconds
+Average Throughput: 5.67 MB/s
+----------------------------------------
+
+========================================
+BENCHMARK RUN: 2025-12-05 21:01:05.072369
+File: hnsw-test/index_test/val_200mb.txt | Iterations: 5
+========================================
+Iteration 1: 45.9341s | 4.35 MB/s
+
+========================================
+BENCHMARK RUN: 2025-12-05 21:09:13.801146
+File: hnsw-test/index_test/val_200mb.txt | Iterations: 5
+========================================
+Iteration 1: 24.8878s | 8.04 MB/s
+Iteration 2: 37.1333s | 5.39 MB/s
+Iteration 3: 40.9425s | 4.88 MB/s
+Iteration 4: 37.0935s | 5.39 MB/s
