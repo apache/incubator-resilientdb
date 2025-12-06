@@ -161,10 +161,15 @@ class Query:
 
     # --- New: Vector Search Query ---
     @strawberry.field
-    def searchVector(self, text: str, k: int = 3) -> List[VectorSearchResult]:
+    def searchVector(self, text: str = None, k: int = 1) -> List[VectorSearchResult]:
         """Search for similar texts using the HNSW index."""
-        success, output = run_vector_script("vector_get.py", ["--value", text, "--k_matches", str(k)])
-        
+        success = False
+        output = ""
+        if text is None:
+            success, output = run_vector_script("vector_get.py", ["--show_all"])
+        else:
+            success, output = run_vector_script("vector_get.py", ["--value", text, "--k_matches", str(k)])
+
         results = []
         if not success:
             # Log error internally if needed, returning empty list or raising error

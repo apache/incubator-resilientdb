@@ -20,8 +20,8 @@ import hnsw_library
 
 # Global Variables
 WORKING_DIR = Path("./").resolve()
-db = ResDBORM()
 MODEL_NAME = 'all-MiniLM-L6-v2'  # Lightweight and fast model
+db = ResDBORM()
 
 if __name__ == "__main__":
     # --- SECTION 1: Input Parsing ---
@@ -32,6 +32,7 @@ if __name__ == "__main__":
             break
 
     if value_to_add == '':
+        # TODO: Check up and make sure that this gets sent out to the GQL
         print("Critical Error - requires argument `--value stringToSave`")
         sys.exit()
 
