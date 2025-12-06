@@ -132,7 +132,7 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
 - **Docker & Docker Compose** - For running all services
 - **Node.js 18+** - For local development (optional)
 - **Gemini API Key** - For LLM capabilities (get from [Google AI Studio](https://makersuite.google.com/app/apikey))
-- **Nexus Repository** - Separate Next.js frontend (cloned from [ResilientApp/nexus](https://github.com/ResilientApp/nexus))
+- **Nexus Repository** - Separate Next.js frontend (use the forked version with GraphQ-LLM integration: [sophiequynn/nexus](https://github.com/sophiequynn/nexus))
 
 ### Quick Start
 
@@ -170,8 +170,13 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
    ```
 
 5. **Set Up Nexus Frontend**
-   - Clone Nexus repository separately
-   - Add GraphQ-LLM integration files (see `NEXUS_UI_EXTENSION_GUIDE.md`)
+   - Clone the forked Nexus repository (includes GraphQ-LLM integration):
+     ```bash
+     git clone https://github.com/sophiequynn/nexus.git
+     cd nexus
+     npm install
+     ```
+   - **Note:** This fork already includes all GraphQ-LLM integration files - no manual setup needed!
    - Start with `npm run dev`
 
 6. **Access the Tool**
@@ -313,9 +318,10 @@ Comprehensive explanation with examples, documentation references, and links to 
 - [ ] Start ResilientDB container
 - [ ] Start GraphQ-LLM Backend container
 - [ ] Ingest documentation (one-time setup)
-- [ ] Clone Nexus repository
-- [ ] Add GraphQ-LLM integration to Nexus
-- [ ] Start Nexus frontend
+- [ ] Clone forked Nexus repository (`https://github.com/sophiequynn/nexus`)
+- [ ] Install Nexus dependencies (`npm install`)
+- [ ] Configure Nexus `.env` file (see `TEAM_SETUP.md`)
+- [ ] Start Nexus frontend (`npm run dev`)
 - [ ] Access `http://localhost:3000/graphql-tutor`
 - [ ] Start querying!
 
@@ -327,7 +333,7 @@ GraphQ-LLM bridges the gap between complex GraphQL documentation and practical q
 
 Whether you're a GraphQL beginner or an experienced developer looking to optimize queries, GraphQ-LLM offers the insights and recommendations you need to write better, faster, and more efficient queries for ResilientDB.
 
-**Ready to get started?** Follow the complete setup guide in `TEAM_SETUP.md` and begin exploring the power of AI-assisted GraphQL development!
+**Ready to get started?** Follow the complete setup guide in `TEAM_SETUP.md` (which includes instructions for cloning the forked Nexus repository) and begin exploring the power of AI-assisted GraphQL development!
 
 ---
 
