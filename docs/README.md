@@ -117,7 +117,12 @@ Get actionable recommendations:
 - Add filters to reduce result size
 - Optimize nested queries
 
-### 4. **Performance Metrics**
+### 4. **Efficiency Estimator**
+   - Calculates query complexity scores
+   - Estimates execution time and resource usage
+   - Provides real-time metrics when ResLens is enabled
+
+### 5. **Performance Metrics**
 
 See efficiency scores, estimated execution times, and resource usage to understand query performance at a glance.
 
@@ -203,6 +208,15 @@ All services run in Docker containers:
 - **GraphQ-LLM MCP Server** - For MCP client integration (stdio transport)
 - **ResLens Middleware** (Port 3003) - Performance monitoring API (optional)
 - **ResLens Frontend** (Port 5173) - Performance monitoring UI (optional)
+- **Nexus Frontend** (Port 3002) - GraphQL Tutor UI
+
+###Access URLs 
+-  **Nexus Frontend:** http://localhost:3002
+-  **GraphQL Tutor:** http://localhost:3002/graphql-tutor
+-  **GraphQ-LLM Backend API:** http://localhost:3001
+-  **ResLens Frontend:** http://localhost:5173
+-  **ResLens Middleware API:** http://localhost:3003
+-  **ResilientDB GraphQL:** http://localhost:5001/graphql
 
 ---
 
