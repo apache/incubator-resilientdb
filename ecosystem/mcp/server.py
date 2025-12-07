@@ -1,4 +1,4 @@
-"""MCP Server for ResilientDB - GraphQL integration."""
+"""MCP Server for ResilientDB - Complete integration with GraphQL, REST API, and Smart Contracts."""
 import asyncio
 import json
 import sys
@@ -149,10 +149,10 @@ def _setup_resilientdb_path() -> str:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
     possible_paths = [
-        os.path.join(script_dir, '../../graphql/resdb_driver'),
-        '/Users/rahul/data/workspace/kanagrah/incubator-resilientdb/ecosystem/graphql/resdb_driver',
+        # Relative path from mcp to graphql/resdb_driver (go up 1 level to ecosystem/)
         os.path.join(script_dir, '../graphql/resdb_driver'),
-        os.path.join(script_dir, '../../../ecosystem/graphql/resdb_driver'),
+        # Absolute path (fallback)
+        '/Users/rahul/data/workspace/kanagrah/incubator-resilientdb/ecosystem/graphql/resdb_driver',
     ]
     
     for path in possible_paths:

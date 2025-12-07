@@ -1,4 +1,4 @@
-"""ResContract client for smart contract operations."""
+"""ResContract client for ResilientDB smart contract operations."""
 import os
 import subprocess
 import json
@@ -21,10 +21,10 @@ class ResContractClient:
             repo_root: Root directory of ResilientDB repository. If None, auto-detects.
         """
         if repo_root is None:
-            # Auto-detect: go up from mcp-graphql to incubator-resilientdb root
+            # Auto-detect: go up from mcp directory to incubator-resilientdb root
             script_dir = os.path.dirname(os.path.abspath(__file__))
-            # From ecosystem/mcp/mcp-graphql/ to root
-            repo_root = os.path.abspath(os.path.join(script_dir, '../../..'))
+            # From ecosystem/mcp/ to root (go up 2 levels: .. = ecosystem/, ../.. = root)
+            repo_root = os.path.abspath(os.path.join(script_dir, '../..'))
         
         self.repo_root = repo_root
         self.rescontract_cmd = "rescontract"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Utility script to generate Ed25519 keypairs for ResilientDB GraphQL API.
+"""Utility script to generate Ed25519 keypairs for ResilientDB.
 
 This is a standalone utility script for manual key generation.
 For automated key generation, use the MCP server's generateKeys tool instead.
@@ -11,15 +11,12 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Try to find the ResilientDB resdb_driver path
-# From ecosystem/mcp/mcp-graphql/ to ecosystem/graphql/resdb_driver
+# From ecosystem/mcp/ to ecosystem/graphql/resdb_driver
 possible_paths = [
-    # Relative path from mcp-graphql to graphql/resdb_driver (go up 2 levels to ecosystem/)
-    os.path.join(script_dir, '../../graphql/resdb_driver'),
+    # Relative path from mcp to graphql/resdb_driver (go up 1 level to ecosystem/)
+    os.path.join(script_dir, '../graphql/resdb_driver'),
     # Absolute path (fallback)
     '/Users/rahul/data/workspace/kanagrah/incubator-resilientdb/ecosystem/graphql/resdb_driver',
-    # Alternative relative paths
-    os.path.join(script_dir, '../graphql/resdb_driver'),
-    os.path.join(script_dir, '../../../ecosystem/graphql/resdb_driver'),
 ]
 
 resilientdb_path = None
