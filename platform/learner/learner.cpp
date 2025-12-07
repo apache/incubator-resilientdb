@@ -72,7 +72,7 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
             }
         }
         config.total_replicas = config.replicas.size();
-        config.min_needed = (config.total_replicas - 1) / 3 + 2;
+        config.min_needed = (config.total_replicas - 1) / 3 + 1;
     }
 
     if (config.port <= 0) {
@@ -176,8 +176,6 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
 
         ++total_messages_;
         total_bytes_.fetch_add(payload.size());
-        
-        
 
         return true;
     }
@@ -328,14 +326,17 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
 
                     if (final_hash == block_hash) { // we have reconstructed the batch
 
-                        LOG(INFO) << "RECONSTRUCTED " << c_seq << " FROM " << rep_ids[0] << " " << rep_ids[1] << " " << rep_ids[2];
+                        LOG(INFO) << "RECONSTRUCTED " << c_seq << " FROM " << rep_ids[0] << " " << rep_ids[1];
 
                         resdb::RequestBatch batch;
                         if (batch.ParseFromArray(raw_bytes.data(), static_cast<int>(raw_bytes.size()))) {
-                            std::vector<resdb::Request> out;
+                            resdb::BatchUserRequest batch_request;
                             for (int i = 0; i < batch.requests_size(); ++i) {
-                                out.push_back(batch.requests(i)); // copies each Request
-                                LOG(INFO) << out[i].seq();
+                                batch_request.ParseFromString(batch.requests()[i].data());
+
+                                for (int j = 0; j < batch_request.user_requests().size(); j++) {
+                                    ExecuteRequest(batch_request.user_requests()[j].request().data());
+                                }
                             }
                             
                         }
@@ -352,6 +353,26 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
     
         }
 
+}
+
+
+void Learner::ExecuteRequest(std::string requestStr) {
+    resdb::KVRequest kv_request;
+    if (!kv_request.ParseFromString(requestStr)) {
+        return;
+    }
+
+    if (kv_request.cmd() == resdb::KVRequest::SET) {
+        storage_->SetValue(kv_request.key(), kv_request.value());
+        if (known_keys_.find(kv_request.key()) == known_keys_.end()) {
+            known_keys_.insert(kv_request.key());
+        }
+    } else if (kv_request.cmd() == resdb::KVRequest::SET_WITH_VERSION) {
+        storage_->SetValueWithVersion(kv_request.key(), kv_request.value(), kv_request.version());
+        if (known_keys_.find(kv_request.key()) == known_keys_.end()) {
+            known_keys_.insert(kv_request.key());
+        }
+    }
 }
 
 uint32_t Learner::modpow(uint32_t a, uint32_t e, uint32_t p) {
@@ -504,15 +525,18 @@ void Learner::MetricsLoop() const {
 bool Learner::HandleReadOnlyRequest(resdb::Socket* socket,
                                     const resdb::KVRequest& request) const {
     if (request.cmd() != resdb::KVRequest::GET_READ_ONLY || storage_ == nullptr) {
+        LOG(INFO) << "A";
         return false;
     }
 
     if (known_keys_.find(request.key()) == known_keys_.end()) {
+        LOG(INFO) << "B";
         return false;
     }
 
     std::string value = storage_->GetValue(request.key());
     if (value.empty()) {
+        LOG(INFO) << "C";
         return false;
     }
 
