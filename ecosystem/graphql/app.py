@@ -177,18 +177,7 @@ class Query:
     # --- New: Vector Search Query (Optimized) ---
     @strawberry.field
     def searchVector(self, text: str = None, k: int = 1) -> List[VectorSearchResult]:
-<<<<<<< HEAD
         """Search for similar texts using the in-memory manager."""
-=======
-        """Search for similar texts using the HNSW index."""
-        success = False
-        output = ""
-        if text is None:
-            success, output = run_vector_script("vector_get.py", ["--show_all"])
-        else:
-            success, output = run_vector_script("vector_get.py", ["--value", text, "--k_matches", str(k)])
-
->>>>>>> da66f0f3efa3b87ac58da0be4006f5199c1eaf47
         results = []
         
         if not vector_search_manager:
