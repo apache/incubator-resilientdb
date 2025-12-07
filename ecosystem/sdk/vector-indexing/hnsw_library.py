@@ -6,11 +6,18 @@ Description: (Indexers project) Simple library to strongly type Indexer-Project 
 """
 # Typical Python imports
 from typing import Dict, List, Any
+from pathlib import Path
 # ResDB & HNSW imports
 from resdb_orm.orm import ResDBORM
 
+current_dir = Path(__file__).resolve().parent
+# Abs path to resdb_orm/config.yaml 
+config_path = current_dir / "resdb_orm" / "config.yaml"
 
-db = ResDBORM()
+if not config_path.exists():
+    print(f"Warning: Config file not found at {config_path}")
+
+db = ResDBORM(str(config_path))
 
 # RETURNS: Key of the newly created record
 def create_record(value: str | Dict[str, Any]) -> str:

@@ -23,10 +23,23 @@ import os
 import sys
 import subprocess
 import re
+import json
+import strawberry
+import typing
+import ast
 from pathlib import Path
+from typing import Optional, List, Any
+from flask import Flask
+from flask_cors import CORS
+from strawberry.flask.views import GraphQLView
 
+# --- Local Imports ---
 from resdb_driver import Resdb
 from resdb_driver.crypto import generate_keypair
+from json_scalar import JSONScalar 
+
+# --- Vector Indexing Imports ---
+from sentence_transformers import SentenceTransformer
 
 # --- Configuration ---
 db_root_url = "localhost:18000"
@@ -35,50 +48,52 @@ fetch_all_endpoint = "/v1/transactions"
 db = Resdb(db_root_url)
 
 # --- Vector Indexing Scripts Path Configuration ---
-# app.py is in ecosystem/graphql/
-# scripts are in ecosystem/sdk/vector-indexing/
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 VECTOR_SCRIPT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, "../sdk/vector-indexing"))
 PYTHON_EXE = sys.executable
 
-def run_vector_script(script_name: str, args: list) -> tuple[bool, str]:
-    """Helper to run python scripts located in the vector-indexing directory."""
-    script_path = os.path.join(VECTOR_SCRIPT_DIR, script_name)
+# Add vector script dir to sys.path to allow imports
+sys.path.append(VECTOR_SCRIPT_DIR)
+
+# Try importing the manager classes
+try:
+    from vector_add import VectorIndexManager
+    from vector_get import VectorSearchManager
+    from vector_delete import VectorDeleteManager
+except ImportError as e:
+    print(f"Warning: Could not import vector modules. Error: {e}")
+    VectorIndexManager = None
+    VectorSearchManager = None
+    VectorDeleteManager = None
+
+# --- Initialize AI Model & Managers (Run Once) ---
+print("Initializing Vector Managers...")
+vector_index_manager = None
+vector_search_manager = None
+vector_delete_manager = None
+
+try:
+    # Load model into memory once at startup to avoid per-request overhead
+    GLOBAL_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
     
-    if not os.path.exists(script_path):
-        return False, f"Script not found: {script_path}"
+    script_path = Path(VECTOR_SCRIPT_DIR)
+    
+    if VectorIndexManager:
+        vector_index_manager = VectorIndexManager(script_path, GLOBAL_MODEL)
+    
+    if VectorSearchManager:
+        vector_search_manager = VectorSearchManager(script_path, GLOBAL_MODEL)
+        
+    if VectorDeleteManager:
+        vector_delete_manager = VectorDeleteManager(script_path, GLOBAL_MODEL)
+        
+    print("Vector Managers initialized successfully.")
+except Exception as e:
+    print(f"Error initializing vector managers: {e}")
 
-    command = [PYTHON_EXE, script_path] + args
-    try:
-        # Run script with the working directory set to where the script is
-        # (because the scripts rely on relative paths like ./saved_data)
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            cwd=VECTOR_SCRIPT_DIR 
-        )
-        if result.returncode != 0:
-            return False, result.stderr + "\n" + result.stdout
-        return True, result.stdout.strip()
-    except Exception as e:
-        return False, str(e)
-
-import strawberry
-import typing
-import ast
-import json
-
-from typing import Optional, List, Any
-from flask import Flask
-from flask_cors import CORS
-
-from json_scalar import JSONScalar 
 
 app = Flask(__name__)
 CORS(app) # This will enable CORS for all routes
-
-from strawberry.flask.views import GraphQLView
 
 # --- GraphQL Types ---
 
@@ -159,26 +174,31 @@ class Query:
         #return number of cats
         return f'The word "cat" appears {cat_count} times'
 
-    # --- New: Vector Search Query ---
+    # --- New: Vector Search Query (Optimized) ---
     @strawberry.field
-    def searchVector(self, text: str, k: int = 3) -> List[VectorSearchResult]:
-        """Search for similar texts using the HNSW index."""
-        success, output = run_vector_script("vector_get.py", ["--value", text, "--k_matches", str(k)])
-        
+    def searchVector(self, text: str = None, k: int = 1) -> List[VectorSearchResult]:
+        """Search for similar texts using the in-memory manager."""
         results = []
-        if not success:
-            # Log error internally if needed, returning empty list or raising error
-            print(f"Vector search failed: {output}")
+        
+        if not vector_search_manager:
+            print("Error: Vector search manager not initialized.")
             return []
 
-        # Parse the output from vector_get.py (e.g. "1. hello // (similarity score: 0.123)")
-        for line in output.splitlines():
-            match = re.search(r'^\d+\.\s+(.*?)\s+//\s+\(similarity score:\s+([0-9.]+)\)', line)
-            if match:
+        if text is None:
+            # Show all functionality
+            raw_values = vector_search_manager.get_all_values()
+            for val in raw_values:
+                # For 'show all', we typically don't have a similarity score, or it's N/A
+                results.append(VectorSearchResult(text=val, score=1.0))
+        else:
+            # Search functionality
+            search_results = vector_search_manager.search(text, k)
+            for item in search_results:
                 results.append(VectorSearchResult(
-                    text=match.group(1),
-                    score=float(match.group(2))
+                    text=item['text'],
+                    score=item['score']
                 ))
+        
         return results
 
 # --- Mutation ---
@@ -203,27 +223,23 @@ class Mutation:
         )
         return payload
 
-    # --- New: Vector Add Mutation ---
+    # --- New: Vector Add Mutation (Optimized) ---
     @strawberry.mutation
     def addVector(self, text: str) -> str:
-        """Add a text to the vector index."""
-        success, output = run_vector_script("vector_add.py", ["--value", text])
-        if success:
-            return "Success: Added to index."
-        elif "already saved" in output:
-            return "Skipped: Value already exists."
+        """Add a text to the vector index using the in-memory manager."""
+        if vector_index_manager:
+            return vector_index_manager.add_value(text)
         else:
-            return f"Error: {output}"
+            return "Error: Vector index manager not initialized."
 
-    # --- New: Vector Delete Mutation ---
+    # --- New: Vector Delete Mutation (Optimized) ---
     @strawberry.mutation
     def deleteVector(self, text: str) -> str:
-        """Delete a text from the vector index."""
-        success, output = run_vector_script("vector_delete.py", ["--value", text])
-        if success:
-            return "Success: Deleted from index."
+        """Delete a text from the vector index using the in-memory manager."""
+        if vector_delete_manager:
+            return vector_delete_manager.delete_value(text)
         else:
-            return f"Error: {output}"
+            return "Error: Vector delete manager not initialized."
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
