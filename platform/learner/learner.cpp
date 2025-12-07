@@ -525,18 +525,15 @@ void Learner::MetricsLoop() const {
 bool Learner::HandleReadOnlyRequest(resdb::Socket* socket,
                                     const resdb::KVRequest& request) const {
     if (request.cmd() != resdb::KVRequest::GET_READ_ONLY || storage_ == nullptr) {
-        LOG(INFO) << "A";
         return false;
     }
 
     if (known_keys_.find(request.key()) == known_keys_.end()) {
-        LOG(INFO) << "B";
         return false;
     }
 
     std::string value = storage_->GetValue(request.key());
     if (value.empty()) {
-        LOG(INFO) << "C";
         return false;
     }
 
