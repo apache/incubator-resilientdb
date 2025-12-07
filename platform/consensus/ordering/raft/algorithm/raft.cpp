@@ -71,7 +71,7 @@ void Raft::CreateAndSendAppendEntryMsg(uint64_t replica_id, std::vector<uint64_t
   AppendEntries ae;
   ae.set_term(term);
   ae.set_leaderid(id_);
-  ae.set_prevlogindex(nextIndexCopy[i] - 1);
+  ae.set_prevlogindex(nextIndexCopy[replica_id] - 1);
   ae.set_prevlogterm(prevLogTerm);
   auto* e = ae.add_entries();
   e->set_term(entry_term);
@@ -126,11 +126,8 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   }
 
   //LOG(INFO) << "Received Transaction to primary id: " << id_;
-  // Broadcast probably shouldnt be happening here.
-  // Ideally a loop is sending AEs to followers based on index feedback
-  // Broadcast(MessageType::AppendEntriesMsg, ae);
-  for (int i = 1; i <= total_num_; ++i) {
-    CreateAndSendAppendEntryMsg(i, nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, term);
+  for (int replica_id = 1; replica_id <= total_num_; ++replica_id) {
+    if (replica_id != id_) {CreateAndSendAppendEntryMsg(replica_id, nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, term);}
   }
   return true;
 }
@@ -287,8 +284,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       prevLogIndex = lastLogIndex_;
       prevLogTerm = log_[prevIdx]->term;
       leaderCommit = commitIndex_;
-      cmd =  resendEntry.command
-      resendEntryTerm = resendEntry.term
+      cmd =  resendEntry.command;
+      resendEntryTerm = resendEntry.term;
       resending = true;
 
     //  LOG(INFO) << "Resending AppendEntries for index " << resendIndex
