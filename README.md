@@ -30,6 +30,7 @@
 2. [ResilientDB Installation](#ResilientDB-Installation)
 3. [ResilientDB Installation Bugs](#ResilientDB-Installation-Bugs)
 4. [How to Run ResDB-ORM](#How-to-Run-ResDB-ORM)
+5. [Stress Test KV](#Stress-Testing-KV)
 
 ## Running the Indexing Project
 All user-facing code for this project is located in `ecosystem/sdk/vector-indexing`. As long as the **KV Service** and **GraphQL Server** are running, executing the python code directly through the command line will work - nothing needs to be built beforehand. This does need to be run with a python instance with the ResDB-orm package installed (we reccoment using a virtual environment)
@@ -282,3 +283,12 @@ bazel-bin/service/http_server/crow_service_main ecosystem/graphql/service/tools/
 Note that each of these commands will prevent input on the terminal you run them in.
 
 To interact with ResDB-orm, spin up the python instance running it: `source venv/bin/activate`. To leave this Python environment and return to bash, just type `deactivate`.
+
+
+## Stress Testing KV
+
+We tested for the storage limit of big values. In this configuration: 
+1. 8GB RAM Shell
+2. Standard 5 replica config from `./service/tools/kv/server_tools/start_kv_service.sh`
+
+The results was that around 150-200mb values will cause the KV store to have long delays on operations. You can read more in `hnsw-test/index_test/README.md` along with the testing kit. 
