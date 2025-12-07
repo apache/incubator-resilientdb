@@ -331,7 +331,6 @@ int Commitment::PostProcessExecutedMsg() {
 
     // send an update to learners after every block size execution
     if (request.seq() % config_.GetBlockSize() == 0) {
-        LOG(ERROR) << "SENDING LEARNER UPDATE";
         SendUpdateToLearners(request.seq());
     }
 
@@ -368,13 +367,6 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     // turn the entire batch variable into string
     batch.SerializeToString(&raw_data);
 
-    // std::ofstream out("learner_resTEST" + std::to_string(config_.GetSelfInfo().id()) + ".txt");
-    // for (int i = 0; i < raw_data.size(); i++) {
-    //     for (int j=1; j < 256; j*=2) {
-    //         out << (raw_data[i] & j) << " ";
-    //     }
-    // }
-
     // generate hash of entire batch
     std::string block_hash = resdb::utils::CalculateSHA256Hash(raw_data);
 
@@ -394,8 +386,8 @@ void Commitment::SendUpdateToLearners(int seq_num) {
     uint32_t c_ik = 0;
 
     for (int d = 0; d < raw_data.size(); d++) { // data MUST BE A MULTIPLE OF m
-        c_ik = (c_ik + A_i[iter] * raw_data[d]) % 257;
-
+        c_ik = (c_ik + A_i[iter] * (uint8_t)static_cast<unsigned char>(raw_data[d])) % 257;
+        
         iter++;
         if (iter == A_i.size()) {
             F_i.push_back(c_ik);
@@ -404,7 +396,7 @@ void Commitment::SendUpdateToLearners(int seq_num) {
             iter = 0;
         }
     }
-
+    
     // add data to learner update message and send it
     LearnerUpdate learnerUpdate;
     learnerUpdate.mutable_data()->Reserve(static_cast<int>(F_i.size()));

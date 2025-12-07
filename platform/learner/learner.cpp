@@ -27,6 +27,7 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <mutex>
 
 #include <glog/logging.h>
 #include <nlohmann/json.hpp>
@@ -71,7 +72,7 @@ LearnerConfig ParseLearnerConfig(const std::string& config_path) {
             }
         }
         config.total_replicas = config.replicas.size();
-        config.min_needed = (config.total_replicas - 1) / 3 + 1;
+        config.min_needed = (config.total_replicas - 1) / 3 + 2;
     }
 
     if (config.port <= 0) {
@@ -171,26 +172,13 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
 
         if (request.sender_id() == 0) return true;
 
-        // LOG(INFO) << "DATA: " << request.data();
-        // LOG(INFO) << "HASH: " << request.block_hash();
-        // LOG(INFO) << "SEQ: " << request.seq();
-        LOG(INFO) << "S_ID: " << request.sender_id();
-        // LOG(INFO) << "excess_bytes: " << request.excess_bytes();
-
         HandleLearnerUpdate(request);
 
         ++total_messages_;
-        // total_bytes_.fetch_add(payload.size());
-        // last_type_.store(request.type());
-        // last_seq_.store(request.seq());
-        // last_sender_.store(request.sender_id());
-        // last_payload_bytes_.store(request.data().size());
-        // resdb::BatchUserResponse batch_response;
-        // if (batch_response.ParseFromString(request.data())) {
-        //     total_sets_.fetch_add(batch_response.set_count());
-        //     total_reads_.fetch_add(batch_response.read_count());
-        //     total_deletes_.fetch_add(batch_response.delete_count());
-        // }
+        total_bytes_.fetch_add(payload.size());
+        
+        
+
         return true;
     }
 
@@ -205,7 +193,7 @@ bool Learner::ProcessBroadcast(resdb::Socket* socket,
 
 void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
 
-    LOG(INFO) << "START HANDLE";
+    std::lock_guard<std::mutex> lock(m);
 
     std::string block_hash = learnerUpdate.block_hash();
     int c_seq = learnerUpdate.seq();
@@ -221,7 +209,6 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
     
     switch (sequence_status[blockIndex]) {
         case 0: {
-            LOG(INFO) << "CASE 0";
             hashCounts.push_back(std::tuple(blockIndex, block_hash, 1));
             learnerUpdates.push_back(learnerUpdate);
             sequence_status[blockIndex] = 1;
@@ -235,8 +222,6 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
         case 1: {
         }
         case 2: {
-            LOG(INFO) << "CASE 1/2: " << sequence_status[blockIndex];
-
             std::tuple<int, std::string, int> *valid_hc = nullptr;
 
             if (sequence_status[blockIndex] == 1) {
@@ -342,7 +327,8 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
                     std::string final_hash = resdb::utils::CalculateSHA256Hash(raw_bytes);
 
                     if (final_hash == block_hash) { // we have reconstructed the batch
-                        LOG(INFO) << "RECONSTRUCTED" << c_seq;
+
+                        LOG(INFO) << "RECONSTRUCTED " << c_seq << " FROM " << rep_ids[0] << " " << rep_ids[1] << " " << rep_ids[2];
 
                         resdb::RequestBatch batch;
                         if (batch.ParseFromArray(raw_bytes.data(), static_cast<int>(raw_bytes.size()))) {
@@ -355,6 +341,7 @@ void Learner::HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate) {
                         }
 
                         sequence_status[blockIndex] = 3;
+                        return;
                     }                  
 
                 }
