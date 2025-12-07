@@ -66,19 +66,18 @@ Raft::~Raft() { is_stop_ = true; }
 
 bool Raft::IsStop() { return is_stop_; }
 
-void Raft::CreateAndSendAppendEntries(std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit, std::string cmd) {
-  for (int i = 1; i <= total_num_; ++i) {
-    AppendEntries ae;
-    ae.set_term(term);
-    ae.set_leaderid(id_);
-    ae.set_prevlogindex(nextIndexCopy[i] - 1);
-    ae.set_prevlogterm(prevLogTerm);
-    auto* e = ae.add_entries();
-    e->set_term(term);
-    e->set_command(cmd); 
-    ae.set_leadercommitindex(leaderCommit); 
-    SendMessage(MessageType::AppendEntriesMsg, ae, i);
-  }
+void Raft::CreateAndSendAppendEntryMsg(uint64_t replica_id, std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit,
+                             std::string cmd, uint64_t entry_term) {
+  AppendEntries ae;
+  ae.set_term(term);
+  ae.set_leaderid(id_);
+  ae.set_prevlogindex(nextIndexCopy[i] - 1);
+  ae.set_prevlogterm(prevLogTerm);
+  auto* e = ae.add_entries();
+  e->set_term(entry_term);
+  e->set_command(cmd); 
+  ae.set_leadercommitindex(leaderCommit); 
+  SendMessage(MessageType::AppendEntriesMsg, ae, replica_id);
 }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
@@ -130,7 +129,9 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   // Broadcast probably shouldnt be happening here.
   // Ideally a loop is sending AEs to followers based on index feedback
   // Broadcast(MessageType::AppendEntriesMsg, ae);
-  CreateAndSendAppendEntries(nextIndexCopy, term, prevLogTerm, leaderCommit, cmd);
+  for (int i = 1; i <= total_num_; ++i) {
+    CreateAndSendAppendEntryMsg(i, nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, term);
+  }
   return true;
 }
 
@@ -217,6 +218,11 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
 
 bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer) {
   uint64_t term;
+  uint64_t prevLogIndex;
+  uint64_t prevLogTerm;
+  uint64_t leaderCommit;
+  uint64_t resendEntryTerm;
+  std::string cmd;
   bool demoted = false;
   bool resending = false;
   TermRelation tr;
@@ -275,16 +281,14 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
         return;
       }
       uint64_t prevIdx = resendIndex - 1;
-      uint64_t prevTerm = log_[prevIdx]->term;
       const LogEntry& resendEntry = *log_[resendIndex];
-      resend.set_term(currentTerm_);
-      resend.set_leaderid(id_);
-      resend.set_prevlogindex(prevIdx);
-      resend.set_prevlogterm(prevTerm);
-      auto* e = resend.add_entries();
-      e->set_term(resendEntry.term);
-      e->set_command(resendEntry.command); 
-      resend.set_leadercommitindex(commitIndex_);
+      // prepare fields for appendEntries message
+      term = currentTerm_;
+      prevLogIndex = lastLogIndex_;
+      prevLogTerm = log_[prevIdx]->term;
+      leaderCommit = commitIndex_;
+      cmd =  resendEntry.command
+      resendEntryTerm = resendEntry.term
       resending = true;
 
     //  LOG(INFO) << "Resending AppendEntries for index " << resendIndex
@@ -299,7 +303,10 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
     return false;
   }
-  if (resending) { SendMessage(MessageType::AppendEntriesMsg, resend, aer->id()); }
+  if (resending) { 
+    CreateAndSendAppendEntryMsg(aer->id(), nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, resendEntryTerm);
+    // SendMessage(MessageType::AppendEntriesMsg, resend, aer->id()); 
+  }
 
   for (auto& e : eToApply) {
     commit_(*e);

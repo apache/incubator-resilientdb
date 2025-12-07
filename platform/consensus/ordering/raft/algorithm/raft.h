@@ -66,7 +66,8 @@ class Raft : public common::ProtocolBase {
   void StartElection();
   void SendHeartBeat();
   //nextIndexCopy is a copy of nextIndex_ to prevent updating it outside a mutex lock
-  void CreateAndSendAppendEntries(std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit, std::string cmd);
+  void CreateAndSendAppendEntryMsg(uint64_t replica_id, std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit, 
+                              std::string cmd, uint64_t entry_term);
 
  private:
   mutable std::mutex mutex_;
