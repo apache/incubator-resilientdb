@@ -173,6 +173,16 @@ class Query:
 
         #return number of cats
         return f'The word "cat" appears {cat_count} times'
+    
+    @strawberry.field
+    def getAllVectors(self) -> List[VectorSearchResult]:
+        """Search for all texts"""
+        results = []
+        raw_values = vector_search_manager.get_all_values()
+        for val in raw_values:
+            # For 'show all', we typically don't have a similarity score, or it's N/A
+            results.append(VectorSearchResult(text=val, score=1.0))
+        return results
 
     # --- New: Vector Search Query (Optimized) ---
     @strawberry.field
