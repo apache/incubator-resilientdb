@@ -223,7 +223,7 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
   Role initialRole;
   std::vector<std::unique_ptr<Request>> eToApply;
   AppendEntries resend;
-
+  std::vector<uint64_t> nextIndexCopy = nextIndex_;
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
     initialRole = role_;
@@ -259,9 +259,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
     else {
       LOG(INFO) << "AppendEntriesResponse indicates FAILURE from follower " << aer->id();
       // Move nextIndex one step back, but don't go below 1
-      if (nextIndex_[aer->id()] > 1) {
-        --nextIndex_[aer->id()];
-      } else {
+      nextIndex_[aer->id()] = aer->lastlogindex() - 1;
+      if (nextIndex_[aer->id()] < 1) {
         nextIndex_[aer->id()] = 1;
       }
       uint64_t resendIndex = nextIndex_[aer->id()];
