@@ -24,6 +24,7 @@ sys.path.append(str(current_dir))
 from resdb_orm.orm import ResDBORM
 import hnsw_library
 
+<<<<<<< HEAD
 class VectorIndexManager:
     """
     Manages the HNSW index and ResDB storage for vector embeddings.
@@ -158,6 +159,12 @@ class VectorIndexManager:
         # We don't remove the dir here to be safe, or we can if empty.
 
         return "Success: Value added and index rebuilt."
+=======
+# Global Variables
+WORKING_DIR = Path("./").resolve()
+MODEL_NAME = 'all-MiniLM-L6-v2'  # Lightweight and fast model
+db = ResDBORM()
+>>>>>>> da66f0f3efa3b87ac58da0be4006f5199c1eaf47
 
 if __name__ == "__main__":
     # --- CLI Execution Support ---
@@ -175,6 +182,7 @@ if __name__ == "__main__":
             break
 
     if value_to_add == '':
+        # TODO: Check up and make sure that this gets sent out to the GQL
         print("Critical Error - requires argument `--value stringToSave`")
         sys.exit()
 

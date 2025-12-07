@@ -65,6 +65,7 @@ static struct option long_options[] = {
     {"min_key", required_argument, NULL, 'y'},
     {"max_key", required_argument, NULL, 'Y'},
     {"top", required_argument, NULL, 't'},
+    //{"value_path", required_argument, NULL, 'p'}, //#SIZE TEST
 };
 
 void OldAPI(char** argv) {
@@ -174,6 +175,19 @@ int main(int argc, char** argv) {
       case 'h':
         ShowUsage();
         break;
+      /* //#SIZE TEST
+      case 'p': {
+        std::ifstream t(optarg);
+        if (!t.is_open()) {
+            printf("Error: Could not open value file: %s\n", optarg);
+            return -1;
+        }
+        std::string str((std::istreambuf_iterator<char>(t)),
+                        std::istreambuf_iterator<char>());
+        value = str;
+        break;
+      }
+      */
     }
   }
 
@@ -188,7 +202,9 @@ int main(int argc, char** argv) {
     }
     int ret = client.Set(key, value, version);
     printf("set key = %s, value = %s, version = %d done, ret = %d\n",
-           key.c_str(), value.c_str(), version, ret);
+           key.c_str(), value.c_str(), version, ret); 
+    /*printf("set key = %s, value_size = %lu, version = %d done, ret = %d\n", //#SIZE TEST
+          key.c_str(), value.size(), version, ret);*/
     if (ret == 0) {
       usleep(100000);
       auto res = client.Get(key, 0);
