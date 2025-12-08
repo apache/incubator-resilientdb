@@ -18,7 +18,7 @@
 
 3. **ResilientDB** (reference only - using Docker image)
    - **URL:** https://github.com/apache/incubator-resilientdb
-   - **Note:** We use the Docker image `expolab/resdb`, not cloning the repo
+   - **Note:** We use the Docker image `expolab/resdb`, not cloning the repo.
 
 4. **ResLens Frontend** (separate repository - optional)
    - **URL:** https://github.com/sophiequynn/incubator-resilientdb-ResLens.git
