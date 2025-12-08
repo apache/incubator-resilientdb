@@ -18,6 +18,7 @@
 */
 
 import bundleAnalyzer from '@next/bundle-analyzer';
+import { remarkMermaid } from '@theguild/remark-mermaid'
 import nextra from 'nextra';
 
 const withBundleAnalyzer = bundleAnalyzer({
@@ -30,6 +31,9 @@ const withNextra = nextra({
     codeblocks: false
   },
   contentDirBasePath: '/docs',
+  mdxOptions: {
+    remarkPlugins: [remarkMermaid],
+  },
 })
 
 export default withNextra(

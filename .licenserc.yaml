@@ -14,6 +14,19 @@ header:
     - 'dev/.rat-excludes'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
+    # Ecosystem-specific exclusions
+    - 'ecosystem/**/.rat-excludes'
+    - 'ecosystem/**/.gitignore'
+    - 'ecosystem/**/.bazelrc'
+    - 'ecosystem/**/.gitattributes'
+    - 'ecosystem/**/.npmrc'
+    - 'ecosystem/**/.prettierrc'
+    - 'ecosystem/**/.prettierignore'
+    - 'ecosystem/**/.licenserc.yaml'
+    # Beacon content MDX files don't support license headers
+    - 'ecosystem/AI-Tooling/beacon/content/**'
+    # Pocketflow is MIT-licensed third-party code
+    - 'ecosystem/pocketflow/**'
 
 
 

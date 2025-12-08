@@ -24,3 +24,5 @@ ecosystem/.*\.npmrc
 ecosystem/.*\.prettierrc
 ecosystem/.*\.prettierignore
 ecosystem/.*\.licenserc.yaml
+# Pocketflow is MIT-licensed third-party code
+ecosystem/pocketflow

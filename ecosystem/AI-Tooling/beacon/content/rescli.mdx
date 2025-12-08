@@ -7,121 +7,199 @@ import { CommentSection } from '@/components/CommentSection'
 import { Divider, Box, Space, Tabs, TabsList, TabsTab, TabsPanel, Code, Alert } from '@mantine/core'
 import { IconInfoCircle } from '@tabler/icons-react'
 
-# ResCLI
+{/* BEGIN AUTO_DOC: rescli */}
 
-ResCLI is a command-line interface for managing ResDB instances and Python SDK instances. It provides functionalities to create, delete, view, and manage instances in a simple and efficient way.
+# rescli
 
-## Installation
+ResCLI is a **command-line tool** for managing services within the *ResilientDB blockchain ecosystem*. It provides a simple way for authorized users to **create, view, and delete** running software components, which it calls *instances*. Before performing any actions, users must first use the login command to authenticate themselves, ensuring secure access to their resources.
 
-To use ResCLI, you can download the binary from the Releases page on GitHub.
 
-1. Go to the Releases page
-2. Download the latest release for your operating system (e.g., `res-cli-linux` for Linux)
-3. Make the downloaded binary executable:
+```mermaid
+flowchart TD
+A0["ResCLI (Command-Line Interface)"]
+A1["Instance Management"]
+A2["User Authentication"]
+A3["ResilientDB (ResDB) Ecosystem"]
+A4["ASF Project Governance"]
+A0 -- "Performs" --> A1
+A2 -- "Secures" --> A0
+A0 -- "Interacts with" --> A3
+A4 -- "Governs" --> A3
 
-```bash
-chmod +x res-cli
 ```
 
-## Usage
+`rescli` is a command-line interface (CLI) for managing resources on the ResilientDB platform. It provides a simple, secure, and scriptable way to provision, monitor, and terminate services like database instances. This guide covers authentication, core commands, instance management, and the architecture of the ResilientDB ecosystem.
 
-Once installed and configured, you can use res-cli to perform various actions related to ResDB and Python SDK instances. Run the CLI with the following command:
+## User Authentication
 
+Secure access is the foundation of `rescli`. The authentication system ensures that only authorized users can manage resources, providing both protection from unauthorized access and accountability for all actions performed.
+
+### Core Authentication Commands
+
+Your session is managed with three primary commands:
+
+*   `--login`: Authenticates your identity and starts a secure session.
+*   `--whoami`: Displays the currently logged-in user.
+*   `--logout`: Terminates the current session, deleting local credentials.
+
+### Authentication Workflow
+
+A typical session involves logging in, performing tasks, and logging out.
+
+1.  **Check Current Status**
+    Before logging in, you can check if a session is already active.
+    ```bash
+    ./res-cli --whoami
+    ```
+    **Output:**
+    ```
+    No user is currently logged in.
+    ```
+
+2.  **Log In**
+    Initiate the login process. You will be prompted for your credentials.
+    ```bash
+    ./res-cli --login
+    ```
+    **Output:**
+    ```
+    Enter your email: your_email@example.com
+    Enter your password: 
+    Login successful.
+    ```
+
+3.  **Verify Identity**
+    Confirm the login was successful.
+    ```bash
+    ./res-cli --whoami
+    ```
+    **Output:**
+    ```
+    Currently logged in as: your_email@example.com
+    ```
+    You are now authenticated and can manage your instances.
+
+4.  **Log Out**
+    When finished, securely end your session.
+    ```bash
+    ./res-cli --logout
+    ```
+    **Output:**
+    ```
+    Logout successful.
+    ```
+
+## Core Concepts
+
+Understanding the structure of `rescli` commands and the resources you manage is key to using the tool effectively.
+
+### Command Structure
+
+All `rescli` commands follow a consistent pattern: `executable command [argument]`.
+
+*   **Executable (`./res-cli`)**: The program itself.
+*   **Command (`--some-action`)**: The specific action to perform (e.g., `--create`).
+*   **Argument (`<some-value>`)**: Optional information required by the command (e.g., an instance ID).
+
+The most useful command for exploration is `--help`, which provides a list of all available commands and their functions.
 ```bash
-./res-cli
+./res-cli --help
 ```
 
-## Commands
+### Understanding Instances
 
-<Tabs defaultValue="auth">
-  <TabsList>
-    <TabsTab value="auth">Authentication</TabsTab>
-    <TabsTab value="instance">Instance Management</TabsTab>
-  </TabsList>
+In ResilientDB, an **instance** is a running copy of a service, such as a ResDB blockchain node or a Python SDK environment. `rescli` abstracts away the complex server setup, allowing you to manage the lifecycle of these instances with simple commands.
 
-  <TabsPanel value="auth">
-    <Box my="md">
-      <Alert icon={<IconInfoCircle size={16} />} title="Authentication Commands" color="blue">
-        These commands help you manage your ResCLI authentication.
-      </Alert>
+## Managing Instances
 
-      <Tabs defaultValue="login">
-        <TabsList>
-          <TabsTab value="login">Login</TabsTab>
-          <TabsTab value="logout">Logout</TabsTab>
-          <TabsTab value="whoami">Current User</TabsTab>
-        </TabsList>
+The primary purpose of `rescli` is to manage the lifecycle of your instances: creating, viewing, and deleting them.
 
-        <TabsPanel value="login">
-          Logs in to the specified user account.
+### Step 1: Create an Instance
 
-          ```bash
-          ./res-cli --login
-          # Enter email and password when prompted
-          ```
-        </TabsPanel>
+To provision a new service, use the `--create` command followed by the instance type. For example, to create a ResDB node:
+```bash
+./res-cli --create resdb
+```
+**Output:**
+```
+Instance 'resdb-xyz-123' is being created.
+```
+In the background, the ResilientDB platform automatically provisions and configures the requested resource.
 
-        <TabsPanel value="logout">
-          Logs out from the current user account.
+### Step 2: View Instances
 
-          ```bash
-          ./res-cli --logout
-          ```
-        </TabsPanel>
+To monitor your active instances, use the `--view-instances` command. This acts as your dashboard, showing the status and connection details for all your resources.
+```bash
+./res-cli --view-instances
+```
+**Output:**
+```
++----------------+--------+-----------+-------------------------+
+|  Instance ID   |  Type  |  Status   |       Connection Info   |
++----------------+--------+-----------+-------------------------+
+| resdb-xyz-123  | resdb  | Running   | server.example.com:18000|
++----------------+--------+-----------+-------------------------+
+```
+The **Instance ID** is a unique identifier used to manage a specific instance.
 
-        <TabsPanel value="whoami">
-          Displays the currently logged-in user.
+### Step 3: Delete an Instance
 
-          ```bash
-          ./res-cli --whoami
-          ```
-        </TabsPanel>
-      </Tabs>
-    </Box>
-  </TabsPanel>
+When you no longer need an instance, you should delete it to free up resources. Use the `--delete` command with the target **Instance ID**.
+```bash
+./res-cli --delete resdb-xyz-123
+```
+**Output:**
+```
+Instance 'resdb-xyz-123' has been scheduled for deletion.
+```
+The instance will be terminated and removed from your list.
 
-  <TabsPanel value="instance">
-    <Box my="md">
-      <Alert icon={<IconInfoCircle size={16} />} title="Instance Management Commands" color="blue">
-        These commands help you manage your ResDB and Python SDK instances.
-      </Alert>
+## Architecture and Governance
 
-      <Tabs defaultValue="create">
-        <TabsList>
-          <TabsTab value="create">Create</TabsTab>
-          <TabsTab value="view">View</TabsTab>
-          <TabsTab value="delete">Delete</TabsTab>
-        </TabsList>
+While `rescli` is simple to use, it is part of a larger, robust ecosystem governed by trusted open-source principles.
 
-        <TabsPanel value="create">
-          Creates a new ResDB or Python SDK instance.
+### How `rescli` Works
 
-          ```bash
-          ./res-cli --create <type>
-          ```
-        </TabsPanel>
+`rescli` acts as a secure client that communicates with the ResilientDB server API.
+1.  **Authentication:** Upon successful login, the server issues a temporary session token, which `rescli` stores locally.
+2.  **Command Execution:** For subsequent commands like `--view-instances`, `rescli` sends the request to the server along with the session token for authorization.
+3.  **Server Processing:** The server validates the token, performs the requested action (e.g., querying the instance database or instructing the provisioner to create a new instance), and returns the result.
+4.  **Display:** `rescli` formats the server's response into human-readable output and displays it in your terminal.
 
-        <TabsPanel value="view">
-          Displays details about running instances.
+This flow is illustrated below:
+```mermaid
+sequenceDiagram
+    participant "rescli Tool" as CLI
+    participant "ResilientDB Server" as Server
+    participant "Instance Provisioner" as Provisioner
 
-          ```bash
-          ./res-cli --view-instances
-          ```
-        </TabsPanel>
+    CLI->>Server: Sends authenticated request (e.g., --create resdb)
+    Server->>Provisioner: Instructs to provision a new 'resdb' instance
+    Provisioner-->>Server: Reports success with instance details
+    Server-->>CLI: Returns a success message
 
-        <TabsPanel value="delete">
-          Deletes a running ResDB or Python SDK instance.
 
-          ```bash
-          ./res-cli --delete <instance_id>
-          ```
-        </TabsPanel>
-      </Tabs>
-    </Box>
-  </TabsPanel>
-</Tabs>
+```
 
-For more detailed information about each command, run `./res-cli --help` or `./res-cli <command> --help`.
+### The ResilientDB Ecosystem
+
+`rescli` is your interface to a powerful, multi-layered platform.
+*   **`rescli` (The Management Tool):** Your command-line "app store" for installing and managing services.
+*   **Instances (The Applications):** Your personal, isolated services (e.g., a `resdb` node) running on the platform.
+*   **ResilientDB Fabric (The Platform):** The underlying global-scale blockchain fabric that provides the security, decentralization, and core functionality for all instances.
+
+### Project Governance
+
+ResilientDB is a project of The **Apache Software Foundation (ASF)**, which ensures it is governed in a fair, open, and community-driven manner. This governance model, known as "The Apache Way," guarantees that the project is a stable and trustworthy platform built on three key pillars:
+1.  **Apache License 2.0:** A permissive license that grants you the freedom to use, modify, and distribute the software for any purpose, free of charge.
+2.  **Community-Driven:** Decisions are made by community consensus, not by a single individual or company. Influence is earned through contribution (meritocracy).
+3.  **Vendor Neutrality:** No single company is allowed to control the project's direction, ensuring it serves the public good rather than any one commercial interest.
+
+---
+
+Generated by [AI Codebase Knowledge Builder](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge)
+
+{/* END AUTO_DOC: rescli */}
 
 <Space h="xl" />
 <Divider my="xl" label="Community Feedback" labelPosition="center" />

@@ -19,6 +19,120 @@ def get_content_for_indices(files_data, indices):
     return content_map
 
 
+def fix_mermaid_syntax(content: str) -> str:
+    """
+    Fix common Mermaid syntax issues in generated content:
+    - Quote participant names with spaces in sequence diagrams
+    - Remove newlines inside node labels in flowcharts (including multi-line labels)
+    - Ensure proper formatting
+    """
+    # Pattern to match mermaid code blocks (handle various newline formats)
+    mermaid_pattern = r'```mermaid\s*\n(.*?)```'
+    
+    def fix_mermaid_block(match):
+        mermaid_content = match.group(1)
+        
+        # First, fix multi-line node labels by collapsing them
+        # Pattern: A0["Label\n"] (split across lines where closing is on next line)
+        def fix_multiline_labels(text):
+            # Match node labels that span lines: A0["text\n"] where closing "]" is on next line
+            # This pattern matches across newlines: node_id["label_text\n"] followed by "]" on next line
+            pattern = r'(\s*)([A-Za-z0-9_]+)\["(.*?)\n\s*"\]'
+            def replacer(m):
+                indent = m.group(1)
+                node_id = m.group(2)
+                label = m.group(3)
+                # Clean up the label - remove newlines and extra spaces
+                label = label.replace('\n', ' ').replace('\r', ' ').strip()
+                label = ' '.join(label.split())
+                return f'{indent}{node_id}["{label}"]'
+            # Apply with DOTALL flag to match across newlines
+            while True:
+                new_text = re.sub(pattern, replacer, text, flags=re.DOTALL)
+                if new_text == text:
+                    break
+                text = new_text
+            return text
+        
+        mermaid_content = fix_multiline_labels(mermaid_content)
+        
+        # Now process line by line
+        lines = mermaid_content.split('\n')
+        fixed_lines = []
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i]
+            original_line = line
+            stripped = line.strip()
+            
+            # Fix sequence diagram participant declarations
+            if stripped.startswith('participant '):
+                # Extract participant name and optional alias
+                parts = stripped.replace('participant ', '').split(' as ', 1)
+                participant_name = parts[0].strip()
+                alias = parts[1].strip() if len(parts) > 1 else None
+                
+                # If participant name has spaces and isn't already quoted, quote it
+                if ' ' in participant_name and not (participant_name.startswith('"') and participant_name.endswith('"')):
+                    participant_name = f'"{participant_name}"'
+                
+                # Preserve original indentation
+                indent = len(original_line) - len(original_line.lstrip())
+                indent_str = ' ' * indent
+                
+                # Reconstruct the line
+                if alias:
+                    fixed_line = f'{indent_str}participant {participant_name} as {alias}'
+                else:
+                    fixed_line = f'{indent_str}participant {participant_name}'
+                fixed_lines.append(fixed_line)
+                i += 1
+                continue
+            
+            # Fix flowchart node labels - handle both single-line and already-fixed multi-line
+            if '["' in stripped and '"]' in stripped:
+                # Single-line label (or already fixed multi-line)
+                node_match = re.match(r'(\s*)([A-Za-z0-9_]+)\["(.*?)"\]', stripped, re.DOTALL)
+                if node_match:
+                    indent = node_match.group(1)
+                    node_id = node_match.group(2)
+                    label = node_match.group(3)
+                    # Clean up any remaining newlines
+                    label = label.replace('\n', ' ').replace('\r', ' ').strip()
+                    label = ' '.join(label.split())
+                    fixed_line = f'{indent}{node_id}["{label}"]'
+                    fixed_lines.append(fixed_line)
+                    i += 1
+                    continue
+            
+            # Fix edge labels - remove newlines
+            if '--' in stripped and '"' in stripped:
+                edge_match = re.match(r'(\s*)([A-Za-z0-9_]+)\s+--\s+"(.*?)"\s+-->\s+([A-Za-z0-9_]+)', stripped, re.DOTALL)
+                if edge_match:
+                    indent = edge_match.group(1)
+                    from_node = edge_match.group(2)
+                    label = edge_match.group(3)
+                    to_node = edge_match.group(4)
+                    # Clean up label
+                    label = label.replace('\n', ' ').replace('\r', ' ').strip()
+                    label = ' '.join(label.split())
+                    fixed_line = f'{indent}{from_node} -- "{label}" --> {to_node}'
+                    fixed_lines.append(fixed_line)
+                    i += 1
+                    continue
+            
+            # Keep other lines as-is
+            fixed_lines.append(line)
+            i += 1
+        
+        return '```mermaid\n' + '\n'.join(fixed_lines) + '\n```'
+    
+    # Replace all mermaid blocks with fixed versions
+    fixed_content = re.sub(mermaid_pattern, fix_mermaid_block, content, flags=re.DOTALL)
+    return fixed_content
+
+
 class FetchRepo(Node):
     def prep(self, shared):
         repo_url = shared.get("repo_url")
@@ -544,6 +658,7 @@ class WriteChapters(BatchNode):
         project_name = shared["project_name"]
         language = shared.get("language", "english")
         use_cache = shared.get("use_cache", True)  # Get use_cache flag, default to True
+        single_file_mode = shared.get("single_file_mode", False)  # Check if single-file mode
 
         # Get already written chapters to provide context
         # We store them temporarily during the batch run, not in shared memory yet
@@ -616,6 +731,7 @@ class WriteChapters(BatchNode):
                         "next_chapter": next_chapter,  # Add next chapter info (uses potentially translated name)
                         "language": language,  # Add language for multi-language support
                         "use_cache": use_cache, # Pass use_cache flag
+                        "single_file_mode": single_file_mode,  # Pass single_file_mode flag
                         # previous_chapters_summary will be added dynamically in exec
                     }
                 )
@@ -639,6 +755,7 @@ class WriteChapters(BatchNode):
         project_name = item.get("project_name")
         language = item.get("language", "english")
         use_cache = item.get("use_cache", True) # Read use_cache from item
+        single_file_mode = item.get("single_file_mode", False)  # Read single_file_mode from item
         print(f"Writing chapter {chapter_num} for: {abstraction_name} using LLM...")
 
         # Prepare file context string from the map
@@ -698,6 +815,7 @@ Instructions for the chapter (Generate content in {language.capitalize()} unless
 - If this is not the first chapter, begin with a brief transition from the previous chapter{instruction_lang_note}, referencing it with a proper Markdown link using its name{link_lang_note}.
 
 - Begin with a high-level motivation explaining what problem this abstraction solves{instruction_lang_note}. Start with a central use case as a concrete example. The whole chapter should guide the reader to understand how to solve this use case. Make it very minimal and friendly to beginners.
+{f"- **IMPORTANT for single-file mode**: Write in a more concise, documentation-style tone. Focus on clarity and completeness over verbosity. Each section should be self-contained but flow smoothly into the next. Keep explanations direct and practical." if single_file_mode else ""}
 
 - If the abstraction is complex, break it down into key concepts. Explain each concept one-by-one in a very beginner-friendly way{instruction_lang_note}.
 
@@ -705,13 +823,13 @@ Instructions for the chapter (Generate content in {language.capitalize()} unless
 
 - Each code block should be BELOW 10 lines! If longer code blocks are needed, break them down into smaller pieces and walk through them one-by-one. Aggresively simplify the code to make it minimal. Use comments{code_comment_note} to skip non-important implementation details. Each code block should have a beginner friendly explanation right after it{instruction_lang_note}.
 
-- Describe the internal implementation to help understand what's under the hood{instruction_lang_note}. First provide a non-code or code-light walkthrough on what happens step-by-step when the abstraction is called{instruction_lang_note}. It's recommended to use a simple sequenceDiagram with a dummy example - keep it minimal with at most 5 participants to ensure clarity. If participant name has space, use: `participant QP as Query Processing`. {mermaid_lang_note}.
+- Describe the internal implementation to help understand what's under the hood{instruction_lang_note}. First provide a non-code or code-light walkthrough on what happens step-by-step when the abstraction is called{instruction_lang_note}. It's recommended to use a simple sequenceDiagram with a dummy example - keep it minimal with at most 5 participants to ensure clarity. **CRITICAL for sequence diagrams**: If participant name contains spaces, you MUST quote it: `participant "Query Processing" as QP` or `participant "ResilientDB Server" as Server`. Never use unquoted participant names with spaces. {mermaid_lang_note}.
 
 - Then dive deeper into code for the internal implementation with references to files. Provide example code blocks, but make them similarly simple and beginner-friendly. Explain{instruction_lang_note}.
 
 - IMPORTANT: When you need to refer to other core abstractions covered in other chapters, ALWAYS use proper Markdown links like this: [Chapter Title](filename.md). Use the Complete Tutorial Structure above to find the correct filename and the chapter title{link_lang_note}. Translate the surrounding text.
 
-- Use mermaid diagrams to illustrate complex concepts (```mermaid``` format). {mermaid_lang_note}.
+- Use mermaid diagrams to illustrate complex concepts (```mermaid``` format). **CRITICAL Mermaid syntax rules**: (1) Participant names with spaces in sequence diagrams MUST be quoted: `participant "Name With Spaces" as Alias`. (2) Node labels in flowcharts must be on a single line - no newlines inside quotes. (3) Edge labels must be on a single line. {mermaid_lang_note}.
 
 - Heavily use analogies and examples throughout{instruction_lang_note} to help beginners understand.
 
@@ -737,6 +855,9 @@ Now, directly provide a super beginner-friendly Markdown output (DON'T need ```m
             else:  # Otherwise, prepend it
                 chapter_content = f"{actual_heading}\n\n{chapter_content}"
 
+        # Fix Mermaid syntax issues in the generated content
+        chapter_content = fix_mermaid_syntax(chapter_content)
+
         # Add the generated content to our temporary list for the next iteration's context
         self.chapters_written_so_far.append(chapter_content)
 
@@ -756,7 +877,9 @@ class CombineTutorial(Node):
         output_base_dir = shared.get("output_dir", "output")  # Default output dir
         output_path = os.path.join(output_base_dir, project_name)
         repo_url = shared.get("repo_url")  # Get the repository URL
-        # language = shared.get("language", "english") # No longer needed for fixed strings
+        single_file_mode = shared.get("single_file_mode", False)  # Check for single-file mode
+        language = shared.get("language", "english")
+        use_cache = shared.get("use_cache", True)
 
         # Get potentially translated data
         relationships_data = shared[
@@ -845,33 +968,135 @@ class CombineTutorial(Node):
         # Add attribution to index content (using English fixed string)
         index_content += f"\n\n---\n\nGenerated by [AI Codebase Knowledge Builder](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge)"
 
+        # If single-file mode, create consolidated content with summarization
+        if single_file_mode:
+            # Collect all chapter content for summarization
+            all_chapters_text = ""
+            chapter_titles = []
+            for i, abstraction_index in enumerate(chapter_order):
+                if 0 <= abstraction_index < len(abstractions) and i < len(chapters_content):
+                    chapter_content = chapters_content[i]
+                    abstraction_name = abstractions[abstraction_index]["name"]
+                    chapter_titles.append(abstraction_name)
+                    # Remove the main heading from each chapter
+                    lines = chapter_content.split('\n')
+                    start_idx = 0
+                    if lines and lines[0].strip().startswith('#'):
+                        start_idx = 1
+                        if len(lines) > 1 and not lines[1].strip():
+                            start_idx = 2
+                    chapter_body = '\n'.join(lines[start_idx:])
+                    all_chapters_text += f"\n\n## {abstraction_name}\n\n{chapter_body}"
+            
+            # Summarize all chapters into a compact format
+            lang_instruction = ""
+            if language.lower() != "english":
+                lang_instruction = f"IMPORTANT: Write the entire summary in **{language.capitalize()}** language.\n\n"
+            
+            summarize_prompt = f"""
+{lang_instruction}You have a detailed tutorial for the project `{project_name}` with the following chapters:
+
+{all_chapters_text}
+
+Your task: Transform this into a **well-structured, documentation-style guide** that:
+
+**Structure & Flow:**
+1. Start with a clear, welcoming introduction that explains what {project_name} is and why it exists (2-3 sentences)
+2. Use smooth transitions between sections - each section should naturally lead to the next
+3. Maintain clear hierarchical structure: ## for main concepts, ### for sub-concepts
+4. Keep logical flow: introduction → core concepts → usage examples → advanced details
+
+**Content Guidelines:**
+5. Preserve ALL essential information from each chapter, but make it more concise
+6. Remove redundant explanations, but keep key insights and practical examples
+7. Focus on **documentation tone** (clear, authoritative, reference-like) rather than tutorial prose
+8. Keep code examples practical and concise (5-10 lines max per example)
+9. Maintain analogies and examples that help understanding, but make them more direct
+10. Preserve important implementation details, but present them more efficiently
+
+**Length & Style:**
+11. Target length: 40-60% of original (more than heavy summarization, less than full chapters)
+12. Write in a **documentation style**: clear, direct, professional, but still accessible
+13. Avoid abrupt jumps - ensure smooth transitions between concepts
+14. Each section should feel complete and self-contained, yet connected to the whole
+
+**Output Format:**
+- Start directly with content (no title - it will be added separately)
+- Use proper Markdown formatting
+- Include code blocks where relevant
+- Use clear section headings
+
+Provide the documentation-style guide:
+"""
+            print("Summarizing chapters into compact format using LLM...")
+            # Use cache for summarization (this is in prep, so cur_retry may not be set yet)
+            summarized_content = call_llm(summarize_prompt, use_cache=use_cache)
+            # Fix Mermaid syntax in summarized content
+            summarized_content = fix_mermaid_syntax(summarized_content)
+            
+            # Start with project summary and mermaid diagram
+            consolidated_content = f"# {project_name}\n\n"
+            consolidated_content += f"{relationships_data['summary']}\n\n"
+            if repo_url and repo_url != "None":
+                consolidated_content += f"**Source Repository:** [{repo_url}]({repo_url})\n\n"
+            
+            # Add Mermaid diagram
+            consolidated_content += "```mermaid\n"
+            consolidated_content += mermaid_diagram + "\n"
+            consolidated_content += "```\n\n"
+            
+            # Add the summarized content
+            consolidated_content += summarized_content.strip()
+            
+            consolidated_content += f"\n\n---\n\nGenerated by [AI Codebase Knowledge Builder](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge)"
+            
+            # Fix Mermaid syntax issues in the consolidated content
+            consolidated_content = fix_mermaid_syntax(consolidated_content)
+            
+            return {
+                "output_path": output_path,
+                "single_file_mode": True,
+                "consolidated_content": consolidated_content,
+            }
+        
         return {
             "output_path": output_path,
+            "single_file_mode": False,
             "index_content": index_content,
             "chapter_files": chapter_files,  # List of {"filename": str, "content": str}
         }
 
     def exec(self, prep_res):
         output_path = prep_res["output_path"]
-        index_content = prep_res["index_content"]
-        chapter_files = prep_res["chapter_files"]
+        single_file_mode = prep_res.get("single_file_mode", False)
 
         print(f"Combining tutorial into directory: {output_path}")
         # Rely on Node's built-in retry/fallback
         os.makedirs(output_path, exist_ok=True)
 
-        # Write index.md
-        index_filepath = os.path.join(output_path, "index.md")
-        with open(index_filepath, "w", encoding="utf-8") as f:
-            f.write(index_content)
-        print(f"  - Wrote {index_filepath}")
+        if single_file_mode:
+            # Write single consolidated file
+            consolidated_content = prep_res["consolidated_content"]
+            consolidated_filepath = os.path.join(output_path, "index.md")
+            with open(consolidated_filepath, "w", encoding="utf-8") as f:
+                f.write(consolidated_content)
+            print(f"  - Wrote {consolidated_filepath} (single consolidated file)")
+        else:
+            # Write index.md and separate chapter files (original behavior)
+            index_content = prep_res["index_content"]
+            chapter_files = prep_res["chapter_files"]
+            
+            index_filepath = os.path.join(output_path, "index.md")
+            with open(index_filepath, "w", encoding="utf-8") as f:
+                f.write(index_content)
+            print(f"  - Wrote {index_filepath}")
 
-        # Write chapter files
-        for chapter_info in chapter_files:
-            chapter_filepath = os.path.join(output_path, chapter_info["filename"])
-            with open(chapter_filepath, "w", encoding="utf-8") as f:
-                f.write(chapter_info["content"])
-            print(f"  - Wrote {chapter_filepath}")
+            # Write chapter files
+            for chapter_info in chapter_files:
+                chapter_filepath = os.path.join(output_path, chapter_info["filename"])
+                with open(chapter_filepath, "w", encoding="utf-8") as f:
+                    f.write(chapter_info["content"])
+                print(f"  - Wrote {chapter_filepath}")
 
         return output_path  # Return the final path
 

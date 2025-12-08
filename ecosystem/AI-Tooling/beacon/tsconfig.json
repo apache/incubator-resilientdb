@@ -4,11 +4,6 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "types": [
-      "node",
-      "jest",
-      "@testing-library/jest-dom"
-    ],
     "target": "es5",
     "lib": [
       "dom",
@@ -27,11 +22,6 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
     "plugins": [
       {
         "name": "next"

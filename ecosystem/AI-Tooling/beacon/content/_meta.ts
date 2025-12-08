@@ -43,16 +43,16 @@ export default {
   pythonsdk: {
     title: 'ResilientDB Python SDK',
   },
-  python_cache: {
+  'resilient-python-cache': {
     title: 'Resilient Python Cache',
   },
-  node_cache: {
+  'resilient-node-cache': {
     title: 'ResilientNode Cache',
   },
   rescontract: {
     title: 'ResContract',
   },
-  resdb_orm: {
+  'resdb-orm': {
     title: 'ResDB-ORM',
   },
   rescli: {

@@ -56,6 +56,8 @@ def main():
     parser.add_argument("--no-cache", action="store_true", help="Disable LLM response caching (default: caching enabled)")
     # Add max_abstraction_num parameter to control the number of abstractions
     parser.add_argument("--max-abstractions", type=int, default=10, help="Maximum number of abstractions to identify (default: 10)")
+    # Add single-file mode for consolidated output
+    parser.add_argument("--single-file", action="store_true", help="Generate a single consolidated markdown file instead of index + separate chapter files")
 
     args = parser.parse_args()
 
@@ -87,6 +89,9 @@ def main():
         
         # Add max_abstraction_num parameter
         "max_abstraction_num": args.max_abstractions,
+        
+        # Add single_file_mode flag
+        "single_file_mode": args.single_file,
 
         # Outputs will be populated by the nodes
         "files": [],
