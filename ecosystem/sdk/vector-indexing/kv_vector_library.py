@@ -14,8 +14,8 @@ def format_get_responses(results: Any) -> None:
             # There's probably a better way of telling if there is a score, but thats okay
             try:
                 score = pairing["score"]
-                score *= 100
-                print(f"{i+1}. {text} // (similarity score: {score:.2f}%)")
+                ## score *= 100
+                print(f"{i+1}. {text} // (similarity score: {score})")
             except KeyError:
                 print(f"{i+1}. {text}")
 
