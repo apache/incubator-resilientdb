@@ -66,12 +66,12 @@ Raft::~Raft() { is_stop_ = true; }
 
 bool Raft::IsStop() { return is_stop_; }
 
-void Raft::CreateAndSendAppendEntryMsg(uint64_t replica_id, std::vector<uint64_t> nextIndexCopy, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit,
+void Raft::CreateAndSendAppendEntryMsg(uint64_t replica_id, uint64_t nextIndex, uint64_t term, uint64_t prevLogTerm, uint64_t leaderCommit,
                              std::string cmd, uint64_t entry_term) {
   AppendEntries ae;
   ae.set_term(term);
   ae.set_leaderid(id_);
-  ae.set_prevlogindex(nextIndexCopy[replica_id] - 1);
+  ae.set_prevlogindex(nextIndex);
   ae.set_prevlogterm(prevLogTerm);
   auto* e = ae.add_entries();
   e->set_term(entry_term);
@@ -127,7 +127,8 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
 
   //LOG(INFO) << "Received Transaction to primary id: " << id_;
   for (int replica_id = 1; replica_id <= total_num_; ++replica_id) {
-    if (replica_id != id_) {CreateAndSendAppendEntryMsg(replica_id, nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, term);}
+    auto prevLogIndexForReplica = nextIndexCopy[replica_id] - 1;
+    if (replica_id != id_) {CreateAndSendAppendEntryMsg(replica_id, prevLogIndexForReplica, term, prevLogTerm, leaderCommit, cmd, term);}
   }
   return true;
 }
@@ -227,6 +228,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
   std::vector<std::unique_ptr<Request>> eToApply;
   AppendEntries resend;
   std::vector<uint64_t> nextIndexCopy = nextIndex_;
+  std::vector<LogEntry> sendList;
+  std::vector<uint64_t> sendListTerm;
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
     initialRole = role_;
@@ -278,15 +281,23 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
         return;
       }
       uint64_t prevIdx = resendIndex - 1;
-      const LogEntry& resendEntry = *log_[resendIndex];
       // prepare fields for appendEntries message
       term = currentTerm_;
-      prevLogIndex = lastLogIndex_;
       prevLogTerm = log_[prevIdx]->term;
       leaderCommit = commitIndex_;
-      cmd =  resendEntry.command;
-      resendEntryTerm = resendEntry.term;
       resending = true;
+
+      while (resendIndex <= lastLogIndex_) {
+        LOG(INFO) << "Resending AppendEntries for index " << resendIndex << " to " << aer->id();
+        const LogEntry& resendEntry = *log_[resendIndex];
+        cmd =  resendEntry.command;
+        resendEntryTerm = resendEntry.term;
+        prevLogTerm = log_[prevIdx]->term;
+        sendList.push_back(resendEntry);
+        sendListTerm.push_back(prevLogTerm);
+        resendIndex++;
+        prevIdx++;
+      }
 
     //  LOG(INFO) << "Resending AppendEntries for index " << resendIndex
     //            << " (prevIdx=" << prevIdx
@@ -300,9 +311,12 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
                 << (initialRole == Role::LEADER ? "LEADER" : "CANDIDATE") << "->FOLLOWER in term " << term;
     return false;
   }
-  if (resending) { 
-    CreateAndSendAppendEntryMsg(aer->id(), nextIndexCopy, term, prevLogTerm, leaderCommit, cmd, resendEntryTerm);
-    // SendMessage(MessageType::AppendEntriesMsg, resend, aer->id()); 
+  if (resending) {
+    auto prevLogIndexForReplica = nextIndexCopy[aer->id()] - 1;
+    for (int i = 0; i < sendList.size(); i++) {
+      LOG(INFO) << "Sending Command:  " << sendList[i].command << " Term: " << sendList[i].term;
+      CreateAndSendAppendEntryMsg(aer->id(), prevLogIndexForReplica + i, term, sendListTerm[i], leaderCommit, sendList[i].command, sendList[i].term);
+    }
   }
 
   for (auto& e : eToApply) {
