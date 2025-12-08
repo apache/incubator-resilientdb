@@ -102,7 +102,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       leaderCommit = commitIndex_;
 
       // assign seq number as log index for the request or executing transactions fails.
-      req->set_seq(lastLogIndex_ + 1);
+      //req->set_seq(lastLogIndex_ + 1);
 
       // append new transaction to log
       auto entry = std::make_unique<LogEntry>();
@@ -550,6 +550,8 @@ std::vector<std::unique_ptr<Request>> Raft::PrepareCommitLocked() {
         LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Failed to parse command";
         continue;
       }
+      // assign seq number as log index for the request or executing transactions fails.
+      command->set_seq(lastApplied_);
       v.push_back(std::move(command));
       //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Applying index entry " << lastApplied_;
     }
