@@ -1,0 +1,62 @@
+{
+  "_comment": "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements. See the NOTICE file distributed with this work for additional information regarding copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the 'License'); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.",
+  "name": "collaborative-drawing-toolkit",
+  "version": "2.0.0",
+  "description": "Universal JavaScript SDK for building collaborative drawing applications with blockchain-backed storage",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "examples"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "collaborative",
+    "drawing",
+    "canvas",
+    "real-time",
+    "blockchain",
+    "toolkit",
+    "sdk",
+    "decentralized",
+    "resilientdb",
+    "web3",
+    "paint",
+    "whiteboard",
+    "art",
+    "sketch"
+  ],
+  "author": "ResilientDB Contributors",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/incubator-resilientdb"
+  },
+  "bugs": {
+    "url": "https://github.com/apache/incubator-resilientdb/issues"
+  },
+  "homepage": "https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/tools/drawing-toolkit",
+  "dependencies": {
+    "socket.io-client": "^4.7.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@types/node": "^20.0.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "rollup": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
