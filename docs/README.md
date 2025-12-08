@@ -10,7 +10,7 @@
 
 ## Introduction
 
-GraphQ-LLM is an intelligent AI assistant that helps developers learn, understand, and optimize GraphQL queries for ResilientDB. Built with Retrieval-Augmented Generation (RAG) and integrated with the ResilientApp ecosystem, it provides real-time explanations, optimization suggestions, and performance insights for your GraphQL queries.
+GraphQ-LLM is an intelligent AI assistant that helps developers learn, understand, and optimize GraphQL queries for ResilientDB. Built with Retrieval-Augmented Generation (RAG) and integrated with the ResilientApp ecosystem, it provides real-time explanations, suggestions, and performance insights for your GraphQL queries.
 
 ---
 
@@ -19,7 +19,6 @@ GraphQ-LLM is an intelligent AI assistant that helps developers learn, understan
 GraphQ-LLM is a comprehensive AI tutor that transforms how developers interact with GraphQL APIs. Instead of searching through documentation or trial-and-error query writing, developers can ask questions in natural language or paste their queries to get:
 
 - **Detailed Explanations**: Understand what each query does, how fields work, and what to expect in responses
-- **Optimization Suggestions**: Get actionable recommendations to improve query performance and efficiency
 - **Efficiency Metrics**: See estimated execution time, resource usage, and complexity scores
 - **Documentation Context**: Access relevant ResilientDB and GraphQL documentation through semantic search
 
@@ -66,12 +65,7 @@ GraphQ-LLM uses a three-tier architecture that combines AI, vector search, and r
    - For queries: Analyzes structure, fields, operations, and provides explanations
    - For questions: Retrieves relevant docs and generates comprehensive answers
 
-3. **Optimization Engine**
-   - Analyzes query structure and complexity
-   - Compares with historical query patterns (via ResLens)
-   - Provides specific, actionable optimization recommendations
-
-4. **Efficiency Estimator**
+3. **Efficiency Estimator**
    - Calculates query complexity scores
    - Estimates execution time and resource usage
    - Provides real-time metrics when ResLens is enabled
@@ -109,20 +103,12 @@ Ask questions like:
 
 The system retrieves relevant documentation and provides comprehensive answers with examples.
 
-### 3. **Query Optimization Suggestions**
-
-Get actionable recommendations:
-- Remove unused fields
-- Use field aliases for clarity
-- Add filters to reduce result size
-- Optimize nested queries
-
-### 4. **Efficiency Estimator**
+### 3. **Efficiency Estimator**
    - Calculates query complexity scores
    - Estimates execution time and resource usage
    - Provides real-time metrics when ResLens is enabled
 
-### 5. **Performance Metrics**
+### 4. **Performance Metrics**
 
 See efficiency scores, estimated execution times, and resource usage to understand query performance at a glance.
 
@@ -231,7 +217,7 @@ New to GraphQL? GraphQ-LLM explains:
 - Schema exploration
 - Best practices
 
-### Query Optimization
+### Query Effeciency
 
 Working on performance? Get:
 - Complexity analysis
