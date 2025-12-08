@@ -28,13 +28,31 @@ cc_library(
     ],
 )
 
+
+#filegroup(
+#    name = "data_files",
+#    srcs = ["test.config", "expect_test.config"],
+#)
+#
+#cc_library(
+#    name = "test_config_data",
+#     "//platform/config:expect_test.config",
+#    ],
+#)
+#
+
 cc_test(
     name = "resdb_config_test",
     srcs = ["resdb_config_test.cpp"],
     deps = [
         ":resdb_config",
         "//common/test:test_main",
+        ":resdb_config_utils",
     ],
+    data = [
+    "//platform/config:test.config",
+    "//platform/config:expect_test.config",
+    ]
 )
 
 cc_library(
@@ -43,6 +61,7 @@ cc_library(
     hdrs = ["resdb_config_utils.h"],
     deps = [
         ":resdb_config",
+        "//common:json",
     ],
 )
 
