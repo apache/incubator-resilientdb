@@ -339,51 +339,86 @@ def exp4_fault_injection_sanity(set_value, get_value, get_value_readonly):
       - read via learner, and
       - check for impossible values.
     """
-    key = "EXP4_KEY"
-    num_rounds = 50
+    num_rounds = 100
+    fallback_thresholds = [0.1, 0.01, 0.001, 0.0001]  # seconds
+    all_results = []
 
-    impossible_values = []
-    mismatches = 0
-    fallbacks = 0
+    for th_idx, th in enumerate(fallback_thresholds):
+        key = f"EXP4_KEY_{th_idx}"
 
-    for i in range(num_rounds):
-        # Write monotone integer
-        set_value(key, str(i))
-        time.sleep(0.1)
+        print(f"Testing with fallback threshold: {th} seconds")
+        impossible_values = []
+        mismatches = 0
+        fallbacks = 0
 
-        # Ground truth
-        truth = get_value(key)
+        pbft_latencies = []
+        learner_latencies = []
+        highest_seen = -1
 
-        try:
+        for i in range(num_rounds):
+            # Write monotone integer
+            set_value(key, str(i))
+            time.sleep(0.1)
+
+            # Ground truth
+            time0 = time.time()
+            truth = get_value(key)
+            time1 = time.time()
+            # Took pbft this time to get value
+            pbft_latencies.append(time1 - time0)
+
+            time2 = time.time()
             val = get_value_readonly(key)
-        except Exception:
-            # learner refused due to bad digests or staleness
-            fallbacks += 1
-            continue
+            time3 = time.time()       
+            # Took learner this time to get value
+            learner_latency = time3 - time2
+            learner_latencies.append(learner_latency)
+            
+            if learner_latency > th:
+                # If learner took too long, consider it a fallback
+                fallbacks += 1
 
-        if val != truth:
-            mismatches += 1
-            # If you never wrote val at all, this is impossible
+            if val != truth:
+                mismatches += 1
+                    # If you never wrote val at all, this is impossible
             try:
                 int_val = int(val)
-                if int_val < 0 or int_val > i:
-                    impossible_values.append(val)
             except ValueError:
                 # non-integer, clearly impossible in this setup
                 impossible_values.append(val)
+                continue
+            
+            if int_val < 0 or int_val > i:
+                impossible_values.append(val)
 
-    print("\n=== Exp4: Fault Injection Sanity ===")
-    print(f"Total rounds: {num_rounds}")
-    print(f"  mismatches (learner != PBFT): {mismatches}")
-    print(f"  fallbacks (exceptions)      : {fallbacks}")
-    print(f"  impossible values seen      : {impossible_values}")
+            # Rollback check: learner should not move backwards in value
+            if int_val < highest_seen:
+                impossible_values.append(
+                    f"rollback: was {highest_seen}, now {int_val}"
+                )
+            else:
+                highest_seen = max(highest_seen, int_val)
 
-    # In a correct implementation, impossible_values should be empty.
-    return {
-        "mismatches": mismatches,
-        "fallbacks": fallbacks,
-        "impossible_values": impossible_values,
-    }
+        print("\n=== Exp4: Fault Injection (Timing-based) ===")
+        print(f"Threshold:             {th} seconds")
+        print(f"Total rounds:          {num_rounds}")
+        print(f"Fallback reads (slow): {fallbacks}")
+        print(f"Mismatches total:      {mismatches}")
+        print(f"Impossible values:     {impossible_values}")
+        print(f"Learner latencies:     {summarize_latencies(learner_latencies)}")
+        print(f"PBFT latencies:        {summarize_latencies(pbft_latencies)}")
+
+        all_results.append({
+            "threshold": th,
+            "num_rounds": num_rounds,
+            "mismatches": mismatches,
+            "fallbacks": fallbacks,
+            "impossible_values": impossible_values,
+            "learner_latencies": summarize_latencies(learner_latencies),
+            "pbft_latencies": summarize_latencies(pbft_latencies),
+        })
+
+    return all_results
 
 def plot_exp1_latency(exp1_results, metric="median"):
     """
@@ -574,30 +609,49 @@ def plot_exp3_latency(exp3_results):
 def plot_exp4_fault_summary(exp4_results):
     """
     Visual summary of learner behavior under faulty replica digests.
-    Shows:
-      - mismatches between learner and PBFT
-      - fallbacks (learner refused to serve)
-      - impossible values (should be 0 in a correct system)
-    """
-    mismatches = exp4_results["mismatches"]
-    fallbacks = exp4_results["fallbacks"]
-    impossible_count = len(exp4_results["impossible_values"])
 
-    labels = ["Mismatches", "Fallbacks", "Impossible values"]
-    values = [mismatches, fallbacks, impossible_count]
+    exp4_results is a list of dicts, each like:
+      {
+        "threshold": th,
+        "num_rounds": num_rounds,
+        "mismatches": mismatches,
+        "fallbacks": fallbacks,
+        "impossible_values": [...],
+        "learner_latencies": {...},
+        "pbft_latencies": {...},
+      }
+    """
+    import matplotlib.pyplot as plt
+    import os
+
+    # Extract per-threshold stats
+    thresholds = [r["threshold"] for r in exp4_results]
+    mismatches = [r["mismatches"] for r in exp4_results]
+    fallbacks = [r["fallbacks"] for r in exp4_results]
+    impossible_counts = [len(r["impossible_values"]) for r in exp4_results]
+
+    x = list(range(len(thresholds)))
+    width = 0.25
 
     plt.figure()
-    x = range(len(labels))
-    plt.bar(x, values)
-    plt.xticks(x, labels, rotation=15)
 
+    # Grouped bars: one group per threshold
+    plt.bar([i - width for i in x], mismatches, width, label="Mismatches")
+    plt.bar(x, fallbacks, width, label="Fallbacks")
+    plt.bar([i + width for i in x], impossible_counts, width, label="Impossible values")
+
+    # X-axis labels = thresholds
+    plt.xticks(x, [str(th) for th in thresholds], rotation=15)
+    plt.xlabel("Fallback threshold (seconds)")
     plt.ylabel("Count")
     plt.title("Experiment 4: Learner behavior under faulty digest injection")
+    plt.legend()
     plt.grid(axis="y")
     plt.tight_layout()
 
     filename = os.path.join(PLOTS_DIR, "exp4_fault_summary.pdf")
     plt.savefig(filename, dpi=300)
+    plt.close()
 
 
 PLOTS_DIR = "plots"
@@ -611,22 +665,22 @@ if __name__ == "__main__":
     set_value, get_value, get_value_readonly = build_kv_binding()
 
     # Run experiments
-    exp1_results = exp1_read_latency(set_value, get_value, get_value_readonly)
-    plot_exp1_latency(exp1_results, metric="median")
-    plot_exp1_latency(exp1_results, metric="p95")
-    plot_exp1_throughput(exp1_results)
+    # exp1_results = exp1_read_latency(set_value, get_value, get_value_readonly)
+    # plot_exp1_latency(exp1_results, metric="median")
+    # plot_exp1_latency(exp1_results, metric="p95")
+    # plot_exp1_throughput(exp1_results)
 
-    exp2_results = exp2_mixed_workload(set_value, get_value, get_value_readonly)
-    plot_exp2_write_throughput(exp2_results)
-    plot_exp2_read_throughput(exp2_results)
+    # exp2_results = exp2_mixed_workload(set_value, get_value, get_value_readonly)
+    # plot_exp2_write_throughput(exp2_results)
+    # plot_exp2_read_throughput(exp2_results)
 
-    exp3_results = exp3_staleness_and_fallback(set_value, get_value, get_value_readonly)
-    plot_exp3_staleness(exp3_results)
-    plot_exp3_latency(exp3_results)
+    # exp3_results = exp3_staleness_and_fallback(set_value, get_value, get_value_readonly)
+    # plot_exp3_staleness(exp3_results)
+    # plot_exp3_latency(exp3_results)
 
     # Only run exp4 when there is a faulty-replica setup ready
-    # exp4_results = exp4_fault_injection_sanity(set_value, get_value, get_value_readonly)
-    # plot_exp4_fault_summary(exp4_results)
+    exp4_results = exp4_fault_injection_sanity(set_value, get_value, get_value_readonly)
+    plot_exp4_fault_summary(exp4_results)
 
 
 
