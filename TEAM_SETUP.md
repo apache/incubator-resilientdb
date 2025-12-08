@@ -1276,4 +1276,4 @@ You've successfully set up the project when:
 
 ---
 
-**Ready to start? Begin with Step 1! 🚀**
+**Ready to start? Begin with Step 1! 🚀**.
