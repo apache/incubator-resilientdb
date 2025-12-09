@@ -27,6 +27,7 @@ A shell script is provided to quickly populate the database with sample data for
 1. Make sure you are in the ```ecosystem/sdk/vector-indexing``` directory.
 2. Run the demo script:
    ```
+   chmod +x demo_add.sh
    ./demo_add.sh
    ```
    **What this does:** The script iterates through a predefined list of sentences (covering topics like biology, sports, and art) and adds them to the ResilientDB vector index one by one using ```kv_vector.py```.
