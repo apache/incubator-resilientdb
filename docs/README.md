@@ -196,7 +196,7 @@ All services run in Docker containers:
 - **ResLens Frontend** (Port 5173) - Performance monitoring UI (optional)
 - **Nexus Frontend** (Port 3002) - GraphQL Tutor UI
 
-###Access URLs 
+### Access URLs 
 -  **Nexus Frontend:** http://localhost:3002
 -  **GraphQL Tutor:** http://localhost:3002/graphql-tutor
 -  **GraphQ-LLM Backend API:** http://localhost:3001
