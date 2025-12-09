@@ -14,7 +14,6 @@ Before using this SDK, please ensure the entire ResilientDB stack is up and runn
 1. ResilientDB KV Store: The core blockchain storage service must be running. [How to Setup](https://github.com/apache/incubator-resilientdb)
 2. GraphQL Server (```ecosystem/graphql```): The backend service handling GraphQL schemas and resolvers. [How to Setup](https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/graphql)
 3. GraphQL Application (```ecosystem/graphql/app.py```): The Python web server (Ariadne/Flask) that exposes the GraphQL endpoint. [How to Setup](https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/graphql)
-   - Default Endpoint: http://127.0.0.1:8000/graphql
 4. In a terminal where the current directory is ecosystem/sdk/vector-indexing, activate the GraphQL virtual environment.
 
 ## Installation
