@@ -39,7 +39,8 @@ ecosystem/
 ├── sdk/                             # Software Development Kits
 │   ├── rust-sdk/                    # Rust SDK
 │   ├── resvault-sdk/                # ResVault SDK
-│   └── resdb-orm/                   # Python ORM
+│   ├── resdb-orm/                   # Python ORM
+│   └── vector-indexing/             # Vector indexing for semantic search
 ├── deployment/                      # Deployment and infrastructure
 │   ├── ansible/                     # Ansible playbooks
 │   └── orbit/                       # Orbit deployment tool
