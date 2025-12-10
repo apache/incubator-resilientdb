@@ -183,7 +183,8 @@ GraphQ-LLM is fully dockerized for easy deployment. Here's what you need:
    - Start with `npm run dev`
 
 7. **Access the Tool**
-   - Open `http://localhost:3000/graphql-tutor` in your browser
+   - **Tab-based UI:** Open `http://localhost:3000/graphql-tutor` in your browser
+   - **Chatbot UI:** Open `http://localhost:3000/graphql-tutor/chat` for a chat-style interface
    - Start querying or asking questions!
 
 ### Service Architecture
@@ -199,7 +200,8 @@ All services run in Docker containers:
 
 ### Access URLs 
 -  **Nexus Frontend:** http://localhost:3000
--  **GraphQL Tutor:** http://localhost:3000/graphql-tutor
+-  **GraphQL Tutor (Tab UI):** http://localhost:3000/graphql-tutor
+-  **GraphQL Tutor (Chat UI):** http://localhost:3000/graphql-tutor/chat
 -  **GraphQ-LLM Backend API:** http://localhost:3001
 -  **ResLens Frontend:** http://localhost:5173
 -  **ResLens Middleware API:** http://localhost:3003
