@@ -338,10 +338,10 @@ export class ExplanationService {
     }
 
     // Step 5: Generate explanation using LLM
-    // Optimize token usage for Gemini API limits
-    // For Gemini, use shorter responses to save tokens
+    // For detailed explanations, allow longer responses
     const isGeminiModel = this.llmClient.getProvider() === 'gemini';
-    const maxResponseTokens = isLocalSmallModel ? 200 : (isGeminiModel ? 800 : 1500); // Reduced for Gemini
+    // Increase token limits for detailed explanations
+    const maxResponseTokens = isLocalSmallModel ? 200 : (isGeminiModel ? 2000 : (detailed ? 3000 : 1500));
     let explanation: string;
     
     try {

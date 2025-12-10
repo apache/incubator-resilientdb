@@ -212,14 +212,14 @@ services:
       context: /Users/CelineJohnPhilip/DDS/ResLens
       dockerfile: Dockerfile
       args:
-        - VITE_MIDDLEWARE_BASE_URL=http://reslens-middleware:3003/api/v1
-        - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://reslens-middleware:3003/api/v1
+        - VITE_MIDDLEWARE_BASE_URL=http://localhost:3003/api/v1
+        - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://localhost:3003/api/v1
     container_name: reslens-frontend
     ports:
       - "5173:80"  # Frontend UI
-    depends_on:
-      reslens-middleware:
-        condition: service_healthy
+    # depends_on:
+    #   reslens-middleware:
+    #     condition: service_healthy
     networks:
       - graphq-llm-network
     healthcheck:

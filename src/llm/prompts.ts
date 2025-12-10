@@ -41,9 +41,12 @@ Guidelines:
 - Break down complex queries into understandable parts
 - Reference relevant documentation when available
 - Use examples when helpful
-- Be concise but thorough
+- Provide comprehensive, detailed explanations (especially when detailed mode is requested)
+- Include context about how each field works and what data it returns
+- Explain the relationship between different parts of the query
 - If the query has issues, point them out constructively
-- Reference schema information when explaining fields and types`;
+- Reference schema information when explaining fields and types
+- When providing detailed explanations, be thorough and cover all aspects of the query`;
 
 /**
  * System prompt for query optimizations
@@ -196,7 +199,7 @@ export function formatDetailedExplanationPrompt(
   documentationContext: string,
   schemaContext?: string
 ): string {
-  let prompt = `Provide a detailed explanation of this GraphQL query:\n\n`;
+  let prompt = `Provide a comprehensive, detailed explanation of this GraphQL query. Be thorough and cover all aspects:\n\n`;
   prompt += `\`\`\`graphql\n${query}\n\`\`\`\n\n`;
 
   prompt += `Documentation:\n${documentationContext}\n\n`;
@@ -205,12 +208,14 @@ export function formatDetailedExplanationPrompt(
     prompt += `Schema:\n${schemaContext}\n\n`;
   }
 
-  prompt += `Explain:\n`;
-  prompt += `1. What the query does\n`;
-  prompt += `2. How each field/operation works\n`;
-  prompt += `3. Expected results\n`;
-  prompt += `4. Common use cases\n`;
-  prompt += `5. Potential issues or considerations`;
+  prompt += `Provide a detailed explanation covering:\n`;
+  prompt += `1. What the query does (overview and purpose)\n`;
+  prompt += `2. How each field/operation works (detailed breakdown of each field)\n`;
+  prompt += `3. Expected results (what data will be returned and in what format)\n`;
+  prompt += `4. Common use cases (when and why you would use this query)\n`;
+  prompt += `5. Potential issues or considerations (edge cases, performance, limitations)\n`;
+  prompt += `6. Additional context from the documentation (relevant details, examples, best practices)\n\n`;
+  prompt += `Be comprehensive and detailed in your explanation.`;
 
   return prompt;
 }

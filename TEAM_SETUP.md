@@ -14,7 +14,7 @@
 2. **Nexus** (separate repository - must be cloned)
    - **URL:** https://github.com/sophiequynn/nexus.git
    - **Purpose:** Next.js frontend application
-   - **Note:** This fork includes GraphQ-LLM integration (see Step 7.6 for details)
+   - **Note:** This fork includes GraphQ-LLM integration (see Step 7.6 for details.)
 
 3. **ResilientDB** (reference only - using Docker image)
    - **URL:** https://github.com/apache/incubator-resilientdb

@@ -107,10 +107,11 @@ The system retrieves relevant documentation and provides comprehensive answers w
    - Calculates query complexity scores
    - Estimates execution time and resource usage
    - Provides real-time metrics when ResLens is enabled
+   - **Query Stats Integration**: Direct link to ResLens query statistics page from the efficiency tab
 
 ### 4. **Performance Metrics**
 
-See efficiency scores, estimated execution times, and resource usage to understand query performance at a glance.
+See efficiency scores, estimated execution times, and resource usage to understand query performance at a glance. The efficiency tab includes a "View Query Stats in ResLens" button that opens the ResLens query statistics dashboard in a new tab, allowing you to see historical query performance data.
 
 ---
 
@@ -194,11 +195,11 @@ All services run in Docker containers:
 - **GraphQ-LLM MCP Server** - For MCP client integration (stdio transport)
 - **ResLens Middleware** (Port 3003) - Performance monitoring API (optional)
 - **ResLens Frontend** (Port 5173) - Performance monitoring UI (optional)
-- **Nexus Frontend** (Port 3002) - GraphQL Tutor UI
+- **Nexus Frontend** (Port 3000) - GraphQL Tutor UI
 
-###Access URLs 
--  **Nexus Frontend:** http://localhost:3002
--  **GraphQL Tutor:** http://localhost:3002/graphql-tutor
+### Access URLs 
+-  **Nexus Frontend:** http://localhost:3000
+-  **GraphQL Tutor:** http://localhost:3000/graphql-tutor
 -  **GraphQ-LLM Backend API:** http://localhost:3001
 -  **ResLens Frontend:** http://localhost:5173
 -  **ResLens Middleware API:** http://localhost:3003
@@ -284,6 +285,7 @@ GraphQ-LLM uses forked versions of external repositories that include GraphQ-LLM
 - **Original Repository:** [Apache ResLens](https://github.com/apache/incubator-resilientdb-ResLens)
 - **Integration Status:** Forks include Dockerfile updates, additional routes (CpuPage, MemoryPage, QueryStats), and improved configuration
 - **Setup:** Clone both forks - Docker Compose will use them automatically via absolute paths
+- **Note:** ResLens Frontend is configured to connect to middleware at `http://localhost:3003` (browser-accessible URL) rather than Docker service names
 
 ---
 
