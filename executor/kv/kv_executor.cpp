@@ -26,7 +26,6 @@ namespace resdb {
 
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage){
     storage_=std::move(storage);
-    LOG(ERROR)<<" init storage:"<<storage_.get();
     contract_manager_ = std::make_unique<resdb::contract::ContractTransactionManager>(storage_.get());
 }
 
@@ -95,7 +94,6 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
-  LOG(ERROR)<<" execute cmd:"<<kv_request.cmd();
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
@@ -136,12 +134,10 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-	LOG(ERROR)<<" set key:"<<key<<" seq:"<<seq_;
   storage_->SetValueWithSeq(key, value, seq_);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  LOG(ERROR)<<" get key:"<<key;
   return storage_->GetValueWithSeq(key,0).first;
 }
 

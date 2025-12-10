@@ -31,7 +31,6 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
                                      SignatureVerifier* verifier)
     : config_(config),
       replica_communicator_(replica_communicator),
-      txn_db_(std::make_unique<ChainState>()),
       verifier_(verifier),
       stop_(false),
       txn_accessor_(config),
@@ -70,10 +69,6 @@ std::string GetHash(const std::string& h1, const std::string& h2) {
   return SignatureVerifier::CalculateHash(h1 + h2);
 }
 
-ChainState* CheckPointManager::GetTxnDB() { return txn_db_.get(); }
-
-uint64_t CheckPointManager::GetMaxTxnSeq() { return txn_db_->GetMaxSeq(); }
-
 uint64_t CheckPointManager::GetStableCheckpoint() {
   std::lock_guard<std::mutex> lk(mutex_);
   return current_stable_seq_;
@@ -87,9 +82,7 @@ StableCheckPoint CheckPointManager::GetStableCheckpointWithVotes() {
 void CheckPointManager::AddCommitData(std::unique_ptr<Request> request) {
   if (config_.IsCheckPointEnabled()) {
     data_queue_.Push(std::move(request));
-  } else {
-    txn_db_->Put(std::move(request));
-  }
+  } 
 }
 
 // check whether there are 2f+1 valid checkpoint proof.
@@ -186,57 +179,6 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
           std::set<uint32_t> senders_ =
               sender_ckpt_[std::make_pair(committable_seq_, committable_hash_)];
           sem_post(&committable_seq_signal_);
-          if (last_seq_ < committable_seq_ &&
-              last_committable_seq < committable_seq_) {
-            auto replicas_ = config_.GetReplicaInfos();
-            for (auto& replica_ : replicas_) {
-              std::string last_hash;
-              uint64_t last_seq;
-              {
-                std::lock_guard<std::mutex> lk(lt_mutex_);
-                last_hash = last_hash_;
-                // last_seq_ = last_seq > last_committable_seq ? last_seq :
-                // last_committable_seq;
-                last_seq = last_seq_;
-              }
-              if (senders_.count(replica_.id()) &&
-                  last_seq < committable_seq_) {
-                // LOG(ERROR) << "GetRequestFromReplica " << last_seq_ + 1 << "
-                // " << committable_seq_;
-                auto requests = txn_accessor_.GetRequestFromReplica(
-                    last_seq + 1, committable_seq_, replica_);
-                if (requests.ok()) {
-                  bool fail = false;
-                  for (auto& request : *requests) {
-                    if (SignatureVerifier::CalculateHash(request.data()) !=
-                        request.hash()) {
-                      LOG(ERROR)
-                          << "The hash of the request does not match the data.";
-                      fail = true;
-                      break;
-                    }
-                    last_hash = GetHash(last_hash, request.hash());
-                  }
-                  if (fail) {
-                    continue;
-                  } else if (last_hash != committable_hash_) {
-                    LOG(ERROR) << "The hash of requests returned do not match. "
-                               << last_seq + 1 << " " << committable_seq_;
-                  } else {
-                    last_committable_seq = committable_seq_;
-                    for (auto& request : *requests) {
-                      if (executor_) {
-                        executor_->Commit(std::make_unique<Request>(request));
-                      }
-                    }
-                    SetHighestPreparedSeq(committable_seq_);
-                    // LOG(ERROR) << "[4]";
-                    break;
-                  }
-                }
-              }
-            }
-          }
         }
         if (it.second.size() >=
             static_cast<size_t>(config_.GetMinDataReceiveNum())) {
@@ -294,16 +236,6 @@ void CheckPointManager::TimeoutHandler() {
 
 void CheckPointManager::SetLastCommit(uint64_t seq) {
   last_seq_ = seq;
-}
-
-void CheckPointManager::SetMaxSeq(uint64_t seq) {
-  std::lock_guard<std::mutex> lk(seq_mutex_);
-  max_seq_ = std::max(max_seq_, seq);
-}
-
-uint64_t CheckPointManager::GetMaxSeq() {
-  std::lock_guard<std::mutex> lk(seq_mutex_);
-  return max_seq_;
 }
 
 int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
@@ -408,7 +340,6 @@ void CheckPointManager::UpdateCheckPointStatus() {
       last_seq_++;
     }
     bool is_recovery = request->is_recovery();
-    //txn_db_->Put(std::move(request));
 
     if (current_seq == last_ckpt_seq + water_mark) {
       last_ckpt_seq = current_seq;

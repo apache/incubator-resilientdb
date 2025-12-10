@@ -41,11 +41,7 @@ class CheckPointManager : public CheckPoint {
                     SignatureVerifier* verifier);
   virtual ~CheckPointManager();
 
-  ChainState* GetTxnDB();
-  uint64_t GetMaxTxnSeq();
   void SetLastCommit(uint64_t seq);
-  void SetMaxSeq(uint64_t seq);
-  uint64_t GetMaxSeq();
 
   void AddCommitData(std::unique_ptr<Request> request);
   int ProcessCheckPoint(std::unique_ptr<Context> context,
@@ -100,7 +96,6 @@ class CheckPointManager : public CheckPoint {
   uint64_t last_executed_seq_ = 0;
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
-  std::unique_ptr<ChainState> txn_db_;
   std::thread checkpoint_thread_, stable_checkpoint_thread_, status_thread_;
   SignatureVerifier* verifier_;
   std::atomic<bool> stop_;

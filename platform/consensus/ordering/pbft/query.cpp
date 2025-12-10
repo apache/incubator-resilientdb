@@ -24,10 +24,10 @@
 
 namespace resdb {
 
-Query::Query(const ResDBConfig& config, MessageManager* message_manager,
+Query::Query(const ResDBConfig& config, Recovery* recovery,
              std::unique_ptr<CustomQuery> executor)
     : config_(config),
-      message_manager_(message_manager),
+      recovery_(recovery),
       custom_query_executor_(std::move(executor)) {}
 
 Query::~Query() {}
@@ -35,17 +35,17 @@ Query::~Query() {}
 int Query::ProcessGetReplicaState(std::unique_ptr<Context> context,
                                   std::unique_ptr<Request> request) {
   ReplicaState replica_state;
-  int ret = message_manager_->GetReplicaState(&replica_state);
-  if (ret == 0) {
-    if (context != nullptr && context->client != nullptr) {
-      ret = context->client->SendRawMessage(replica_state);
-      if (ret) {
-        LOG(ERROR) << "send resp" << replica_state.DebugString()
-                   << " fail ret:" << ret;
-      }
+
+  *replica_state.mutable_replica_config() = config_.GetConfigData();
+
+  if (context != nullptr && context->client != nullptr) {
+    int ret = context->client->SendRawMessage(replica_state);
+    if (ret) {
+      LOG(ERROR) << "send resp" << replica_state.DebugString()
+        << " fail ret:" << ret;
     }
   }
-  return ret;
+  return 0;
 }
 
 int Query::ProcessQuery(std::unique_ptr<Context> context,
@@ -64,6 +64,7 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
         }
       }
     };
+
     ReplicaInfo primary = find_primary();
     std::string ip = primary.ip();
     int port = primary.port();
@@ -94,20 +95,22 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
 
   QueryResponse response;
   if (query.max_seq() == 0 && query.min_seq() == 0) {
-    uint64_t mseq = message_manager_->GetNextSeq();
-    response.set_max_seq(mseq - 1);
+    uint64_t mseq = recovery_->GetMaxSeq();
+    response.set_max_seq(mseq);
     LOG(ERROR) << "get max seq:" << mseq;
   } else {
-    for (uint64_t i = query.min_seq(); i <= query.max_seq(); ++i) {
-      Request* ret_request = message_manager_->GetRequest(i);
-      if (ret_request == nullptr) {
-        break;
+    auto res = recovery_->GetDataFromRecoveryFiles(query.min_seq(), query.max_seq());
+
+    for(const auto& it : res) {
+      for(const auto& req: it.second) {
+        Request* ret_request = req.second.get();
+
+        Request* txn = response.add_transactions();
+        txn->set_data(ret_request->data());
+        txn->set_hash(ret_request->hash());
+        txn->set_seq(ret_request->seq());
+        txn->set_proxy_id(ret_request->proxy_id());
       }
-      Request* txn = response.add_transactions();
-      txn->set_data(ret_request->data());
-      txn->set_hash(ret_request->hash());
-      txn->set_seq(ret_request->seq());
-      txn->set_proxy_id(ret_request->proxy_id());
     }
   }
 

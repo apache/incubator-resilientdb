@@ -332,9 +332,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 	    }
       FinishExecute(request->seq());
 
-      if (response != nullptr || !response_v.empty()){
-        set_OnExecuteSuccess(request->seq());
-      }
       if(response == nullptr){
 	      response = std::make_unique<BatchUserResponse>();
 	      for (auto& s : response_v) {
@@ -367,20 +364,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
 void TransactionExecutor::SetDuplicateManager(DuplicateManager* manager) {
   duplicate_manager_ = manager;
-}
-
-void TransactionExecutor::set_OnExecuteSuccess(uint64_t seq) {
-  // Monotonic update: only move forward.
-  uint64_t cur = latest_executed_seq_.load(std::memory_order_relaxed);
-  while (seq > cur && !latest_executed_seq_.compare_exchange_weak(
-            cur, seq, std::memory_order_release, std::memory_order_relaxed)) {
-    /* retry with updated `cur` */
-  }
-  // latest_executed_seq_ = seq;
-}
-
-uint64_t TransactionExecutor::get_latest_executed_seq() const {
-  return latest_executed_seq_.load(std::memory_order_acquire);
 }
 
 bool TransactionExecutor::SetFlag(uint64_t uid, int f) {

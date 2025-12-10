@@ -39,8 +39,6 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
       commitment_(std::make_unique<Commitment>(config_, message_manager_.get(),
                                                GetBroadCastClient(),
                                                GetSignatureVerifier())),
-      query_(std::make_unique<Query>(config_, message_manager_.get(),
-                                     std::move(query_executor))),
       response_manager_(config_.IsPerformanceRunning()
                             ? nullptr
                             : std::make_unique<ResponseManager>(
@@ -56,7 +54,9 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
           system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
       recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
                                            system_info_.get(),
-                                           message_manager_->GetStorage())) {
+                                           message_manager_->GetStorage())), 
+      query_(std::make_unique<Query>(config_, recovery_.get(),
+                                     std::move(query_executor))){
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();

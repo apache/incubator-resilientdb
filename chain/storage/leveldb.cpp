@@ -96,8 +96,7 @@ ResLevelDB::~ResLevelDB() {
 }
 
 int ResLevelDB::SetValueWithSeq(const std::string& key,
-                                    const std::string& value, uint64_t seq) {
-    LOG(ERROR) << "set value seq:" << seq;
+    const std::string& value, uint64_t seq) {
   std::string value_str = GetValue(key);
   ValueHistory history;
   if (!history.ParseFromString(value_str)) {
@@ -112,9 +111,7 @@ int ResLevelDB::SetValueWithSeq(const std::string& key,
 
   if (last_seq > seq) {
     LOG(ERROR) << "seq is small, last:" <<  last_seq << " new seq:" << seq;
-
     UpdateLastCkpt(last_seq);
-    
     return -2;
   }
 
@@ -130,7 +127,7 @@ int ResLevelDB::SetValueWithSeq(const std::string& key,
   history.SerializeToString(&value_str);
   int ret = SetValue(key, value_str);
   if(ret) {
-	  return ret;
+    return ret;
   }
   UpdateLastCkpt(seq);
   return 0;

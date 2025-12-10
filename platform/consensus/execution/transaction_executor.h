@@ -20,8 +20,6 @@
 #pragma once
 #include <functional>
 #include <thread>
-#include <atomic>
-#include <cstdint>
 
 #include "executor/common/transaction_manager.h"
 #include "platform/common/queue/lock_free_queue.h"
@@ -36,8 +34,6 @@ namespace resdb {
 // Execute the requests that may contain system information or user requests.
 class TransactionExecutor {
  public:
-  void set_OnExecuteSuccess(uint64_t seq);
-  uint64_t get_latest_executed_seq() const;
   typedef std::function<void(std::unique_ptr<Request>,
                              std::unique_ptr<BatchUserResponse> resp)>
       PostExecuteFunc;
@@ -79,7 +75,6 @@ class TransactionExecutor {
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
-  std::atomic<uint64_t> latest_executed_seq_{0};
   std::unique_ptr<std::string> DoExecute(const Request& request);
   void OrderMessage();
   void ExecuteMessage();

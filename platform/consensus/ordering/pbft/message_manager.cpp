@@ -31,7 +31,6 @@ MessageManager::MessageManager(
     CheckPointManager* checkpoint_manager, SystemInfo* system_info)
     : config_(config),
       queue_("executed"),
-      txn_db_(checkpoint_manager->GetTxnDB()),
       system_info_(system_info),
       checkpoint_manager_(checkpoint_manager),
       transaction_executor_(std::make_unique<TransactionExecutor>(
@@ -182,9 +181,6 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   uint64_t seq = request->seq();
   int resp_received_count = 0;
   int proxy_id = request->proxy_id();
-  if(checkpoint_manager_){
-    checkpoint_manager_->SetMaxSeq(seq);
-  }
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
@@ -205,29 +201,6 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   }
   return CollectorResultCode::OK;
 }
-
-RequestSet MessageManager::GetRequestSet(uint64_t min_seq, uint64_t max_seq) {
-  RequestSet ret;
-  std::unique_lock<std::mutex> lk(data_mutex_);
-  for (uint64_t i = min_seq; i <= max_seq; ++i) {
-    if (committed_data_.find(i) == committed_data_.end()) {
-      LOG(ERROR) << "seq :" << i << " doesn't exist";
-      continue;
-    }
-    RequestWithProof* request = ret.add_requests();
-    *request->mutable_request() = committed_data_[i];
-    request->set_seq(i);
-    for (const auto& request_info : committed_proof_[i]) {
-      RequestWithProof::RequestData* data = request->add_proofs();
-      *data->mutable_request() = *request_info->request;
-      *data->mutable_signature() = request_info->signature;
-    }
-  }
-  return ret;
-}
-
-// Get the transactions that have been execuited.
-Request* MessageManager::GetRequest(uint64_t seq) { return txn_db_->Get(seq); }
 
 std::vector<RequestInfo> MessageManager::GetPreparedProof(uint64_t seq) {
   return collector_pool_->GetCollector(seq)->GetPreparedProof();
