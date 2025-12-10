@@ -459,7 +459,9 @@ void Recovery::ReadLogs(
 
   auto recovery_files_pair = GetRecoveryFiles(storage_ckpt);
   int64_t ckpt = recovery_files_pair.second;
-  set_start_point(ckpt);
+  if (set_start_point) {
+    set_start_point(ckpt);
+  }
   int idx = 0;
   for (auto path : recovery_files_pair.first) {
     ReadLogsFromFiles(path.second, ckpt, idx++, system_callback, call_back);
