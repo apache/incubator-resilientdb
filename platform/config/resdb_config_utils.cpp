@@ -25,12 +25,15 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <regex>
+#include <nlohmann/json.hpp>
 
 #include <fstream>
 
 namespace resdb {
 
 using ::google::protobuf::util::JsonParseOptions;
+using json = nlohmann::json;
 
 namespace {
 
@@ -90,14 +93,27 @@ ReplicaInfo GenerateReplicaInfo(int id, const std::string& ip, int port) {
   return info;
 }
 
+std::string RemoveJsonComments(const std::string& jsonWithComments) {
+    std::string result = std::regex_replace(jsonWithComments, std::regex("/\\*.*?\\*/"), "");
+    result = std::regex_replace(result, std::regex("//.*?\\n"), "\n");
+    return result;
+}
+
+
 ResConfigData ReadConfigFromFile(const std::string& file_name) {
   std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
-  json_data << infile.rdbuf();
+  if (!infile.is_open()) {
+    std::cerr << "Failed to open file." <<file_name<<" "<< strerror(errno)<<std::endl;
+    return ResConfigData();
+  }
 
+  json_data << infile.rdbuf();
+  std::string cleanJson = RemoveJsonComments(json_data.str());
+ 
   ResConfigData config_data;
   JsonParseOptions options;
-  auto status = JsonStringToMessage(json_data.str(), &config_data, options);
+  auto status = JsonStringToMessage(cleanJson, &config_data, options);
   if (!status.ok()) {
     LOG(ERROR) << "parse json :" << file_name << " fail:" << status.message();
   }
@@ -113,6 +129,12 @@ std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
   std::string ip;
   int port;
   while (infile >> id >> ip >> port) {
+    if(id == 0) {
+      continue;
+    }
+    if(ip.size()==0) {
+      continue;
+    }
     replicas.push_back(GenerateReplicaInfo(id, ip, port));
   }
   if (replicas.size() == 0) {
