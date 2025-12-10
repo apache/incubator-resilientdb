@@ -276,8 +276,10 @@ python tests/test.py
 ### Step 6+: Re-Running ResdDB-orm in the future
 As long as the setup is successful, you will only need to run these two commands to spin up the **KV Service** and **GraphQL Server** in the future:
 ```bash
+# From the top-level directory
 ./service/tools/kv/server_tools/start_kv_service.sh
-bazel-bin/service/http_server/crow_service_main ecosystem/graphql/service/tools/config/interface/service.config ecosystem/graphql/service/http_server/server_config.config
+# From the ecosystem/graphql directory
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
 ```
 
 Note that each of these commands will prevent input on the terminal you run them in.
