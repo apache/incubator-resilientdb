@@ -171,7 +171,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
       LOG(ERROR) << " recovery request not valid:"
                  << " current seq:" << message_manager_->GetNextSeq()
                  << " data seq:" << request->seq();
-      //return 0;
+      return 0;
     }
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));

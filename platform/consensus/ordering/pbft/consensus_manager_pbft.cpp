@@ -69,14 +69,6 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
         system_info_->SetPrimary(data.primary_id());
       },
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-
-      if(config_.GetSelfInfo().id() == 3 && request->seq() == 188000) {
-        LOG(ERROR)<<" skip seq:"<<request->seq();
-        return 0;
-      }
-
-
-
         return InternalConsensusCommit(std::move(context), std::move(request));
       },
       [&](int seq) {
