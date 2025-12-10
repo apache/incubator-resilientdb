@@ -258,36 +258,15 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
   }
   switch (request->type()) {
     case Request::TYPE_PRE_PREPARE:
-      // break;
     case Request::TYPE_PREPARE:
-      // break;
     case Request::TYPE_COMMIT:
-      // break;
     case Request::TYPE_CHECKPOINT:
-    // {
-    //   uint64_t latest_executed_seq = get_latest_executed_seq_recov();
-    //   std::string temp_dir = "/tmp";
-    //   std::string file_path = temp_dir + "/latest_seqnum.txt";
-    //   std::ofstream log_file(file_path);
-    //   // std::ofstream log_file("latest_seqnum.txt"); 
-    //   if (!log_file.is_open()) { 
-    //     std::cerr << "Error: Could not open the log file." << std::strerror(errno) << std::endl; 
-    //   } 
-    //   log_file << "Lastest_seqnum: " << latest_executed_seq << std::endl; 
-    //   log_file.flush(); 
-    //   log_file.close();
-    // }
-      // break;
     case Request::TYPE_NEWVIEW:
       return WriteLog(context, request);
     default:
       break;
   }
 }
-
-// uint64_t Recovery::get_latest_executed_seq_recov(){
-//   return checkpoint_->GetLastExecutedSeq();
-// }
 
 void Recovery::WriteLog(const Context* context, const Request* request) {
 
@@ -310,9 +289,6 @@ void Recovery::WriteLog(const Context* context, const Request* request) {
   AppendData(sig);
 
   Flush();
-  if(context){
-    InsertCache(*context, *request);
-  }
 }
 
 void Recovery::AppendData(const std::string& data) {
@@ -570,11 +546,6 @@ void Recovery::ReadLogsFromFiles(
   close(fd);
 }
 
-void Recovery::InsertCache(const Context& context, const Request& request){
-  std::unique_lock<std::mutex> lk(data_mutex_);
-  cache_[request.seq()].push_back(std::make_pair(context.signature, request));
-}
-
 int Recovery::GetData(const RecoveryRequest& request,
     RecoveryResponse &response) {
 
@@ -586,19 +557,6 @@ int Recovery::GetData(const RecoveryRequest& request,
         *response.add_request() = *req.second;
     }
   }
-
-  /*
-  for(int i = request.min_seq(); i <= request.max_seq(); ++i) {
-    std::unique_lock<std::mutex> lk(data_mutex_);
-    if(cache_.find(i) != cache_.end()) {
-      LOG(ERROR)<<" get data from cache i:"<<i<<" size:"<<cache_[i].size();
-      for(const auto& req : cache_[i]){
-        *response.add_signature() = req.first;
-        *response.add_request() = req.second;
-      }
-    }
-  }
-  */
   return 0;
 }
 

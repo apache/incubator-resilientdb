@@ -40,7 +40,6 @@ class Recovery {
   void Init();
 
   virtual void AddRequest(const Context* context, const Request* request);
-  // uint64_t get_latest_executed_seq_recov();
   void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
                 std::function<void(std::unique_ptr<Context> context,
                                    std::unique_ptr<Request> request)>
@@ -111,7 +110,6 @@ class Recovery {
   int recovery_ckpt_time_s_;
   SystemInfo* system_info_;
   Storage* storage_;
-  std::map<uint64_t, std::vector<std::pair<SignatureInfo, Request>>> cache_;
 };
 
 }  // namespace resdb
