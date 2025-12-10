@@ -76,18 +76,18 @@ std::pair<std::string, uint64_t> MemoryDB::GetValueWithSeq(
   return std::make_pair("", 0);
 }
 
-int MemoryDB::SetValueWithSeq(const std::string& key,
-                                  const std::string& value, uint64_t seq) {
+int MemoryDB::SetValueWithSeq(const std::string& key, const std::string& value,
+                              uint64_t seq) {
   auto it = kv_map_with_seq_.find(key);
   if (it != kv_map_with_seq_.end() && it->second.back().second > seq) {
     LOG(ERROR) << " value seq not match. key:" << key << " db seq:"
-      << (it == kv_map_with_seq_.end() ? 0 : it->second.back().second)
-      << " new seq:" << seq;
+               << (it == kv_map_with_seq_.end() ? 0 : it->second.back().second)
+               << " new seq:" << seq;
     return -2;
   }
   kv_map_with_seq_[key].push_back(std::make_pair(value, seq));
-  while(kv_map_with_seq_[key].size()>max_history_) {
-    kv_map_with_seq_[key].erase(kv_map_with_seq_[key].begin()); 
+  while (kv_map_with_seq_[key].size() > max_history_) {
+    kv_map_with_seq_[key].erase(kv_map_with_seq_[key].begin());
   }
   return 0;
 }
@@ -128,11 +128,12 @@ std::pair<std::string, int> MemoryDB::GetValueWithVersion(
   return std::make_pair("", 0);
 }
 
-std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> MemoryDB::GetAllItemsWithSeq() {
+std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+MemoryDB::GetAllItemsWithSeq() {
   std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> resp;
   for (const auto& it : kv_map_with_seq_) {
-    LOG(ERROR)<<" value num:"<<it.second.size();
-    for(const auto& item : it.second){
+    LOG(ERROR) << " value num:" << it.second.size();
+    for (const auto& item : it.second) {
       resp[it.first].push_back(item);
     }
   }

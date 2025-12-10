@@ -72,6 +72,7 @@ class TransactionExecutor {
   void FinishExecute(int64_t seq);
 
   void Prepare(std::unique_ptr<Request> request);
+
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
@@ -125,7 +126,6 @@ class TransactionExecutor {
     End_Prepare = 4,
   };
 
-
   std::vector<std::thread> prepare_thread_;
   static const int mod = 2048;
   std::mutex f_mutex_[mod], fd_mutex_[mod];
@@ -142,7 +142,6 @@ class TransactionExecutor {
       uint64_t,
       std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>>
       data_[mod];
-
 };
 
 }  // namespace resdb

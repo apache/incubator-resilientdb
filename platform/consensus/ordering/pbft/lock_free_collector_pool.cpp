@@ -50,16 +50,16 @@ LockFreeCollectorPool::LockFreeCollectorPool(const std::string& name,
              << " enable viewchange:" << enable_viewchange_ << " done";
 }
 
-void LockFreeCollectorPool::Reset(uint64_t start_seq){
+void LockFreeCollectorPool::Reset(uint64_t start_seq) {
   uint32_t idx = start_seq & mask_;
   int seq = start_seq;
-  LOG(ERROR)<<" reset collector:"<<start_seq;
+  LOG(ERROR) << " reset collector:" << start_seq;
   for (size_t i = 0; i < (capacity_ << 1); ++i) {
-      int pos = (i + idx)%(capacity_ << 1);
-      collector_[pos] = std::make_unique<TransactionCollector>(seq++, executor_,
-          enable_viewchange_);
+    int pos = (i + idx) % (capacity_ << 1);
+    collector_[pos] = std::make_unique<TransactionCollector>(
+        seq++, executor_, enable_viewchange_);
   }
-  LOG(ERROR)<<" reset collector:"<<start_seq;
+  LOG(ERROR) << " reset collector:" << start_seq;
 }
 
 void LockFreeCollectorPool::Update(uint64_t seq) {

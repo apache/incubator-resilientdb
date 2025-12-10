@@ -43,10 +43,12 @@ class ResLevelDB : public Storage {
   ResLevelDB(std::optional<LevelDBInfo> config_data = std::nullopt);
 
   virtual ~ResLevelDB();
-  int SetValueWithSeq(const std::string& key, const std::string& value, uint64_t seq) override;
+  int SetValueWithSeq(const std::string& key, const std::string& value,
+                      uint64_t seq) override;
   int SetValue(const std::string& key, const std::string& value) override;
   std::string GetValue(const std::string& key) override;
-  std::pair<std::string,uint64_t> GetValueWithSeq(const std::string& key, uint64_t seq) override;
+  std::pair<std::string, uint64_t> GetValueWithSeq(const std::string& key,
+                                                   uint64_t seq) override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
 
@@ -56,7 +58,8 @@ class ResLevelDB : public Storage {
                                                   int version) override;
 
   // Return a map of <key, <value, version>>
-  std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> GetAllItemsWithSeq() override;
+  std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+  GetAllItemsWithSeq() override;
   std::map<std::string, std::pair<std::string, int>> GetAllItems() override;
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;

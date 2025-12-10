@@ -50,7 +50,7 @@ class CheckPointManager : public CheckPoint {
                         std::unique_ptr<Request> request);
 
   uint64_t GetStableCheckpoint() override;
-//   void SetLastExecutedSeq(uint64_t latest_executed_seq);
+  //   void SetLastExecutedSeq(uint64_t latest_executed_seq);
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
@@ -76,7 +76,6 @@ class CheckPointManager : public CheckPoint {
   uint64_t GetCommittableSeq();
 
  private:
-  
   void UpdateCheckPointStatus();
   void UpdateStableCheckPointStatus();
   void BroadcastCheckPoint(uint64_t seq, const std::string& hash,
@@ -85,12 +84,11 @@ class CheckPointManager : public CheckPoint {
 
   void Notify();
   bool Wait();
-  void BroadcastRecovery(uint64_t min_seq,  uint64_t max_seq);
+  void BroadcastRecovery(uint64_t min_seq, uint64_t max_seq);
 
   void SyncStatus();
   void StatusProcess();
   void CheckStatus(uint64_t last_seq);
-
 
  protected:
   uint64_t last_executed_seq_ = 0;
@@ -123,7 +121,7 @@ class CheckPointManager : public CheckPoint {
   uint64_t committable_seq_ = 0;
   std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
-  std::map<int, uint64_t>status_;
+  std::map<int, uint64_t> status_;
 };
 
 }  // namespace resdb

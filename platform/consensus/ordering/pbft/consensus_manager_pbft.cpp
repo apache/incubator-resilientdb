@@ -54,9 +54,9 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
           system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
       recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
                                            system_info_.get(),
-                                           message_manager_->GetStorage())), 
+                                           message_manager_->GetStorage())),
       query_(std::make_unique<Query>(config_, recovery_.get(),
-                                     std::move(query_executor))){
+                                     std::move(query_executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
@@ -71,19 +71,17 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         return InternalConsensusCommit(std::move(context), std::move(request));
       },
-      [&](int seq) {
-        message_manager_->SetNextCommitSeq(seq+1);      
-      });
-
+      [&](int seq) { message_manager_->SetNextCommitSeq(seq + 1); });
 }
 
 void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
   commitment_->SetNeedCommitQC(need_qc);
 }
 
-void ConsensusManagerPBFT::Start() { 
-  ConsensusManager::Start(); 
-  recovery_thread_ = std::thread(&ConsensusManagerPBFT::RemoteRecoveryProcess, this);
+void ConsensusManagerPBFT::Start() {
+  ConsensusManager::Start();
+  recovery_thread_ =
+      std::thread(&ConsensusManagerPBFT::RemoteRecoveryProcess, this);
 }
 
 std::vector<ReplicaInfo> ConsensusManagerPBFT::GetReplicas() {
@@ -192,8 +190,8 @@ int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
 
 int ConsensusManagerPBFT::InternalConsensusCommit(
     std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-   //LOG(ERROR) << "recv impl type:" << request->type() << " "
-   //        << "sender id:" << request->sender_id()<<" seq:"<<request->seq();
+  // LOG(ERROR) << "recv impl type:" << request->type() << " "
+  //        << "sender id:" << request->sender_id()<<" seq:"<<request->seq();
 
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
@@ -262,7 +260,8 @@ int ConsensusManagerPBFT::InternalConsensusCommit(
     case Request::TYPE_RECOVERY_DATA:
       return ProcessRecoveryData(std::move(context), std::move(request));
     case Request::TYPE_RECOVERY_DATA_RESP:
-      return ProcessRecoveryDataResponse(std::move(context), std::move(request));
+      return ProcessRecoveryDataResponse(std::move(context),
+                                         std::move(request));
   }
   return 0;
 }
@@ -277,17 +276,18 @@ void ConsensusManagerPBFT::SetPreVerifyFunc(
   commitment_->SetPreVerifyFunc(func);
 }
 
-int ConsensusManagerPBFT::ProcessRecoveryData(std::unique_ptr<Context> context,
-                                         std::unique_ptr<Request> request) {
+int ConsensusManagerPBFT::ProcessRecoveryData(
+    std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
   RecoveryRequest recovery_data;
   if (!recovery_data.ParseFromString(request->data())) {
     LOG(ERROR) << "parse checkpont data fail:";
     return -2;
   }
-  LOG(ERROR)<<" obtain min seq:"<<recovery_data.min_seq()<<" max seq:"<<recovery_data.max_seq();
+  LOG(ERROR) << " obtain min seq:" << recovery_data.min_seq()
+             << " max seq:" << recovery_data.max_seq();
   RecoveryResponse response;
   int ret = recovery_->GetData(recovery_data, response);
-  if(ret) {
+  if (ret) {
     return ret;
   }
 
@@ -296,26 +296,28 @@ int ConsensusManagerPBFT::ProcessRecoveryData(std::unique_ptr<Context> context,
 
   response.SerializeToString(response_data->mutable_data());
 
-  LOG(ERROR)<<" obtain min seq:"<<recovery_data.min_seq()<<" max seq:"<<recovery_data.max_seq()<<" data size:"<<response.request_size();
+  LOG(ERROR) << " obtain min seq:" << recovery_data.min_seq()
+             << " max seq:" << recovery_data.max_seq()
+             << " data size:" << response.request_size();
 
   GetBroadCastClient()->SendMessage(*response_data, request->sender_id());
 
   return 0;
 }
 
-int ConsensusManagerPBFT::ProcessRecoveryDataResponse(std::unique_ptr<Context> context,
-                                         std::unique_ptr<Request> request) {
+int ConsensusManagerPBFT::ProcessRecoveryDataResponse(
+    std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
   recovery_queue_.Push(std::move(request));
   return 0;
 }
 
-void ConsensusManagerPBFT::RemoteRecoveryProcess(){
+void ConsensusManagerPBFT::RemoteRecoveryProcess() {
   uint64_t last_recovery = 0;
   std::set<uint64_t> data;
 
-  while(IsRunning()){
+  while (IsRunning()) {
     auto request = recovery_queue_.Pop();
-    if(request == nullptr) {
+    if (request == nullptr) {
       continue;
     }
 
@@ -325,30 +327,32 @@ void ConsensusManagerPBFT::RemoteRecoveryProcess(){
       continue;
     }
 
-    LOG(ERROR)<<" receive recovery  data from " <<request->sender_id()<<" data size:"<<recovery_data.request_size()<<" signrue:"<<recovery_data.signature_size();
+    LOG(ERROR) << " receive recovery  data from " << request->sender_id()
+               << " data size:" << recovery_data.request_size()
+               << " signrue:" << recovery_data.signature_size();
 
-    for(int i = 0; i < recovery_data.request().size(); i++) {
+    for (int i = 0; i < recovery_data.request().size(); i++) {
       uint64_t seq = recovery_data.request(i).seq();
       int type = recovery_data.request(i).type();
-      if(data.find(seq) != data.end()) {
-      //LOG(ERROR)<<" check recovery remote seq:"<<seq<<" type:"<<type<<" has been recovered.";
+      if (data.find(seq) != data.end()) {
+        // LOG(ERROR)<<" check recovery remote seq:"<<seq<<" type:"<<type<<" has
+        // been recovered.";
         continue;
       }
 
       auto context = std::make_unique<Context>();
       context->signature = recovery_data.signature(i);
       auto request = std::make_unique<Request>(recovery_data.request(i));
-      //write to log
-      //recovery_->AddRequest(context.get(), request.get());
+      // write to log
+      // recovery_->AddRequest(context.get(), request.get());
       InternalConsensusCommit(std::move(context), std::move(request));
     }
 
-    for(int i = 0; i < recovery_data.request().size(); i++) {
+    for (int i = 0; i < recovery_data.request().size(); i++) {
       uint64_t seq = recovery_data.request(i).seq();
       data.insert(seq);
     }
   }
 }
-
 
 }  // namespace resdb

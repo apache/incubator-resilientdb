@@ -42,7 +42,7 @@ int Query::ProcessGetReplicaState(std::unique_ptr<Context> context,
     int ret = context->client->SendRawMessage(replica_state);
     if (ret) {
       LOG(ERROR) << "send resp" << replica_state.DebugString()
-        << " fail ret:" << ret;
+                 << " fail ret:" << ret;
     }
   }
   return 0;
@@ -99,10 +99,11 @@ int Query::ProcessQuery(std::unique_ptr<Context> context,
     response.set_max_seq(mseq);
     LOG(ERROR) << "get max seq:" << mseq;
   } else {
-    auto res = recovery_->GetDataFromRecoveryFiles(query.min_seq(), query.max_seq());
+    auto res =
+        recovery_->GetDataFromRecoveryFiles(query.min_seq(), query.max_seq());
 
-    for(const auto& it : res) {
-      for(const auto& req: it.second) {
+    for (const auto& it : res) {
+      for (const auto& req : it.second) {
         Request* ret_request = req.second.get();
 
         Request* txn = response.add_transactions();

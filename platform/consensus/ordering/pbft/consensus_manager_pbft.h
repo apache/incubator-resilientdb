@@ -56,10 +56,11 @@ class ConsensusManagerPBFT : public ConsensusManager {
   void SetNeedCommitQC(bool need_qc);
 
   int ProcessRecoveryData(std::unique_ptr<Context> context,
-      std::unique_ptr<Request> request);
+                          std::unique_ptr<Request> request);
 
   int ProcessRecoveryDataResponse(std::unique_ptr<Context> context,
-                                         std::unique_ptr<Request> request);
+                                  std::unique_ptr<Request> request);
+
  protected:
   int InternalConsensusCommit(std::unique_ptr<Context> context,
                               std::unique_ptr<Request> request);

@@ -21,8 +21,8 @@
 
 #include <map>
 
-#include "eEVM/storage.h"
 #include "chain/storage/storage.h"
+#include "eEVM/storage.h"
 
 namespace resdb {
 namespace contract {

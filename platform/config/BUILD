@@ -28,7 +28,6 @@ cc_library(
     ],
 )
 
-
 #filegroup(
 #    name = "data_files",
 #    srcs = ["test.config", "expect_test.config"],
@@ -44,15 +43,15 @@ cc_library(
 cc_test(
     name = "resdb_config_test",
     srcs = ["resdb_config_test.cpp"],
+    data = [
+        "//platform/config:expect_test.config",
+        "//platform/config:test.config",
+    ],
     deps = [
         ":resdb_config",
-        "//common/test:test_main",
         ":resdb_config_utils",
+        "//common/test:test_main",
     ],
-    data = [
-    "//platform/config:test.config",
-    "//platform/config:expect_test.config",
-    ]
 )
 
 cc_library(

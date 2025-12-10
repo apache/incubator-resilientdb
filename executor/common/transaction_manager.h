@@ -37,15 +37,18 @@ class TransactionManager {
   TransactionManager(bool is_out_of_order = false, bool need_response = true);
   virtual ~TransactionManager() = default;
 
-  std::unique_ptr<BatchUserResponse> ExecuteBatchWithSeq(uint64_t seq, const BatchUserRequest& request);
+  std::unique_ptr<BatchUserResponse> ExecuteBatchWithSeq(
+      uint64_t seq, const BatchUserRequest& request);
 
-  virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(const BatchUserRequest& request);
+  virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
+      const BatchUserRequest& request);
 
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request);
 
   std::vector<std::unique_ptr<std::string>> ExecuteBatchDataWithSeq(
-      uint64_t seq, const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
+      uint64_t seq,
+      const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
   std::vector<std::unique_ptr<std::string>> ExecuteBatchData(
       const std::vector<std::unique_ptr<google::protobuf::Message>>& requests);
 
@@ -55,7 +58,7 @@ class TransactionManager {
 
   bool NeedResponse();
 
-  virtual Storage* GetStorage() { return storage_ ? storage_.get(): nullptr; }
+  virtual Storage* GetStorage() { return storage_ ? storage_.get() : nullptr; }
 
  protected:
   virtual std::unique_ptr<google::protobuf::Message> ParseData(
@@ -65,6 +68,7 @@ class TransactionManager {
   uint64_t seq_ = 0;
 
   std::unique_ptr<Storage> storage_;
+
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

@@ -44,8 +44,7 @@ CheckPointManager::CheckPointManager(const ResDBConfig& config,
         std::thread(&CheckPointManager::UpdateStableCheckPointStatus, this);
     checkpoint_thread_ =
         std::thread(&CheckPointManager::UpdateCheckPointStatus, this);
-    status_thread_ =
-        std::thread(&CheckPointManager::SyncStatus, this);
+    status_thread_ = std::thread(&CheckPointManager::SyncStatus, this);
   }
   sem_init(&committable_seq_signal_, 0, 0);
 }
@@ -82,7 +81,7 @@ StableCheckPoint CheckPointManager::GetStableCheckpointWithVotes() {
 void CheckPointManager::AddCommitData(std::unique_ptr<Request> request) {
   if (config_.IsCheckPointEnabled()) {
     data_queue_.Push(std::move(request));
-  } 
+  }
 }
 
 // check whether there are 2f+1 valid checkpoint proof.
@@ -234,13 +233,10 @@ void CheckPointManager::TimeoutHandler() {
   }
 }
 
-void CheckPointManager::SetLastCommit(uint64_t seq) {
-  last_seq_ = seq;
-}
+void CheckPointManager::SetLastCommit(uint64_t seq) { last_seq_ = seq; }
 
 int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
                                          std::unique_ptr<Request> request) {
-
   CheckPointData checkpoint_data;
   if (!checkpoint_data.ParseFromString(request->data())) {
     LOG(ERROR) << "parse checkpont data fail:";
@@ -249,29 +245,28 @@ int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
   uint64_t seq = checkpoint_data.seq();
   uint32_t sender_id = request->sender_id();
   status_[sender_id] = seq;
-  LOG(ERROR)<<" received from :"<<sender_id<<" commit status:"<<seq;
+  LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq;
   return 0;
 }
 
 void CheckPointManager::CheckStatus(uint64_t last_seq) {
   std::vector<uint64_t> seqs;
-  for(auto it : status_) {
+  for (auto it : status_) {
     seqs.push_back(it.second);
   }
-  
+
   sort(seqs.begin(), seqs.end());
   int f = config_.GetMaxMaliciousReplicaNum();
 
-  if(seqs.size() <= f+1) {
+  if (seqs.size() <= f + 1) {
     return;
   }
-  uint64_t min_seq = seqs[f+1];
+  uint64_t min_seq = seqs[f + 1];
 
-
-  LOG(ERROR)<<" check last seq:"<<last_seq<<" max seq:"<<min_seq;
-  if(last_seq < min_seq) {
+  LOG(ERROR) << " check last seq:" << last_seq << " max seq:" << min_seq;
+  if (last_seq < min_seq) {
     // need recovery from others
-    BroadcastRecovery(last_seq+1,  std::min(min_seq,last_seq+100));
+    BroadcastRecovery(last_seq + 1, std::min(min_seq, last_seq + 100));
   }
 }
 
@@ -288,12 +283,13 @@ void CheckPointManager::SyncStatus() {
     checkpoint_data.SerializeToString(checkpoint_request->mutable_data());
     replica_communicator_->BroadCast(*checkpoint_request);
 
-    LOG(ERROR)<<" sync status last seq:"<<last_seq<<" last time:"<<last_time;
-    if(last_check_seq == last_seq && last_time > 300) {
+    LOG(ERROR) << " sync status last seq:" << last_seq
+               << " last time:" << last_time;
+    if (last_check_seq == last_seq && last_time > 300) {
       CheckStatus(last_seq);
       last_time = 0;
     }
-    if(last_seq != last_check_seq) {
+    if (last_seq != last_check_seq) {
       last_check_seq = last_seq;
       last_time = 0;
     }
@@ -301,7 +297,6 @@ void CheckPointManager::SyncStatus() {
     last_time++;
   }
 }
-
 
 void CheckPointManager::UpdateCheckPointStatus() {
   uint64_t last_ckpt_seq = 0;
@@ -312,13 +307,13 @@ void CheckPointManager::UpdateCheckPointStatus() {
   std::map<uint64_t, std::unique_ptr<Request>> pendings;
   while (!stop_) {
     std::unique_ptr<Request> request = nullptr;
-    if(!pendings.empty()){
-      if(pendings.begin()->second->seq() == last_seq_+1){
+    if (!pendings.empty()) {
+      if (pendings.begin()->second->seq() == last_seq_ + 1) {
         request = std::move(pendings.begin()->second);
         pendings.erase(pendings.begin());
       }
     }
-    if(request == nullptr){
+    if (request == nullptr) {
       request = data_queue_.Pop(timeout_ms);
     }
     if (request == nullptr) {
@@ -326,10 +321,11 @@ void CheckPointManager::UpdateCheckPointStatus() {
     }
     std::string hash_ = request->hash();
     uint64_t current_seq = request->seq();
-    //LOG(ERROR) << "update checkpoint seq :" << last_seq_ << " current:" << current_seq;
+    // LOG(ERROR) << "update checkpoint seq :" << last_seq_ << " current:" <<
+    // current_seq;
     if (current_seq != last_seq_ + 1) {
       LOG(ERROR) << "seq invalid:" << last_seq_ << " current:" << current_seq;
-      if(current_seq > last_seq_ +1) {
+      if (current_seq > last_seq_ + 1) {
         pendings[current_seq] = std::move(request);
       }
       continue;
@@ -374,8 +370,7 @@ void CheckPointManager::BroadcastCheckPoint(
   replica_communicator_->BroadCast(*checkpoint_request);
 }
 
-void CheckPointManager::BroadcastRecovery(
-    uint64_t min_seq,  uint64_t max_seq) {
+void CheckPointManager::BroadcastRecovery(uint64_t min_seq, uint64_t max_seq) {
   RecoveryRequest recovery_data;
   std::unique_ptr<Request> recovery_request = NewRequest(
       Request::TYPE_RECOVERY_DATA, Request(), config_.GetSelfInfo().id());
@@ -383,7 +378,7 @@ void CheckPointManager::BroadcastRecovery(
   recovery_data.set_max_seq(max_seq);
   recovery_data.SerializeToString(recovery_request->mutable_data());
 
-  LOG(ERROR)<<" recovery request ["<<min_seq<<","<<max_seq<<"]";
+  LOG(ERROR) << " recovery request [" << min_seq << "," << max_seq << "]";
   replica_communicator_->BroadCast(*recovery_request);
 }
 

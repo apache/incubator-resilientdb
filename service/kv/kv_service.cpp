@@ -31,9 +31,9 @@
 using namespace resdb;
 using namespace resdb::storage;
 
-
 void SignalHandler(int sig_num) {
-  LOG(ERROR)<<" signal:"<<sig_num<<" call"<<" ======================";
+  LOG(ERROR) << " signal:" << sig_num << " call"
+             << " ======================";
 }
 
 void ShowUsage() {
@@ -59,7 +59,6 @@ int main(int argc, char** argv) {
   FLAGS_minloglevel = 0;
   signal(SIGINT, SignalHandler);
   signal(SIGKILL, SignalHandler);
-
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];

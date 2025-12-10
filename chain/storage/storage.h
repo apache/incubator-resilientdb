@@ -31,7 +31,8 @@ class Storage {
   virtual ~Storage() = default;
 
   virtual int SetValue(const std::string& key, const std::string& value) = 0;
-  virtual int SetValueWithSeq(const std::string& key, const std::string& value, uint64_t seq) = 0;
+  virtual int SetValueWithSeq(const std::string& key, const std::string& value,
+                              uint64_t seq) = 0;
   virtual std::string GetValue(const std::string& key) = 0;
   virtual std::pair<std::string, uint64_t> GetValueWithSeq(
       const std::string& key, uint64_t seq) = 0;
@@ -44,7 +45,8 @@ class Storage {
       const std::string& key, int version) = 0;
 
   // Return a map of <key, <value, version>>
-  virtual std::map<std::string, std::vector<std::pair<std::string, uint64_t>>> GetAllItemsWithSeq() = 0;
+  virtual std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+  GetAllItemsWithSeq() = 0;
   virtual std::map<std::string, std::pair<std::string, int>> GetAllItems() = 0;
   virtual std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) = 0;
@@ -60,10 +62,11 @@ class Storage {
   virtual bool Flush() { return true; };
 
   virtual uint64_t GetLastCheckpoint() { return 0; }
-  
+
   void SetMaxHistoryNum(int num) { max_history_ = num; }
-  protected:
-    uint32_t max_history_ = 10;
+
+ protected:
+  uint32_t max_history_ = 10;
 };
 
 }  // namespace resdb

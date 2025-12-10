@@ -95,4 +95,4 @@ bool PYVerificator::Validate(const std::string &transaction) {
   return locals["is_valid"].cast<bool>();
 }
 
-} // namespace sdk
+}  // namespace sdk

@@ -39,7 +39,7 @@ MessageManager::MessageManager(
               std::unique_ptr<BatchUserResponse> resp_msg) {
             if (request->is_recovery()) {
               if (checkpoint_manager_) {
-                 checkpoint_manager_->AddCommitData(std::move(request));
+                checkpoint_manager_->AddCommitData(std::move(request));
               }
               return;
             }

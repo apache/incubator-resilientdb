@@ -124,7 +124,6 @@ TEST_F(CheckPointManagerTest, SendCheckPoint) {
   LOG(ERROR) << "done";
 }
 
-
 TEST_F(CheckPointManagerTest, SendCheckPointOnce) {
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();

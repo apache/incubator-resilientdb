@@ -25,10 +25,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <regex>
-#include <nlohmann/json.hpp>
 
 #include <fstream>
+#include <nlohmann/json.hpp>
+#include <regex>
 
 namespace resdb {
 
@@ -94,23 +94,24 @@ ReplicaInfo GenerateReplicaInfo(int id, const std::string& ip, int port) {
 }
 
 std::string RemoveJsonComments(const std::string& jsonWithComments) {
-    std::string result = std::regex_replace(jsonWithComments, std::regex("/\\*.*?\\*/"), "");
-    result = std::regex_replace(result, std::regex("//.*?\\n"), "\n");
-    return result;
+  std::string result =
+      std::regex_replace(jsonWithComments, std::regex("/\\*.*?\\*/"), "");
+  result = std::regex_replace(result, std::regex("//.*?\\n"), "\n");
+  return result;
 }
-
 
 ResConfigData ReadConfigFromFile(const std::string& file_name) {
   std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
   if (!infile.is_open()) {
-    std::cerr << "Failed to open file." <<file_name<<" "<< strerror(errno)<<std::endl;
+    std::cerr << "Failed to open file." << file_name << " " << strerror(errno)
+              << std::endl;
     return ResConfigData();
   }
 
   json_data << infile.rdbuf();
   std::string cleanJson = RemoveJsonComments(json_data.str());
- 
+
   ResConfigData config_data;
   JsonParseOptions options;
   auto status = JsonStringToMessage(cleanJson, &config_data, options);
@@ -129,10 +130,10 @@ std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
   std::string ip;
   int port;
   while (infile >> id >> ip >> port) {
-    if(id == 0) {
+    if (id == 0) {
       continue;
     }
-    if(ip.size()==0) {
+    if (ip.size() == 0) {
       continue;
     }
     replicas.push_back(GenerateReplicaInfo(id, ip, port));

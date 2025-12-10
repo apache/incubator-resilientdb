@@ -179,7 +179,7 @@ TEST_F(RecoveryTest, CheckPoint) {
 
   {
     Recovery recovery(config, &checkpoint_, &system_info_, nullptr);
-    
+
     for (int i = 1; i < 10; ++i) {
       for (int t : types) {
         std::unique_ptr<Request> request =

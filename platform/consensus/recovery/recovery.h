@@ -44,17 +44,17 @@ class Recovery {
                 std::function<void(std::unique_ptr<Context> context,
                                    std::unique_ptr<Request> request)>
                     call_back,
-                std::function<void(int)> start_point 
-                    );
+                std::function<void(int)> start_point);
 
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
 
-  int GetData(const RecoveryRequest& request,
-      RecoveryResponse &response);
+  int GetData(const RecoveryRequest& request, RecoveryResponse& response);
 
-  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> >>
-    GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
+  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>,
+                                           std::unique_ptr<Request>>>>
+  GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
+
  private:
   struct RecoveryData {
     std::unique_ptr<Context> context;
@@ -89,8 +89,7 @@ class Recovery {
                          std::unique_ptr<Request> request)>
           call_back);
 
-  void InsertCache(const Context&context, const Request& request);
-
+  void InsertCache(const Context& context, const Request& request);
 
  protected:
   ResDBConfig config_;
