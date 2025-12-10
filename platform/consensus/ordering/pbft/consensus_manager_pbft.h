@@ -55,6 +55,12 @@ class ConsensusManagerPBFT : public ConsensusManager {
   void SetPreVerifyFunc(std::function<bool(const Request&)>);
   void SetNeedCommitQC(bool need_qc);
 
+  int ProcessRecoveryData(std::unique_ptr<Context> context,
+                          std::unique_ptr<Request> request);
+
+  int ProcessRecoveryDataResponse(std::unique_ptr<Context> context,
+                                  std::unique_ptr<Request> request);
+
  protected:
   int InternalConsensusCommit(std::unique_ptr<Context> context,
                               std::unique_ptr<Request> request);
@@ -66,6 +72,8 @@ class ConsensusManagerPBFT : public ConsensusManager {
   PopPendingRequest();
   absl::StatusOr<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
   PopComplainedRequest();
+
+  void RemoteRecoveryProcess();
 
  protected:
   std::unique_ptr<SystemInfo> system_info_;
@@ -83,6 +91,8 @@ class ConsensusManagerPBFT : public ConsensusManager {
   std::queue<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>
       request_complained_;
   std::mutex mutex_;
+  std::thread recovery_thread_;
+  LockFreeQueue<Request> recovery_queue_;
 };
 
 }  // namespace resdb

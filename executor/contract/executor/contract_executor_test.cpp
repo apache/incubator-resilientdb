@@ -19,19 +19,19 @@
 
 #include "executor/contract/executor/contract_executor.h"
 
-#include "chain/storage/memory_db.h"
-
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
 #include <fstream>
 
+#include "chain/storage/memory_db.h"
+
 namespace resdb {
 namespace contract {
 namespace {
 
-using ::testing::Test;
 using resdb::storage::MemoryDB;
+using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
@@ -45,7 +45,7 @@ std::string ToString(const Request& request) {
 
 class ContractTransactionManagerTest : public Test {
  public:
-  ContractTransactionManagerTest() : executor_(&db_)  {
+  ContractTransactionManagerTest() : executor_(&db_) {
     std::string contract_path = test_dir + "test_data/contract.json";
     contract_name_ = "token.sol:Token";
 
@@ -132,7 +132,8 @@ class ContractTransactionManagerTest : public Test {
     }
   }
 
-  absl::StatusOr<std::string> SetBalance(const std::string& account_address, const std::string& balance) {
+  absl::StatusOr<std::string> SetBalance(const std::string& account_address,
+                                         const std::string& balance) {
     Request request;
     Response response;
 
@@ -377,7 +378,7 @@ TEST_F(ContractTransactionManagerTest, GetFromKV) {
 
     {
       auto result = GetBalance(account.address());
-    EXPECT_EQ(*result, 600);
+      EXPECT_EQ(*result, 600);
     }
   }
 
@@ -398,7 +399,6 @@ TEST_F(ContractTransactionManagerTest, GetFromKV) {
   }
 
   {
-
     {
       auto result = SetBalance(account.address(), "1000");
       EXPECT_EQ(*result, "1");
@@ -454,8 +454,8 @@ TEST_F(ContractTransactionManagerTest, GetFromKV2) {
     EXPECT_EQ(*result, 0x3e8);
   }
 
-  //Account transfer_receiver = CreateAccount();
-  //EXPECT_FALSE(account.address().empty());
+  // Account transfer_receiver = CreateAccount();
+  // EXPECT_FALSE(account.address().empty());
   // receiver 0
   {
     Params func_params;
@@ -491,7 +491,7 @@ TEST_F(ContractTransactionManagerTest, GetFromKV2) {
 
     {
       auto result = GetBalance(account.address());
-    EXPECT_EQ(*result, 600);
+      EXPECT_EQ(*result, 600);
     }
   }
 
@@ -510,10 +510,7 @@ TEST_F(ContractTransactionManagerTest, GetFromKV2) {
       EXPECT_EQ(*result, 400);
     }
   }
-
 }
-
-
 
 }  // namespace
 }  // namespace contract

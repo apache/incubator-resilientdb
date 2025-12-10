@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #pragma once
 
 #include "eEVM/simple/simpleaccount.h"

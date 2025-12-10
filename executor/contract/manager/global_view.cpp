@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "executor/contract/manager/global_view.h"
 
 #include <glog/logging.h>

@@ -24,15 +24,15 @@
 
 #include <fstream>
 
-#include "executor/contract/manager/address_manager.h"
 #include "chain/storage/memory_db.h"
+#include "executor/contract/manager/address_manager.h"
 
 namespace resdb {
 namespace contract {
 namespace {
 
-using ::testing::Test;
 using resdb::storage::MemoryDB;
+using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +

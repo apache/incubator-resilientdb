@@ -61,7 +61,8 @@ class QueryTest : public Test {
         system_info_(config_),
         checkpoint_manager_(config_, &replica_communicator_, nullptr),
         message_manager_(config_, nullptr, &checkpoint_manager_, &system_info_),
-        query_(config_, &message_manager_),
+        recovery_(config_, &checkpoint_manager_, &system_info_, nullptr),
+        query_(config_, &recovery_),
         commitment_(config_, &message_manager_, &replica_communicator_,
                     &verifier_) {}
 
@@ -136,6 +137,7 @@ class QueryTest : public Test {
   SystemInfo system_info_;
   CheckPointManager checkpoint_manager_;
   MessageManager message_manager_;
+  Recovery recovery_;
   Query query_;
   MockReplicaCommunicator replica_communicator_;
   MockSignatureVerifier verifier_;

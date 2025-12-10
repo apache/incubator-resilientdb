@@ -117,9 +117,9 @@ absl::StatusOr<std::string> ContractClient::ExecuteContract(
   }
   return response.res();
 }
-  
 
-absl::StatusOr<std::string> ContractClient::GetBalance(const std::string& address) {
+absl::StatusOr<std::string> ContractClient::GetBalance(
+    const std::string& address) {
   Request request;
   Response response;
   request.set_account(address);
@@ -133,7 +133,8 @@ absl::StatusOr<std::string> ContractClient::GetBalance(const std::string& addres
   return response.res();
 }
 
-absl::StatusOr<std::string> ContractClient::SetBalance(const std::string& address, const std::string& balance) {
+absl::StatusOr<std::string> ContractClient::SetBalance(
+    const std::string& address, const std::string& balance) {
   Request request;
   Response response;
   request.set_account(address);
@@ -148,7 +149,8 @@ absl::StatusOr<std::string> ContractClient::SetBalance(const std::string& addres
   return response.res();
 }
 
-int ContractClient::SendRequestInternal(const Request& request, Response * response) {
+int ContractClient::SendRequestInternal(const Request& request,
+                                        Response* response) {
   KVRequest kv_request;
   request.SerializeToString(kv_request.mutable_smart_contract_request());
   KVResponse kv_response;
@@ -158,12 +160,10 @@ int ContractClient::SendRequestInternal(const Request& request, Response * respo
     return ret;
   }
   printf("get response from sm\n");
-  
+
   response->ParseFromString(kv_response.smart_contract_response());
   return 0;
 }
-
-
 
 }  // namespace contract
 }  // namespace resdb

@@ -33,14 +33,14 @@
 namespace sdk {
 
 class CrowService {
-public:
-  CrowService(resdb::ResDBConfig client_config, resdb::ResDBConfig server_config,
-              uint16_t port_num = 18000);
+ public:
+  CrowService(resdb::ResDBConfig client_config,
+              resdb::ResDBConfig server_config, uint16_t port_num = 18000);
   void run();
 
-private:
+ private:
   std::string GetAllBlocks(int batch_size, bool increment_txn_count = false,
-                          bool make_sublists=false);
+                           bool make_sublists = false);
   std::string ParseKVRequest(const KVRequest &kv_request);
   std::string ParseCreateTime(uint64_t createtime);
   resdb::ResDBConfig client_config_;
@@ -56,4 +56,4 @@ private:
   const uint64_t DB_SCAN_TIMEOUT_MS = 30000;
 };
 
-} // namespace sdk
+}  // namespace sdk
