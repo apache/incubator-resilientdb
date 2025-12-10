@@ -58,6 +58,8 @@ class Storage {
       const std::string& key, int number) = 0;
 
   virtual bool Flush() { return true; };
+
+  virtual uint64_t GetLastCheckpoint() { return 0; }
   
   void SetMaxHistoryNum(int num) { max_history_ = num; }
   protected:

@@ -84,6 +84,8 @@ class MessageManager {
   std::vector<RequestInfo> GetPreparedProof(uint64_t seq);
   TransactionStatue GetTransactionState(uint64_t seq);
 
+  void SetNextCommitSeq(int seq);
+
   // =============  System information ========
   // Obtain the current replica list.
   std::vector<ReplicaInfo> GetReplicas();

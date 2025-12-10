@@ -64,6 +64,7 @@ std::unique_ptr<std::string> TransactionManager::ExecuteRequest(
 
 std::vector<std::unique_ptr<std::string>> TransactionManager::ExecuteBatchDataWithSeq(
     uint64_t seq, const std::vector<std::unique_ptr<google::protobuf::Message>>& requests) {
+	seq_ = seq;
     return ExecuteBatchData(requests);
 }
 
@@ -85,6 +86,7 @@ std::vector<std::unique_ptr<std::string>> TransactionManager::ExecuteBatchData(
 
 std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatchWithSeq(
     uint64_t seq, const BatchUserRequest& request) {
+	LOG(ERROR)<<" execute batch seq:"<<seq_;
     seq_ = seq;
   return ExecuteBatch(request);
 }

@@ -24,8 +24,9 @@
 
 namespace resdb {
 
-KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
-    : storage_(std::move(storage)) {
+KVExecutor::KVExecutor(std::unique_ptr<Storage> storage){
+    storage_=std::move(storage);
+    LOG(ERROR)<<" init storage:"<<storage_.get();
     contract_manager_ = std::make_unique<resdb::contract::ContractTransactionManager>(storage_.get());
 }
 
@@ -135,6 +136,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
+	LOG(ERROR)<<" set key:"<<key<<" seq:"<<seq_;
   storage_->SetValueWithSeq(key, value, seq_);
 }
 

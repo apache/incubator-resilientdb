@@ -177,10 +177,14 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   if (request == nullptr || !IsValidMsg(*request)) {
     return CollectorResultCode::INVALID;
   }
+
   int type = request->type();
   uint64_t seq = request->seq();
   int resp_received_count = 0;
   int proxy_id = request->proxy_id();
+  if(checkpoint_manager_){
+    checkpoint_manager_->SetMaxSeq(seq);
+  }
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
@@ -240,6 +244,13 @@ int MessageManager::GetReplicaState(ReplicaState* state) {
 
 Storage* MessageManager::GetStorage() {
   return transaction_executor_->GetStorage();
+}
+
+void MessageManager::SetNextCommitSeq(int seq) {
+  SetNextSeq(seq);
+  collector_pool_->Reset(seq);
+  checkpoint_manager_->SetLastCommit(seq);
+  return transaction_executor_->SetPendingExecutedSeq(seq);
 }
 
 void MessageManager::SetLastCommittedTime(uint64_t proxy_id) {

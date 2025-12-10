@@ -64,7 +64,9 @@ ResLevelDB::ResLevelDB(std::optional<LevelDBInfo> config) {
     LOG(ERROR) << "initialized block cache" << std::endl;
   }
   global_stats_ = Stats::GetGlobalStats();
+  last_ckpt_ = 0;
   CreateDB(path);
+  last_ckpt_ = GetLastCheckpointInternal();
 }
 
 void ResLevelDB::CreateDB(const std::string& path) {
@@ -95,6 +97,7 @@ ResLevelDB::~ResLevelDB() {
 
 int ResLevelDB::SetValueWithSeq(const std::string& key,
                                     const std::string& value, uint64_t seq) {
+    LOG(ERROR) << "set value seq:" << seq;
   std::string value_str = GetValue(key);
   ValueHistory history;
   if (!history.ParseFromString(value_str)) {
@@ -109,6 +112,9 @@ int ResLevelDB::SetValueWithSeq(const std::string& key,
 
   if (last_seq > seq) {
     LOG(ERROR) << "seq is small, last:" <<  last_seq << " new seq:" << seq;
+
+    UpdateLastCkpt(last_seq);
+    
     return -2;
   }
 
@@ -120,9 +126,14 @@ int ResLevelDB::SetValueWithSeq(const std::string& key,
     history.mutable_value()->erase(history.mutable_value()->begin());
   }
 
-  LOG(ERROR)<<" set value, string:"<<key<<" seq:"<<seq;
+  LOG(ERROR)<<" set value, string:"<<key<<" seq:"<<seq<<" last seq:"<<last_seq;
   history.SerializeToString(&value_str);
-  return SetValue(key, value_str);
+  int ret = SetValue(key, value_str);
+  if(ret) {
+	  return ret;
+  }
+  UpdateLastCkpt(seq);
+  return 0;
 }
 
 std::pair<std::string, uint64_t> ResLevelDB::GetValueWithSeq(
@@ -394,6 +405,41 @@ std::vector<std::pair<std::string, int>> ResLevelDB::GetTopHistory(
   }
 
   return resp;
+}
+
+const std::string ckpt_key = "leveldb_checkpoint";
+
+void ResLevelDB::UpdateLastCkpt(uint64_t seq) {
+  LOG(ERROR)<<" update ckpt seq:"<<seq<<" last:"<<last_ckpt_<<" update time:"<<update_time_;
+  if(last_ckpt_ > seq) {
+    return;
+  }
+  last_ckpt_ = seq;
+  update_time_++;
+  if(update_time_%100 == 0 && last_ckpt_>0){
+    SetLastCheckpoint(last_ckpt_);
+    update_time_ = 0;
+  }
+}
+
+int ResLevelDB::SetLastCheckpoint(uint64_t ckpt) {
+  LOG(ERROR)<<" update last ckpt :"<<ckpt;
+  return SetValue(ckpt_key, std::to_string(ckpt));
+}
+
+uint64_t ResLevelDB::GetLastCheckpointInternal() {
+	std::string value = GetValue(ckpt_key);
+	if(value.empty()) {
+		return 0;
+	}
+	return std::stoll(value);
+}
+
+uint64_t ResLevelDB::GetLastCheckpoint() {
+	if(last_ckpt_ >0) {
+		  return last_ckpt_;
+	}
+	return GetLastCheckpointInternal();
 }
 
 }  // namespace storage

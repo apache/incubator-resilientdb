@@ -55,7 +55,7 @@ class TransactionManager {
 
   bool NeedResponse();
 
-  virtual Storage* GetStorage() { return nullptr; };
+  virtual Storage* GetStorage() { return storage_ ? storage_.get(): nullptr; }
 
  protected:
   virtual std::unique_ptr<google::protobuf::Message> ParseData(
@@ -63,6 +63,8 @@ class TransactionManager {
   virtual std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& request);
   uint64_t seq_ = 0;
+
+  std::unique_ptr<Storage> storage_;
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

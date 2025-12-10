@@ -81,4 +81,5 @@ if __name__ == "__main__":
     template_config = None
     if len(sys.argv)>3:
       template_config = sys.argv[3]
+    print("generate json config:",template_config)
     GenerateJsonConfig(sys.argv[1], sys.argv[2], template_config)

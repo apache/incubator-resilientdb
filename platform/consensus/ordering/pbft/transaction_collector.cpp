@@ -90,8 +90,8 @@ int TransactionCollector::AddRequest(
   }
 
   if (seq_ != static_cast<uint64_t>(request->seq())) {
-    // LOG(ERROR) << "data invalid, seq not the same:" << seq
-    //           << " collect seq:" << seq_;
+     LOG(ERROR) << "data invalid, seq not the same:" << seq
+               << " collect seq:" << seq_;
     return -2;
   }
 

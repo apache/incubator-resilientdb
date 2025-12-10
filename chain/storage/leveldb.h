@@ -73,8 +73,14 @@ class ResLevelDB : public Storage {
 
   bool Flush() override;
 
+  virtual uint64_t GetLastCheckpoint() override;
+
+  virtual int SetLastCheckpoint(uint64_t ckpt);
+
  private:
   void CreateDB(const std::string& path);
+  uint64_t GetLastCheckpointInternal();
+  void UpdateLastCkpt(uint64_t seq);
 
  private:
   std::unique_ptr<leveldb::DB> db_ = nullptr;
@@ -85,6 +91,8 @@ class ResLevelDB : public Storage {
  protected:
   Stats* global_stats_ = nullptr;
   std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
+  uint64_t last_ckpt_;
+  int update_time_ = 0;
 };
 
 }  // namespace storage

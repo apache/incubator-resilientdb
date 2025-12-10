@@ -44,10 +44,15 @@ class Recovery {
   void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
                 std::function<void(std::unique_ptr<Context> context,
                                    std::unique_ptr<Request> request)>
-                    call_back);
+                    call_back,
+                std::function<void(int)> start_point 
+                    );
 
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
+
+  int GetData(const RecoveryRequest& request,
+      RecoveryResponse &response);
 
  private:
   struct RecoveryData {
@@ -75,13 +80,18 @@ class Recovery {
 
   void UpdateStableCheckPoint();
   std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t>
-  GetRecoveryFiles();
+  GetRecoveryFiles(int64_t ckpt);
   void ReadLogsFromFiles(
       const std::string& path, int64_t ckpt, int file_idx,
       std::function<void(const SystemInfoData& data)> system_callback,
       std::function<void(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request)>
           call_back);
+
+  void InsertCache(const Context&context, const Request& request);
+
+  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> >>
+    GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
 
  protected:
   ResDBConfig config_;
@@ -92,7 +102,7 @@ class Recovery {
   std::string file_path_, base_file_path_;
   size_t buffer_size_ = 0;
   int fd_;
-  std::mutex mutex_;
+  std::mutex mutex_, data_mutex_;
 
   int64_t last_ckpt_;
   int64_t min_seq_, max_seq_;
@@ -101,6 +111,7 @@ class Recovery {
   int recovery_ckpt_time_s_;
   SystemInfo* system_info_;
   Storage* storage_;
+  std::map<uint64_t, std::vector<std::pair<SignatureInfo, Request>>> cache_;
 };
 
 }  // namespace resdb

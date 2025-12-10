@@ -55,6 +55,7 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
   }
 
   if (recovery_enabled_ == false) {
+    LOG(INFO) << "recovery is not enabled:" << recovery_enabled_;
     return;
   }
 
@@ -83,8 +84,10 @@ Recovery::Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
 }
 
 void Recovery::Init() {
+LOG(ERROR)<<" init";
   GetLastFile();
   SwitchFile(file_path_);
+LOG(ERROR)<<" init done";
 
   ckpt_thread_ = std::thread(&Recovery::UpdateStableCheckPoint, this);
 }
@@ -141,6 +144,7 @@ void Recovery::GetLastFile() {
 
     int64_t time_s =
         std::stoll(file_name.substr(time_pos + 1, min_seq_pos - time_pos - 1));
+    LOG(ERROR) << "get path:" << entry.path() << " min:" << min_seq<<" time:"<<time_s;
     if (min_seq == -1) {
       if (last_ckpt_ == -1 || m_time_s < time_s) {
         file_path_ = entry.path();
@@ -306,6 +310,9 @@ void Recovery::WriteLog(const Context* context, const Request* request) {
   AppendData(sig);
 
   Flush();
+  if(context){
+    InsertCache(*context, *request);
+  }
 }
 
 void Recovery::AppendData(const std::string& data) {
@@ -407,7 +414,7 @@ bool Recovery::Read(int fd, size_t len, char* data) {
 }
 
 std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t>
-Recovery::GetRecoveryFiles() {
+Recovery::GetRecoveryFiles(int64_t ckpt) {
   std::string dir = std::filesystem::path(file_path_).parent_path();
   int64_t last_ckpt = 0;
   for (const auto& entry : std::filesystem::directory_iterator(dir)) {
@@ -421,6 +428,8 @@ Recovery::GetRecoveryFiles() {
       last_ckpt = ckpt;
     }
   }
+  LOG(ERROR)<<"file max ckpt:"<<last_ckpt <<" storage ckpt:"<<ckpt;
+  last_ckpt = std::min(last_ckpt, ckpt);
   std::vector<std::pair<int64_t, std::string>> list;
 
   std::vector<std::pair<int64_t, std::string>> e_list;
@@ -462,13 +471,19 @@ void Recovery::ReadLogs(
     std::function<void(const SystemInfoData& data)> system_callback,
     std::function<void(std::unique_ptr<Context> context,
                        std::unique_ptr<Request> request)>
-        call_back) {
+        call_back,
+        std::function<void(int)> set_start_point) {
   if (recovery_enabled_ == false) {
     return;
   }
+  assert(storage_);
+  int64_t storage_ckpt = storage_->GetLastCheckpoint();
+  LOG(ERROR)<<" storage ckpt:"<<storage_ckpt;
   std::unique_lock<std::mutex> lk(mutex_);
-  auto recovery_files_pair = GetRecoveryFiles();
+
+  auto recovery_files_pair = GetRecoveryFiles(storage_ckpt);
   int64_t ckpt = recovery_files_pair.second;
+  set_start_point(ckpt);
   int idx = 0;
   for (auto path : recovery_files_pair.first) {
     ReadLogsFromFiles(path.second, ckpt, idx++, system_callback, call_back);
@@ -538,9 +553,12 @@ void Recovery::ReadLogsFromFiles(
   }
   uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
+    //LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data seq:"<<recovery_data->request->seq();
     if (ckpt < recovery_data->request->seq()) {
       recovery_data->request->set_is_recovery(true);
       max_seq = recovery_data->request->seq();
+      //LOG(ERROR)<<" ??? call back:"<<recovery_data->request->seq()<<" call_back:"<<(call_back?"1":"0");
+      //InsertCache(*recovery_data->context, *recovery_data->request);
       call_back(std::move(recovery_data->context),
                 std::move(recovery_data->request));
     }
@@ -551,5 +569,95 @@ void Recovery::ReadLogsFromFiles(
 
   close(fd);
 }
+
+void Recovery::InsertCache(const Context& context, const Request& request){
+  std::unique_lock<std::mutex> lk(data_mutex_);
+  cache_[request.seq()].push_back(std::make_pair(context.signature, request));
+}
+
+int Recovery::GetData(const RecoveryRequest& request,
+    RecoveryResponse &response) {
+
+  auto res = GetDataFromRecoveryFiles(request.min_seq(), request.max_seq());
+
+  for(const auto& it : res) {
+    for(const auto& req: it.second) {
+        *response.add_signature() = req.first->signature;
+        *response.add_request() = *req.second;
+    }
+  }
+
+  /*
+  for(int i = request.min_seq(); i <= request.max_seq(); ++i) {
+    std::unique_lock<std::mutex> lk(data_mutex_);
+    if(cache_.find(i) != cache_.end()) {
+      LOG(ERROR)<<" get data from cache i:"<<i<<" size:"<<cache_[i].size();
+      for(const auto& req : cache_[i]){
+        *response.add_signature() = req.first;
+        *response.add_request() = req.second;
+      }
+    }
+  }
+  */
+  return 0;
+}
+
+std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> >>
+Recovery::GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq) {
+  std::string dir = std::filesystem::path(file_path_).parent_path();
+
+  std::vector<std::pair<int64_t, std::string>> list;
+  std::vector<std::pair<int64_t, std::string>> e_list;
+
+  for (const auto& entry : std::filesystem::directory_iterator(dir)) {
+    std::string dir = std::filesystem::path(entry.path()).parent_path();
+    std::string file_name = std::filesystem::path(entry.path()).stem();
+    std::string ext = std::filesystem::path(entry.path()).extension();
+    if (ext != ".log") continue;
+    int pos = file_name.rfind("_");
+
+    int max_seq_pos = file_name.rfind("_", pos - 1);
+    int64_t max_seq =
+        std::stoll(file_name.substr(max_seq_pos + 1, pos - max_seq_pos - 1));
+
+    int min_seq_pos = file_name.rfind("_", max_seq_pos - 1);
+    int64_t min_seq = std::stoll(
+        file_name.substr(min_seq_pos + 1, max_seq_pos - min_seq_pos - 1));
+
+    int time_pos = file_name.rfind("_", min_seq_pos - 1);
+    int64_t time =
+        std::stoll(file_name.substr(time_pos + 1, min_seq_pos - time_pos - 1));
+
+    //LOG(ERROR)<<" min seq:"<<min_seq << " max seq:"<<max_seq<<" need:"<<need_min_seq<<" "<<need_max_seq;
+    if (min_seq == -1) {
+      e_list.push_back(std::make_pair(time, entry.path()));
+    } else if (max_seq < need_min_seq || min_seq > need_max_seq) {
+      continue;
+    }
+    //LOG(ERROR)<<" get min seq:"<<min_seq << " max seq:"<<max_seq<<" need:"<<need_min_seq<<" "<<need_max_seq;
+    list.push_back(std::make_pair(time, entry.path()));
+  }
+
+  sort(e_list.begin(), e_list.end());
+  list.push_back(e_list.back());
+  sort(list.begin(), list.end());
+
+
+  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> >> res;
+  for (const auto& path : list) {
+    ReadLogsFromFiles(
+      path.second, need_min_seq-1, 0, [&](const SystemInfoData& data) {},
+      [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+            LOG(ERROR)<<"check get data from recovery file seq:"<<request->seq();
+            if(request->seq() >= need_min_seq && request->seq() <= need_max_seq) {
+              LOG(ERROR)<<"get data from recovery file seq:"<<request->seq();
+              res[request->seq()].push_back( std::make_pair(std::move(context), std::move(request) ) );
+            }
+      });
+  }
+
+  return res;
+}
+
 
 }  // namespace resdb
