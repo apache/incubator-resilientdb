@@ -31,12 +31,6 @@
 3. [Stress testing the Project](#Stress-testing-the-Project)
 4. [(Appendix) Common Installation bugs](#(Appendix)-Common-Installation-Bugs)
 
-1. [Running the Indexing Project](#Running-the-Indexing-Project)
-2. [ResilientDB Installation](#ResilientDB-Installation)
-3. [ResilientDB Installation Bugs](#ResilientDB-Installation-Bugs)
-4. [How to Run ResDB-ORM](#How-to-Run-ResDB-ORM)
-5. [Stress Test KV](#Stress-Testing-KV)
-
 ## First-Time Installation
 Forked from [this repository](https://github.com/apache/incubator-resilientdb), for more complex setup instructions, please head there.
 
@@ -83,7 +77,7 @@ bazel-bin/service/http_server/crow_service_main service/tools/config/interface/s
 
 The first command may take some time to run. Reciving one or more `[INFO    ]` messages indicates that the service is running.
 
-7. (optional) The third component that the indexing project is built on is the graphql tool itself. This server runs on python. It is a requirement of this project that python3.10 is used (see appendix for help using different python versions). While you can run this from your device's global python distribution, it is reccomended that you use a venv, as following:
+7. (optional) The third component that the indexing project is built on is the graphql tool itself. This server runs on python. It is a requirement of this project that python3.10 is used (see [the appendix](#(Appendix)-Common-Installation-Bugs) for help using different python versions). While you can run this from your device's global python distribution, it is reccomended that you use a venv, as following:
 
 ```bash
 python3.10 -m venv venv
