@@ -28,8 +28,8 @@
 # Table of Contents
 1. [First-Time Installation](#First-Time-Installation)
 2. [Using the Project](#Using-the-Project)
-3. [Stress testing the Project]
-4. [(Appendix) Common Installation bugs]
+3. [Stress testing the Project](#Stress-testing-the-Project)
+4. [(Appendix) Common Installation bugs](#(Appendix)-Common-Installation-Bugs)
 
 1. [Running the Indexing Project](#Running-the-Indexing-Project)
 2. [ResilientDB Installation](#ResilientDB-Installation)
@@ -169,7 +169,29 @@ To get a brief recap of all of this functionality, you can run:
 python kv_vector.py --help
 ```
 
-## ResilientDB Installation Bugs
+## Stress Testing the Project
+
+We tested for the storage limit of big values. In this configuration: 
+1. 8GB RAM Shell
+2. Standard 5 replica config from `./service/tools/kv/server_tools/start_kv_service.sh`
+
+The results was that around 150-200mb values will cause the KV store to have long delays on operations. You can read more in `hnsw-test/index_test/README.md` along with the testing kit. 
+
+## (Appendix) Common Installation Bugs
+
+### Using Python3.10
+The project will not be able to install the correct dependencies for graphql if a version aside from python3.10 is used. Specifically, python3.10 needs to create the virtual environment, or be the globally install version of python if all commands are run outside of a venv.
+
+There are several ways of doing this, but we reccomend using deadsnakes
+
+```bash
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt install python3.10 python3.10-dev python3.10-venv
+```
+
+This will create a command in your terminal, `python3.10`, which can be used to create the venv.
+
 ### Carriage returns & running shell files on Windows
 For Windows (and mac?) users, we need to make bash files friendly for your OS. To do this, we can just run a simple character replacement program on any shell files, `sed -i 's/\r//g' YOUR_SHELL_SCRIPT.sh`. We talk about doing this for INSTALL.sh and start_kv_service.sh in the Installation guide, but it will need to be done for any shell file you want to run. For issues with sed, instead run and `dos2unix YOUR_SHELL_SCRIPT.sh`
 
@@ -289,90 +311,3 @@ g++ --version
 Re-running the INSTALL and kv_start scripts should work now.
 
 This took me a couple tries to get right, and mistakes with `update-alternatives` were tough to recover from. Uninstalling WSL/Ubuntu then reinstalling it fresh always gets a fresh version of gcc / g++ that works again. Note that this will remove everything in your _Ubuntu_ distro (not everything on your computer)
-
-## How to Run ResDB-ORM
-
-To run ResDB-ORM, you must first start the backend services (**KV Service** and **GraphQL Server**) and then connect to them using **ResDB-ORM**.
-
-### First Time Setup
-
-Running **ResDB-ORM** will always involve starting the **KV Service** and **GraphQL Server** as mentioned above. However, a few things must be done to create the environment first.
-
-### Step 1: Start the KV Service
-Run the following script in your top-level indexers-ECS265-Fall2025 directory:
-```bash
-./service/tools/kv/server_tools/start_kv_service.sh
-```
-Reciving one or more `nohup: redirecting stderr to stdout` messages indicates that the service is running. Note that this may take over control of your WSL instance. Do not close out of the terminal, instead continue on a new terminal.
-
-### Step 2: Start the GraphQL Server
-(1) Run the following script in your ecosystem/graphql directory:
-```bash
-cd ./ecosystem/graphql
-bazel build service/http_server:crow_service_main
-bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
-```
-The first command may take some time to run.
-
-Reciving one or more `[INFO    ]` messages indicates that the service is running. Note that this may take over control of your WSL instance. Do not close out of the terminal, instead continue on a new terminal.
-
-(2) After running bazel-bin, you should recieve a message with the format `[INFO    ] Crow/1.0 server is running at http://0.0.0.0:18000 using ~ threads`. Copy and save the URL (in this case `http://0.0.0.0:18000`) for the next step.
-
-### Step 3 Open ```config.yaml``` and Update the db_root_url with the GraphQL Server URL you Copied in Step 2.
-Open the file `indexers-ECS265-Fall2025/ecosystem/sdk/resdb-orm/config.yaml`, it will be a small config file. Replace `<CROW_ENDPOINT>` with the exact url you copied above like this:
-```yaml
-database:
-  db_root_url: <CROW_ENDPOINT>  
-```
-
-More likely than not, it will be `http://0.0.0.0:18000` for you too, and that will match what is currently in the config file.
-
-### Step 4 Create the Python Virtual Environment
-GraphQL requires python packages, so we use a virtual environment to run them (though in practice, these packages could be/may already be installed globally). Note that while we create this virtual environment at the top-level, it operates excusively on ResDB-orm and *could* be placed in there instead.
-
-Open a new terminal tab, then setup and start the GraphQL server:
-
-(1) Create a virtual environment:
-```bash
-python3.10 -m venv venv
-```
-(2) activate the virtual environment:
-```bash
-source venv/bin/activate
-```
-(3) install the necessary packages (may take awhile):
-```bash
-pip install -r ./ecosystem/sdk/resdb-orm/requirements.txt
-pip install resdb-orm
-```
-
-The first install command may take some time to run. Your terminal will be free when it's done.
-
-### Step 5: Run the test script to ensure everything is working correctly:
-To run the ResDB-orm test code, you need to change into the resdb-orm directory:
-```bash
-cd ./ecosystem/sdk/resdb-orm
-python tests/test.py
-```
-
-### Step 6+: Re-Running ResdDB-orm in the future
-As long as the setup is successful, you will only need to run these two commands to spin up the **KV Service** and **GraphQL Server** in the future:
-```bash
-# From the top-level directory
-./service/tools/kv/server_tools/start_kv_service.sh
-# From the ecosystem/graphql directory
-bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
-```
-
-Note that each of these commands will prevent input on the terminal you run them in.
-
-To interact with ResDB-orm, spin up the python instance running it: `source venv/bin/activate`. To leave this Python environment and return to bash, just type `deactivate`.
-
-
-## Stress Testing KV
-
-We tested for the storage limit of big values. In this configuration: 
-1. 8GB RAM Shell
-2. Standard 5 replica config from `./service/tools/kv/server_tools/start_kv_service.sh`
-
-The results was that around 150-200mb values will cause the KV store to have long delays on operations. You can read more in `hnsw-test/index_test/README.md` along with the testing kit. 
