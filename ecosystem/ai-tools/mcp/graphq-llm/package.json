@@ -1,0 +1,53 @@
+{
+  "name": "graphq-llm",
+  "version": "0.1.0",
+  "description": "AI Query Tutor for ResilientDB - GraphQL query assistance with LLM",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "mcp-server": "tsx src/index.ts -- --mcp-server",
+    "http-api": "tsx src/index.ts -- --http-api",
+    "ingest": "tsx ingest-docs.ts",
+    "ingest:graphql": "tsx ingest-graphql-docs.ts",
+    "test:rag": "tsx test-rag.ts",
+    "test:rag:queries": "tsx test-rag-queries.ts",
+    "test:rag:accuracy": "tsx test-rag-accuracy.ts",
+    "test:nexus": "tsx test-nexus.ts"
+  },
+  "keywords": [
+    "resilientdb",
+    "graphql",
+    "llm",
+    "mcp",
+    "query-tutor"
+  ],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "@google/generative-ai": "^0.24.1",
+    "@huggingface/inference": "^4.13.0",
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@xenova/transformers": "^2.6.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "openai": "^6.8.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
