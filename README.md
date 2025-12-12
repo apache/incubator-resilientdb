@@ -27,7 +27,7 @@
 
 # Table of Contents
 1. [First-Time Installation](#First-Time-Installation)
-2. [Using the Project]
+2. [Using the Project](#Using-the-Project)
 3. [Stress testing the Project]
 4. [(Appendix) Common Installation bugs]
 
@@ -107,62 +107,67 @@ Next, we need to start graphql. It is reccomended that you do this step in a sep
 python app.py
 ```
 
+## Using the Project
+### Starting Back Up Again
+Every time you would like to use the project again, you need to again run the kv_store, graphql server and graphql itself:
 
+```bash
+# From the top-level directory
+./service/tools/kv/server_tools/start_kv_service.sh
+# From ecosystem/graphql
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
+# From ecosystem/graphql, AND using your python virtual environment (if applicable)
+python app.py
+```
 
-## Running the Indexing Project
-All user-facing code for this project is located in `ecosystem/sdk/vector-indexing`. As long as the **KV Service** and **GraphQL Server** are running, executing the python code directly through the command line will work - nothing needs to be built beforehand. This does need to be run with a python instance with the ResDB-orm package installed (we reccoment using a virtual environment)
+Note that running each of these will most likely take away control of the terminal.
 
-The project acts as a wrapper around the KV Service - (string) values added using our tools will save them to ResilientDB *in addition* to generating vector embeddings for those values (Embeddings are also saved in resilientDB). We then offer the ability to search for the k_closest embeddings based on an input value
+### Commands
+All of the functionality of this program is accessible through a CLI tool located in `ecosystem/sdk/vector-indexing/kv_vector.py`
 
-### Adding a Value
+#### Adding a Value
 From `ecosystem/sdk/vector-indexing`, run the command
 
 ```bash
-python vector_add.py --value <your_string>
+python kv_vector.py --add <YOUR_STRING>
 ```
-- Flag `--value`: must be immediately followed by the value a user wishes to save. Omitting this flag will prevent the program from running. Duplicate values cannot be saved.
 
-### Searching Across Embeddings
-This is the main functionality of our project - the ability to search for the most similar values based on their embeddings. From `ecosystem/sdk/vector-indexing`, run the command
+This will save both the value, as well an embedding representing the value, to ResDB.
+
+- `YOUR_STRING` will be saved as a string, regardless of the format it is sent as. Duplicate values cannot be saved.
+
+#### Deleting a Value
+From `ecosystem/sdk/vector-indexing`, run the command
 
 ```bash
-python vector_get.py --value <your_string> --k_matches <your_integer>
-```
-- Flag `--value`: must be immediately followed by the value a user wishes to perform a similarity search for. Either this flag, or `--show_all` must be used - omitting both will prevent the program from running.
-- Flag `--k_matches`: must immediately be followed by the k-most-similar matches to `--value` that a user wishes to retrieve. If this flag is omitted, a default of 1 will be used.
-- Flag `--show_all`: does not require a second arguement. It will list every value that has been added to this instance of ResDB that has a correlated vector embedding. Using this arguement will override the other two flags completely.
-
-## ResilientDB Installation
-Forked from [this repository](https://github.com/apache/incubator-resilientdb), for more complex setup instructions, please head there.
-
-Hey all, Steven here, this is the quickstart guide to getting ResDB up and running. If you've already setup and installed your repo, start from step 5.
-
-1. Clone this repo to your local device with `git clone https://github.com/apache/incubator-resilientdb.git`
-
-2. (Windows only) ResilientDB uses bash shell commands (.sh extension), which windows doesn't support natively. Fortunately, Windows 11 and most versions of Windows 10 have an easy to use subsystem for Linux, WSL. Link on how to setup [here](https://learn.microsoft.com/en-us/windows/wsl/install).
-After installing WSL, you can open a bash terminal by running the program `Ubuntu`. This will open from the profile of your newly created User for WSL, but you can still access to your Windows files in windows via `cd ~/../../mnt`, which should navigate you to the location of your C/D drive.
-
-3. (Windows only?) There's a mismatch between the way Windows and Linux ends lines in files, in short, on Windows machines the shell scripts will all have an unnecessary `\r` (carriage return) character at the end of all shell files. This _will_ cause problems with execution of these files. Use the sed command (at the top-level of the cloned repo) to remove the extraneous characters of the install file:
-
-```
-sudo sed -i 's/\r//g' INSTALL.sh
+python kv_vector.py --delete <YOUR_STRING>
 ```
 
-Unfortunately, this is a problem with every shell file in the repository. To fix this, we added a script that will recursively remove the CR from every file in the repo before running install:
+This remove both the value, as well the embedding representing the value, from ResDB. If `YOUR_STRING` has not been saved through our tooling, nothing will happen.
 
+#### Searching Across Embeddings
+This is the main functionality of our project - the ability to search for the most similar values based on their embeddings. To get the k-closest values to a queried string, run:
+
+```bash
+python kv_vector.py --get <YOUR_STRING> --k_matches <YOUR_INTEGER>
 ```
-sudo sh WSL_INSTALL.sh
+
+This will return the `YOUR_INTEGER` most similar currently stored values to `YOUR_STRING`, as long as their similarity score.
+
+- If `--k_matches` is omitted, a value of k=1 will be used. If a non-integer value is used for this input, the program will terminate.
+
+There is also a command to see all values saved to ResDB that this tool has generated an embedding for:
+
+```bash
+python kv_vector.py --getAll
 ```
 
-4. Navigate to the project folder and run `sudo sh INSTALL.sh` (unless you've already run WSL_INSTALL)
+#### Other
+To get a brief recap of all of this functionality, you can run:
 
-5. To start the k/v store, run `./service/tools/kv/server_tools/start_kv_service.sh`
-
-6. To start tools for the k/v store, run `bazel build service/tools/kv/api_tools/kv_service_tools`
-
-If you're starting from step 1, you'll more likely than not run into bugs. Here are a list of ones we've come across and their fixes:
-
-\
+```bash
+python kv_vector.py --help
+```
 
 ## ResilientDB Installation Bugs
 ### Carriage returns & running shell files on Windows
