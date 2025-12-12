@@ -163,7 +163,19 @@ program
         process.exit(1);
       }
 
-      await handleExecFile(commandPath, ['create', '-c', configPath]);
+      const tempConfigPath = path.join(os.tmpdir(), `rescontract_config_${Date.now()}.json`);
+      const tempConfig = {
+        command: 'create_account'
+      };
+      fs.writeFileSync(tempConfigPath, JSON.stringify(tempConfig));
+
+      try {
+        await handleExecFile(commandPath, ['-c', configPath, '--config_file', tempConfigPath]);
+      } finally {
+        if (fs.existsSync(tempConfigPath)) {
+          fs.unlinkSync(tempConfigPath);
+        }
+      }
     } catch (error) {
       logger.error(`Error executing create command: ${error.message}`);
       console.error(`Error: ${error.message}`);
@@ -265,18 +277,21 @@ program
         'contract_tools'
       );
 
+      const tempConfigPath = path.join(os.tmpdir(), `rescontract_config_${Date.now()}.json`);
+      const tempConfig = {
+        command: 'deploy',
+        contract_path: contract,
+        contract_name: name,
+        contract_address: owner,
+        init_params: args
+      };
+      fs.writeFileSync(tempConfigPath, JSON.stringify(tempConfig));
+
       const argList = [
-        'deploy',
         '-c',
         configPath,
-        '-p',
-        contract,
-        '-n',
-        name,
-        '-a',
-        args,
-        '-m',
-        owner,
+        '--config_file',
+        tempConfigPath
       ];
 
       const output = await handleSpawnProcess(commandPath, argList);
