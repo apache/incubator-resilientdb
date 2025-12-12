@@ -26,11 +26,88 @@
 --> 
 
 # Table of Contents
+1. [First-Time Installation](#First-Time-Installation)
+2. [Using the Project]
+3. [Stress testing the Project]
+4. [(Appendix) Common Installation bugs]
+
 1. [Running the Indexing Project](#Running-the-Indexing-Project)
 2. [ResilientDB Installation](#ResilientDB-Installation)
 3. [ResilientDB Installation Bugs](#ResilientDB-Installation-Bugs)
 4. [How to Run ResDB-ORM](#How-to-Run-ResDB-ORM)
 5. [Stress Test KV](#Stress-Testing-KV)
+
+## First-Time Installation
+Forked from [this repository](https://github.com/apache/incubator-resilientdb), for more complex setup instructions, please head there.
+
+Hey all, Steven here. This is the quickstart guide to getting this project up and running. Vector Indexing itself only requires one line of setup (`pip install hnswlib sentence-transformers numpy`, from your venv or with python), but it is built on top of ResDB tooling that _does_ require setup (kv_store, graphQL server, and graphQL itself). This guide will walk you through setting those elements up for the first time.
+
+1. Clone this repo to your local device with `git clone https://github.com/apache/incubator-resilientdb.git`
+
+2. (Windows only) ResilientDB uses bash shell commands (.sh extension), which windows doesn't support natively. Fortunately, Windows 11 and most versions of Windows 10 have an easy to use subsystem for Linux, WSL. Link on how to setup [here](https://learn.microsoft.com/en-us/windows/wsl/install).
+After installing WSL, you can open a bash terminal by running the program `Ubuntu`. This will open from the profile of your newly created User for WSL, but you can still access to your Windows files in windows via `cd ~/../../mnt`, which should navigate you to the location of your C/D drive.
+
+3. (Windows/WSL only) There's a mismatch between the way Windows and Linux ends lines in files, in short, on Windows machines the shell scripts will all have an unnecessary `\r` (carriage return) character at the end of all shell files. This _will_ cause problems with execution of these files. Use the sed command (at the top-level of the cloned repo) to remove the extraneous characters of the install file:
+
+```bash
+sudo sed -i 's/\r//g' INSTALL.sh
+```
+
+Unfortunately, this is a problem with every shell file in the repository. Instead of just running the above command, we reccomend running it in the top-level directory and having the change propagate to all shell files: 
+
+```bash
+find . -type f -name '*sh' -exec sed -i 's/\r//g' {} \;
+```
+
+4. Navigate to the project folder and run the install script
+```bash
+sudo sh INSTALL.sh
+```
+
+5. The first component the indexing project is built upon is the kv_store. It is reccomended that you do this step in a seperate command line, as it can take control of the command line while running. From the top level of your project directory, run:
+
+```bash
+./service/tools/kv/server_tools/start_kv_service.sh
+```
+
+Reciving one or more `nohup: redirecting stderr to stdout` messages indicates that the service is running.
+
+6. The second component the indexing project is built on is the graphql server. It is reccomended that you do this step in a seperate command line, as it can take control of the command line while running. Navigate to `ecosystem/graphql`, and run the following commands:
+
+```bash
+# First-time installation only
+bazel build service/http_server:
+# Start the server
+bazel-bin/service/http_server/crow_service_main service/tools/config/interface/service.config service/http_server/server_config.config
+```
+
+The first command may take some time to run. Reciving one or more `[INFO    ]` messages indicates that the service is running.
+
+7. (optional) The third component that the indexing project is built on is the graphql tool itself. This server runs on python. It is a requirement of this project that python3.10 is used (see appendix for help using different python versions). While you can run this from your device's global python distribution, it is reccomended that you use a venv, as following:
+
+```bash
+python3.10 -m venv venv
+source venv/bin/activate
+```
+
+to leave the virtual environment, just run `deactivate`
+
+8. We need to run installation for grapql tooling. First navigate to `ecosystem/graphql`. Then, from your python venv or global python distribution, run:
+
+```bash
+pip install -r requirements.txt
+pip install hnswlib sentence-transformers numpy
+```
+
+Note that these commands can take a very long time to run (10+ minutes)
+
+Next, we need to start graphql. It is reccomended that you do this step in a seperate command line, as it can take control of the command line while running. While still in the `ecosystem/graphql`, and run the following command:
+
+```bash
+python app.py
+```
+
+
 
 ## Running the Indexing Project
 All user-facing code for this project is located in `ecosystem/sdk/vector-indexing`. As long as the **KV Service** and **GraphQL Server** are running, executing the python code directly through the command line will work - nothing needs to be built beforehand. This does need to be run with a python instance with the ResDB-orm package installed (we reccoment using a virtual environment)
