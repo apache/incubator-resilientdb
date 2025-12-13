@@ -169,7 +169,7 @@ We tested for the storage limit of big values. In this configuration:
 1. 8GB RAM Shell
 2. Standard 5 replica config from `./service/tools/kv/server_tools/start_kv_service.sh`
 
-The results was that around 150-200mb values will cause the KV store to have long delays on operations. You can read more in `hnsw-test/index_test/README.md` along with the testing kit. 
+The results was that around 150-200mb values will cause the KV store to have long delays on operations. You can read more in `ecosystem/sdk/vector-indexing/hnsw-test/index_test/README.md` along with the testing kit. 
 
 ## (Appendix) Common Installation Bugs
 
