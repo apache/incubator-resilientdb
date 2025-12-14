@@ -84,8 +84,12 @@ jobs:
             exit 0
           fi
           
+          # Convert newline-separated list to space-separated for GITHUB_OUTPUT
+          # GITHUB_OUTPUT requires single-line values, so we use spaces as delimiter
+          TOOLS_LIST=$(echo "$CHANGED_TOOLS" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          
           echo "Changed tools: $CHANGED_TOOLS"
-          echo "tools=$CHANGED_TOOLS" >> $GITHUB_OUTPUT
+          echo "tools=$TOOLS_LIST" >> $GITHUB_OUTPUT
           echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Generate documentation for changed tools
@@ -101,15 +105,18 @@ jobs:
           export GEMINI_API_KEY="$GEMINI_API_KEY"
           export GEMINI_MODEL="$GEMINI_MODEL"
           
-          # Read tools from previous step
+          # Read tools from previous step (space-separated)
           TOOLS="${{ steps.detect-tools.outputs.tools }}"
           
+          # Process each tool (bash splits on spaces by default)
           for tool in $TOOLS; do
-            echo "Generating documentation for: $tool"
-            python3 scripts/run_pocketflow_for_tool.py \
-              --tool "$tool" \
-              --single-file \
-              --skip-format || echo "Failed to generate docs for $tool"
+            if [ -n "$tool" ]; then
+              echo "Generating documentation for: $tool"
+              python3 scripts/run_pocketflow_for_tool.py \
+                --tool "$tool" \
+                --single-file \
+                --skip-format || echo "Failed to generate docs for $tool"
+            fi
           done
 
       - name: Check for changes
