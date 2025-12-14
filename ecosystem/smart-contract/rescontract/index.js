@@ -34,7 +34,7 @@ async function ensureResDBHome() {
     const resDBHome = await getResDBHome();
     if (!resDBHome) {
       console.error(
-        'Error: ResDB_Home is not set. Please set the ResDB_Home environment variable or provide a config.yaml file.'
+        'Error: ResDB_Home is not set. Please set the ResDB_Home environment variable or provide a config.yaml file!'
       );
       logger.error('ResDB_Home is not set.');
       process.exit(1);

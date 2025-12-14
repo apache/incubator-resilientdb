@@ -32,6 +32,11 @@ on:
 jobs:
   update-docs:
     runs-on: ubuntu-latest
+    env:
+      # Required by Pocketflow; must be uppercase "GEMINI" to use Gemini-specific path
+      LLM_PROVIDER: GEMINI
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
     
     # Skip if commit message contains [skip docs] (only applicable to push events)
     # github.event.head_commit is null for workflow_dispatch, so guard with event_name and default string
@@ -61,8 +66,9 @@ jobs:
       - name: Detect changed tools
         id: detect-tools
         env:
+          LLM_PROVIDER: GEMINI
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-1.5-pro' }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
         run: |
           cd ecosystem/pocketflow
           # Export env vars for Python scripts
@@ -85,10 +91,13 @@ jobs:
       - name: Generate documentation for changed tools
         if: steps.detect-tools.outputs.changed == 'true'
         env:
+          LLM_PROVIDER: GEMINI
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'gemini-1.5-pro' }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
         run: |
           cd ecosystem/pocketflow
+          # Export all env vars to ensure they're available to subprocess calls
+          export LLM_PROVIDER="$LLM_PROVIDER"
           export GEMINI_API_KEY="$GEMINI_API_KEY"
           export GEMINI_MODEL="$GEMINI_MODEL"
           
