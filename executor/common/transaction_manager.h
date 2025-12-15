@@ -56,8 +56,11 @@ class TransactionManager {
  protected:
   virtual std::unique_ptr<google::protobuf::Message> ParseData(
       const std::string& data);
+  virtual std::unique_ptr<google::protobuf::Message> ParseData(
+      const std::string& data,uint64_t seq);
   virtual std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& request);
+
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <sys/types.h>
 #include <map>
 #include <optional>
 #include <unordered_map>
@@ -38,6 +39,8 @@ class KVExecutor : public TransactionManager {
 
   std::unique_ptr<google::protobuf::Message> ParseData(
       const std::string& request) override;
+  std::unique_ptr<google::protobuf::Message> ParseData(
+      const std::string& request,uint64_t seq) override;
   std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& kv_request) override;
  protected:

@@ -7,6 +7,10 @@ header:
     - '.*'
     - '.**/**'
     - '**/*.sol'
+    - '**/*.config'
+    - '**/*.conf'
+    - '**/*.json'
+    - '**/*.prettierrc'
     - CNAME
     - DISCLAIMER
     - LICENSE

@@ -31,4 +31,4 @@ CONFIG_PATH=$PWD/service/tools/config/
 PORT_BASE=10000
 CLIENT_NUM=1
 
-./service/tools/config/generate_config.sh ${WORKSPACE} ${CERT_PATH} ${CERT_PATH} ${CONFIG_PATH} ${CERT_PATH} ${CLIENT_NUM} ${PORT_BASE} ${iplist[@]} 
+./service/tools/config/generate_keys_and_certs.sh ${WORKSPACE} ${CERT_PATH} ${CERT_PATH} ${PORT_BASE} ${CLIENT_NUM} ${iplist[@]} 

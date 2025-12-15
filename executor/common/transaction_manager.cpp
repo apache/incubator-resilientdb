@@ -20,6 +20,7 @@
 #include "executor/common/transaction_manager.h"
 
 #include <glog/logging.h>
+#include <sys/types.h>
 
 namespace resdb {
 
@@ -40,6 +41,11 @@ std::unique_ptr<google::protobuf::Message> TransactionManager::ParseData(
   return nullptr;
 }
 
+std::unique_ptr<google::protobuf::Message> TransactionManager::ParseData(
+    const std::string& data,uint64_t seq) {
+  return nullptr;
+}
+
 std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
 TransactionManager::Prepare(const BatchUserRequest& request) {
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
@@ -48,17 +54,17 @@ TransactionManager::Prepare(const BatchUserRequest& request) {
   {
     for (auto& sub_request : request.user_requests()) {
       std::unique_ptr<google::protobuf::Message> response =
-          ParseData(sub_request.request().data());
+          ParseData(sub_request.request().data(), request.seq());
       batch_response->push_back(std::move(response));
     }
     // LOG(ERROR)<<"prepare data size:"<<batch_response.size();
   }
-
   return batch_response;
 }
 
 std::unique_ptr<std::string> TransactionManager::ExecuteRequest(
     const google::protobuf::Message& request) {
+  LOG(ERROR) << "At TransactionManger::ExecuteRequest" << std::endl;
   return nullptr;
 }
 
@@ -77,7 +83,6 @@ std::vector<std::unique_ptr<std::string>> TransactionManager::ExecuteBatchData(
   }
   return ret;
 }
-
 
 std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
     const BatchUserRequest& request) {

@@ -48,6 +48,7 @@ message KVRequest {
     // For top history
     int32 top_number = 9;
     bytes smart_contract_request = 10;
+    uint64 seq = 11;
 }
 
 message ValueInfo {
@@ -69,6 +70,7 @@ message KVResponse {
     bytes value = 2;
     ValueInfo value_info = 3;
     Items items = 4;
+    uint64 seq = 5;
     bytes smart_contract_response = 10;
 }
 

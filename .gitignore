@@ -21,6 +21,7 @@ resdb/
 100*_db/
 gmon.out
 .history/
+service/tools/data/cert/
 # Generated LLM cache and Pocketflow outputs
 llm_cache.json
 ecosystem/pocketflow/.pf-output/

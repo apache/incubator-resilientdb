@@ -17,125 +17,126 @@
  * under the License.
  */
 
-#include "platform/config/resdb_config.h"
-
-#include <google/protobuf/util/message_differencer.h>
-#include <gtest/gtest.h>
-#include <filesystem>
-
-#include <thread>
-
-#include "resdb_config_utils.h"
-#include "common/test/test_macros.h"
-#include "gmock/gmock.h"
-
-namespace resdb {
-namespace {
-
-using ::google::protobuf::util::MessageDifferencer;
-using ::resdb::testing::EqualsProto;
-
-MATCHER_P(EqualsReplicas, replicas, "") {
-  if (arg.size() != replicas.size()) {
-    return false;
-  }
-  for (size_t i = 0; i < replicas.size(); ++i) {
-    if (!MessageDifferencer::Equals(replicas[i], arg[i])) {
-      return false;
-    }
-  }
-  return true;
-}
-
-ReplicaInfo GenerateReplicaInfo(const std::string& ip, int port) {
-  ReplicaInfo info;
-  info.set_ip(ip);
-  info.set_port(port);
-  return info;
-}
-
-/*
-TEST(ResDBConfigTest, ResDBConfig) {
-  ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
-
-  std::vector<ReplicaInfo> replicas;
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
-
-  ResDBConfig config(replicas, self_info);
-
-  EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
-  EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
-  EXPECT_EQ(config.GetReplicaNum(), replicas.size());
-  EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
-}
-
-TEST(ResDBConfigTest, ResDBConfigWith5Replicas) {
-  ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
-
-  std::vector<ReplicaInfo> replicas;
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1239));
-
-  ResDBConfig config(replicas, self_info);
-
-  EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
-  EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
-  EXPECT_EQ(config.GetReplicaNum(), replicas.size());
-  EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
-}
-
-TEST(ResDBConfigTest, ResDBConfigWith6Replicas) {
-  ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
-
-  std::vector<ReplicaInfo> replicas;
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1239));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1240));
-
-  ResDBConfig config(replicas, self_info);
-
-  EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
-  EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
-  EXPECT_EQ(config.GetReplicaNum(), replicas.size());
-  EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
-}
-
-TEST(ResDBConfigTest, ResDBConfigWith2Replicas) {
-  ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
-
-  std::vector<ReplicaInfo> replicas;
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
-  replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
-
-  ResDBConfig config(replicas, self_info);
-
-  EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
-  EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
-  EXPECT_EQ(config.GetReplicaNum(), replicas.size());
-  EXPECT_EQ(config.GetMinDataReceiveNum(), 1);
-}
-*/
-
-TEST(ResDBConfigTest, ResDBConfigFromFile) {
-  const char * file = "platform/config/test.config";
-  const char * ext_file = "platform/config/expect_test.config";
-  ResConfigData config_data = ReadConfigFromFile(file);
-  ResConfigData ext_config_data = ReadConfigFromFile(ext_file);
-  std::cout<<config_data.DebugString()<<std::endl;
-
-  EXPECT_THAT(config_data, EqualsProto(ext_config_data));
-}
-
-
-}  // namespace
-
-}  // namespace resdb
+ #include "platform/config/resdb_config.h"
+ #include "platform/config/resdb_config_utils.h"
+ #include <filesystem>
+ 
+ #include <google/protobuf/util/message_differencer.h>
+ #include <gtest/gtest.h>
+ 
+ 
+ #include "common/test/test_macros.h"
+ #include "gmock/gmock.h"
+ 
+ namespace resdb {
+ namespace {
+ 
+ using ::google::protobuf::util::MessageDifferencer;
+ using ::resdb::testing::EqualsProto;
+ using ::resdb::ReadConfig;
+ using ::resdb::ReadConfigFromFile;
+ 
+ MATCHER_P(EqualsReplicas, replicas, "") {
+   if (arg.size() != replicas.size()) {
+     return false;
+   }
+   for (size_t i = 0; i < replicas.size(); ++i) {
+     if (!MessageDifferencer::Equals(replicas[i], arg[i])) {
+       return false;
+     }
+   }
+   return true;
+ }
+ 
+ ReplicaInfo GenerateReplicaInfo(const std::string& ip, int port) {
+   ReplicaInfo info;
+   info.set_ip(ip);
+   info.set_port(port);
+   return info;
+ }
+ 
+ TEST(TcpSocket, ResDBConfig) {
+   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
+ 
+   std::vector<ReplicaInfo> replicas;
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
+ 
+   ResDBConfig config(replicas, self_info);
+ 
+   EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
+   EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
+   EXPECT_EQ(config.GetReplicaNum(), replicas.size());
+   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
+ }
+ 
+ TEST(TcpSocket, ResDBConfigWith5Replicas) {
+   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
+ 
+   std::vector<ReplicaInfo> replicas;
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1239));
+ 
+   ResDBConfig config(replicas, self_info);
+ 
+   EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
+   EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
+   EXPECT_EQ(config.GetReplicaNum(), replicas.size());
+   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
+ }
+ 
+ TEST(TcpSocket, ResDBConfigWith6Replicas) {
+   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
+ 
+   std::vector<ReplicaInfo> replicas;
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1237));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1238));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1239));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1240));
+ 
+   ResDBConfig config(replicas, self_info);
+ 
+   EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
+   EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
+   EXPECT_EQ(config.GetReplicaNum(), replicas.size());
+   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
+ }
+ 
+ TEST(TcpSocket, ResDBConfigWith2Replicas) {
+   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
+ 
+   std::vector<ReplicaInfo> replicas;
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1235));
+   replicas.push_back(GenerateReplicaInfo("127.0.0,1", 1236));
+ 
+   ResDBConfig config(replicas, self_info);
+ 
+   EXPECT_THAT(config.GetReplicaInfos(), EqualsReplicas(replicas));
+   EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
+   EXPECT_EQ(config.GetReplicaNum(), replicas.size());
+   EXPECT_EQ(config.GetMinDataReceiveNum(), 1);
+ }
+ 
+ TEST(TcpSocket, ReadConfigFromFile) {
+   std::string config_file = "/home/ubuntu/harish_work/incubator-resilientdb/service/tools/config/server/server.config"; //TODO: make dynamic
+ 
+   ResConfigData config_data = ReadConfigFromFile(config_file);
+   ResDBConfig config = ResDBConfig(config_data, ReplicaInfo(), KeyInfo(), CertificateInfo());
+ 
+   EXPECT_EQ(config_data.region(0).replica_info_size(), 4) 
+       << "Should have 4 replicas as per server.config";
+   EXPECT_EQ(config_data.region(0).replica_info(0).id(), 1);
+   EXPECT_EQ(config_data.region(0).replica_info(0).ip(), "127.0.0.1");
+ }
+ 
+ }  // namespace
+ 
+ }  // namespace resdb
+ 
