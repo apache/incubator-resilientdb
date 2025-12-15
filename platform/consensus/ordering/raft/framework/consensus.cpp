@@ -39,8 +39,6 @@ Consensus::Consensus(const ResDBConfig& config,
 
   Init();
 
-  start_ = 0;
-
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()

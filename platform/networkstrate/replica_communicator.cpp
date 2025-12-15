@@ -181,17 +181,34 @@ const ReplicaInfo& replica_info) {
   global_stats_->BroadCastMsg();
   
   if (is_use_long_conn_) {
+    /*
+    auto msgStart = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration msgDelta;
+    auto pushStart = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration pushDelta;
+    */
     auto item = std::make_unique<QueueItem>();
     item->data = NetChannel::GetRawMessageString(message, verifier_);
+    /*
+    auto pushEnd = std::chrono::steady_clock::now();
+    pushDelta = pushEnd - pushStart;
+    auto pushMs = std::chrono::duration_cast<std::chrono::milliseconds>(pushDelta).count();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": " << pushMs << " ms elapsed getting raw msg string";
+    */
     std::lock_guard<std::mutex> lk(smutex_);
     if(single_bq_.find(std::make_pair(ip, port)) == single_bq_.end()){
       StartSingleInBackGround(ip, port);
     }
     assert(single_bq_[std::make_pair(ip, port)] != nullptr);
     single_bq_[std::make_pair(ip, port)]->Push(std::move(item));
+    /*
+    auto msgEnd = std::chrono::steady_clock::now();
+    msgDelta = msgEnd - msgStart;
+    auto msgMs = std::chrono::duration_cast<std::chrono::milliseconds>(msgDelta).count();
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": " << msgMs << " ms elapsed in is_use_long_conn_ conditional";
+    */
     return 0;
   } else {
-    
     return SendMessageInternal(message, replicas_);
   }
 }
