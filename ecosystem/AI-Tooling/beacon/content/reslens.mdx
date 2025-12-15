@@ -1,0 +1,164 @@
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Alert, Text, Code, Title } from '@mantine/core'
+import { IconInfoCircle, IconCheck, IconAlertTriangle } from '@tabler/icons-react'
+
+---
+title: ResLens - Monitoring tool
+---
+
+{/* BEGIN AUTO_DOC: reslens */}
+
+# ResLens
+
+ResLens is a CPU and memory profiling toolkit for ResilientDB that aggregates system/process metrics and low‑level storage engine insights into a single, easy‑to‑use dashboard. It combines eBPF/pyroscope, Prometheus exporters (node/process), LevelDB internal stats and custom hooks to help you understand what happens under the hood and optimize performance.
+
+> Source: Apache Incubator · ResilientDB ResLens  
+> GitHub (Dashboard): https://github.com/apache/incubator-resilientdb-ResLens  
+> GitHub (Middleware): https://github.com/apache/incubator-resilientdb-ResLens-Middleware  
+> Live Demo: https://reslens.resilientdb.com
+
+## Why ResLens
+
+- Understand hot paths with flame graphs and call stacks
+- Inspect LevelDB/engine stats (cache hit ratio, SST layout, files per level)
+- Track CPU/memory trends at node and process granularity
+- One dashboard for learn (offline demo data) and live environments
+
+## Prerequisites (Live Mode)
+
+- Linux host (Ubuntu 20.04+ recommended)
+- ResilientDB running (service under test)
+- Prometheus + exporters:
+  - node_exporter · process_exporter
+- Pyroscope (eBPF) for profiling (v0.37.0 used by authors)
+- ResLens Middleware (backend aggregator)
+
+You can also run ResLens in “Offline Mode” to explore the UI with demo data.
+
+## Quick Start
+
+### Offline Mode (Explore UI)
+
+1. Clone the ResLens dashboard
+```bash
+git clone https://github.com/apache/incubator-resilientdb-ResLens
+cd incubator-resilientdb-ResLens
+# follow repo README to run the frontend (Vite/React)
+```
+2. Open the dashboard – it will render demo data bundled by the team so you can learn features without a full stack.
+
+### Live Mode (End‑to‑End)
+
+1. Clone and set up the dashboard
+```bash
+git clone https://github.com/apache/incubator-resilientdb-ResLens
+cd incubator-resilientdb-ResLens
+```
+2. Install and run dependencies
+   - ResilientDB (service under test)
+   - ResilientDB GraphQL (optional for key/value demos)
+   - node_exporter and process_exporter
+   - Pyroscope (eBPF) agent
+   - ResLens Middleware (aggregates metrics + exposes HTTP for UI)
+3. Stand up the Middleware (Docker Compose)
+```bash
+git clone https://github.com/apache/incubator-resilientdb-ResLens-Middleware
+cd incubator-resilientdb-ResLens-Middleware
+docker-compose down && docker-compose build && docker-compose up -d
+# Pyroscope UI: http://localhost:4040
+# Process Exporter metrics: http://localhost:9256/metrics
+```
+4. Configure the dashboard to point to your middleware endpoints
+5. Start the dashboard (see repo README for exact commands)
+
+> Tip: Start in Offline Mode first to learn navigation, then wire exporters and Pyroscope one by one.
+
+## Core Features
+
+### 1) Terminal‑like Playground (Key/Value)
+Interactively Get/Set values in ResilientDB to generate realistic load and immediately visualize effects.
+
+### 2) Flame Graphs & Call Stacks
+Visualize hot paths and find bottlenecks across services. Ideal for spotting expensive functions during Reads/Writes.
+
+### 3) Engine‑Level Insights (LevelDB)
+Custom hooks expose storage metrics like cache hit ratio, SST layout and files per level.
+
+### 4) System & Process Metrics
+Prometheus exporters provide CPU/memory/io per host and per process for full context.
+
+## Typical Workflow
+
+1. Open the dashboard (Offline Mode) and review example graphs
+2. Switch to Live Mode:
+   - Ensure exporters, Pyroscope and middleware are running
+   - Point the dashboard to your middleware
+3. Reproduce a workload (e.g., KV Get/Set via GraphQL) and watch ResLens update
+4. Use the flame graph to locate hot functions and correlate with LevelDB stats
+5. Iterate: optimize cache, compaction, or code paths and re‑measure
+
+## Example: Key/Value via GraphQL
+
+```bash
+# Set
+curl --location 'https://crow.resilientdb.com/v1/transactions/commit' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "id": "key_test",
+    "value": "value_test"
+  }'
+
+# (Optional) Get – via GraphQL service
+# See ResilientDB GraphQL docs for the exact query
+```
+
+> Use this simple load to generate events; then inspect flame graphs, process CPU and LevelDB cache hit ratio.
+
+## Troubleshooting
+
+- No data in dashboard
+  - Check middleware URL, Prometheus targets, and Pyroscope agent status
+- Flame graph empty
+  - Ensure eBPF/Pyroscope is running with correct process targets
+- Storage metrics missing
+  - Verify LevelDB hooks are enabled in your ResilientDB build
+
+## Middleware Details
+
+The ResLens Middleware is a containerized sidecar that:
+
+- Runs Pyroscope (server + client) to profile target processes
+- Runs Process Exporter to expose process metrics for Prometheus
+- Exposes HTTP endpoints that the dashboard consumes
+- Shares the host process namespace (pid: host) to profile host processes
+
+Key ports (default):
+
+- Pyroscope UI: http://localhost:4040
+- Process Exporter metrics: http://localhost:9256/metrics
+
+Security note: Requires elevated privileges to access host resources; review before production use.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/apache/incubator-resilientdb-ResLens?tab=Apache-2.0-1-ov-filehttps://github.com/apache/incubator-resilientdb-ResLens?tab=Apache-2.0-1-ov-file) file for details.
+
+## Contributing
+
+We welcome contributions to this project! Please feel free to submit pull requests, report issues, or suggest new features.
+
+{/* END AUTO_DOC: reslens */}
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResLens Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-ResLens"
+    labels={['user-feedback', 'documentation', 'ResLens']}
+    title="Questions or Feedback about ResLens?"
+  />
+</Box> 

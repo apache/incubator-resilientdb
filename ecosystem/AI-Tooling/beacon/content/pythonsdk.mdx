@@ -1,0 +1,79 @@
+import { PythonPlayground } from '@/components/PythonPlayground'
+import { PYTHON_SDK_EXAMPLE_TEMPLATES } from '@/app/lib/constants'
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space } from '@mantine/core'
+
+{/* BEGIN AUTO_DOC: pythonsdk */}
+
+# Python SDK
+
+The ResilientDB Python SDK provides a simple and intuitive way to interact with ResilientDB using Python. This SDK allows you to perform various operations such as creating transactions, querying the blockchain, and managing smart contracts.
+
+## Installation
+
+```bash
+pip install resilientdb-sdk
+```
+
+## Quick Start
+
+```python
+from resilientdb.client import Client
+
+# Initialize the client
+client = Client('http://localhost:8080')
+
+# Create a transaction
+transaction = client.create_transaction(
+    sender='your_public_key',
+    recipient='recipient_public_key',
+    amount=100
+)
+
+# Send the transaction
+response = client.send_transaction(transaction)
+print(f"Transaction ID: {response['id']}")
+```
+
+## Interactive Playground
+
+Try out Python code directly in your browser! The playground below lets you experiment with Python code and see the results in real-time.
+
+<PythonPlayground templates={PYTHON_SDK_EXAMPLE_TEMPLATES} />
+
+### Available API Endpoints
+
+The ResilientDB Python SDK provides the following operations:
+
+- **Storing Data**: Use `db.transactions.send_commit(data)` to store data on the blockchain
+- **Retrieving Data**: Use `db.transactions.retrieve(transaction_id)` to fetch transaction details
+- **Smart Contracts**: Coming soon!
+
+## Features
+
+- Simple and intuitive API
+- Async support
+- Built-in transaction management
+- Smart contract integration
+- Comprehensive error handling
+
+
+## Documentation
+
+For detailed documentation and examples, visit our [Python SDK Documentation](https://docs.resilientdb.com/python-sdk).
+
+{/* END AUTO_DOC: pythonsdk */}
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="Python SDK Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-python-sdk"
+    labels={['user-feedback', 'documentation', 'python-sdk']}
+    title="Questions or Feedback about the Python SDK?"
+  />
+</Box>

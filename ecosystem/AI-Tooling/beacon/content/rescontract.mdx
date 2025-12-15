@@ -1,0 +1,205 @@
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Tabs, TabsList, TabsTab, TabsPanel, Code, Alert } from '@mantine/core'
+import { IconInfoCircle } from '@tabler/icons-react'
+import { ResContractPlayground } from '@/components/ResContractPlayground'
+
+{/* BEGIN AUTO_DOC: rescontract */}
+
+# rescontract
+
+The ResContract CLI is a command-line tool designed to simplify smart contract management within the *ResilientDB ecosystem*. It acts as a user-friendly **wrapper** around more complex underlying tools, allowing developers to easily **create** accounts, **compile** Solidity code, and **deploy** contracts directly from their terminal.
+
+
+```mermaid
+flowchart TD
+A0["`ResDB_Home` Configuration"]
+A1["CLI Command Handling"]
+A2["External Process Execution"]
+A3["Deployment State Registry"]
+A4["Centralized Logging"]
+A5["Solidity Compilation Wrapper"]
+A1 -- "Gets path from" --> A0
+A1 -- "Delegates tasks to" --> A2
+A1 -- "Updates state in" --> A3
+A0 -- "Logs errors to" --> A4
+A5 -- "Uses for compiling" --> A2
+
+```
+
+Welcome to `rescontract`, a command-line interface (CLI) designed to streamline smart contract management for the ResilientDB ecosystem. It provides a simple, user-friendly wrapper around complex compilation, deployment, and interaction tasks, making blockchain development faster and more reliable.
+
+## CLI Command Handling
+
+The `rescontract` CLI is the primary entrypoint for all operations. It functions like a menu, where you select a command (`compile`, `deploy`) and provide specific options (flags) to perform an action.
+
+A typical command follows a clear structure:
+
+```bash
+rescontract <command> [options]
+```
+
+For example, to compile a Solidity contract, you would use the `compile` command with options specifying the source and output files:
+
+```bash
+rescontract compile --sol contracts/MyToken.sol --output build/MyToken.json
+```
+
+-   **`rescontract`**: The program name.
+-   **`compile`**: The command to execute.
+-   **`--sol <path>`**: An option specifying the input Solidity file path.
+-   **`--output <path>`**: An option specifying the output JSON file path.
+
+### Implementation Overview
+
+The CLI is built using the `commander.js` library, which handles parsing commands and options. The main entrypoint, `index.js`, defines each command, its required options, and the action to be executed when the command is called.
+
+```javascript
+// A simplified view of a command definition in index.js
+program
+  .command('compile')
+  .description('Compile a .sol file to a .json file')
+  .requiredOption('-s, --sol <path>', 'Path to the .sol file')
+  .requiredOption('-o, --output <name>', 'Name of the output .json file')
+  .action(async (options) => {
+    // Logic to handle the compilation process using options.sol and options.output
+    console.log(`Compiled successfully to ${options.output}`);
+  });
+```
+
+This structure separates the command-line interface from the core application logic, allowing for a clean and maintainable architecture.
+
+## Solidity Compilation Wrapper
+
+`rescontract` does not compile Solidity itself; it acts as a convenient wrapper around the official Solidity compiler (`solc`). This simplifies the process by pre-configuring optimal compiler flags for you, ensuring consistent and efficient bytecode generation.
+
+When you run the `compile` command:
+
+```bash
+rescontract compile --sol contracts/MyToken.sol --output build/MyToken.json
+```
+
+`rescontract` translates this simple request into a more complex, optimized call to `solc` behind the scenes:
+
+```bash
+solc --evm-version homestead --combined-json bin,hashes --optimize contracts/MyToken.sol
+```
+
+This wrapper automatically includes best-practice flags like `--optimize` (to reduce gas costs) and `--evm-version` (for compatibility), so you don't have to manage them yourself. The core functionality is an example of [External Process Execution](#external-process-execution).
+
+## Deployment State Registry
+
+To prevent accidental and costly duplicate deployments, `rescontract` maintains a state registry—a simple logbook of deployed contracts.
+
+Before executing a `deploy` command, the CLI checks this registry. If a contract with the same name and owner has already been deployed, the operation is halted, and an error is displayed. After a successful deployment, a new entry is added to the registry.
+
+### How It Works
+
+The registry is stored in a hidden JSON file in your home directory: `~/.rescontract_deployed_contracts.json`.
+
+-   **Key**: A unique identifier is created by combining the owner's address and the contract name (e.g., `"0xabc...:MyToken"`).
+-   **Value**: An object containing the deployed contract's on-chain address and other metadata.
+
+This simple key-value store acts as the CLI's memory, ensuring that each contract-owner pair is deployed only once.
+
+```javascript
+// Conceptual check within the deploy command's action
+const deploymentKey = `${ownerAddress}:${contractName}`;
+
+if (deployedContracts.has(deploymentKey)) {
+  const existing = deployedContracts.get(deploymentKey);
+  throw new Error(`Contract is already deployed at address ${existing.contractAddress}`);
+}
+
+// ... after successful deployment, the key is added to the registry
+```
+
+## `ResDB_Home` Configuration
+
+Many `rescontract` commands, such as `deploy`, rely on specialized tools from a full ResilientDB installation. To function correctly, `rescontract` must know the location of this installation. This is configured via the `ResDB_Home` variable.
+
+`rescontract` uses a prioritized search order to find the `ResDB_Home` path:
+
+1.  **Environment Variable**: It first checks for an environment variable named `ResDB_Home`. This has the highest priority.
+2.  **Local `config.yaml`**: If not found, it looks for a `config.yaml` file in the current working directory. This is ideal for project-specific configurations.
+3.  **Global `config.yaml`**: Finally, it searches for a `config.yaml` file in the user's home directory (`~`). This serves as a global default.
+
+If `ResDB_Home` cannot be found in any of these locations, the command will fail with an error.
+
+**Example `config.yaml`:**
+```yaml
+# Set the path to your ResilientDB installation.
+ResDB_Home: /home/user/dev/resilientdb
+```
+
+## External Process Execution
+
+`rescontract` operates as a manager, delegating complex tasks like contract deployment to specialized tools within the `ResDB_Home` directory (e.g., `contract_tools`). It uses Node.js's built-in modules to run and communicate with these external command-line programs.
+
+Two primary methods are used for this:
+
+-   **`execFile`**: Used for simple, short-running commands that return their entire output at once. The `compile` command uses this to run `solc` and wait for the complete JSON output.
+-   **`spawn`**: Used for longer-running or interactive processes where real-time output is beneficial. The `deploy` command uses this to stream logs from `contract_tools` directly to your terminal as they happen.
+
+### Implementation via `spawn`
+
+The `handleSpawnProcess` helper function launches an external tool and captures its output, providing real-time feedback to the user.
+
+```javascript
+// Simplified handleSpawnProcess function
+function handleSpawnProcess(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args); // Launch the external tool
+
+    // Stream stdout from the child process to the user's terminal
+    child.stdout.on('data', (data) => process.stdout.write(data));
+    child.stderr.on('data', (data) => process.stderr.write(data));
+
+    // Resolve or reject when the process finishes
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`Process exited with code ${code}`));
+    });
+  });
+}
+```
+
+## Centralized Logging
+
+The logging system serves two purposes: providing clean, concise feedback to the user in the console, while writing detailed, timestamped records to log files for debugging. This is analogous to an airplane's dashboard (for the pilot) and its "black box" (for investigators).
+
+### How It Works
+
+`rescontract` uses the `winston` library to manage two distinct output streams, or "transports":
+
+1.  **Console Transport**: Displays simple, human-readable messages directly in your terminal.
+    -   Example: `Compiled successfully to build/MyToken.json`
+2.  **File Transport**: Writes detailed, structured logs to files located in a hidden directory in your home folder (`~/.rescontract-logs/`).
+    -   `cli.log`: Records all informational messages and errors with timestamps.
+    -   `exceptions.log`: Specifically captures unhandled crashes for easier debugging.
+    -   Example log entry: `2023-10-27T14:30:15.123Z info: Successfully compiled contracts/MyToken.sol to build/MyToken.json`
+
+This dual approach ensures a clean user experience while providing a robust, persistent record for troubleshooting and development.
+
+---
+
+Generated by [AI Codebase Knowledge Builder](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge)
+
+{/* END AUTO_DOC: rescontract */}
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/apache/incubator-resilientdb-ResContract/blob/main/LICENSE) file for details.
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResContract CLI Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-ResContract"
+    labels={['user-feedback', 'documentation', 'rescontract']}
+    title="Questions or Feedback about ResContract?"
+  />
+</Box> 

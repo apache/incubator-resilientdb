@@ -1,0 +1,199 @@
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Alert, Text, Code, Title } from '@mantine/core'
+import { IconInfoCircle, IconCheck, IconAlertTriangle } from '@tabler/icons-react'
+
+{/* BEGIN AUTO_DOC: resdb-orm */}
+
+# ResDB-ORM
+
+ResDB-ORM is a Python module designed to simplify interactions with ResilientDB's key-value store database by providing an Object-Relational Mapping (ORM) interface. This library allows developers to use basic CRUD functionalities with ease.
+
+## Prerequisites
+
+Before using ResDB-ORM, ensure that the following services are running:
+
+<Alert icon={<IconInfoCircle size={16} />} title="Required Services" color="blue" mb="md">
+  <ul>
+    <li><strong>kv_server</strong>: The key-value store server that forms the backend for ResilientDB</li>
+    <li><strong>ResilientDB-GraphQL</strong>: Provides a GraphQL interface to interact with ResilientDB</li>
+  </ul>
+</Alert>
+
+## Installation
+
+### Option 1: Using the Installation Script
+
+The easiest way to set up ResDB-ORM is using the provided installation script:
+
+```bash
+git clone https://github.com/ResilientEcosystem/ResDB-ORM.git
+cd ResDB-ORM
+./INSTALL.sh
+```
+
+<Alert icon={<IconAlertTriangle size={16} />} title="Note" color="yellow" mb="md">
+  The script may require sudo privileges to install dependencies and set up services.
+</Alert>
+
+### Option 2: Manual Installation
+
+#### 1. Clone the Repository
+
+```bash
+git clone https://github.com/ResilientEcosystem/ResDB-ORM.git
+cd ResDB-ORM
+```
+
+#### 2. Create and Activate Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Install from PyPI
+
+Alternatively, you can install ResDB-ORM directly from PyPI:
+
+```bash
+pip install resdb-orm
+```
+
+## Configuration
+
+### Setting up config.yaml
+
+The ResDB-ORM uses a `config.yaml` file to specify the database connection. The default configuration structure is:
+
+```yaml
+database:
+  db_root_url: http://0.0.0.0:18000
+```
+
+Update the `db_root_url` to point to your ResilientDB instance. For example:
+
+```yaml
+database:
+  db_root_url: http://localhost:18000
+```
+
+Or for a remote instance:
+
+```yaml
+database:
+  db_root_url: https://crow.resilientdb.com
+```
+
+## Quick Start
+
+```python
+from resdb_orm.orm import ResDBORM
+
+# Initialize the ORM (uses config.yaml by default)
+orm = ResDBORM()
+
+# Create a new record
+data = {"name": "John Doe", "age": 30, "city": "New York"}
+record_id = orm.create(data)
+print(f"Record created with ID: {record_id}")
+
+# Read a specific record
+record = orm.read(record_id)
+print(f"Retrieved record: {record}")
+print(f"Record data: {record['data']}")
+
+# Read all records
+all_records = orm.read_all()
+print(f"All records: {all_records}")
+
+# Update a record
+updated_data = {"name": "John Doe", "age": 31, "city": "Boston"}
+result = orm.update(record_id, updated_data)
+print(f"Update result: {result}")
+
+# Delete a record
+delete_result = orm.delete(record_id)
+print(f"Delete result: {delete_result}")
+```
+
+## Features
+
+<Box mb="xl">
+  <ul style={{ listStyle: 'none', padding: 0 }}>
+    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <IconCheck size={16} color="green" style={{ marginRight: '8px' }} />
+      <strong>Simple CRUD Operations</strong>: Create, Read, Update, and Delete records with ease
+    </li>
+    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <IconCheck size={16} color="green" style={{ marginRight: '8px' }} />
+      <strong>Automatic Token Generation</strong>: Automatically generates secure random tokens for record IDs
+    </li>
+    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <IconCheck size={16} color="green" style={{ marginRight: '8px' }} />
+      <strong>Configuration Management</strong>: Simple YAML-based configuration
+    </li>
+    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <IconCheck size={16} color="green" style={{ marginRight: '8px' }} />
+      <strong>Error Handling</strong>: Comprehensive error handling and response validation
+    </li>
+    <li style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+      <IconCheck size={16} color="green" style={{ marginRight: '8px' }} />
+      <strong>Easy Integration</strong>: Simple integration with existing Python applications
+    </li>
+  </ul>
+</Box>
+
+## API Reference
+
+### ResDBORM Class
+
+The main class for interacting with ResilientDB through the ORM interface.
+
+#### Constructor
+
+- **`ResDBORM(config_path='config.yaml')`**: Initialize the ORM with a configuration file
+
+#### Methods
+
+- **`create(data: dict)`**: Creates a new record with the provided data. Returns the generated record ID.
+- **`read(key: str)`**: Retrieves a specific record by its key. Returns the record data.
+- **`read_all()`**: Retrieves all records from the database. Returns a list of all records.
+- **`update(key: str, new_data: dict)`**: Updates an existing record by key. Returns status information.
+- **`delete(key: str)`**: Deletes a record by its key. Returns status information.
+- **`generate_token(length: int = 64)`**: Generates a secure random hexadecimal token for record IDs.
+
+## Verification
+
+Run the provided test script to verify that everything is set up correctly:
+
+```bash
+python test.py
+```
+
+This script will perform basic operations to ensure that the connection to the ResilientDB instance is functional.
+
+## Contributing
+
+We welcome contributions to this project! Please feel free to submit pull requests, report issues, or suggest new features.
+
+{/* END AUTO_DOC: resdb-orm */}
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResDB-ORM Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-ResDB-ORM"
+    labels={['user-feedback', 'documentation', 'resdb-orm']}
+    title="Questions or Feedback about ResDB-ORM?"
+  />
+</Box> 
