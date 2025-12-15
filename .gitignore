@@ -21,3 +21,4 @@ resdb/
 100*_db/
 gmon.out
 .history/
+service/tools/data/cert/

@@ -23,6 +23,11 @@ SERVER_CONFIG=service/tools/config/server/server.config
 WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
 
+./service/tools/kv/server_tools/generate_keys_and_certs.sh || {
+  echo "Failed to generate configs/certificates" 1>&2
+  exit 1
+}
+
 bazel build //service/kv:kv_service $@
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > server0.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > server1.log &
