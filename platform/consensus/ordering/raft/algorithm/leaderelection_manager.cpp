@@ -137,13 +137,19 @@ Waited LeaderElectionManager::LeaderWait() {
                   || (known_role_epoch_ != role_epoch_)
                   || (broadcast_snapshot != broadcast_count_));
                 });
-  if (stop_.load() == true) { return Waited::STOPPED; }
+  if (stop_.load() == true) {
+    return Waited::STOPPED;
+  }
   else if (known_role_epoch_ != role_epoch_) { 
     known_role_epoch_ = role_epoch_;
     return Waited::ROLE_CHANGE; 
   }
-  else if (broadcast_snapshot != broadcast_count_) { return Waited::BROADCASTED; }
-  else { return Waited::TIMEOUT; }
+  else if (broadcast_snapshot != broadcast_count_) {
+    return Waited::BROADCASTED;
+  }
+  else {
+    return Waited::TIMEOUT;
+  }
 }
 
 Waited LeaderElectionManager::Wait() {
@@ -162,13 +168,19 @@ Waited LeaderElectionManager::Wait() {
                   || (heartbeat_snapshot != heartbeat_count_)
                   || (known_role_epoch_ != role_epoch_));
                 });
-  if (stop_.load() == true) { return Waited::STOPPED; }
+  if (stop_.load() == true) {
+    return Waited::STOPPED;
+  }
   else if (known_role_epoch_ != role_epoch_) { 
     known_role_epoch_ = role_epoch_;
     return Waited::ROLE_CHANGE; 
   }
-  else if (heartbeat_snapshot != heartbeat_count_) { return Waited::HEARTBEAT; }
-  else { return Waited::TIMEOUT; }
+  else if (heartbeat_snapshot != heartbeat_count_) {
+    return Waited::HEARTBEAT;
+  }
+  else {
+    return Waited::TIMEOUT;
+  }
 }
 
 // Function that is run in server_checking_timeout_thread started in MayStart().
@@ -193,7 +205,9 @@ void LeaderElectionManager::MonitoringElectionTimeout() {
     if (raft_->livenessLoggingFlag_) {
       LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
     }
-    if (res == Waited::STOPPED) { break; }
+    if (res == Waited::STOPPED) {
+      break;
+    }
     else if (res == Waited::ROLE_CHANGE) {
       LOG(INFO) << __FUNCTION__ << ": Role change detected";
       continue; 

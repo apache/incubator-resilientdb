@@ -65,7 +65,8 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     }
     raft_->ReceiveAppendEntries(std::move(txn));
     return 0;
-  } else if (request->user_type() == MessageType::AppendEntriesResponseMsg) {
+  }
+  else if (request->user_type() == MessageType::AppendEntriesResponseMsg) {
     std::unique_ptr<AppendEntriesResponse> AppendEntriesResponse = std::make_unique<resdb::raft::AppendEntriesResponse>();
     if (!AppendEntriesResponse->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
@@ -108,25 +109,10 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   }
   return 0;
 }
-/*
-message BatchUserRequest {
-  message UserRequest {
-    Request request = 1;
-    SignatureInfo signature = 2;
-    int32 id = 3;
-  };
-  repeated UserRequest user_requests = 1;
-  uint64 createtime = 2;
-  uint64 local_id = 3;
-  uint64 seq = 4;
-  Certs committed_certs= 5;
-  bytes hash = 6;
-  int32 proxy_id = 7;
-}
-*/
+
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
     return raft_->ReceiveTransaction(std::move(request));
-  }
+}
 
 int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   auto* req = dynamic_cast<const Request*>(&msg);

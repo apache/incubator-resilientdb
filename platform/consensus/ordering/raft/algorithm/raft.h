@@ -54,6 +54,7 @@ struct AeFields {
   uint64_t prevLogTerm = 0;
   std::vector<LogEntry> entries{};
   uint64_t leaderCommit = 0;
+  int followerId = -1; // not part of AE message itself, but needed to determine recipient
 };
 
 class Raft : public common::ProtocolBase {
@@ -87,9 +88,9 @@ class Raft : public common::ProtocolBase {
   //bool IsDuplicateLogEntry(const std::string& hash) const; // Must be called under mutex
   std::vector<std::unique_ptr<Request>> PrepareCommitLocked(); // Must be called under mutex
   AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
-  std::vector<std::tuple<int, AeFields>> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
+  std::vector<AeFields> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
 
-  void CreateAndSendAppendEntryMsg(int followerId, const AeFields& f);
+  void CreateAndSendAppendEntryMsg(const AeFields& f);
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
