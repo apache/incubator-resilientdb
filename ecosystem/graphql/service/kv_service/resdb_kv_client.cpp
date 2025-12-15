@@ -36,6 +36,21 @@ int ResDBKVClient::Set(const std::string &key, const std::string &data) {
   return SendRequest(request);
 }
 
+int64_t ResDBKVClient::SetWithSeq(const std::string &key,
+                                   const std::string &data) {
+  KVRequest request;
+  request.set_cmd(KVRequest::SET);
+  request.set_key(key);
+  request.set_value(data);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return -1;
+  }
+  return response.seq();
+}
+
 std::unique_ptr<std::string> ResDBKVClient::Get(const std::string &key) {
   KVRequest request;
   request.set_cmd(KVRequest::GET);
@@ -61,9 +76,8 @@ std::unique_ptr<std::string> ResDBKVClient::GetAllValues() {
   return std::make_unique<std::string>(response.value());
 }
 
-std::unique_ptr<std::string>
-ResDBKVClient::GetRange(const std::string &min_key,
-                        const std::string &max_key) {
+std::unique_ptr<std::string> ResDBKVClient::GetRange(
+    const std::string &min_key, const std::string &max_key) {
   KVRequest request;
   request.set_cmd(KVRequest::GETRANGE);
   request.set_key(min_key);
@@ -77,4 +91,4 @@ ResDBKVClient::GetRange(const std::string &min_key,
   return std::make_unique<std::string>(response.value());
 }
 
-} // namespace sdk
+}  // namespace sdk

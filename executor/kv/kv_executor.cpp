@@ -36,6 +36,18 @@ std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
     LOG(ERROR) << "parse data fail";
     return nullptr;
   }
+  kv_request->set_seq(0);
+  return kv_request;
+}
+
+std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
+    const std::string& request, uint64_t seq) {
+  std::unique_ptr<KVRequest> kv_request = std::make_unique<KVRequest>();
+  if (!kv_request->ParseFromString(request)) {
+    LOG(ERROR) << "parse data fail";
+    return nullptr;
+  }
+  kv_request->set_seq(seq);
   return kv_request;
 }
 
@@ -46,6 +58,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
+    kv_response.set_seq(kv_request.seq());
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
