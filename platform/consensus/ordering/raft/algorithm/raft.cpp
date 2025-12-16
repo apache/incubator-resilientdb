@@ -132,6 +132,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
   const char* parent_fn = __FUNCTION__;
   [&]() {
     std::lock_guard<std::mutex> lk(mutex_);
+    // ---------- Checking term, role, prevlogindex, prevlogterm ----------
     initialRole = role_;
     lastLogIndex = lastLogIndex_;
     tr = TermCheckLocked(ae->term());
@@ -149,11 +150,12 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
       }
     }
     term = currentTerm_;
+    // Early return if we should not append
     if (!success) {
       return;
     }
 
-    // Try to append entries to the log
+    // ---------- Appending entries ----------
     uint64_t logIdx = ae->prevlogindex() + 1;
     uint64_t entriesIdx = 0;
     uint64_t entriesSize = static_cast<uint64_t>(ae->entries_size());
@@ -198,7 +200,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
       }
     }
 
-    // Try to raise commitIndex and commit entries
+    // ---------- Try to raise commitIndex and commit entries ----------
     uint64_t prevCommitIndex = commitIndex_;
     if (leaderCommit > commitIndex_) {
        commitIndex_ = std::min(leaderCommit, lastLogIndex_);
@@ -210,7 +212,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
 
     }
 
-    // apply any newly committed entries to state machine
+    // build vector to apply committed entries outside mutex
     eToApply = PrepareCommitLocked();
   }();
 
@@ -229,6 +231,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
   }
   */
 
+  // ---------- Outside mutex: inform leader_election_manager, apply committed entries, send response  ----------
   if (demoted) {
     leader_election_manager_->OnRoleChange();
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted from "
