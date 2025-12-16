@@ -90,7 +90,8 @@ class Raft : public common::ProtocolBase {
   AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
   std::vector<AeFields> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
 
-  void CreateAndSendAppendEntryMsg(const AeFields& f);
+  void CreateAndSendAppendEntryMsg(const AeFields& fields);
+  LogEntry CreateLogEntry(const Entry& entry) const;
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
@@ -110,8 +111,8 @@ class Raft : public common::ProtocolBase {
   //int leaderId_; // Protected by mutex_
   std::vector<int> votes_; // Protected by mutex_
   std::vector<int> inflight_; // Protected by mutex_
-  std::chrono::steady_clock::time_point last_ae_time_;
-  std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
+  //std::chrono::steady_clock::time_point last_ae_time_;
+  //std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
 
   bool is_stop_;
   const uint64_t quorum_;

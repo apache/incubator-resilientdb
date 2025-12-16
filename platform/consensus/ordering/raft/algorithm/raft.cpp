@@ -50,8 +50,8 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   id_ = id;
   total_num_ = total_num;
   f_ = (total_num-1)/2;
-  last_ae_time_ = std::chrono::steady_clock::now();
-  last_heartbeat_time_ = std::chrono::steady_clock::now();
+  //last_ae_time_ = std::chrono::steady_clock::now();
+  //last_heartbeat_time_ = std::chrono::steady_clock::now();
 
   auto sentinel = std::make_unique<LogEntry>();
   sentinel->term = 0;
@@ -153,52 +153,52 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
       return;
     }
 
-
-    /*
-    new logic concept:
-    rather than checking idx > lastLogIndex_, check idx == lastLogIndex_ + 1 (should be equivalent, has semantic value)
-
-    First, loop over entries before lastLogIndex + 1 and look for conflicts.
-    If conflict occurs, wipe suffix and set LastLogIndex = idx
-    If idx already = lastLogIndex_ + 1, this loop is skipped
-
-    Second, batch append all remaining entries to log
-    */
-
-    uint64_t idx = ae->prevlogindex() + 1;
-    for (const auto& entry : ae->entries()) {
-      auto newEntry = std::make_unique<LogEntry>();
-      newEntry->term = entry.term();
-      newEntry->command = entry.command();
-
-      // entry is at new position
-      if (idx > lastLogIndex_) {
-        log_.push_back(std::move(newEntry));
-        lastLogIndex_ = idx;
-
-        if (replicationLoggingFlag_) {
-          LOG(INFO) << "JIM -> " << parent_fn << ": follower appended new entry at index " << lastLogIndex_;
-        }
-
-      }
-      // entry is at an existing position && new term doesnt match old term
-      else if (newEntry->term != log_[idx]->term) {
-        auto first = log_.begin() + idx;
+    // Try to append entries to the log
+    uint64_t logIdx = ae->prevlogindex() + 1;
+    uint64_t entriesIdx = 0;
+    uint64_t entriesSize = static_cast<uint64_t>(ae->entries_size());
+    // check for conflicting entry terms in existing indices
+    // if conflict, delete suffix and short circuit out of loop
+    while (logIdx < log_.size() && entriesIdx < entriesSize) {
+      uint64_t term = ae->entries(entriesIdx).term();
+      if (term != log_[logIdx]->term) {
+        auto first = log_.begin() + logIdx;
         auto last = log_.begin() + lastLogIndex_ + 1;
         log_.erase(first, last);
-        log_.push_back(std::move(newEntry));
-        lastLogIndex_ = idx;
+        lastLogIndex_ = log_.size() - 1;
 
         if (replicationLoggingFlag_) {
-          LOG(INFO) << "JIM -> " << parent_fn << ": follower saw term mismatch at index " << lastLogIndex_ << ". Later entries erased";
+          LOG(INFO) << "JIM -> " << parent_fn << ": follower saw term mismatch at index " << logIdx << ". Suffix erased from log";
         }
 
+        break;
       }
-      ++idx;
-      // TODO: have to actually store the entry durably before it can be considered "appended"
+      ++entriesIdx;
+      ++logIdx;
     }
+
+    // append remaining entries
+    const auto appendSize = entriesSize - entriesIdx;
+    log_.reserve(log_.size() + appendSize);
+    for (uint64_t i = entriesIdx; i < entriesSize; ++i) {
+      log_.emplace_back(std::make_unique<LogEntry>(CreateLogEntry(ae->entries(i))));
+    }
+    // update lastLogIndex after appends
+    uint64_t firstAppendIdx = lastLogIndex_ + 1;
+    lastLogIndex_ = log_.size() - 1;
+    // TODO: have to actually store the entry durably before follower can respond to RPC
     lastLogIndex = lastLogIndex_;
-    
+
+    if (replicationLoggingFlag_ && appendSize > 0) {
+      if (appendSize > 1) {
+        LOG(INFO) << "JIM -> " << parent_fn << ": follower appended entries at indices " << firstAppendIdx << " to " << lastLogIndex_;
+      }
+      else {
+        LOG(INFO) << "JIM -> " << parent_fn << ": follower appended entry at index " << lastLogIndex_;
+      }
+    }
+
+    // Try to raise commitIndex and commit entries
     uint64_t prevCommitIndex = commitIndex_;
     if (leaderCommit > commitIndex_) {
        commitIndex_ = std::min(leaderCommit, lastLogIndex_);
@@ -214,6 +214,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     eToApply = PrepareCommitLocked();
   }();
 
+  /*
   auto now = std::chrono::steady_clock::now();
   std::chrono::steady_clock::duration delta;
   delta = now - last_ae_time_;
@@ -221,11 +222,12 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
   
 
   if (replicationLoggingFlag_) {
-    /*
+    
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": AE received after " << ms << "ms";
-    */
+    
   }
+  */
 
   if (demoted) {
     leader_election_manager_->OnRoleChange();
@@ -691,6 +693,13 @@ void Raft::CreateAndSendAppendEntryMsg(const AeFields& fields) {
   if (replicationLoggingFlag_) {
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Sent AE with " << entryCount << (entryCount == 1 ? " entry" : " entries");
   }
+}
+
+LogEntry Raft::CreateLogEntry(const Entry& entry) const {
+  LogEntry newEntry;
+  newEntry.term = entry.term();
+  newEntry.command = entry.command();
+  return newEntry;
 }
 
 }  // namespace raft
