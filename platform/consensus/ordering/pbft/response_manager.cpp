@@ -125,7 +125,13 @@ int ResponseManager::ProcessResponseMsg(std::unique_ptr<Context> context,
   // The callback will be triggered if it received f+1 messages.
   if (request->ret() == -2) {
     LOG(ERROR) << "get response fail:" << request->ret();
-    send_num_--;
+    int current = send_num_.load();
+    if (current > 0) {
+      send_num_--;
+    } else {
+      LOG(ERROR) << "send_num_ is already " << current << ", not decrementing";
+      send_num_.store(0);
+    }
     return 0;
   }
   CollectorResultCode ret =
@@ -220,7 +226,13 @@ void ResponseManager::SendResponseToClient(
   } else {
     LOG(ERROR) << "seq:" << local_id << " no resp";
   }
-  send_num_--;
+  int current = send_num_.load();
+  if (current > 0) {
+    send_num_--;
+  } else {
+    LOG(ERROR) << "send_num_ is already " << current << ", not decrementing";
+    send_num_.store(0);
+  }
 
   if (config_.IsPerformanceRunning()) {
     return;
@@ -253,8 +265,14 @@ int ResponseManager::BatchProposeMsg() {
             << " batch num:" << config_.ClientBatchNum();
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   while (!stop_) {
-    if (send_num_ > config_.GetMaxProcessTxn()) {
-      LOG(ERROR) << "send num too high, wait:" << send_num_;
+    int current_send_num = send_num_.load();
+    if (current_send_num < 0) {
+      LOG(ERROR) << "send_num_ is negative (" << current_send_num << "), resetting to 0";
+      send_num_.store(0);
+      current_send_num = 0;
+    }
+    if (current_send_num > config_.GetMaxProcessTxn()) {
+      LOG(ERROR) << "send num too high, wait:" << current_send_num;
       usleep(100);
       continue;
     }

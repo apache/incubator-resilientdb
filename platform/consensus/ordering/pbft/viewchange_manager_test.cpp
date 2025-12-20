@@ -33,6 +33,9 @@
 #include "platform/consensus/ordering/pbft/transaction_utils.h"
 #include "platform/networkstrate/mock_replica_communicator.h"
 #include "platform/proto/checkpoint_info.pb.h"
+#include "common/crypto/signature_verifier.h"
+#include <thread>
+#include <chrono>
 
 namespace resdb {
 namespace {
@@ -82,7 +85,13 @@ TEST_F(ViewChangeManagerTest, SendViewChange) {
   manager_->MayStart();
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_seq(1);
+  request->set_data("test_data");
+  request->set_hash(SignatureVerifier::CalculateHash("test_data"));
   checkpoint_manager_->AddCommitData(std::move(request));
+  
+  // Wait a bit for the request to be processed (last_seq_ to be updated)
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  
   std::promise<bool> propose_done;
   std::future<bool> propose_done_future = propose_done.get_future();
   EXPECT_CALL(replica_communicator_, BroadCast)

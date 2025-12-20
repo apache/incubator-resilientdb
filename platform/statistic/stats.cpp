@@ -422,7 +422,7 @@ void Stats::MonitorGlobal() {
     run_req_num = run_req_num_;
     run_req_run_time = run_req_run_time_;
 
-    LOG(ERROR) << "=========== monitor =========\n"
+    LOG(INFO) << "=========== monitor =========\n"
                << "server call:" << server_call - last_server_call
                << " server process:" << server_process - last_server_process
                << " socket recv:" << socket_recv - last_socket_recv
@@ -472,7 +472,7 @@ void Stats::MonitorGlobal() {
                << " "
                   "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
-      LOG(ERROR) << "  req client latency:"
+      LOG(INFO) << "  req client latency:"
                  << static_cast<double>(run_req_run_time -
                                         last_run_req_run_time) /
                         (run_req_num - last_run_req_num) / 1000000000.0;

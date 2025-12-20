@@ -93,8 +93,10 @@ bool CheckPointManager::IsValidCheckpointProof(
   std::string hash = stable_ckpt_.hash();
   std::set<uint32_t> senders;
   for (const auto& signature : stable_ckpt_.signatures()) {
-    if (!verifier_->VerifyMessage(hash, signature)) {
-      return false;
+    if (verifier_ && config_.SignatureVerifierEnabled()) {
+      if (!verifier_->VerifyMessage(hash, signature)) {
+        return false;
+      }
     }
     senders.insert(signature.node_id());
   }
@@ -296,9 +298,14 @@ void CheckPointManager::UpdateCheckPointStatus() {
   while (!stop_) {
     auto request = data_queue_.Pop(timeout_ms);
     if (request == nullptr) {
-      // if (last_seq > 0) {
-      //   TimeoutHandler();
-      // }
+      // If we've processed transactions before and now timing out,
+      // the primary might be faulty - trigger view change
+      {
+        std::lock_guard<std::mutex> lk(lt_mutex_);
+        if (last_seq_ > 0) {
+          TimeoutHandler();
+        }
+      }
       continue;
     }
     std::string hash_ = request->hash();
@@ -359,7 +366,7 @@ CheckPointManager::PopStableSeqHash() {
 }
 
 uint64_t CheckPointManager::GetHighestPreparedSeq() {
-  std::lock_guard<std::mutex> lk(lt_mutex_);
+  // highest_prepared_seq_ is atomic, no lock needed
   return highest_prepared_seq_;
 }
 
