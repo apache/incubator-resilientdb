@@ -167,12 +167,13 @@ void Stats::CrowRoute() {
             res.set_header(
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization");  // Specify allowed headers
-
+            
+            res.body = "Not Enabled";
             // Send your response
             if (enable_faulty_switch_) {
               make_faulty_.store(!make_faulty_.load());
+              res.body = "Success";
             }
-            res.body = "Success";
             res.end();
           });
       CROW_ROUTE(app, "/transaction_data")
