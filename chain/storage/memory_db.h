@@ -53,10 +53,13 @@ class MemoryDB : public Storage {
  public:
   MemoryDB();
 
-  int SetValue(const std::string& key, const std::string& value);
-  std::string GetValue(const std::string& key);
+  int SetValueWithSeq(const std::string& key, const std::string& value,
+                      uint64_t seq) override;
+  int SetValue(const std::string& key, const std::string& value) override;
+  std::string GetValue(const std::string& key) override;
+  std::pair<std::string, uint64_t> GetValueWithSeq(const std::string& key,
+                                                   uint64_t seq) override;
 
-  std::string GetAllValues() override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
 
@@ -66,6 +69,8 @@ class MemoryDB : public Storage {
                                                   int version) override;
 
   // Return a map of <key, <value, version>>
+  std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+  GetAllItemsWithSeq() override;
   std::map<std::string, std::pair<std::string, int>> GetAllItems() override;
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;
@@ -82,6 +87,8 @@ class MemoryDB : public Storage {
   std::unordered_map<std::string, std::string> kv_map_;
   std::unordered_map<std::string, std::list<std::pair<std::string, int>>>
       kv_map_with_v_;
+  std::unordered_map<std::string, std::list<std::pair<std::string, uint64_t>>>
+      kv_map_with_seq_;
 };
 
 }  // namespace storage

@@ -26,7 +26,6 @@ cc_library(
     deps = [
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/pbft:consensus_manager_pbft",
-        "//platform/consensus/ordering/raft:consensus_manager_raft",
         "//platform/networkstrate:service_network",
     ],
 )

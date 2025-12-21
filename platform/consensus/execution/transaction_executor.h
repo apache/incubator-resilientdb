@@ -53,6 +53,7 @@ class TransactionExecutor {
 
   // The max seq S that can be executed (have received all the seq before S).
   uint64_t GetMaxPendingExecutedSeq();
+  void SetPendingExecutedSeq(int seq);
 
   // When a transaction is ready to be executed (have received all the seq
   // before Txn) PreExecute func will be called.
@@ -75,7 +76,6 @@ class TransactionExecutor {
  private:
   void Execute(std::unique_ptr<Request> request, bool need_execute = true);
   void OnlyExecute(std::unique_ptr<Request> request);
-
   std::unique_ptr<std::string> DoExecute(const Request& request);
   void OrderMessage();
   void ExecuteMessage();
@@ -117,14 +117,14 @@ class TransactionExecutor {
   static const int blucket_num_ = 1024;
   int blucket_[blucket_num_];
   std::condition_variable cv_;
-  std::mutex mutex_;
+  std::mutex mutex_, e_mutex_;
+  int32_t last_seq_ = 0;
 
   enum PrepareType {
     Start_Prepare = 1,
     Start_Execute = 2,
     End_Prepare = 4,
   };
-
 
   std::vector<std::thread> prepare_thread_;
   static const int mod = 2048;
@@ -142,7 +142,6 @@ class TransactionExecutor {
       uint64_t,
       std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>>
       data_[mod];
-
 };
 
 }  // namespace resdb

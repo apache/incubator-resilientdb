@@ -22,9 +22,12 @@
 #include "chain/storage/memory_db.h"
 #include "executor/contract/executor/contract_executor.h"
 #include "platform/config/resdb_config_utils.h"
+#include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
 #include "platform/statistic/stats.h"
 #include "service/utils/server_factory.h"
 
+using resdb::ConsensusManagerPBFT;
+using resdb::CustomGenerateResDBServer;
 using resdb::GenerateResDBConfig;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
@@ -59,11 +62,10 @@ int main(int argc, char** argv) {
   std::unique_ptr<ResDBConfig> config =
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
-  const std::string consensus_protocol = config->GetConsensusProtocol();
 
   std::unique_ptr<resdb::Storage> memory_db = resdb::storage::NewMemoryDB();
-  auto server = GenerateResDBServerForProtocol(
-      consensus_protocol, config_file, private_key_file, cert_file,
+  auto server = CustomGenerateResDBServer<ConsensusManagerPBFT>(
+      config_file, private_key_file, cert_file,
       std::make_unique<ContractTransactionManager>(memory_db.get()),
       logging_dir);
 

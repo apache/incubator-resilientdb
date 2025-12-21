@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "executor/contract/manager/global_state.h"
 
 #include <glog/logging.h>
@@ -30,16 +29,15 @@ using eevm::Address;
 using eevm::Code;
 using eevm::SimpleAccount;
 
-
 uint256_t AccountToAddress(const eevm::Address& account) {
-    std::vector<uint8_t> code;
-    code.resize(64);
-    std::fill(code.begin(), code.end(), 0);
-    eevm::to_big_endian(account, code.data());
+  std::vector<uint8_t> code;
+  code.resize(64);
+  std::fill(code.begin(), code.end(), 0);
+  eevm::to_big_endian(account, code.data());
 
-    uint8_t h[32];
-    eevm::keccak_256(code.data(), static_cast<unsigned int>(64), h);
-    return eevm::from_big_endian(h, sizeof(h));
+  uint8_t h[32];
+  eevm::keccak_256(code.data(), static_cast<unsigned int>(64), h);
+  return eevm::from_big_endian(h, sizeof(h));
 }
 
 GlobalState::GlobalState(resdb::Storage* storage) : storage_(storage) {}
@@ -76,12 +74,15 @@ void GlobalState::Insert(const StateEntry& p) {
 }
 
 std::string GlobalState::GetBalance(const eevm::Address& account) {
-  std::string key = "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
+  std::string key =
+      "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
   return storage_->GetValue(key);
 }
 
-int GlobalState::SetBalance(const eevm::Address& account, const uint256_t& balance) {
-  std::string key = "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
+int GlobalState::SetBalance(const eevm::Address& account,
+                            const uint256_t& balance) {
+  std::string key =
+      "contract_balance_" + eevm::to_hex_string(AccountToAddress(account));
   return storage_->SetValue(key, eevm::to_hex_string(balance));
 }
 

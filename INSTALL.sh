@@ -1,5 +1,3 @@
-#!/bin/bash
-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+
+#!/bin/bash
+
+
 sudo apt update
 sudo apt install apt-transport-https curl gnupg -y
 sudo apt-get install protobuf-compiler -y
@@ -40,7 +42,7 @@ if [[ $ret != "0" ]]; then
 sudo apt-get install build-essential openjdk-11-jdk zip unzip -y
 rm bazel-6.0.0-dist.zip
 rm -rf bazel_build
-wget https://releases.bazel.build/6.0.0/release/bazel-6.0.0-dist.zip
+wget wget https://releases.bazel.build/6.0.0/release/bazel-6.0.0-dist.zip
 mkdir -p bazel_build
 mv bazel-6.0.0-dist.zip bazel_build/
 cd bazel_build
@@ -60,3 +62,5 @@ bazel build @com_github_bazelbuild_buildtools//buildifier:buildifier
 
 sudo apt-get install python3.10-dev -y
 sudo apt-get install python3-dev -y
+
+

@@ -43,46 +43,6 @@ Download address for run-directly software package: https://downloads.apache.org
 6. ResilientDB provides access to a seamless **GUI display** for deployment and maintenance, and supports  **Grafana** for plotting monitoring data. 
 7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://expolab.resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
 
-## Experimental Raft Integration (contributed by Yang Yu)
-
-In addition to PBFT and other BFT protocols, this branch includes an **experimental Raft integration** for CFT deployments. The goal is to reuse the existing execution and storage layers while adding a pluggable Raft path alongside PBFT, without breaking existing APIs.
-
-### Design Highlights
-
-- **Protocol selection via configuration**
-  - Extended `ResConfigData` and `ResDBConfig` with a `consensus_protocol` field and `GetConsensusProtocol/SetConsensusProtocol` helpers.
-  - Updated major service entrypoints (`service/kv/kv_service.cpp`, `service/contract/contract_service.cpp`, `service/utxo/utxo_service.cpp`, `ecosystem/graphql/service/kv_service/kv_server.cpp`) to choose between PBFT and Raft at runtime through `ServerFactory::CreateResDBServerForProtocol`.
-
-- **Raft core components**
-  - Implemented `RaftLog`, `RaftPersistentState`, and `RaftSnapshotManager` on top of the shared `Storage` abstraction (`MemoryDB` / LevelDB) with dedicated key prefixes to avoid collisions with PBFT metadata.
-  - Implemented `RaftRpc` on top of `ReplicaCommunicator`, using `TYPE_CUSTOM_CONSENSUS` + RAFT user types to send `AppendEntries`, `RequestVote`, and `InstallSnapshot` messages between replicas.
-
-- **RaftNode and ConsensusManagerRaft**
-  - Added `ConsensusManagerRaft` in `platform/consensus/ordering/raft/` to connect network `Request`s and the `TransactionManager` to a per‑replica `RaftNode` instance.
-  - Implemented `RaftNode` to handle leader election, heartbeats, log replication, commit index advancement, and applying committed entries into the existing `TransactionManager::ExecuteData` pipeline (e.g., `KVExecutor` + `MemoryDB` for the KV service).
-  - Fixed critical correctness bugs encountered during bring‑up (election storms due to timeout handling, RequestVote term/vote logic, and log commit behavior).
-
-- **Client request forwarding from followers to the leader**
-  - Existing `KVClient` and `TransactionConstructor` always send to the first replica listed in `client.config` (`GetReplicaInfos()[0]`), regardless of who is the current leader.
-  - Added follower‑side forwarding in `RaftNode::HandleClientRequest`: when a follower knows `leader_id_`, it forwards the original client `Request` to the current leader over a temporary `NetChannel` and proxies the response back. This makes legacy clients work transparently under Raft, without changing the public client API.
-
-- **Locking and concurrency**
-  - Investigated and fixed the most severe deadlock and election‑storm issues caused by holding `state_mutex_` while performing network and storage I/O (especially in election and RequestVote paths).
-  - Drafted a refactoring plan to move all blocking I/O out of `state_mutex_` critical sections, so that term/role/log index updates remain cheap even under high load or persistent storage (LevelDB) backends.
-
-### Current Status and Limitations
-
-- The Raft path is **functional for KV workloads** on a 4‑node cluster, including:
-  - Stable leader election and heartbeats.
-  - Log replication and commit driving `KVExecutor` as the state machine.
-  - Follower‑side request forwarding so that `client.config` can remain unchanged (still pointing at the first replica).
-- Persistence and crash recovery for Raft are **not yet fully integrated** with the global `Recovery` module:
-  - The current setup uses `MemoryDB` in the KV service, which is in‑memory only. Raft metadata and KV state are lost on process restart.
-  - `RaftLog`, `RaftPersistentState`, and `RaftSnapshotManager` provide the building blocks for durable state, but end‑to‑end crash‑recovery wiring and tests remain future work.
-- The default client tooling still treats `ret = 0` as “TCP send success”, not “Raft commit success”. Strengthening the client API semantics (explicit “committed” responses, retry/backoff strategies) is tracked as follow‑up work.
-
-For an internal, step‑by‑step walkthrough of the Raft implementation and known limitations, see the developer notes in `problems_sum.md` and UML diagrams in `TO_CREATE_UML.md`.
-
 <div align = "center">
 <img src="./img/resdb-v2.png" width="220">
 <img src="./img/apache-resdb.png" width="80">

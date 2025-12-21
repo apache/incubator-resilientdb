@@ -41,14 +41,16 @@ class CheckPointManager : public CheckPoint {
                     SignatureVerifier* verifier);
   virtual ~CheckPointManager();
 
-  ChainState* GetTxnDB();
-  uint64_t GetMaxTxnSeq();
+  void SetLastCommit(uint64_t seq);
 
   void AddCommitData(std::unique_ptr<Request> request);
   int ProcessCheckPoint(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> request);
+  int ProcessStatusSync(std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request);
 
   uint64_t GetStableCheckpoint() override;
+  //   void SetLastExecutedSeq(uint64_t latest_executed_seq);
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
@@ -82,12 +84,17 @@ class CheckPointManager : public CheckPoint {
 
   void Notify();
   bool Wait();
+  void BroadcastRecovery(uint64_t min_seq, uint64_t max_seq);
+
+  void SyncStatus();
+  void StatusProcess();
+  void CheckStatus(uint64_t last_seq);
 
  protected:
+  uint64_t last_executed_seq_ = 0;
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
-  std::unique_ptr<ChainState> txn_db_;
-  std::thread checkpoint_thread_, stable_checkpoint_thread_;
+  std::thread checkpoint_thread_, stable_checkpoint_thread_, status_thread_;
   SignatureVerifier* verifier_;
   std::atomic<bool> stop_;
   std::map<std::pair<uint64_t, std::string>, std::set<uint32_t>> sender_ckpt_;
@@ -106,13 +113,15 @@ class CheckPointManager : public CheckPoint {
   LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue_;
   std::condition_variable signal_;
   ResDBTxnAccessor txn_accessor_;
-  std::mutex lt_mutex_;
+  std::mutex lt_mutex_, seq_mutex_;
   uint64_t last_seq_ = 0;
+  uint64_t max_seq_ = 0;
   TransactionExecutor* executor_;
   std::atomic<uint64_t> highest_prepared_seq_;
   uint64_t committable_seq_ = 0;
   std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
+  std::map<int, uint64_t> status_;
 };
 
 }  // namespace resdb

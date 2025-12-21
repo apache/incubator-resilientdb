@@ -73,13 +73,11 @@ int main(int argc, char **argv) {
   std::unique_ptr<ResDBConfig> config =
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
-  const std::string consensus_protocol = config->GetConsensusProtocol();
 
   auto server =
-      GenerateResDBServerForProtocol(
-          consensus_protocol, config_file, private_key_file, cert_file,
-          std::make_unique<KVServiceTransactionManager>(
-              NewState(cert_file, config_data)),
-          logging_dir);
+      GenerateResDBServer(config_file, private_key_file, cert_file,
+                          std::make_unique<KVServiceTransactionManager>(
+                              NewState(cert_file, config_data)),
+                          logging_dir);
   server->Run();
 }

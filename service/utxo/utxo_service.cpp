@@ -28,6 +28,8 @@
 #include "service/utils/server_factory.h"
 
 using google::protobuf::util::JsonParseOptions;
+using resdb::ConsensusManagerPBFT;
+using resdb::CustomGenerateResDBServer;
 using resdb::GenerateResDBConfig;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
@@ -79,15 +81,13 @@ int main(int argc, char** argv) {
   std::unique_ptr<ResDBConfig> config =
       GenerateResDBConfig(config_file, private_key_file, cert_file);
   ResConfigData config_data = config->GetConfigData();
-  const std::string consensus_protocol = config->GetConsensusProtocol();
 
   std::unique_ptr<Wallet> wallet = std::make_unique<Wallet>();
   std::unique_ptr<Transaction> transaction =
       std::make_unique<Transaction>(utxo_config, wallet.get());
 
-  ServerFactory factory;
-  auto server = factory.CreateResDBServerForProtocol(
-      consensus_protocol, config_file, private_key_file, cert_file,
+  auto server = CustomGenerateResDBServer<ConsensusManagerPBFT>(
+      config_file, private_key_file, cert_file,
       std::make_unique<UTXOExecutor>(utxo_config, transaction.get(),
                                      wallet.get()),
       std::make_unique<QueryExecutor>(transaction.get(), wallet.get()));
