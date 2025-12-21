@@ -45,6 +45,8 @@ cc_library(
         ":lock_free_collector_pool",
         ":transaction_utils",
         "//platform/networkstrate:replica_communicator",
+        "//interface/rdbc:net_channel",
+        "//proto/kv:kv_cc_proto",
     ],
 )
 
@@ -103,7 +105,8 @@ cc_library(
     hdrs = ["commitment.h"],
     deps = [
         ":message_manager",
-        ":response_manager",
+        ":response_manager", 
+        "//common/crypto:hash",
         "//common/utils",
         "//platform/common/queue:batch_queue",
         "//platform/config:resdb_config",

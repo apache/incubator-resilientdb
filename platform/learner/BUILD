@@ -26,9 +26,13 @@ cc_library(
     ],
     hdrs = ["learner.h"],
     deps = [
+        "//chain/storage:leveldb",
         "//common:json",
         "//platform/common/network:tcp_socket",
         "//platform/proto:resdb_cc_proto",
+        "//proto/kv:kv_cc_proto",
+        "@com_github_google_glog//:glog",
+        "//common/crypto:hash",
     ],
 )
 

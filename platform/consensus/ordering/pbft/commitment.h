@@ -59,6 +59,10 @@ class Commitment {
  protected:
   virtual int PostProcessExecutedMsg();
 
+  // distributed message functions
+  std::vector<uint16_t> gen_A_row();
+  void SendUpdateToLearners(int seq_num);
+
  protected:
   ResDBConfig config_;
   MessageManager* message_manager_;
@@ -74,6 +78,7 @@ class Commitment {
 
   std::mutex mutex_;
   std::unique_ptr<DuplicateManager> duplicate_manager_;
+
 };
 
 }  // namespace resdb

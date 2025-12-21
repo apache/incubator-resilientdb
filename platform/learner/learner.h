@@ -22,6 +22,16 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <unordered_set>
+#include <vector>
+#include <tuple>
+#include <mutex>
+
+#include "chain/storage/storage.h"
+#include "proto/kv/kv.pb.h"
+#include "platform/proto/resdb.pb.h"
+#include "platform/proto/replica_info.pb.h"
+#include "common/crypto/hash.h"
 
 namespace resdb {
 class Socket;
@@ -32,6 +42,10 @@ struct LearnerConfig {
     std::string ip = "127.0.0.1";
     int port = 0;
     int block_size = 0;
+    std::string db_path;
+    std::vector<resdb::ReplicaInfo> replicas;
+    int total_replicas = 0;
+    int min_needed = 0;
 };
 
 class Learner {
@@ -41,10 +55,23 @@ class Learner {
 
 private:
     static LearnerConfig LoadConfig(const std::string& config_path);
-    void HandleClient(std::unique_ptr<resdb::Socket> socket) const;
-    void ProcessBroadcast(const std::string& payload) const;
+    void HandleClient(std::unique_ptr<resdb::Socket> socket);
+    // Returns true if the connection should remain open, false if it should be closed.
+    bool ProcessBroadcast(resdb::Socket* socket,
+                          const std::string& payload);
+    bool HandleReadOnlyRequest(resdb::Socket* socket,
+                               const resdb::KVRequest& request) const;
     void MetricsLoop() const;
     void PrintMetrics() const;
+    void InitializeStorage();
+
+    void HandleLearnerUpdate(resdb::LearnerUpdate learnerUpdate);
+    uint32_t modpow(uint32_t a, uint32_t e, uint32_t p);
+    uint32_t modinv(uint32_t x, uint32_t p);
+    std::vector<std::vector<uint16_t>> invertMatrix(std::vector<std::vector<uint16_t>> A, int p);
+    std::vector<std::vector<uint16_t>> gen_A(std::vector<int> inds);
+    bool GetNextCombination(std::vector<bool> &choice, bool first);
+    void ExecuteRequest(std::string requestStr);
 
 private:
     LearnerConfig config_;
@@ -59,4 +86,11 @@ private:
     mutable std::atomic<int> last_sender_{-1};
     mutable std::atomic<size_t> last_payload_bytes_{0};
     mutable std::thread metrics_thread_;
+    mutable std::unique_ptr<resdb::Storage> storage_;
+    std::unordered_set<std::string> known_keys_;
+
+    std::vector<int> sequence_status; // 0 = not started, 1 = unknown valid hash, 2 = known valid hash, 3 = completed
+    std::vector<resdb::LearnerUpdate> learnerUpdates;
+    std::vector<std::tuple<int, std::string, int>> hashCounts;
+    std::mutex m;
 };

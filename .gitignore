@@ -17,9 +17,10 @@ apache_release
 *.data.*
 *.pb.*
 .cache/
+.bazel-cache/
 resdb/
 100*_db/
+*_db/
 gmon.out
 .history/
 **/*AGENTS.md
-

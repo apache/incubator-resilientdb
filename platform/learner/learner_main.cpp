@@ -23,6 +23,8 @@
 #include <iostream>
 #include <string>
 
+#include <glog/logging.h>
+
 std::string ResolveConfigPath(int argc, char** argv) {
     std::string config_path = "platform/learner/learner.config";
     for (int i = 1; i < argc; ++i) {
@@ -36,6 +38,8 @@ std::string ResolveConfigPath(int argc, char** argv) {
 
 int main(int argc, char** argv) {
     try {
+        google::InitGoogleLogging(argv[0]);
+        FLAGS_logtostderr = 1;
         Learner learner(ResolveConfigPath(argc, argv));
         learner.Run();
     } catch (const std::exception& e) {
