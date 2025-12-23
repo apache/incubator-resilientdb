@@ -124,7 +124,6 @@ ResConfigData ReadConfigFromFile(const std::string& file_name) {
 
 std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
 
-
   std::vector<ReplicaInfo> replicas;
   std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
