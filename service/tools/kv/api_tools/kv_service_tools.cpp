@@ -101,12 +101,7 @@ void OldAPI(char** argv) {
       printf("client get value fail\n");
     }
   } else if (cmd == "getvalues") {
-    auto res = client.GetAllValues();
-    if (res != nullptr) {
-      printf("client getvalues value = %s\n", res->c_str());
-    } else {
       printf("client getvalues value fail\n");
-    }
   } else if (cmd == "getrange") {
     auto res = client.GetRange(key, key2);
     if (res != nullptr) {
