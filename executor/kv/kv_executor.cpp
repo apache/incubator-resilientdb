@@ -25,13 +25,8 @@
 
 namespace resdb {
 
-<<<<<<< HEAD
-KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
-    : storage_(std::move(storage)) {
-=======
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage) {
   storage_ = std::move(storage);
->>>>>>> master
   contract_manager_ =
       std::make_unique<resdb::contract::ContractTransactionManager>(
           storage_.get());
