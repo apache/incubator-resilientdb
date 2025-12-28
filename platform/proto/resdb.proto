@@ -209,3 +209,24 @@ message CustomQueryResponse {
   bytes resp_str = 1;
 }
 
+message BatchClientRequest {
+  message ClientRequest {
+    Request request = 1;
+    SignatureInfo signature = 2;
+    int32 id = 3;
+  };
+  repeated ClientRequest client_requests = 1;
+  uint64 createtime = 2;
+  uint64 local_id = 3;
+}
+
+message BatchClientResponse {
+  repeated bytes response = 1;
+  repeated SignatureInfo signatures = 2;
+  int32 proxy_id = 3;
+  uint64 seq = 4;
+  uint64 current_view = 5;
+  uint64 createtime = 6;
+  uint64 local_id = 7;
+}
+

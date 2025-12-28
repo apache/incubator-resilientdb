@@ -17,9 +17,21 @@
  * under the License.
  */
 
+
 #include "platform/config/resdb_poc_config.h"
 
 namespace resdb {
+
+ResDBPoCConfig::ResDBPoCConfig(const ResDBConfig& bft_config,
+                               const std::vector<ReplicaInfo>& replicas,
+                               const ReplicaInfo& self_info,
+                               const KeyInfo& private_key,
+                               const CertificateInfo& public_key_cert_info)
+    : ResDBConfig(replicas, self_info, private_key, public_key_cert_info),
+      bft_config_(bft_config) {
+  SetHeartBeatEnabled(false);
+  SetSignatureVerifierEnabled(false);
+}
 
 ResDBPoCConfig::ResDBPoCConfig(const ResDBConfig& bft_config,
                                const ResConfigData& config_data,
