@@ -1,9 +1,9 @@
 #pragma once
 
 #include "platform/config/resdb_poc_config.h"
-#include "platform/consensus/ordering/poc/pow/pow_manager.h"
-#include "platform/consensus/ordering/poc/pow/miner_manager.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
+#include "platform/consensus/ordering/poc/pow/miner_manager.h"
+#include "platform/consensus/ordering/poc/pow/pow_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {

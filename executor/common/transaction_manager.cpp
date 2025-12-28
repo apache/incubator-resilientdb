@@ -78,7 +78,6 @@ std::vector<std::unique_ptr<std::string>> TransactionManager::ExecuteBatchData(
   return ret;
 }
 
-
 std::unique_ptr<BatchUserResponse> TransactionManager::ExecuteBatch(
     const BatchUserRequest& request) {
   std::unique_ptr<BatchUserResponse> batch_response =

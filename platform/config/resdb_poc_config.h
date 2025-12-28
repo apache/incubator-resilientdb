@@ -12,11 +12,10 @@ class ResDBPoCConfig : public ResDBConfig {
                  const ReplicaInfo& self_info, const KeyInfo& private_key,
                  const CertificateInfo& public_key_cert_info);
 
-   ResDBPoCConfig(const ResDBConfig& bft_config,
-                 const ResConfigData& config_data,
-                 const ReplicaInfo& self_info, const KeyInfo& private_key,
+  ResDBPoCConfig(const ResDBConfig& bft_config,
+                 const ResConfigData& config_data, const ReplicaInfo& self_info,
+                 const KeyInfo& private_key,
                  const CertificateInfo& public_key_cert_info);
-
 
   const ResDBConfig* GetBFTConfig() const;
 
@@ -41,8 +40,8 @@ class ResDBPoCConfig : public ResDBConfig {
   uint32_t GetWokerNum();
   void SetWorkerNum(uint32_t worker_num);
 
-  uint32_t GetMiningTime() const { return mining_time_ms_;}
-  void SetMiningTime(uint32_t time_ms) {mining_time_ms_ = time_ms;}
+  uint32_t GetMiningTime() const { return mining_time_ms_; }
+  void SetMiningTime(uint32_t time_ms) { mining_time_ms_ = time_ms; }
 
  private:
   uint32_t difficulty_ = 0;
@@ -50,7 +49,7 @@ class ResDBPoCConfig : public ResDBConfig {
   uint32_t target_value_ = 0;
   uint32_t batch_num_ = 12000;
   uint32_t worker_num_ = 16;
-  uint32_t mining_time_ms_ = 60000; // 60s
+  uint32_t mining_time_ms_ = 60000;  // 60s
   std::vector<ReplicaInfo> bft_replicas_;
   ResDBConfig bft_config_;
 };

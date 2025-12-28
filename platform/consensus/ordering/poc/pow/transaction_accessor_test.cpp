@@ -6,8 +6,8 @@
 
 #include <future>
 
-#include "interface/common/mock_resdb_txn_accessor.h"
 #include "common/test/test_macros.h"
+#include "interface/common/mock_resdb_txn_accessor.h"
 #include "platform/config/resdb_config_utils.h"
 
 namespace resdb {
@@ -55,7 +55,8 @@ TEST(TransactionAccessorTest, GetTransactionsFail) {
   request.set_max_seq(1);
   MockTransactionAccessor accessor(config);
   EXPECT_CALL(accessor, GetResDBTxnAccessor).WillRepeatedly(Invoke([&]() {
-    auto client = std::make_unique<MockResDBTxnAccessor>(*config.GetBFTConfig());
+    auto client =
+        std::make_unique<MockResDBTxnAccessor>(*config.GetBFTConfig());
     EXPECT_CALL(*client, GetTxn(1, 1)).WillOnce(Invoke([&]() {
       cli_done.set_value(true);
       return absl::InternalError("recv data fail.");
@@ -89,7 +90,8 @@ TEST(TransactionAccessorTest, GetTransactions) {
   request.set_max_seq(1);
   MockTransactionAccessor accessor(config);
   EXPECT_CALL(accessor, GetResDBTxnAccessor).WillRepeatedly(Invoke([&]() {
-    auto client = std::make_unique<MockResDBTxnAccessor>(*config.GetBFTConfig());
+    auto client =
+        std::make_unique<MockResDBTxnAccessor>(*config.GetBFTConfig());
     ON_CALL(*client, GetTxn(1, 1)).WillByDefault(Invoke([&]() {
       std::vector<std::pair<uint64_t, std::string>> resp;
       resp.push_back(std::make_pair(expected_resp.seq(),

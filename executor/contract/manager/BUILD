@@ -32,8 +32,8 @@ cc_library(
     hdrs = ["contract_manager.h"],
     deps = [
         ":address_manager",
-        ":utils",
         ":global_state",
+        ":utils",
         "//common:comm",
         "//proto/contract:func_params_cc_proto",
     ],
@@ -78,11 +78,10 @@ cc_library(
     hdrs = ["global_view.h"],
     deps = [
         ":utils",
-        "//chain/storage:storage",
+        "//chain/storage",
         "//common:comm",
     ],
 )
-
 
 cc_library(
     name = "evm_state",
@@ -92,7 +91,6 @@ cc_library(
         "//common:comm",
     ],
 )
-
 
 cc_library(
     name = "global_state",
@@ -104,4 +102,3 @@ cc_library(
         "//common:comm",
     ],
 )
-

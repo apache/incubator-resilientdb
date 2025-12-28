@@ -6,8 +6,8 @@
 
 #include <boost/format.hpp>
 
-#include "common/test/test_macros.h"
 #include "common/crypto/signature_verifier.h"
+#include "common/test/test_macros.h"
 
 namespace resdb {
 namespace {

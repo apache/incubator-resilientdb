@@ -21,7 +21,8 @@ class TransactionAccessor {
   virtual ~TransactionAccessor();
 
   // consume the transaction between [seq, seq+batch_num-1]
-  virtual std::unique_ptr<BatchClientTransactions> ConsumeTransactions(uint64_t seq);
+  virtual std::unique_ptr<BatchClientTransactions> ConsumeTransactions(
+      uint64_t seq);
 
   // For test.
   void Start();
@@ -42,7 +43,7 @@ class TransactionAccessor {
   std::mutex mutex_;
   uint64_t last_time_ = 0;
 
-  PrometheusHandler * prometheus_handler_;
+  PrometheusHandler* prometheus_handler_;
 };
 
 }  // namespace resdb

@@ -18,15 +18,18 @@
  */
 
 #include "executor/kv/kv_executor.h"
-#include "executor/contract/executor/contract_executor.h"
 
 #include <glog/logging.h>
+
+#include "executor/contract/executor/contract_executor.h"
 
 namespace resdb {
 
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {
-    contract_manager_ = std::make_unique<resdb::contract::ContractTransactionManager>(storage_.get());
+  contract_manager_ =
+      std::make_unique<resdb::contract::ContractTransactionManager>(
+          storage_.get());
 }
 
 std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
@@ -68,10 +71,10 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
   } else if (kv_request.cmd() == KVRequest::GET_TOP) {
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
-  }
-  else if(!kv_request.smart_contract_request().empty()){
-    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
-    if(resp != nullptr){
+  } else if (!kv_request.smart_contract_request().empty()) {
+    std::unique_ptr<std::string> resp =
+        contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if (resp != nullptr) {
       kv_response.set_smart_contract_response(*resp);
     }
   }
@@ -94,7 +97,7 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
-  LOG(ERROR)<<" execute cmd:"<<kv_request.cmd();
+  LOG(ERROR) << " execute cmd:" << kv_request.cmd();
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
@@ -119,10 +122,10 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
   } else if (kv_request.cmd() == KVRequest::GET_TOP) {
     GetTopHistory(kv_request.key(), kv_request.top_number(),
                   kv_response.mutable_items());
-  }
-  else if(!kv_request.smart_contract_request().empty()){
-    std::unique_ptr<std::string> resp = contract_manager_->ExecuteData(kv_request.smart_contract_request());
-    if(resp != nullptr){
+  } else if (!kv_request.smart_contract_request().empty()) {
+    std::unique_ptr<std::string> resp =
+        contract_manager_->ExecuteData(kv_request.smart_contract_request());
+    if (resp != nullptr) {
       kv_response.set_smart_contract_response(*resp);
     }
   }
@@ -135,12 +138,12 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  LOG(ERROR)<<" set key:"<<key;
+  LOG(ERROR) << " set key:" << key;
   storage_->SetValue(key, value);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  LOG(ERROR)<<" get key:"<<key;
+  LOG(ERROR) << " get key:" << key;
   return storage_->GetValue(key);
 }
 

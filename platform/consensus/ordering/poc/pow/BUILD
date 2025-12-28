@@ -16,9 +16,9 @@ cc_test(
     srcs = ["miner_utils_test.cpp"],
     deps = [
         ":miner_utils",
+        "//common/crypto:signature_verifier",
         "//common/test:test_main",
         "//platform/config:resdb_config_utils",
-        "//common/crypto:signature_verifier",
     ],
 )
 
@@ -46,8 +46,8 @@ cc_library(
     hdrs = ["miner.h"],
     deps = [
         ":miner_utils",
-        "//platform/config:resdb_poc_config",
         "//common/crypto:signature_verifier",
+        "//platform/config:resdb_poc_config",
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
         "@boost//:format",
     ],
@@ -82,8 +82,8 @@ cc_library(
         "//common:comm",
         "//platform/config:resdb_poc_config",
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
-        "//platform/statistic:stats",
         "//platform/proto:resdb_cc_proto",
+        "//platform/statistic:stats",
     ],
 )
 
@@ -92,9 +92,9 @@ cc_test(
     srcs = ["block_manager_test.cpp"],
     deps = [
         ":block_manager",
+        "//common/crypto:key_generator",
         "//common/test:test_main",
         "//platform/config:resdb_config_utils",
-        "//common/crypto:key_generator",
     ],
 )
 
@@ -104,9 +104,9 @@ cc_library(
     hdrs = ["transaction_accessor.h"],
     deps = [
         ":miner_manager",
+        "//common/utils",
         "//interface/common:resdb_txn_accessor",
         "//platform/common/queue:lock_free_queue",
-        "//common/utils:utils",
         "//platform/config:resdb_poc_config",
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
         "//platform/statistic:stats",
@@ -126,9 +126,9 @@ cc_test(
     srcs = ["transaction_accessor_test.cpp"],
     deps = [
         ":transaction_accessor",
-        "//interface/rdbc:net_channel",
-        "//interface/common:mock_resdb_txn_accessor",
         "//common/test:test_main",
+        "//interface/common:mock_resdb_txn_accessor",
+        "//interface/rdbc:net_channel",
         "//platform/config:resdb_config_utils",
     ],
 )
@@ -139,13 +139,13 @@ cc_library(
     hdrs = ["consensus_service_pow.h"],
     deps = [
         ":block_manager",
-        ":transaction_accessor",
         ":pow_manager",
-        "//platform/common/queue:blocking_queue",
+        ":transaction_accessor",
         "//common/utils",
+        "//platform/common/queue:blocking_queue",
+        "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
         "//platform/networkstrate:service_network",
-        "//platform/consensus/ordering/common/framework:consensus"
     ],
 )
 
@@ -173,7 +173,6 @@ cc_library(
     ],
 )
 
-
 cc_library(
     name = "pow_manager",
     srcs = ["pow_manager.cpp"],
@@ -182,10 +181,10 @@ cc_library(
         ":block_manager",
         ":shift_manager",
         ":transaction_accessor",
-        "//platform/networkstrate:replica_communicator",
+        "//common/utils",
         "//platform/common/queue:blocking_queue",
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
-        "//common/utils",
+        "//platform/networkstrate:replica_communicator",
     ],
 )
 
@@ -193,10 +192,10 @@ cc_test(
     name = "pow_manager_test",
     srcs = ["pow_manager_test.cpp"],
     deps = [
-      ":pow_manager",
-      ":mock_transaction_accessor",
+        ":mock_transaction_accessor",
+        ":pow_manager",
+        "//common/test:test_main",
+        "//platform/config:resdb_config_utils",
         "//platform/networkstrate:mock_replica_communicator",
-      "//common/test:test_main",
-      "//platform/config:resdb_config_utils",
     ],
 )

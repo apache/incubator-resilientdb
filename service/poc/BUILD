@@ -6,7 +6,7 @@ cc_binary(
     deps = [
         "//platform/config:resdb_config_utils",
         "//platform/consensus/ordering/poc/pow:consensus_service_pow",
+        "//platform/statistic:stats",
         "//service/utils:server_factory",
-        "//platform/statistic:stats"
     ],
 )

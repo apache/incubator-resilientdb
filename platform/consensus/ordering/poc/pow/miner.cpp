@@ -48,8 +48,8 @@ void Miner::SetSliceIdx(int slice_idx) {
   int idx = (replica_id - 1 + shift_idx_) % replica_size + 1;
 
   // the default slice is [min_slice, max_slice].
-  uint64_t min_slice =  0;
-  uint64_t max_slice = total_slice-1; 
+  uint64_t min_slice = 0;
+  uint64_t max_slice = total_slice - 1;
   LOG(ERROR) << "slice idx ??:" << slice_idx
              << " total slice size:" << total_slice
              << " replica id:" << replica_id << " replica size:" << replica_size
@@ -60,14 +60,20 @@ void Miner::SetSliceIdx(int slice_idx) {
 }
 
 absl::Status Miner::Mine(Block* new_block) {
-	if(new_block->header().height() == 10 && new_block->max_seq() - new_block->min_seq() +1<= config_.BatchTransactionNum() && shift_idx_ == 0){
-		LOG(ERROR)<<"skip fake fail";
-		return absl::NotFoundError("solution not found");
-	}
-	if(new_block->header().height() == 30 && new_block->max_seq() - new_block->min_seq() +1<= config_.BatchTransactionNum() && shift_idx_ == 0){
-		LOG(ERROR)<<"skip fake fail";
-		return absl::NotFoundError("solution not found");
-	}
+  if (new_block->header().height() == 10 &&
+      new_block->max_seq() - new_block->min_seq() + 1 <=
+          config_.BatchTransactionNum() &&
+      shift_idx_ == 0) {
+    LOG(ERROR) << "skip fake fail";
+    return absl::NotFoundError("solution not found");
+  }
+  if (new_block->header().height() == 30 &&
+      new_block->max_seq() - new_block->min_seq() + 1 <=
+          config_.BatchTransactionNum() &&
+      shift_idx_ == 0) {
+    LOG(ERROR) << "skip fake fail";
+    return absl::NotFoundError("solution not found");
+  }
   LOG(ERROR) << " start mine block slice:" << shift_idx_;
   stop_ = false;
   std::vector<std::pair<uint64_t, uint64_t>> slices = GetMiningSlices();
@@ -94,7 +100,8 @@ absl::Status Miner::Mine(Block* new_block) {
             for (uint64_t nonce = slice.first;
                  nonce <= max_slice && !stop_ && !solution_found;
                  nonce += step) {
-	    //LOG(ERROR)<<" miner min:"<<slice.first<<" max:"<<max_slice<<" nonce"<<nonce;
+              // LOG(ERROR)<<" miner min:"<<slice.first<<" max:"<<max_slice<<"
+              // nonce"<<nonce;
               header.set_nonce(nonce);
               std::string str_value =
                   header_hash + std::to_string(header.nonce());

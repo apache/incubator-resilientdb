@@ -1,7 +1,8 @@
 #include "platform/consensus/ordering/poc/pow/miner_utils.h"
 
-#include <boost/format.hpp>
 #include <glog/logging.h>
+
+#include <boost/format.hpp>
 
 #include "common/crypto/signature_verifier.h"
 namespace resdb {
@@ -60,7 +61,7 @@ bool IsValidDigest(const std::string& digest, uint32_t difficulty) {
     num += zeros;
     if (zeros != 8) break;
   }
-  //LOG(ERROR)<<"digest:"<<digest<<" num:"<<num;
+  // LOG(ERROR)<<"digest:"<<digest<<" num:"<<num;
   return num >= difficulty;
 }
 

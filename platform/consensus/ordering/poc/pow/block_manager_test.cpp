@@ -4,10 +4,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "common/test/test_macros.h"
-#include "platform/config/resdb_config_utils.h"
 #include "common/crypto/key_generator.h"
 #include "common/crypto/signature_verifier.h"
+#include "common/test/test_macros.h"
+#include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/poc/pow/merkle.h"
 
 namespace resdb {

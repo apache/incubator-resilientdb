@@ -21,13 +21,13 @@
 
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
-#include <filesystem>
 
+#include <filesystem>
 #include <thread>
 
-#include "resdb_config_utils.h"
 #include "common/test/test_macros.h"
 #include "gmock/gmock.h"
+#include "resdb_config_utils.h"
 
 namespace resdb {
 namespace {
@@ -126,15 +126,14 @@ TEST(ResDBConfigTest, ResDBConfigWith2Replicas) {
 */
 
 TEST(ResDBConfigTest, ResDBConfigFromFile) {
-  const char * file = "platform/config/test.config";
-  const char * ext_file = "platform/config/expect_test.config";
+  const char* file = "platform/config/test.config";
+  const char* ext_file = "platform/config/expect_test.config";
   ResConfigData config_data = ReadConfigFromFile(file);
   ResConfigData ext_config_data = ReadConfigFromFile(ext_file);
-  std::cout<<config_data.DebugString()<<std::endl;
+  std::cout << config_data.DebugString() << std::endl;
 
   EXPECT_THAT(config_data, EqualsProto(ext_config_data));
 }
-
 
 }  // namespace
 

@@ -41,8 +41,6 @@ std::unique_ptr<ResDBConfig> GenerateResDBConfig(
 
 ResDBConfig GenerateResDBConfig(const std::string& config_file);
 
-
 ResConfigData ReadConfigFromFile(const std::string& file_name);
 
 }  // namespace resdb
-

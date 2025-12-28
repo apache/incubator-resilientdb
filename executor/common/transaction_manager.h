@@ -58,6 +58,7 @@ class TransactionManager {
       const std::string& data);
   virtual std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& request);
+
  private:
   bool is_out_of_order_ = false;
   bool need_response_ = true;

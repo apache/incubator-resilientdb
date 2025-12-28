@@ -12,7 +12,7 @@ namespace resdb {
 class BlockManager {
  public:
   BlockManager(const ResDBPoCConfig& config);
- virtual ~BlockManager() = default;
+  virtual ~BlockManager() = default;
   // ================ mining a new block ============================
   // All the mining functions below are not thread safe.
   // They should be run in the same thread.
@@ -63,10 +63,11 @@ class BlockManager {
   int AddNewBlock(std::unique_ptr<Block> new_block);
   uint64_t GetCurrentHeightNoLock();
   void Execute(const Block& block);
-  void SaveClientTransactions(std::unique_ptr<BatchClientTransactions> client_request);
+  void SaveClientTransactions(
+      std::unique_ptr<BatchClientTransactions> client_request);
 
  private:
-ResDBPoCConfig config_;
+  ResDBPoCConfig config_;
   std::mutex mtx_;
   std::unique_ptr<Miner> miner_;
   // Blocks that have been committed.
@@ -77,10 +78,10 @@ ResDBPoCConfig config_;
   BatchClientTransactions request_candidate_;
 
   Stats* global_stats_;
-  uint64_t first_block_time_ = 0, first_mine_time_= 0;
+  uint64_t first_block_time_ = 0, first_mine_time_ = 0;
   std::map<uint64_t, uint64_t> create_time_;
   std::atomic<uint64_t> last_update_time_;
-  PrometheusHandler * prometheus_handler_;
+  PrometheusHandler* prometheus_handler_;
 };
 
 }  // namespace resdb

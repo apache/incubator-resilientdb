@@ -7,7 +7,7 @@ proto_library(
     name = "transaction_proto",
     srcs = ["transaction.proto"],
     deps = [
-        "//common/proto:signature_info_proto"
+        "//common/proto:signature_info_proto",
     ],
 )
 
