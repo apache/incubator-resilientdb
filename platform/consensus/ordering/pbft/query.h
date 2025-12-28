@@ -21,13 +21,13 @@
 
 #include "executor/common/custom_query.h"
 #include "platform/config/resdb_config.h"
-#include "platform/consensus/ordering/pbft/message_manager.h"
+#include "platform/consensus/recovery/recovery.h"
 
 namespace resdb {
 
 class Query {
  public:
-  Query(const ResDBConfig& config, MessageManager* message_manager,
+  Query(const ResDBConfig& config, Recovery* recovery,
         std::unique_ptr<CustomQuery> executor = nullptr);
   virtual ~Query();
 
@@ -41,7 +41,7 @@ class Query {
 
  protected:
   ResDBConfig config_;
-  MessageManager* message_manager_;
+  Recovery* recovery_;
   std::unique_ptr<CustomQuery> custom_query_executor_;
 };
 

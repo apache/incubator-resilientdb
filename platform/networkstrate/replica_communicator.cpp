@@ -167,7 +167,6 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip,
             LOG(ERROR) << "broadcast request fail:";
           }
           // LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<"
-          // port:"<<replica_info.port()<<" bq size:"<<batch_req.size()<<" done";
         }
       },
       single_bq_[std::make_pair(ip, port)].get(), replica_info));

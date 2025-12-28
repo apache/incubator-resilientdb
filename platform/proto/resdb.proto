@@ -57,8 +57,9 @@ message Request {
         TYPE_NEWVIEW= 17;
         TYPE_CUSTOM_QUERY = 18;
         TYPE_CUSTOM_CONSENSUS = 19;
+        TYPE_STATUS_SYNC = 20;
 
-        NUM_OF_TYPE = 20; // the total number of types.
+        NUM_OF_TYPE = 21; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -175,6 +176,7 @@ message RecoveryRequest {
 
 message RecoveryResponse {
   repeated Request request = 1;
+  repeated SignatureInfo signature = 2;
 }
 
 message RequestWithProof {

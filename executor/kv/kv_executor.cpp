@@ -25,8 +25,13 @@
 
 namespace resdb {
 
+<<<<<<< HEAD
 KVExecutor::KVExecutor(std::unique_ptr<Storage> storage)
     : storage_(std::move(storage)) {
+=======
+KVExecutor::KVExecutor(std::unique_ptr<Storage> storage) {
+  storage_ = std::move(storage);
+>>>>>>> master
   contract_manager_ =
       std::make_unique<resdb::contract::ContractTransactionManager>(
           storage_.get());
@@ -97,7 +102,10 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
     return nullptr;
   }
 
+<<<<<<< HEAD
   LOG(ERROR) << " execute cmd:" << kv_request.cmd();
+=======
+>>>>>>> master
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
   } else if (kv_request.cmd() == KVRequest::GET) {
@@ -138,16 +146,14 @@ std::unique_ptr<std::string> KVExecutor::ExecuteData(
 }
 
 void KVExecutor::Set(const std::string& key, const std::string& value) {
-  LOG(ERROR) << " set key:" << key;
-  storage_->SetValue(key, value);
+  storage_->SetValueWithSeq(key, value, seq_);
 }
 
 std::string KVExecutor::Get(const std::string& key) {
-  LOG(ERROR) << " get key:" << key;
-  return storage_->GetValue(key);
+  return storage_->GetValueWithSeq(key, 0).first;
 }
 
-std::string KVExecutor::GetAllValues() { return storage_->GetAllValues(); }
+std::string KVExecutor::GetAllValues() { return ""; }
 
 // Get values on a range of keys
 std::string KVExecutor::GetRange(const std::string& min_key,
@@ -167,16 +173,7 @@ void KVExecutor::GetWithVersion(const std::string& key, int version,
   info->set_version(ret.second);
 }
 
-void KVExecutor::GetAllItems(Items* items) {
-  const std::map<std::string, std::pair<std::string, int>>& ret =
-      storage_->GetAllItems();
-  for (auto it : ret) {
-    Item* item = items->add_item();
-    item->set_key(it.first);
-    item->mutable_value_info()->set_value(it.second.first);
-    item->mutable_value_info()->set_version(it.second.second);
-  }
-}
+void KVExecutor::GetAllItems(Items* items) { return; }
 
 void KVExecutor::GetKeyRange(const std::string& min_key,
                              const std::string& max_key, Items* items) {

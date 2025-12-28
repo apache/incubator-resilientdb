@@ -31,6 +31,11 @@
 using namespace resdb;
 using namespace resdb::storage;
 
+void SignalHandler(int sig_num) {
+  LOG(ERROR) << " signal:" << sig_num << " call"
+             << " ======================";
+}
+
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
@@ -51,7 +56,9 @@ int main(int argc, char** argv) {
     exit(0);
   }
   google::InitGoogleLogging(argv[0]);
-  FLAGS_minloglevel = 1;
+  FLAGS_minloglevel = 0;
+  signal(SIGINT, SignalHandler);
+  signal(SIGKILL, SignalHandler);
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];
@@ -71,7 +78,7 @@ int main(int argc, char** argv) {
   ResConfigData config_data = config->GetConfigData();
 
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
-  LOG(INFO) << "db path:" << db_path;
+  LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,

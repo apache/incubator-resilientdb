@@ -24,6 +24,7 @@ package resdb.storage;
 message Value {
     bytes value = 1;
     int32 version = 2;
+    uint64 seq = 3;
 }
 
 message ValueHistory {

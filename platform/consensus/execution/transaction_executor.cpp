@@ -72,7 +72,8 @@ void TransactionExecutor::RegisterExecute(int64_t seq) {
 void TransactionExecutor::WaitForExecute(int64_t seq) {
   if (execute_thread_num_ == 1) return;
   int pre_idx = (seq - 1 + blucket_num_) % blucket_num_;
-
+  // LOG(ERROR)<<"wait for:"<<seq<<" pre idx:"<<pre_idx<<"
+  // thread:"<<execute_thread_num_;
   while (!IsStop()) {
     std::unique_lock<std::mutex> lk(mutex_);
     cv_.wait_for(lk, std::chrono::milliseconds(10000), [&] {
@@ -89,7 +90,7 @@ void TransactionExecutor::FinishExecute(int64_t seq) {
   if (execute_thread_num_ == 1) return;
   int idx = seq % blucket_num_;
   std::unique_lock<std::mutex> lk(mutex_);
-  // LOG(ERROR)<<"finish :"<<seq<<" done";
+  // LOG(ERROR)<<"finish :"<<seq<<" done"<<" idx:"<<idx;
   blucket_[idx] = 3;
   cv_.notify_all();
 }
@@ -115,6 +116,7 @@ void TransactionExecutor::Stop() {
 }
 
 Storage* TransactionExecutor::GetStorage() {
+  assert(transaction_manager_);
   return transaction_manager_ ? transaction_manager_->GetStorage() : nullptr;
 }
 
@@ -130,6 +132,11 @@ bool TransactionExecutor::IsStop() { return stop_; }
 
 uint64_t TransactionExecutor::GetMaxPendingExecutedSeq() {
   return next_execute_seq_ - 1;
+}
+
+void TransactionExecutor::SetPendingExecutedSeq(int seq) {
+  // LOG(ERROR)<<" seq next pending seq:"<<seq;
+  next_execute_seq_ = seq;
 }
 
 bool TransactionExecutor::NeedResponse() {
@@ -174,8 +181,8 @@ void TransactionExecutor::OrderMessage() {
       global_stats_->IncExecute();
       uint64_t seq = message->seq();
       if (next_execute_seq_ > seq) {
-        // LOG(INFO) << "request seq:" << seq << " has been executed"
-        // << " next seq:" << next_execute_seq_;
+        LOG(INFO) << "request seq:" << seq << " has been executed"
+                  << " next seq:" << next_execute_seq_;
         continue;
       }
 
@@ -205,13 +212,18 @@ void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
 
 void TransactionExecutor::ExecuteMessage() {
   while (!IsStop()) {
-    auto message = execute_queue_.Pop();
-    if (message == nullptr) {
-      continue;
-    }
+    std::unique_ptr<Request> message = nullptr;
     bool need_execute = true;
-    if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
-      need_execute = false;
+    {
+      std::unique_lock<std::mutex> lk(e_mutex_);
+      message = execute_queue_.Pop();
+      if (message == nullptr) {
+        continue;
+      }
+      if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
+        need_execute = false;
+      }
+      RegisterExecute(message->seq());
     }
     Execute(std::move(message), need_execute);
   }
@@ -246,7 +258,8 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(batch_request);
   if (transaction_manager_) {
-    response = transaction_manager_->ExecuteBatch(batch_request);
+    response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
+                                                         batch_request);
   }
 
   // global_stats_->IncTotalRequest(batch_request.user_requests_size());
@@ -255,7 +268,6 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
                                   bool need_execute) {
-  RegisterExecute(request->seq());
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
   std::vector<std::unique_ptr<google::protobuf::Message>>* data_p = nullptr;
@@ -283,15 +295,17 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   }
   assert(batch_request_p);
 
-  // LOG(INFO) << " get request batch size:"
-  // << batch_request.user_requests_size()<<" proxy id:"
-  //  <<request->proxy_id()<<" need execute:"<<need_execute;
+  // LOG(ERROR) << " get request batch size:"
+  // << batch_request_p->user_requests_size()<<" proxy id:"
+  //  <<request->proxy_id()<<" need execute:"<<need_execute<<"
+  //  seq:"<<request->seq();
 
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(*batch_request_p);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
-      response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
+                                                           *batch_request_p);
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
@@ -307,10 +321,18 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
       }
 
       WaitForExecute(request->seq());
-      if (data_p->empty() || (*data_p)[0] == nullptr) {
-        response = transaction_manager_->ExecuteBatch(*batch_request_p);
+      if (last_seq_ == 0) {
+        last_seq_ = request->seq();
       } else {
-        response_v = transaction_manager_->ExecuteBatchData(*data_p);
+        assert(last_seq_ + 1 == request->seq());
+        last_seq_++;
+      }
+      if (data_p->empty() || (*data_p)[0] == nullptr) {
+        response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
+                                                             *batch_request_p);
+      } else {
+        response_v = transaction_manager_->ExecuteBatchDataWithSeq(
+            request->seq(), *data_p);
       }
       FinishExecute(request->seq());
 
@@ -339,7 +361,6 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_local_id(batch_request_p->local_id());
 
   response->set_seq(request->seq());
-
   if (post_exec_func_) {
     post_exec_func_(std::move(request), std::move(response));
   }

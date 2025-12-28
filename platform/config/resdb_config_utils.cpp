@@ -123,24 +123,29 @@ ResConfigData ReadConfigFromFile(const std::string& file_name) {
 }
 
 std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
+
   std::vector<ReplicaInfo> replicas;
-  std::string line;
+  std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
-  int id;
-  std::string ip;
-  int port;
-  while (infile >> id >> ip >> port) {
-    if (id == 0) {
-      continue;
-    }
-    if (ip.size() == 0) {
-      continue;
-    }
-    replicas.push_back(GenerateReplicaInfo(id, ip, port));
+  if (!infile.is_open()) {
+    std::cerr << "Failed to open file." << file_name << " " << strerror(errno)
+      << std::endl;
+    return replicas;
   }
-  if (replicas.size() == 0) {
-    LOG(ERROR) << "read config:" << file_name << " fail.";
-    assert(replicas.size() > 0);
+
+  json_data << infile.rdbuf();
+  std::string cleanJson = RemoveJsonComments(json_data.str());
+  
+  RegionInfo region_info;
+  JsonParseOptions options;
+  auto status = JsonStringToMessage(cleanJson, &region_info, options);
+  if (!status.ok()) {
+    LOG(ERROR) << "parse json :" << file_name << " fail:" << status.message();
+  }
+  assert(status.ok());
+  for(const auto& replica_info : region_info.replica_info()) {
+    LOG(ERROR) << "parse json id:" << replica_info.id() << " ip:" << replica_info.ip() <<" port:"<<replica_info.port();
+    replicas.push_back(GenerateReplicaInfo(replica_info.id(), replica_info.ip(), replica_info.port()));
   }
   return replicas;
 }

@@ -58,8 +58,6 @@ class KVExecutor : public TransactionManager {
   void GetTopHistory(const std::string& key, int top_number, Items* items);
 
  private:
-  std::unique_ptr<Storage> storage_;
-
   std::unique_ptr<TransactionManager> contract_manager_;
 };
 
