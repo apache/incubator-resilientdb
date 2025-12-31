@@ -129,14 +129,7 @@ void ViewChangeManager::MayStart() {
       view_change_counter_++;
     }
     // std::lock_guard<std::mutex> lk(status_mutex_);
-    LOG(ERROR) << "[VIEWCHANGE] Timeout handler triggered - current status: "
-               << status_ << " attempting to change to READY_VIEW_CHANGE";
-    bool changed = ChangeStatue(ViewChangeStatus::READY_VIEW_CHANGE);
-    LOG(ERROR) << "[VIEWCHANGE] ChangeStatue returned: " << changed
-               << " current status: " << status_;
-    if (changed) {
-      LOG(ERROR) << "[VIEWCHANGE] Status changed to READY_VIEW_CHANGE, sending "
-                    "view change msg";
+    if (ChangeStatue(ViewChangeStatus::READY_VIEW_CHANGE)) {
       SendViewChangeMsg();
       auto viewchange_timer = std::make_shared<ViewChangeTimeout>(
           ViewChangeTimerType::TYPE_VIEWCHANGE, system_info_->GetCurrentView(),
@@ -203,13 +196,10 @@ bool ViewChangeManager::IsValidViewChangeMsg(
       }
       std::string data;
       proof.request().SerializeToString(&data);
-      // Skip signature verification if verifier is null or disabled
-      // if (verifier_ && config_.SignatureVerifierEnabled()) {
-      //   if (!verifier_->VerifyMessage(data, proof.signature())) {
-      //     LOG(ERROR) << "proof signature not valid";
-      //     return false;
-      //   }
-      // }
+      if (!verifier_->VerifyMessage(data, proof.signature())) {
+        LOG(ERROR) << "proof signature not valid";
+        return false;
+      }
     }
   }
   return true;
@@ -485,35 +475,21 @@ void ViewChangeManager::SendViewChangeMsg() {
 
   // n (sequence number of the latest checkpoint) and C (proof for the stable
   // checkpoint)
-  LOG(ERROR) << "[VIEWCHANGE] Getting stable checkpoint with votes";
   *view_change_message.mutable_stable_ckpt() =
       checkpoint_manager_->GetStableCheckpointWithVotes();
-  LOG(ERROR) << "[VIEWCHANGE] Got stable checkpoint, seq: "
-             << view_change_message.stable_ckpt().seq();
 
   // P - P is a set containing a set Pm for each request m that prepared at i
   // with a sequence number higher than n.
-  LOG(ERROR) << "[VIEWCHANGE] Getting highest prepared seq";
   int max_seq = checkpoint_manager_->GetHighestPreparedSeq();
-  LOG(ERROR) << "[VIEWCHANGE] Got highest prepared seq: " << max_seq;
-  LOG(ERROR) << "[VIEWCHANGE] Check prepared or committed txns from "
-             << view_change_message.stable_ckpt().seq() + 1 << " to "
-             << max_seq;
+  LOG(INFO) << "Check prepared or committed txns from "
+            << view_change_message.stable_ckpt().seq() + 1 << " to " << max_seq;
 
-  LOG(ERROR) << "[VIEWCHANGE] Checking prepared messages from "
-             << (view_change_message.stable_ckpt().seq() + 1) << " to "
-             << max_seq;
   for (int i = view_change_message.stable_ckpt().seq() + 1; i <= max_seq; ++i) {
     // seq i has been prepared or committed.
-    LOG(ERROR) << "[VIEWCHANGE] Checking seq: " << i;
     if (message_manager_->GetTransactionState(i) >=
         TransactionStatue::READY_COMMIT) {
-      LOG(ERROR) << "[VIEWCHANGE] Seq " << i
-                 << " is READY_COMMIT, getting proof";
       std::vector<RequestInfo> proof_info =
           message_manager_->GetPreparedProof(i);
-      LOG(ERROR) << "[VIEWCHANGE] Got proof for seq " << i
-                 << ", size: " << proof_info.size();
       assert(proof_info.size() >= config_.GetMinDataReceiveNum());
       auto txn = view_change_message.add_prepared_msg();
       txn->set_seq(i);
@@ -524,16 +500,12 @@ void ViewChangeManager::SendViewChangeMsg() {
       }
     }
   }
-  LOG(ERROR) << "[VIEWCHANGE] Finished checking prepared messages";
 
   // Broadcast my view change request.
-  LOG(ERROR) << "[VIEWCHANGE] Creating view change request and broadcasting";
   std::unique_ptr<Request> request = NewRequest(
       Request::TYPE_VIEWCHANGE, Request(), config_.GetSelfInfo().id());
   view_change_message.SerializeToString(request->mutable_data());
-  LOG(ERROR) << "[VIEWCHANGE] About to call BroadCast";
   replica_communicator_->BroadCast(*request);
-  LOG(ERROR) << "[VIEWCHANGE] BroadCast called";
 }
 
 void ViewChangeManager::AddComplaintTimer(uint64_t proxy_id, std::string hash) {
