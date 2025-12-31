@@ -89,7 +89,6 @@ TEST_F(ViewChangeManagerTest, SendViewChange) {
   request->set_hash(SignatureVerifier::CalculateHash("test_data"));
   checkpoint_manager_->AddCommitData(std::move(request));
   
-  // Wait a bit for the request to be processed (last_seq_ to be updated)
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   
   std::promise<bool> propose_done;

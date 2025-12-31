@@ -33,6 +33,11 @@
 #include "proto/kv/kv.pb.h"
 #include "sys/resource.h"
 
+// Forward declaration for LevelDB
+namespace leveldb {
+class DB;
+}
+
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 using tcp = asio::ip::tcp;
@@ -159,9 +164,11 @@ class Stats {
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
   nlohmann::json summary_json_;
-  nlohmann::json consensus_history_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
+  
+  std::unique_ptr<leveldb::DB> summary_db_;
+  std::mutex summary_db_mutex_;
 };
 
 }  // namespace resdb

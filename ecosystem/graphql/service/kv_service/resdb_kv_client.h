@@ -19,21 +19,28 @@
 
 #pragma once
 
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "interface/rdbc/transaction_constructor.h"
 
 namespace sdk {
 
 // ResDBKVClient to send data to the kv server.
 class ResDBKVClient : public resdb::TransactionConstructor {
-public:
+ public:
   ResDBKVClient(const resdb::ResDBConfig &config);
 
   int Set(const std::string &key, const std::string &data);
   int64_t SetWithSeq(const std::string &key, const std::string &data);
+  std::unique_ptr<std::pair<int64_t, std::string>> GetWithSeq(
+      const std::string &key);
   std::unique_ptr<std::string> Get(const std::string &key);
   std::unique_ptr<std::string> GetAllValues();
   std::unique_ptr<std::string> GetRange(const std::string &min_key,
                                         const std::string &max_key);
 };
 
-} // namespace sdk
+}  // namespace sdk

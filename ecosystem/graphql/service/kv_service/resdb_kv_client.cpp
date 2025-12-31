@@ -64,6 +64,21 @@ std::unique_ptr<std::string> ResDBKVClient::Get(const std::string &key) {
   return std::make_unique<std::string>(response.value());
 }
 
+std::unique_ptr<std::pair<int64_t, std::string>> ResDBKVClient::GetWithSeq(
+    const std::string &key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET);
+  request.set_key(key);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<std::pair<int64_t, std::string>>(
+      response.seq(), response.value());
+}
+
 std::unique_ptr<std::string> ResDBKVClient::GetAllValues() {
   KVRequest request;
   request.set_cmd(KVRequest::GETALLVALUES);

@@ -22,8 +22,12 @@
 #include <glog/logging.h>
 
 #include <ctime>
+#include <sstream>
 
 #include "common/utils/utils.h"
+#include "leveldb/db.h"
+#include "leveldb/options.h"
+#include "leveldb/write_batch.h"
 #include "proto/kv/kv.pb.h"
 
 namespace asio = boost::asio;
@@ -124,22 +128,88 @@ void Stats::CrowRoute() {
   crow::SimpleApp app;
   while (!stop_) {
     try {
+      //Deprecated
       CROW_ROUTE(app, "/consensus_data")
-          .methods("GET"_method)([this](const crow::request& req,
-                                        crow::response& res) {
-            LOG(ERROR) << "API 1";
-            res.set_header("Access-Control-Allow-Origin",
-                           "*");  // Allow requests from any origin
-            res.set_header("Access-Control-Allow-Methods",
-                           "GET, POST, OPTIONS");  // Specify allowed methods
-            res.set_header(
-                "Access-Control-Allow-Headers",
-                "Content-Type, Authorization");  // Specify allowed headers
+          .methods("GET"_method)(
+              [this](const crow::request& req, crow::response& res) {
+                LOG(ERROR) << "API 1";
+                res.set_header("Access-Control-Allow-Origin", "*");
+                res.set_header("Access-Control-Allow-Methods",
+                               "GET, POST, OPTIONS");
+                res.set_header("Access-Control-Allow-Headers",
+                               "Content-Type, Authorization");
 
-            // Send your response
-            res.body = consensus_history_.dump();
-            res.end();
-          });
+                int limit = 10; 
+                int page = 1;
+                
+                std::string url = req.url;
+                size_t query_pos = url.find('?');
+                if (query_pos != std::string::npos) {
+                  std::string query_string = url.substr(query_pos + 1);
+                  std::istringstream iss(query_string);
+                  std::string param;
+                  while (std::getline(iss, param, '&')) {
+                    size_t eq_pos = param.find('=');
+                    if (eq_pos != std::string::npos) {
+                      std::string key = param.substr(0, eq_pos);
+                      std::string value = param.substr(eq_pos + 1);
+                      if (key == "limit") {
+                        try {
+                          limit = std::stoi(value);
+                          if (limit <= 0) limit = 10;
+                        } catch (...) {
+                          limit = 10;
+                        }
+                      } else if (key == "page") {
+                        try {
+                          page = std::stoi(value);
+                          if (page <= 0) page = 1;
+                        } catch (...) {
+                          page = 1;
+                        }
+                      }
+                    }
+                  }
+                }
+
+                nlohmann::json result;
+                int total_count = 0;
+                int offset = (page - 1) * limit;
+                int current_index = 0;
+                int items_collected = 0;
+
+                if (summary_db_) {
+                  std::lock_guard<std::mutex> lock(summary_db_mutex_);
+                  leveldb::Iterator* it =
+                      summary_db_->NewIterator(leveldb::ReadOptions());
+                  
+                  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                    total_count++;
+                  }
+                  
+                  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                    if (current_index >= offset && items_collected < limit) {
+                      try {
+                        result[it->key().ToString()] =
+                            nlohmann::json::parse(it->value().ToString());
+                        items_collected++;
+                      } catch (...) {
+                        res.code = 500;
+                        result["error"] = "Failed to parse transaction data";
+                        delete it;
+                        res.body = result.dump();
+                        res.end();
+                        return;
+                      }
+                    }
+                    current_index++;
+                  }
+                  delete it;
+                }
+
+                res.body = result.dump();
+                res.end();
+              });
       CROW_ROUTE(app, "/get_status")
           .methods("GET"_method)([this](const crow::request& req,
                                         crow::response& res) {
@@ -167,7 +237,7 @@ void Stats::CrowRoute() {
             res.set_header(
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization");  // Specify allowed headers
-            
+
             res.body = "Not Enabled";
             // Send your response
             if (enable_faulty_switch_) {
@@ -211,6 +281,46 @@ void Stats::CrowRoute() {
             mem_view_json.clear();
             res.end();
           });
+      CROW_ROUTE(app, "/consensus_data/<int>")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res, int txn_number) {
+            LOG(ERROR) << "API 5: Get transaction " << txn_number;
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            nlohmann::json result;
+            if (summary_db_) {
+              std::lock_guard<std::mutex> lock(summary_db_mutex_);
+              std::string txn_key = std::to_string(txn_number);
+              std::string value;
+              leveldb::Status status =
+                  summary_db_->Get(leveldb::ReadOptions(), txn_key, &value);
+
+              if (status.ok() && !value.empty()) {
+                try {
+                  result[txn_key] = nlohmann::json::parse(value);
+                } catch (...) {
+                  res.code = 500;
+                  result["error"] = "Failed to parse transaction data";
+                }
+              } else {
+                res.code = 404;
+                result["error"] = "Transaction not found";
+                result["txn_number"] = txn_number;
+              }
+            } else {
+              res.code = 503;
+              result["error"] = "Storage not initialized";
+            }
+
+            res.body = result.dump();
+            res.end();
+          });
       app.port(8500 + transaction_summary_.port).multithreaded().run();
       sleep(1);
     } catch (const std::exception& e) {
@@ -234,6 +344,19 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
   enable_resview = resview_flag;
   enable_faulty_switch_ = faulty_flag;
   if (resview_flag) {
+    std::string storage_path = "/tmp/resdb_summaries_" + std::to_string(port);
+    leveldb::Options options;
+    options.create_if_missing = true;
+    leveldb::DB* db = nullptr;
+    leveldb::Status status = leveldb::DB::Open(options, storage_path, &db);
+    if (status.ok()) {
+      summary_db_.reset(db);
+      LOG(INFO) << "Initialized LevelDB storage for summaries at: "
+                << storage_path;
+    } else {
+      LOG(ERROR) << "Failed to open LevelDB at " << storage_path << ": "
+                 << status.ToString();
+    }
     crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
 }
@@ -345,8 +468,18 @@ void Stats::SendSummary() {
 
   summary_json_["ext_cache_hit_ratio"] =
       transaction_summary_.ext_cache_hit_ratio_;
-  consensus_history_[std::to_string(transaction_summary_.txn_number)] =
-      summary_json_;
+
+  std::string txn_key = std::to_string(transaction_summary_.txn_number);
+
+  if (summary_db_) {
+    std::lock_guard<std::mutex> lock(summary_db_mutex_);
+    leveldb::Status status = summary_db_->Put(leveldb::WriteOptions(), txn_key,
+                                              summary_json_.dump());
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to write summary to storage for txn: " << txn_key
+                 << ": " << status.ToString();
+    }
+  }
 
   LOG(ERROR) << summary_json_.dump();
 
@@ -423,59 +556,59 @@ void Stats::MonitorGlobal() {
     run_req_run_time = run_req_run_time_;
 
     LOG(INFO) << "=========== monitor =========\n"
-               << "server call:" << server_call - last_server_call
-               << " server process:" << server_process - last_server_process
-               << " socket recv:" << socket_recv - last_socket_recv
-               << " "
-                  "client call:"
-               << client_call - last_client_call
-               << " "
-                  "client req:"
-               << num_client_req - last_num_client_req
-               << " "
-                  "broad_cast:"
-               << broad_cast_msg - last_broad_cast_msg
-               << " "
-                  "send broad_cast:"
-               << send_broad_cast_msg - last_send_broad_cast_msg
-               << " "
-                  "per send broad_cast:"
-               << send_broad_cast_msg_per_rep - last_send_broad_cast_msg_per_rep
-               << " "
-                  "propose:"
-               << num_propose - last_num_propose
-               << " "
-                  "prepare:"
-               << (num_prepare - last_num_prepare)
-               << " "
-                  "commit:"
-               << (num_commit - last_num_commit)
-               << " "
-                  "pending execute:"
-               << pending_execute - last_pending_execute
-               << " "
-                  "execute:"
-               << execute - last_execute
-               << " "
-                  "execute done:"
-               << execute_done - last_execute_done << " seq gap:" << seq_gap
-               << " total request:" << total_request - last_total_request
-               << " txn:" << (total_request - last_total_request) / 5
-               << " total geo request:"
-               << total_geo_request - last_total_geo_request
-               << " total geo request per:"
-               << (total_geo_request - last_total_geo_request) / 5
-               << " geo request:" << (geo_request - last_geo_request)
-               << " "
-                  "seq fail:"
-               << seq_fail - last_seq_fail << " time:" << time
-               << " "
-                  "\n--------------- monitor ------------";
+              << "server call:" << server_call - last_server_call
+              << " server process:" << server_process - last_server_process
+              << " socket recv:" << socket_recv - last_socket_recv
+              << " "
+                 "client call:"
+              << client_call - last_client_call
+              << " "
+                 "client req:"
+              << num_client_req - last_num_client_req
+              << " "
+                 "broad_cast:"
+              << broad_cast_msg - last_broad_cast_msg
+              << " "
+                 "send broad_cast:"
+              << send_broad_cast_msg - last_send_broad_cast_msg
+              << " "
+                 "per send broad_cast:"
+              << send_broad_cast_msg_per_rep - last_send_broad_cast_msg_per_rep
+              << " "
+                 "propose:"
+              << num_propose - last_num_propose
+              << " "
+                 "prepare:"
+              << (num_prepare - last_num_prepare)
+              << " "
+                 "commit:"
+              << (num_commit - last_num_commit)
+              << " "
+                 "pending execute:"
+              << pending_execute - last_pending_execute
+              << " "
+                 "execute:"
+              << execute - last_execute
+              << " "
+                 "execute done:"
+              << execute_done - last_execute_done << " seq gap:" << seq_gap
+              << " total request:" << total_request - last_total_request
+              << " txn:" << (total_request - last_total_request) / 5
+              << " total geo request:"
+              << total_geo_request - last_total_geo_request
+              << " total geo request per:"
+              << (total_geo_request - last_total_geo_request) / 5
+              << " geo request:" << (geo_request - last_geo_request)
+              << " "
+                 "seq fail:"
+              << seq_fail - last_seq_fail << " time:" << time
+              << " "
+                 "\n--------------- monitor ------------";
     if (run_req_num - last_run_req_num > 0) {
       LOG(INFO) << "  req client latency:"
-                 << static_cast<double>(run_req_run_time -
-                                        last_run_req_run_time) /
-                        (run_req_num - last_run_req_num) / 1000000000.0;
+                << static_cast<double>(run_req_run_time -
+                                       last_run_req_run_time) /
+                       (run_req_num - last_run_req_num) / 1000000000.0;
     }
 
     last_seq_fail = seq_fail;
@@ -530,8 +663,10 @@ void Stats::IncPrepare() {
     prometheus_->Inc(PREPARE, 1);
   }
   num_prepare_++;
-  transaction_summary_.prepare_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if (enable_resview) {
+    transaction_summary_.prepare_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncCommit() {
@@ -539,8 +674,10 @@ void Stats::IncCommit() {
     prometheus_->Inc(COMMIT, 1);
   }
   num_commit_++;
-  transaction_summary_.commit_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if (enable_resview) {
+    transaction_summary_.commit_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncPendingExecute() { pending_execute_++; }

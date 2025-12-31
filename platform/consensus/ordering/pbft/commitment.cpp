@@ -296,7 +296,7 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {
     // LOG(ERROR)<<request->data().size();
-    // global_stats_->GetTransactionDetails(request->data());
+    //global_stats_->GetTransactionDetails(request->data());
     global_stats_->RecordStateTime("commit");
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;

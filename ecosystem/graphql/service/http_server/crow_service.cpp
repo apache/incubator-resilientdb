@@ -128,6 +128,34 @@ void CrowService::run() {
     }
   });
 
+  // Get value with sequence number of specific id
+  CROW_ROUTE(app, "/v2/transactions/<string>")
+  ([this](const crow::request &req, response &res, std::string id) {
+    auto result = kv_client_.GetWithSeq(id);
+    if (result != nullptr) {
+      LOG(INFO) << "client get value with seq = " << result->second
+                << ", seq = " << result->first;
+
+      // Send updated blocks list to websocket
+      if (users.size() > 0) {
+        for (auto u : users) u->send_text("Update blocks");
+      }
+
+      num_transactions_++;
+
+      crow::json::wvalue resp;
+      resp["value"] = result->second;
+      resp["seq"] = result->first;
+
+      res.set_header("Content-Type", "application/json");
+      res.end(resp.dump());
+    } else {
+      res.code = 500;
+      res.set_header("Content-Type", "text/plain");
+      res.end("get value with seq fail");
+    }
+  });
+
   // Get values based on key range
   CROW_ROUTE(app, "/v1/transactions/<string>/<string>")
   ([this](const crow::request &req, response &res, std::string min_id,

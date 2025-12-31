@@ -335,7 +335,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_seq(request->seq());
 
   if (post_exec_func_) {
-    post_exec_func_(std::move(request), std::move(response)); //TODO: request_tracking
+    post_exec_func_(std::move(request), std::move(response));
   }
 
   global_stats_->IncExecuteDone();
