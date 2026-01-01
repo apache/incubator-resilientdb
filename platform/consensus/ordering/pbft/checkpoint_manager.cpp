@@ -160,6 +160,15 @@ bool CheckPointManager::Wait() {
                       [&] { return new_data_ > 0; });
 }
 
+void CheckPointManager::CheckHealthy() {
+  uint32_t current_time = time(nullptr);
+  for(int i = 1; i <= config_.GetReplicaNum(); ++i) {
+    if( current_time - last_update_time_[i] > replica_timeout_ ) {
+      TimeoutHandler(i);
+    }
+  }
+}
+
 void CheckPointManager::UpdateStableCheckPointStatus() {
   uint64_t last_committable_seq = 0;
   while (!stop_) {
@@ -223,13 +232,19 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
 }
 
 void CheckPointManager::SetTimeoutHandler(
-    std::function<void()> timeout_handler) {
+    std::function<void(int)> timeout_handler) {
   timeout_handler_ = timeout_handler;
 }
 
 void CheckPointManager::TimeoutHandler() {
   if (timeout_handler_) {
-    timeout_handler_();
+    timeout_handler_(0);
+  }
+}
+
+void CheckPointManager::TimeoutHandler(uint32_t replica) {
+  if (timeout_handler_) {
+    timeout_handler_(replica);
   }
 }
 
@@ -245,6 +260,7 @@ int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
   uint64_t seq = checkpoint_data.seq();
   uint32_t sender_id = request->sender_id();
   status_[sender_id] = seq;
+  last_update_time_[sender_id] = time(nullptr);
   LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq;
   return 0;
 }
@@ -293,6 +309,7 @@ void CheckPointManager::SyncStatus() {
       last_check_seq = last_seq;
       last_time = 0;
     }
+    CheckHealthy();
     sleep(10);
     last_time++;
   }

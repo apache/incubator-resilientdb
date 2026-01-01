@@ -64,7 +64,7 @@ std::pair<std::string, uint64_t> MemoryDB::GetValueWithSeq(
     auto it = search_it->second.end();
     do {
       --it;
-      if (it->second == seq) {
+      if (it->second == seq || seq == 0) {
         return *it;
       }
       if (it->second < seq) {

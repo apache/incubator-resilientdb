@@ -54,13 +54,14 @@ class CheckPointManager : public CheckPoint {
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
-  void SetTimeoutHandler(std::function<void()> timeout_handler);
+  void SetTimeoutHandler(std::function<void(int)> timeout_handler);
   virtual void UpdateStableCheckPointCallback(
       int64_t current_stable_checkpoint) {}
 
   void Stop();
 
   void TimeoutHandler();
+  void TimeoutHandler(uint32_t replica);
 
   void WaitSignal();
   std::unique_ptr<std::pair<uint64_t, std::string>> PopStableSeqHash();
@@ -89,6 +90,7 @@ class CheckPointManager : public CheckPoint {
   void SyncStatus();
   void StatusProcess();
   void CheckStatus(uint64_t last_seq);
+  void CheckHealthy();
 
  protected:
   uint64_t last_executed_seq_ = 0;
@@ -107,7 +109,7 @@ class CheckPointManager : public CheckPoint {
   LockFreeQueue<Request> data_queue_;
   std::mutex cv_mutex_;
   std::condition_variable cv_;
-  std::function<void()> timeout_handler_;
+  std::function<void(int)> timeout_handler_;
   StableCheckPoint stable_ckpt_;
   int new_data_ = 0;
   LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue_;
@@ -122,6 +124,8 @@ class CheckPointManager : public CheckPoint {
   std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
   std::map<int, uint64_t> status_;
+  std::map<int,int> last_update_time_;
+  int replica_timeout_ = 120;
 };
 
 }  // namespace resdb
