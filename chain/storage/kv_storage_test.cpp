@@ -152,6 +152,10 @@ TEST_P(KVStorageTest, SetValueWithSeq) {
 
   EXPECT_EQ(storage->GetValueWithSeq("test_key", 4),
             std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 0),
+      std::make_pair(std::string("test_value_v2"), static_cast<uint64_t>(3)));
 }
 
 TEST_P(KVStorageTest, GetAllValueWithSeq) {

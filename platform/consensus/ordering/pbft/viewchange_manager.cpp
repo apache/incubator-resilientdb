@@ -119,7 +119,11 @@ void ViewChangeManager::MayStart() {
     return;
   }
 
-  checkpoint_manager_->SetTimeoutHandler([&]() {
+  checkpoint_manager_->SetTimeoutHandler([&](int replica_id) {
+    if( system_info_->GetPrimaryId() != replica_id ) {
+      return;
+    }
+
     // LOG(ERROR) << "checkpoint timeout";
     if (status_ == ViewChangeStatus::NONE) {
       view_change_counter_ = 1;
