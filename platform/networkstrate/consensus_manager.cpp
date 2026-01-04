@@ -141,7 +141,9 @@ void ConsensusManager::SendHeartBeat() {
   LOG(ERROR) << " server:" << config_.GetSelfInfo().id() << " sends HB"
              << " is ready:" << is_ready_
              << " client size:" << client_replicas.size()
-             << " svr size:" << replicas.size();
+             << " svr size:" << replicas.size() 
+             << "  primary:"<<hb_info.primary()
+             << " version:" << hb_info.version();
 
   Request request;
   request.set_type(Request::TYPE_HEART_BEAT);

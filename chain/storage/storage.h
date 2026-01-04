@@ -61,6 +61,7 @@ class Storage {
 
   virtual bool Flush() { return true; };
 
+  virtual uint64_t GetStableCheckpoint() { return 0; }
   virtual uint64_t GetLastCheckpoint() { return 0; }
 
   void SetMaxHistoryNum(int num) { max_history_ = num; }

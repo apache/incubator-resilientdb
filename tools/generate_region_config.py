@@ -18,6 +18,7 @@
 import os
 import json
 import sys
+import re
 from platform.proto.replica_info_pb2 import ResConfigData,ReplicaInfo
 from google.protobuf.json_format import MessageToJson
 from google.protobuf.json_format import Parse, ParseDict
@@ -64,13 +65,23 @@ def GenerateJsonConfig(file_name, output_file, template_file):
         old_json=json.loads(s)
 
       template_json = {}
-      with open(template_file) as f:
-        lines=f.readlines()
-        for l in lines:
-          l=l.strip()
-        s=''.join(lines)
-        template_json=json.loads(s)
-  
+      with open(template_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+      content = re.sub(r'/\*(.*?)\*/', '', content, flags=re.DOTALL)
+
+      lines = content.splitlines()
+      clean_lines = []
+      for line in lines:
+          line = re.sub(r'//.*', '', line) 
+          if line.strip(): 
+              clean_lines.append(line)
+
+      clean_content = '\n'.join(clean_lines)
+
+      # 解析清理后的 JSON
+      template_json = json.loads(clean_content)
+
       for (k,v) in template_json.items():
         old_json[k] = v
 

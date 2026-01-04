@@ -35,6 +35,8 @@ message CheckPointData {
   SignatureInfo hash_signature = 3;
   repeated bytes hashs = 4;
   repeated uint64 seqs = 5;
+  uint64 primary_id = 6;
+  uint64 view = 7;
 }
 
 message StableCheckPoint {

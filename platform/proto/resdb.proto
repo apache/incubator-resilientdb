@@ -90,6 +90,8 @@ message Request {
     int64 create_time = 24;
     int64 commit_time = 25;
     bytes data_hash = 26;
+    bool force_recovery =27;
+
 }
 
 // The response message containing response

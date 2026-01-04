@@ -73,6 +73,7 @@ class Commitment {
   bool need_qc_ = false;
 
   std::mutex mutex_;
+  std::map<uint64_t, std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>> > pending_recovery_;
   std::unique_ptr<DuplicateManager> duplicate_manager_;
 };
 

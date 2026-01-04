@@ -68,8 +68,8 @@ void LockFreeCollectorPool::Update(uint64_t seq) {
     LOG(ERROR) << "seq not match, skip update:" << seq;
     return;
   }
-  // LOG(ERROR)<<" update:"<<(idx^capacity_)<<" seq:"<<seq+capacity_<<
-  // 	  " cap:"<<capacity_<<" update seq:"<<seq;
+   LOG(ERROR)<<" update:"<<(idx^capacity_)<<" seq:"<<seq+capacity_<<
+   	  " cap:"<<capacity_<<" update seq:"<<seq;
   collector_[idx ^ capacity_] = std::make_unique<TransactionCollector>(
       seq + capacity_, executor_, enable_viewchange_);
 }

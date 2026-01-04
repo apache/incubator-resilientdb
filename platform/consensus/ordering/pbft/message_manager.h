@@ -76,7 +76,7 @@ class MessageManager {
   // if the request has been prepared, having received 2f+1
   // pre-prepare messages.
   std::vector<RequestInfo> GetPreparedProof(uint64_t seq);
-  TransactionStatue GetTransactionState(uint64_t seq);
+  //TransactionStatue GetTransactionState(uint64_t seq);
 
   void SetNextCommitSeq(int seq);
 
