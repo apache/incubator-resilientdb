@@ -435,10 +435,8 @@ void CheckPointManager::UpdateCheckPointStatus() {
     LOG(ERROR)<<" current seq:"<<current_seq<<" water mark:"<<water_mark<<" current stable seq:"<<current_stable_seq_;
     if (current_seq > 0 && current_seq % water_mark == 0) {
       last_ckpt_seq = current_seq;
-      //if (!is_recovery) {
       BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
                             stable_seqs);
-      //}
     }
     ClearCommittedStatus(current_seq);
   }
