@@ -205,7 +205,7 @@ int TransactionCollector::Commit() {
 
   auto main_request = atomic_mian_request_.Reference();
   if (main_request == nullptr) {
-    LOG(ERROR) << "no main";
+    LOG(ERROR) << "no main:" << seq_;
     return -2;
   }
 

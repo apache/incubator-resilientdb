@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "ordering/poc/pow/consensus_service_pow.h"
 
 #include <glog/logging.h>

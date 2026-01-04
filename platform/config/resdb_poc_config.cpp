@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "platform/config/resdb_poc_config.h"
 
 namespace resdb {

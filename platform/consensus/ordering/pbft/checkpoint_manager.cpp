@@ -28,13 +28,15 @@ namespace resdb {
 
 CheckPointManager::CheckPointManager(const ResDBConfig& config,
                                      ReplicaCommunicator* replica_communicator,
-                                     SignatureVerifier* verifier)
+                                     SignatureVerifier* verifier,
+                                     SystemInfo* sys_info)
     : config_(config),
       replica_communicator_(replica_communicator),
       verifier_(verifier),
       stop_(false),
       txn_accessor_(config),
-      highest_prepared_seq_(0) {
+      highest_prepared_seq_(0),
+      sys_info_(sys_info) {
   current_stable_seq_ = 0;
   if (config_.GetConfigData().enable_viewchange()) {
     config_.EnableCheckPoint(true);
@@ -62,6 +64,11 @@ void CheckPointManager::Stop() {
   if (status_thread_.joinable()) {
     status_thread_.join();
   }
+}
+
+void CheckPointManager::SetResetExecute(
+    std::function<void(uint64_t seq)> func) {
+  reset_execute_func_ = func;
 }
 
 std::string GetHash(const std::string& h1, const std::string& h2) {
@@ -109,6 +116,7 @@ int CheckPointManager::ProcessCheckPoint(std::unique_ptr<Context> context,
   }
   uint64_t checkpoint_seq = checkpoint_data.seq();
   uint32_t sender_id = request->sender_id();
+  LOG(ERROR) << " receive ckpt:" << checkpoint_seq << " from:" << sender_id;
   int water_mark = config_.GetCheckPointWaterMark();
   if (checkpoint_seq % water_mark) {
     LOG(ERROR) << "checkpoint seq not invalid:" << checkpoint_seq;
@@ -162,11 +170,39 @@ bool CheckPointManager::Wait() {
 
 void CheckPointManager::CheckHealthy() {
   uint32_t current_time = time(nullptr);
-  for(int i = 1; i <= config_.GetReplicaNum(); ++i) {
-    if( current_time - last_update_time_[i] > replica_timeout_ ) {
+
+  std::map<uint64_t, int> seqs;
+
+  for (int i = 1; i <= config_.GetReplicaNum(); ++i) {
+    if (last_update_time_.find(i) == last_update_time_.end() ||
+        last_update_time_[i] == 0) {
+      continue;
+    }
+    LOG(ERROR) << " check healthy, replica:" << i
+               << " current time:" << current_time
+               << " last time:" << last_update_time_[i]
+               << " timeout:" << replica_timeout_
+               << " pass:" << current_time - last_update_time_[i];
+    if (current_time - last_update_time_[i] > replica_timeout_) {
       TimeoutHandler(i);
     }
+    seqs[status_[i]]++;
   }
+
+  uint64_t unstable_check_ckpt = 0;
+  for (auto it : seqs) {
+    int num = 0;
+    for (auto sit : seqs) {
+      if (sit.first < it.first) {
+        continue;
+      }
+      num += sit.second;
+    }
+    if (num >= config_.GetMinDataReceiveNum()) {
+      unstable_check_ckpt = std::max(unstable_check_ckpt, it.first);
+    }
+  }
+  SetUnstableCkpt(unstable_check_ckpt);
 }
 
 void CheckPointManager::UpdateStableCheckPointStatus() {
@@ -197,8 +233,11 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
       new_data_ = 0;
     }
 
-    // LOG(ERROR) << "current stable seq:" << current_stable_seq_
-    //  << " stable seq:" << stable_seq;
+    LOG(ERROR) << "current stable seq:" << current_stable_seq_
+               << " stable seq:" << stable_seq;
+    if (stable_seq == 0) {
+      continue;
+    }
     std::vector<SignatureInfo> votes;
     if (current_stable_seq_ < stable_seq) {
       std::lock_guard<std::mutex> lk(mutex_);
@@ -223,9 +262,6 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
         *stable_ckpt_.add_signatures() = vote;
       }
       current_stable_seq_ = stable_seq;
-      // LOG(INFO) << "done. stable seq:" << current_stable_seq_
-      //           << " votes:" << stable_ckpt_.DebugString();
-      // LOG(INFO) << "done. stable seq:" << current_stable_seq_;
     }
     UpdateStableCheckPointCallback(current_stable_seq_);
   }
@@ -248,7 +284,14 @@ void CheckPointManager::TimeoutHandler(uint32_t replica) {
   }
 }
 
-void CheckPointManager::SetLastCommit(uint64_t seq) { last_seq_ = seq; }
+void CheckPointManager::SetLastCommit(uint64_t seq) {
+  LOG(ERROR) << " set last commit:" << seq;
+  last_seq_ = seq;
+  std::lock_guard<std::mutex> lk(lt_mutex_);
+  committed_status_.clear();
+}
+
+uint64_t CheckPointManager::GetLastCommit() { return last_seq_; }
 
 int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
                                          std::unique_ptr<Request> request) {
@@ -259,9 +302,14 @@ int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
   }
   uint64_t seq = checkpoint_data.seq();
   uint32_t sender_id = request->sender_id();
+  uint32_t primary_id = checkpoint_data.primary_id();
+  uint32_t view = checkpoint_data.view();
+
   status_[sender_id] = seq;
   last_update_time_[sender_id] = time(nullptr);
-  LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq;
+  view_status_[sender_id] = std::make_pair(primary_id, view);
+  LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq
+             << " primary:" << primary_id << " view:" << view;
   return 0;
 }
 
@@ -277,12 +325,37 @@ void CheckPointManager::CheckStatus(uint64_t last_seq) {
   if (seqs.size() <= f + 1) {
     return;
   }
-  uint64_t min_seq = seqs[f + 1];
+  // uint64_t min_seq = seqs[f + 1];
+  uint64_t min_seq = seqs.back();
 
   LOG(ERROR) << " check last seq:" << last_seq << " max seq:" << min_seq;
   if (last_seq < min_seq) {
     // need recovery from others
-    BroadcastRecovery(last_seq + 1, std::min(min_seq, last_seq + 100));
+    reset_execute_func_(last_seq + 1);
+    BroadcastRecovery(last_seq + 1, std::min(min_seq, last_seq + 500));
+  }
+}
+
+void CheckPointManager::CheckSysStatus() {
+  int f = config_.GetMaxMaliciousReplicaNum();
+
+  std::map<std::pair<int, uint64_t>, int> views;
+  int current_primary = 0;
+  uint64_t current_view = 0;
+  for (auto it : view_status_) {
+    views[it.second]++;
+    if (views[it.second] >= 2 * f + 1) {
+      current_primary = it.second.first;
+      current_view = it.second.second;
+    }
+  }
+
+  if (current_primary > 0 && current_primary != sys_info_->GetPrimaryId() &&
+      current_view > sys_info_->GetCurrentView()) {
+    sys_info_->SetCurrentView(current_view);
+    sys_info_->SetPrimary(current_primary);
+    LOG(ERROR) << " change to primary:" << current_primary
+               << " view:" << current_view;
   }
 }
 
@@ -296,15 +369,21 @@ void CheckPointManager::SyncStatus() {
     std::unique_ptr<Request> checkpoint_request = NewRequest(
         Request::TYPE_STATUS_SYNC, Request(), config_.GetSelfInfo().id());
     checkpoint_data.set_seq(last_seq);
+    checkpoint_data.set_view(sys_info_->GetCurrentView());
+    checkpoint_data.set_primary_id(sys_info_->GetPrimaryId());
     checkpoint_data.SerializeToString(checkpoint_request->mutable_data());
     replica_communicator_->BroadCast(*checkpoint_request);
 
     LOG(ERROR) << " sync status last seq:" << last_seq
-               << " last time:" << last_time;
-    if (last_check_seq == last_seq && last_time > 300) {
+               << " last time:" << last_time
+               << " primary:" << sys_info_->GetPrimaryId()
+               << " view:" << sys_info_->GetCurrentView();
+    if (last_check_seq == last_seq && last_time > 5) {
       CheckStatus(last_seq);
       last_time = 0;
     }
+    CheckSysStatus();
+
     if (last_seq != last_check_seq) {
       last_check_seq = last_seq;
       last_time = 0;
@@ -325,6 +404,8 @@ void CheckPointManager::UpdateCheckPointStatus() {
   while (!stop_) {
     std::unique_ptr<Request> request = nullptr;
     if (!pendings.empty()) {
+      LOG(ERROR) << " last seq:" << last_seq_
+                 << " pending:" << pendings.begin()->second->seq();
       if (pendings.begin()->second->seq() == last_seq_ + 1) {
         request = std::move(pendings.begin()->second);
         pendings.erase(pendings.begin());
@@ -338,8 +419,8 @@ void CheckPointManager::UpdateCheckPointStatus() {
     }
     std::string hash_ = request->hash();
     uint64_t current_seq = request->seq();
-    // LOG(ERROR) << "update checkpoint seq :" << last_seq_ << " current:" <<
-    // current_seq;
+    LOG(ERROR) << "update checkpoint seq :" << last_seq_
+               << " current:" << current_seq;
     if (current_seq != last_seq_ + 1) {
       LOG(ERROR) << "seq invalid:" << last_seq_ << " current:" << current_seq;
       if (current_seq > last_seq_ + 1) {
@@ -354,13 +435,13 @@ void CheckPointManager::UpdateCheckPointStatus() {
     }
     bool is_recovery = request->is_recovery();
 
-    if (current_seq == last_ckpt_seq + water_mark) {
+    LOG(ERROR) << " current seq:" << current_seq << " water mark:" << water_mark
+               << " current stable seq:" << current_stable_seq_;
+    if (current_seq > 0 && current_seq % water_mark == 0) {
       last_ckpt_seq = current_seq;
-      if (!is_recovery) {
-        BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs,
-                            stable_seqs);
-      }
+      BroadcastCheckPoint(last_ckpt_seq, last_hash_, stable_hashs, stable_seqs);
     }
+    ClearCommittedStatus(current_seq);
   }
   return;
 }
@@ -411,10 +492,12 @@ CheckPointManager::PopStableSeqHash() {
 
 uint64_t CheckPointManager::GetHighestPreparedSeq() {
   std::lock_guard<std::mutex> lk(lt_mutex_);
+  LOG(ERROR) << "get high prepared seq:" << highest_prepared_seq_;
   return highest_prepared_seq_;
 }
 
 void CheckPointManager::SetHighestPreparedSeq(uint64_t seq) {
+  LOG(ERROR) << "set high prepared seq:" << seq;
   std::lock_guard<std::mutex> lk(lt_mutex_);
   highest_prepared_seq_ = seq;
 }
@@ -427,6 +510,45 @@ sem_t* CheckPointManager::CommitableSeqSignal() {
 uint64_t CheckPointManager::GetCommittableSeq() {
   std::lock_guard<std::mutex> lk(lt_mutex_);
   return committable_seq_;
+}
+
+void CheckPointManager::SetUnstableCkpt(uint64_t unstable_check_ckpt) {
+  LOG(ERROR) << " set unstable ckpt:" << unstable_check_ckpt;
+  {
+    std::lock_guard<std::mutex> lk(lt_mutex_);
+    unstable_check_ckpt_ = unstable_check_ckpt;
+  }
+}
+
+uint64_t CheckPointManager::GetUnstableCkpt() {
+  std::lock_guard<std::mutex> lk(lt_mutex_);
+  LOG(ERROR) << " get unstable ckpt:" << unstable_check_ckpt_;
+  return unstable_check_ckpt_;
+}
+
+void CheckPointManager::AddCommitState(uint64_t seq) {
+  LOG(ERROR) << " add commited state:" << seq;
+  std::lock_guard<std::mutex> lk(lt_mutex_);
+  committed_status_[seq] = true;
+}
+
+bool CheckPointManager::IsCommitted(uint64_t seq) {
+  std::lock_guard<std::mutex> lk(lt_mutex_);
+  if (seq < last_seq_) {
+    return true;
+  }
+  return committed_status_.find(seq) != committed_status_.end();
+}
+
+void CheckPointManager::ClearCommittedStatus(uint64_t seq) {
+  std::lock_guard<std::mutex> lk(lt_mutex_);
+  while (!committed_status_.empty()) {
+    if (committed_status_.begin()->first <= seq) {
+      committed_status_.erase(committed_status_.begin());
+    } else {
+      break;
+    }
+  }
 }
 
 // void CheckPointManager::SetLastExecutedSeq(uint64_t latest_executed_seq){

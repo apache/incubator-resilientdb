@@ -59,7 +59,7 @@ class QueryTest : public Test {
       : global_stats_(Stats::GetGlobalStats(1)),
         config_(GenerateConfig()),
         system_info_(config_),
-        checkpoint_manager_(config_, &replica_communicator_, nullptr),
+        checkpoint_manager_(config_, &replica_communicator_, nullptr, &system_info_),
         message_manager_(config_, nullptr, &checkpoint_manager_, &system_info_),
         recovery_(config_, &checkpoint_manager_, &system_info_, nullptr),
         query_(config_, &recovery_),

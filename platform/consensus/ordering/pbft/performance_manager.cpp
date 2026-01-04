@@ -195,7 +195,8 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
 
   std::unique_ptr<BatchUserResponse> batch_response =
       std::make_unique<BatchUserResponse>();
-  if (!batch_response->ParseFromString(request->data())) {
+  if (!batch_response->ParseFromString(request->data()) ||
+      request->seq() == 0) {
     LOG(ERROR) << "parse response fail:" << request->data().size()
                << " seq:" << request->seq();
     return CollectorResultCode::INVALID;

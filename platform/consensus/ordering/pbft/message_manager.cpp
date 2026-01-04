@@ -63,6 +63,8 @@ MessageManager::MessageManager(
   transaction_executor_->SetSeqUpdateNotifyFunc(
       [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
   checkpoint_manager_->SetExecutor(transaction_executor_.get());
+  checkpoint_manager_->SetResetExecute(
+      [&](uint64_t seq) { SetNextCommitSeq(seq); });
 }
 
 MessageManager::~MessageManager() {
@@ -84,6 +86,7 @@ uint64_t MessageManager ::GetCurrentView() const {
 }
 
 void MessageManager::SetNextSeq(uint64_t seq) {
+  LOG(ERROR) << "set next old seq:" << next_seq_;
   next_seq_ = seq;
   LOG(ERROR) << "set next seq:" << next_seq_;
 }
@@ -158,7 +161,6 @@ bool MessageManager::MayConsensusChangeStatus(
         return status->compare_exchange_strong(
             old_status, TransactionStatue::READY_EXECUTE,
             std::memory_order_acq_rel, std::memory_order_acq_rel);
-        return true;
       }
       break;
   }
@@ -174,6 +176,7 @@ bool MessageManager::MayConsensusChangeStatus(
 CollectorResultCode MessageManager::AddConsensusMsg(
     const SignatureInfo& signature, std::unique_ptr<Request> request) {
   if (request == nullptr || !IsValidMsg(*request)) {
+    LOG(ERROR) << " msg not invalid";
     return CollectorResultCode::INVALID;
   }
 
@@ -181,6 +184,10 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   uint64_t seq = request->seq();
   int resp_received_count = 0;
   int proxy_id = request->proxy_id();
+  if (checkpoint_manager_->IsCommitted(seq)) {
+    LOG(ERROR) << " seq:" << seq << " type:" << type << " has been committed";
+    return CollectorResultCode::STATE_CHANGED;
+  }
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
@@ -194,9 +201,15 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   if (ret == 1) {
     SetLastCommittedTime(proxy_id);
   } else if (ret != 0) {
+    LOG(ERROR) << " add request fail";
     return CollectorResultCode::INVALID;
   }
   if (resp_received_count > 0) {
+    if (type == Request::TYPE_COMMIT) {
+      if (checkpoint_manager_) {
+        checkpoint_manager_->AddCommitState(seq);
+      }
+    }
     return CollectorResultCode::STATE_CHANGED;
   }
   return CollectorResultCode::OK;
@@ -204,10 +217,6 @@ CollectorResultCode MessageManager::AddConsensusMsg(
 
 std::vector<RequestInfo> MessageManager::GetPreparedProof(uint64_t seq) {
   return collector_pool_->GetCollector(seq)->GetPreparedProof();
-}
-
-TransactionStatue MessageManager::GetTransactionState(uint64_t seq) {
-  return collector_pool_->GetCollector(seq)->GetStatus();
 }
 
 int MessageManager::GetReplicaState(ReplicaState* state) {
@@ -220,9 +229,11 @@ Storage* MessageManager::GetStorage() {
 }
 
 void MessageManager::SetNextCommitSeq(int seq) {
+  LOG(ERROR) << " set next commit seq:" << seq;
   SetNextSeq(seq);
+  SetHighestPreparedSeq(seq);
   collector_pool_->Reset(seq);
-  checkpoint_manager_->SetLastCommit(seq);
+  checkpoint_manager_->SetLastCommit(seq - 1);
   return transaction_executor_->SetPendingExecutedSeq(seq);
 }
 

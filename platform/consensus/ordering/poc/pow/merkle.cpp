@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "platform/consensus/ordering/poc/pow/merkle.h"
 
 #include "platform/consensus/ordering/poc/pow/miner_utils.h"

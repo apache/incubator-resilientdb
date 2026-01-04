@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "platform/consensus/ordering/poc/pow/block_manager.h"
 
 #include <glog/logging.h>

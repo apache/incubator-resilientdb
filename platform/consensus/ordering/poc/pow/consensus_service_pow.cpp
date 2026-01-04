@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #include "platform/consensus/ordering/poc/pow/consensus_service_pow.h"
 
 #include "common/utils/utils.h"
