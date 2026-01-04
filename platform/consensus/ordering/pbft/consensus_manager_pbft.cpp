@@ -32,7 +32,8 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
     : ConsensusManager(config),
       system_info_(std::make_unique<SystemInfo>(config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
-          config, GetBroadCastClient(), GetSignatureVerifier(), system_info_.get())),
+          config, GetBroadCastClient(), GetSignatureVerifier(),
+          system_info_.get())),
       message_manager_(std::make_unique<MessageManager>(
           config, std::move(executor), checkpoint_manager_.get(),
           system_info_.get())),
@@ -65,7 +66,8 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
 
   recovery_->ReadLogs(
       [&](const SystemInfoData& data) {
-        LOG(ERROR)<<" read data info:"<<data.view()<<" primary:"<<data.primary_id();
+        LOG(ERROR) << " read data info:" << data.view()
+                   << " primary:" << data.primary_id();
         system_info_->SetCurrentView(data.view());
         system_info_->SetPrimary(data.primary_id());
       },
@@ -73,7 +75,7 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
         return InternalConsensusCommit(std::move(context), std::move(request));
       },
       [&](int seq) { message_manager_->SetNextCommitSeq(seq + 1); });
- LOG(ERROR)<<" recovery is done";
+  LOG(ERROR) << " recovery is done";
 }
 
 void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
@@ -81,7 +83,7 @@ void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
 }
 
 void ConsensusManagerPBFT::Start() {
- LOG(ERROR)<<" ======= start";
+  LOG(ERROR) << " ======= start";
   ConsensusManager::Start();
   recovery_thread_ =
       std::thread(&ConsensusManagerPBFT::RemoteRecoveryProcess, this);
@@ -146,8 +148,9 @@ ConsensusManagerPBFT::PopComplainedRequest() {
 // The implementation of PBFT.
 int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
-   LOG(INFO) << "recv impl type:" << request->type() << " "
-            << "sender id:" << request->sender_id()<<" primary:"<<system_info_->GetPrimaryId();
+  LOG(INFO) << "recv impl type:" << request->type() << " "
+            << "sender id:" << request->sender_id()
+            << " primary:" << system_info_->GetPrimaryId();
   // If it is in viewchange, push the request to the queue
   // for the requests from the new view which come before
   // the local new view done.
@@ -193,10 +196,11 @@ int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
 
 int ConsensusManagerPBFT::InternalConsensusCommit(
     std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-   LOG(ERROR) << "recv impl type:" << request->type() << " "
-          << "sender id:" << request->sender_id()<<" seq:"<<request->seq() 
-          <<" primary:"<<system_info_->GetPrimaryId() 
-          << " is convery:"<<request->is_recovery() ;
+  LOG(ERROR) << "recv impl type:" << request->type() << " "
+             << "sender id:" << request->sender_id()
+             << " seq:" << request->seq()
+             << " primary:" << system_info_->GetPrimaryId()
+             << " is convery:" << request->is_recovery();
 
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
@@ -289,7 +293,7 @@ int ConsensusManagerPBFT::ProcessRecoveryData(
     return -2;
   }
   LOG(ERROR) << " obtain min seq:" << recovery_data.min_seq()
-             << " max seq:" << recovery_data.max_seq() 
+             << " max seq:" << recovery_data.max_seq()
              << " from:" << request->sender_id();
   if (request->sender_id() == config_.GetSelfInfo().id()) {
     return 0;
@@ -340,25 +344,27 @@ void ConsensusManagerPBFT::RemoteRecoveryProcess() {
                << " data size:" << recovery_data.request_size()
                << " signrue:" << recovery_data.signature_size();
 
-
     for (int i = 0; i < recovery_data.request().size(); i++) {
       uint64_t seq = recovery_data.request(i).seq();
       int type = recovery_data.request(i).type();
-      if(checkpoint_manager_->IsCommitted(seq)) {
-         LOG(ERROR)<<" check recovery remote seq:"<<seq<<" type:"<<type<<" has been recovered.";
+      if (checkpoint_manager_->IsCommitted(seq)) {
+        LOG(ERROR) << " check recovery remote seq:" << seq << " type:" << type
+                   << " has been recovered.";
         continue;
       }
 
       uint64_t last_seq = checkpoint_manager_->GetLastCommit();
-      if( seq - last_seq > 1000 ) {
-         LOG(ERROR)<<" check seq:"<<seq<<" last:"<<last_seq<<" data is missing, skip.";
+      if (seq - last_seq > 1000) {
+        LOG(ERROR) << " check seq:" << seq << " last:" << last_seq
+                   << " data is missing, skip.";
         continue;
       }
 
       auto context = std::make_unique<Context>();
       context->signature = recovery_data.signature(i);
       auto request = std::make_unique<Request>(recovery_data.request(i));
-      view_change_manager_->SetCurrentViewAndNewPrimary(request->current_view());
+      view_change_manager_->SetCurrentViewAndNewPrimary(
+          request->current_view());
       request->set_force_recovery(true);
 
       InternalConsensusCommit(std::move(context), std::move(request));

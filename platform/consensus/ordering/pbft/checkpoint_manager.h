@@ -38,8 +38,7 @@ class CheckPointManager : public CheckPoint {
  public:
   CheckPointManager(const ResDBConfig& config,
                     ReplicaCommunicator* replica_communicator,
-                    SignatureVerifier* verifier,
-                    SystemInfo * sys_info);
+                    SignatureVerifier* verifier, SystemInfo* sys_info);
   virtual ~CheckPointManager();
 
   void SetLastCommit(uint64_t seq);
@@ -87,7 +86,7 @@ class CheckPointManager : public CheckPoint {
   bool IsCommitted(uint64_t seq);
   void ClearCommittedStatus(uint64_t seq);
 
-  void SetResetExecute(std::function<void (uint64_t seq)>);
+  void SetResetExecute(std::function<void(uint64_t seq)>);
 
  private:
   void UpdateCheckPointStatus();
@@ -138,13 +137,13 @@ class CheckPointManager : public CheckPoint {
   std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
   std::map<int, uint64_t> status_;
-  std::map<int,int> last_update_time_;
+  std::map<int, int> last_update_time_;
   int replica_timeout_ = 60;
   uint64_t unstable_check_ckpt_;
   std::map<int, uint64_t> committed_status_;
-  std::function<void (uint64_t)> reset_execute_func_;
-  SystemInfo * sys_info_;
-  std::map<int, std::pair<int, uint64_t> > view_status_;
+  std::function<void(uint64_t)> reset_execute_func_;
+  SystemInfo* sys_info_;
+  std::map<int, std::pair<int, uint64_t>> view_status_;
 };
 
 }  // namespace resdb

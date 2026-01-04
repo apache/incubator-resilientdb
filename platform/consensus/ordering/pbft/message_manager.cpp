@@ -63,10 +63,8 @@ MessageManager::MessageManager(
   transaction_executor_->SetSeqUpdateNotifyFunc(
       [&](uint64_t seq) { collector_pool_->Update(seq - 1); });
   checkpoint_manager_->SetExecutor(transaction_executor_.get());
-  checkpoint_manager_->SetResetExecute([&](uint64_t seq) {
-    SetNextCommitSeq(seq);
-  });
-
+  checkpoint_manager_->SetResetExecute(
+      [&](uint64_t seq) { SetNextCommitSeq(seq); });
 }
 
 MessageManager::~MessageManager() {
@@ -178,7 +176,7 @@ bool MessageManager::MayConsensusChangeStatus(
 CollectorResultCode MessageManager::AddConsensusMsg(
     const SignatureInfo& signature, std::unique_ptr<Request> request) {
   if (request == nullptr || !IsValidMsg(*request)) {
-    LOG(ERROR)<<" msg not invalid";
+    LOG(ERROR) << " msg not invalid";
     return CollectorResultCode::INVALID;
   }
 
@@ -186,11 +184,10 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   uint64_t seq = request->seq();
   int resp_received_count = 0;
   int proxy_id = request->proxy_id();
-  if(checkpoint_manager_->IsCommitted(seq)){
-    LOG(ERROR)<<" seq:"<<seq<<" type:"<<type<<" has been committed";
+  if (checkpoint_manager_->IsCommitted(seq)) {
+    LOG(ERROR) << " seq:" << seq << " type:" << type << " has been committed";
     return CollectorResultCode::STATE_CHANGED;
   }
-
 
   int ret = collector_pool_->GetCollector(seq)->AddRequest(
       std::move(request), signature, type == Request::TYPE_PRE_PREPARE,
@@ -204,12 +201,12 @@ CollectorResultCode MessageManager::AddConsensusMsg(
   if (ret == 1) {
     SetLastCommittedTime(proxy_id);
   } else if (ret != 0) {
-     LOG(ERROR)<<" add request fail";
+    LOG(ERROR) << " add request fail";
     return CollectorResultCode::INVALID;
   }
   if (resp_received_count > 0) {
-    if(type == Request::TYPE_COMMIT) {
-      if(checkpoint_manager_) {
+    if (type == Request::TYPE_COMMIT) {
+      if (checkpoint_manager_) {
         checkpoint_manager_->AddCommitState(seq);
       }
     }
@@ -222,7 +219,6 @@ std::vector<RequestInfo> MessageManager::GetPreparedProof(uint64_t seq) {
   return collector_pool_->GetCollector(seq)->GetPreparedProof();
 }
 
-
 int MessageManager::GetReplicaState(ReplicaState* state) {
   *state->mutable_replica_config() = config_.GetConfigData();
   return 0;
@@ -233,11 +229,11 @@ Storage* MessageManager::GetStorage() {
 }
 
 void MessageManager::SetNextCommitSeq(int seq) {
-  LOG(ERROR)<<" set next commit seq:"<<seq;
+  LOG(ERROR) << " set next commit seq:" << seq;
   SetNextSeq(seq);
   SetHighestPreparedSeq(seq);
   collector_pool_->Reset(seq);
-  checkpoint_manager_->SetLastCommit(seq-1);
+  checkpoint_manager_->SetLastCommit(seq - 1);
   return transaction_executor_->SetPendingExecutedSeq(seq);
 }
 

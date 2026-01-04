@@ -121,7 +121,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   // Artificially make the primary stop proposing new trasactions.
 
   if (!seq.ok()) {
-    LOG(ERROR)<<" seq fail";
+    LOG(ERROR) << " seq fail";
     duplicate_manager_->EraseProposed(user_request->hash());
     global_stats_->SeqFail();
     Request request;
@@ -161,26 +161,31 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     if (message_manager_->GetNextSeq() == 0 ||
         request->seq() == message_manager_->GetNextSeq()) {
       message_manager_->SetNextSeq(request->seq() + 1);
-      while(!pending_recovery_.empty()) {
-        LOG(ERROR)<<" pending size:"<<pending_recovery_.size()<<" first:"<<pending_recovery_.begin()->first<<" next:"<<message_manager_->GetNextSeq();
-        if(pending_recovery_.begin()->first <= message_manager_->GetNextSeq()) {
-          if(pending_recovery_.begin()->first == message_manager_->GetNextSeq()){
+      while (!pending_recovery_.empty()) {
+        LOG(ERROR) << " pending size:" << pending_recovery_.size()
+                   << " first:" << pending_recovery_.begin()->first
+                   << " next:" << message_manager_->GetNextSeq();
+        if (pending_recovery_.begin()->first <=
+            message_manager_->GetNextSeq()) {
+          if (pending_recovery_.begin()->first ==
+              message_manager_->GetNextSeq()) {
             message_manager_->SetNextSeq(pending_recovery_.begin()->first + 1);
-            message_manager_->AddConsensusMsg(pending_recovery_.begin()->second.first->signature,
+            message_manager_->AddConsensusMsg(
+                pending_recovery_.begin()->second.first->signature,
                 std::move(pending_recovery_.begin()->second.second));
           }
           pending_recovery_.erase(pending_recovery_.begin());
-        }
-        else {
+        } else {
           break;
         }
       }
 
-    } else if( request->seq() > message_manager_->GetNextSeq() ) {
+    } else if (request->seq() > message_manager_->GetNextSeq()) {
       uint64_t seq = request->seq();
-      pending_recovery_[seq] = std::make_pair(std::move(context), std::move(request));
+      pending_recovery_[seq] =
+          std::make_pair(std::move(context), std::move(request));
       return 0;
-    }else if(!request->force_recovery()){
+    } else if (!request->force_recovery()) {
       LOG(ERROR) << " recovery request not valid:"
                  << " current seq:" << message_manager_->GetNextSeq()
                  << " data seq:" << request->seq();
@@ -196,7 +201,6 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                << request->sender_id() << " seq:" << request->seq();
     return -2;
   }
-
 
   if (request->sender_id() != config_.GetSelfInfo().id()) {
     if (pre_verify_func_ && !pre_verify_func_(*request)) {
@@ -250,8 +254,8 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   }
   if (request->is_recovery()) {
     uint64_t seq = request->seq();
-    CollectorResultCode ret = message_manager_->AddConsensusMsg(context->signature,
-        std::move(request));
+    CollectorResultCode ret = message_manager_->AddConsensusMsg(
+        context->signature, std::move(request));
     if (ret == CollectorResultCode::STATE_CHANGED) {
       if (message_manager_->GetHighestPreparedSeq() < seq) {
         message_manager_->SetHighestPreparedSeq(seq);
@@ -334,7 +338,7 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_current_view(batch_resp->current_view());
     request.set_proxy_id(batch_resp->proxy_id());
     request.set_primary_id(batch_resp->primary_id());
-    LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
+    LOG(ERROR) << "send back to proxy:" << batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
   }

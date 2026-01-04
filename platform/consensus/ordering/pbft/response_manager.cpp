@@ -184,11 +184,15 @@ CollectorResultCode ResponseManager::AddResponseMsg(
     return CollectorResultCode::INVALID;
   }
 
-  LOG(ERROR)<<" receive request seq:"<<request->seq()<<" type:"<<request->type()<<" local id:"<<batch_response->local_id();
+  LOG(ERROR) << " receive request seq:" << request->seq()
+             << " type:" << request->type()
+             << " local id:" << batch_response->local_id();
   uint64_t seq = batch_response->local_id();
   request->set_seq(seq);
-  if(seq == 0) {
-    LOG(ERROR)<<" local id is invalid:"<<seq<<" request seq:"<<request->seq()<<" type:"<<request->type();
+  if (seq == 0) {
+    LOG(ERROR) << " local id is invalid:" << seq
+               << " request seq:" << request->seq()
+               << " type:" << request->type();
     return CollectorResultCode::INVALID;
   }
 
@@ -207,7 +211,7 @@ CollectorResultCode ResponseManager::AddResponseMsg(
   if (ret != 0) {
     return CollectorResultCode::INVALID;
   }
-  LOG(ERROR)<<" get receive count:"<<resp_received_count<<" seq:"<<seq;
+  LOG(ERROR) << " get receive count:" << resp_received_count << " seq:" << seq;
   if (resp_received_count > 0) {
     collector_pool_->Update(seq);
     RemoveWaitingResponseRequest(hash);
@@ -342,7 +346,8 @@ int ResponseManager::DoBatch(
   new_request->set_proxy_id(config_.GetSelfInfo().id());
   replica_communicator_->SendMessage(*new_request, GetPrimary());
   send_num_++;
-   LOG(INFO) << "send msg to primary:" << GetPrimary() << " batch size:" << batch_req.size();
+  LOG(INFO) << "send msg to primary:" << GetPrimary()
+            << " batch size:" << batch_req.size();
   AddWaitingResponseRequest(std::move(new_request));
   return 0;
 }

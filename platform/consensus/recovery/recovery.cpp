@@ -114,7 +114,7 @@ void Recovery::UpdateStableCheckPoint() {
   }
   while (!stop_) {
     int64_t latest_ckpt = checkpoint_->GetStableCheckpoint();
-    LOG(ERROR) << "get stable ckpt:" << latest_ckpt<<" last:"<<last_ckpt_;
+    LOG(ERROR) << "get stable ckpt:" << latest_ckpt << " last:" << last_ckpt_;
     if (last_ckpt_ >= latest_ckpt) {
       sleep(recovery_ckpt_time_s_);
       continue;
@@ -150,7 +150,8 @@ void Recovery::GetLastFile() {
       if (m_time_s < time_s) {
         file_path_ = entry.path();
         last_ckpt_ = ckpt;
-        LOG(ERROR) << "get last path:" << file_name << " min:" << min_seq<<" time_s:"<<time_s<<" min:"<<m_time_s;
+        LOG(ERROR) << "get last path:" << file_name << " min:" << min_seq
+                   << " time_s:" << time_s << " min:" << m_time_s;
         m_time_s = time_s;
       }
     }
@@ -235,14 +236,14 @@ void Recovery::OpenFile(const std::string& path) {
 
   lseek(fd_, 0, SEEK_END);
   LOG(ERROR) << "open file:" << path << " pos:" << lseek(fd_, 0, SEEK_CUR)
-            << " fd:" << fd_;
+             << " fd:" << fd_;
   assert(fd_ >= 0);
 }
 
 void Recovery::WriteSystemInfo() {
   int view = system_info_->GetCurrentView();
   int primary_id = system_info_->GetPrimaryId();
-  LOG(ERROR)<<"write system info:"<<primary_id<<" view:"<<view;
+  LOG(ERROR) << "write system info:" << primary_id << " view:" << view;
   SystemInfoData data;
   data.set_view(view);
   data.set_primary_id(primary_id);
@@ -528,8 +529,11 @@ void Recovery::ReadLogsFromFiles(
   }
   uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
-     //LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data seq:"<<recovery_data->request->seq()<<" type:"<<recovery_data->request->type();
-    if (ckpt < recovery_data->request->seq() || recovery_data->request->type() == Request::TYPE_NEWVIEW) {
+    // LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data
+    // seq:"<<recovery_data->request->seq()<<"
+    // type:"<<recovery_data->request->type();
+    if (ckpt < recovery_data->request->seq() ||
+        recovery_data->request->type() == Request::TYPE_NEWVIEW) {
       recovery_data->request->set_is_recovery(true);
       max_seq = recovery_data->request->seq();
       call_back(std::move(recovery_data->context),
@@ -609,7 +613,7 @@ Recovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
         path.second, need_min_seq - 1, 0, [&](const SystemInfoData& data) {},
         [&](std::unique_ptr<Context> context,
             std::unique_ptr<Request> request) {
-          //LOG(ERROR) << "check get data from recovery file seq:"
+          // LOG(ERROR) << "check get data from recovery file seq:"
           //           << request->seq();
           if (request->seq() >= need_min_seq &&
               request->seq() <= need_max_seq) {

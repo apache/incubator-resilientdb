@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #pragma once
 
 #include "platform/consensus/ordering/poc/proto/pow.pb.h"

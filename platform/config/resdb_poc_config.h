@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 #pragma once
 
 #include "platform/config/resdb_config.h"

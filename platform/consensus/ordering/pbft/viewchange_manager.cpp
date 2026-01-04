@@ -87,7 +87,7 @@ ViewChangeManager::ViewChangeManager(const ResDBConfig& config,
   if (config_.GetConfigData().enable_viewchange()) {
     collector_pool_ = message_manager->GetCollectorPool();
     sem_init(&viewchange_timer_signal_, 0, 0);
-    //server_checking_timeout_thread_ =
+    // server_checking_timeout_thread_ =
     //    std::thread(&ViewChangeManager::MonitoringViewChangeTimeOut, this);
     checkpoint_state_thread_ =
         std::thread(&ViewChangeManager::MonitoringCheckpointState, this);
@@ -120,7 +120,7 @@ void ViewChangeManager::MayStart() {
   }
 
   checkpoint_manager_->SetTimeoutHandler([&](int replica_id) {
-    if( system_info_->GetPrimaryId() != replica_id ) {
+    if (system_info_->GetPrimaryId() != replica_id) {
       return;
     }
 
@@ -201,7 +201,8 @@ void ViewChangeManager::SetCurrentViewAndNewPrimary(uint64_t view_number) {
       config_.GetReplicaInfos()[(view_number - 1) % replicas.size()].id();
   system_info_->SetPrimary(id);
   global_stats_->ChangePrimary(id);
-  LOG(ERROR) << "View Change Happened: primary:"<<id<<" view:"<<view_number;
+  LOG(ERROR) << "View Change Happened: primary:" << id
+             << " view:" << view_number;
 }
 
 std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
@@ -210,10 +211,9 @@ std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
   for (const auto& msg : new_view_message.viewchange_messages()) {
     for (const auto& msg : msg.prepared_msg()) {
       uint64_t seq = msg.seq();
-      if(prepared_msg.find(seq) == prepared_msg.end()){
+      if (prepared_msg.find(seq) == prepared_msg.end()) {
         prepared_msg[seq] = msg.proof(0).request();
-      }
-      else if(prepared_msg[seq].type() < msg.proof(0).request().type()){
+      } else if (prepared_msg[seq].type() < msg.proof(0).request().type()) {
         prepared_msg[seq] = msg.proof(0).request();
       }
     }
@@ -235,29 +235,29 @@ std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
   std::vector<std::unique_ptr<Request>> redo_request;
   // Resent all the request with the current view number.
   for (auto i = min_s + 1; i <= max_seq; ++i) {
-      // for sequence hole, create a new request with empty data and
-      // sign by the new primary.
-      if(prepared_msg.find(i) == prepared_msg.end()) {
-        LOG(ERROR)<<" seq:"<<i<<" not prepared, in new view";
+    // for sequence hole, create a new request with empty data and
+    // sign by the new primary.
+    if (prepared_msg.find(i) == prepared_msg.end()) {
+      LOG(ERROR) << " seq:" << i << " not prepared, in new view";
+    } else {
+      LOG(ERROR) << " seq:" << i
+                 << " prepared, type:" << prepared_msg[i].type();
+    }
+    std::unique_ptr<Request> user_request = resdb::NewRequest(
+        Request::TYPE_PRE_PREPARE, Request(), config_.GetSelfInfo().id());
+    user_request->set_seq(i);
+    user_request->set_current_view(new_view_message.view_number());
+    user_request->set_hash("null" + std::to_string(i));
+    if (verifier_ && need_sign) {
+      std::string data;
+      auto signature_or = verifier_->SignMessage(data);
+      if (!signature_or.ok()) {
+        LOG(ERROR) << "Sign message fail";
+        continue;
       }
-      else {
-        LOG(ERROR)<<" seq:"<<i<<" prepared, type:"<<prepared_msg[i].type();
-      }
-      std::unique_ptr<Request> user_request = resdb::NewRequest(
-          Request::TYPE_PRE_PREPARE, Request(), config_.GetSelfInfo().id());
-      user_request->set_seq(i);
-      user_request->set_current_view(new_view_message.view_number());
-      user_request->set_hash("null" + std::to_string(i));
-      if (verifier_ && need_sign) {
-        std::string data;
-        auto signature_or = verifier_->SignMessage(data);
-        if (!signature_or.ok()) {
-          LOG(ERROR) << "Sign message fail";
-          continue;
-        }
-        *user_request->mutable_data_signature() = *signature_or;
-      }
-      redo_request.push_back(std::move(user_request));
+      *user_request->mutable_data_signature() = *signature_or;
+    }
+    redo_request.push_back(std::move(user_request));
   }
 
   return redo_request;
@@ -270,8 +270,8 @@ int ViewChangeManager::ProcessNewView(std::unique_ptr<Context> context,
     LOG(ERROR) << "Parsing new_view_msg failed.";
     return -2;
   }
-  if(request->is_recovery()) {
-    LOG(ERROR)<<" set new view";
+  if (request->is_recovery()) {
+    LOG(ERROR) << " set new view";
     SetCurrentViewAndNewPrimary(new_view_message.view_number());
     return 0;
   }
@@ -459,8 +459,8 @@ void ViewChangeManager::SendViewChangeMsg() {
   uint64_t min_seq = view_change_message.stable_ckpt().seq();
   min_seq = std::max(min_seq, checkpoint_manager_->GetUnstableCkpt());
   view_change_message.mutable_stable_ckpt()->set_seq(min_seq);
-  LOG(ERROR) << "Check prepared or committed txns from "
-            << min_seq + 1 << " to " << max_seq;
+  LOG(ERROR) << "Check prepared or committed txns from " << min_seq + 1
+             << " to " << max_seq;
 
   for (int i = min_seq + 1; i <= max_seq; ++i) {
     // seq i has been prepared or committed.
