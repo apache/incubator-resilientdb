@@ -79,7 +79,6 @@ def GenerateJsonConfig(file_name, output_file, template_file):
 
       clean_content = '\n'.join(clean_lines)
 
-      # 解析清理后的 JSON
       template_json = json.loads(clean_content)
 
       for (k,v) in template_json.items():
