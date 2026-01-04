@@ -279,6 +279,15 @@ void CheckPointManager::SetTimeoutHandler(
 void CheckPointManager::TimeoutHandler() {
   if (timeout_handler_) {
     timeout_handler_(0);
+<<<<<<< HEAD
+=======
+  }
+}
+
+void CheckPointManager::TimeoutHandler(uint32_t replica) {
+  if (timeout_handler_) {
+    timeout_handler_(replica);
+>>>>>>> master
   }
 }
 
@@ -313,8 +322,12 @@ int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
 
   status_[sender_id] = seq;
   last_update_time_[sender_id] = time(nullptr);
+<<<<<<< HEAD
   view_status_[sender_id] = std::make_pair(primary_id, view);
   LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq<<" primary:"<<primary_id<<" view:"<<view;
+=======
+  LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq;
+>>>>>>> master
   return 0;
 }
 

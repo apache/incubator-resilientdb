@@ -103,7 +103,10 @@ class CheckPointManager : public CheckPoint {
   void SyncStatus();
   void StatusProcess();
   void CheckStatus(uint64_t last_seq);
+<<<<<<< HEAD
   void CheckSysStatus();
+=======
+>>>>>>> master
   void CheckHealthy();
 
  protected:
