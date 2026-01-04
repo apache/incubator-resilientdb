@@ -146,7 +146,6 @@ bool TransactionExecutor::NeedResponse() {
 
 int TransactionExecutor::Commit(std::unique_ptr<Request> message) {
   global_stats_->IncPendingExecute();
-  LOG(ERROR)<<" commit msg:"<<message->seq();
   if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
     // LOG(ERROR)<<"add out of order exe:"<<message->seq()<<" from
     // proxy:"<<message->proxy_id();
@@ -164,7 +163,6 @@ void TransactionExecutor::AddNewData(std::unique_ptr<Request> message) {
 }
 
 std::unique_ptr<Request> TransactionExecutor::GetNextData() {
-  //LOG(ERROR)<<" want next:"<<next_execute_seq_;
   if (candidates_.empty() || candidates_.begin()->first != next_execute_seq_) {
     return nullptr;
   }

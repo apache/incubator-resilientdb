@@ -222,11 +222,6 @@ std::vector<RequestInfo> MessageManager::GetPreparedProof(uint64_t seq) {
   return collector_pool_->GetCollector(seq)->GetPreparedProof();
 }
 
-/*
-TransactionStatue MessageManager::GetTransactionState(uint64_t seq) {
-  return collector_pool_->GetCollector(seq)->GetStatus();
-}
-*/
 
 int MessageManager::GetReplicaState(ReplicaState* state) {
   *state->mutable_replica_config() = config_.GetConfigData();

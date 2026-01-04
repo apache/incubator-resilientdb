@@ -270,7 +270,6 @@ void Recovery::AddRequest(const Context* context, const Request* request) {
 }
 
 void Recovery::WriteLog(const Context* context, const Request* request) {
-  LOG(ERROR)<<" write log request type:"<<request->type();
   std::string data;
   if (request) {
     request->SerializeToString(&data);
@@ -500,9 +499,7 @@ void Recovery::ReadLogsFromFiles(
       return;
     }
     LOG(ERROR) << "read system info:" << info.DebugString();
-    //if (file_idx == 0) {
     system_callback(info);
-    //}
   }
 
   std::vector<std::unique_ptr<RecoveryData>> request_list;
@@ -531,11 +528,10 @@ void Recovery::ReadLogsFromFiles(
   }
   uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
-     LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data seq:"<<recovery_data->request->seq()<<" type:"<<recovery_data->request->type();
+     //LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data seq:"<<recovery_data->request->seq()<<" type:"<<recovery_data->request->type();
     if (ckpt < recovery_data->request->seq() || recovery_data->request->type() == Request::TYPE_NEWVIEW) {
       recovery_data->request->set_is_recovery(true);
       max_seq = recovery_data->request->seq();
-      LOG(ERROR)<<" ??? call back:"<<recovery_data->request->seq()<<" call_back:"<<(call_back?"1":"0"); 
       call_back(std::move(recovery_data->context),
                 std::move(recovery_data->request));
     }
@@ -608,7 +604,6 @@ Recovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
   std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>,
                                            std::unique_ptr<Request>>>>
       res;
-  int is_in = 0;
   for (const auto& path : list) {
     ReadLogsFromFiles(
         path.second, need_min_seq - 1, 0, [&](const SystemInfoData& data) {},

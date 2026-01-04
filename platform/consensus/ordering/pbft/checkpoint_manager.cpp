@@ -81,12 +81,10 @@ uint64_t CheckPointManager::GetStableCheckpoint() {
 
 StableCheckPoint CheckPointManager::GetStableCheckpointWithVotes() {
   std::lock_guard<std::mutex> lk(mutex_);
-  LOG(ERROR)<<"get stable ckpt:"<<stable_ckpt_.DebugString();
   return stable_ckpt_;
 }
 
 void CheckPointManager::AddCommitData(std::unique_ptr<Request> request) {
-  LOG(ERROR)<<" add commit data:"<<request->seq();
   if (config_.IsCheckPointEnabled()) {
     data_queue_.Push(std::move(request));
   }
@@ -216,7 +214,6 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
     {
       std::lock_guard<std::mutex> lk(mutex_);
       for (auto it : sender_ckpt_) {
-         LOG(ERROR)<<" get ckpt seq :"<<it.first.first<<" size:"<<it.second.size();
         if (it.second.size() >=
             static_cast<size_t>(config_.GetMinCheckpointReceiveNum())) {
           committable_seq_ = it.first.first;
@@ -263,9 +260,6 @@ void CheckPointManager::UpdateStableCheckPointStatus() {
         *stable_ckpt_.add_signatures() = vote;
       }
       current_stable_seq_ = stable_seq;
-       LOG(INFO) << "done. stable seq:" << current_stable_seq_
-                 << " votes:" << stable_ckpt_.DebugString();
-       LOG(INFO) << "done. stable seq:" << current_stable_seq_;
     }
     UpdateStableCheckPointCallback(current_stable_seq_);
   }
@@ -279,15 +273,6 @@ void CheckPointManager::SetTimeoutHandler(
 void CheckPointManager::TimeoutHandler() {
   if (timeout_handler_) {
     timeout_handler_(0);
-<<<<<<< HEAD
-=======
-  }
-}
-
-void CheckPointManager::TimeoutHandler(uint32_t replica) {
-  if (timeout_handler_) {
-    timeout_handler_(replica);
->>>>>>> master
   }
 }
 
@@ -322,12 +307,8 @@ int CheckPointManager::ProcessStatusSync(std::unique_ptr<Context> context,
 
   status_[sender_id] = seq;
   last_update_time_[sender_id] = time(nullptr);
-<<<<<<< HEAD
   view_status_[sender_id] = std::make_pair(primary_id, view);
   LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq<<" primary:"<<primary_id<<" view:"<<view;
-=======
-  LOG(ERROR) << " received from :" << sender_id << " commit status:" << seq;
->>>>>>> master
   return 0;
 }
 

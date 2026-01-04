@@ -83,7 +83,6 @@ int TransactionCollector::AddRequest(
   uint64_t seq = request->seq();
   uint64_t view = request->current_view();
   if (is_committed_) {
-    LOG(ERROR)<<" seq:"<<seq<<" is committed:";
     return -2;
   }
   if (status_.load() == EXECUTED) {
@@ -117,7 +116,6 @@ int TransactionCollector::AddRequest(
       LOG(ERROR) << "set main request data fail";
       return -2;
     }
-    LOG(ERROR)<<" seq:"<<seq<<" add main:"<<this;
     view_ = view;
     call_back(*main_request->request.get(), 1, nullptr, &status_, force);
     return 0;
@@ -144,7 +142,6 @@ int TransactionCollector::AddRequest(
             if (atomic_mian_request_.Reference() != nullptr &&
                 atomic_mian_request_.Reference()->request->hash() != hash) {
               atomic_mian_request_.Clear();
-              LOG(ERROR)<<" seq:"<<seq_<<" main clear";
               for (auto it = other_main_request_.begin();
                    it != other_main_request_.end(); it++) {
                 if ((*it)->request->hash() == hash) {
@@ -152,7 +149,6 @@ int TransactionCollector::AddRequest(
                   request_info->signature = (*it)->signature;
                   request_info->request = std::move((*it)->request);
                   atomic_mian_request_.Set(request_info);
-                  LOG(ERROR)<<" seq:"<<seq_<<" reset main";
                   break;
                 }
               }
@@ -207,7 +203,6 @@ int TransactionCollector::Commit() {
     return -2;
   }
 
-  LOG(ERROR)<<" seq:"<<seq_<<" commit:"<<this;
   auto main_request = atomic_mian_request_.Reference();
   if (main_request == nullptr) {
     LOG(ERROR) << "no main:"<<seq_;

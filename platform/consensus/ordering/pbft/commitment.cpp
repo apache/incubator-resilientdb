@@ -117,7 +117,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
   auto seq = message_manager_->AssignNextSeq();
-  LOG(ERROR)<<" get new txn seq:"<<(*seq);
 
   // Artificially make the primary stop proposing new trasactions.
 
@@ -236,7 +235,6 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   // message.
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
-      LOG(ERROR)<<" ret:"<<ret;
   if (ret == CollectorResultCode::STATE_CHANGED) {
     replica_communicator_->BroadCast(*prepare_request);
   }
@@ -250,7 +248,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     LOG(ERROR) << "user request doesn't contain signature, reject";
     return -2;
   }
-  LOG(ERROR)<< " prepare seq:"<<request->seq();
   if (request->is_recovery()) {
     uint64_t seq = request->seq();
     CollectorResultCode ret = message_manager_->AddConsensusMsg(context->signature,
@@ -260,7 +257,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
         message_manager_->SetHighestPreparedSeq(seq);
       }
     }
-  LOG(ERROR)<< " prepare seq:"<<seq<<" ret:"<<ret;
     return ret;
   }
   // global_stats_->IncPrepare();
@@ -273,7 +269,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   uint64_t seq = request->seq();
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
-    LOG(ERROR)<<" add msg seq:"<<seq<<" ret:"<<ret;
   if (ret == CollectorResultCode::STATE_CHANGED) {
     if (message_manager_->GetHighestPreparedSeq() < seq) {
       message_manager_->SetHighestPreparedSeq(seq);
@@ -303,7 +298,6 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
                << " context:" << (context == nullptr);
     return -2;
   }
-  LOG(ERROR)<< " commit seq:"<<request->seq();
   uint64_t seq = request->seq();
   if (request->is_recovery()) {
     return message_manager_->AddConsensusMsg(context->signature,

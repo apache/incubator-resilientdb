@@ -175,32 +175,6 @@ bool ViewChangeManager::IsValidViewChangeMsg(
     return false;
   }
 
-
-  uint64_t stable_seq = view_change_message.stable_ckpt().seq();
-
-  for (const auto& prepared_msg : view_change_message.prepared_msg()) {
-    if (prepared_msg.seq() <= stable_seq) {
-      continue;
-    }
-    // If there is less than 2f+1 proof, reject.
-    if (prepared_msg.proof_size() < config_.GetMinDataReceiveNum()) {
-      LOG(ERROR) << "proof[" << prepared_msg.proof_size()
-                 << "] not enough:" << config_.GetMinDataReceiveNum();
-      return false;
-    }
-    for (const auto& proof : prepared_msg.proof()) {
-      if (proof.request().seq() != prepared_msg.seq()) {
-        LOG(ERROR) << "proof seq not match";
-        return false;
-      }
-      std::string data;
-      proof.request().SerializeToString(&data);
-      if (!verifier_->VerifyMessage(data, proof.signature())) {
-        LOG(ERROR) << "proof signature not valid";
-        //return false;
-      }
-    }
-  }
   return true;
 }
 
@@ -233,15 +207,9 @@ void ViewChangeManager::SetCurrentViewAndNewPrimary(uint64_t view_number) {
 std::vector<std::unique_ptr<Request>> ViewChangeManager::GetPrepareMsg(
     const NewViewMessage& new_view_message, bool need_sign) {
   std::map<uint64_t, Request> prepared_msg;  // <sequence, digest>
-  int idx = 0;
   for (const auto& msg : new_view_message.viewchange_messages()) {
-    ++idx;
     for (const auto& msg : msg.prepared_msg()) {
       uint64_t seq = msg.seq();
-      LOG(ERROR)<<" get prepared msg:"<<seq<<" idx:"<<idx;
-      for(auto & pf: msg.proof()) {
-        LOG(ERROR)<<" get prepared msg:"<<seq<<" proof type:"<<pf.request().type();
-      }
       if(prepared_msg.find(seq) == prepared_msg.end()){
         prepared_msg[seq] = msg.proof(0).request();
       }
@@ -337,7 +305,6 @@ int ViewChangeManager::ProcessNewView(std::unique_ptr<Context> context,
     return -2;
   }
 
-  LOG(ERROR)<<" request list size:"<<request_list.size();
   std::set<uint64_t> seq_set;
   // only check the data.
   for (size_t i = 0; i < request_list.size(); ++i) {
@@ -345,7 +312,6 @@ int ViewChangeManager::ProcessNewView(std::unique_ptr<Context> context,
       LOG(ERROR) << "data not match";
       return -2;
     }
-    LOG(ERROR)<<" set request seq:"<<request_list[i]->seq();
     seq_set.insert(request_list[i]->seq());
   }
 
@@ -369,31 +335,18 @@ int ViewChangeManager::ProcessNewView(std::unique_ptr<Context> context,
   for (size_t i = 0; i < request_list.size(); ++i) {
     if (new_view_message.request(i).type() ==
         static_cast<int>(Request::TYPE_PRE_PREPARE)) {
-        /*
-      auto non_proposed_hashes =
-          collector_pool_->GetCollector(new_view_message.request(i).seq())
-              ->GetAllStoredHash();
-      for (auto& hash : non_proposed_hashes) {
-        duplicate_manager_->EraseProposed(hash);
-      }
-      */
-      //LOG(ERROR)<<"get prepare:"<<new_view_message.request(i).seq();
       replica_communicator_->SendMessage(new_view_message.request(i),
                                          config_.GetSelfInfo());
-      //LOG(ERROR)<<"get prepare:"<<new_view_message.request(i).seq()<<" done";
     } else {
       if (new_view_message.request(i).seq() >
           checkpoint_manager_->GetHighestPreparedSeq()) {
         checkpoint_manager_->SetHighestPreparedSeq(
             new_view_message.request(i).seq());
       }
-      LOG(ERROR)<<"broad new prepare:"<<new_view_message.request(i).type();
       replica_communicator_->BroadCast(new_view_message.request(i));
-      LOG(ERROR)<<"broad new prepare:"<<new_view_message.request(i).type()<<" done";
     }
   }
 
-  LOG(ERROR)<<" change state";
   ChangeStatue(ViewChangeStatus::NONE);
   return config_.GetSelfInfo().id() == system_info_->GetPrimaryId() ? -4 : 0;
 }
@@ -517,7 +470,6 @@ void ViewChangeManager::SendViewChangeMsg() {
       assert(proof_info.size() >= config_.GetMinDataReceiveNum());
       auto txn = view_change_message.add_prepared_msg();
       txn->set_seq(i);
-      LOG(ERROR)<<" get seq:"<<i<<" state: commit";
       for (const auto& info : proof_info) {
         auto proof = txn->add_proof();
         *proof->mutable_request() = *info.request;
@@ -530,7 +482,6 @@ void ViewChangeManager::SendViewChangeMsg() {
   std::unique_ptr<Request> request = NewRequest(
       Request::TYPE_VIEWCHANGE, Request(), config_.GetSelfInfo().id());
   view_change_message.SerializeToString(request->mutable_data());
-  LOG(ERROR) << "Broadcast view change";
   replica_communicator_->BroadCast(*request);
 }
 
@@ -593,7 +544,6 @@ void ViewChangeManager::MonitoringViewChangeTimeOut() {
       // [DK9] if the primary cannot get enough viewchange messages before the
       // timer is out, then it broadcasts its viewchanges messages and starts
       // the timer again.
-      LOG(ERROR) << "status :"<<status_;
       if (status_ == ViewChangeStatus::READY_VIEW_CHANGE &&
           viewchange_timeout->view == system_info_->GetCurrentView()) {
         LOG(ERROR) << "It is time to rebroacast viewchange messages";
