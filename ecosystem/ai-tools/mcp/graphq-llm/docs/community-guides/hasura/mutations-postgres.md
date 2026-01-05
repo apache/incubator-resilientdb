@@ -1,0 +1,45 @@
+---
+description: Manage mutations on Postgres with Hasura
+keywords:
+  - hasura
+  - docs
+  - postgres
+  - mutation
+slug: index
+---
+
+# Postgres: GraphQL Mutations
+
+## Introduction
+
+GraphQL mutations are used to modify data on the server (i.e. write, update or delete data).
+
+Hasura GraphQL Engine auto-generates mutations as part of the GraphQL schema from your Postgres schema model.
+
+Data of all tables in the database tracked by the GraphQL Engine can be modified over the GraphQL endpoint. If you have
+a tracked table in your database, its insert/update/delete mutation fields are added as nested fields under the
+`mutation_root` root level type.
+
+:::info Postgres Compatibility
+
+Hasura works with most [Postgres compatible flavours](/databases/postgres/index.mdx#postgres-compatible-flavors).
+
+:::
+
+## Types of mutation requests
+
+The following types of mutation requests are possible:
+
+- [Insert](/mutations/postgres/insert.mdx)
+- [Upsert](/mutations/postgres/upsert.mdx)
+- [Update](/mutations/postgres/update.mdx)
+- [Delete](/mutations/postgres/delete.mdx)
+- [Multiple mutations in a request](/mutations/postgres/multiple-mutations.mdx)
+
+## Other configuration
+
+By default, Hasura treats unset nullable variables with no default as being
+nulls. However, according to the GraphQL specification, these values should be
+removed from the query. Thus, with the experimental feature flag
+[`no_null_unbound_variable_default`](/deployment/graphql-engine-flags/reference.mdx#experimental-features),
+users can opt into this behavior.
