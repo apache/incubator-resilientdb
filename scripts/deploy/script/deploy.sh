@@ -19,6 +19,8 @@
 
 set -e
 
+export TEMPLATE_PATH=$PWD/config/pbft.config
+
 # load environment parameters
 . ./script/env.sh
 
@@ -70,7 +72,8 @@ deploy/script/generate_key.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${#ipli
 deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${output_cert_path} ${output_path} ${admin_key_path} ${deploy_iplist[@]}
 
 # build kv server
-bazel build ${server}
+#bazel build ${server} 
+bazel build ${server} --define="enable_leveldb=True"
 
 if [ $? != 0 ]
 then

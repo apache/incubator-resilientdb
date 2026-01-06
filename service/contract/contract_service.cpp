@@ -66,7 +66,8 @@ int main(int argc, char** argv) {
   std::unique_ptr<resdb::Storage> memory_db = resdb::storage::NewMemoryDB();
   auto server = CustomGenerateResDBServer<ConsensusManagerPBFT>(
       config_file, private_key_file, cert_file,
-      std::make_unique<ContractTransactionManager>(memory_db.get()), logging_dir);
+      std::make_unique<ContractTransactionManager>(memory_db.get()),
+      logging_dir);
 
   server->Run();
 }

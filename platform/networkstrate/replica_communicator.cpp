@@ -43,10 +43,9 @@ ReplicaCommunicator::ReplicaCommunicator(
       worker_threads_.push_back(std::thread([&]() { io_service_.run(); }));
     }
   }
-  LOG(ERROR)<<" tcp batch:"<<tcp_batch;
+  LOG(ERROR) << " tcp batch:" << tcp_batch;
 
   StartBroadcastInBackGround();
-
 }
 
 ReplicaCommunicator::~ReplicaCommunicator() {
@@ -124,8 +123,11 @@ void ReplicaCommunicator::StartBroadcastInBackGround() {
   });
 }
 
-void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int port) {
-  single_bq_[std::make_pair(ip,port)] = std::make_unique<BatchQueue<std::unique_ptr<QueueItem>>>("s_batch", tcp_batch_);
+void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip,
+                                                  int port) {
+  single_bq_[std::make_pair(ip, port)] =
+      std::make_unique<BatchQueue<std::unique_ptr<QueueItem>>>("s_batch",
+                                                               tcp_batch_);
 
   
   ReplicaInfo replica_info;
@@ -145,46 +147,45 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip, int por
     }
   }
 
+  single_thread_.push_back(std::thread(
+      [&](BatchQueue<std::unique_ptr<QueueItem>>* bq,
+          ReplicaInfo replica_info) {
+        while (IsRunning()) {
+          std::vector<std::unique_ptr<QueueItem>> batch_req = bq->Pop(50000);
+          if (batch_req.empty()) {
+            continue;
+          }
+          BroadcastData broadcast_data;
+          for (auto& queue_item : batch_req) {
+            broadcast_data.add_data()->swap(queue_item->data);
+          }
 
-  single_thread_.push_back(std::thread([&](BatchQueue<std::unique_ptr<QueueItem>> *bq, ReplicaInfo replica_info) {
-    while (IsRunning()) {
-      std::vector<std::unique_ptr<QueueItem>> batch_req =
-          bq->Pop(50000);
-      
-      if (batch_req.empty()) {
-        continue;
-      }
-      BroadcastData broadcast_data;
-      for (auto& queue_item : batch_req) {
-        broadcast_data.add_data()->swap(queue_item->data);
-      }
-      
-      global_stats_->SendBroadCastMsg(broadcast_data.data_size());
-      
-      int ret = SendMessageFromPool(broadcast_data, {replica_info});
-      if (ret < 0) {
-        LOG(ERROR) << "broadcast request fail:";
-      }
-      //LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<" port:"<<replica_info.port()<<" bq size:"<<batch_req.size()<<" done";
-    }
-  }, single_bq_[std::make_pair(ip,port)].get(), replica_info));
+          global_stats_->SendBroadCastMsg(broadcast_data.data_size());
+          // LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<"
+          // port:"<<replica_info.port()<<" bq size:"<<batch_req.size();
+          int ret = SendMessageFromPool(broadcast_data, {replica_info});
+          if (ret < 0) {
+            LOG(ERROR) << "broadcast request fail:";
+          }
+          // LOG(ERROR)<<" send to ip:"<<replica_info.ip()<<"
+        }
+      },
+      single_bq_[std::make_pair(ip, port)].get(), replica_info));
 }
 
-
-int ReplicaCommunicator::SendSingleMessage(const google::protobuf::Message& message, 
-const ReplicaInfo& replica_info) {
-
+int ReplicaCommunicator::SendSingleMessage(
+    const google::protobuf::Message& message, const ReplicaInfo& replica_info) {
   std::string ip = replica_info.ip();
   int port = replica_info.port();
 
-  
+  // LOG(ERROR)<<" send msg ip:"<<ip<<" port:"<<port;
   global_stats_->BroadCastMsg();
   
   if (is_use_long_conn_) {
     auto item = std::make_unique<QueueItem>();
     item->data = NetChannel::GetRawMessageString(message, verifier_);
     std::lock_guard<std::mutex> lk(smutex_);
-    if(single_bq_.find(std::make_pair(ip, port)) == single_bq_.end()){
+    if (single_bq_.find(std::make_pair(ip, port)) == single_bq_.end()) {
       StartSingleInBackGround(ip, port);
     }
     assert(single_bq_[std::make_pair(ip, port)] != nullptr);
@@ -259,13 +260,13 @@ int ReplicaCommunicator::SendMessageFromPool(
     if (client == nullptr) {
       continue;
     }
-    
+    // LOG(ERROR) << "send to:" << replica.ip();
     if (client->SendMessage(data) == 0) {
       ret++;
     } else {
       LOG(ERROR) << "send to:" << replica.ip() << " fail";
     }
-    
+    // LOG(ERROR) << "send to:" << replica.ip()<<" done";
   }
   return ret;
 }
@@ -297,7 +298,7 @@ AsyncReplicaClient* ReplicaCommunicator::GetClientFromPool(
     auto client = std::make_unique<AsyncReplicaClient>(
         &io_service_, ip, port + (is_use_long_conn_ ? 10000 : 0), true);
     client_pools_[std::make_pair(ip, port)] = std::move(client);
-    //StartSingleInBackGround(ip, port);
+    // StartSingleInBackGround(ip, port);
   }
   return client_pools_[std::make_pair(ip, port)].get();
 }

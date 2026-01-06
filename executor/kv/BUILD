@@ -28,9 +28,9 @@ cc_library(
         "//chain/storage",
         "//common:comm",
         "//executor/common:transaction_manager",
+        "//executor/contract/executor:contract_executor",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
-        "//executor/contract/executor:contract_executor",
     ],
 )
 

@@ -33,6 +33,7 @@ class LockFreeCollectorPool {
 
   TransactionCollector* GetCollector(uint64_t seq);
   void Update(uint64_t seq);
+  void Reset(uint64_t start_seq);
 
  private:
   std::string name_;

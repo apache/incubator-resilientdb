@@ -24,7 +24,7 @@
 //#include "crow_all.h"
 
 int main() {
-  crow::SimpleApp app; // define your crow application
+  crow::SimpleApp app;  // define your crow application
 
   // define your endpoint at the root directory
   CROW_ROUTE(app, "/")

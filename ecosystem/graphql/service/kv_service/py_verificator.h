@@ -24,11 +24,11 @@
 namespace sdk {
 
 class PYVerificator {
-public:
+ public:
   PYVerificator();
   ~PYVerificator();
 
   bool Validate(const std::string &transaction);
 };
 
-} // namespace sdk
+}  // namespace sdk

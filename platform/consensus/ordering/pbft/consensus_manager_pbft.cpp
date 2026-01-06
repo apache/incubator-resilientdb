@@ -32,15 +32,14 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
     : ConsensusManager(config),
       system_info_(std::make_unique<SystemInfo>(config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
-          config, GetBroadCastClient(), GetSignatureVerifier())),
+          config, GetBroadCastClient(), GetSignatureVerifier(),
+          system_info_.get())),
       message_manager_(std::make_unique<MessageManager>(
           config, std::move(executor), checkpoint_manager_.get(),
           system_info_.get())),
       commitment_(std::make_unique<Commitment>(config_, message_manager_.get(),
                                                GetBroadCastClient(),
                                                GetSignatureVerifier())),
-      query_(std::make_unique<Query>(config_, message_manager_.get(),
-                                     std::move(query_executor))),
       response_manager_(config_.IsPerformanceRunning()
                             ? nullptr
                             : std::make_unique<ResponseManager>(
@@ -56,7 +55,9 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
           system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
       recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
                                            system_info_.get(),
-                                           message_manager_->GetStorage())) {
+                                           message_manager_->GetStorage())),
+      query_(std::make_unique<Query>(config_, recovery_.get(),
+                                     std::move(query_executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
@@ -65,19 +66,28 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
 
   recovery_->ReadLogs(
       [&](const SystemInfoData& data) {
+        LOG(ERROR) << " read data info:" << data.view()
+                   << " primary:" << data.primary_id();
         system_info_->SetCurrentView(data.view());
         system_info_->SetPrimary(data.primary_id());
       },
       [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         return InternalConsensusCommit(std::move(context), std::move(request));
-      });
+      },
+      [&](int seq) { message_manager_->SetNextCommitSeq(seq + 1); });
+  LOG(ERROR) << " recovery is done";
 }
 
 void ConsensusManagerPBFT::SetNeedCommitQC(bool need_qc) {
   commitment_->SetNeedCommitQC(need_qc);
 }
 
-void ConsensusManagerPBFT::Start() { ConsensusManager::Start(); }
+void ConsensusManagerPBFT::Start() {
+  LOG(ERROR) << " ======= start";
+  ConsensusManager::Start();
+  recovery_thread_ =
+      std::thread(&ConsensusManagerPBFT::RemoteRecoveryProcess, this);
+}
 
 std::vector<ReplicaInfo> ConsensusManagerPBFT::GetReplicas() {
   return message_manager_->GetReplicas();
@@ -138,8 +148,9 @@ ConsensusManagerPBFT::PopComplainedRequest() {
 // The implementation of PBFT.
 int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
-  // LOG(INFO) << "recv impl type:" << request->type() << " "
-  //          << "sender id:" << request->sender_id();
+  LOG(INFO) << "recv impl type:" << request->type() << " "
+            << "sender id:" << request->sender_id()
+            << " primary:" << system_info_->GetPrimaryId();
   // If it is in viewchange, push the request to the queue
   // for the requests from the new view which come before
   // the local new view done.
@@ -185,8 +196,11 @@ int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
 
 int ConsensusManagerPBFT::InternalConsensusCommit(
     std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-  // LOG(INFO) << "recv impl type:" << request->type() << " "
-  //         << "sender id:" << request->sender_id()<<" seq:"<<request->seq();
+  LOG(ERROR) << "recv impl type:" << request->type() << " "
+             << "sender id:" << request->sender_id()
+             << " seq:" << request->seq()
+             << " primary:" << system_info_->GetPrimaryId()
+             << " is convery:" << request->is_recovery();
 
   switch (request->type()) {
     case Request::TYPE_CLIENT_REQUEST:
@@ -236,6 +250,9 @@ int ConsensusManagerPBFT::InternalConsensusCommit(
     case Request::TYPE_CHECKPOINT:
       return checkpoint_manager_->ProcessCheckPoint(std::move(context),
                                                     std::move(request));
+    case Request::TYPE_STATUS_SYNC:
+      return checkpoint_manager_->ProcessStatusSync(std::move(context),
+                                                    std::move(request));
     case Request::TYPE_VIEWCHANGE:
       return view_change_manager_->ProcessViewChange(std::move(context),
                                                      std::move(request));
@@ -249,6 +266,11 @@ int ConsensusManagerPBFT::InternalConsensusCommit(
                                             std::move(request));
     case Request::TYPE_CUSTOM_QUERY:
       return query_->ProcessCustomQuery(std::move(context), std::move(request));
+    case Request::TYPE_RECOVERY_DATA:
+      return ProcessRecoveryData(std::move(context), std::move(request));
+    case Request::TYPE_RECOVERY_DATA_RESP:
+      return ProcessRecoveryDataResponse(std::move(context),
+                                         std::move(request));
   }
   return 0;
 }
@@ -261,6 +283,93 @@ void ConsensusManagerPBFT::SetupPerformanceDataFunc(
 void ConsensusManagerPBFT::SetPreVerifyFunc(
     std::function<bool(const Request&)> func) {
   commitment_->SetPreVerifyFunc(func);
+}
+
+int ConsensusManagerPBFT::ProcessRecoveryData(
+    std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+  RecoveryRequest recovery_data;
+  if (!recovery_data.ParseFromString(request->data())) {
+    LOG(ERROR) << "parse checkpont data fail:";
+    return -2;
+  }
+  LOG(ERROR) << " obtain min seq:" << recovery_data.min_seq()
+             << " max seq:" << recovery_data.max_seq()
+             << " from:" << request->sender_id();
+  if (request->sender_id() == config_.GetSelfInfo().id()) {
+    return 0;
+  }
+  RecoveryResponse response;
+  int ret = recovery_->GetData(recovery_data, response);
+  if (ret) {
+    return ret;
+  }
+
+  std::unique_ptr<Request> response_data = NewRequest(
+      Request::TYPE_RECOVERY_DATA_RESP, Request(), config_.GetSelfInfo().id());
+
+  response.SerializeToString(response_data->mutable_data());
+
+  LOG(ERROR) << " obtain min seq:" << recovery_data.min_seq()
+             << " max seq:" << recovery_data.max_seq()
+             << " data size:" << response.request_size();
+
+  GetBroadCastClient()->SendMessage(*response_data, request->sender_id());
+
+  return 0;
+}
+
+int ConsensusManagerPBFT::ProcessRecoveryDataResponse(
+    std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+  recovery_queue_.Push(std::move(request));
+  return 0;
+}
+
+void ConsensusManagerPBFT::RemoteRecoveryProcess() {
+  uint64_t last_recovery = 0;
+  std::set<uint64_t> data;
+
+  while (IsRunning()) {
+    auto request = recovery_queue_.Pop();
+    if (request == nullptr) {
+      continue;
+    }
+
+    RecoveryResponse recovery_data;
+    if (!recovery_data.ParseFromString(request->data())) {
+      LOG(ERROR) << "parse checkpont data fail:";
+      continue;
+    }
+
+    LOG(ERROR) << " receive recovery  data from " << request->sender_id()
+               << " data size:" << recovery_data.request_size()
+               << " signrue:" << recovery_data.signature_size();
+
+    for (int i = 0; i < recovery_data.request().size(); i++) {
+      uint64_t seq = recovery_data.request(i).seq();
+      int type = recovery_data.request(i).type();
+      if (checkpoint_manager_->IsCommitted(seq)) {
+        LOG(ERROR) << " check recovery remote seq:" << seq << " type:" << type
+                   << " has been recovered.";
+        continue;
+      }
+
+      uint64_t last_seq = checkpoint_manager_->GetLastCommit();
+      if (seq - last_seq > 1000) {
+        LOG(ERROR) << " check seq:" << seq << " last:" << last_seq
+                   << " data is missing, skip.";
+        continue;
+      }
+
+      auto context = std::make_unique<Context>();
+      context->signature = recovery_data.signature(i);
+      auto request = std::make_unique<Request>(recovery_data.request(i));
+      view_change_manager_->SetCurrentViewAndNewPrimary(
+          request->current_view());
+      request->set_force_recovery(true);
+
+      InternalConsensusCommit(std::move(context), std::move(request));
+    }
+  }
 }
 
 }  // namespace resdb

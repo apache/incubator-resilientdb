@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#include <pybind11/embed.h> // everything needed for embedding
+#include <pybind11/embed.h>  // everything needed for embedding
 
 #include <fstream>
 #include <string>
@@ -25,13 +25,14 @@ namespace py = pybind11;
 using namespace py::literals;
 
 int main() {
-  py::scoped_interpreter guard{}; // start the interpreter and keep it alive
+  py::scoped_interpreter guard{};  // start the interpreter and keep it alive
 
   printf(
       "++++++++++PLEASE MAKE SURE YOU ARE IN THE PYBIND_SAMPLE DIRECTORY WHEN "
       "RUNNING THE BINARY+++++++++\n");
-  printf("This is so the program correctly finds the Python files in the "
-         "pybind_sample directory\n\n");
+  printf(
+      "This is so the program correctly finds the Python files in the "
+      "pybind_sample directory\n\n");
 
   printf("We can read a Python file into a string and execute its entirety\n");
   std::ifstream ifs("print_sample.py", std::ifstream::in);
@@ -80,6 +81,5 @@ int main() {
 
   auto is_valid = locals["is_valid"].cast<bool>();
 
-  if (is_valid)
-    printf("Valid\n");
+  if (is_valid) printf("Valid\n");
 }

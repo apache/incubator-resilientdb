@@ -41,8 +41,8 @@ KVServiceTransactionManager::KVServiceTransactionManager(
     std::unique_ptr<ChainState> state)
     : state_(std::move(state)) {}
 
-std::unique_ptr<std::string>
-KVServiceTransactionManager::ExecuteData(const std::string &request) {
+std::unique_ptr<std::string> KVServiceTransactionManager::ExecuteData(
+    const std::string &request) {
   KVRequest kv_request;
   KVResponse kv_response;
 
@@ -93,4 +93,4 @@ std::string KVServiceTransactionManager::GetRange(const std::string &min_key,
   return state_->GetRange(min_key, max_key);
 }
 
-} // namespace sdk
+}  // namespace sdk
