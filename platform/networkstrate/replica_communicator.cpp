@@ -129,6 +129,7 @@ void ReplicaCommunicator::StartSingleInBackGround(const std::string& ip,
       std::make_unique<BatchQueue<std::unique_ptr<QueueItem>>>("s_batch",
                                                                tcp_batch_);
 
+  
   ReplicaInfo replica_info;
   for (const auto& replica : replicas_) {
     if (replica.ip() == ip && replica.port() == port) {
@@ -179,6 +180,7 @@ int ReplicaCommunicator::SendSingleMessage(
 
   // LOG(ERROR)<<" send msg ip:"<<ip<<" port:"<<port;
   global_stats_->BroadCastMsg();
+  
   if (is_use_long_conn_) {
     auto item = std::make_unique<QueueItem>();
     item->data = NetChannel::GetRawMessageString(message, verifier_);
@@ -190,6 +192,7 @@ int ReplicaCommunicator::SendSingleMessage(
     single_bq_[std::make_pair(ip, port)]->Push(std::move(item));
     return 0;
   } else {
+    
     return SendMessageInternal(message, replicas_);
   }
 }
@@ -210,12 +213,15 @@ int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                      const ReplicaInfo& replica_info) {
   return SendSingleMessage(message, replica_info);
 
+  
   if (is_use_long_conn_) {
+    
     std::string data = NetChannel::GetRawMessageString(message, verifier_);
     BroadcastData broadcast_data;
     broadcast_data.add_data()->swap(data);
     return SendMessageFromPool(broadcast_data, {replica_info});
   } else {
+    
     return SendMessageInternal(message, {replica_info});
   }
 }
@@ -242,6 +248,7 @@ int ReplicaCommunicator::SendBatchMessage(
 int ReplicaCommunicator::SendMessageFromPool(
     const google::protobuf::Message& message,
     const std::vector<ReplicaInfo>& replicas) {
+  
   int ret = 0;
   std::string data;
   message.SerializeToString(&data);
@@ -249,6 +256,7 @@ int ReplicaCommunicator::SendMessageFromPool(
   std::lock_guard<std::mutex> lk(mutex_);
   for (const auto& replica : replicas) {
     auto client = GetClientFromPool(replica.ip(), replica.port());
+    
     if (client == nullptr) {
       continue;
     }
@@ -275,7 +283,9 @@ int ReplicaCommunicator::SendMessageInternal(
     if (verifier_ != nullptr) {
       client->SetSignatureVerifier(verifier_);
     }
+    
     if (client->SendRawMessage(message) == 0) {
+      
       ret++;
     }
   }
@@ -308,7 +318,9 @@ void ReplicaCommunicator::BroadCast(const google::protobuf::Message& message) {
 void ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                       int64_t node_id) {
   ReplicaInfo target_replica;
+  
   for (const auto& replica : replicas_) {
+    
     if (replica.id() == node_id) {
       target_replica = replica;
       break;

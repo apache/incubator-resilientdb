@@ -52,8 +52,8 @@ PerformanceManager::PerformanceManager(
   total_num_ = 0;
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
-  primary_ = id_ % replica_num_;
-  if (primary_ == 0) primary_ = replica_num_;
+  primary_.store(id_ % replica_num_);
+  if (primary_ == 0) primary_.store(replica_num_);
   local_id_ = 1;
   sum_ = 0;
 }
@@ -67,7 +67,17 @@ PerformanceManager::~PerformanceManager() {
   }
 }
 
-int PerformanceManager::GetPrimary() { return primary_; }
+int PerformanceManager::GetPrimary() { return primary_.load(); }
+
+void PerformanceManager::SetPrimary(int id) {
+  int curr_primary = primary_.load();
+  while (id != curr_primary) {
+    if (primary_.compare_exchange_strong(curr_primary, id)) {
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": primary updated to " << id;
+    return;
+    }
+  }  
+}
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -84,16 +94,17 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 100000000; ++i) {
-    std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
-    queue_item->context = nullptr;
-    queue_item->user_request = GenerateUserRequest();
-    batch_queue_.Push(std::move(queue_item));
-    if (i == 2000000) {
-      eval_ready_promise_.set_value(true);
+  std::thread([&](){
+    for (int i = 0; i < 100000000; ++i) {
+      std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
+      queue_item->context = nullptr;
+      queue_item->user_request = GenerateUserRequest();
+      batch_queue_.Push(std::move(queue_item));
+      if (i == 2000000) {
+        eval_ready_promise_.set_value(true);
+      }
     }
-  }
-  LOG(WARNING) << "start eval done";
+}).detach();
   return 0;
 }
 
@@ -171,9 +182,10 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    LOG(ERROR) << "receive current:" << GetCurrentTime()
-               << " create time:" << create_time << " run time:" << run_time
-               << " local id:" << batch_response.local_id();
+    // JIM
+    //LOG(ERROR) << "receive current:" << GetCurrentTime()
+    //           << " create time:" << create_time << " run time:" << run_time
+    //           << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
   }
   send_num_--;
@@ -270,6 +282,7 @@ int PerformanceManager::DoBatch(
 
 void PerformanceManager::SendMessage(const Request& request) {
   replica_communicator_->SendMessage(request, GetPrimary());
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Sent to replica " << GetPrimary();
 }
 
 }  // namespace common

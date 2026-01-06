@@ -22,6 +22,7 @@
 #include <glog/logging.h>
 #include <unistd.h>
 
+#include "glog/logging.h"
 #include "platform/proto/broadcast.pb.h"
 
 namespace resdb {
@@ -85,7 +86,6 @@ void ConsensusManager::Start() {
 
 // Keep Boardcast the public keys to others.
 void ConsensusManager::HeartBeat() {
-  LOG(INFO) << "heart beat start";
   int sleep_time = 1;
   std::mutex mutex;
   std::condition_variable cv;
