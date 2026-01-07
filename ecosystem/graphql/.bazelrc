@@ -1,0 +1,3 @@
+build --cxxopt='-std=c++17' --copt=-O3 --jobs=40
+
+build:profile --cxxopt='-std=c++17' --copt="-g" --copt="-fno-omit-frame-pointer" --cxxopt="-fno-omit-frame-pointer" --linkopt="-g" --strip=never --jobs=2

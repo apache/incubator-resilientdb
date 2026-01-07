@@ -35,3 +35,10 @@ cc_library(
         "@rapidjson",
     ],
 )
+
+cc_library(
+    name = "json",
+    deps = [
+        "@nlohmann_json//:json",
+    ],
+)
