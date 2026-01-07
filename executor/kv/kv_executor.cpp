@@ -49,8 +49,10 @@ std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());
+    kv_response.set_seq(seq_);
   } else if (kv_request.cmd() == KVRequest::GET) {
     kv_response.set_value(Get(kv_request.key()));
+    kv_response.set_seq(seq_);
   } else if (kv_request.cmd() == KVRequest::GETALLVALUES) {
     kv_response.set_value(GetAllValues());
   } else if (kv_request.cmd() == KVRequest::GETRANGE) {

@@ -36,6 +36,22 @@ int ResDBKVClient::Set(const std::string &key, const std::string &data) {
   return SendRequest(request);
 }
 
+uint64_t ResDBKVClient::SetWithSeq(const std::string &key,
+                                  const std::string &data) {
+  KVRequest request;
+  request.set_cmd(KVRequest::SET);
+  request.set_key(key);
+  request.set_value(data);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return -1;
+  }
+  LOG(ERROR) << "Sequence Number: " << response.seq();
+  return response.seq();
+}
+
 std::unique_ptr<std::string> ResDBKVClient::Get(const std::string &key) {
   KVRequest request;
   request.set_cmd(KVRequest::GET);
@@ -47,6 +63,21 @@ std::unique_ptr<std::string> ResDBKVClient::Get(const std::string &key) {
     return nullptr;
   }
   return std::make_unique<std::string>(response.value());
+}
+
+std::unique_ptr<std::pair<std::string, uint64_t>>
+ResDBKVClient::GetValueWithSeq(const std::string &key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::GET);
+  request.set_key(key);
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<std::pair<std::string, uint64_t>>(
+      response.value(), response.seq());
 }
 
 std::unique_ptr<std::string> ResDBKVClient::GetAllValues() {

@@ -40,5 +40,6 @@ message KVRequest {
 message KVResponse {
     string key = 1;
     bytes value = 2;
+    uint64 seq = 5;
 }
 
