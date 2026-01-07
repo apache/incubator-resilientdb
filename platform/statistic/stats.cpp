@@ -22,8 +22,15 @@
 #include <glog/logging.h>
 
 #include <ctime>
+#include <sstream>
+#include <fstream>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include "common/utils/utils.h"
+#include "leveldb/db.h"
+#include "leveldb/options.h"
+#include "leveldb/write_batch.h"
 #include "proto/kv/kv.pb.h"
 
 namespace asio = boost::asio;
@@ -124,22 +131,99 @@ void Stats::CrowRoute() {
   crow::SimpleApp app;
   while (!stop_) {
     try {
+      //Deprecated
       CROW_ROUTE(app, "/consensus_data")
-          .methods("GET"_method)([this](const crow::request& req,
-                                        crow::response& res) {
-            LOG(ERROR) << "API 1";
-            res.set_header("Access-Control-Allow-Origin",
-                           "*");  // Allow requests from any origin
-            res.set_header("Access-Control-Allow-Methods",
-                           "GET, POST, OPTIONS");  // Specify allowed methods
-            res.set_header(
-                "Access-Control-Allow-Headers",
-                "Content-Type, Authorization");  // Specify allowed headers
+          .methods("GET"_method)(
+              [this](const crow::request& req, crow::response& res) {
+                LOG(ERROR) << "API 1";
+                res.set_header("Access-Control-Allow-Origin", "*");
+                res.set_header("Access-Control-Allow-Methods",
+                               "GET, POST, OPTIONS");
+                res.set_header("Access-Control-Allow-Headers",
+                               "Content-Type, Authorization");
 
-            // Send your response
-            res.body = consensus_history_.dump();
-            res.end();
-          });
+                int limit = 10; 
+                int page = 1;
+                
+                std::string url = req.url;
+                size_t query_pos = url.find('?');
+                if (query_pos != std::string::npos) {
+                  std::string query_string = url.substr(query_pos + 1);
+                  std::istringstream iss(query_string);
+                  std::string param;
+                  while (std::getline(iss, param, '&')) {
+                    size_t eq_pos = param.find('=');
+                    if (eq_pos != std::string::npos) {
+                      std::string key = param.substr(0, eq_pos);
+                      std::string value = param.substr(eq_pos + 1);
+                      if (key == "limit") {
+                        try {
+                          limit = std::stoi(value);
+                          if (limit <= 0) limit = 10;
+                        } catch (...) {
+                          limit = 10;
+                        }
+                      } else if (key == "page") {
+                        try {
+                          page = std::stoi(value);
+                          if (page <= 0) page = 1;
+                        } catch (...) {
+                          page = 1;
+                        }
+                      }
+                    }
+                  }
+                }
+
+                nlohmann::json result;
+                int total_count = 0;
+                int offset = (page - 1) * limit;
+                int current_index = 0;
+                int items_collected = 0;
+
+                if (summary_db_) {
+                  std::lock_guard<std::mutex> lock(summary_db_mutex_);
+                  leveldb::Iterator* it =
+                      summary_db_->NewIterator(leveldb::ReadOptions());
+                  
+                  // Count only non-timeline entries
+                  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                    std::string key = it->key().ToString();
+                    if (key.find("timeline_") != 0) {
+                      total_count++;
+                    }
+                  }
+                  
+                  // Iterate and collect only non-timeline entries
+                  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                    std::string key = it->key().ToString();
+                    // Skip timeline entries
+                    if (key.find("timeline_") == 0) {
+                      continue;
+                    }
+                    
+                    if (current_index >= offset && items_collected < limit) {
+                      try {
+                        result[key] =
+                            nlohmann::json::parse(it->value().ToString());
+                        items_collected++;
+                      } catch (...) {
+                        res.code = 500;
+                        result["error"] = "Failed to parse transaction data";
+                        delete it;
+                        res.body = result.dump();
+                        res.end();
+                        return;
+                      }
+                    }
+                    current_index++;
+                  }
+                  delete it;
+                }
+
+                res.body = result.dump();
+                res.end();
+              });
       CROW_ROUTE(app, "/get_status")
           .methods("GET"_method)([this](const crow::request& req,
                                         crow::response& res) {
@@ -168,11 +252,12 @@ void Stats::CrowRoute() {
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization");  // Specify allowed headers
 
+            res.body = "Not Enabled";
             // Send your response
             if (enable_faulty_switch_) {
               make_faulty_.store(!make_faulty_.load());
+              res.body = "Success";
             }
-            res.body = "Success";
             res.end();
           });
       CROW_ROUTE(app, "/transaction_data")
@@ -210,6 +295,126 @@ void Stats::CrowRoute() {
             mem_view_json.clear();
             res.end();
           });
+      CROW_ROUTE(app, "/consensus_data/<int>")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res, int txn_number) {
+            LOG(ERROR) << "API 5: Get transaction " << txn_number;
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            nlohmann::json result;
+            if (summary_db_) {
+              std::lock_guard<std::mutex> lock(summary_db_mutex_);
+              std::string txn_key = std::to_string(txn_number);
+              std::string value;
+              leveldb::Status status =
+                  summary_db_->Get(leveldb::ReadOptions(), txn_key, &value);
+
+              if (status.ok() && !value.empty()) {
+                try {
+                  result[txn_key] = nlohmann::json::parse(value);
+                } catch (...) {
+                  res.code = 500;
+                  result["error"] = "Failed to parse transaction data";
+                }
+              } else {
+                res.code = 404;
+                result["error"] = "Transaction not found";
+                result["txn_number"] = txn_number;
+              }
+            } else {
+              res.code = 503;
+              result["error"] = "Storage not initialized";
+            }
+
+            res.body = result.dump();
+            res.end();
+          });
+
+      CROW_ROUTE(app, "/transaction_timeline/<int>")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res, int txn_number) {
+            LOG(ERROR) << "API 6: Get transaction timeline " << txn_number;
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");
+            res.set_header("Access-Control-Allow-Headers",
+                           "Content-Type, Authorization");
+
+            nlohmann::json result;
+            result["txn_number"] = txn_number;
+            
+            if (!summary_db_) {
+              res.code = 503;
+              result["error"] = "Storage not initialized";
+              res.body = result.dump();
+              res.end();
+              return;
+            }
+            
+            std::lock_guard<std::mutex> lock(summary_db_mutex_);
+            std::string txn_key = std::to_string(txn_number);
+            std::string timeline_key = "timeline_" + txn_key;
+            
+            std::string txn_value;
+            leveldb::Status status =
+                summary_db_->Get(leveldb::ReadOptions(), txn_key, &txn_value);
+
+            if (status.ok() && !txn_value.empty()) {
+              try {
+                nlohmann::json txn_summary = nlohmann::json::parse(txn_value);
+                nlohmann::json txn_details;
+                if (txn_summary.contains("txn_commands")) {
+                  txn_details["txn_commands"] = txn_summary["txn_commands"];
+                }
+                if (txn_summary.contains("txn_keys")) {
+                  txn_details["txn_keys"] = txn_summary["txn_keys"];
+                }
+                if (txn_summary.contains("txn_values")) {
+                  txn_details["txn_values"] = txn_summary["txn_values"];
+                }
+                if (txn_summary.contains("propose_pre_prepare_time")) {
+                  txn_details["propose_pre_prepare_time"] =
+                      txn_summary["propose_pre_prepare_time"];
+                }
+                if (txn_summary.contains("prepare_time")) {
+                  txn_details["prepare_time"] = txn_summary["prepare_time"];
+                }
+                if (txn_summary.contains("commit_time")) {
+                  txn_details["commit_time"] = txn_summary["commit_time"];
+                }
+                if (txn_summary.contains("execution_time")) {
+                  txn_details["execution_time"] = txn_summary["execution_time"];
+                }
+                result["transaction_details"] = txn_details;
+              } catch (...) {
+                LOG(ERROR) << "Failed to parse transaction summary for txn: "
+                           << txn_number;
+              }
+            }
+            
+            std::string timeline_value;
+            status = summary_db_->Get(leveldb::ReadOptions(), timeline_key, &timeline_value);
+            
+            if (status.ok() && !timeline_value.empty()) {
+              try {
+                nlohmann::json events_array = nlohmann::json::parse(timeline_value);
+                result["timeline"] = events_array;
+              } catch (...) {
+                LOG(ERROR) << "Failed to parse timeline for txn: " << txn_number;
+              }
+            } else {
+              LOG(ERROR) << "Timeline not found for txn: " << txn_number;
+            }
+
+            res.body = result.dump();
+            res.end();
+          });
       app.port(8500 + transaction_summary_.port).multithreaded().run();
       sleep(1);
     } catch (const std::exception& e) {
@@ -233,6 +438,27 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
   enable_resview = resview_flag;
   enable_faulty_switch_ = faulty_flag;
   if (resview_flag) {
+    // Single data directory for both summaries and timeline
+    std::string data_dir = "./resdb_data_" + std::to_string(port);
+    int mkdir_result = mkdir(data_dir.c_str(), 0755);
+    if (mkdir_result != 0 && errno != EEXIST) {
+      LOG(ERROR) << "Failed to create data directory: " << data_dir;
+    }
+    
+    // Initialize LevelDB for both transaction summaries and timeline events
+    std::string summary_path = data_dir + "/summaries";
+    leveldb::Options options;
+    options.create_if_missing = true;
+    leveldb::DB* db = nullptr;
+    leveldb::Status status = leveldb::DB::Open(options, summary_path, &db);
+    if (status.ok()) {
+      summary_db_.reset(db);
+      LOG(INFO) << "Initialized LevelDB storage at: " << summary_path;
+    } else {
+      LOG(ERROR) << "Failed to open LevelDB at " << summary_path << ": "
+                 << status.ToString();
+    }
+    
     crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
 }
@@ -344,8 +570,63 @@ void Stats::SendSummary() {
 
   summary_json_["ext_cache_hit_ratio"] =
       transaction_summary_.ext_cache_hit_ratio_;
-  consensus_history_[std::to_string(transaction_summary_.txn_number)] =
-      summary_json_;
+
+  std::string txn_key = std::to_string(transaction_summary_.txn_number);
+
+  if (summary_db_) {
+    std::lock_guard<std::mutex> lock(summary_db_mutex_);
+    
+    // Write transaction summary
+    leveldb::Status status = summary_db_->Put(leveldb::WriteOptions(), txn_key,
+                                              summary_json_.dump());
+    if (!status.ok()) {
+      LOG(ERROR) << "Failed to write summary to storage for txn: " << txn_key
+                 << ": " << status.ToString();
+    }
+    
+    // Batch write all buffered timeline events for this transaction
+    {
+      std::lock_guard<std::mutex> timeline_lock(timeline_buffer_mutex_);
+      auto it = timeline_buffer_.find(transaction_summary_.txn_number);
+      if (it != timeline_buffer_.end() && !it->second.empty()) {
+        std::string timeline_key = "timeline_" + txn_key;
+        
+        // Read existing timeline events if they exist, then merge
+        nlohmann::json events_array;
+        std::string existing_value;
+        leveldb::Status read_status = summary_db_->Get(leveldb::ReadOptions(), timeline_key, &existing_value);
+        if (read_status.ok() && !existing_value.empty()) {
+          try {
+            events_array = nlohmann::json::parse(existing_value);
+            // Ensure it's an array
+            if (!events_array.is_array()) {
+              events_array = nlohmann::json::array();
+            }
+          } catch (...) {
+            // If parsing fails, start with empty array
+            events_array = nlohmann::json::array();
+          }
+        } else {
+          events_array = nlohmann::json::array();
+        }
+        
+        // Append new events to existing array
+        for (const auto& event : it->second) {
+          events_array.push_back(event);
+        }
+        
+        // Write merged timeline events back to LevelDB
+        status = summary_db_->Put(leveldb::WriteOptions(), timeline_key,
+                                  events_array.dump());
+        if (!status.ok()) {
+          LOG(ERROR) << "Failed to write timeline to storage for txn: " << txn_key
+                     << ": " << status.ToString();
+        }
+        // Clean up buffer for this txn
+        timeline_buffer_.erase(it);
+      }
+    }
+  }
 
   LOG(ERROR) << summary_json_.dump();
 
@@ -362,6 +643,76 @@ void Stats::SendSummary() {
   transaction_summary_.commit_message_count_times_list.clear();
 
   summary_json_.clear();
+}
+
+void Stats::WriteTimelineEvent(uint64_t seq, const std::string& phase, int sender_id) {
+  if (!enable_resview) {
+    return;
+  }
+  
+  // Buffer timeline events in memory - written to LevelDB in batch during SendSummary()
+  std::lock_guard<std::mutex> lock(timeline_buffer_mutex_);
+  
+  // Create new event
+  nlohmann::json event;
+  event["timestamp"] = std::chrono::system_clock::now().time_since_epoch().count();
+  event["phase"] = phase;
+  if (sender_id >= 0) {
+    event["sender_id"] = sender_id;
+  }
+  
+  // Append to in-memory buffer for this seq
+  timeline_buffer_[seq].push_back(event);
+}
+
+void Stats::RecordNetworkRecv(uint64_t seq) {
+  WriteTimelineEvent(seq, "network_recv");
+}
+
+void Stats::RecordPrepareRecv(uint64_t seq, int sender_id) {
+  WriteTimelineEvent(seq, "prepare_recv", sender_id);
+}
+
+void Stats::RecordCommitRecv(uint64_t seq, int sender_id) {
+  WriteTimelineEvent(seq, "commit_recv", sender_id);
+}
+
+void Stats::RecordExecuteStart(uint64_t seq) {
+  WriteTimelineEvent(seq, "execute_start");
+}
+
+void Stats::RecordExecuteEnd(uint64_t seq) {
+  WriteTimelineEvent(seq, "execute_end");
+}
+
+void Stats::RecordResponseSent(uint64_t seq) {
+  WriteTimelineEvent(seq, "response_sent");
+}
+
+void Stats::CleanupOldTimelineEntries() {
+  // Periodically clean up old buffer entries to prevent memory leaks
+  // Keep only entries within the last 10000 sequence numbers
+  std::lock_guard<std::mutex> timeline_lock(timeline_buffer_mutex_);
+  
+  if (timeline_buffer_.empty()) {
+    return;
+  }
+  
+  // Get the highest sequence number we've seen
+  uint64_t max_seq = timeline_buffer_.rbegin()->first;
+  uint64_t cleanup_threshold = (max_seq > 10000) ? (max_seq - 10000) : 0;
+  
+  // Remove all entries below the threshold
+  auto it = timeline_buffer_.begin();
+  while (it != timeline_buffer_.end() && it->first < cleanup_threshold) {
+    it = timeline_buffer_.erase(it);
+  }
+  
+  size_t buffer_size = timeline_buffer_.size();
+  if (buffer_size > 1000) {
+    LOG(WARNING) << "Timeline buffer size is large: " << buffer_size
+                 << " entries. This may indicate transactions not completing.";
+  }
 }
 
 void Stats::MonitorGlobal() {
@@ -398,6 +749,10 @@ void Stats::MonitorGlobal() {
   while (!stop_) {
     sleep(monitor_sleep_time_);
     time += monitor_sleep_time_;
+    
+    // Periodically clean up old timeline buffer entries to prevent memory leaks
+    CleanupOldTimelineEntries();
+    
     seq_fail = seq_fail_;
     socket_recv = socket_recv_;
     client_call = client_call_;
@@ -529,8 +884,10 @@ void Stats::IncPrepare() {
     prometheus_->Inc(PREPARE, 1);
   }
   num_prepare_++;
-  transaction_summary_.prepare_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if (enable_resview) {
+    transaction_summary_.prepare_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncCommit() {
@@ -538,8 +895,10 @@ void Stats::IncCommit() {
     prometheus_->Inc(COMMIT, 1);
   }
   num_commit_++;
-  transaction_summary_.commit_message_count_times_list.push_back(
-      std::chrono::system_clock::now());
+  if (enable_resview) {
+    transaction_summary_.commit_message_count_times_list.push_back(
+        std::chrono::system_clock::now());
+  }
 }
 
 void Stats::IncPendingExecute() { pending_execute_++; }

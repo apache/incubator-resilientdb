@@ -26,6 +26,7 @@
 
 #include "platform/common/network/tcp_socket.h"
 #include "platform/proto/broadcast.pb.h"
+#include "platform/proto/resdb.pb.h"
 
 namespace resdb {
 
@@ -73,6 +74,17 @@ void ServiceNetwork::AcceptorHandler(const char* buffer, size_t data_len) {
     item->data = std::move(sub_request_info);
     // LOG(ERROR) << "receve data from acceptor:" << data.is_resp()<<" data
     // len:"<<item->data->data_len;
+    
+    // Try to extract seq from request for timeline tracking
+    try {
+      Request request;
+      if (request.ParseFromArray(sub_data.data(), sub_data.size())) {
+        global_stats_->RecordNetworkRecv(request.seq());
+      }
+    } catch (...) {
+      // Ignore parse errors, seq extraction is optional
+    }
+    
     global_stats_->ServerCall();
     input_queue_.Push(std::move(item));
   }

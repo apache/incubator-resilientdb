@@ -302,6 +302,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(*batch_request_p);
+  uint64_t seq = request->seq();
+  global_stats_->RecordExecuteStart(seq);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
@@ -354,6 +356,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   if (response == nullptr) {
     response = std::make_unique<BatchUserResponse>();
   }
+  global_stats_->RecordExecuteEnd(seq);
   global_stats_->IncTotalRequest(batch_request_p->user_requests_size());
   response->set_proxy_id(batch_request_p->proxy_id());
   response->set_createtime(batch_request_p->createtime() +
@@ -363,6 +366,7 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   response->set_seq(request->seq());
   if (post_exec_func_) {
     post_exec_func_(std::move(request), std::move(response));
+    global_stats_->RecordResponseSent(seq);
   }
 
   global_stats_->IncExecuteDone();

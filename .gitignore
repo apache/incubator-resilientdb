@@ -22,3 +22,4 @@ resdb/
 gmon.out
 .history/
 *_db/
+resdb_data_*/*

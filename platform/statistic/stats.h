@@ -23,6 +23,7 @@
 
 #include <chrono>
 #include <future>
+#include <map>
 #include <nlohmann/json.hpp>
 
 #include "boost/asio.hpp"
@@ -32,6 +33,11 @@
 #include "platform/statistic/prometheus_handler.h"
 #include "proto/kv/kv.pb.h"
 #include "sys/resource.h"
+
+// Forward declaration for LevelDB
+namespace leveldb {
+class DB;
+}
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -90,6 +96,15 @@ class Stats {
   void CrowRoute();
   bool IsFaulty();
   void ChangePrimary(int primary_id);
+
+  // Timeline event recording (disk-based, only when resview enabled)
+  void RecordNetworkRecv(uint64_t seq);
+  void RecordPrepareRecv(uint64_t seq, int sender_id);
+  void RecordCommitRecv(uint64_t seq, int sender_id);
+  void RecordExecuteStart(uint64_t seq);
+  void RecordExecuteEnd(uint64_t seq);
+  void RecordResponseSent(uint64_t seq);
+  void CleanupOldTimelineEntries();  // Prevent timeline buffer memory leak
 
   void AddLatency(uint64_t run_time);
 
@@ -159,9 +174,20 @@ class Stats {
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
   nlohmann::json summary_json_;
-  nlohmann::json consensus_history_;
 
   std::unique_ptr<PrometheusHandler> prometheus_;
+  
+  std::unique_ptr<leveldb::DB> summary_db_;
+  std::mutex summary_db_mutex_;
+  
+  // In-memory timeline event buffer (per-seq) - batched writes to LevelDB
+  std::map<uint64_t, std::vector<nlohmann::json>> timeline_buffer_;
+  std::mutex timeline_buffer_mutex_;
+  
+  // Timeline directory for per-transaction event logs
+  std::string timeline_dir_;
+  std::mutex timeline_mutex_;
+  void WriteTimelineEvent(uint64_t seq, const std::string& phase, int sender_id = -1);
 };
 
 }  // namespace resdb
