@@ -205,7 +205,7 @@ void TransactionExecutor::OrderMessage() {
 }
 
 void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
-  global_stats_->IncCommit();
+  global_stats_->IncCommit(message->seq());
   message->set_commit_time(GetCurrentTime());
   execute_queue_.Push(std::move(message));
 }

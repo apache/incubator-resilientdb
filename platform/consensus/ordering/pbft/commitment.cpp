@@ -135,7 +135,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
-  global_stats_->RecordStateTime("request");
+  global_stats_->RecordStateTime(*seq, "request");
 
   user_request->set_type(Request::TYPE_PRE_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
@@ -229,7 +229,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   }
 
   global_stats_->IncPropose();
-  global_stats_->RecordStateTime("pre-prepare");
+  global_stats_->RecordStateTime(request->seq(), "pre-prepare");
   std::unique_ptr<Request> prepare_request = resdb::NewRequest(
       Request::TYPE_PREPARE, *request, config_.GetSelfInfo().id());
   prepare_request->clear_data();
@@ -263,9 +263,9 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     }
     return ret;
   }
-  global_stats_->IncPrepare();
   uint64_t seq = request->seq();
   int sender_id = request->sender_id();
+  global_stats_->IncPrepare(seq);
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
   commit_request->mutable_data_signature()->Clear();
@@ -289,7 +289,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       // LOG(ERROR) << "sign hash"
       //           << commit_request->data_signature().DebugString();
     }
-    global_stats_->RecordStateTime("prepare");
+    global_stats_->RecordStateTime(seq, "prepare");
     replica_communicator_->BroadCast(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
@@ -309,7 +309,7 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
-  global_stats_->IncCommit();
+  global_stats_->IncCommit(seq);
   // Add request to message_manager.
   // If it has received enough same requests(2f+1), message manager will
   // commit the request.
@@ -318,7 +318,7 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
   if (ret == CollectorResultCode::STATE_CHANGED) {
     // LOG(ERROR)<<request->data().size();
     // global_stats_->GetTransactionDetails(request->data());
-    global_stats_->RecordStateTime("commit");
+    global_stats_->RecordStateTime(seq, "commit");
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
@@ -331,7 +331,7 @@ int Commitment::PostProcessExecutedMsg() {
     if (batch_resp == nullptr) {
       continue;
     }
-    global_stats_->SendSummary();
+    global_stats_->SendSummary(batch_resp->seq());
     Request request;
     request.set_hash(batch_resp->hash());
     request.set_seq(batch_resp->seq());
