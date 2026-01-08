@@ -257,6 +257,7 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   //          id:"<<request->proxy_id();
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(batch_request);
+  global_stats_->RecordExecuteStart(batch_request.seq());
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
                                                          batch_request);
@@ -264,6 +265,7 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
 
   // global_stats_->IncTotalRequest(batch_request.user_requests_size());
   // global_stats_->IncExecuteDone();
+  global_stats_->RecordExecuteEnd(batch_request.seq());
 }
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
@@ -303,6 +305,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(*batch_request_p);
   uint64_t seq = request->seq();
+  // Timeline: execution start
+  global_stats_->RecordExecuteStart(seq);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
@@ -366,6 +370,8 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     post_exec_func_(std::move(request), std::move(response));
   }
 
+  // Timeline: execution end
+  global_stats_->RecordExecuteEnd(seq);
   global_stats_->IncExecuteDone();
 }
 

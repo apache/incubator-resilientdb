@@ -65,6 +65,14 @@ struct TransactionTelemetry {
       commit_message_count_times_list;
   std::chrono::system_clock::time_point execution_time;
 
+  // Timeline events for detailed tracking
+  struct TimelineEvent {
+    std::chrono::system_clock::time_point timestamp;
+    std::string phase;
+    int sender_id = -1;
+  };
+  std::vector<TimelineEvent> timeline_events;
+
   // Storage Engine Stats
   double ext_cache_hit_ratio_ = 0.0;
   std::string level_db_stats_;
@@ -110,6 +118,18 @@ struct TransactionTelemetry {
     json["ext_cache_hit_ratio"] = ext_cache_hit_ratio_;
     json["level_db_stats"] = level_db_stats_;
     json["level_db_approx_mem_size"] = level_db_approx_mem_size_;
+
+    // Add timeline events
+    json["timeline_events"] = nlohmann::json::array();
+    for (const auto& event : timeline_events) {
+      nlohmann::json event_json;
+      event_json["timestamp"] = event.timestamp.time_since_epoch().count();
+      event_json["phase"] = event.phase;
+      if (event.sender_id >= 0) {
+        event_json["sender_id"] = event.sender_id;
+      }
+      json["timeline_events"].push_back(event_json);
+    }
 
     return json;
   }
@@ -163,6 +183,10 @@ class Stats {
                                std::string level_db_approx_mem_size);
   void RecordStateTime(std::string state);
   void RecordStateTime(uint64_t seq, std::string state);
+  void RecordPrepareRecv(uint64_t seq, int sender_id);
+  void RecordCommitRecv(uint64_t seq, int sender_id);
+  void RecordExecuteStart(uint64_t seq);
+  void RecordExecuteEnd(uint64_t seq);
   void GetTransactionDetails(BatchUserRequest batch_request);
   void SendSummary();
   void SendSummary(uint64_t seq);

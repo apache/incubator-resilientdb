@@ -139,11 +139,62 @@ void Stats::CrowRoute() {
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization");  // Specify allowed headers
 
-            // Send your response
+            // Send your response - includes all consensus history with timeline events
             {
               std::lock_guard<std::mutex> lock(consensus_history_mutex_);
               res.body = consensus_history_.dump();
             }
+            res.end();
+          });
+      CROW_ROUTE(app, "/consensus_data/<int>")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res, int seq_number) {
+            LOG(ERROR) << "API: Get consensus data for sequence " << seq_number;
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");
+            res.set_header("Access-Control-Allow-Headers",
+                           "Content-Type, Authorization");
+
+            nlohmann::json result;
+            
+            // First check consensus_history_
+            {
+              std::lock_guard<std::mutex> lock(consensus_history_mutex_);
+              std::string seq_str = std::to_string(seq_number);
+              if (consensus_history_.find(seq_str) != consensus_history_.end()) {
+                result = consensus_history_[seq_str];
+              }
+            }
+            
+            // Also check live telemetry map (may have more recent data)
+            uint64_t seq = static_cast<uint64_t>(seq_number);
+            size_t shard = seq % 256;  // kTelemetryShards
+            {
+              std::lock_guard<std::mutex> lock(telemetry_mutex_[shard]);
+              auto& map = transaction_telemetry_map_[shard];
+              auto it = map.find(seq);
+              if (it != map.end()) {
+                // Merge live telemetry data (may be more complete)
+                nlohmann::json live_data = it->second.to_json();
+                
+                // If we have data from consensus_history_, merge it
+                if (!result.empty()) {
+                  // Prefer live data for most fields, but keep timeline events from both
+                  result.update(live_data);
+                } else {
+                  result = live_data;
+                }
+              }
+            }
+            
+            if (result.empty()) {
+              res.code = 404;
+              result["error"] = "Transaction not found";
+              result["seq_number"] = seq_number;
+            }
+            
+            res.body = result.dump();
             res.end();
           });
       CROW_ROUTE(app, "/get_status")
@@ -350,6 +401,128 @@ void Stats::RecordStateTime(uint64_t seq, std::string state) {
   } else if (state == "commit") {
     telemetry.commit_state_time = now;
   }
+}
+
+void Stats::RecordPrepareRecv(uint64_t seq, int sender_id) {
+  if (!enable_resview) {
+    return;
+  }
+  
+  size_t shard = GetShardIndex(seq);
+  std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+  
+  auto& map = transaction_telemetry_map_[shard];
+  auto it = map.find(seq);
+  if (it == map.end()) {
+    // Initialize with static info
+    TransactionTelemetry telemetry;
+    telemetry.replica_id = static_telemetry_info_.replica_id;
+    telemetry.primary_id = static_telemetry_info_.primary_id;
+    telemetry.ip = static_telemetry_info_.ip;
+    telemetry.port = static_telemetry_info_.port;
+    telemetry.ext_cache_hit_ratio_ = static_telemetry_info_.ext_cache_hit_ratio_;
+    telemetry.level_db_stats_ = static_telemetry_info_.level_db_stats_;
+    telemetry.level_db_approx_mem_size_ = static_telemetry_info_.level_db_approx_mem_size_;
+    telemetry.txn_number = seq;
+    it = map.emplace(seq, std::move(telemetry)).first;
+  }
+  
+  // Add timeline event
+  TransactionTelemetry::TimelineEvent event;
+  event.timestamp = std::chrono::system_clock::now();
+  event.phase = "prepare_recv";
+  event.sender_id = sender_id;
+  it->second.timeline_events.push_back(event);
+}
+
+void Stats::RecordCommitRecv(uint64_t seq, int sender_id) {
+  if (!enable_resview) {
+    return;
+  }
+  
+  size_t shard = GetShardIndex(seq);
+  std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+  
+  auto& map = transaction_telemetry_map_[shard];
+  auto it = map.find(seq);
+  if (it == map.end()) {
+    // Initialize with static info
+    TransactionTelemetry telemetry;
+    telemetry.replica_id = static_telemetry_info_.replica_id;
+    telemetry.primary_id = static_telemetry_info_.primary_id;
+    telemetry.ip = static_telemetry_info_.ip;
+    telemetry.port = static_telemetry_info_.port;
+    telemetry.ext_cache_hit_ratio_ = static_telemetry_info_.ext_cache_hit_ratio_;
+    telemetry.level_db_stats_ = static_telemetry_info_.level_db_stats_;
+    telemetry.level_db_approx_mem_size_ = static_telemetry_info_.level_db_approx_mem_size_;
+    telemetry.txn_number = seq;
+    it = map.emplace(seq, std::move(telemetry)).first;
+  }
+  
+  // Add timeline event
+  TransactionTelemetry::TimelineEvent event;
+  event.timestamp = std::chrono::system_clock::now();
+  event.phase = "commit_recv";
+  event.sender_id = sender_id;
+  it->second.timeline_events.push_back(event);
+}
+
+void Stats::RecordExecuteStart(uint64_t seq) {
+  if (!enable_resview) {
+    return;
+  }
+
+  size_t shard = GetShardIndex(seq);
+  std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+
+  auto& map = transaction_telemetry_map_[shard];
+  auto it = map.find(seq);
+  if (it == map.end()) {
+    TransactionTelemetry telemetry;
+    telemetry.replica_id = static_telemetry_info_.replica_id;
+    telemetry.primary_id = static_telemetry_info_.primary_id;
+    telemetry.ip = static_telemetry_info_.ip;
+    telemetry.port = static_telemetry_info_.port;
+    telemetry.ext_cache_hit_ratio_ = static_telemetry_info_.ext_cache_hit_ratio_;
+    telemetry.level_db_stats_ = static_telemetry_info_.level_db_stats_;
+    telemetry.level_db_approx_mem_size_ = static_telemetry_info_.level_db_approx_mem_size_;
+    telemetry.txn_number = seq;
+    it = map.emplace(seq, std::move(telemetry)).first;
+  }
+
+  TransactionTelemetry::TimelineEvent event;
+  event.timestamp = std::chrono::system_clock::now();
+  event.phase = "execute_start";
+  it->second.timeline_events.push_back(event);
+}
+
+void Stats::RecordExecuteEnd(uint64_t seq) {
+  if (!enable_resview) {
+    return;
+  }
+
+  size_t shard = GetShardIndex(seq);
+  std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+
+  auto& map = transaction_telemetry_map_[shard];
+  auto it = map.find(seq);
+  if (it == map.end()) {
+    TransactionTelemetry telemetry;
+    telemetry.replica_id = static_telemetry_info_.replica_id;
+    telemetry.primary_id = static_telemetry_info_.primary_id;
+    telemetry.ip = static_telemetry_info_.ip;
+    telemetry.port = static_telemetry_info_.port;
+    telemetry.ext_cache_hit_ratio_ = static_telemetry_info_.ext_cache_hit_ratio_;
+    telemetry.level_db_stats_ = static_telemetry_info_.level_db_stats_;
+    telemetry.level_db_approx_mem_size_ = static_telemetry_info_.level_db_approx_mem_size_;
+    telemetry.txn_number = seq;
+    it = map.emplace(seq, std::move(telemetry)).first;
+  }
+
+  TransactionTelemetry::TimelineEvent event;
+  event.timestamp = std::chrono::system_clock::now();
+  event.phase = "execute_end";
+  it->second.timeline_events.push_back(event);
 }
 
 void Stats::GetTransactionDetails(BatchUserRequest batch_request) {
