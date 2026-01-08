@@ -85,6 +85,9 @@ Stats::Stats(int sleep_time) {
 
   // Initialize static telemetry info
   static_telemetry_info_.port = -1;
+  
+  // Initialize previous_primary_id_ to detect view changes
+  previous_primary_id_ = -1;
 }
 
 void Stats::Stop() { stop_ = true; }
@@ -280,6 +283,13 @@ bool Stats::IsFaulty() { return make_faulty_.load(); }
 void Stats::ChangePrimary(int primary_id) {
   transaction_summary_.primary_id = primary_id;
   make_faulty_.store(false);
+  
+  // Detect view change
+  if (prometheus_ && previous_primary_id_ != -1 && 
+      previous_primary_id_ != primary_id) {
+    prometheus_->Inc(VIEW_CHANGE, 1);
+  }
+  previous_primary_id_ = primary_id;
 }
 
 void Stats::SetProps(int replica_id, std::string ip, int port,
@@ -301,6 +311,12 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
 void Stats::SetPrimaryId(int primary_id) {
   transaction_summary_.primary_id = primary_id;
   static_telemetry_info_.primary_id = primary_id;
+  
+  if (prometheus_ && previous_primary_id_ != -1 && 
+      previous_primary_id_ != primary_id) {
+    prometheus_->Inc(VIEW_CHANGE, 1);
+  }
+  previous_primary_id_ = primary_id;
 }
 
 void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
@@ -312,6 +328,17 @@ void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
   static_telemetry_info_.ext_cache_hit_ratio_ = ext_cache_hit_ratio;
   static_telemetry_info_.level_db_stats_ = level_db_stats;
   static_telemetry_info_.level_db_approx_mem_size_ = level_db_approx_mem_size;
+  
+  if (prometheus_) {
+    prometheus_->Set(CACHE_HIT_RATIO, ext_cache_hit_ratio);
+    // Parse level_db_approx_mem_size as number (it's a string like "4104")
+    try {
+      double mem_size = std::stod(level_db_approx_mem_size);
+      prometheus_->Set(LEVELDB_MEM_SIZE, mem_size);
+    } catch (...) {
+      // Ignore parse errors
+    }
+  }
 }
 
 size_t Stats::GetShardIndex(uint64_t seq) const {
@@ -364,7 +391,7 @@ void Stats::RecordStateTime(std::string state) {
 }
 
 void Stats::RecordStateTime(uint64_t seq, std::string state) {
-  if (!enable_resview) {
+  if (!enable_resview && !prometheus_) {
     return;
   }
 
@@ -398,8 +425,24 @@ void Stats::RecordStateTime(uint64_t seq, std::string state) {
     telemetry.request_pre_prepare_state_time = now;
   } else if (state == "prepare") {
     telemetry.prepare_state_time = now;
+    
+    // Calculate prepare phase latency
+    if (prometheus_ && telemetry.request_pre_prepare_state_time != 
+        std::chrono::system_clock::time_point::min()) {
+      auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+          now - telemetry.request_pre_prepare_state_time).count();
+      prometheus_->Observe(PREPARE_PHASE_LATENCY, duration / 1e6); // Convert to seconds
+    }
   } else if (state == "commit") {
     telemetry.commit_state_time = now;
+    
+    // Calculate commit phase latency
+    if (prometheus_ && telemetry.prepare_state_time != 
+        std::chrono::system_clock::time_point::min()) {
+      auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+          now - telemetry.prepare_state_time).count();
+      prometheus_->Observe(COMMIT_PHASE_LATENCY, duration / 1e6); // Convert to seconds
+    }
   }
 }
 
@@ -697,6 +740,14 @@ void Stats::SendSummary(uint64_t seq) {
   // CRITICAL: Set execution_time before serialization, but don't modify any
   // other fields
   telemetry.execution_time = std::chrono::system_clock::now();
+  
+  // Calculate execution duration
+  if (prometheus_ && telemetry.commit_state_time != 
+      std::chrono::system_clock::time_point::min()) {
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+        telemetry.execution_time - telemetry.commit_state_time).count();
+    prometheus_->Observe(EXECUTION_DURATION, duration / 1e6); // Convert to seconds
+  }
 
   // Use automatic JSON serialization - this reads current state, doesn't modify
   // it
@@ -847,7 +898,7 @@ void Stats::MonitorGlobal() {
       LOG(ERROR) << "  req client latency:"
                  << static_cast<double>(run_req_run_time -
                                         last_run_req_run_time) /
-                        (run_req_num - last_run_req_num) / 1000000000.0;
+                        (run_req_num - last_run_req_num) / 1000000.0;
     }
 
     last_seq_fail = seq_fail;
@@ -987,13 +1038,19 @@ void Stats::IncCommit(uint64_t seq) {
   }
 }
 
-void Stats::IncPendingExecute() { pending_execute_++; }
+void Stats::IncPendingExecute() { 
+  pending_execute_++; 
+  if (prometheus_) {
+    prometheus_->Set(PENDING_EXECUTE, static_cast<double>(pending_execute_.load()));
+  }
+}
 
 void Stats::IncExecute() { execute_++; }
 
 void Stats::IncExecuteDone() {
   if (prometheus_) {
     prometheus_->Inc(EXECUTE, 1);
+    prometheus_->Inc(EXECUTE_DONE, 1);
   }
   execute_done_++;
 }
@@ -1005,22 +1062,48 @@ void Stats::BroadCastMsg() {
   broad_cast_msg_++;
 }
 
-void Stats::SendBroadCastMsg(uint32_t num) { send_broad_cast_msg_ += num; }
+void Stats::SendBroadCastMsg(uint32_t num) { 
+  send_broad_cast_msg_ += num; 
+  if (prometheus_) {
+    prometheus_->Inc(SEND_BROADCAST_MSG, static_cast<double>(num));
+  }
+}
 
-void Stats::SendBroadCastMsgPerRep() { send_broad_cast_msg_per_rep_++; }
+void Stats::SendBroadCastMsgPerRep() { 
+  send_broad_cast_msg_per_rep_++; 
+  if (prometheus_) {
+    prometheus_->Inc(SEND_BROADCAST_PER_REP, 1);
+  }
+}
 
-void Stats::SeqFail() { seq_fail_++; }
+void Stats::SeqFail() { 
+  seq_fail_++; 
+  if (prometheus_) {
+    prometheus_->Inc(SEQ_FAIL, 1);
+  }
+}
 
 void Stats::IncTotalRequest(uint32_t num) {
   if (prometheus_) {
     prometheus_->Inc(NUM_EXECUTE_TX, num);
+    prometheus_->Inc(TOTAL_REQUEST, static_cast<double>(num));
   }
   total_request_ += num;
 }
 
-void Stats::IncTotalGeoRequest(uint32_t num) { total_geo_request_ += num; }
+void Stats::IncTotalGeoRequest(uint32_t num) { 
+  total_geo_request_ += num; 
+  if (prometheus_) {
+    prometheus_->Inc(TOTAL_GEO_REQUEST, static_cast<double>(num));
+  }
+}
 
-void Stats::IncGeoRequest() { geo_request_++; }
+void Stats::IncGeoRequest() { 
+  geo_request_++; 
+  if (prometheus_) {
+    prometheus_->Inc(GEO_REQUEST, 1);
+  }
+}
 
 void Stats::ServerCall() {
   if (prometheus_) {
@@ -1036,11 +1119,19 @@ void Stats::ServerProcess() {
   server_process_++;
 }
 
-void Stats::SeqGap(uint64_t seq_gap) { seq_gap_ = seq_gap; }
+void Stats::SeqGap(uint64_t seq_gap) { 
+  seq_gap_ = seq_gap; 
+  if (prometheus_) {
+    prometheus_->Set(SEQ_GAP, static_cast<double>(seq_gap));
+  }
+}
 
 void Stats::AddLatency(uint64_t run_time) {
   run_req_num_++;
   run_req_run_time_ += run_time;
+  if (prometheus_) {
+    prometheus_->Observe(CLIENT_LATENCY, run_time / 1e6);
+  }
 }
 
 void Stats::SetPrometheus(const std::string& prometheus_address) {

@@ -23,6 +23,7 @@
 #include <prometheus/counter.h>
 #include <prometheus/exposer.h>
 #include <prometheus/registry.h>
+#include <prometheus/summary.h>
 
 namespace resdb {
 
@@ -48,6 +49,23 @@ enum MetricName {
   COMMIT,
   EXECUTE,
   NUM_EXECUTE_TX,
+  CLIENT_LATENCY,
+  // New metrics
+  SEQ_FAIL,
+  SEQ_GAP,
+  PENDING_EXECUTE,
+  EXECUTE_DONE,
+  SEND_BROADCAST_MSG,
+  TOTAL_REQUEST,
+  PREPARE_PHASE_LATENCY,
+  COMMIT_PHASE_LATENCY,
+  EXECUTION_DURATION,
+  CACHE_HIT_RATIO,
+  LEVELDB_MEM_SIZE,
+  SEND_BROADCAST_PER_REP,
+  GEO_REQUEST,
+  TOTAL_GEO_REQUEST,
+  VIEW_CHANGE,
 };
 
 class PrometheusHandler {
@@ -57,6 +75,7 @@ class PrometheusHandler {
 
   void Set(MetricName name, double value);
   void Inc(MetricName name, double value);
+  void Observe(MetricName name, double value);
 
  protected:
   void Register();
@@ -67,6 +86,8 @@ class PrometheusHandler {
  private:
   typedef prometheus::Family<prometheus::Gauge> gbuilder;
   typedef prometheus::Gauge gmetric;
+  typedef prometheus::Family<prometheus::Summary> sbuilder;
+  typedef prometheus::Summary smetric;
 
   std::unique_ptr<prometheus::Exposer, std::default_delete<prometheus::Exposer>>
       exposer_;
@@ -74,6 +95,11 @@ class PrometheusHandler {
 
   std::map<std::string, gbuilder*> gauge_;
   std::map<std::string, gmetric*> metric_;
+  std::map<std::string, sbuilder*> summary_;
+  std::map<std::string, smetric*> summary_metric_;
+  
+  void RegisterSummaryMetric(const std::string& table_name,
+                              const std::string& metric_name);
 };
 
 }  // namespace resdb

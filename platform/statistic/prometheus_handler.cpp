@@ -43,7 +43,23 @@ std::map<MetricName, std::pair<TableName, std::string>> metric_names = {
     {PREPARE, {CONSENSUS, "prepare"}},
     {COMMIT, {CONSENSUS, "commit"}},
     {EXECUTE, {CONSENSUS, "execute"}},
-    {NUM_EXECUTE_TX, {CONSENSUS, "num_execute_tx"}}};
+    {NUM_EXECUTE_TX, {CONSENSUS, "num_execute_tx"}},
+    {CLIENT_LATENCY, {CLIENT, "client_latency"}},
+    {SEQ_FAIL, {CONSENSUS, "seq_fail"}},
+    {SEQ_GAP, {CONSENSUS, "seq_gap"}},
+    {PENDING_EXECUTE, {CONSENSUS, "pending_execute"}},
+    {EXECUTE_DONE, {CONSENSUS, "execute_done"}},
+    {SEND_BROADCAST_MSG, {IO_THREAD, "send_broadcast_msg"}},
+    {TOTAL_REQUEST, {CONSENSUS, "total_request"}},
+    {PREPARE_PHASE_LATENCY, {CONSENSUS, "prepare_phase_latency"}},
+    {COMMIT_PHASE_LATENCY, {CONSENSUS, "commit_phase_latency"}},
+    {EXECUTION_DURATION, {CONSENSUS, "execution_duration"}},
+    {CACHE_HIT_RATIO, {GENERAL, "cache_hit_ratio"}},
+    {LEVELDB_MEM_SIZE, {GENERAL, "leveldb_mem_size"}},
+    {SEND_BROADCAST_PER_REP, {IO_THREAD, "send_broadcast_per_rep"}},
+    {GEO_REQUEST, {CLIENT, "geo_request"}},
+    {TOTAL_GEO_REQUEST, {CLIENT, "total_geo_request"}},
+    {VIEW_CHANGE, {CONSENSUS, "view_change"}}};
 
 PrometheusHandler::PrometheusHandler(const std::string& server_address) {
   exposer_ =
@@ -67,8 +83,17 @@ void PrometheusHandler::Register() {
   }
 
   for (auto& metric_pair : metric_names) {
-    RegisterMetric(table_names[metric_pair.second.first],
-                   metric_pair.second.second);
+    // Register Summary metrics (latencies)
+    if (metric_pair.first == CLIENT_LATENCY ||
+        metric_pair.first == PREPARE_PHASE_LATENCY ||
+        metric_pair.first == COMMIT_PHASE_LATENCY ||
+        metric_pair.first == EXECUTION_DURATION) {
+      RegisterSummaryMetric(table_names[metric_pair.second.first],
+                            metric_pair.second.second);
+    } else {
+      RegisterMetric(table_names[metric_pair.second.first],
+                     metric_pair.second.second);
+    }
   }
 }
 
@@ -103,6 +128,37 @@ void PrometheusHandler::Inc(MetricName name, double value) {
     return;
   }
   metric_[metric_name_str]->Increment(value);
+}
+
+void PrometheusHandler::RegisterSummaryMetric(const std::string& table_name,
+                                               const std::string& metric_name) {
+  // Create summary family if it doesn't exist
+  if (summary_.find(table_name) == summary_.end()) {
+    sbuilder* summary_family = &prometheus::BuildSummary()
+                                   .Name(table_name + "_summary")
+                                   .Help(table_name + " summary metrics")
+                                   .Register(*registry_);
+    summary_[table_name] = summary_family;
+  }
+  
+  // Create summary metric
+  smetric* summary_metric = &summary_[table_name]->Add(
+      {{"metrics", metric_name}},
+      prometheus::Summary::Quantiles{
+          {0.5, 0.05},   // p50 with 5% error
+          {0.9, 0.01},   // p90 with 1% error
+          {0.95, 0.01},  // p95 with 1% error
+          {0.99, 0.001}  // p99 with 0.1% error
+      });
+  summary_metric_[metric_name] = summary_metric;
+}
+
+void PrometheusHandler::Observe(MetricName name, double value) {
+  std::string metric_name_str = metric_names[name].second;
+  if (summary_metric_.find(metric_name_str) == summary_metric_.end()) {
+    return;
+  }
+  summary_metric_[metric_name_str]->Observe(value);
 }
 
 }  // namespace resdb

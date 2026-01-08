@@ -289,6 +289,8 @@ class Stats {
   nlohmann::json consensus_history_;
   std::mutex consensus_history_mutex_;  // Protect consensus_history_ access
 
+  int previous_primary_id_ = -1;  // Track for view change detection
+
   std::unique_ptr<PrometheusHandler> prometheus_;
 };
 
