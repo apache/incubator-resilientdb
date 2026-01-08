@@ -26,10 +26,6 @@ cc_library(
     name = "stats",
     srcs = ["stats.cpp"],
     hdrs = ["stats.h"],
-    copts = select({
-        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
-        "//conditions:default": [],
-    }),
     deps = [
         ":prometheus_handler",
         "//common:asio",
@@ -42,7 +38,6 @@ cc_library(
         "//proto/kv:kv_cc_proto",
         "//third_party:crow",
         "//third_party:prometheus",
-        "//third_party:leveldb",
     ],
 )
 

@@ -266,7 +266,6 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   global_stats_->IncPrepare();
   uint64_t seq = request->seq();
   int sender_id = request->sender_id();
-  global_stats_->RecordPrepareRecv(seq, sender_id);
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
   commit_request->mutable_data_signature()->Clear();
@@ -311,7 +310,6 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
                                              std::move(request));
   }
   global_stats_->IncCommit();
-  global_stats_->RecordCommitRecv(seq, sender_id);
   // Add request to message_manager.
   // If it has received enough same requests(2f+1), message manager will
   // commit the request.
