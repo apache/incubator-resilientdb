@@ -42,11 +42,6 @@ void SignalHandler(int sig_num) {
              << " ======================";
 }
 
-void SignalHandler(int sig_num) {
-  LOG(ERROR) << " signal:" << sig_num << " call"
-             << " ======================";
-}
-
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> "
          "[--enable_duckdb] [--duckdb_path=<path>] "
