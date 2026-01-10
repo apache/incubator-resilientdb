@@ -19,10 +19,12 @@
 
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
 
+#include <cstdint>
 #include <glog/logging.h>
 #include <unistd.h>
 
 #include "common/crypto/signature_verifier.h"
+#include "platform/statistic/trace_hooks.h"
 
 namespace resdb {
 
@@ -148,6 +150,11 @@ ConsensusManagerPBFT::PopComplainedRequest() {
 // The implementation of PBFT.
 int ConsensusManagerPBFT::ConsensusCommit(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
+  resdb_trace_consensus_commit(
+      reinterpret_cast<uint64_t>(request.get()), request->seq(),
+      static_cast<uint32_t>(request->type()),
+      static_cast<uint32_t>(request->sender_id()), request->proxy_id());
+  
   LOG(INFO) << "recv impl type:" << request->type() << " "
             << "sender id:" << request->sender_id()
             << " primary:" << system_info_->GetPrimaryId();

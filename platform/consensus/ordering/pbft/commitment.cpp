@@ -24,6 +24,7 @@
 
 #include "common/utils/utils.h"
 #include "platform/consensus/ordering/pbft/transaction_utils.h"
+#include "platform/statistic/trace_hooks.h"
 
 namespace resdb {
 
@@ -136,6 +137,12 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   }
 
   global_stats_->RecordStateTime(*seq, "request");
+  uint64_t meta_request = ResdbTracePackMeta(
+      static_cast<uint32_t>(user_request->type()), /*sender_id=*/0,
+      static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_request(reinterpret_cast<uint64_t>(user_request.get()), *seq,
+                           meta_request, user_request->proxy_id(),
+                           ResdbTraceEpochNs());
 
   user_request->set_type(Request::TYPE_PRE_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
@@ -230,6 +237,19 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
 
   global_stats_->IncPropose();
   global_stats_->RecordStateTime(request->seq(), "pre-prepare");
+  uint64_t meta_pre_prepare = ResdbTracePackMeta(
+      static_cast<uint32_t>(request->type()),
+      static_cast<uint32_t>(request->sender_id()),
+      static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_pre_prepare(reinterpret_cast<uint64_t>(request.get()),
+                               request->seq(), meta_pre_prepare,
+                               request->proxy_id(), ResdbTraceEpochNs());
+
+  // Keep epoch_ns aligned to Stats' system_clock domain for drop-in timeline
+  // compatibility.
+  // Note: system_clock can jump (NTP); monotonic nsecs remains best for deltas.
+  // We emit both.
+  // (epoch_ns passed to per-phase hooks; ConsensusCommit hook remains monotonic-only)
   std::unique_ptr<Request> prepare_request = resdb::NewRequest(
       Request::TYPE_PREPARE, *request, config_.GetSelfInfo().id());
   prepare_request->clear_data();
@@ -265,7 +285,13 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
   }
   uint64_t seq = request->seq();
   int sender_id = request->sender_id();
+  uint64_t req_ptr = reinterpret_cast<uint64_t>(request.get());
+  uint64_t meta_prepare_recv = ResdbTracePackMeta(
+      static_cast<uint32_t>(request->type()), static_cast<uint32_t>(sender_id),
+      static_cast<uint32_t>(config_.GetSelfInfo().id()));
   global_stats_->RecordPrepareRecv(seq, sender_id);
+  resdb_trace_pbft_prepare_recv(
+      req_ptr, seq, meta_prepare_recv, request->proxy_id(), ResdbTraceEpochNs());
   global_stats_->IncPrepare(seq);
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
@@ -291,6 +317,12 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       //           << commit_request->data_signature().DebugString();
     }
     global_stats_->RecordStateTime(seq, "prepare");
+      uint64_t meta_prepare_state = ResdbTracePackMeta(
+          static_cast<uint32_t>(Request::TYPE_PREPARE), /*sender_id=*/0,
+          static_cast<uint32_t>(config_.GetSelfInfo().id()));
+      resdb_trace_pbft_prepare_state(req_ptr, seq, meta_prepare_state,
+                                    commit_request->proxy_id(),
+                                    ResdbTraceEpochNs());
     replica_communicator_->BroadCast(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
@@ -306,11 +338,18 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
   }
   uint64_t seq = request->seq();
   int sender_id = request->sender_id();
+  uint64_t proxy_id = request->proxy_id();
+  uint64_t req_ptr = reinterpret_cast<uint64_t>(request.get());
+  uint64_t meta_commit_recv = ResdbTracePackMeta(
+      static_cast<uint32_t>(request->type()), static_cast<uint32_t>(sender_id),
+      static_cast<uint32_t>(config_.GetSelfInfo().id()));
   if (request->is_recovery()) {
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
   global_stats_->RecordCommitRecv(seq, sender_id);
+  resdb_trace_pbft_commit_recv(
+      req_ptr, seq, meta_commit_recv, proxy_id, ResdbTraceEpochNs());
   global_stats_->IncCommit(seq);
   // Add request to message_manager.
   // If it has received enough same requests(2f+1), message manager will
@@ -321,6 +360,11 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
     // LOG(ERROR)<<request->data().size();
     // global_stats_->GetTransactionDetails(request->data());
     global_stats_->RecordStateTime(seq, "commit");
+    uint64_t meta_commit_state = ResdbTracePackMeta(
+        static_cast<uint32_t>(Request::TYPE_COMMIT), /*sender_id=*/0,
+        static_cast<uint32_t>(config_.GetSelfInfo().id()));
+    resdb_trace_pbft_commit_state(req_ptr, seq, meta_commit_state, proxy_id,
+                                 ResdbTraceEpochNs());
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }

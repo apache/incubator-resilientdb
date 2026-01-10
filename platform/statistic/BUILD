@@ -24,8 +24,14 @@ package(default_visibility = [
 
 cc_library(
     name = "stats",
-    srcs = ["stats.cpp"],
-    hdrs = ["stats.h"],
+    srcs = [
+        "stats.cpp",
+        "trace_hooks.cpp",
+    ],
+    hdrs = [
+        "stats.h",
+        "trace_hooks.h",
+    ],
     deps = [
         ":prometheus_handler",
         "//common:asio",

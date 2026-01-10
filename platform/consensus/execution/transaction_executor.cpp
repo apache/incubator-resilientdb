@@ -21,7 +21,10 @@
 
 #include <glog/logging.h>
 
+#include <chrono>
+
 #include "common/utils/utils.h"
+#include "platform/statistic/trace_hooks.h"
 
 namespace resdb {
 
@@ -240,6 +243,8 @@ void TransactionExecutor::ExecuteMessageOutOfOrder() {
 }
 
 void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
+  uint64_t req_ptr = reinterpret_cast<uint64_t>(request.get());
+  uint32_t req_type = static_cast<uint32_t>(request->type());
   // Only Execute the request.
   BatchUserRequest batch_request;
   if (!batch_request.ParseFromString(request->data())) {
@@ -257,6 +262,11 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   //          id:"<<request->proxy_id();
   std::unique_ptr<BatchUserResponse> response;
   global_stats_->GetTransactionDetails(batch_request);
+  uint64_t meta_execute_start =
+      ResdbTracePackMeta(req_type, /*sender_id=*/0,
+                         static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_execute_start(req_ptr, batch_request.seq(), meta_execute_start,
+                                batch_request.proxy_id(), ResdbTraceEpochNs());
   global_stats_->RecordExecuteStart(batch_request.seq());
   if (transaction_manager_) {
     response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
@@ -266,10 +276,17 @@ void TransactionExecutor::OnlyExecute(std::unique_ptr<Request> request) {
   // global_stats_->IncTotalRequest(batch_request.user_requests_size());
   // global_stats_->IncExecuteDone();
   global_stats_->RecordExecuteEnd(batch_request.seq());
+  uint64_t meta_execute_end =
+      ResdbTracePackMeta(req_type, /*sender_id=*/0,
+                         static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_execute_end(req_ptr, batch_request.seq(), meta_execute_end,
+                              batch_request.proxy_id(), ResdbTraceEpochNs());
 }
 
 void TransactionExecutor::Execute(std::unique_ptr<Request> request,
                                   bool need_execute) {
+  uint64_t req_ptr = reinterpret_cast<uint64_t>(request.get());
+  uint32_t req_type = static_cast<uint32_t>(request->type());
   std::unique_ptr<BatchUserRequest> batch_request = nullptr;
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>> data;
   std::vector<std::unique_ptr<google::protobuf::Message>>* data_p = nullptr;
@@ -306,6 +323,12 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
   global_stats_->GetTransactionDetails(*batch_request_p);
   uint64_t seq = request->seq();
   // Timeline: execution start
+  uint64_t meta_execute_start =
+      ResdbTracePackMeta(req_type, /*sender_id=*/0,
+                         static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_execute_start(req_ptr, seq, meta_execute_start,
+                                batch_request_p->proxy_id(),
+                                ResdbTraceEpochNs());
   global_stats_->RecordExecuteStart(seq);
   if (transaction_manager_ && need_execute) {
     if (execute_thread_num_ == 1) {
@@ -372,6 +395,11 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
 
   // Timeline: execution end
   global_stats_->RecordExecuteEnd(seq);
+  uint64_t meta_execute_end =
+      ResdbTracePackMeta(req_type, /*sender_id=*/0,
+                         static_cast<uint32_t>(config_.GetSelfInfo().id()));
+  resdb_trace_pbft_execute_end(req_ptr, seq, meta_execute_end,
+                              batch_request_p->proxy_id(), ResdbTraceEpochNs());
   global_stats_->IncExecuteDone();
 }
 

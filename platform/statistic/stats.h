@@ -25,6 +25,7 @@
 #include <future>
 #include <mutex>
 #include <nlohmann/json.hpp>
+#include <atomic>
 #include <unordered_map>
 
 #include "boost/asio.hpp"
@@ -227,6 +228,10 @@ class Stats {
   void ServerProcess();
   void SetPrometheus(const std::string& prometheus_address);
 
+  // Latest executed consensus sequence observed by this replica.
+  // This is updated when execution completes (and also when summaries are sent).
+  uint64_t GetLastExecutedSeq() const { return last_executed_seq_.load(); }
+
  protected:
   Stats(int sleep_time = 5);
   ~Stats();
@@ -286,8 +291,9 @@ class Stats {
   std::atomic<uint64_t> prev_num_prepare_;
   std::atomic<uint64_t> prev_num_commit_;
   nlohmann::json summary_json_;
-  nlohmann::json consensus_history_;
-  std::mutex consensus_history_mutex_;  // Protect consensus_history_ access
+
+  // Tracks the most recently executed sequence number.
+  std::atomic<uint64_t> last_executed_seq_{0};
 
   int previous_primary_id_ = -1;  // Track for view change detection
 

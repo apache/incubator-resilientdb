@@ -142,11 +142,29 @@ void Stats::CrowRoute() {
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization");  // Specify allowed headers
 
-            // Send your response - includes all consensus history with timeline events
-            {
-              std::lock_guard<std::mutex> lock(consensus_history_mutex_);
-              res.body = consensus_history_.dump();
+            // Send only the most recently executed sequence telemetry.
+            // We intentionally do not retain an unbounded history here.
+            uint64_t seq = last_executed_seq_.load();
+            nlohmann::json result;
+            result["seq_number"] = seq;
+            if (seq != 0) {
+              size_t shard = GetShardIndex(seq);
+              {
+                std::lock_guard<std::mutex> lock(telemetry_mutex_[shard]);
+                auto& map = transaction_telemetry_map_[shard];
+                auto it = map.find(seq);
+                if (it != map.end()) {
+                  result = it->second.to_json();
+                } else {
+                  result["error"] =
+                      "Latest executed sequence not found in telemetry map";
+                }
+              }
+            } else {
+              result["error"] = "No executed sequence recorded yet";
             }
+
+            res.body = result.dump();
             res.end();
           });
       CROW_ROUTE(app, "/consensus_data/<int>")
@@ -160,34 +178,14 @@ void Stats::CrowRoute() {
                            "Content-Type, Authorization");
 
             nlohmann::json result;
-            
-            // First check consensus_history_
-            {
-              std::lock_guard<std::mutex> lock(consensus_history_mutex_);
-              std::string seq_str = std::to_string(seq_number);
-              if (consensus_history_.find(seq_str) != consensus_history_.end()) {
-                result = consensus_history_[seq_str];
-              }
-            }
-            
-            // Also check live telemetry map (may have more recent data)
             uint64_t seq = static_cast<uint64_t>(seq_number);
-            size_t shard = seq % 256;  // kTelemetryShards
+            size_t shard = GetShardIndex(seq);
             {
               std::lock_guard<std::mutex> lock(telemetry_mutex_[shard]);
               auto& map = transaction_telemetry_map_[shard];
               auto it = map.find(seq);
               if (it != map.end()) {
-                // Merge live telemetry data (may be more complete)
-                nlohmann::json live_data = it->second.to_json();
-                
-                // If we have data from consensus_history_, merge it
-                if (!result.empty()) {
-                  // Prefer live data for most fields, but keep timeline events from both
-                  result.update(live_data);
-                } else {
-                  result = live_data;
-                }
+                result = it->second.to_json();
               }
             }
             
@@ -282,9 +280,18 @@ bool Stats::IsFaulty() { return make_faulty_.load(); }
 
 void Stats::ChangePrimary(int primary_id) {
   transaction_summary_.primary_id = primary_id;
+  static_telemetry_info_.primary_id = primary_id;
   make_faulty_.store(false);
   
-  // Detect view change
+  // Update all existing transaction telemetry entries with new primary
+  for (size_t shard = 0; shard < kTelemetryShards; ++shard) {
+    std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+    auto& map = transaction_telemetry_map_[shard];
+    for (auto& entry : map) {
+      entry.second.primary_id = primary_id;
+    }
+  }
+  
   if (prometheus_ && previous_primary_id_ != -1 && 
       previous_primary_id_ != primary_id) {
     prometheus_->Inc(VIEW_CHANGE, 1);
@@ -311,6 +318,15 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
 void Stats::SetPrimaryId(int primary_id) {
   transaction_summary_.primary_id = primary_id;
   static_telemetry_info_.primary_id = primary_id;
+  
+  // Update all existing transaction telemetry entries with new primary
+  for (size_t shard = 0; shard < kTelemetryShards; ++shard) {
+    std::unique_lock<std::mutex> lock(telemetry_mutex_[shard]);
+    auto& map = transaction_telemetry_map_[shard];
+    for (auto& entry : map) {
+      entry.second.primary_id = primary_id;
+    }
+  }
   
   if (prometheus_ && previous_primary_id_ != -1 && 
       previous_primary_id_ != primary_id) {
@@ -540,6 +556,13 @@ void Stats::RecordExecuteStart(uint64_t seq) {
 }
 
 void Stats::RecordExecuteEnd(uint64_t seq) {
+  // Track last executed sequence even if resview is disabled.
+  {
+    uint64_t cur = last_executed_seq_.load();
+    while (seq > cur && !last_executed_seq_.compare_exchange_weak(cur, seq)) {
+      // retry with updated cur
+    }
+  }
   if (!enable_resview) {
     return;
   }
@@ -697,12 +720,6 @@ void Stats::SendSummary() {
   summary_json_["ext_cache_hit_ratio"] =
       transaction_summary_.ext_cache_hit_ratio_;
 
-  {
-    std::lock_guard<std::mutex> history_lock(consensus_history_mutex_);
-    consensus_history_[std::to_string(transaction_summary_.txn_number)] =
-        summary_json_;
-  }
-
   LOG(ERROR) << summary_json_.dump();
 
   // Reset Transaction Summary Parameters
@@ -723,6 +740,15 @@ void Stats::SendSummary() {
 void Stats::SendSummary(uint64_t seq) {
   if (!enable_resview) {
     return;
+  }
+
+  // Summary is generated after execution; treat this as another signal for the
+  // latest executed sequence.
+  {
+    uint64_t cur = last_executed_seq_.load();
+    while (seq > cur && !last_executed_seq_.compare_exchange_weak(cur, seq)) {
+      // retry with updated cur
+    }
   }
 
   size_t shard = GetShardIndex(seq);
@@ -752,33 +778,6 @@ void Stats::SendSummary(uint64_t seq) {
   // Use automatic JSON serialization - this reads current state, doesn't modify
   // it
   nlohmann::json summary_json = telemetry.to_json();
-
-  {
-    std::lock_guard<std::mutex> history_lock(consensus_history_mutex_);
-    // Only update if we don't already have this sequence, or update existing
-    // This prevents overwriting good data with bad data
-    std::string seq_str = std::to_string(seq);
-    if (consensus_history_.find(seq_str) == consensus_history_.end()) {
-      // First time storing - always store
-      consensus_history_[seq_str] = summary_json;
-    } else {
-      // Already exists - only update if new data has more complete information
-      // (i.e., has transaction details or more timestamps)
-      auto& existing = consensus_history_[seq_str];
-      bool new_has_details = !summary_json["txn_commands"].empty();
-      bool existing_has_details = !existing["txn_commands"].empty();
-
-      // If new data has details and existing doesn't, merge them
-      if (new_has_details && !existing_has_details) {
-        existing["txn_commands"] = summary_json["txn_commands"];
-        existing["txn_keys"] = summary_json["txn_keys"];
-        existing["txn_values"] = summary_json["txn_values"];
-      }
-
-      // Always update execution_time as it's the latest
-      existing["execution_time"] = summary_json["execution_time"];
-    }
-  }
 
   LOG(ERROR) << summary_json.dump();
 
