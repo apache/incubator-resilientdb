@@ -97,13 +97,6 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     return -3;
   }
 
-  /*
-  if(SignatureVerifier::CalculateHash(user_request->data()) !=
-  user_request->hash()){ LOG(ERROR) << "the hash and data of the user request
-  don't match, reject"; return -2;
-  }
-  */
-
   // check signatures
   bool valid = verifier_->VerifyMessage(user_request->data(),
                                         user_request->data_signature());
@@ -128,6 +121,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   // Artificially make the primary stop proposing new trasactions.
 
   if (!seq.ok()) {
+    LOG(ERROR) << " seq fail";
     duplicate_manager_->EraseProposed(user_request->hash());
     global_stats_->SeqFail();
     Request request;
@@ -167,12 +161,37 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
     if (message_manager_->GetNextSeq() == 0 ||
         request->seq() == message_manager_->GetNextSeq()) {
       message_manager_->SetNextSeq(request->seq() + 1);
-    } else {
+      while (!pending_recovery_.empty()) {
+        LOG(ERROR) << " pending size:" << pending_recovery_.size()
+                   << " first:" << pending_recovery_.begin()->first
+                   << " next:" << message_manager_->GetNextSeq();
+        if (pending_recovery_.begin()->first <=
+            message_manager_->GetNextSeq()) {
+          if (pending_recovery_.begin()->first ==
+              message_manager_->GetNextSeq()) {
+            message_manager_->SetNextSeq(pending_recovery_.begin()->first + 1);
+            message_manager_->AddConsensusMsg(
+                pending_recovery_.begin()->second.first->signature,
+                std::move(pending_recovery_.begin()->second.second));
+          }
+          pending_recovery_.erase(pending_recovery_.begin());
+        } else {
+          break;
+        }
+      }
+
+    } else if (request->seq() > message_manager_->GetNextSeq()) {
+      uint64_t seq = request->seq();
+      pending_recovery_[seq] =
+          std::make_pair(std::move(context), std::move(request));
+      return 0;
+    } else if (!request->force_recovery()) {
       LOG(ERROR) << " recovery request not valid:"
                  << " current seq:" << message_manager_->GetNextSeq()
                  << " data seq:" << request->seq();
       return 0;
     }
+    request->set_force_recovery(false);
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
@@ -182,14 +201,6 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
                << request->sender_id() << " seq:" << request->seq();
     return -2;
   }
-
-  /*
-    if(request->hash() != "null" + std::to_string(request->seq())
-        && SignatureVerifier::CalculateHash(request->data()) != request->hash())
-    { LOG(ERROR) << "the hash and data of the request don't match, reject";
-      return -2;
-    }
-    */
 
   if (request->sender_id() != config_.GetSelfInfo().id()) {
     if (pre_verify_func_ && !pre_verify_func_(*request)) {
@@ -242,22 +253,29 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
     return -2;
   }
   if (request->is_recovery()) {
-    return message_manager_->AddConsensusMsg(context->signature,
-                                             std::move(request));
+    uint64_t seq = request->seq();
+    CollectorResultCode ret = message_manager_->AddConsensusMsg(
+        context->signature, std::move(request));
+    if (ret == CollectorResultCode::STATE_CHANGED) {
+      if (message_manager_->GetHighestPreparedSeq() < seq) {
+        message_manager_->SetHighestPreparedSeq(seq);
+      }
+    }
+    return ret;
   }
-  //global_stats_->IncPrepare();
+  // global_stats_->IncPrepare();
   std::unique_ptr<Request> commit_request = resdb::NewRequest(
       Request::TYPE_COMMIT, *request, config_.GetSelfInfo().id());
   commit_request->mutable_data_signature()->Clear();
   // Add request to message_manager.
   // If it has received enough same requests(2f+1), broadcast the commit
   // message.
-  uint64_t seq_ = request->seq();
+  uint64_t seq = request->seq();
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {
-    if (message_manager_->GetHighestPreparedSeq() < seq_) {
-      message_manager_->SetHighestPreparedSeq(seq_);
+    if (message_manager_->GetHighestPreparedSeq() < seq) {
+      message_manager_->SetHighestPreparedSeq(seq);
     }
     // If need qc, sign the data
     if (need_qc_ && verifier_) {
@@ -284,11 +302,12 @@ int Commitment::ProcessCommitMsg(std::unique_ptr<Context> context,
                << " context:" << (context == nullptr);
     return -2;
   }
+  uint64_t seq = request->seq();
   if (request->is_recovery()) {
     return message_manager_->AddConsensusMsg(context->signature,
                                              std::move(request));
   }
-  //global_stats_->IncCommit();
+  // global_stats_->IncCommit();
   // Add request to message_manager.
   // If it has received enough same requests(2f+1), message manager will
   // commit the request.
@@ -319,7 +338,7 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_current_view(batch_resp->current_view());
     request.set_proxy_id(batch_resp->proxy_id());
     request.set_primary_id(batch_resp->primary_id());
-    // LOG(ERROR)<<"send back to proxy:"<<batch_resp->proxy_id();
+    LOG(ERROR) << "send back to proxy:" << batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
     replica_communicator_->SendMessage(request, request.proxy_id());
   }

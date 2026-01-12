@@ -49,7 +49,7 @@ class ConsensusManager : public ServiceInterface {
   void Stop();
 
   // Should be called by the instance or test.
-  void Start();
+  virtual void Start();
 
  protected:
   // BroadCast will generate signatures whiling sending data to other replicas.

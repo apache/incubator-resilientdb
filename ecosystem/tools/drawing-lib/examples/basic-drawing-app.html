@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Drawing Toolkit - Basic Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+    }
+
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .controls button:hover {
+      background: #0056b3;
+    }
+
+    .controls button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .controls input[type="color"] {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .controls input[type="range"] {
+      width: 120px;
+    }
+
+    #drawingCanvas {
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      cursor: crosshair;
+      display: block;
+      width: 100%;
+      background: white;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+      background: #f8f9fa;
+      font-size: 14px;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .info {
+      margin-top: 20px;
+      padding: 15px;
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      border-radius: 4px;
+    }
+
+    .info h3 {
+      margin-top: 0;
+      color: #0056b3;
+    }
+
+    .info code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>🎨 Collaborative Drawing Toolkit</h1>
+    <p>Basic collaborative drawing example with ResilientDB integration</p>
+  </div>
+
+  <div class="container">
+    <div class="controls">
+      <label>
+        <span>Color:</span>
+        <input type="color" id="colorPicker" value="#000000">
+      </label>
+      <label>
+        <span>Width:</span>
+        <input type="range" id="lineWidth" min="1" max="20" value="2">
+        <span id="widthValue">2</span>px
+      </label>
+      <button id="undoBtn" disabled>↶ Undo</button>
+      <button id="redoBtn" disabled>↷ Redo</button>
+      <button id="clearBtn" disabled>🗑️ Clear Canvas</button>
+      <button id="loginBtn">🔐 Login</button>
+      <span id="userInfo" style="margin-left: auto; color: #666; font-size: 14px;"></span>
+    </div>
+
+    <canvas id="drawingCanvas" width="1120" height="600"></canvas>
+
+    <div id="status" class="status" style="display: none;"></div>
+
+    <div class="info">
+      <h3>📘 How to Use</h3>
+      <p><strong>1.</strong> Click "Login" to authenticate (demo credentials: username: <code>demo</code>, password:
+        <code>password</code>)
+      </p>
+      <p><strong>2.</strong> Draw on the canvas by clicking and dragging</p>
+      <p><strong>3.</strong> Your strokes are automatically saved to ResilientDB blockchain</p>
+      <p><strong>4.</strong> Use Undo/Redo to manage your drawing history</p>
+      <p><strong>5.</strong> Open this page in multiple tabs to see real-time collaboration!</p>
+    </div>
+  </div>
+
+  <!-- In a real application, you would import from npm -->
+  <script type="module">
+    // This example uses inline code for demonstration
+    // In production, use: import DrawingClient from 'collaborative-drawing-toolkit';
+
+    const API_BASE_URL = 'http://localhost:10010';
+
+    class DrawingApp {
+      constructor() {
+        this.canvas = document.getElementById('drawingCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.isDrawing = false;
+        this.currentPath = [];
+        this.color = '#000000';
+        this.lineWidth = 2;
+        this.currentRoom = null;
+        this.token = null;
+
+        this.setupUI();
+        this.setupCanvas();
+        this.showStatus('Ready to draw! Click "Login" to enable saving and collaboration.', 'info');
+      }
+
+      setupUI() {
+        document.getElementById('colorPicker').addEventListener('input', (e) => {
+          this.color = e.target.value;
+        });
+
+        const widthSlider = document.getElementById('lineWidth');
+        widthSlider.addEventListener('input', (e) => {
+          this.lineWidth = parseInt(e.target.value);
+          document.getElementById('widthValue').textContent = this.lineWidth;
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => this.login());
+        document.getElementById('undoBtn').addEventListener('click', () => this.undo());
+        document.getElementById('redoBtn').addEventListener('click', () => this.redo());
+        document.getElementById('clearBtn').addEventListener('click', () => this.clearCanvas());
+      }
+
+      setupCanvas() {
+        this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+        this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+        this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+        this.canvas.addEventListener('mouseleave', () => this.stopDrawing());
+      }
+
+      startDrawing(e) {
+        this.isDrawing = true;
+        const rect = this.canvas.getBoundingClientRect();
+        this.currentPath = [{
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        }];
+      }
+
+      draw(e) {
+        if (!this.isDrawing) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const point = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+
+        this.currentPath.push(point);
+        this.drawPath(this.currentPath, this.color, this.lineWidth);
+      }
+
+      async stopDrawing() {
+        if (!this.isDrawing) return;
+        this.isDrawing = false;
+
+        if (this.currentPath.length < 2) return;
+
+        // If logged in, save to backend
+        if (this.token && this.currentRoom) {
+          try {
+            await this.submitStroke(this.currentPath, this.color, this.lineWidth);
+            this.showStatus('Stroke saved to ResilientDB! ✓', 'success');
+          } catch (error) {
+            this.showStatus('Failed to save stroke: ' + error.message, 'error');
+          }
+        }
+
+        this.currentPath = [];
+      }
+
+      drawPath(pathData, color, width) {
+        if (pathData.length < 2) return;
+
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = width;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(pathData[0].x, pathData[0].y);
+        for (let i = 1; i < pathData.length; i++) {
+          this.ctx.lineTo(pathData[i].x, pathData[i].y);
+        }
+        this.ctx.stroke();
+      }
+
+      async login() {
+        const username = prompt('Username:', 'demo');
+        const password = prompt('Password:', 'password');
+
+        if (!username || !password) return;
+
+        try {
+          this.showStatus('Logging in...', 'info');
+
+          // Login
+          const loginResp = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+          });
+
+          if (!loginResp.ok) {
+            throw new Error('Login failed');
+          }
+
+          const { token, user } = await loginResp.json();
+          this.token = token;
+
+          // Create or join a room
+          const roomResp = await fetch(`${API_BASE_URL}/api/v1/rooms`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${this.token}`
+            },
+            body: JSON.stringify({
+              name: 'Demo Drawing Room',
+              type: 'public'
+            })
+          });
+
+          const { room } = await roomResp.json();
+          this.currentRoom = room;
+
+          // Load existing strokes
+          await this.loadStrokes();
+
+          // Enable controls
+          document.getElementById('undoBtn').disabled = false;
+          document.getElementById('redoBtn').disabled = false;
+          document.getElementById('clearBtn').disabled = false;
+          document.getElementById('loginBtn').textContent = '✓ Logged In';
+          document.getElementById('loginBtn').disabled = true;
+          document.getElementById('userInfo').textContent = `User: ${user.username} | Room: ${room.name}`;
+
+          this.showStatus(`Connected! Drawing to room "${room.name}" backed by ResilientDB.`, 'success');
+        } catch (error) {
+          this.showStatus('Login failed: ' + error.message, 'error');
+        }
+      }
+
+      async loadStrokes() {
+        try {
+          const resp = await fetch(`${API_BASE_URL}/api/v1/canvases/${this.currentRoom.id}/strokes`, {
+            headers: { 'Authorization': `Bearer ${this.token}` }
+          });
+          const { strokes } = await resp.json();
+
+          // Clear and redraw
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          strokes.forEach(stroke => {
+            this.drawPath(stroke.pathData, stroke.color, stroke.lineWidth);
+          });
+        } catch (error) {
+          console.error('Failed to load strokes:', error);
+        }
+      }
+
+      async submitStroke(pathData, color, lineWidth) {
+        const resp = await fetch(`${API_BASE_URL}/api/v1/canvases/${this.currentRoom.id}/strokes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.token}`
+          },
+          body: JSON.stringify({ pathData, color, lineWidth })
+        });
+
+        if (!resp.ok) {
+          throw new Error('Failed to submit stroke');
+        }
+
+        return await resp.json();
+      }
+
+      async undo() {
+        if (!this.token || !this.currentRoom) return;
+
+        try {
+          await fetch(`${API_BASE_URL}/api/v1/canvases/${this.currentRoom.id}/history/undo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${this.token}` }
+          });
+          await this.loadStrokes();
+          this.showStatus('Undo successful', 'success');
+        } catch (error) {
+          this.showStatus('Undo failed: ' + error.message, 'error');
+        }
+      }
+
+      async redo() {
+        if (!this.token || !this.currentRoom) return;
+
+        try {
+          await fetch(`${API_BASE_URL}/api/v1/canvases/${this.currentRoom.id}/history/redo`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${this.token}` }
+          });
+          await this.loadStrokes();
+          this.showStatus('Redo successful', 'success');
+        } catch (error) {
+          this.showStatus('Redo failed: ' + error.message, 'error');
+        }
+      }
+
+      async clearCanvas() {
+        if (!this.token || !this.currentRoom) return;
+        if (!confirm('Clear the entire canvas? This cannot be undone.')) return;
+
+        try {
+          await fetch(`${API_BASE_URL}/api/v1/canvases/${this.currentRoom.id}/strokes`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${this.token}` }
+          });
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          this.showStatus('Canvas cleared', 'success');
+        } catch (error) {
+          this.showStatus('Clear failed: ' + error.message, 'error');
+        }
+      }
+
+      showStatus(message, type = 'info') {
+        const status = document.getElementById('status');
+        status.textContent = message;
+        status.className = `status ${type}`;
+        status.style.display = 'block';
+
+        if (type === 'success') {
+          setTimeout(() => {
+            status.style.display = 'none';
+          }, 3000);
+        }
+      }
+    }
+
+    // Initialize the app
+    window.app = new DrawingApp();
+  </script>
+</body>
+
+</html>

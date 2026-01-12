@@ -27,10 +27,13 @@
 #include <unistd.h>
 
 #include <fstream>
+#include <nlohmann/json.hpp>
+#include <regex>
 
 namespace resdb {
 
 using ::google::protobuf::util::JsonParseOptions;
+using json = nlohmann::json;
 
 namespace {
 
@@ -90,14 +93,28 @@ ReplicaInfo GenerateReplicaInfo(int id, const std::string& ip, int port) {
   return info;
 }
 
+std::string RemoveJsonComments(const std::string& jsonWithComments) {
+  std::string result =
+      std::regex_replace(jsonWithComments, std::regex("/\\*.*?\\*/"), "");
+  result = std::regex_replace(result, std::regex("//.*?\\n"), "\n");
+  return result;
+}
+
 ResConfigData ReadConfigFromFile(const std::string& file_name) {
   std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
+  if (!infile.is_open()) {
+    std::cerr << "Failed to open file." << file_name << " " << strerror(errno)
+              << std::endl;
+    return ResConfigData();
+  }
+
   json_data << infile.rdbuf();
+  std::string cleanJson = RemoveJsonComments(json_data.str());
 
   ResConfigData config_data;
   JsonParseOptions options;
-  auto status = JsonStringToMessage(json_data.str(), &config_data, options);
+  auto status = JsonStringToMessage(cleanJson, &config_data, options);
   if (!status.ok()) {
     LOG(ERROR) << "parse json :" << file_name << " fail:" << status.message();
   }
@@ -107,17 +124,30 @@ ResConfigData ReadConfigFromFile(const std::string& file_name) {
 
 std::vector<ReplicaInfo> ReadConfig(const std::string& file_name) {
   std::vector<ReplicaInfo> replicas;
-  std::string line;
+  std::stringstream json_data;
   std::ifstream infile(file_name.c_str());
-  int id;
-  std::string ip;
-  int port;
-  while (infile >> id >> ip >> port) {
-    replicas.push_back(GenerateReplicaInfo(id, ip, port));
+  if (!infile.is_open()) {
+    std::cerr << "Failed to open file." << file_name << " " << strerror(errno)
+              << std::endl;
+    return replicas;
   }
-  if (replicas.size() == 0) {
-    LOG(ERROR) << "read config:" << file_name << " fail.";
-    assert(replicas.size() > 0);
+
+  json_data << infile.rdbuf();
+  std::string cleanJson = RemoveJsonComments(json_data.str());
+
+  RegionInfo region_info;
+  JsonParseOptions options;
+  auto status = JsonStringToMessage(cleanJson, &region_info, options);
+  if (!status.ok()) {
+    LOG(ERROR) << "parse json :" << file_name << " fail:" << status.message();
+  }
+  assert(status.ok());
+  for (const auto& replica_info : region_info.replica_info()) {
+    LOG(ERROR) << "parse json id:" << replica_info.id()
+               << " ip:" << replica_info.ip()
+               << " port:" << replica_info.port();
+    replicas.push_back(GenerateReplicaInfo(replica_info.id(), replica_info.ip(),
+                                           replica_info.port()));
   }
   return replicas;
 }

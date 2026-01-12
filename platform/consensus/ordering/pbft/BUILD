@@ -193,9 +193,9 @@ cc_library(
     srcs = ["query.cpp"],
     hdrs = ["query.h"],
     deps = [
-        ":message_manager",
         "//executor/common:custom_query",
         "//platform/config:resdb_config",
+        "//platform/consensus/recovery",
         "//platform/proto:resdb_cc_proto",
     ],
 )

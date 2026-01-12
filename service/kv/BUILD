@@ -27,7 +27,6 @@ cc_binary(
     copts = select({
         "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
         "//conditions:default": [],
-
     }),
     deps = [
         "//platform/config:resdb_config_utils",

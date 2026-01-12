@@ -67,8 +67,8 @@ int main(int argc, char** argv) {
       std::stringstream ss;
       ss << " bazel-bin/service/tools/kv/api_tools/kv_service_tools --config "
             "service/tools/config/interface/service.config --cmd set "
-         << "--key key" << (std::rand() % 500) << " " << "--value value"
-         << (std::rand() % 500);
+         << "--key key" << (std::rand() % 500) << " "
+         << "--value value" << (std::rand() % 500);
 
       std::string test = ss.str();
       output = Exec(test.c_str());

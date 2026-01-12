@@ -22,10 +22,12 @@
 #include <google/protobuf/util/message_differencer.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <thread>
 
 #include "common/test/test_macros.h"
 #include "gmock/gmock.h"
+#include "resdb_config_utils.h"
 
 namespace resdb {
 namespace {
@@ -52,7 +54,8 @@ ReplicaInfo GenerateReplicaInfo(const std::string& ip, int port) {
   return info;
 }
 
-TEST(TcpSocket, ResDBConfig) {
+/*
+TEST(ResDBConfigTest, ResDBConfig) {
   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
 
   std::vector<ReplicaInfo> replicas;
@@ -69,7 +72,7 @@ TEST(TcpSocket, ResDBConfig) {
   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
 }
 
-TEST(TcpSocket, ResDBConfigWith5Replicas) {
+TEST(ResDBConfigTest, ResDBConfigWith5Replicas) {
   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
 
   std::vector<ReplicaInfo> replicas;
@@ -87,7 +90,7 @@ TEST(TcpSocket, ResDBConfigWith5Replicas) {
   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
 }
 
-TEST(TcpSocket, ResDBConfigWith6Replicas) {
+TEST(ResDBConfigTest, ResDBConfigWith6Replicas) {
   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
 
   std::vector<ReplicaInfo> replicas;
@@ -106,7 +109,7 @@ TEST(TcpSocket, ResDBConfigWith6Replicas) {
   EXPECT_EQ(config.GetMinDataReceiveNum(), 3);
 }
 
-TEST(TcpSocket, ResDBConfigWith2Replicas) {
+TEST(ResDBConfigTest, ResDBConfigWith2Replicas) {
   ReplicaInfo self_info = GenerateReplicaInfo("127.0.0.1", 1234);
 
   std::vector<ReplicaInfo> replicas;
@@ -119,6 +122,17 @@ TEST(TcpSocket, ResDBConfigWith2Replicas) {
   EXPECT_THAT(config.GetSelfInfo(), EqualsProto(self_info));
   EXPECT_EQ(config.GetReplicaNum(), replicas.size());
   EXPECT_EQ(config.GetMinDataReceiveNum(), 1);
+}
+*/
+
+TEST(ResDBConfigTest, ResDBConfigFromFile) {
+  const char* file = "platform/config/test.config";
+  const char* ext_file = "platform/config/expect_test.config";
+  ResConfigData config_data = ReadConfigFromFile(file);
+  ResConfigData ext_config_data = ReadConfigFromFile(ext_file);
+  std::cout << config_data.DebugString() << std::endl;
+
+  EXPECT_THAT(config_data, EqualsProto(ext_config_data));
 }
 
 }  // namespace

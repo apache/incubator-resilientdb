@@ -40,6 +40,7 @@ class KVExecutor : public TransactionManager {
       const std::string& request) override;
   std::unique_ptr<std::string> ExecuteRequest(
       const google::protobuf::Message& kv_request) override;
+
  protected:
   virtual void Set(const std::string& key, const std::string& value);
   std::string Get(const std::string& key);
@@ -58,8 +59,6 @@ class KVExecutor : public TransactionManager {
   std::string ExecuteSQL(const std::string& sql_query);
 
  private:
-  std::unique_ptr<Storage> storage_;
-
   std::unique_ptr<TransactionManager> contract_manager_;
 };
 
