@@ -21,7 +21,7 @@ def generate_config(
     tpcc_enabled = False,
     network_delay_num =  0,
     mean_network_delay = 0,
-    timer_length = 10): 
+    timer_length = 100): 
 
     config_dict = {
         "clientBatchNum": str(clientBatchNum),
