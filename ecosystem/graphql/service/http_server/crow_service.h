@@ -48,7 +48,6 @@ class CrowService {
   uint16_t port_num_;
   ResDBKVClient kv_client_;
   resdb::ResDBStateAccessor state_client_;
-  resdb::ResDBTxnAccessor txn_client_;
   std::unordered_set<crow::websocket::connection *> users;
   std::atomic_uint16_t num_transactions_ = 0;
   std::atomic_uint64_t first_commit_time_ = 0;

@@ -16,29 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-#
+
+licenses(["notice"])
+exports_files(["LICENSE"])
 
 package(default_visibility = ["//visibility:public"])
 
-load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make", "make")
-
-cc_library(
-    name = "crow",
-    deps = [
-        "@com_crowcpp_crow//:crow",
-    ],
-)
-
-cc_library(
-    name = "rapidjson",
-    deps = [
-        "@rapidjson",
-    ],
-)
-
 cc_library(
     name = "json",
-    deps = [
-        "@nlohmann_json//:json",
-    ],
+    hdrs = glob(["single_include/nlohmann/*.hpp"]),
+    includes = ["single_include"],
+    visibility = ["//visibility:public"],
 )

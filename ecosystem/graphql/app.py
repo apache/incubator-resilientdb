@@ -40,15 +40,12 @@ CORS(app) # This will enable CORS for all routes
 
 from strawberry.flask.views import GraphQLView
 
-@strawberry.scalar(description="Custom JSON scalar")
-class JSONScalar:
-    @staticmethod
-    def serialize(value: Any) -> Any:
-        return value  # Directly return the JSON object
-
-    @staticmethod
-    def parse_value(value: Any) -> Any:
-        return value  # Accept JSON as is
+JSONScalar = strawberry.scalar(
+    typing.NewType("JSONScalar", typing.Any),
+    serialize=lambda v: v,
+    parse_value=lambda v: v,
+    description="Custom JSON scalar"
+)
 
 @strawberry.type
 class RetrieveTransaction:
