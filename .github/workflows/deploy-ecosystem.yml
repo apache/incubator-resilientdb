@@ -26,7 +26,7 @@ on:
     paths:
       - 'ecosystem/**'
       - '.github/workflows/deploy-ecosystem.yml'
-      - '.github/deploy-ecosystem-configs.yml'
+      - '.github/deploy-ecosystem-configs.json'
   workflow_dispatch:
     inputs:
       project_name:
@@ -51,115 +51,45 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Parse deployment config (YAML -> JSON) with Python
+      - name: Read deployment config
         id: config
         shell: bash
         run: |
-          set -euo pipefail
-
-          # Convert YAML to JSON. Prefer PyYAML if present; install locally if missing.
-          python3 - << 'PY' > /tmp/deploy-config.json
-          import json, sys
-          from pathlib import Path
-
-          config_path = Path(".github/deploy-ecosystem-configs.yml")
-          if not config_path.exists():
-              print(f"Config file not found: {config_path}", file=sys.stderr)
-              sys.exit(1)
-
-          try:
-              import yaml  # type: ignore
-          except Exception:
-              # If PyYAML isn't available, signal caller to install it.
-              print("__NEED_PYYAML__", file=sys.stderr)
-              sys.exit(2)
-
-          data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-          print(json.dumps(data))
-          PY
-
-          # If PyYAML was missing, install it and retry once.
-          if grep -q "__NEED_PYYAML__" /tmp/deploy-config.json 2>/dev/null; then
-            true
-          fi
-
-          # The above approach prints the marker to stderr and exits 2, so handle that:
-          if [ "${PIPESTATUS[0]:-0}" -ne 0 ]; then
-            echo "PyYAML not found; installing with pip (user install)..."
-            python3 -m pip install --user pyyaml
-            python3 - << 'PY' > /tmp/deploy-config.json
-            import json
-            from pathlib import Path
-            import yaml  # type: ignore
-
-            config_path = Path(".github/deploy-ecosystem-configs.yml")
-            data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-            print(json.dumps(data))
-            PY
-          fi
-
-          # Expose JSON as a multiline output safely
+          # Read JSON config file and output as multiline string
           echo "config_json<<EOF" >> "$GITHUB_OUTPUT"
-          cat /tmp/deploy-config.json >> "$GITHUB_OUTPUT"
+          cat .github/deploy-ecosystem-configs.json >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
-      - name: Filter projects based on changes
+      - name: Filter projects based on inputs
         id: filter
-        uses: actions/github-script@v7
-        env:
-          DEPLOY_CONFIG_JSON: ${{ steps.config.outputs.config_json }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { execSync } = require('child_process');
-            const config = JSON.parse(process.env.DEPLOY_CONFIG_JSON);
-
-            // Manual trigger: deploy specific project or all
-            if ('${{ github.event_name }}' === 'workflow_dispatch') {
-              if ('${{ inputs.project_name }}') {
-                const project = config.projects.find(p => p.name === '${{ inputs.project_name }}');
-                if (project) {
-                  core.setOutput('projects_json', JSON.stringify([project]));
-                  core.setOutput('projects', JSON.stringify([project.name]));
-                  return;
-                }
-              }
-              if ('${{ inputs.force_deploy_all }}' === 'true') {
-                core.setOutput('projects_json', JSON.stringify(config.projects));
-                core.setOutput('projects', JSON.stringify(config.projects.map(p => p.name)));
-                return;
-              }
-            }
-
-            // Get changed files (only for push events)
-            let changedFiles = [];
-            if ('${{ github.event_name }}' === 'push') {
-              try {
-                changedFiles = execSync(`git diff --name-only ${{ github.event.before }} ${{ github.event.after }}`)
-                  .toString()
-                  .trim()
-                  .split('\n')
-                  .filter(Boolean);
-              } catch (error) {
-                // If git diff fails, deploy all projects
-                changedFiles = ['ecosystem/'];
-              }
-            }
-
-            // Find projects with changed files, or if workflow/config changed
-            const workflowChanged = changedFiles.some(f =>
-              f.includes('deploy-ecosystem') || f.includes('deploy-ecosystem-configs')
-            );
-
-            const projectsToDeploy = workflowChanged
-              ? config.projects
-              : config.projects.filter(project =>
-                  changedFiles.some(file => file.startsWith(project.path + '/'))
-                );
-
-            core.setOutput('projects_json', JSON.stringify(projectsToDeploy));
-            core.setOutput('projects', JSON.stringify(projectsToDeploy.map(p => p.name)));
+        shell: bash
+        run: |
+          # Read config JSON
+          CONFIG_JSON="${{ steps.config.outputs.config_json }}"
+          
+          # Manual trigger: deploy specific project or all
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ -n "${{ inputs.project_name }}" ]; then
+              # Find specific project using jq
+              PROJECT=$(echo "$CONFIG_JSON" | jq -r --arg name "${{ inputs.project_name }}" '.projects[] | select(.name == $name)')
+              if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ]; then
+                echo "projects_json=[$PROJECT]" >> "$GITHUB_OUTPUT"
+                echo "projects=[\"${{ inputs.project_name }}\"]" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            fi
+            if [ "${{ inputs.force_deploy_all }}" == "true" ]; then
+              echo "projects_json=$(echo "$CONFIG_JSON" | jq -c '.projects')" >> "$GITHUB_OUTPUT"
+              echo "projects=$(echo "$CONFIG_JSON" | jq -c '[.projects[].name]')" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+          
+          # For push events or default, deploy all projects
+          echo "projects_json=$(echo "$CONFIG_JSON" | jq -c '.projects')" >> "$GITHUB_OUTPUT"
+          echo "projects=$(echo "$CONFIG_JSON" | jq -c '[.projects[].name]')" >> "$GITHUB_OUTPUT"
 
       - name: Show projects to deploy
         run: |
