@@ -1,0 +1,219 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+name: Deploy Ecosystem Projects to Vercel
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'ecosystem/**'
+      - '.github/workflows/deploy-ecosystem.yml'
+      - '.github/deploy-ecosystem-configs.yml'
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Specific project to deploy (leave empty to deploy all changed projects)'
+        required: false
+        type: string
+      force_deploy_all:
+        description: 'Force deploy all projects regardless of changes'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  determine-projects:
+    name: Determine Projects to Deploy
+    runs-on: ubuntu-latest
+    outputs:
+      projects: ${{ steps.filter.outputs.projects }}
+      projects_json: ${{ steps.filter.outputs.projects_json }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js (for reading YAML config)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install js-yaml (pinned)
+        run: npm i js-yaml@4 --no-save
+
+      - name: Read deployment config
+        id: config
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+
+            const configPath = '.github/deploy-ecosystem-configs.yml';
+            const configContent = fs.readFileSync(configPath, 'utf8');
+            const config = yaml.load(configContent);
+
+            core.setOutput('config', JSON.stringify(config));
+
+      - name: Filter projects based on changes
+        id: filter
+        uses: actions/github-script@v7
+        env:
+          DEPLOY_CONFIG_JSON: ${{ steps.config.outputs.config }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { execSync } = require('child_process');
+            const config = JSON.parse(process.env.DEPLOY_CONFIG_JSON);
+
+            // Manual trigger: deploy specific project or all
+            if ('${{ github.event_name }}' === 'workflow_dispatch') {
+              if ('${{ inputs.project_name }}') {
+                const project = config.projects.find(p => p.name === '${{ inputs.project_name }}');
+                if (project) {
+                  core.setOutput('projects_json', JSON.stringify([project]));
+                  core.setOutput('projects', JSON.stringify([project.name]));
+                  return;
+                }
+              }
+              if ('${{ inputs.force_deploy_all }}' === 'true') {
+                core.setOutput('projects_json', JSON.stringify(config.projects));
+                core.setOutput('projects', JSON.stringify(config.projects.map(p => p.name)));
+                return;
+              }
+            }
+
+            // Get changed files (only for push events)
+            let changedFiles = [];
+            if ('${{ github.event_name }}' === 'push') {
+              try {
+                changedFiles = execSync(`git diff --name-only ${{ github.event.before }} ${{ github.event.after }}`)
+                  .toString()
+                  .trim()
+                  .split('\n')
+                  .filter(Boolean);
+              } catch (error) {
+                // If git diff fails, deploy all projects
+                changedFiles = ['ecosystem/'];
+              }
+            }
+
+            // Find projects with changed files, or if workflow/config changed
+            const workflowChanged = changedFiles.some(f =>
+              f.includes('deploy-ecosystem') || f.includes('deploy-ecosystem-configs')
+            );
+
+            const projectsToDeploy = workflowChanged
+              ? config.projects
+              : config.projects.filter(project =>
+                  changedFiles.some(file => file.startsWith(project.path + '/'))
+                );
+
+            core.setOutput('projects_json', JSON.stringify(projectsToDeploy));
+            core.setOutput('projects', JSON.stringify(projectsToDeploy.map(p => p.name)));
+
+      - name: Show projects to deploy
+        run: |
+          echo "Projects to deploy: ${{ steps.filter.outputs.projects }}"
+          if [ "${{ steps.filter.outputs.projects }}" == "[]" ]; then
+            echo "No projects to deploy"
+          fi
+
+  deploy:
+    name: Deploy ${{ matrix.project.name }}
+    needs: determine-projects
+    if: needs.determine-projects.outputs.projects != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.determine-projects.outputs.projects_json) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ${{ matrix.project.path }}/package-lock.json
+
+      - name: Enable Corepack (for pnpm/yarn if needed)
+        run: corepack enable
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.project.path }}
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          elif [ -f "yarn.lock" ]; then
+            yarn install --frozen-lockfile
+          elif [ -f "pnpm-lock.yaml" ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "No lockfile found, using npm install"
+            npm install
+          fi
+
+      - name: Pull Vercel Environment Information
+        working-directory: ${{ matrix.project.path }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ matrix.project.vercel_org_id || secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ matrix.project.vercel_project_id }}
+        run: |
+          # Link to existing project if IDs are specified, otherwise let vercel create one
+          if [ -n "$VERCEL_PROJECT_ID" ] && [ -n "$VERCEL_ORG_ID" ]; then
+            mkdir -p .vercel
+            echo "$VERCEL_ORG_ID" > .vercel/org-id
+            echo "$VERCEL_PROJECT_ID" > .vercel/project-id
+          fi
+
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN || echo "Could not pull Vercel config, continuing..."
+
+      - name: Build Project
+        working-directory: ${{ matrix.project.path }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel build --prod --token=$VERCEL_TOKEN
+
+      - name: Deploy to Vercel
+        working-directory: ${{ matrix.project.path }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "### Deployment: ${{ matrix.project.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path:** ${{ matrix.project.path }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
