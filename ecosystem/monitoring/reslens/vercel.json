@@ -1,4 +1,6 @@
 {
+  "framework": "vite",
+  "buildCommand": "npm run build:skip",
   "rewrites": [
     {
       "source": "/(.*)",
