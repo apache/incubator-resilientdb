@@ -103,7 +103,6 @@ jobs:
                 return;
               }
             }
-
             // Get changed files (only for push events)
             let changedFiles = [];
             if ('${{ github.event_name }}' === 'push') {
