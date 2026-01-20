@@ -133,32 +133,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: |
-            **/package-lock.json
-            **/npm-shrinkwrap.json
-            **/yarn.lock
-            **/pnpm-lock.yaml
-
-      - name: Enable Corepack (for pnpm/yarn if needed)
-        run: corepack enable
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
-
-      - name: Install dependencies
-        working-directory: ${{ matrix.project.path }}
-        run: |
-          if [ -f "package-lock.json" ]; then
-            npm ci
-          elif [ -f "yarn.lock" ]; then
-            yarn install --frozen-lockfile
-          elif [ -f "pnpm-lock.yaml" ]; then
-            pnpm install --frozen-lockfile
-          else
-            echo "No lockfile found, using npm install"
-            npm install
-          fi
 
       - name: Pull Vercel Environment Information
         working-directory: ${{ matrix.project.path }}
