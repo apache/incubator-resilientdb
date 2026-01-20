@@ -52,41 +52,30 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js (for reading YAML config)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
+      - name: Install yq
+        uses: mikefarah/yq@v4.44.3
 
-      - name: Install js-yaml (pinned)
-        run: npm i js-yaml@4 --no-save
-
-      - name: Read deployment config
+      - name: Convert deployment config YAML to JSON
         id: config
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const yaml = require('js-yaml');
-
-            const configPath = '.github/deploy-ecosystem-configs.yml';
-            const configContent = fs.readFileSync(configPath, 'utf8');
-            const config = yaml.load(configContent);
-
-            core.setOutput('config', JSON.stringify(config));
+        run: |
+          yq -o=json '.'
+          yq -o=json '.' .github/deploy-ecosystem-configs.yml > /tmp/deploy-config.json
+          echo "config_json<<EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/deploy-config.json >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Filter projects based on changes
         id: filter
         uses: actions/github-script@v7
         env:
-          DEPLOY_CONFIG_JSON: ${{ steps.config.outputs.config }}
+          DEPLOY_CONFIG_JSON: ${{ steps.config.outputs.config_json }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { execSync } = require('child_process');
             const config = JSON.parse(process.env.DEPLOY_CONFIG_JSON);
 
+            // Manual trigger: deploy specific project or all
             if ('${{ github.event_name }}' === 'workflow_dispatch') {
               if ('${{ inputs.project_name }}') {
                 const project = config.projects.find(p => p.name === '${{ inputs.project_name }}');
@@ -103,6 +92,7 @@ jobs:
               }
             }
 
+            // Get changed files (only for push events)
             let changedFiles = [];
             if ('${{ github.event_name }}' === 'push') {
               try {
@@ -111,11 +101,13 @@ jobs:
                   .trim()
                   .split('\n')
                   .filter(Boolean);
-              } catch {
+              } catch (error) {
+                // If git diff fails, deploy all projects
                 changedFiles = ['ecosystem/'];
               }
             }
 
+            // Find projects with changed files, or if workflow/config changed
             const workflowChanged = changedFiles.some(f =>
               f.includes('deploy-ecosystem') || f.includes('deploy-ecosystem-configs')
             );
