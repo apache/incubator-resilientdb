@@ -43,6 +43,8 @@ jobs:
   determine-projects:
     name: Determine Projects to Deploy
     runs-on: ubuntu-latest
+    container:
+      image: node:20-bookworm-slim
     outputs:
       projects: ${{ steps.filter.outputs.projects }}
       projects_json: ${{ steps.filter.outputs.projects_json }}
@@ -66,35 +68,51 @@ jobs:
         id: filter
         shell: bash
         run: |
-          # Read config JSON
-          CONFIG_JSON="${{ steps.config.outputs.config_json }}"
+          # Use Node.js to parse JSON (already available in container)
+          node << 'EOF'
+          const fs = require('fs');
+          const configJson = `${{ steps.config.outputs.config_json }}`;
+          const config = JSON.parse(configJson);
           
-          # Manual trigger: deploy specific project or all
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            if [ -n "${{ inputs.project_name }}" ]; then
-              # Find specific project using jq
-              PROJECT=$(echo "$CONFIG_JSON" | jq -r --arg name "${{ inputs.project_name }}" '.projects[] | select(.name == $name)')
-              if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ]; then
-                echo "projects_json=[$PROJECT]" >> "$GITHUB_OUTPUT"
-                echo "projects=[\"${{ inputs.project_name }}\"]" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-            fi
-            if [ "${{ inputs.force_deploy_all }}" == "true" ]; then
-              echo "projects_json=$(echo "$CONFIG_JSON" | jq -c '.projects')" >> "$GITHUB_OUTPUT"
-              echo "projects=$(echo "$CONFIG_JSON" | jq -c '[.projects[].name]')" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
+          const eventName = '${{ github.event_name }}';
+          const projectName = '${{ inputs.project_name }}';
+          const forceDeployAll = '${{ inputs.force_deploy_all }}' === 'true';
           
-          # For push events or default, deploy all projects
-          echo "projects_json=$(echo "$CONFIG_JSON" | jq -c '.projects')" >> "$GITHUB_OUTPUT"
-          echo "projects=$(echo "$CONFIG_JSON" | jq -c '[.projects[].name]')" >> "$GITHUB_OUTPUT"
+          let projectsToDeploy = [];
+          
+          // Manual trigger: deploy specific project or all
+          if (eventName === 'workflow_dispatch') {
+            if (projectName) {
+              const project = config.projects.find(p => p.name === projectName);
+              if (project) {
+                projectsToDeploy = [project];
+              } else {
+                projectsToDeploy = config.projects;
+              }
+            } else if (forceDeployAll) {
+              projectsToDeploy = config.projects;
+            } else {
+              projectsToDeploy = config.projects;
+            }
+          } else {
+            // For push events, deploy all projects
+            projectsToDeploy = config.projects;
+          }
+          
+          // Output results
+          const outputFile = process.env.GITHUB_OUTPUT;
+          const projectsJson = JSON.stringify(projectsToDeploy);
+          const projectsNames = JSON.stringify(projectsToDeploy.map(p => p.name));
+          
+          fs.appendFileSync(outputFile, `projects_json<<EOF\n${projectsJson}\nEOF\n`);
+          fs.appendFileSync(outputFile, `projects=${projectsNames}\n`);
+          EOF
 
       - name: Show projects to deploy
         run: |
           echo "Projects to deploy: ${{ steps.filter.outputs.projects }}"
-          if [ "${{ steps.filter.outputs.projects }}" == "[]" ]; then
+          PROJECTS="${{ steps.filter.outputs.projects }}"
+          if [ "$PROJECTS" = "[]" ]; then
             echo "No projects to deploy"
           fi
 
