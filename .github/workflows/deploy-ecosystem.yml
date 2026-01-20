@@ -52,14 +52,54 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install yq
-        uses: mikefarah/yq@v4.44.3
-
-      - name: Convert deployment config YAML to JSON
+      - name: Parse deployment config (YAML -> JSON) with Python
         id: config
+        shell: bash
         run: |
-          yq -o=json '.'
-          yq -o=json '.' .github/deploy-ecosystem-configs.yml > /tmp/deploy-config.json
+          set -euo pipefail
+
+          # Convert YAML to JSON. Prefer PyYAML if present; install locally if missing.
+          python3 - << 'PY' > /tmp/deploy-config.json
+          import json, sys
+          from pathlib import Path
+
+          config_path = Path(".github/deploy-ecosystem-configs.yml")
+          if not config_path.exists():
+              print(f"Config file not found: {config_path}", file=sys.stderr)
+              sys.exit(1)
+
+          try:
+              import yaml  # type: ignore
+          except Exception:
+              # If PyYAML isn't available, signal caller to install it.
+              print("__NEED_PYYAML__", file=sys.stderr)
+              sys.exit(2)
+
+          data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+          print(json.dumps(data))
+          PY
+
+          # If PyYAML was missing, install it and retry once.
+          if grep -q "__NEED_PYYAML__" /tmp/deploy-config.json 2>/dev/null; then
+            true
+          fi
+
+          # The above approach prints the marker to stderr and exits 2, so handle that:
+          if [ "${PIPESTATUS[0]:-0}" -ne 0 ]; then
+            echo "PyYAML not found; installing with pip (user install)..."
+            python3 -m pip install --user pyyaml
+            python3 - << 'PY' > /tmp/deploy-config.json
+            import json
+            from pathlib import Path
+            import yaml  # type: ignore
+
+            config_path = Path(".github/deploy-ecosystem-configs.yml")
+            data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+            print(json.dumps(data))
+            PY
+          fi
+
+          # Expose JSON as a multiline output safely
           echo "config_json<<EOF" >> "$GITHUB_OUTPUT"
           cat /tmp/deploy-config.json >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
