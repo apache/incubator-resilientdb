@@ -22,6 +22,7 @@
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
 #include "platform/consensus/ordering/poe/algorithm/poe.h"
+#include "platform/consensus/ordering/poe/framework/performance_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -40,6 +41,9 @@ class Consensus : public common::Consensus {
   int CommitMsgInternal(const Transaction& txn);
 
   int Prepare(const Transaction& txn);
+
+  std::unique_ptr<PoEPerformanceManager> GetPerformanceManager();
+
 
  protected:
   std::unique_ptr<PoE> poe_;
