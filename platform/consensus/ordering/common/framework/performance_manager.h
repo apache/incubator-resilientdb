@@ -46,6 +46,7 @@ class PerformanceManager {
 
  protected:
   virtual void SendMessage(const Request& request);
+  virtual int NeedResponse();
 
  private:
   // Add response messages which will be sent back to the caller
