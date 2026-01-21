@@ -27,14 +27,12 @@
 namespace resdb {
 namespace poe {
 
-
 std::unique_ptr<PoEPerformanceManager> Consensus::GetPerformanceManager() {
-        return config_.IsPerformanceRunning()
-        ? std::make_unique<PoEPerformanceManager>(
-          config_, GetBroadCastClient(), GetSignatureVerifier())
-        : nullptr;
+  return config_.IsPerformanceRunning()
+             ? std::make_unique<PoEPerformanceManager>(
+                   config_, GetBroadCastClient(), GetSignatureVerifier())
+             : nullptr;
 }
-
 
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
@@ -42,11 +40,10 @@ Consensus::Consensus(const ResDBConfig& config,
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
 
-
   if (config_.GetPublicKeyCertificateInfo()
-      .public_key()
-      .public_key_info()
-      .type() == CertificateKeyInfo::CLIENT) {
+          .public_key()
+          .public_key_info()
+          .type() == CertificateKeyInfo::CLIENT) {
     SetPerformanceManager(GetPerformanceManager());
   }
 

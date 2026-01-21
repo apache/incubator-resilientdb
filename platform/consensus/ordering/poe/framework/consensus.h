@@ -44,7 +44,6 @@ class Consensus : public common::Consensus {
 
   std::unique_ptr<PoEPerformanceManager> GetPerformanceManager();
 
-
  protected:
   std::unique_ptr<PoE> poe_;
   Stats* global_stats_;

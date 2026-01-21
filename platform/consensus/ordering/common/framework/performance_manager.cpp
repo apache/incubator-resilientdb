@@ -70,7 +70,7 @@ PerformanceManager::~PerformanceManager() {
 int PerformanceManager::GetPrimary() { return primary_; }
 
 int PerformanceManager::NeedResponse() {
-    return config_.GetMinClientReceiveNum(); // f+1;
+  return config_.GetMinClientReceiveNum();  // f+1;
 }
 
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
