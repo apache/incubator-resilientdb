@@ -35,7 +35,9 @@ cc_binary(
         "//common:comm",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-    ] + select({
+        "//chain/storage:duckdb_storage",
+        "//chain/storage/proto:duckdb_config_cc_proto",
+	] + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
         "//conditions:default": [],
     }),
