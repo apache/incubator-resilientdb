@@ -7,6 +7,10 @@ header:
     - '.*'
     - '.**/**'
     - '**/*.sol'
+    - '**/*.config'
+    - '**/*.conf'
+    - '**/*.json'
+    - '**/*.prettierrc'
     - CNAME
     - DISCLAIMER
     - LICENSE
@@ -14,10 +18,25 @@ header:
     - 'dev/.rat-excludes'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
-    - 'ecosystem/**/*.mdx'
+    # Ecosystem-specific exclusions & Fille types which do not support headers (like JSON, etc.)
+    - 'ecosystem/**/.rat-excludes'
+    - 'ecosystem/**/.gitignore'
+    - 'ecosystem/**/.bazelrc'
+    - 'ecosystem/**/.gitattributes'
+    - 'ecosystem/**/.npmrc'
+    - 'ecosystem/**/.prettierrc'
+    - 'ecosystem/**/.prettierignore'
+    - 'ecosystem/**/.licenserc.yaml'
     - 'ecosystem/**/*.json'
-
-
+    - 'ecosystem/**/.nvmrc'
+    - 'ecosystem/**/.env*'
+    - 'ecosystem/**/*.svg'
+    - 'ecosystem/**/next-env.d.ts'
+    - 'ecosystem/**/.vscode/**'
+    # Beacon content MDX files don't support license headers
+    - 'ecosystem/AI-Tooling/beacon/content/**'
+    # Pocketflow is MIT-licensed third-party code
+    - 'ecosystem/pocketflow/**'
 
   comment: on-failure
 
