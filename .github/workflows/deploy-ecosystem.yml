@@ -22,6 +22,7 @@ name: Deploy Ecosystem Projects to Vercel
 on:
   push:
     branches:
+      - master
       - development
     paths:
       - 'ecosystem/**'
