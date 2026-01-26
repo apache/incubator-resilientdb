@@ -158,6 +158,14 @@ jobs:
 
           vercel pull --yes --environment=production --token=$VERCEL_TOKEN || echo "Could not pull Vercel config, continuing..."
 
+      - name: Create deployment commit with correct author
+        run: |
+          # Configure git user
+          git config user.name "github-actions[bot]"
+          git config user.email "support@resilientdb.com"
+          # Create an empty commit with correct author for Vercel to see
+          git commit --allow-empty -m "ci: authorize deploy for ${{ matrix.project.name }}" || echo "Skipping commit creation"
+
       - name: Deploy to Vercel
         working-directory: ${{ matrix.project.path }}
         env:
