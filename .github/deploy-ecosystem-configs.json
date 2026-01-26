@@ -4,6 +4,10 @@
       "name": "Reslens",
       "path": "ecosystem/monitoring/reslens",
       "vercel_project_id": "prj_g5KA6QQ36ltVydRW6TUKJhgdgYjT"
+    },
+    {
+      "name": "Beacon",
+      "path": "ecosystem/ai-tools/beacon"
     }
   ]
 }
