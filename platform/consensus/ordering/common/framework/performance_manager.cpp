@@ -69,6 +69,10 @@ PerformanceManager::~PerformanceManager() {
 
 int PerformanceManager::GetPrimary() { return primary_; }
 
+int PerformanceManager::NeedResponse() {
+  return config_.GetMinClientReceiveNum();  // f+1;
+}
+
 std::unique_ptr<Request> PerformanceManager::GenerateUserRequest() {
   std::unique_ptr<Request> request = std::make_unique<Request>();
   request->set_data(data_func_());
@@ -154,7 +158,7 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
       return CollectorResultCode::OK;
     }
     response_[idx][seq]++;
-    if (response_[idx][seq] >= config_.GetMinClientReceiveNum()) {
+    if (response_[idx][seq] >= NeedResponse()) {
       response_[idx].erase(response_[idx].find(seq));
       done = true;
     }
