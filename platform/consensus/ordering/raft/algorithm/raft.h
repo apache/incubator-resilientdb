@@ -42,9 +42,16 @@ namespace raft {
 enum class Role { FOLLOWER, CANDIDATE, LEADER };
 enum class TermRelation { STALE, CURRENT, NEW };
 
-struct LogEntry {
+class LogEntry {
+  public:
   uint64_t term;
   std::string command;
+
+  uint32_t GetSerializedSize();
+  uint32_t ComputeSerializedEntrySize() const;
+  
+  private:
+  uint32_t serializedSize = 0;
 };
 
 struct AeFields {
@@ -55,6 +62,12 @@ struct AeFields {
   std::vector<LogEntry> entries{};
   uint64_t leaderCommit = 0;
   int followerId = -1; // not part of AE message itself, but needed to determine recipient
+};
+
+struct InFlightMsg {
+  std::chrono::steady_clock::time_point timeSent;
+  uint64_t prevLogIndexSent;
+  uint64_t lastIndexOfSegmentSent;
 };
 
 class Raft : public common::ProtocolBase {
@@ -89,10 +102,15 @@ class Raft : public common::ProtocolBase {
   std::vector<std::unique_ptr<Request>> PrepareCommitLocked(); // Must be called under mutex
   AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
   std::vector<AeFields> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
-
   void CreateAndSendAppendEntryMsg(const AeFields& fields);
   LogEntry CreateLogEntry(const Entry& entry) const;
+  void ClearInFlightsLocked();
+  void PruneExpiredInFlightMsgsLocked();
+  void PruneRedundantInFlightMsgsLocked(int followerId, uint64_t followerLastLogIndex);
+  void RecordNewInFlightMsgLocked(const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
+  bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
 
+  
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
@@ -110,7 +128,7 @@ class Raft : public common::ProtocolBase {
   Role role_; // Protected by mutex_
   //int leaderId_; // Protected by mutex_
   std::vector<int> votes_; // Protected by mutex_
-  std::vector<int> inflight_; // Protected by mutex_
+  std::vector<std::vector<InFlightMsg>> inflightVecs_; // Protected by mutex_
   //std::chrono::steady_clock::time_point last_ae_time_;
   //std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
 
@@ -118,9 +136,11 @@ class Raft : public common::ProtocolBase {
   const uint64_t quorum_;
 
   // for limiting AppendEntries batch sizing
+  static constexpr size_t maxHeaderBytes = 64;
   static constexpr size_t maxBytes = 64 * 1024;
-  static constexpr size_t maxEntries = 8;
-  static constexpr size_t maxInFlightAE = 3;
+  static constexpr size_t maxEntries = 16;
+  static constexpr size_t maxInFlightPerFollower = 4;
+  static constexpr std::chrono::milliseconds AEResponseDeadline{300}; // in milliseconds
   
   SignatureVerifier* verifier_;
   LeaderElectionManager* leader_election_manager_;

@@ -21,6 +21,7 @@
 
 #include <glog/logging.h>
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <memory>
 
@@ -31,6 +32,21 @@
 
 namespace resdb {
 namespace raft {
+
+
+uint32_t LogEntry::GetSerializedSize() {
+  if (serializedSize == 0) {
+    serializedSize = ComputeSerializedEntrySize();
+  }
+  return serializedSize;
+}
+
+uint32_t LogEntry::ComputeSerializedEntrySize() const {
+  Entry entry;
+  entry.set_term(term);
+  entry.set_command(command);
+  return entry.ByteSizeLong();
+}
 
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   LeaderElectionManager* leaderelection_manager, ReplicaCommunicator* replica_communicator)
@@ -58,7 +74,10 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   sentinel->command = "COMMON_PREFIX";
   log_.push_back(std::move(sentinel));
 
-  inflight_.assign(total_num_ + 1, 0);
+  inflightVecs_.resize(total_num_ + 1);
+  for (auto& vec : inflightVecs_) {
+    vec.reserve(maxInFlightPerFollower);
+  }
   nextIndex_.assign(total_num_ + 1, lastLogIndex_ + 1);
   matchIndex_.assign(total_num_ + 1, lastLogIndex_);
 }
@@ -88,6 +107,7 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
         LOG(INFO) << "JIM -> " << __FUNCTION__ << ": req could not be serialized";
         return false;
       }
+      entry->GetSerializedSize();
       log_.push_back(std::move(entry));
       
 
@@ -106,7 +126,12 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       }
 
       // prepare fields for appendEntries message
+      PruneExpiredInFlightMsgsLocked();
       messages = GatherAeFieldsForBroadcastLocked();
+      auto now = std::chrono::steady_clock::now();
+      for (const auto& msg : messages) {
+        RecordNewInFlightMsgLocked(msg, now);
+      }
   }
   for (const auto& msg : messages) {
       CreateAndSendAppendEntryMsg(msg);
@@ -288,7 +313,8 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
     if (role_ != Role::LEADER || tr == TermRelation::STALE) {
       return;
     }
-
+    PruneExpiredInFlightMsgsLocked();
+    PruneRedundantInFlightMsgsLocked(followerId, aer->lastlogindex());
     nextIndex_[followerId] = aer->lastlogindex() + 1;
 
     // if successful, update matchIndex and try to commit more entries
@@ -313,8 +339,12 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       if (!aer->success()) {
         LOG(INFO) << "AppendEntriesResponse indicates FAILURE from follower " << followerId;
       }
-      fields = GatherAeFieldsLocked(followerId);
-      resending = true;
+      if (!InFlightPerFollowerLimitReachedLocked(followerId)) {
+        fields = GatherAeFieldsLocked(followerId);
+        resending = true;
+        auto now = std::chrono::steady_clock::now();
+        RecordNewInFlightMsgLocked(fields, now);
+      }
     }
   }();
   if (demoted) {
@@ -436,7 +466,7 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
     if (votes_.size() >= quorum_) {
       elected = true;
       role_ = Role::LEADER;
-      inflight_.assign(total_num_ + 1, 0);
+      ClearInFlightsLocked();
       nextIndex_.assign(total_num_ + 1, lastLogIndex_ + 1);
 
       // make sure to set leaders own matchIndex entry to lastLogIndex
@@ -543,7 +573,6 @@ void Raft::SendHeartBeat() {
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Heartbeat " << heartBeatNum << " for term " << currentTerm;
   }
   
-  
   auto redirectStart = std::chrono::steady_clock::now();
   std::chrono::steady_clock::duration redirectDelta;
   
@@ -646,9 +675,15 @@ AeFields Raft::GatherAeFieldsLocked(int followerId, bool heartBeat) const {
   if (heartBeat) {
     return fields;
   }
+  uint32_t msgBytes = maxHeaderBytes;
   const uint64_t firstNew = nextIndex_[followerId];
   const uint64_t limit = std::min(lastLogIndex_, (firstNew + maxEntries) - 1);
   for (uint64_t i = firstNew; i <= limit; ++i) {
+    msgBytes += log_[i]->GetSerializedSize();
+    // Always include at least 1 entry, after that limit by maxBytes.
+    if (i != firstNew && msgBytes >= maxBytes) {
+      break;
+    }
     LogEntry entry;
     entry.term = log_[i]->term;
     entry.command = log_[i]->command;
@@ -660,11 +695,16 @@ AeFields Raft::GatherAeFieldsLocked(int followerId, bool heartBeat) const {
 // returns vector of tuples <followerId, AeFields>
 // If heartBeat == true, entries[] will be empty for all messages
 // else entries will each contain at most maxEntries amount of entries
+// Followers will be excluded from the broadcast if they are at inflight max unless this is a heartbeat
 std::vector<AeFields> Raft::GatherAeFieldsForBroadcastLocked(bool heartBeat) const {
+  assert(role_ == Role::LEADER);
   std::vector<AeFields> fieldsVec;
   fieldsVec.reserve(total_num_ - 1);
-  for (int i = 1; i <= total_num_; ++i) {
+  for (size_t i = 1; i <= total_num_; ++i) {
     if (i == id_) {
+      continue;
+    }
+    if (!heartBeat && InFlightPerFollowerLimitReachedLocked(i)) {
       continue;
     }
     AeFields fields = GatherAeFieldsLocked(i, heartBeat);
@@ -681,19 +721,14 @@ void Raft::CreateAndSendAppendEntryMsg(const AeFields& fields) {
   ae.set_prevlogindex(fields.prevLogIndex);
   ae.set_prevlogterm(fields.prevLogTerm);
   ae.set_leadercommitindex(fields.leaderCommit);
-  uint64_t entryCount = 0; 
   for (const auto& entry : fields.entries) {
     auto* newEntry = ae.add_entries();
     newEntry->set_term(entry.term);
     newEntry->set_command(entry.command);
-    if (entryCount > 0 && ae.ByteSizeLong() > maxBytes) {
-      ae.mutable_entries()->RemoveLast();
-      break;
-    }
-    entryCount++;
   }
   SendMessage(MessageType::AppendEntriesMsg, ae, followerId);
   if (replicationLoggingFlag_) {
+    uint64_t entryCount = fields.entries.size();
     LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Sent AE with " << entryCount << (entryCount == 1 ? " entry" : " entries");
   }
 }
@@ -703,6 +738,86 @@ LogEntry Raft::CreateLogEntry(const Entry& entry) const {
   newEntry.term = entry.term();
   newEntry.command = entry.command();
   return newEntry;
+}
+
+void Raft::ClearInFlightsLocked() {
+  assert(role_ == Role::LEADER);
+  for (auto& vec : inflightVecs_) {
+    vec.clear();
+  }
+}
+
+void Raft::PruneExpiredInFlightMsgsLocked() {
+  assert(role_ == Role::LEADER);
+  auto now = std::chrono::steady_clock::now();
+  for (size_t i = 1; i < inflightVecs_.size(); ++i) {
+    if (i == id_) {
+      continue;
+    }
+    auto& vec = inflightVecs_[i];
+    if (vec.empty()) {
+      continue;
+    }
+    auto it = vec.begin();
+    while(it != vec.end()) {
+      auto timeElapsed = now - it->timeSent;
+      if (timeElapsed >= AEResponseDeadline) {
+        it = vec.erase(it);
+        if (replicationLoggingFlag_) {
+          LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Pruned expired inflight AE for follower " << i;
+        }
+      }
+      else {
+        ++it;
+      }
+    }
+  }
+}
+
+void Raft::PruneRedundantInFlightMsgsLocked(int followerId, uint64_t followerLastLogIndex) {
+  assert(role_ == Role::LEADER);
+  assert(followerId > 0);
+  assert(static_cast<size_t>(followerId) < inflightVecs_.size());
+  assert(followerId != id_);
+
+  auto& msgVec = inflightVecs_[followerId];
+  if (msgVec.empty()) {
+    return;
+  }
+  auto it = msgVec.begin();
+  while(it != msgVec.end()) {
+    if (it->prevLogIndexSent > followerLastLogIndex || it->lastIndexOfSegmentSent <= followerLastLogIndex) {
+      it = msgVec.erase(it);
+      if (replicationLoggingFlag_) {
+        LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Pruned redundant inflight AE for follower " << followerId;
+      }
+    }
+    else {
+      ++it;
+    }
+  }
+}
+
+void Raft::RecordNewInFlightMsgLocked(const AeFields& msg, std::chrono::steady_clock::time_point timestamp) {
+  if (msg.entries.empty()) {
+    return;
+  }
+  InFlightMsg inFlight;
+  inFlight.timeSent = timestamp;
+  inFlight.prevLogIndexSent = msg.prevLogIndex;
+  inFlight.lastIndexOfSegmentSent = msg.prevLogIndex + msg.entries.size();
+  inflightVecs_[msg.followerId].push_back(inFlight);
+}
+
+bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
+  assert(role_ == Role::LEADER);
+  assert(followerId > 0);
+  assert(static_cast<size_t>(followerId) < inflightVecs_.size());
+  assert(followerId != id_);
+
+  auto size = inflightVecs_[followerId].size();
+  assert(size <= maxInFlightPerFollower);
+  return size == maxInFlightPerFollower;
 }
 
 }  // namespace raft
