@@ -9,6 +9,10 @@
       "name": "Beacon",
       "path": "ecosystem/ai-tools/beacon",
       "skip": true
+    },
+    {
+      "name": "Nexus",
+      "path": "ecosystem/ai-tools/nexus"
     }
   ]
 }
