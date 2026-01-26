@@ -102,7 +102,8 @@ TEST_F(RecoveryTest, ReadLog) {
     recovery.ReadLogs(
         [&](const SystemInfoData &data) {},
         [&](std::unique_ptr<Context> context,
-            std::unique_ptr<Request> request) { list.push_back(*request); });
+            std::unique_ptr<Request> request) { list.push_back(*request); },
+        nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -143,7 +144,8 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
                           std::unique_ptr<Request> request) {
                         LOG(ERROR) << "call back:" << request->seq();
                         list.push_back(*request);
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -209,7 +211,8 @@ TEST_F(RecoveryTest, CheckPoint) {
                           std::unique_ptr<Request> request) {
                         list.push_back(*request);
                         // LOG(ERROR)<<"call back:"<<request->seq();
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -286,7 +289,8 @@ TEST_F(RecoveryTest, CheckPoint2) {
                           std::unique_ptr<Request> request) {
                         list.push_back(*request);
                         // LOG(ERROR)<<"call back:"<<request->seq();
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -323,7 +327,8 @@ TEST_F(RecoveryTest, CheckPoint2) {
                           std::unique_ptr<Request> request) {
                         list.push_back(*request);
                         // LOG(ERROR)<<"call back:"<<request->seq();
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 9);
 
@@ -405,7 +410,8 @@ TEST_F(RecoveryTest, SystemInfo) {
                           std::unique_ptr<Request> request) {
                         list.push_back(*request);
                         // LOG(ERROR)<<"call back:"<<request->seq();
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -443,7 +449,8 @@ TEST_F(RecoveryTest, SystemInfo) {
                           std::unique_ptr<Request> request) {
                         list.push_back(*request);
                         // LOG(ERROR)<<"call back:"<<request->seq();
-                      });
+                      },
+                      nullptr);
 
     EXPECT_EQ(data.view(), 2);
     EXPECT_EQ(data.primary_id(), 2);

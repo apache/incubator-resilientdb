@@ -33,13 +33,12 @@ cc_binary(
     name = "contract_service_tools",
     srcs = ["contract_service_tools.cpp"],
     deps = [
+        "//common:boost_comm",
         "//common/proto:signature_info_cc_proto",
         "//interface/kv:contract_client",
         "//platform/config:resdb_config_utils",
-	"//common:boost_comm",
     ],
 )
-
 
 cc_binary(
     name = "kv_client_txn_tools",

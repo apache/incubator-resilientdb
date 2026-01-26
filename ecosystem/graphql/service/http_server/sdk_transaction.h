@@ -29,4 +29,4 @@ struct SDKTransaction {
 
 SDKTransaction ParseSDKTransaction(const std::string &json);
 
-} // namespace resdb
+}  // namespace resdb

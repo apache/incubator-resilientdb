@@ -47,18 +47,6 @@ std::unique_ptr<std::string> KVClient::Get(const std::string& key) {
   return std::make_unique<std::string>(response.value());
 }
 
-std::unique_ptr<std::string> KVClient::GetAllValues() {
-  KVRequest request;
-  request.set_cmd(KVRequest::GETALLVALUES);
-  KVResponse response;
-  int ret = SendRequest(request, &response);
-  if (ret != 0) {
-    LOG(ERROR) << "send request fail, ret:" << ret;
-    return nullptr;
-  }
-  return std::make_unique<std::string>(response.value());
-}
-
 std::unique_ptr<std::string> KVClient::GetRange(const std::string& min_key,
                                                 const std::string& max_key) {
   KVRequest request;

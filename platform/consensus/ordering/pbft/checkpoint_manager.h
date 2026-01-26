@@ -38,27 +38,31 @@ class CheckPointManager : public CheckPoint {
  public:
   CheckPointManager(const ResDBConfig& config,
                     ReplicaCommunicator* replica_communicator,
-                    SignatureVerifier* verifier);
+                    SignatureVerifier* verifier, SystemInfo* sys_info);
   virtual ~CheckPointManager();
 
-  ChainState* GetTxnDB();
-  uint64_t GetMaxTxnSeq();
+  void SetLastCommit(uint64_t seq);
+  uint64_t GetLastCommit();
 
   void AddCommitData(std::unique_ptr<Request> request);
   int ProcessCheckPoint(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> request);
+  int ProcessStatusSync(std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request);
 
   uint64_t GetStableCheckpoint() override;
+  //   void SetLastExecutedSeq(uint64_t latest_executed_seq);
   StableCheckPoint GetStableCheckpointWithVotes();
   bool IsValidCheckpointProof(const StableCheckPoint& stable_ckpt);
 
-  void SetTimeoutHandler(std::function<void()> timeout_handler);
+  void SetTimeoutHandler(std::function<void(int)> timeout_handler);
   virtual void UpdateStableCheckPointCallback(
       int64_t current_stable_checkpoint) {}
 
   void Stop();
 
   void TimeoutHandler();
+  void TimeoutHandler(uint32_t replica);
 
   void WaitSignal();
   std::unique_ptr<std::pair<uint64_t, std::string>> PopStableSeqHash();
@@ -73,6 +77,17 @@ class CheckPointManager : public CheckPoint {
 
   uint64_t GetCommittableSeq();
 
+  void SetUnstableCkpt(uint64_t unstable_check_ckpt);
+
+  uint64_t GetUnstableCkpt();
+
+  void AddCommitState(uint64_t seq);
+
+  bool IsCommitted(uint64_t seq);
+  void ClearCommittedStatus(uint64_t seq);
+
+  void SetResetExecute(std::function<void(uint64_t seq)>);
+
  private:
   void UpdateCheckPointStatus();
   void UpdateStableCheckPointStatus();
@@ -82,12 +97,19 @@ class CheckPointManager : public CheckPoint {
 
   void Notify();
   bool Wait();
+  void BroadcastRecovery(uint64_t min_seq, uint64_t max_seq);
+
+  void SyncStatus();
+  void StatusProcess();
+  void CheckStatus(uint64_t last_seq);
+  void CheckSysStatus();
+  void CheckHealthy();
 
  protected:
+  uint64_t last_executed_seq_ = 0;
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
-  std::unique_ptr<ChainState> txn_db_;
-  std::thread checkpoint_thread_, stable_checkpoint_thread_;
+  std::thread checkpoint_thread_, stable_checkpoint_thread_, status_thread_;
   SignatureVerifier* verifier_;
   std::atomic<bool> stop_;
   std::map<std::pair<uint64_t, std::string>, std::set<uint32_t>> sender_ckpt_;
@@ -100,19 +122,28 @@ class CheckPointManager : public CheckPoint {
   LockFreeQueue<Request> data_queue_;
   std::mutex cv_mutex_;
   std::condition_variable cv_;
-  std::function<void()> timeout_handler_;
+  std::function<void(int)> timeout_handler_;
   StableCheckPoint stable_ckpt_;
   int new_data_ = 0;
   LockFreeQueue<std::pair<uint64_t, std::string>> stable_hash_queue_;
   std::condition_variable signal_;
   ResDBTxnAccessor txn_accessor_;
-  std::mutex lt_mutex_;
+  std::mutex lt_mutex_, seq_mutex_;
   uint64_t last_seq_ = 0;
+  uint64_t max_seq_ = 0;
   TransactionExecutor* executor_;
   std::atomic<uint64_t> highest_prepared_seq_;
   uint64_t committable_seq_ = 0;
   std::string last_hash_, committable_hash_;
   sem_t committable_seq_signal_;
+  std::map<int, uint64_t> status_;
+  std::map<int, int> last_update_time_;
+  int replica_timeout_ = 60;
+  uint64_t unstable_check_ckpt_;
+  std::map<int, uint64_t> committed_status_;
+  std::function<void(uint64_t)> reset_execute_func_;
+  SystemInfo* sys_info_;
+  std::map<int, std::pair<int, uint64_t>> view_status_;
 };
 
 }  // namespace resdb

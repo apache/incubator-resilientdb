@@ -148,7 +148,8 @@ std::string ContractManager::GetBalance(const Address& account) {
   return gs_->GetBalance(account);
 }
 
-int ContractManager::SetBalance(const Address& account, const uint256_t& balance) {
+int ContractManager::SetBalance(const Address& account,
+                                const uint256_t& balance) {
   return gs_->SetBalance(account, balance);
 }
 

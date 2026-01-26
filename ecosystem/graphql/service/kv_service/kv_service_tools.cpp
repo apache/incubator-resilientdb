@@ -36,8 +36,9 @@ using sdk::ResDBKVClient;
 
 int main(int argc, char **argv) {
   if (argc < 3) {
-    printf("<config path> <cmd>(set/get/getallvalues/getrange), [key] "
-           "[value/key2]\n");
+    printf(
+        "<config path> <cmd>(set/get/getallvalues/getrange), [key] "
+        "[value/key2]\n");
     return 0;
   }
   std::string client_config_file = argv[1];

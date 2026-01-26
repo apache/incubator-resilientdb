@@ -20,11 +20,11 @@
 #pragma once
 
 #include "absl/status/statusor.h"
+#include "chain/storage/storage.h"
 #include "eEVM/opcode.h"
 #include "eEVM/simple/simpleglobalstate.h"
-#include "chain/storage/storage.h"
-#include "executor/contract/manager/utils.h"
 #include "executor/contract/manager/global_state.h"
+#include "executor/contract/manager/utils.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {

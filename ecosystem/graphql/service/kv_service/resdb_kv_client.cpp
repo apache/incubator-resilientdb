@@ -61,9 +61,8 @@ std::unique_ptr<std::string> ResDBKVClient::GetAllValues() {
   return std::make_unique<std::string>(response.value());
 }
 
-std::unique_ptr<std::string>
-ResDBKVClient::GetRange(const std::string &min_key,
-                        const std::string &max_key) {
+std::unique_ptr<std::string> ResDBKVClient::GetRange(
+    const std::string &min_key, const std::string &max_key) {
   KVRequest request;
   request.set_cmd(KVRequest::GETRANGE);
   request.set_key(min_key);
@@ -77,4 +76,4 @@ ResDBKVClient::GetRange(const std::string &min_key,
   return std::make_unique<std::string>(response.value());
 }
 
-} // namespace sdk
+}  // namespace sdk
