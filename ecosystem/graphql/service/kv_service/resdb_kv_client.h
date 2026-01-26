@@ -25,7 +25,7 @@ namespace sdk {
 
 // ResDBKVClient to send data to the kv server.
 class ResDBKVClient : public resdb::TransactionConstructor {
-public:
+ public:
   ResDBKVClient(const resdb::ResDBConfig &config);
 
   int Set(const std::string &key, const std::string &data);
@@ -35,4 +35,4 @@ public:
                                         const std::string &max_key);
 };
 
-} // namespace sdk
+}  // namespace sdk

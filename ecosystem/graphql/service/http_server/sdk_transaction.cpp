@@ -36,4 +36,4 @@ SDKTransaction ParseSDKTransaction(const std::string &json) {
   return transaction;
 }
 
-} // namespace resdb
+}  // namespace resdb

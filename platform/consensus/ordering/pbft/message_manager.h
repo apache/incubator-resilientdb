@@ -72,17 +72,12 @@ class MessageManager {
   // to the client proxy.
   std::unique_ptr<BatchUserResponse> GetResponseMsg();
 
-  // Get committed messages with 2f+1 proof in [min_seq, max_seq].
-  RequestSet GetRequestSet(uint64_t min_seq, uint64_t max_seq);
-
-  // Get the transactions that have been execuited.
-  Request* GetRequest(uint64_t seq);
-
   // Get the proof info containing the request and signatures
   // if the request has been prepared, having received 2f+1
   // pre-prepare messages.
   std::vector<RequestInfo> GetPreparedProof(uint64_t seq);
-  TransactionStatue GetTransactionState(uint64_t seq);
+
+  void SetNextCommitSeq(int seq);
 
   // =============  System information ========
   // Obtain the current replica list.
@@ -139,6 +134,7 @@ class MessageManager {
 
   std::mutex lct_lock_;
   std::map<uint64_t, uint64_t> last_committed_time_;
+  std::map<uint64_t, uint32_t> last_update_time_;
 };
 
 }  // namespace resdb

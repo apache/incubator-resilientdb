@@ -60,24 +60,24 @@ cc_library(
 
 cc_test(
     name = "kv_storage_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
     srcs = ["kv_storage_test.cpp"],
     deps = [
         ":leveldb",
         ":memory_db",
         "//common/test:test_main",
     ],
-    timeout = "short",  # Set the timeout to "short"
-    size = "small",     # Set the size to "small"
 )
 
 cc_test(
     name = "leveldb_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
     srcs = ["leveldb_test.cpp"],
     deps = [
         ":leveldb",
-        "//platform/statistic:stats",
         "//common/test:test_main",
+        "//platform/statistic:stats",
     ],
-    timeout = "short",  # Set the timeout to "short"
-    size = "small",     # Set the size to "small"
 )

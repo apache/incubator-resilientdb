@@ -28,7 +28,7 @@ namespace {
 using ::testing::Test;
 
 class CrowServiceTest : public Test {
-protected:
+ protected:
   crow::SimpleApp app;
 };
 
@@ -91,6 +91,6 @@ TEST_F(CrowServiceTest, GetBlockRange) {
   EXPECT_EQ(B, 2);
 }
 
-} // namespace
+}  // namespace
 
-} // namespace resdb
+}  // namespace resdb

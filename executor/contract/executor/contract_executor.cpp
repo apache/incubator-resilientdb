@@ -24,7 +24,7 @@
 namespace resdb {
 namespace contract {
 
-ContractTransactionManager::ContractTransactionManager(Storage * storage)
+ContractTransactionManager::ContractTransactionManager(Storage* storage)
     : contract_manager_(std::make_unique<ContractManager>(storage)),
       address_manager_(std::make_unique<AddressManager>()) {}
 
@@ -42,7 +42,7 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     absl::StatusOr<Account> account_or = CreateAccount();
     if (account_or.ok()) {
       response.mutable_account()->Swap(&(*account_or));
-    LOG(ERROR)<<" create count:"<<response.account().DebugString();
+      LOG(ERROR) << " create count:" << response.account().DebugString();
     } else {
       ret = -1;
     }
@@ -134,24 +134,17 @@ absl::StatusOr<std::string> ContractTransactionManager::Execute(
 
 absl::StatusOr<std::string> ContractTransactionManager::GetBalance(
     const Request& request) {
-
-  Address account =
-      AddressManager::HexToAddress(request.account());
+  Address account = AddressManager::HexToAddress(request.account());
   return contract_manager_->GetBalance(account);
 }
 
 absl::StatusOr<std::string> ContractTransactionManager::SetBalance(
     const Request& request) {
-
-  Address account =
-      AddressManager::HexToAddress(request.account());
-  Address balance =
-      AddressManager::HexToAddress(request.balance());
+  Address account = AddressManager::HexToAddress(request.account());
+  Address balance = AddressManager::HexToAddress(request.balance());
   int ret = contract_manager_->SetBalance(account, balance);
   return std::to_string(ret);
 }
-
-
 
 }  // namespace contract
 }  // namespace resdb

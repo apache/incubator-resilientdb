@@ -26,11 +26,11 @@ cc_library(
 
 cc_test(
     name = "lru_cache_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
     srcs = ["lru_cache_test.cpp"],
     deps = [
         "//common/lru:lru_cache",
         "//common/test:test_main",
     ],
-    timeout = "short",  # Set the timeout to "short"
-    size = "small",     # Set the size to "small"
 )

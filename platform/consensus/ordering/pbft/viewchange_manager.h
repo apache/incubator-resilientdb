@@ -107,6 +107,7 @@ class ViewChangeManager {
   void AddNewViewTimer();
   void CheckComplaintTimeout();
   void SetDuplicateManager(DuplicateManager* manager);
+  void SetCurrentViewAndNewPrimary(uint64_t view_number);
 
  private:
   void SendViewChangeMsg();
@@ -115,7 +116,6 @@ class ViewChangeManager {
   uint32_t AddRequest(const ViewChangeMessage& viewchange_message,
                       uint32_t sender);
   bool IsNextPrimary(uint64_t view_number);
-  void SetCurrentViewAndNewPrimary(uint64_t view_number);
   std::vector<std::unique_ptr<Request>> GetPrepareMsg(
       const NewViewMessage& new_view_message, bool need_sign = true);
 
