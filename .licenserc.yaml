@@ -16,7 +16,8 @@ header:
     - 'third_party/loc_script/src/index.js'
     - 'ecosystem/**/*.mdx'
     - 'ecosystem/**/*.json'
-    # Pocketflow is MIT-licensed third-party code
+    - 'ecosystem/**/LICENSE*'
+    - 'ecosystem/monitoring/reslens/src/lib/**'
     - 'ecosystem/pocketflow/**'
 
 
