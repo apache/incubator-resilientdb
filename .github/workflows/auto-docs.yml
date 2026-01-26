@@ -1,0 +1,154 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+name: Auto-Generate Documentation
+
+on:
+  push:
+    paths:
+      - 'ecosystem/**'
+    branches:
+      - main
+      - master
+  # Allow manual triggering
+  workflow_dispatch:
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    env:
+      # Required by Pocketflow; must be uppercase "GEMINI" to use Gemini-specific path
+      LLM_PROVIDER: GEMINI
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
+    
+    # Skip if commit message contains [skip docs] (only applicable to push events)
+    # github.event.head_commit is null for workflow_dispatch, so guard with event_name and default string
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message || '', '[skip docs]') }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need at least 2 commits for diff
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd ecosystem/pocketflow
+          pip install -r requirements.txt
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Detect changed tools
+        id: detect-tools
+        env:
+          LLM_PROVIDER: GEMINI
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
+        run: |
+          cd ecosystem/pocketflow
+          # Export env vars for Python scripts
+          export GEMINI_API_KEY="$GEMINI_API_KEY"
+          export GEMINI_MODEL="$GEMINI_MODEL"
+          
+          # Detect changed tools
+          CHANGED_TOOLS=$(python3 scripts/detect_changed_tools.py --base-ref HEAD^)
+          
+          if [ -z "$CHANGED_TOOLS" ]; then
+            echo "No tools changed, skipping documentation update"
+            echo "changed=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # Convert newline-separated list to space-separated for GITHUB_OUTPUT
+          # GITHUB_OUTPUT requires single-line values, so we use spaces as delimiter
+          TOOLS_LIST=$(echo "$CHANGED_TOOLS" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          
+          echo "Changed tools: $CHANGED_TOOLS"
+          echo "tools=$TOOLS_LIST" >> $GITHUB_OUTPUT
+          echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Generate documentation for changed tools
+        if: steps.detect-tools.outputs.changed == 'true'
+        env:
+          LLM_PROVIDER: GEMINI
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
+        run: |
+          cd ecosystem/pocketflow
+          # Export all env vars to ensure they're available to subprocess calls
+          export LLM_PROVIDER="$LLM_PROVIDER"
+          export GEMINI_API_KEY="$GEMINI_API_KEY"
+          export GEMINI_MODEL="$GEMINI_MODEL"
+          
+          # Read tools from previous step (space-separated)
+          TOOLS="${{ steps.detect-tools.outputs.tools }}"
+          
+          # Process each tool (bash splits on spaces by default)
+          for tool in $TOOLS; do
+            if [ -n "$tool" ]; then
+              echo "Generating documentation for: $tool"
+              python3 scripts/run_pocketflow_for_tool.py \
+                --tool "$tool" \
+                --single-file \
+                --skip-format || echo "Failed to generate docs for $tool"
+            fi
+          done
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changes
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          git add ecosystem/AI-Tooling/beacon/content/*.mdx
+          git commit -m "docs: auto-update documentation [skip docs]" || exit 0
+
+      - name: Create Pull Request
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: auto-update documentation [skip docs]"
+          title: "docs: Auto-update documentation"
+          body: |
+            This PR contains automatically generated documentation updates.
+            
+            **Changed tools:**
+            ${{ steps.detect-tools.outputs.tools }}
+            
+            Generated by Pocketflow based on code changes.
+          branch: auto-docs-update
+          delete-branch: true
+          labels: documentation, automated
+
