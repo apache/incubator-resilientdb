@@ -65,3 +65,4 @@ npm run build
 ## Contributing
 
 Contributions are welcome! Open an issue or pull request with focused edits. If you’re adding or editing docs, prefer small, incremental changes with clear examples. If you’re enhancing the AI assistant behavior, include a short rationale and a quick way to test.
+.
