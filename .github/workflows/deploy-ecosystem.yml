@@ -152,11 +152,19 @@ jobs:
 
           vercel pull --yes --environment=production --token=$VERCEL_TOKEN || echo "Could not pull Vercel config, continuing..."
 
+      - name: Configure Git for Vercel
+        working-directory: ${{ matrix.project.path }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "support@resilientdb.com"
+
       - name: Deploy to Vercel
         working-directory: ${{ matrix.project.path }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: vercel deploy --prod --yes --token=$VERCEL_TOKEN
+          VERCEL_ORG_ID: ${{ matrix.project.vercel_org_id || secrets.VERCEL_ORG_ID }}
+        run: |
+            vercel deploy --prod --yes --token=$VERCEL_TOKEN
 
       - name: Deployment Summary
         if: always()
