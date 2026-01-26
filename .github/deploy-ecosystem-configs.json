@@ -3,16 +3,17 @@
     {
       "name": "Reslens",
       "path": "ecosystem/monitoring/reslens",
-      "vercel_project_id": "prj_g5KA6QQ36ltVydRW6TUKJhgdgYjT"
+      "vercel_project_id": "prj_cGTEEoWrPjwmgHT8Oh3GDnt8AV3j"
     },
     {
       "name": "Beacon",
       "path": "ecosystem/ai-tools/beacon",
-      "skip": true
+      "vercel_project_id": "prj_k3vjg1KTaQFVhhxasQunxgLNGBbk"
     },
     {
       "name": "Nexus",
-      "path": "ecosystem/ai-tools/nexus"
+      "path": "ecosystem/ai-tools/nexus",
+      "vercel_project_id":"prj_Kam9DhhjI7zb5yPfrQXfyhGnf5TT"
     }
   ]
 }
