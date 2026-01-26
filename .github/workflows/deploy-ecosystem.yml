@@ -80,23 +80,26 @@ jobs:
           
           let projectsToDeploy = [];
           
+          // Filter out projects with skip: true
+          const availableProjects = config.projects.filter(p => !p.skip);
+          
           // Manual trigger: deploy specific project or all
           if (eventName === 'workflow_dispatch') {
             if (projectName) {
-              const project = config.projects.find(p => p.name === projectName);
+              const project = availableProjects.find(p => p.name === projectName);
               if (project) {
                 projectsToDeploy = [project];
               } else {
-                projectsToDeploy = config.projects;
+                projectsToDeploy = availableProjects;
               }
             } else if (forceDeployAll) {
-              projectsToDeploy = config.projects;
+              projectsToDeploy = availableProjects;
             } else {
-              projectsToDeploy = config.projects;
+              projectsToDeploy = availableProjects;
             }
           } else {
-            // For push events, deploy all projects
-            projectsToDeploy = config.projects;
+            // For push events, deploy all available projects (excluding skipped ones)
+            projectsToDeploy = availableProjects;
           }
           
           // Output results
