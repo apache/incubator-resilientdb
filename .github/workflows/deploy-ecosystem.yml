@@ -164,7 +164,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ matrix.project.vercel_org_id || secrets.VERCEL_ORG_ID }}
         run: |
-            vercel deploy --prod --yes --token=$VERCEL_TOKEN
+            vercel deploy --prod --yes
 
       - name: Deployment Summary
         if: always()
