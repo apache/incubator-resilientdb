@@ -1,0 +1,252 @@
+import { CommentSection } from '@/components/CommentSection'
+import { Divider, Box, Space, Alert, Text, Code, Title } from '@mantine/core'
+
+# ResVault
+
+A Chrome extension that serves as a comprehensive wallet for ResilientDB, providing a user-friendly interface for managing accounts, submitting transactions, deploying smart contracts, and interacting with the ResilientDB blockchain network.
+
+## Overview
+
+ResVault is a Chrome extension wallet designed specifically for ResilientDB, a High Throughput Yielding Permissioned Blockchain Fabric founded by [ExpoLab](https://expolab.org/) at [UC Davis](https://www.ucdavis.edu/) in 2018. ResilientDB advocates a system-centric design by adopting a multi-threaded architecture that encompasses deep pipelines and separates the ordering of client transactions from their execution.
+
+## Features
+
+### Core Functionality
+
+- **Account Management**
+  - Create new accounts with secure key generation
+  - Delete existing accounts
+  - Multi-account support with key pair switching
+  - User profiles and authentication
+
+- **Transaction Operations**
+  - Submit transactions to ResilientDB networks
+  - Transaction logging and history
+  - Secure transaction signing with Ed25519 keys
+  - File upload for transaction data
+
+- **Network Management**
+  - Switch between ResilientDB Mainnet and Localnet
+  - Custom network configuration
+  - Real-time connection status
+  - Network-specific settings
+
+- **Service Modes**
+  - Key-Value service mode for data operations
+  - Smart Contract service mode for contract deployment
+  - Dynamic mode switching
+
+### Smart Contract Features (v1.2.0)
+
+- **Contract Deployment**
+  - Deploy Solidity smart contracts directly from the wallet
+  - Automatic contract compilation on the server
+  - Address ownership using your wallet address
+  - GraphQL integration with ResilientDB contract service
+
+- **Contract Management**
+  - Upload and deploy contract files
+  - Constructor argument support
+  - Contract address tracking
+  - Deployment status monitoring
+
+### Planned Features
+
+- Password improvement
+- Transaction details view
+- View all transactions functionality
+- Contract execution and interaction
+- Gas estimation and optimization
+
+## Installation
+
+### Building and Installing from Source
+
+ResVault can be built from source and then installed into chrome.
+
+#### Prerequisites
+
+- **Node.js** (required for building)
+- Git
+
+#### Build Steps
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/ResilientApp/ResVault.git
+   cd ResVault
+   ```
+
+2. **Install Dependencies**
+   ```bash
+   npm install --legacy-peer-deps
+   ```
+
+3. **Build the Extension**
+   ```bash
+   npm run build
+   ```
+
+4. **Install in Chrome**
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Toggle **Developer mode** on (top right corner)
+   - Click **Load unpacked**
+   - Select the `build` folder from the ResVault project directory
+
+5. **Verify Installation**
+   - The ResVault extension should appear in your Chrome extensions list
+   - Click the extension icon in the toolbar to access the wallet
+
+### Future Installation Methods
+
+- **Chrome Web Store**: Coming Soon
+- **GitHub Releases**: Will be available once releases are published
+
+## Usage
+
+### Getting Started
+
+1. **Access the Wallet**
+   - Click the ResVault extension icon in your Chrome toolbar
+   - The wallet interface will open in a popup window
+
+2. **Create Your First Account**
+   - Click "Create Account" to generate a new wallet
+   - Follow the setup process to secure your account
+   - Save your recovery information securely
+
+3. **Login to Your Account**
+   - Use your credentials to access your wallet
+   - Ensure you're on a secure connection
+
+### Managing Accounts
+
+- **Create Account**: Generate new wallet addresses with secure key pairs
+- **Delete Account**: Remove accounts you no longer need
+- **Switch Accounts**: Easily switch between multiple key pairs
+- **User Profiles**: Manage different user profiles within the wallet
+- **Export/Import Keys**: Download and upload key pair files
+
+### Network Configuration
+
+1. **Select Network**
+   - Choose between ResilientDB Mainnet and Localnet
+   - Configure custom network endpoints
+   - Set protocol (HTTP/HTTPS)
+
+2. **Service Mode**
+   - Toggle between Key-Value and Smart Contract modes
+   - Mode-specific functionality and interfaces
+
+3. **Connection Status**
+   - Real-time connection indicators
+   - Network-specific settings and configurations
+
+### Submitting Transactions
+
+1. **Prepare Transaction**
+   - Upload JSON transaction files
+   - Enter transaction details manually
+   - Verify recipient addresses and amounts
+
+2. **Review and Confirm**
+   - Double-check all transaction details
+   - Confirm the transaction with your private key
+
+3. **Monitor Status**
+   - Track transaction status in real-time
+   - View transaction history and confirmations
+   - Copy transaction IDs for reference
+
+### Smart Contract Deployment
+
+1. **Upload Contract**
+   - Upload Solidity contract files
+   - Paste contract code directly
+   - Provide constructor arguments if needed
+
+2. **Deploy Contract**
+   - Deploy using your wallet address as owner
+   - Monitor deployment progress
+   - Receive contract address upon successful deployment
+
+3. **Contract Management**
+   - Track deployed contracts
+   - View contract addresses and ownership
+   - Monitor contract deployment status
+
+### Transaction Logging
+
+- View all submitted transactions
+- Check transaction status and confirmations
+- Access detailed transaction information
+- Export transaction history
+
+## Security Considerations
+
+### Best Practices
+
+- **Secure Storage**: Never share your private keys or recovery phrases
+- **Regular Updates**: Keep the extension updated to the latest version
+- **Secure Environment**: Only use the wallet on trusted devices and networks
+- **Backup**: Always backup your account recovery information
+
+### Privacy
+
+- ResVault operates locally in your browser
+- Private keys are stored securely in the extension
+- No sensitive data is transmitted to external servers
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Extension Not Loading**
+   - Ensure Developer mode is enabled in Chrome
+   - Check that the build folder is correctly selected
+   - Try refreshing the extensions page
+
+2. **Transaction Failures**
+   - Verify you have sufficient balance
+   - Check network connectivity to ResilientDB
+   - Ensure transaction parameters are correct
+
+3. **Account Access Issues**
+   - Verify your login credentials
+   - Check if the account exists
+   - Try refreshing the extension
+
+## Links
+
+- **Website**: [ResilientDB](https://resilientdb.com)
+- **GitHub Repository**: [ResVault](https://github.com/apache/incubator-resilientdb-resvault)
+- **Apache Incubator**: [Apache Incubator ResVault](https://github.com/apache/incubator-resilientdb-resvault)
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/apache/incubator-resilientdb-resvault/blob/main/LICENSE) file for details.
+
+## Related Tools
+
+- [ResilientDB](../resilientdb) - The underlying blockchain platform
+- [ResContract CLI](../rescontract) - Command-line interface for smart contracts
+- [ResDB-ORM](../resdb_orm) - Object-relational mapping for ResilientDB
+- [ResilientDB Python SDK](../pythonsdk) - Python SDK for ResilientDB 
+
+## Contributing
+
+We welcome contributions to this project! Please feel free to submit pull requests, report issues, or suggest new features.
+
+<Space h="xl" />
+<Divider my="xl" label="Community Feedback" labelPosition="center" />
+
+<Box mb="xl">
+  <CommentSection
+    pageTitle="ResVault Documentation"
+    pageUrl={typeof window !== 'undefined' ? window.location.href : ''}
+    repoOwner="apache"
+    repoName="incubator-resilientdb-resvault"
+    labels={['user-feedback', 'documentation', 'resvault']}
+    title="Questions or Feedback about ResVault?"
+  />
+</Box> 
