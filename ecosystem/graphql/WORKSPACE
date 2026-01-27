@@ -20,6 +20,21 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
+    name = "hedron_compile_commands",
+    #Replace the commit hash (4f28899228fb3ad0126897876f147ca15026151e) with the latest commit hash from the repo
+    url = "https://github.com/hedronvision/bazel-compile-commands-extractor/archive/4f28899228fb3ad0126897876f147ca15026151e.tar.gz",
+    strip_prefix = "bazel-compile-commands-extractor-4f28899228fb3ad0126897876f147ca15026151e",
+)
+load("@hedron_compile_commands//:workspace_setup.bzl", "hedron_compile_commands_setup")
+hedron_compile_commands_setup()
+load("@hedron_compile_commands//:workspace_setup_transitive.bzl", "hedron_compile_commands_setup_transitive")
+hedron_compile_commands_setup_transitive()
+load("@hedron_compile_commands//:workspace_setup_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive")
+hedron_compile_commands_setup_transitive_transitive()
+load("@hedron_compile_commands//:workspace_setup_transitive_transitive_transitive.bzl", "hedron_compile_commands_setup_transitive_transitive_transitive")
+hedron_compile_commands_setup_transitive_transitive_transitive()
+
+http_archive(
     name = "rules_foreign_cc",
     sha256 = "69023642d5781c68911beda769f91fcbc8ca48711db935a75da7f6536b65047f",
     strip_prefix = "rules_foreign_cc-0.6.0",
@@ -236,6 +251,19 @@ http_archive(
     urls = [
         "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.0.1.zip",
     ],
+)
+
+http_archive(
+    name = "nlohmann_json",
+    build_file = "//third_party:json.BUILD",
+    sha256 = "95651d7d1fcf2e5c3163c3d37df6d6b3e9e5027299e6bd050d157322ceda9ac9",
+    strip_prefix = "json-3.11.2",
+    url = "https://github.com/nlohmann/json/archive/refs/tags/v3.11.2.zip",
+)
+
+bind(
+    name = "json",
+    actual = "@nlohmann_json//:json",
 )
 
 load("@com_resdb_nexres//:repositories.bzl", "nexres_repositories")

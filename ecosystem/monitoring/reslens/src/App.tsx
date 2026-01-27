@@ -22,22 +22,35 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Dashboard } from "@/components/dashboard/dashboard";
 import { HomePage } from "@/components/home-page/homePage";
-import PBFTPage from "@/components/home-page/PBFTFullView"; // Import the new PBFT page
+import PBFTPage from "@/components/home-page/PBFTFullView";
 import AuthorsPage from "./components/Authors/AuthorPage";
 import { Toaster } from "./components/ui/toaster";
+import { CpuPage, FlamegraphPage } from "@/pages/CpuPage";
+import { MemoryPage } from "@/pages/MemoryPage";
+import { ExplorerPage } from "@/pages/ExplorerPage";
+import { ResViewPage } from "@/pages/ResViewPage";
+import { ModeProvider } from "@/contexts/ModeContext";
+import { Loading } from "@/components/ui/loading";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Toaster />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/pbft" element={<PBFTPage />} /> {/* Add this */}
-          <Route path="/authors" element={<AuthorsPage />} />
-        </Routes>
-      </BrowserRouter>
+      <ModeProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/pbft" element={<PBFTPage />} />
+            <Route path="/authors" element={<AuthorsPage />} />
+            <Route path="/cpu" element={<CpuPage />} />
+            <Route path="/memory" element={<MemoryPage />} />
+            {/* <Route path="/explorer" element={<ExplorerPage />} /> */}
+            <Route path="/resview" element={<ResViewPage />} />
+            <Route path="/flamegraph" element={<FlamegraphPage />} />
+          </Routes>
+        </BrowserRouter>
+      </ModeProvider>
     </ThemeProvider>
   );
 }

@@ -21,14 +21,13 @@
 //@ts-nocheck
 import { ModeType } from "@/components/toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ModeContext } from "@/hooks/context";
-import { middlewareApi } from "@/lib/api";
+import { useMode } from "@/contexts/ModeContext";
 import { SquareTerminal } from "lucide-react";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import Terminal, { ColorMode, TerminalOutput } from "react-terminal-ui";
 
 export const TerminalController = (props = {}) => {
-  const mode = useContext<ModeType>(ModeContext);
+  const { mode, api } = useMode();
   const [terminalLineData, setTerminalLineData] = useState([
     <TerminalOutput>Welcome to ResilientDB Playground!</TerminalOutput>,
   ]);
@@ -38,8 +37,8 @@ export const TerminalController = (props = {}) => {
     let output: JSX.Element;
 
     if (args[0] === "resdb") {
-      if (mode === "offline") {
-        output = <p>Unable to run get and set method in offline mode</p>;
+      if (mode === "development") {
+        output = <p>Unable to run get and set method in development mode</p>;
       } else if (
         args[1] === "set" &&
         args[2] === "--key" &&
@@ -49,7 +48,7 @@ export const TerminalController = (props = {}) => {
         const key = args[3].replace(/"/g, "");
         const value = args[5].replace(/"/g, "");
         try {
-          const response = await middlewareApi.post("/transactions/set", {
+          const response = await api.post("/transactions/set", {
             id: key,
             value,
           });
@@ -76,7 +75,7 @@ export const TerminalController = (props = {}) => {
       } else if (args[1] === "get" && args[2] === "--key") {
         const key = args[3].replace(/"/g, "");
         try {
-          const response = await middlewareApi.get(`/transactions/get/${key}`);
+          const response = await api.get(`/transactions/get/${key}`);
           if (response?.status !== 200) {
             output = <p>Error: Unable to get value for {key}</p>;
             return;

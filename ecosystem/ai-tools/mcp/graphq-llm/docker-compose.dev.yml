@@ -1,0 +1,258 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+version: '3.8'
+
+services:
+  # ResilientDB Database
+  # Note: Using existing ResilientDB setup from start-resilientdb.sh
+  # This service is optional if ResilientDB is already running
+  resilientdb:
+    image: expolab/resdb:${ARCH:-amd64}
+    # Platform should match ARCH variable - remove if you want Docker to auto-detect
+    # For ARM64: set ARCH=arm64 in .env or export ARCH=arm64
+    # For AMD64: leave ARCH unset or set ARCH=amd64 (default)
+    container_name: resilientdb
+    ports:
+      - "18000:18000"
+      - "5001:5001"  # GraphQL server port
+    volumes:
+      - resilientdb-data:/data
+      # Mount GraphQL setup script for persistence
+      - ./setup-graphql.sh:/app/setup-graphql.sh:ro
+    networks:
+      - graphq-llm-network
+    environment:
+      - RESDB_HOST=0.0.0.0
+      - RESDB_PORT=18000
+    # ⚠️ IMPORTANT: This configuration may prevent ResilientDB KV service from starting
+    # The expolab/resdb image's default entrypoint should start the KV service automatically,
+    # but we're overriding it to run setup-graphql.sh. This might prevent KV service startup.
+    # 
+    # RECOMMENDED: Set up ResilientDB separately first (see TEAM_SETUP.md for details)
+    # Then comment out this service and use your existing ResilientDB instance.
+    # 
+    # If you want to try this setup:
+    # 1. Start containers: docker-compose up -d
+    # 2. Verify KV service: curl http://localhost:18000/v1/transactions/test
+    # 3. If it fails, set up ResilientDB separately (see TEAM_SETUP.md)
+    # 
+    # The healthcheck tests port 18000 (KV service) - if it fails, KV service isn't running
+    # Note: Use default entrypoint which starts KV service
+    # GraphQL setup can be done manually after container starts
+    # Remove entrypoint override to use default
+    # entrypoint: ["/bin/sh", "-c"]
+    # command: "tail -f /dev/null"
+    healthcheck:
+      # Check if KV service processes are running instead of HTTP endpoint
+      # The HTTP endpoint on 18000 may not be immediately available
+      test: ["CMD-SHELL", "ps aux | grep -E '[k]v_service' | wc -l | xargs test $(cat) -ge 1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s  # Give more time for services to start
+
+  # GraphQ-LLM Backend (HTTP API Server for Nexus)
+  graphq-llm-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: graphq-llm-backend
+    ports:
+      - "3001:3001"
+      - "9229:9229" # Debug port
+    environment:
+      # ResilientDB Configuration
+      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://resilientdb:5001/graphql}
+      - RESILIENTDB_API_KEY=${RESILIENTDB_API_KEY:-}
+      
+      # Nexus Configuration (optional)
+      - NEXUS_API_URL=${NEXUS_API_URL:-}
+      - NEXUS_API_KEY=${NEXUS_API_KEY:-}
+      
+      # ResLens Configuration (for Live Mode)
+      - RESLENS_API_URL=${RESLENS_API_URL:-}
+      - RESLENS_API_KEY=${RESLENS_API_KEY:-}
+      - RESLENS_LIVE_MODE=${RESLENS_LIVE_MODE:-false}
+      - RESLENS_POLL_INTERVAL=${RESLENS_POLL_INTERVAL:-5000}
+      
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-deepseek}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-chat}
+      # Enable Live Stats access for LLM (requires ResLens Live Mode)
+      - LLM_ENABLE_LIVE_STATS=${LLM_ENABLE_LIVE_STATS:-false}
+      
+      # Embedding Provider Configuration (Hugging Face)
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY:-}
+      
+      # MCP Server Configuration (for HTTP API)
+      - MCP_SERVER_PORT=3001
+      - MCP_SERVER_HOST=0.0.0.0
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NODE_ENV=development
+      
+      # Debug
+      - NODE_OPTIONS=--inspect=0.0.0.0:9229
+    depends_on:
+      resilientdb:
+        condition: service_healthy
+    networks:
+      - graphq-llm-network
+    volumes:
+      # Live updates: mount source code
+      - ./src:/app/src
+      - ./dist:/app/dist
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      # Mount docs directory for document ingestion
+      - ./docs:/app/docs
+      # Exclude node_modules from volume mount
+      - /app/node_modules
+    command: sh -c "npm install && npm run http-api"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # MCP Server (Model Context Protocol Server)
+  # Uses stdio transport for communication with MCP clients
+  graphq-llm-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: graphq-llm-mcp-server
+    stdin_open: true  # Keep stdin open for MCP stdio communication
+    tty: true         # Allocate a pseudo-TTY
+    environment:
+      # ResilientDB Configuration
+      - RESILIENTDB_GRAPHQL_URL=${RESILIENTDB_GRAPHQL_URL:-http://resilientdb:5001/graphql}
+      - RESILIENTDB_SIGNER_PUBLIC_KEY=${RESILIENTDB_SIGNER_PUBLIC_KEY:-}
+      - RESILIENTDB_SIGNER_PRIVATE_KEY=${RESILIENTDB_SIGNER_PRIVATE_KEY:-}
+      - RESILIENTDB_RECIPIENT_PUBLIC_KEY=${RESILIENTDB_RECIPIENT_PUBLIC_KEY:-}
+      - RESILIENTDB_API_KEY=${RESILIENTDB_API_KEY:-}
+      
+      # ResLens Configuration (for Live Mode)
+      - RESLENS_API_URL=${RESLENS_API_URL:-}
+      - RESLENS_API_KEY=${RESLENS_API_KEY:-}
+      - RESLENS_LIVE_MODE=${RESLENS_LIVE_MODE:-false}
+      - RESLENS_POLL_INTERVAL=${RESLENS_POLL_INTERVAL:-5000}
+      
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-deepseek}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-deepseek-chat}
+      # Enable Live Stats access for LLM (requires ResLens Live Mode)
+      - LLM_ENABLE_LIVE_STATS=${LLM_ENABLE_LIVE_STATS:-false}
+      
+      # Embedding Provider Configuration (Hugging Face)
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY:-}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NODE_ENV=development
+    depends_on:
+      resilientdb:
+        condition: service_healthy
+    networks:
+      - graphq-llm-network
+    volumes:
+      # Live updates: mount source code
+      - ./src:/app/src
+      - ./dist:/app/dist
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      # Mount docs directory for RAG
+      - ./docs:/app/docs
+      # Exclude node_modules from volume mount
+      - /app/node_modules
+    command: sh -c "npm install && npm run mcp-server"
+    restart: unless-stopped
+    # Note: MCP server uses stdio transport, so it doesn't expose HTTP ports
+    # Health check is not applicable for stdio-based services
+    # The server will run until terminated via stdin
+
+  # ResLens Middleware (Optional - for live performance monitoring)
+  # See DOCKER_RESLENS_SETUP.md for full setup instructions
+  reslens-middleware:
+    build:
+      context: /Users/sophiequynn/ResLens-Middleware/middleware
+      dockerfile: Dockerfile
+    container_name: reslens-middleware
+    ports:
+      - "3003:3003"  # Middleware HTTP API
+    environment:
+      - PORT=3003
+      - CPP_STATS_API_BASE_URL=http://resilientdb:18000
+      - CPP_TRANSACTIONS_API_BASE_URL=http://resilientdb:18000
+      # Optional: Add other environment variables as needed
+      # - PYROSCOPE_SERVER_URL=http://pyroscope:4040
+      # - PROMETHEUS_URL=http://prometheus:9090
+      # - NODE_EXPORTER_BASE_URL=http://node-exporter:9100
+      # - PROCESS_EXPORTER_BASE_URL=http://process-exporter:9256
+      # - EXPLORER_BASE_URL=http://explorer:8080
+    depends_on:
+      resilientdb:
+        condition: service_healthy
+    networks:
+      - graphq-llm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3003/api/v1/healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # ResLens Frontend (Optional - for performance monitoring UI)
+  reslens-frontend:
+    build:
+      context: /Users/sophiequynn/ResLens
+      dockerfile: Dockerfile
+      args:
+        - VITE_MIDDLEWARE_BASE_URL=http://localhost:3003/api/v1
+        - VITE_MIDDLEWARE_SECONDARY_BASE_URL=http://localhost:3003/api/v1
+    container_name: reslens-frontend
+    ports:
+      - "5173:80"  # Frontend UI
+    # depends_on:
+    #   reslens-middleware:
+    #     condition: service_healthy
+    networks:
+      - graphq-llm-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+networks:
+  graphq-llm-network:
+    driver: bridge
+    name: graphq-llm-network
+
+volumes:
+  resilientdb-data:
+    name: resilientdb-data
+

@@ -27,6 +27,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@webapp": path.resolve(__dirname, "./src/lib/webapp/javascript"),
     },
   },
 })

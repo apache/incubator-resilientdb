@@ -36,7 +36,7 @@ import {
 } from "../ui/card";
 import { NotFound } from "../ui/not-found";
 import { useEffect, useState } from "react";
-import { middlewareApi } from "@/lib/api";
+import { useMode } from "@/contexts/ModeContext";
 import { Skeleton } from "../ui/skeleton";
 import { formatSeconds } from "@/lib/utils";
 import { Block, BlockchainTable } from "./table";
@@ -73,6 +73,7 @@ type ExplorerCardProps = {
 };
 
 export function Explorer() {
+  const { api, refreshTrigger, mode } = useMode();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [configData, setData] = useState<BlockchainConfig>(
@@ -87,7 +88,7 @@ export function Explorer() {
   async function fetchExplorerData() {
     try {
       setLoading(true);
-      const response = await middlewareApi.get("/explorer/getExplorerData");
+      const response = await api.get("/explorer/getExplorerData");
       setData(response?.data[0]);
       setLoading(false);
     } catch (error) {
@@ -98,7 +99,7 @@ export function Explorer() {
 
   useEffect(() => {
     fetchExplorerData();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -120,11 +121,9 @@ export function Explorer() {
               <DatabaseCard loading={loading} data={configData} />
               <ChainInfoCard loading={loading} data={configData} />
             </div>
-            <div>
+            <div className="space-y-4">
               <MiscellaneousDataCard loading={loading} data={configData} />
-            </div>
-            <div>
-            <TransactionZoomChart />
+              {mode === "prod" && <TransactionZoomChart />}
             </div>
           </main>
         </CardContent>

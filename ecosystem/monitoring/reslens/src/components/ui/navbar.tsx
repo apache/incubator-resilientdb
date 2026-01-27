@@ -54,7 +54,7 @@ const Navbar: React.FC = () => {
               Home
             </Link>
             <Link
-              to="/dashboard"
+              to="/cpu"
               className={`py-4 px-2 font-semibold hover:text-blue-400 transition duration-300 ${isActive(
                 "/dashboard"
               )}`}

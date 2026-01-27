@@ -27,14 +27,15 @@ import { DependencyGraph } from "../graphs/dependency";
 import { startCase } from "@/lib/utils";
 import { CpuPage } from "../graphs/cpuCard";
 import { MemoryTrackerPage } from "../graphs/MemorySpecs/memoryTrackerPage";
-import { ToggleState, ModeType } from "../toggle";
-import { ModeContext } from "@/hooks/context";
-import { middlewareApi } from "@/lib/api";
+import { ToggleState } from "../toggle";
+import { useMode } from "@/contexts/ModeContext";
 import Banner from "../ui/banner";
 import { TourProvider, useTour } from "@/hooks/use-tour";
 import { Tour } from "../ui/tour";
 import { Explorer } from "../graphs/explorer";
 import { ResView } from "../graphs/resView";
+import { DashboardNavigation } from "../navigation/DashboardNavigation";
+import { Loading } from "../ui/loading";
 
 const tabVariants = {
   hidden: { opacity: 0, y: 10 },
@@ -91,38 +92,24 @@ export function Dashboard() {
 function DashboardComponent() {
   const { setSteps } = useTour();
   const [activeTab, setActiveTab] = useState("cpu");
-  const [mode, setMode] = useState<ModeType>("offline");
-
-  async function getMode() {
-    try {
-      const response = await middlewareApi.get("/healthcheck");
-      if (response?.status === 200) {
-        setMode("live");
-      } else {
-        setMode("offline");
-      }
-    } catch (error) {
-      setMode("offline");
-    }
-  }
+  const { mode, isLoading, setMode } = useMode();
 
   useEffect(() => {
     setSteps(steps);
   }, [setSteps]);
 
   useEffect(() => {
-    getMode();
-  }, []);
-
-  useEffect(() => {
-    if (mode === "offline") {
+    if (mode === "development") {
       setActiveTab("cpu");
     }
   }, [mode]);
 
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
-    <ModeContext.Provider value={mode}>
-      {mode === "offline" && <Banner />}
+    <>
       <Tour />
       <div className="min-h-screen bg-gradient-to-br from-slate-950 to-slate-900 text-slate-50">
         <Tabs
@@ -140,17 +127,7 @@ function DashboardComponent() {
                     className="h-6 mb-0"
                   />
                 </a>
-                <TabsList className="bg-slate-900/50 backdrop-blur-sm">
-                  {tabMapping.map((tab) => (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      className="data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                    >
-                      {tab.tag}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+                <DashboardNavigation activeTab={activeTab} onTabChange={setActiveTab} />
               </div>
               <div className="flex items-center space-x-4">
                 <span id="version" className="text-sm text-slate-400">
@@ -206,6 +183,6 @@ function DashboardComponent() {
           </main>
         </Tabs>
       </div>
-    </ModeContext.Provider>
+    </>
   );
 }
