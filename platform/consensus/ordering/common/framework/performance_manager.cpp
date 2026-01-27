@@ -193,9 +193,9 @@ void PerformanceManager::SendResponseToClient(
 
 // =================== request ========================
 int PerformanceManager::BatchProposeMsg() {
-  LOG(WARNING) << "batch wait time:" << config_.ClientBatchWaitTimeMS()
-               << " batch num:" << config_.ClientBatchNum()
-               << " max txn:" << config_.GetMaxProcessTxn();
+  //LOG(WARNING) << "batch wait time:" << config_.ClientBatchWaitTimeMS()
+  //             << " batch num:" << config_.ClientBatchNum()
+  //             << " max txn:" << config_.GetMaxProcessTxn();
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   eval_ready_future_.get();
   bool start = false;

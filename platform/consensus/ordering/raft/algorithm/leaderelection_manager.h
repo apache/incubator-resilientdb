@@ -35,7 +35,8 @@ enum class Waited {
   HEARTBEAT,
   STOPPED,
   TIMEOUT,
-  ROLE_CHANGE
+  ROLE_CHANGE,
+  BROADCASTED
 };
 
 class LeaderElectionManager {
@@ -48,6 +49,7 @@ class LeaderElectionManager {
   void SetRaft(raft::Raft*);
   void OnHeartBeat();
   void OnRoleChange();
+  void OnAeBroadcast();
 
  private:
   Waited LeaderWait();
@@ -69,6 +71,7 @@ class LeaderElectionManager {
   uint64_t timeout_max_ms;
   uint64_t heartbeat_timer_;
   uint64_t heartbeat_count_; // Protected by cv_mutex_
+  uint64_t broadcast_count_; // Protected by cv_mutex_
   //std::chrono::steady_clock::time_point last_heartbeat_time_;
   uint64_t role_epoch_; // Protected by cv_mutex_
   uint64_t known_role_epoch_; // Protected by cv_mutex_

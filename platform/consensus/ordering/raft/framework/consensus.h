@@ -43,10 +43,6 @@ class Consensus : public common::Consensus {
  protected:
   std::unique_ptr<Raft> raft_;
   std::unique_ptr<LeaderElectionManager> leader_election_manager_;
-  Stats* global_stats_;
-  int64_t start_;
-  std::mutex mutex_;
-  int send_num_[200];
 };
 
 }  // namespace raft

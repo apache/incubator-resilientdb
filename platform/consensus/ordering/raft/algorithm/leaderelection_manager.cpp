@@ -42,6 +42,7 @@ LeaderElectionManager::LeaderElectionManager(const ResDBConfig& config)
       heartbeat_timer_(100),
       heartbeat_count_(0),
       //last_heartbeat_time_(std::chrono::steady_clock::now()),
+      broadcast_count_(0),
       role_epoch_(0),
       known_role_epoch_(0) {
   global_stats_ = Stats::GetGlobalStats();
@@ -100,9 +101,18 @@ void LeaderElectionManager::OnHeartBeat() {
 
 void LeaderElectionManager::OnRoleChange() {
   {
-    //LOG(INFO) << "JIM -> " << __FUNCTION__;
+    LOG(INFO) << "JIM -> " << __FUNCTION__;
     std::lock_guard<std::mutex> lk(cv_mutex_);
     role_epoch_++;
+  }
+  cv_.notify_all();
+}
+
+void LeaderElectionManager::OnAeBroadcast() {
+  {
+    LOG(INFO) << "JIM -> " << __FUNCTION__;
+    std::lock_guard<std::mutex> lk(cv_mutex_);
+    broadcast_count_++;
   }
   cv_.notify_all();
 }
@@ -116,21 +126,30 @@ uint64_t LeaderElectionManager::RandomInt(uint64_t min, uint64_t max) {
 Waited LeaderElectionManager::LeaderWait() {
   //LOG(INFO) << "JIM -> " << __FUNCTION__;
   std::unique_lock<std::mutex> lk(cv_mutex_);
+  const uint64_t broadcast_snapshot = broadcast_count_;
   if (known_role_epoch_ != role_epoch_) {
     known_role_epoch_ = role_epoch_;
     return Waited::ROLE_CHANGE;
   }
   cv_.wait_for(lk, std::chrono::milliseconds(heartbeat_timer_),
-              [this] {
+              [this, broadcast_snapshot] {
                   return (stop_.load() == true
-                  || (known_role_epoch_ != role_epoch_));
+                  || (known_role_epoch_ != role_epoch_)
+                  || (broadcast_snapshot != broadcast_count_));
                 });
-  if (stop_.load() == true) { return Waited::STOPPED; }
+  if (stop_.load() == true) {
+    return Waited::STOPPED;
+  }
   else if (known_role_epoch_ != role_epoch_) { 
     known_role_epoch_ = role_epoch_;
     return Waited::ROLE_CHANGE; 
   }
-  else { return Waited::TIMEOUT; }
+  else if (broadcast_snapshot != broadcast_count_) {
+    return Waited::BROADCASTED;
+  }
+  else {
+    return Waited::TIMEOUT;
+  }
 }
 
 Waited LeaderElectionManager::Wait() {
@@ -149,13 +168,19 @@ Waited LeaderElectionManager::Wait() {
                   || (heartbeat_snapshot != heartbeat_count_)
                   || (known_role_epoch_ != role_epoch_));
                 });
-  if (stop_.load() == true) { return Waited::STOPPED; }
+  if (stop_.load() == true) {
+    return Waited::STOPPED;
+  }
   else if (known_role_epoch_ != role_epoch_) { 
     known_role_epoch_ = role_epoch_;
     return Waited::ROLE_CHANGE; 
   }
-  else if (heartbeat_snapshot != heartbeat_count_) { return Waited::HEARTBEAT; }
-  else { return Waited::TIMEOUT; }
+  else if (heartbeat_snapshot != heartbeat_count_) {
+    return Waited::HEARTBEAT;
+  }
+  else {
+    return Waited::TIMEOUT;
+  }
 }
 
 // Function that is run in server_checking_timeout_thread started in MayStart().
@@ -163,38 +188,48 @@ Waited LeaderElectionManager::Wait() {
 // Causes followers and candidates to start an election if no heartbeat received.
 void LeaderElectionManager::MonitoringElectionTimeout() {
   while (!stop_.load()) {
-    raft::Role role = raft_->GetRoleSnapshot();
+    Role role = raft_->GetRoleSnapshot();
     Waited res;
-    //std::chrono::steady_clock::time_point wait_start_time_ = std::chrono::steady_clock::now();
-    //bool leader = false;
-    if (role == raft::Role::LEADER) { 
+    std::chrono::steady_clock::time_point wait_start_time_ = std::chrono::steady_clock::now();
+    bool leader = false;
+    if (role == Role::LEADER) { 
       res = LeaderWait(); 
-      //leader = true;
+      leader = true;
     }
     else { 
       res = Wait(); 
     }
-    //std::chrono::steady_clock::time_point wait_end_time_ = std::chrono::steady_clock::now();
-    //std::chrono::steady_clock::duration delta = wait_end_time_ - wait_start_time_;
-    //auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
-    //LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
-    if (res == Waited::STOPPED) { break; }
+    std::chrono::steady_clock::time_point wait_end_time_ = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::duration delta = wait_end_time_ - wait_start_time_;
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(delta).count();
+    if (raft_->livenessLoggingFlag_) {
+      LOG(INFO) << __FUNCTION__ << ": " << (leader ? "Leader" : "") << "Wait " << ms << "ms";
+    }
+    if (res == Waited::STOPPED) {
+      break;
+    }
     else if (res == Waited::ROLE_CHANGE) {
-      //LOG(INFO) << __FUNCTION__ << ": Role change detected";
+      LOG(INFO) << __FUNCTION__ << ": Role change detected";
       continue; 
     }
     else if (res == Waited::HEARTBEAT) {
       //LOG(INFO) << __FUNCTION__ << ": Heartbeat received within window";
-      if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {
+      if (raft_->GetRoleSnapshot() == Role::LEADER) {
         // A leader receiving a heartbeat would be unusual but not impossible.
         LOG(WARNING) << __FUNCTION__ << " Received Heartbeat as LEADER";
       }
       continue;
     }
+    else if (res == Waited::BROADCASTED) {
+      if (raft_->livenessLoggingFlag_) {
+        LOG(INFO) << __FUNCTION__ << ": AE Broadcast reset leader heartbeat timer";
+      }
+      continue; 
+    }
     
     // Only gets here if timeout expired.
     // Leaders send a new heartbeat.
-    if (raft_->GetRoleSnapshot() == raft::Role::LEADER) {
+    if (raft_->GetRoleSnapshot() == Role::LEADER) {
         raft_->SendHeartBeat();
     }
     // Followers and Candidates start an election.
