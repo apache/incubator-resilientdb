@@ -18,7 +18,7 @@ header:
     - 'ecosystem/**/*.json'
     - 'ecosystem/**/LICENSE*'
     - 'ecosystem/monitoring/reslens/src/lib/**'
-    - 'ecosystem/pocketflow/**'
+    - 'ecosystem/third_party/pocketflow/**'
 
 
   comment: on-failure
