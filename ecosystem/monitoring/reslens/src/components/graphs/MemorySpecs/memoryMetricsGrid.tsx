@@ -19,7 +19,7 @@
 */
 
 //@ts-nocheck
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
@@ -37,9 +37,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { middlewareApi } from "@/lib/api";
 import { ModeType } from "@/components/toggle";
-import { ModeContext } from "@/hooks/context";
+import { useMode } from "@/contexts/ModeContext";
 import { useToast } from "@/hooks/use-toast";
 import {
   DiskRWData,
@@ -121,7 +120,7 @@ const MetricChart = ({ title, data, yAxisLabel, onRefresh, info }) => {
 
 export function MemoryMetricsGrid() {
   const { toast } = useToast();
-  const mode = useContext<ModeType>(ModeContext);
+  const { mode, api, refreshTrigger } = useMode();
   const [ioTimeData, setIoTimeData] = useState([]);
   const [diskRWData, setDiskRWData] = useState([]);
   const [diskIOPSData, setDiskIOPSData] = useState([]);
@@ -130,16 +129,6 @@ export function MemoryMetricsGrid() {
   const [__, setErrorDiskIOPS] = useState(null); // Error state
 
   const fetchIoTimeData = async () => {
-    if (mode === "offline") {
-      setIoTimeData(TimeDuringIOData?.data);
-      toast({
-        title: "Offline Mode",
-        description: "Using sample data in offline mode.",
-        variant: "default",
-      });
-      return;
-    }
-
     try {
       setLoadingDiskIOPS(true); // Set loading state
       setErrorDiskIOPS(null); // Clear errors
@@ -148,7 +137,7 @@ export function MemoryMetricsGrid() {
       const from = new Date(until - 1 * 60 * 60 * 1000).getTime(); // 1 hour ago
 
       // Fetch data from the backend
-      const response = await middlewareApi.post(
+      const response = await api.post(
         "/nodeExporter/getTimeSpentDoingIO",
         {
           from: parseFloat((from / 1000).toFixed(3)),
@@ -173,10 +162,6 @@ export function MemoryMetricsGrid() {
   };
 
   const fetchDiskRWData = async () => {
-    if (mode === "offline") {
-      setDiskRWData(DiskRWData?.data?.writeMerged);
-      return;
-    }
     try {
       setLoadingDiskIOPS(true); // Indicate loading state
       setErrorDiskIOPS(null); // Clear previous errors
@@ -186,7 +171,7 @@ export function MemoryMetricsGrid() {
       const step = 14; // Step size in seconds
 
       // Call the backend API
-      const response = await middlewareApi.post("/nodeExporter/getDiskRWData", {
+      const response = await api.post("/nodeExporter/getDiskRWData", {
         from: parseFloat((from / 1000).toFixed(3)),
         until: parseFloat((until / 1000).toFixed(3)),
         step,
@@ -220,10 +205,6 @@ export function MemoryMetricsGrid() {
   };
 
   const fetchDiskIOPSData = async () => {
-    if (mode === "offline") {
-      setDiskIOPSData(DiskIOPSData?.data);
-      return;
-    }
     try {
       setLoadingDiskIOPS(true); // Indicate loading state
       setErrorDiskIOPS(null); // Clear previous errors
@@ -233,7 +214,7 @@ export function MemoryMetricsGrid() {
       const step = 14; // Step size in seconds
 
       // Call the backend API
-      const response = await middlewareApi.post("/nodeExporter/getDiskIOPS", {
+      const response = await api.post("/nodeExporter/getDiskIOPS", {
         from: parseFloat((from / 1000).toFixed(3)),
         until: parseFloat((until / 1000).toFixed(3)),
         step,
@@ -259,10 +240,6 @@ export function MemoryMetricsGrid() {
   };
 
   const fetchDiskWaitTimeData = async () => {
-    if (mode === "offline") {
-      setDiskWaitTimeData(DiskWaitTimeData?.data?.writeWaitTime);
-      return;
-    }
     try {
       setLoadingDiskIOPS(true); // Indicate loading state
       setErrorDiskIOPS(null); // Clear previous errors
@@ -272,7 +249,7 @@ export function MemoryMetricsGrid() {
       const step = 14; // Step size in seconds
 
       // Call the backend API
-      const response = await middlewareApi.post(
+      const response = await api.post(
         "/nodeExporter/getDiskWaitTime",
         {
           from: parseFloat((from / 1000).toFixed(3)),
@@ -311,11 +288,13 @@ export function MemoryMetricsGrid() {
   };
 
   useEffect(() => {
-    fetchIoTimeData();
-    fetchDiskRWData();
-    fetchDiskIOPSData();
-    fetchDiskWaitTimeData();
-  }, [mode]);
+    if (mode === "prod") {
+      fetchIoTimeData();
+      fetchDiskRWData();
+      fetchDiskIOPSData();
+      fetchDiskWaitTimeData();
+    }
+  }, [refreshTrigger, mode]);
 
   const metrics = [
     {
@@ -347,6 +326,10 @@ export function MemoryMetricsGrid() {
       onRefresh: fetchDiskWaitTimeData,
     },
   ];
+
+  if (mode !== "prod") {
+    return null;
+  }
 
   return (
     <Card className="bg-slate-900 p-6">

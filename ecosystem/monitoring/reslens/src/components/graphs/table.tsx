@@ -53,7 +53,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
 import { Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
-import { middlewareApi } from "@/lib/api";
+import { useMode } from "@/contexts/ModeContext";
 
 export interface Transaction {
   cmd: string;
@@ -146,6 +146,7 @@ export function BlockchainTable({
   total: number;
   cb: (state: unknown) => void;
 }) {
+  const { api, refreshTrigger } = useMode();
   const [loading, setLoading] = React.useState(false);
   const [data, setData] = React.useState<Block[]>([]);
   const [pageIndex, setPageIndex] = React.useState(0);
@@ -165,7 +166,7 @@ export function BlockchainTable({
         end,
       }));
 
-      const response = await middlewareApi.get(`/explorer/getBlocks`, {
+      const response = await api.get(`/explorer/getBlocks`, {
         params: { start, end },
       });
       console.log("Response is: ", response?.data);
@@ -180,7 +181,7 @@ export function BlockchainTable({
   // Run fetchBlocksData when pageIndex or pageSize changes
   React.useEffect(() => {
     fetchBlocksData();
-  }, [fetchBlocksData]); // Direct dependencies
+  }, [fetchBlocksData, refreshTrigger]); // Direct dependencies
 
   const totalPages = Math.ceil(total / pageSize);
 

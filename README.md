@@ -173,6 +173,11 @@ Install dependencies:
 
 For non-root users, see [INSTALL/README.md](https://github.com/apache/incubator-resilientdb/blob/master/INSTALL/README.md)
 
+
+Generate the certificates and the public-private keys.
+
+    ./service/tools/kv/server_tools/generate_keys_and_certs.sh
+
 Run ResilientDB (Providing a Key-Value Service):
 
     ./service/tools/kv/server_tools/start_kv_service.sh

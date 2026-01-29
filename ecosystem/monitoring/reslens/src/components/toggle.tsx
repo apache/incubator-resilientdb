@@ -19,7 +19,7 @@
 */
 
 import * as React from "react";
-import { Check, ChevronDown, Globe, Wifi, WifiOff } from "lucide-react";
+import { Check, ChevronDown, Globe, Wifi, WifiOff, Code, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export type ModeType = "offline" | "live" | "remote";
+export type ModeType = "development" | "prod";
 
 const states: {
   value: ModeType;
@@ -39,21 +39,15 @@ const states: {
   icon: React.ComponentType<{ className?: string }>;
 }[] = [
   {
-    value: "offline",
-    label: "Offline",
-    icon: WifiOff,
+    value: "development",
+    label: "Dev",
+    icon: Code,
     disabled: false,
   },
   {
-    value: "live",
-    label: "Live",
-    icon: Wifi,
-    disabled: false,
-  },
-  {
-    value: "remote",
-    label: "Remote",
-    icon: Globe,
+    value: "prod",
+    label: "Prod",
+    icon: Zap,
     disabled: true,
   },
 ];

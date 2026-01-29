@@ -1,0 +1,185 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+name: Deploy Ecosystem Projects to Vercel
+
+on:
+  push:
+    branches:
+      - master
+      - development
+    paths:
+      - 'ecosystem/**'
+      - '.github/workflows/deploy-ecosystem.yml'
+      - '.github/deploy-ecosystem-configs.json'
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'Specific project to deploy (leave empty to deploy all changed projects)'
+        required: false
+        type: string
+      force_deploy_all:
+        description: 'Force deploy all projects regardless of changes'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  determine-projects:
+    name: Determine Projects to Deploy
+    runs-on: ubuntu-latest
+    container:
+      image: node:20-bookworm-slim
+    outputs:
+      projects: ${{ steps.filter.outputs.projects }}
+      projects_json: ${{ steps.filter.outputs.projects_json }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read deployment config
+        id: config
+        shell: bash
+        run: |
+          # Read JSON config file and output as multiline string
+          echo "config_json<<EOF" >> "$GITHUB_OUTPUT"
+          cat .github/deploy-ecosystem-configs.json >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Filter projects based on inputs
+        id: filter
+        shell: bash
+        run: |
+          # Use Node.js to parse JSON (already available in container)
+          node << 'EOF'
+          const fs = require('fs');
+          const configJson = `${{ steps.config.outputs.config_json }}`;
+          const config = JSON.parse(configJson);
+          
+          const eventName = '${{ github.event_name }}';
+          const projectName = '${{ inputs.project_name }}';
+          const forceDeployAll = '${{ inputs.force_deploy_all }}' === 'true';
+          
+          let projectsToDeploy = [];
+          
+          // Filter out projects with skip: true
+          const availableProjects = config.projects.filter(p => !p.skip);
+          
+          // Manual trigger: deploy specific project or all
+          if (eventName === 'workflow_dispatch') {
+            if (projectName) {
+              const project = availableProjects.find(p => p.name === projectName);
+              if (project) {
+                projectsToDeploy = [project];
+              } else {
+                projectsToDeploy = availableProjects;
+              }
+            } else if (forceDeployAll) {
+              projectsToDeploy = availableProjects;
+            } else {
+              projectsToDeploy = availableProjects;
+            }
+          } else {
+            // For push events, deploy all available projects (excluding skipped ones)
+            projectsToDeploy = availableProjects;
+          }
+          
+          // Output results
+          const outputFile = process.env.GITHUB_OUTPUT;
+          const projectsJson = JSON.stringify(projectsToDeploy);
+          const projectsNames = JSON.stringify(projectsToDeploy.map(p => p.name));
+          
+          fs.appendFileSync(outputFile, `projects_json<<EOF\n${projectsJson}\nEOF\n`);
+          fs.appendFileSync(outputFile, `projects=${projectsNames}\n`);
+          EOF
+
+      - name: Show projects to deploy
+        run: |
+          echo "Projects to deploy: ${{ steps.filter.outputs.projects }}"
+          PROJECTS="${{ steps.filter.outputs.projects }}"
+          if [ "$PROJECTS" = "[]" ]; then
+            echo "No projects to deploy"
+          fi
+
+  deploy:
+    name: Deploy ${{ matrix.project.name }}
+    needs: determine-projects
+    if: needs.determine-projects.outputs.projects != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJson(needs.determine-projects.outputs.projects_json) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Configure Git for Vercel
+        working-directory: ${{ matrix.project.path }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "support@resilientdb.com"
+
+      - name: Pull Vercel Environment Information
+        working-directory: ${{ matrix.project.path }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ matrix.project.vercel_org_id || secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ matrix.project.vercel_project_id }}
+        run: |
+          if [ -n "$VERCEL_PROJECT_ID" ] && [ -n "$VERCEL_ORG_ID" ]; then
+            mkdir -p .vercel
+            echo "$VERCEL_ORG_ID" > .vercel/org-id
+            echo "$VERCEL_PROJECT_ID" > .vercel/project-id
+          fi
+
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN || echo "Could not pull Vercel config, continuing..."
+
+      - name: Create deployment commit with correct author
+        run: |
+          # Configure git user
+          git config user.name "github-actions[bot]"
+          git config user.email "support@resilientdb.com"
+          # Create an empty commit with correct author for Vercel to see
+          git commit --allow-empty -m "ci: authorize deploy for ${{ matrix.project.name }}" || echo "Skipping commit creation"
+
+      - name: Deploy to Vercel
+        working-directory: ${{ matrix.project.path }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --yes --token=$VERCEL_TOKEN
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "### Deployment: ${{ matrix.project.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Path:** ${{ matrix.project.path }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY

@@ -18,15 +18,14 @@
 *
 */
 
-import { StorageEngineMetrics } from "./storageEngineMetrics";
 import { MemoryMetricsGrid } from "./memoryMetricsGrid";
 import { Info, Map } from "lucide-react";
 import { TerminalController } from "./terminal";
-import { useContext } from "react";
-import { ModeContext } from "@/hooks/context";
+import { useMode } from "@/contexts/ModeContext";
+import { StorageEngineMetrics } from "./storageEngineMetrics";
 
 export function MemoryTrackerPage() {
-  const mode = useContext(ModeContext);
+  const { mode } = useMode();
   return (
     <div className="space-y-8">
       <div className="relative">
@@ -48,10 +47,10 @@ export function MemoryTrackerPage() {
         </div>
         <div className="space-y-4">
           <TerminalController />
-          {!(mode === "offline") && <StorageEngineMetrics />}
-          {/* {import.meta.env.VITE_DISK_METRICS_FLAG === "true" && (
-            <MemoryMetricsGrid />
-          )} */}
+          {/* {!(mode === "development") && <StorageEngineMetrics />} */}
+          {(mode === "development") && (
+            <StorageEngineMetrics />
+          )}
           <MemoryMetricsGrid />
         </div>
       </div>

@@ -1,0 +1,114 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# All-in-One Dockerfile: ResilientDB + PostgreSQL + GraphQ-LLM Backend
+# Multi-stage build: Uses ResilientDB image and adds PostgreSQL + Node.js
+
+ARG ARCH=arm64
+
+# Stage 1: Get ResilientDB binaries
+FROM expolab/resdb:${ARCH} AS resilientdb-stage
+# Just to have the image available
+
+# Stage 2: Base with PostgreSQL and Node.js
+FROM ubuntu:22.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install base dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    python3 \
+    make \
+    g++ \
+    supervisor \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install PostgreSQL 14
+RUN apt-get update && apt-get install -y \
+    postgresql-14 \
+    postgresql-contrib-14 \
+    postgresql-server-dev-14 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pgvector extension
+RUN git clone --branch v0.5.1 https://github.com/pgvector/pgvector.git /tmp/pgvector && \
+    cd /tmp/pgvector && \
+    make && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/pgvector && \
+    apt-get purge -y git build-essential postgresql-server-dev-14 && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy ResilientDB binaries from the image (if we can access them)
+# For now, we'll use a volume mount or run ResilientDB in a sidecar
+# Actually, let's use docker-compose to run ResilientDB separately but in the same network
+# OR: Use the ResilientDB HTTP wrapper approach
+
+# Create directories
+RUN mkdir -p /var/lib/postgresql/data \
+    && mkdir -p /app/graphq-llm \
+    && mkdir -p /data \
+    && chown -R postgres:postgres /var/lib/postgresql/data
+
+# Copy GraphQ-LLM application files
+WORKDIR /app/graphq-llm
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install Node.js dependencies
+RUN npm ci
+
+# Copy source code and build
+COPY src/ ./src/
+RUN npm run build
+
+# Copy supervisor configuration
+COPY supervisord-all.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy scripts
+COPY healthcheck-all.sh /app/healthcheck-all.sh
+COPY init-postgres.sh /app/init-postgres.sh
+RUN chmod +x /app/healthcheck-all.sh /app/init-postgres.sh
+
+# Copy docs
+COPY docs/ /app/graphq-llm/docs/
+
+# Note: ResilientDB will run in a separate container but same network
+# We'll use docker-compose to link them, or use a sidecar pattern
+# For true all-in-one, we'd need to install ResilientDB from source (complex)
+
+# Expose ports
+EXPOSE 5432 3001
+
+# Health check (only PostgreSQL and GraphQ-LLM, ResilientDB is separate)
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=120s \
+  CMD /bin/bash -c "pg_isready -U nexus && curl -f http://localhost:3001/health || exit 1"
+
+# Start supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
