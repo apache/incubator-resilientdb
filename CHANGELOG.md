@@ -21,7 +21,7 @@
 
 ### Apache ResilientDB v1.12.0
 
-Changes since [v1.11.0-rc06](https://github.com/apache/incubator-resilientdb/releases/tag/v1.11.0-rc06).
+Apache ResilientDB v1.12.0 ([2026-2-04](https://github.com/resilientdb/resilientdb/releases/tag/v1.12.0))
 
 #### Core
 * **Support Securing Consensus from Long-Range Attacks through Collaboration** – PoC implementation merged ([#215](https://github.com/apache/incubator-resilientdb/pull/215), closes [#216](https://github.com/apache/incubator-resilientdb/issues/216)). ([Junchao Chen](https://github.com/cjcchen))
