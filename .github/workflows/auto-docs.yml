@@ -55,7 +55,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ecosystem/pocketflow
+          cd ecosystem/third_party/pocketflow
           pip install -r requirements.txt
 
       - name: Configure Git
@@ -70,7 +70,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
         run: |
-          cd ecosystem/pocketflow
+          cd ecosystem/third_party/pocketflow
           # Export env vars for Python scripts
           export GEMINI_API_KEY="$GEMINI_API_KEY"
           export GEMINI_MODEL="$GEMINI_MODEL"
@@ -99,7 +99,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ secrets.GEMINI_MODEL || 'models/gemini-2.5-pro' }}
         run: |
-          cd ecosystem/pocketflow
+          cd ecosystem/third_party/pocketflow
           # Export all env vars to ensure they're available to subprocess calls
           export LLM_PROVIDER="$LLM_PROVIDER"
           export GEMINI_API_KEY="$GEMINI_API_KEY"
