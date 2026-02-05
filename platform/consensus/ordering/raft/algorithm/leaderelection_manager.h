@@ -55,7 +55,7 @@ class LeaderElectionManager {
   Waited LeaderWait();
   Waited Wait();
   void MonitoringElectionTimeout();
-  uint64_t RandomInt(uint64_t min, uint64_t max);
+  virtual uint64_t RandomInt(uint64_t min, uint64_t max);
   
 
  protected:

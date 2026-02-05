@@ -87,8 +87,8 @@ class Raft : public common::ProtocolBase {
   bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer);
   void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
   void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
-  void StartElection();
-  void SendHeartBeat();
+  virtual void StartElection();
+  virtual void SendHeartBeat();
   Role GetRoleSnapshot() const;
   void SetRole(Role role);
 

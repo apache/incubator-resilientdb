@@ -41,3 +41,23 @@ cc_library(
         "//platform/proto:viewchange_message_cc_proto",
     ],
 )
+
+cc_library(
+    name = "mock_raft",
+    hdrs = ["mock_raft.h"],
+    deps = [
+        ":raft",
+    ],
+)
+
+cc_test(
+    name = "leader_election_test",
+    srcs = ["leader_election_manager_test.cpp"],
+    deps = [
+        ":raft",
+        ":mock_raft",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main"
+    ],
+    size="small"
+)
