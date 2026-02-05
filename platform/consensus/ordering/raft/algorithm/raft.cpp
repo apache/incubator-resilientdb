@@ -90,6 +90,10 @@ bool Raft::IsStop() {
   return is_stop_; 
 }
 
+void Raft::SetRole(Role role) {
+  role_ = role;
+}
+
 bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   std::vector<AeFields> messages;
   {
@@ -465,7 +469,7 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
               << votes_.size() << "/" << quorum_ << " in term " << currentTerm_;
     if (votes_.size() >= quorum_) {
       elected = true;
-      role_ = Role::LEADER;
+      SetRole(Role::LEADER);
       ClearInFlightsLocked();
       nextIndex_.assign(total_num_ + 1, lastLogIndex_ + 1);
 
@@ -507,7 +511,7 @@ void Raft::StartElection() {
       return;
     }
     if (role_ == Role::FOLLOWER) {
-      role_ = Role::CANDIDATE;
+      SetRole(Role::CANDIDATE);
       roleChanged = true;
     }
     heartBeatsSentThisTerm_ = 0;
@@ -609,7 +613,7 @@ bool Raft::DemoteSelfLocked(uint64_t term) {
     votedFor_ = -1;
   }
   if (role_ != Role::FOLLOWER) {
-    role_ = Role::FOLLOWER;
+    SetRole(Role::FOLLOWER);
     //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted to FOLLOWER";
     return true;
   }

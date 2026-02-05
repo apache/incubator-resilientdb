@@ -90,6 +90,7 @@ class Raft : public common::ProtocolBase {
   void StartElection();
   void SendHeartBeat();
   Role GetRoleSnapshot() const;
+  void SetRole(Role role);
 
  private:
   mutable std::mutex mutex_;
