@@ -47,29 +47,10 @@ pip install -r requirements.txt
 
 ## 🏃‍♂️ **How to Run**
 
-### **Option 1: Windows Startup Script (Easiest)**
-```bash
-start_server.bat
-```
-This script will:
-- Check dependencies
-- Activate virtual environment
-- Start the MCP server
-- Show helpful startup information
-
-### **Option 2: Direct Python Execution**
+### **Direct Python Execution**
 ```bash
 # Make sure virtual environment is activated
-python resilientdb_mcp_server.py
-```
-
-### **Option 3: Docker Container**
-```bash
-# Build the container
-docker build -t resilientdb-mcp-server .
-
-# Run the container
-docker run -p 8000:8000 resilientdb-mcp-server
+python server.py
 ```
 
 ## 🎮 **How to Use the Project**
@@ -87,23 +68,6 @@ docker run -p 8000:8000 resilientdb-mcp-server
    🤖 Assistant: Welcome to ResilientDB! Let me guide you through...
    ```
 
-### **Method 2: Interactive Demo Mode**
-
-Run the standalone demo to test without MCP client:
-```bash
-python demo_conversational_assistant.py
-```
-
-**Demo Options:**
-1. **Watch Sample Conversations** - See example student interactions
-2. **Interactive Mode** - Ask your own questions directly
-3. **Both** - Sample conversations followed by interactive mode
-
-### **Method 3: Testing and Development**
-
-Run the comprehensive test suite:
-```bash
-python test_conversational_assistant.py
 ```
 
 ## 💬 **Example Usage Scenarios**
@@ -161,7 +125,7 @@ Add to your Claude Desktop MCP configuration:
   "mcpServers": {
     "resilientdb-assistant": {
       "command": "python",
-      "args": ["C:/path/to/your/project/resilientdb_mcp_server.py"],
+      "args": ["C:/path/to/your/project/server.py"],
       "env": {
         "PYTHONPATH": "C:/path/to/your/project"
       }
@@ -222,21 +186,6 @@ Add to your Continue configuration:
 "Network partition handling"
 ```
 
-## 🔍 **Verification & Testing**
-
-### **Test the Server**
-```bash
-# Run all tests
-python test_conversational_assistant.py
-
-# Test specific functionality
-python -c "
-import asyncio
-from resilientdb_mcp_server import ask_resilientdb_assistant
-print(asyncio.run(ask_resilientdb_assistant('Hello, test the assistant')))
-"
-```
-
 ### **Check Dependencies**
 ```bash
 # Verify Python version
@@ -249,19 +198,6 @@ pip list | grep -E "(mcp|docker|fastmcp)"
 docker --version
 ```
 
-## 📁 **Project Structure**
-
-```
-resilientdb-mcp-server/
-├── 📄 resilientdb_mcp_server.py           # 🎯 Main MCP server
-├── 🎮 demo_conversational_assistant.py    # 🎪 Interactive demo
-├── 🧪 test_conversational_assistant.py    # 🔬 Test suite  
-├── 🚀 start_server.bat                    # 🪟 Windows launcher
-├── 📋 requirements.txt                    # 📦 Dependencies
-├── 🐳 Dockerfile                          # 📦 Container setup
-├── 📖 README.md                           # 📚 This guide
-└── 📄 CONVERSATIONAL_ASSISTANT_SUMMARY.md # 🔧 Technical details
-```
 
 ## 🚨 **Troubleshooting**
 
@@ -277,12 +213,6 @@ source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-**"Docker unavailable" warnings:**
-```bash
-# Install Docker Desktop, or ignore (Docker is optional)
-# The assistant works without Docker for most features
-```
-
 **MCP client connection issues:**
 ```bash
 # Check file paths in MCP configuration
@@ -290,32 +220,17 @@ pip install -r requirements.txt
 # Verify server starts without errors
 ```
 
-### **Getting Help**
-
-1. **Run the demo**: `python demo_conversational_assistant.py`
-2. **Check tests**: `python test_conversational_assistant.py`  
-3. **Ask the assistant**: "I'm having trouble with [specific issue]"
-4. **Check logs**: Look for error messages in terminal output
-
-## 📚 **Learning Resources**
-
-### **Start Here**
-- Run: `python demo_conversational_assistant.py`
-- Ask: "What is ResilientDB and why should I use it?"
-- Follow the guided learning path in responses
-
 ### **References**
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [ResilientDB Project](https://github.com/apache/incubator-resilientdb)
-- [FastMCP Framework](https://github.com/jlowin/fastmcp)
 - [Docker Documentation](https://docs.docker.com/)
 
 ---
 
 ## 🎉 **Ready to Start Learning?**
 
-1. **Run the server**: `start_server.bat` (Windows) or `python resilientdb_mcp_server.py`
-2. **Try the demo**: `python demo_conversational_assistant.py`
+1. **Run the server**: `python server.py`
+2. **Configure Claude(or your favourite LLM)**
 3. **Ask your first question**: "I'm new to ResilientDB, where should I start?"
 
 **Transform your ResilientDB learning from documentation reading to interactive conversation!** 🚀
