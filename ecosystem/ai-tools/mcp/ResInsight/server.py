@@ -122,7 +122,7 @@ class RepoInsights(BaseModel):
 # -------------------------
 # FastMCP Server Setup
 # -------------------------
-mcp = FastMCP(name="RepoInsight: AI-driven developer onboarding ecosystem")
+mcp = FastMCP(name="ResInsight: AI-driven developer onboarding ecosystem")
 
 # -------------------------
 # Authentication Setup Function
