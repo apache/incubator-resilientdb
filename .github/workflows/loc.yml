@@ -36,7 +36,7 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: NPM Init
-       run: npm init -y 
+       run: npm init -y  & npm update
 
      - name: NPM Install
        run: npm install badgen @actions/core glob-gitignore
