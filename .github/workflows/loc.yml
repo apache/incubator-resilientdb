@@ -35,11 +35,19 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
+     - name: Use Node.js 20.x
+       uses: actions/setup-node@v4
+       with:
+        node-version: '20.x'
+
      - name: NPM Init
-       run: npm init -y 
+       run: npm init -y
 
      - name: NPM Install
-       run: npm install badgen @actions/core glob-gitignore
+       run: npm install badgen @actions/core glob-gitignore --save-dev
+
+     - name: NPM Update
+       run: npm update && npm audit fix --force
 
      - name: Launch the local action
        id: badge
