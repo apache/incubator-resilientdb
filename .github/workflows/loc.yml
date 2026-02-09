@@ -35,6 +35,12 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
+     - name: Use Node.js 22.x
+       uses: actions/setup-node@v4
+       with:
+        node-version: '22.x'
+        cache: 'npm'
+
      - name: NPM Init
        run: npm init -y
 
@@ -42,7 +48,7 @@ jobs:
        run: npm install badgen @actions/core glob-gitignore --save-dev
 
      - name: NPM Update
-       run: npm update
+       run: npm update && npm audit fix --force
 
      - name: Launch the local action
        id: badge
