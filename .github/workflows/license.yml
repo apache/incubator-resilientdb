@@ -20,7 +20,13 @@
 name: Check Apache License
 
 on:
-  push
+  push: 
+    branches:
+      - master
+
+  pull_request:
+    branches: 
+      - master
 
 jobs:
   ubuntu-build:
