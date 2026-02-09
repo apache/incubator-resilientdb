@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resilientdb-tutor"
+version = "1.0.0"
+description = "ResilientDB Educational Assistant MCP Server"
+authors = [
+    {name = "ResilientDB Tutor", email = "tutor@resilientdb.edu"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "mcp>=1.0.0",
+    "fastmcp>=0.1.0",
+    "docker>=6.0.0",
+    "pydantic>=2.0.0",
+    "uvicorn>=0.20.0",
+    "asyncio"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0"
+]
+
+[project.scripts]
+resilientdb-tutor = "resilientdb_mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["resilientdb_mcp_server*"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]  # Line too long (handled by black)
