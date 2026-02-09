@@ -39,7 +39,7 @@ jobs:
        run: npm init -y  & npm update
 
      - name: NPM Install
-       run: npm install badgen @actions/core glob-gitignore
+       run: npm install badgen @actions/core glob-gitignore --save-dev
 
      - name: Launch the local action
        id: badge
