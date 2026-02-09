@@ -1,124 +1,228 @@
-# ResilientDB Educational Assistant MCP Server
+# 🎓 ResInsight: AI-Driven Developer Ecosystem
 
 An **interactive, conversational educational assistant** built with the Model Context Protocol (MCP) that helps students learn ResilientDB distributed database systems through natural language interactions.
 
-## 🎯 **What This Is**
+---
+
+## 📋 Table of Contents
+- [What This Is](#what-this-is)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [How to Run](#how-to-run)
+- [How to Use](#how-to-use)
+- [Example Scenarios](#example-scenarios)
+- [MCP Client Setup](#mcp-client-setup)
+- [Educational Features](#educational-features)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## What This Is
 
 This MCP server transforms learning ResilientDB from reading static documentation into having **natural conversations** with an AI assistant that:
 
-- **Understands your questions** in plain English
-- **Provides educational, context-aware responses** 
-- **Helps troubleshoot problems** with specific solutions
-- **Guides you through concepts** from beginner to advanced
-- **Offers practical examples** and hands-on learning
+- ✅ **Understands your questions** in plain English
+- ✅ **Provides educational, context-aware responses** 
+- ✅ **Helps troubleshoot problems** with specific solutions
+- ✅ **Guides you through concepts** from beginner to advanced
+- ✅ **Offers practical examples** and hands-on learning
 
-## 🚀 **Quick Start**
+---
 
-### **Prerequisites**
+## Architecture
+
+### Technology Stack
+
+| Component | Purpose |
+|-----------|---------|
+| **FastMCP** | MCP server framework for tool integration |
+| **FAISS** | Vector similarity search for semantic code understanding |
+| **NetworkX** | Graph-based dependency analysis |
+| **Sentence Transformers** | Semantic embedding generation |
+
+### Data Flow
+
+```
+GitHub Repo
+    ↓
+[Ingestion] → Code & metadata via GitHub API
+    ↓
+[Processing] → Code chunked & embedded
+    ↓
+[Indexing] → FAISS embeddings + NetworkX graph
+    ↓
+[Query] → User queries through MCP tools
+    ↓
+[Retrieval] → Hybrid semantic + structural search
+    ↓
+[Response] → Context-aware answers via MCP
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
 - **Python 3.8+** (3.9+ recommended)
 - **Docker** (optional but recommended for ResilientDB examples)
 - **MCP-compatible client** (Claude Desktop, Continue, or any MCP client)
 
-### **Installation**
+### Installation Steps
 
-1. **Clone and setup:**
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd ResInsight
+   ```
+
+2. **Create virtual environment**
+   ```bash
+   python -m venv .venv
+   ```
+
+3. **Activate environment**
+   ```bash
+   # Windows
+   .venv\Scripts\activate
+
+   # Linux/Mac
+   source .venv/bin/activate
+   ```
+
+4. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Configure environment variables**
+   
+   Create a `.env` file in the ResInsight directory:
+   ```env
+   GITHUB_TOKEN=ghp_your_token_here
+   MCP_TOKEN=your_mcp_token_here
+   ```
+
+---
+
+## How to Run
+
+### Direct Python Execution
+
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd resilientdb-mcp-server
-
-# Create virtual environment
-python -m venv .venv
-```
-
-2. **Activate environment:**
-```bash
-# Windows
-.venv\Scripts\activate
-
-# Linux/Mac
-source .venv/bin/activate
-```
-
-3. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-## 🏃‍♂️ **How to Run**
-
-### **Direct Python Execution**
-```bash
-# Make sure virtual environment is activated
+# Ensure virtual environment is activated
 python server.py
 ```
 
-## 🎮 **How to Use the Project**
+---
 
-### **Method 1: MCP Client Integration (Recommended)**
+## Authentication & Security
 
-1. **Setup MCP Client** (e.g., Claude Desktop):
+RepoInsight implements a **two-layer authentication system** for secure operation:
+
+### 1. MCP Access Token (Client Authentication)
+
+**Purpose:** Authenticates clients connecting to the MCP server
+
+**Setup:**
+- Contact ExpoLab administrator (Harish or Bisman) to receive an MCP access token
+- Add to your `.env` file: `MCP_TOKEN=your_token_here`
+- Keep your token confidential and do not share it
+
+### 2. GitHub Personal Access Token (Server-Side)
+
+**Purpose:** Enables the server to access GitHub repositories via API
+
+**Required Scopes:**
+- `public_repo` - For accessing public repositories
+- `repo` - For accessing private repositories (if needed)
+
+**How to Generate:**
+
+1. Go to GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
+2. Click "Generate new token"
+3. Select required scopes: `repo` or `public_repo`
+4. Copy the token immediately (it won't be shown again)
+5. Add to your `.env` file: `GITHUB_PAT=ghp_your_token_here`
+
+---
+
+## How to Use
+
+### Method 1: MCP Client Integration (Recommended) : Scroll for MCP Client Setup
+
+1. **Setup MCP Client** (e.g., Claude Desktop)
    - Install Claude Desktop or your preferred MCP client
    - Configure the MCP server in your client settings
-   - Add server configuration pointing to `resilientdb_mcp_server.py`
+   - Add server configuration pointing to `server.py`
 
-2. **Start Conversations**:
+2. **Start Conversing**
    ```
-   🎓 You: "I'm new to ResilientDB, where should I start?"
-   🤖 Assistant: Welcome to ResilientDB! Let me guide you through...
+   You: "I'm new to ResilientDB, where should I start?"
+   
+   Assistant: Welcome to ResilientDB! Let me guide you through 
+   the fundamentals and get you started...
    ```
 
-```
+---
 
-## 💬 **Example Usage Scenarios**
+## Example Scenarios
 
-### **🎓 Complete Beginner Workflow**
+### 🎓 Complete Beginner Workflow
+
+Start with the basics and progressively learn:
 
 ```bash
-# 1. Start with basics
+# 1. Introduction
 "What is ResilientDB and why should I care?"
 
-# 2. Get setup help  
+# 2. Setup guidance
 "How do I install ResilientDB on Windows?"
 
-# 3. Learn concepts
+# 3. Concept learning
 "Explain Byzantine fault tolerance in simple terms"
 
-# 4. Practical examples
+# 4. Hands-on practice
 "Show me how to create a simple transaction"
 ```
 
-### **🔧 Troubleshooting Workflow**
+### 🔧 Troubleshooting Workflow
+
+Get targeted help when you encounter issues:
 
 ```bash
-# 1. Report your error
+# 1. Report the problem
 "I'm getting cmake build errors when compiling ResilientDB"
 
-# 2. Get specific help
+# 2. Get specific guidance
 "The error says 'grpc++/grpc++.h file not found'"
 
-# 3. Verify solution
+# 3. Verify the solution
 "How do I check if gRPC is properly installed?"
 ```
 
-### **🚀 Advanced Learning Workflow**
+### 🚀 Advanced Learning Workflow
+
+Deep dive into system design and optimization:
 
 ```bash
-# 1. Deep dive into algorithms
+# 1. Algorithm deep-dive
 "Explain the PBFT consensus algorithm in detail"
 
-# 2. Performance optimization
+# 2. Performance tuning
 "How can I benchmark ResilientDB throughput?"
 
 # 3. Code exploration
 "Show me the transaction processing implementation"
 ```
 
-## 🛠️ **MCP Client Configuration**
+---
 
-### **Claude Desktop Setup**
+## MCP Client Setup
 
-Add to your Claude Desktop MCP configuration:
+### Claude Desktop Configuration
+
+Add the following to your Claude Desktop MCP configuration file:
 
 ```json
 {
@@ -134,9 +238,9 @@ Add to your Claude Desktop MCP configuration:
 }
 ```
 
-### **VS Code with Continue Extension**
+### VS Code with Continue Extension
 
-Add to your Continue configuration:
+Add the following to your Continue configuration:
 
 ```json
 {
@@ -144,51 +248,62 @@ Add to your Continue configuration:
     {
       "serverName": "resilientdb-assistant",
       "command": "python",
-      "args": ["resilientdb_mcp_server.py"],
+      "args": ["server.py"],
       "cwd": "/path/to/your/project"
     }
   ]
 }
 ```
 
-## 🎓 **Educational Features You Can Use**
+---
 
-### **Available Query Types**
-- **Installation Help**: "How do I install ResilientDB?"
-- **Troubleshooting**: "I'm getting build errors"
-- **Concept Explanations**: "What is consensus?"
-- **Consensus Questions**: "Explain PBFT algorithm"
-- **Performance Questions**: "How to optimize throughput?"
-- **Code Exploration**: "Show transaction code"
-- **Docker Help**: "Help with containers"
-- **General Questions**: "Tell me about ResilientDB"
+## Educational Features
 
-### **Learning Progression**
+### Available Query Types
 
-**Beginner Level:**
+| Query Type | Example |
+|-----------|---------|
+| **Installation Help** | "How do I install ResilientDB?" |
+| **Troubleshooting** | "I'm getting build errors" |
+| **Concept Explanations** | "What is consensus?" |
+| **Consensus Algorithms** | "Explain PBFT algorithm" |
+| **Performance** | "How to optimize throughput?" |
+| **Code Exploration** | "Show transaction code" |
+| **Docker Help** | "Help with containers" |
+| **General Questions** | "Tell me about ResilientDB" |
+
+### Learning Progression
+
+#### 🟢 Beginner Level
+- Questions on fundamentals
+  ```bash
+  "What is ResilientDB?"
+  "Why use blockchain databases?"  
+  "How do I get started?"
+  ```
+
+#### 🟡 Intermediate Level
+- Understanding core concepts
+  ```bash
+  "Explain Byzantine fault tolerance"
+  "How does consensus work?"
+  "Show me code examples"
+  "How is inventory uplaod implemented in Arrayan?"
+  ```
+
+#### 🔴 Advanced Level
+- Deep system design knowledge
+  ```bash
+  "Deep dive into PBFT algorithm"
+  "Performance tuning parameters"
+  "Network partition handling"
+  "What is the relation between these files for Inventory Upload in Arrayan?"
+  ```
+
+### Verify Your Setup
+
 ```bash
-"What is ResilientDB?"
-"Why use blockchain databases?"  
-"How do I get started?"
-```
-
-**Intermediate Level:**
-```bash
-"Explain Byzantine fault tolerance"
-"How does consensus work?"
-"Show me code examples"
-```
-
-**Advanced Level:**
-```bash
-"Deep dive into PBFT algorithm"
-"Performance tuning parameters"
-"Network partition handling"
-```
-
-### **Check Dependencies**
-```bash
-# Verify Python version
+# Check Python version
 python --version
 
 # Check installed packages
@@ -199,13 +314,16 @@ docker --version
 ```
 
 
-## 🚨 **Troubleshooting**
+---
 
-### **Common Issues**
+## Troubleshooting
 
-**"Module not found" errors:**
+### Common Issues & Solutions
+
+#### "Module not found" errors
+
 ```bash
-# Make sure virtual environment is activated
+# Ensure virtual environment is activated
 .venv\Scripts\activate  # Windows
 source .venv/bin/activate  # Linux/Mac
 
@@ -213,24 +331,57 @@ source .venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-**MCP client connection issues:**
-```bash
-# Check file paths in MCP configuration
-# Ensure Python path is correct
-# Verify server starts without errors
-```
+#### MCP client connection issues
 
-### **References**
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [ResilientDB Project](https://github.com/apache/incubator-resilientdb)
-- [Docker Documentation](https://docs.docker.com/)
+- Check file paths in MCP configuration
+- Ensure Python path is correct
+- Verify server starts without errors
+- Review `.env` file for required tokens
 
 ---
 
-## 🎉 **Ready to Start Learning?**
+## References
 
-1. **Run the server**: `python server.py`
-2. **Configure Claude(or your favourite LLM)**
-3. **Ask your first question**: "I'm new to ResilientDB, where should I start?"
+- 📚 [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
+- 🔗 [ResilientDB GitHub Project](https://github.com/apache/incubator-resilientdb)
+- 🐳 [Docker Documentation](https://docs.docker.com/)
+
+---
+
+## Getting Started
+
+### Quick Launch
+
+1. **Start the server**
+   ```bash
+   python server.py
+   ```
+
+2. **Configure your MCP client** (Claude Desktop or VS Code)
+
+3. **Ask your first question**
+   ```
+   "I'm new to ResilientDB, where should I start?"
+   ```
 
 **Transform your ResilientDB learning from documentation reading to interactive conversation!** 🚀
+
+---
+
+## License
+
+Licensed under the **Apache License, Version 2.0**. 
+See the Apache ResilientDB LICENSE file for details.
+All source files include the required Apache License 2.0 header.
+
+---
+
+## Acknowledgements
+
+| Role | Name |
+|------|------|
+| **Developer** | Kunjal Agrawal |
+| **Advisor** | Dr. Mohammad Sadoghi |
+| **Lab** | ExpoLab |
+
+---
