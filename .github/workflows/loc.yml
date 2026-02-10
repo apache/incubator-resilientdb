@@ -44,7 +44,7 @@ jobs:
        run: rm -rf node_modules package-lock.json && npm init -y
 
      - name: NPM Install
-       run: npm install badgen @actions/core glob-gitignore --save-dev
+       run: npm install badgen @actions/core@2 glob-gitignore 
 
      - name: NPM Update
        run: npm update && npm audit fix --force
