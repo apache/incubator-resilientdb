@@ -35,10 +35,10 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-     - name: Use Node.js 20.x
+     - name: Use Node.js 19.x
        uses: actions/setup-node@v4
        with:
-        node-version: '20.x'
+        node-version: '19.x'
 
      - name: NPM Init
        run: rm -rf node_modules package-lock.json && npm init -y
