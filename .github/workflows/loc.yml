@@ -35,11 +35,6 @@ jobs:
          repository: ${{github.repository}}
          ref: ${{ env.BRANCH_NAME }}
 
-     - name: Use Node.js 18.x
-       uses: actions/setup-node@v4
-       with:
-        node-version: '18.x'
-
      - name: NPM Init
        run: rm -rf node_modules package-lock.json && npm init -y
 
