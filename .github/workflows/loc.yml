@@ -50,7 +50,7 @@ jobs:
        with:
          debug: true
          directory: ./
-         patterns: '**/*.h|**/*.cpp'
+         patterns: '**/*.h | **/*.cpp | **/*.ts | **/*.py | **/*.js | **/*.ccs'
          badge: ./output/badge.svg
          ignore: 'node_modules/|README'
 
