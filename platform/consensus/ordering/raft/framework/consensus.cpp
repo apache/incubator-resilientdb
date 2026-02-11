@@ -1,0 +1,129 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+#include "platform/consensus/ordering/raft/framework/consensus.h"
+
+#include <glog/logging.h>
+#include <unistd.h>
+
+#include "common/utils/utils.h"
+#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/proto/resdb.pb.h"
+
+namespace resdb {
+namespace raft {
+
+Consensus::Consensus(const ResDBConfig& config,
+                     std::unique_ptr<TransactionManager> executor)
+    : common::Consensus(config, std::move(executor)),
+    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)) {
+  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
+  int total_replicas = config_.GetReplicaNum();
+  int f = (total_replicas - 1) / 3;
+
+  Init();
+
+  if (config_.GetPublicKeyCertificateInfo()
+          .public_key()
+          .public_key_info()
+          .type() != CertificateKeyInfo::CLIENT) {
+    raft_ = std::make_unique<Raft>(config_.GetSelfInfo().id(), f, total_replicas,
+                                 GetSignatureVerifier(), leader_election_manager_.get(),
+                                replica_communicator_);
+
+    leader_election_manager_->SetRaft(raft_.get());
+    leader_election_manager_->MayStart();
+    
+    InitProtocol(raft_.get());
+  }
+}
+
+int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
+  if (request->user_type() == MessageType::AppendEntriesMsg) {
+    //LOG(ERROR) << "Received AppendEntriesMsg";
+    std::unique_ptr<AppendEntries> txn = std::make_unique<AppendEntries>();
+    if (!txn->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveAppendEntries(std::move(txn));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::AppendEntriesResponseMsg) {
+    std::unique_ptr<AppendEntriesResponse> AppendEntriesResponse = std::make_unique<resdb::raft::AppendEntriesResponse>();
+    if (!AppendEntriesResponse->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveAppendEntriesResponse(std::move(AppendEntriesResponse));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::RequestVoteMsg) {
+    std::unique_ptr<RequestVote> rv = std::make_unique<resdb::raft::RequestVote>();
+    if (!rv->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveRequestVote(std::move(rv));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::RequestVoteResponseMsg) {
+    std::unique_ptr<RequestVoteResponse> rvr = std::make_unique<resdb::raft::RequestVoteResponse>();
+    if (!rvr->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    raft_->ReceiveRequestVoteResponse(std::move(rvr));
+    return 0;
+  }
+  else if (request->user_type() == MessageType::DirectToLeaderMsg) {
+    //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In DirectToLeader";
+    std::unique_ptr<DirectToLeader> dtl = std::make_unique<resdb::raft::DirectToLeader>();
+    if (!dtl->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse proposal fail";
+      assert(1 == 0);
+      return -1;
+    }
+    performance_manager_->SetPrimary(dtl->leaderid());
+    return 0;
+  }
+  return 0;
+}
+
+int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
+    return raft_->ReceiveTransaction(std::move(request));
+}
+
+int Consensus::CommitMsg(const google::protobuf::Message& msg) {
+  auto* req = dynamic_cast<const Request*>(&msg);
+  if (!req) {
+    LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Failed to cast Message to Request";
+    return -1;
+  }
+  auto execReq = std::make_unique<Request>(*req);
+  transaction_executor_->Commit(std::move(execReq));
+  return 0;
+}
+
+}  // namespace raft
+}  // namespace resdb
