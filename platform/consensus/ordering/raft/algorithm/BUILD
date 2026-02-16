@@ -71,8 +71,11 @@ cc_test(
 )
 
 cc_test(
-    name = "raft_test",
-    srcs = ["raft_test.cpp"],
+    name = "raft_test_append_entries",
+    srcs = [
+        "raft_test_append_entries.cpp",
+        "raft_tests.h",
+    ],
     copts = ["-DRAFT_TEST_MODE"],
     deps = [
         ":raft",
