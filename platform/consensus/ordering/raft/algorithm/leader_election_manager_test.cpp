@@ -179,4 +179,3 @@ TEST_F(LeaderElectionManagerTest, LeaderWithBroadcastDoesNotSendHeartbeat) {
 
 } // namespace raft
 } // namespace resdb
-

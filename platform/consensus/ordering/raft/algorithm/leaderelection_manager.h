@@ -47,9 +47,9 @@ class LeaderElectionManager {
   // If the monitor is not running, start to monitor.
   void MayStart();
   void SetRaft(raft::Raft*);
-  void OnHeartBeat();
-  void OnRoleChange();
-  void OnAeBroadcast();
+  virtual void OnHeartBeat();
+  virtual void OnRoleChange();
+  virtual void OnAeBroadcast();
 
  private:
   Waited LeaderWait();

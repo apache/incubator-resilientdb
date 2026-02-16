@@ -27,6 +27,9 @@
 #include <queue>
 #include <thread>
 #include <chrono>
+#ifdef RAFT_TEST_MODE
+#include <ostream>
+#endif
 
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
@@ -70,6 +73,20 @@ struct InFlightMsg {
   uint64_t lastIndexOfSegmentSent;
 };
 
+#ifdef RAFT_TEST_MODE
+struct RaftStatePatch {
+  std::optional<uint64_t> currentTerm;
+  std::optional<int> votedFor;
+  std::optional<uint64_t> commitIndex;
+  std::optional<uint64_t> lastApplied;
+  std::optional<Role> role;
+
+  std::optional<std::vector<std::unique_ptr<LogEntry>>> log;
+  std::optional<std::vector<uint64_t>> nextIndex;
+  std::optional<std::vector<uint64_t>> matchIndex;
+};
+#endif
+
 class Raft : public common::ProtocolBase {
  public:
   Raft(int id, int f, int total_num,
@@ -82,34 +99,35 @@ class Raft : public common::ProtocolBase {
   const bool replicationLoggingFlag_ = true;
   const bool livenessLoggingFlag_ = false;
 
-  bool ReceiveTransaction(std::unique_ptr<Request> req);
-  bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae);
-  bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer);
-  void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
-  void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
+  virtual bool ReceiveTransaction(std::unique_ptr<Request> req);
+  virtual bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae);
+  virtual bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer);
+  virtual void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
+  virtual void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
   virtual void StartElection();
   virtual void SendHeartBeat();
-  Role GetRoleSnapshot() const;
-  void SetRole(Role role);
+  virtual Role GetRoleSnapshot() const;
+  virtual void SetRole(Role role);
+  virtual void PrintDebugState() const;
 
  private:
   mutable std::mutex mutex_;
 
-  TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
-  bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
-  uint64_t getLastLogTermLocked() const; // Must be called under mutex
-  bool IsStop();
+  virtual TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
+  virtual bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
+  virtual uint64_t getLastLogTermLocked() const; // Must be called under mutex
+  virtual bool IsStop();
   //bool IsDuplicateLogEntry(const std::string& hash) const; // Must be called under mutex
-  std::vector<std::unique_ptr<Request>> PrepareCommitLocked(); // Must be called under mutex
-  AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
+  virtual std::vector<std::unique_ptr<Request>> PrepareCommitLocked(); // Must be called under mutex
+  virtual AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
   std::vector<AeFields> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
-  void CreateAndSendAppendEntryMsg(const AeFields& fields);
-  LogEntry CreateLogEntry(const Entry& entry) const;
-  void ClearInFlightsLocked();
-  void PruneExpiredInFlightMsgsLocked();
-  void PruneRedundantInFlightMsgsLocked(int followerId, uint64_t followerLastLogIndex);
-  void RecordNewInFlightMsgLocked(const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
-  bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
+  virtual void CreateAndSendAppendEntryMsg(const AeFields& fields);
+  virtual LogEntry CreateLogEntry(const Entry& entry) const;
+  virtual void ClearInFlightsLocked();
+  virtual void PruneExpiredInFlightMsgsLocked();
+  virtual void PruneRedundantInFlightMsgsLocked(int followerId, uint64_t followerLastLogIndex);
+  virtual void RecordNewInFlightMsgLocked(const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
+  virtual bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
 
   
   // Persistent state on all servers:
@@ -147,6 +165,116 @@ class Raft : public common::ProtocolBase {
   LeaderElectionManager* leader_election_manager_;
   //Stats* global_stats_;
   ReplicaCommunicator* replica_communicator_;
+
+#ifdef RAFT_TEST_MODE
+ public:
+  void SetStateForTest(RaftStatePatch patch) {
+    std::lock_guard lk(mutex_);
+
+    if (patch.currentTerm)  currentTerm_  = *patch.currentTerm;
+    if (patch.votedFor)     votedFor_     = *patch.votedFor;
+    if (patch.commitIndex)  commitIndex_  = *patch.commitIndex;
+    if (patch.lastApplied)  lastApplied_  = *patch.lastApplied;
+    if (patch.role)         role_         = *patch.role;
+
+    if (patch.log) {
+      log_ = std::move(*patch.log);
+      lastLogIndex_ = log_.empty() ? 0 : log_.size() - 1;
+    }
+
+    if (patch.nextIndex)   nextIndex_  = *patch.nextIndex;
+    if (patch.matchIndex)  matchIndex_ = *patch.matchIndex;
+  }
+
+  uint64_t GetCurrentTerm() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return currentTerm_;
+  }
+
+  int GetVotedFor() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return votedFor_;
+  }
+
+  const std::vector<std::unique_ptr<LogEntry>>& GetLog() const  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return log_;
+  }
+ 
+  void PrintLog(std::ostream& os) const {
+    os << "Log entries (count = " << log_.size() << "):\n";
+
+    for (size_t i = 0; i < log_.size(); ++i) {
+      const auto& entry = log_[i];
+      if (!entry) {
+        os << "  [" << i << "] <null entry>\n";
+        continue;
+      }
+
+      os << "  [" << i << "] "
+        << "term=" << entry->term
+        << ", command=\"" << entry->command << "\""
+        << ", serializedSize=" << entry->GetSerializedSize()
+        << "\n";
+    }
+  }
+
+  size_t GetLogSize() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return log_.size();
+  }
+
+  uint64_t GetLastLogIndexFromLog() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return log_.empty() ? 0 : log_.size() - 1;
+  }
+
+  std::vector<uint64_t> GetNextIndex() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return nextIndex_;
+  }
+
+  std::vector<uint64_t> GetMatchIndex() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return matchIndex_;
+  }
+
+  uint64_t GetHeartBeatsSentThisTerm() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return heartBeatsSentThisTerm_;
+  }
+
+  uint64_t GetLastLogIndex() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return lastLogIndex_;
+  }
+
+  uint64_t GetCommitIndex() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return commitIndex_;
+  }
+
+  uint64_t GetLastApplied() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return lastApplied_;
+  }
+
+  Role GetRole() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return role_;
+  }
+
+  std::vector<int> GetVotes() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return votes_;
+  }
+
+  std::vector<std::vector<InFlightMsg>> GetInFlightVecs() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return inflightVecs_;
+  }
+
+#endif
 };
 
 }  // namespace raft
