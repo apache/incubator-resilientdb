@@ -137,7 +137,7 @@ python server.py
 
 ## Authentication & Security
 
-RepoInsight implements a **two-layer authentication system** for secure operation:
+ResInsight implements a **two-layer authentication system** for secure operation:
 
 ### 1. MCP Access Token (Client Authentication)
 
