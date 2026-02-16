@@ -88,3 +88,22 @@ cc_test(
     ],
     size="small"
 )
+
+cc_test(
+    name = "raft_test_append_entries_response",
+    srcs = [
+        "raft_test_append_entries_response.cpp",
+        "raft_tests.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
