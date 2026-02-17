@@ -56,6 +56,7 @@ class KVExecutor : public TransactionManager {
   void GetHistory(const std::string& key, int min_key, int max_key,
                   Items* items);
   void GetTopHistory(const std::string& key, int top_number, Items* items);
+  std::string ExecuteSQL(const std::string& sql_query);
 
  private:
   std::unique_ptr<TransactionManager> contract_manager_;
