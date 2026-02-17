@@ -36,10 +36,13 @@ jobs:
          ref: ${{ env.BRANCH_NAME }}
 
      - name: NPM Init
-       run: npm init -y 
+       run: rm -rf node_modules package-lock.json && npm init -y
 
      - name: NPM Install
-       run: npm install badgen @actions/core glob-gitignore
+       run: npm install badgen @actions/core@2 glob-gitignore 
+
+     - name: NPM Update
+       run: npm update && npm audit fix --force
 
      - name: Launch the local action
        id: badge
@@ -47,7 +50,7 @@ jobs:
        with:
          debug: true
          directory: ./
-         patterns: '**/*.h|**/*.cpp'
+         patterns: '**/*.h | **/*.cpp | **/*.ts | **/*.py | **/*.js | **/*.ccs'
          badge: ./output/badge.svg
          ignore: 'node_modules/|README'
 
