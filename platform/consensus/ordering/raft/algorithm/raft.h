@@ -84,6 +84,7 @@ struct RaftStatePatch {
   std::optional<std::vector<std::unique_ptr<LogEntry>>> log;
   std::optional<std::vector<uint64_t>> nextIndex;
   std::optional<std::vector<uint64_t>> matchIndex;
+  std::optional<std::vector<int>> votes;
 };
 #endif
 
@@ -184,6 +185,7 @@ class Raft : public common::ProtocolBase {
 
     if (patch.nextIndex)   nextIndex_  = *patch.nextIndex;
     if (patch.matchIndex)  matchIndex_ = *patch.matchIndex;
+    if (patch.votes)       votes_      = *patch.votes;
   }
 
   uint64_t GetCurrentTerm() const {
