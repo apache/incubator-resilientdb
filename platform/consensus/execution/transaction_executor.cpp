@@ -185,6 +185,7 @@ void TransactionExecutor::OrderMessage() {
                   << " next seq:" << next_execute_seq_;
         continue;
       }
+
       AddNewData(std::move(message));
     }
 

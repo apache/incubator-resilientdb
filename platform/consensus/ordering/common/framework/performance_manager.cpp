@@ -186,10 +186,9 @@ void PerformanceManager::SendResponseToClient(
   uint64_t create_time = batch_response.createtime();
   if (create_time > 0) {
     uint64_t run_time = GetCurrentTime() - create_time;
-    // JIM
-    //LOG(ERROR) << "receive current:" << GetCurrentTime()
-    //           << " create time:" << create_time << " run time:" << run_time
-    //           << " local id:" << batch_response.local_id();
+    LOG(ERROR) << "receive current:" << GetCurrentTime()
+              << " create time:" << create_time << " run time:" << run_time
+              << " local id:" << batch_response.local_id();
     global_stats_->AddLatency(run_time);
   }
   send_num_--;
@@ -197,9 +196,9 @@ void PerformanceManager::SendResponseToClient(
 
 // =================== request ========================
 int PerformanceManager::BatchProposeMsg() {
-  //LOG(WARNING) << "batch wait time:" << config_.ClientBatchWaitTimeMS()
-  //             << " batch num:" << config_.ClientBatchNum()
-  //             << " max txn:" << config_.GetMaxProcessTxn();
+  LOG(WARNING) << "batch wait time:" << config_.ClientBatchWaitTimeMS()
+              << " batch num:" << config_.ClientBatchNum()
+              << " max txn:" << config_.GetMaxProcessTxn();
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   eval_ready_future_.get();
   bool start = false;
@@ -286,7 +285,6 @@ int PerformanceManager::DoBatch(
 
 void PerformanceManager::SendMessage(const Request& request) {
   replica_communicator_->SendMessage(request, GetPrimary());
-  //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Sent to replica " << GetPrimary();
 }
 
 }  // namespace common

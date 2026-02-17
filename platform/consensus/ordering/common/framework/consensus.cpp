@@ -38,6 +38,8 @@ Consensus::Consensus(const ResDBConfig& config,
             ResponseMsg(*resp_msg);
           },
           nullptr, std::move(executor))) {
+  LOG(INFO) << "is running is performance mode:"
+            << config_.IsPerformanceRunning();
   is_stop_ = false;
   global_stats_ = Stats::GetGlobalStats();
 }
