@@ -1,12 +1,12 @@
-#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
-#include "platform/consensus/ordering/raft/algorithm/mock_raft.h"
-#include "platform/config/resdb_config_utils.h"
-
 #include <gtest/gtest.h>
 
 #include <chrono>
-#include <thread>
 #include <future>
+#include <thread>
+
+#include "platform/config/resdb_config_utils.h"
+#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
+#include "platform/consensus/ordering/raft/algorithm/mock_raft.h"
 
 namespace resdb {
 namespace raft {
@@ -25,8 +25,9 @@ ResDBConfig GenerateConfig() {
 }
 
 class TestLeaderElectionManager : public LeaderElectionManager {
-public:
-  TestLeaderElectionManager(const ResDBConfig& config) : LeaderElectionManager(config) {}
+ public:
+  TestLeaderElectionManager(const ResDBConfig& config)
+      : LeaderElectionManager(config) {}
   uint64_t GetHeartbeatCount() {
     std::lock_guard<std::mutex> lk(cv_mutex_);
     return heartbeat_count_;
@@ -35,20 +36,25 @@ public:
     std::lock_guard<std::mutex> lk(cv_mutex_);
     return broadcast_count_;
   }
-private:
-  // Overriding this is used to set the timeout timer to start an election to 50 ms.
+
+ private:
+  // Overriding this is used to set the timeout timer to start an election to 50
+  // ms.
   uint64_t RandomInt(uint64_t min, uint64_t max) { return 50; }
 };
 
 class LeaderElectionManagerTest : public ::testing::Test {
  protected:
-  LeaderElectionManagerTest() : config_(GenerateConfig()) {} 
+  LeaderElectionManagerTest() : config_(GenerateConfig()) {}
 
   void SetUp() override {
     verifier_ = nullptr;
     replica_communicator_ = nullptr;
-    leader_election_manager_ = std::make_unique<TestLeaderElectionManager>(config_);
-    mock_raft_ = std::make_unique<MockRaft>(1, 1, 3, verifier_.get(), leader_election_manager_.get(), replica_communicator_.get());
+    leader_election_manager_ =
+        std::make_unique<TestLeaderElectionManager>(config_);
+    mock_raft_ = std::make_unique<MockRaft>(1, 1, 3, verifier_.get(),
+                                            leader_election_manager_.get(),
+                                            replica_communicator_.get());
   }
 
   void TearDown() override {
@@ -67,29 +73,29 @@ class LeaderElectionManagerTest : public ::testing::Test {
   std::unique_ptr<MockRaft> mock_raft_;
 };
 
-// Test 1: Follower timeout should trigger election
+// Test 1: Follower timeout should trigger election.
 TEST_F(LeaderElectionManagerTest, FollowerTimeoutTriggersElection) {
   mock_raft_->SetRole(Role::FOLLOWER);
-  
+
   std::promise<bool> election_started;
   std::future<bool> election_started_future = election_started.get_future();
 
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
 
-  EXPECT_CALL(*mock_raft_, StartElection)
-      .WillOnce(Invoke([&]() {
-        election_started.set_value(true);
-      }));
-  
-  auto status = election_started_future.wait_for(std::chrono::milliseconds(100));
+  EXPECT_CALL(*mock_raft_, StartElection).WillOnce(Invoke([&]() {
+    election_started.set_value(true);
+  }));
+
+  auto status =
+      election_started_future.wait_for(std::chrono::milliseconds(100));
   ASSERT_EQ(status, std::future_status::ready);
 }
 
-// Test 2: Follower should not start election before timing out
+// Test 2: Follower should not start election before timing out.
 TEST_F(LeaderElectionManagerTest, FollowerShouldNotStartElectionEarly) {
   mock_raft_->SetRole(Role::FOLLOWER);
-  
+
   std::promise<bool> election_started;
   std::future<bool> election_started_future = election_started.get_future();
 
@@ -97,15 +103,17 @@ TEST_F(LeaderElectionManagerTest, FollowerShouldNotStartElectionEarly) {
 
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
-  
+
   std::this_thread::sleep_for(std::chrono::milliseconds(45));
-  // Since the timeout timer is set to 50 ms, StartElection should never be called
+  // Since the timeout timer is set to 50 ms, StartElection should never be
+  // called.
 }
 
-// Test 3: Follower receiving heartbeat should NOT trigger election
-TEST_F(LeaderElectionManagerTest, FollowerReceivingHeartbeatDoesNotStartElection) {
+// Test 3: Follower receiving heartbeat should NOT trigger election.
+TEST_F(LeaderElectionManagerTest,
+       FollowerReceivingHeartbeatDoesNotStartElection) {
   mock_raft_->SetRole(Role::FOLLOWER);
-  
+
   std::promise<bool> election_started;
   std::future<bool> election_started_future = election_started.get_future();
 
@@ -113,38 +121,38 @@ TEST_F(LeaderElectionManagerTest, FollowerReceivingHeartbeatDoesNotStartElection
 
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
-  
+
   std::this_thread::sleep_for(std::chrono::milliseconds(45));
   leader_election_manager_->OnHeartBeat();
 
   std::this_thread::sleep_for(std::chrono::milliseconds(45));
   ASSERT_EQ(leader_election_manager_->GetHeartbeatCount(), 1);
-  // Since the timeout timer is set to 50 ms, StartElection should never be called
+  // Since the timeout timer is set to 50 ms, StartElection should never be
+  // called.
 }
 
-// Test 4: Leader timeout should send heartbeat
+// Test 4: Leader timeout should send heartbeat.
 TEST_F(LeaderElectionManagerTest, LeaderTimeoutSendsHeartbeat) {
   mock_raft_->SetRole(Role::LEADER);
-  
+
   std::promise<bool> heartbeat_sent;
   std::future<bool> heartbeat_sent_future = heartbeat_sent.get_future();
 
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
-  
-  EXPECT_CALL(*mock_raft_, SendHeartBeat)
-      .WillOnce(Invoke([&]() {
-        heartbeat_sent.set_value(true);
-      }));
-  
+
+  EXPECT_CALL(*mock_raft_, SendHeartBeat).WillOnce(Invoke([&]() {
+    heartbeat_sent.set_value(true);
+  }));
+
   auto status = heartbeat_sent_future.wait_for(std::chrono::milliseconds(105));
   ASSERT_EQ(status, std::future_status::ready);
 }
 
-// Test 5: Leader should not send heartbeat before timing out
+// Test 5: Leader should not send heartbeat before timing out.
 TEST_F(LeaderElectionManagerTest, LeaderShouldNotSendHeartbeatEarly) {
   mock_raft_->SetRole(Role::LEADER);
-  
+
   std::promise<bool> heartbeat_sent;
   std::future<bool> heartbeat_sent_future = heartbeat_sent.get_future();
 
@@ -152,30 +160,31 @@ TEST_F(LeaderElectionManagerTest, LeaderShouldNotSendHeartbeatEarly) {
 
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
-  
+
   std::this_thread::sleep_for(std::chrono::milliseconds(95));
-  // Since the heartbeat timer is set to 100 ms, SendHeartBeat should never be called
+  // Since the heartbeat timer is set to 100 ms, SendHeartBeat should never be
+  // called.
 }
 
-// Test 6: Leader sending some broadcast should not be sending heartbeats
+// Test 6: Leader sending some broadcast should not be sending heartbeats.
 TEST_F(LeaderElectionManagerTest, LeaderWithBroadcastDoesNotSendHeartbeat) {
   mock_raft_->SetRole(Role::LEADER);
-  
+
   std::promise<bool> heartbeat_sent;
   std::future<bool> heartbeat_sent_future = heartbeat_sent.get_future();
-  
+
   EXPECT_CALL(*mock_raft_, SendHeartBeat()).Times(0);
   leader_election_manager_->SetRaft(mock_raft_.get());
   leader_election_manager_->MayStart();
-  
-  // Send broadcasts to reset the timer
+
+  // Send broadcasts to reset the timer.
   for (int i = 0; i < 3; i++) {
     std::this_thread::sleep_for(std::chrono::milliseconds(95));
     leader_election_manager_->OnAeBroadcast();
   }
-  
+
   ASSERT_EQ(leader_election_manager_->GetBroadcastCount(), 3);
 }
 
-} // namespace raft
-} // namespace resdb
+}  // namespace raft
+}  // namespace resdb

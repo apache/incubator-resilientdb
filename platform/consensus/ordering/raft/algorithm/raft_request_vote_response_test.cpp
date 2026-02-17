@@ -2,18 +2,19 @@
 
 namespace resdb {
 namespace raft {
-using ::testing::Invoke;
 using ::testing::_;
-using ::testing::Matcher;
 using ::testing::AnyNumber;
+using ::testing::Invoke;
+using ::testing::Matcher;
 
-// Test 1: A candidate gets elected
+// Test 1: A candidate gets elected.
 TEST_F(RaftTest, CandidateGetsElected) {
   EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(1);
   EXPECT_CALL(mock_call, Call(_, _, _))
-    .WillOnce(::testing::Invoke(
-        [](int type, const google::protobuf::Message& msg, int node_id) {
-            const auto& AppendEntriesMessage = dynamic_cast<const AppendEntries&>(msg);
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& AppendEntriesMessage =
+                dynamic_cast<const AppendEntries&>(msg);
             EXPECT_EQ(node_id, 2);
             EXPECT_EQ(AppendEntriesMessage.entries_size(), 0);
             EXPECT_EQ(AppendEntriesMessage.prevlogterm(), 1);
@@ -21,10 +22,11 @@ TEST_F(RaftTest, CandidateGetsElected) {
             EXPECT_EQ(AppendEntriesMessage.leaderid(), 1);
             EXPECT_EQ(AppendEntriesMessage.leadercommitindex(), 1);
             return 0;
-        }))
-    .WillOnce(::testing::Invoke(
-        [](int type, const google::protobuf::Message& msg, int node_id) {
-            const auto& AppendEntriesMessage = dynamic_cast<const AppendEntries&>(msg);
+          }))
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& AppendEntriesMessage =
+                dynamic_cast<const AppendEntries&>(msg);
             EXPECT_EQ(node_id, 3);
             EXPECT_EQ(AppendEntriesMessage.entries_size(), 0);
             EXPECT_EQ(AppendEntriesMessage.prevlogterm(), 1);
@@ -32,10 +34,11 @@ TEST_F(RaftTest, CandidateGetsElected) {
             EXPECT_EQ(AppendEntriesMessage.leaderid(), 1);
             EXPECT_EQ(AppendEntriesMessage.leadercommitindex(), 1);
             return 0;
-        }))
-    .WillOnce(::testing::Invoke(
-        [](int type, const google::protobuf::Message& msg, int node_id) {
-            const auto& AppendEntriesMessage = dynamic_cast<const AppendEntries&>(msg);
+          }))
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& AppendEntriesMessage =
+                dynamic_cast<const AppendEntries&>(msg);
             EXPECT_EQ(node_id, 4);
             EXPECT_EQ(AppendEntriesMessage.entries_size(), 0);
             EXPECT_EQ(AppendEntriesMessage.prevlogterm(), 1);
@@ -43,19 +46,19 @@ TEST_F(RaftTest, CandidateGetsElected) {
             EXPECT_EQ(AppendEntriesMessage.leaderid(), 1);
             EXPECT_EQ(AppendEntriesMessage.leadercommitindex(), 1);
             return 0;
-        }));
+          }));
 
-  raft_->SetStateForTest({
-      .currentTerm = 2,
-      .commitIndex = 1,
-      .lastApplied = 1,
-      .role = Role::CANDIDATE,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-        {1, "Term 1 Transaction 1"},
-      }, true), 
-      .votes = std::vector<int>{1, 3}
-  });
+  raft_->SetStateForTest({.currentTerm = 2,
+                          .commitIndex = 1,
+                          .lastApplied = 1,
+                          .role = Role::CANDIDATE,
+                          .log = CreateLogEntries(
+                              {
+                                  {0, "Term 0 Transaction 1"},
+                                  {1, "Term 1 Transaction 1"},
+                              },
+                              true),
+                          .votes = std::vector<int>{1, 3}});
 
   RequestVoteResponse rvr;
   rvr.set_term(2);
@@ -70,7 +73,8 @@ TEST_F(RaftTest, CandidateGetsElected) {
   EXPECT_THAT(raft_->GetMatchIndex(), ::testing::ElementsAre(0, 2, 0, 0, 0));
 }
 
-// Test 2: A candidate receives a RequestVoteResponse from an older term and ignores it.
+// Test 2: A candidate receives a RequestVoteResponse from an older term and
+// ignores it.
 TEST_F(RaftTest, CandidateIgnoresResponseFromOldTerm) {
   EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
   EXPECT_CALL(mock_call, Call(_, _, _)).Times(0);
@@ -79,9 +83,11 @@ TEST_F(RaftTest, CandidateIgnoresResponseFromOldTerm) {
   raft_->SetStateForTest({
       .currentTerm = 2,
       .role = Role::CANDIDATE,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-      }, true), 
+      .log = CreateLogEntries(
+          {
+              {0, "Term 0 Transaction 1"},
+          },
+          true),
   });
 
   RequestVoteResponse rvr;
@@ -93,7 +99,8 @@ TEST_F(RaftTest, CandidateIgnoresResponseFromOldTerm) {
   EXPECT_EQ(raft_->GetRoleSnapshot(), Role::CANDIDATE);
 }
 
-// Test 3: A candidate receives a RequestVoteResponse from an newer term and demotes.
+// Test 3: A candidate receives a RequestVoteResponse from an newer term and
+// demotes.
 TEST_F(RaftTest, CandidateDemotesAfterRequestVoteResponseFromNewerTerm) {
   EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(1);
   EXPECT_CALL(mock_call, Call(_, _, _)).Times(0);
@@ -102,9 +109,11 @@ TEST_F(RaftTest, CandidateDemotesAfterRequestVoteResponseFromNewerTerm) {
   raft_->SetStateForTest({
       .currentTerm = 2,
       .role = Role::CANDIDATE,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-      }, true), 
+      .log = CreateLogEntries(
+          {
+              {0, "Term 0 Transaction 1"},
+          },
+          true),
   });
 
   RequestVoteResponse rvr;
@@ -127,9 +136,11 @@ TEST_F(RaftTest, FollowerIgnoresRequestVoteResponse) {
   raft_->SetStateForTest({
       .currentTerm = 2,
       .role = Role::FOLLOWER,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-      }, true), 
+      .log = CreateLogEntries(
+          {
+              {0, "Term 0 Transaction 1"},
+          },
+          true),
   });
 
   RequestVoteResponse rvr;
@@ -150,9 +161,11 @@ TEST_F(RaftTest, CandidateIgnoresNoVote) {
   raft_->SetStateForTest({
       .currentTerm = 2,
       .role = Role::CANDIDATE,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-      }, true), 
+      .log = CreateLogEntries(
+          {
+              {0, "Term 0 Transaction 1"},
+          },
+          true),
   });
 
   RequestVoteResponse rvr;
@@ -170,17 +183,17 @@ TEST_F(RaftTest, CandidateIgnoresDuplicateVote) {
   EXPECT_CALL(mock_call, Call(_, _, _)).Times(0);
   EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(0);
 
-  raft_->SetStateForTest({
-      .currentTerm = 2,
-      .commitIndex = 1,
-      .lastApplied = 1,
-      .role = Role::CANDIDATE,
-      .log = CreateLogEntries({
-        {0, "Term 0 Transaction 1"},
-        {1, "Term 1 Transaction 1"},
-      }, true), 
-      .votes = std::vector<int>{1, 2}
-  });
+  raft_->SetStateForTest({.currentTerm = 2,
+                          .commitIndex = 1,
+                          .lastApplied = 1,
+                          .role = Role::CANDIDATE,
+                          .log = CreateLogEntries(
+                              {
+                                  {0, "Term 0 Transaction 1"},
+                                  {1, "Term 1 Transaction 1"},
+                              },
+                              true),
+                          .votes = std::vector<int>{1, 2}});
 
   RequestVoteResponse rvr;
   rvr.set_term(2);
@@ -191,5 +204,5 @@ TEST_F(RaftTest, CandidateIgnoresDuplicateVote) {
   EXPECT_EQ(raft_->GetRoleSnapshot(), Role::CANDIDATE);
 }
 
-} // namespace raft
-} // namespace resdb
+}  // namespace raft
+}  // namespace resdb

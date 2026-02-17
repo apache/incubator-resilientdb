@@ -71,9 +71,9 @@ cc_test(
 )
 
 cc_test(
-    name = "raft_test_append_entries",
+    name = "raft_append_entries_test",
     srcs = [
-        "raft_test_append_entries.cpp",
+        "raft_append_entries_test.cpp",
         "raft_tests.h",
     ],
     copts = ["-DRAFT_TEST_MODE"],
@@ -90,9 +90,9 @@ cc_test(
 )
 
 cc_test(
-    name = "raft_test_append_entries_response",
+    name = "raft_append_entries_response_test",
     srcs = [
-        "raft_test_append_entries_response.cpp",
+        "raft_append_entries_response_test.cpp",
         "raft_tests.h",
     ],
     copts = ["-DRAFT_TEST_MODE"],
@@ -109,9 +109,9 @@ cc_test(
 )
 
 cc_test(
-    name = "raft_test_request_vote",
+    name = "raft_request_vote_test",
     srcs = [
-        "raft_test_request_vote.cpp",
+        "raft_request_vote_test.cpp",
         "raft_tests.h",
     ],
     copts = ["-DRAFT_TEST_MODE"],
@@ -128,9 +128,9 @@ cc_test(
 )
 
 cc_test(
-    name = "raft_test_request_vote_response",
+    name = "raft_request_vote_response_test",
     srcs = [
-        "raft_test_request_vote_response.cpp",
+        "raft_request_vote_response_test.cpp",
         "raft_tests.h",
     ],
     copts = ["-DRAFT_TEST_MODE"],

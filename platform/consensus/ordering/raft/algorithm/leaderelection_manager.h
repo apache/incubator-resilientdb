@@ -56,7 +56,6 @@ class LeaderElectionManager {
   Waited Wait();
   void MonitoringElectionTimeout();
   virtual uint64_t RandomInt(uint64_t min, uint64_t max);
-  
 
  protected:
   ResDBConfig config_;

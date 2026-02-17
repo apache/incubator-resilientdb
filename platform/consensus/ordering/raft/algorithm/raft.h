@@ -102,9 +102,11 @@ class Raft : public common::ProtocolBase {
 
   virtual bool ReceiveTransaction(std::unique_ptr<Request> req);
   virtual bool ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae);
-  virtual bool ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> aer);
+  virtual bool ReceiveAppendEntriesResponse(
+      std::unique_ptr<AppendEntriesResponse> aer);
   virtual void ReceiveRequestVote(std::unique_ptr<RequestVote> rv);
-  virtual void ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr);
+  virtual void ReceiveRequestVoteResponse(
+      std::unique_ptr<RequestVoteResponse> rvr);
   virtual void StartElection();
   virtual void SendHeartBeat();
   virtual Role GetRoleSnapshot() const;
@@ -114,23 +116,27 @@ class Raft : public common::ProtocolBase {
  private:
   mutable std::mutex mutex_;
 
-  virtual TermRelation TermCheckLocked(uint64_t term) const;  // Must be called under mutex
-  virtual bool DemoteSelfLocked(uint64_t term); // Must be called under mutex
-  virtual uint64_t getLastLogTermLocked() const; // Must be called under mutex
+  virtual TermRelation TermCheckLocked(
+      uint64_t term) const;                       // Must be called under mutex
+  virtual bool DemoteSelfLocked(uint64_t term);   // Must be called under mutex
+  virtual uint64_t getLastLogTermLocked() const;  // Must be called under mutex
   virtual bool IsStop();
   //bool IsDuplicateLogEntry(const std::string& hash) const; // Must be called under mutex
-  virtual std::vector<std::unique_ptr<Request>> PrepareCommitLocked(); // Must be called under mutex
-  virtual AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false) const; // Must be called under mutex
+  virtual std::vector<std::unique_ptr<Request>>
+  PrepareCommitLocked();  // Must be called under mutex
+  virtual AeFields GatherAeFieldsLocked(int followerId, bool heartBeat = false)
+      const;  // Must be called under mutex
   std::vector<AeFields> GatherAeFieldsForBroadcastLocked(bool heartBeat = false) const; // Must be called under mutex
   virtual void CreateAndSendAppendEntryMsg(const AeFields& fields);
   virtual LogEntry CreateLogEntry(const Entry& entry) const;
   virtual void ClearInFlightsLocked();
   virtual void PruneExpiredInFlightMsgsLocked();
-  virtual void PruneRedundantInFlightMsgsLocked(int followerId, uint64_t followerLastLogIndex);
-  virtual void RecordNewInFlightMsgLocked(const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
+  virtual void PruneRedundantInFlightMsgsLocked(int followerId,
+                                                uint64_t followerLastLogIndex);
+  virtual void RecordNewInFlightMsgLocked(
+      const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
   virtual bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
 
-  
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
@@ -198,11 +204,11 @@ class Raft : public common::ProtocolBase {
     return votedFor_;
   }
 
-  const std::vector<std::unique_ptr<LogEntry>>& GetLog() const  {
+  const std::vector<std::unique_ptr<LogEntry>>& GetLog() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return log_;
   }
- 
+
   void PrintLog(std::ostream& os) const {
     os << "Log entries (count = " << log_.size() << "):\n";
 
@@ -214,10 +220,8 @@ class Raft : public common::ProtocolBase {
       }
 
       os << "  [" << i << "] "
-        << "term=" << entry->term
-        << ", command=\"" << entry->command << "\""
-        << ", serializedSize=" << entry->GetSerializedSize()
-        << "\n";
+         << "term=" << entry->term << ", command=\"" << entry->command << "\""
+         << ", serializedSize=" << entry->GetSerializedSize() << "\n";
     }
   }
 

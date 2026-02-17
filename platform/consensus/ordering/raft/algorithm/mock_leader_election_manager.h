@@ -26,7 +26,6 @@
 namespace resdb {
 namespace raft {
 
-// Mock MockLeaderElectionManager class to test Raft interactions
 class MockLeaderElectionManager : public LeaderElectionManager {
  public:
   MockLeaderElectionManager(const ResDBConfig& config)

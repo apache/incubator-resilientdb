@@ -26,20 +26,21 @@
 namespace resdb {
 namespace raft {
 
-// Mock Raft class to test LeaderElectionManager interactions
 class MockRaft : public Raft {
  public:
   MockRaft(int id, int f, int total_num, SignatureVerifier* verifier,
-           LeaderElectionManager* leaderelection_manager, 
+           LeaderElectionManager* leaderelection_manager,
            ReplicaCommunicator* replica_communicator)
-      : Raft(id, f, total_num, verifier, leaderelection_manager, replica_communicator){}
+      : Raft(id, f, total_num, verifier, leaderelection_manager,
+             replica_communicator) {}
 
   MOCK_METHOD(void, SendHeartBeat, (), ());
   MOCK_METHOD(void, StartElection, (), ());
-  MOCK_METHOD(int, Broadcast, (int msg_type, const google::protobuf::Message& msg), (override));
-  MOCK_METHOD(int, SendMessage, (int msg_type,
-                              const google::protobuf::Message& msg,
-                              int node_id), (override));
+  MOCK_METHOD(int, Broadcast,
+              (int msg_type, const google::protobuf::Message& msg), (override));
+  MOCK_METHOD(int, SendMessage,
+              (int msg_type, const google::protobuf::Message& msg, int node_id),
+              (override));
 };
 
 }  // namespace raft

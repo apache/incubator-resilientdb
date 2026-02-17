@@ -33,13 +33,13 @@
 namespace resdb {
 namespace raft {
 
-std::ostream &operator << (std::ostream& stream, Role role) {
-  const char* nameRole[] = { "FOLLOWER", "CANDIDATE", "LEADER"};
+std::ostream& operator<<(std::ostream& stream, Role role) {
+  const char* nameRole[] = {"FOLLOWER", "CANDIDATE", "LEADER"};
   return stream << nameRole[static_cast<int>(role)];
 }
 
-std::ostream &operator << (std::ostream& stream, TermRelation tr) {
-  const char* nameTR[] = { "STALE", "CURRENT", "NEW"};
+std::ostream& operator<<(std::ostream& stream, TermRelation tr) {
+  const char* nameTR[] = {"STALE", "CURRENT", "NEW"};
   return stream << nameTR[static_cast<int>(tr)];
 }
 
@@ -99,9 +99,7 @@ bool Raft::IsStop() {
   return is_stop_; 
 }
 
-void Raft::SetRole(Role role) {
-  role_ = role;
-}
+void Raft::SetRole(Role role) { role_ = role; }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   std::vector<AeFields> messages;
@@ -833,7 +831,6 @@ bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
   return size == maxInFlightPerFollower;
 }
 
-
 void Raft::PrintDebugState() const {
   std::lock_guard<std::mutex> lk(mutex_);
 
@@ -843,23 +840,23 @@ void Raft::PrintDebugState() const {
 
   LOG(INFO) << "log_ (size " << log_.size() << "): [";
   for (size_t i = 0; i < log_.size(); ++i) {
-      LOG(INFO) << "{term: " << log_[i]->term 
-                << ", cmd_size: " << log_[i]->command.size() << "}";
-      if (i + 1 != log_.size()) LOG(INFO) << ", ";
+    LOG(INFO) << "{term: " << log_[i]->term
+              << ", cmd_size: " << log_[i]->command.size() << "}";
+    if (i + 1 != log_.size()) LOG(INFO) << ", ";
   }
   LOG(INFO) << "]\n";
 
   LOG(INFO) << "nextIndex_: [";
   for (size_t i = 0; i < nextIndex_.size(); ++i) {
-      LOG(INFO) << nextIndex_[i];
-      if (i + 1 != nextIndex_.size()) LOG(INFO) << ", ";
+    LOG(INFO) << nextIndex_[i];
+    if (i + 1 != nextIndex_.size()) LOG(INFO) << ", ";
   }
   LOG(INFO) << "]\n";
 
   LOG(INFO) << "matchIndex_: [";
   for (size_t i = 0; i < matchIndex_.size(); ++i) {
-      LOG(INFO) << matchIndex_[i];
-      if (i + 1 != matchIndex_.size()) LOG(INFO) << ", ";
+    LOG(INFO) << matchIndex_[i];
+    if (i + 1 != matchIndex_.size()) LOG(INFO) << ", ";
   }
   LOG(INFO) << "]\n";
 
@@ -871,14 +868,13 @@ void Raft::PrintDebugState() const {
 
   LOG(INFO) << "votes_: [";
   for (size_t i = 0; i < votes_.size(); ++i) {
-      LOG(INFO) << votes_[i];
-      if (i + 1 != votes_.size()) LOG(INFO) << ", ";
+    LOG(INFO) << votes_[i];
+    if (i + 1 != votes_.size()) LOG(INFO) << ", ";
   }
   LOG(INFO) << "]\n";
 
   LOG(INFO) << "--------------------------\n";
 }
-
 
 }  // namespace raft
 }  // namespace resdb
