@@ -72,6 +72,8 @@ deploy/script/generate_config.sh ${BAZEL_WORKSPACE_PATH} ${output_key_path} ${ou
 
 # build kv server
 bazel build ${server}
+# JIM opts for debug
+#bazel build -c opt --copt=-g --strip=never ${server}
 
 if [ $? != 0 ]
 then
@@ -144,6 +146,7 @@ do
   private_key="cert/node_"${idx}".key.pri"
   cert="cert/cert_"${idx}".cert"
   cd ${home_path}/${main_folder}/$idx; nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &
+  echo "cd ${home_path}/${main_folder}/$idx; nohup ./${server_bin} server.config ${private_key} ${cert} ${grafna_port} > ${server_bin}.log 2>&1 &"
   ((count++))
   ((idx++))
   ((grafna_port++))
