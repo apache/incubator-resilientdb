@@ -14,8 +14,8 @@ header:
     - 'dev/.rat-excludes'
     - 'documents/doxygen/.gitignore'
     - 'third_party/loc_script/src/index.js'
-
+    - 'ecosystem/**/LICENSE*'
+    - 'ecosystem/third_party/**'
 
 
   comment: on-failure
-

@@ -33,6 +33,15 @@
 namespace resdb {
 namespace raft {
 
+std::ostream& operator<<(std::ostream& stream, Role role) {
+  const char* nameRole[] = {"FOLLOWER", "CANDIDATE", "LEADER"};
+  return stream << nameRole[static_cast<int>(role)];
+}
+
+std::ostream& operator<<(std::ostream& stream, TermRelation tr) {
+  const char* nameTR[] = {"STALE", "CURRENT", "NEW"};
+  return stream << nameTR[static_cast<int>(tr)];
+}
 
 uint32_t LogEntry::GetSerializedSize() {
   if (serializedSize == 0) {
@@ -89,6 +98,8 @@ Raft::~Raft() {
 bool Raft::IsStop() { 
   return is_stop_; 
 }
+
+void Raft::SetRole(Role role) { role_ = role; }
 
 bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
   std::vector<AeFields> messages;
@@ -465,7 +476,7 @@ void Raft::ReceiveRequestVoteResponse(std::unique_ptr<RequestVoteResponse> rvr) 
               << votes_.size() << "/" << quorum_ << " in term " << currentTerm_;
     if (votes_.size() >= quorum_) {
       elected = true;
-      role_ = Role::LEADER;
+      SetRole(Role::LEADER);
       ClearInFlightsLocked();
       nextIndex_.assign(total_num_ + 1, lastLogIndex_ + 1);
 
@@ -507,7 +518,7 @@ void Raft::StartElection() {
       return;
     }
     if (role_ == Role::FOLLOWER) {
-      role_ = Role::CANDIDATE;
+      SetRole(Role::CANDIDATE);
       roleChanged = true;
     }
     heartBeatsSentThisTerm_ = 0;
@@ -609,7 +620,7 @@ bool Raft::DemoteSelfLocked(uint64_t term) {
     votedFor_ = -1;
   }
   if (role_ != Role::FOLLOWER) {
-    role_ = Role::FOLLOWER;
+    SetRole(Role::FOLLOWER);
     //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Demoted to FOLLOWER";
     return true;
   }
@@ -818,6 +829,51 @@ bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
   auto size = inflightVecs_[followerId].size();
   assert(size <= maxInFlightPerFollower);
   return size == maxInFlightPerFollower;
+}
+
+void Raft::PrintDebugState() const {
+  std::lock_guard<std::mutex> lk(mutex_);
+
+  LOG(INFO) << "---- Raft Debug State ----\n";
+  LOG(INFO) << "currentTerm_: " << currentTerm_ << "\n";
+  LOG(INFO) << "votedFor_: " << votedFor_ << "\n";
+
+  LOG(INFO) << "log_ (size " << log_.size() << "): [";
+  for (size_t i = 0; i < log_.size(); ++i) {
+    LOG(INFO) << "{term: " << log_[i]->term
+              << ", cmd_size: " << log_[i]->command.size() << "}";
+    if (i + 1 != log_.size()) LOG(INFO) << ", ";
+  }
+  LOG(INFO) << "]\n";
+
+  LOG(INFO) << "nextIndex_: [";
+  for (size_t i = 0; i < nextIndex_.size(); ++i) {
+    LOG(INFO) << nextIndex_[i];
+    if (i + 1 != nextIndex_.size()) LOG(INFO) << ", ";
+  }
+  LOG(INFO) << "]\n";
+
+  LOG(INFO) << "matchIndex_: [";
+  for (size_t i = 0; i < matchIndex_.size(); ++i) {
+    LOG(INFO) << matchIndex_[i];
+    if (i + 1 != matchIndex_.size()) LOG(INFO) << ", ";
+  }
+  LOG(INFO) << "]\n";
+
+  LOG(INFO) << "heartBeatsSentThisTerm_: " << heartBeatsSentThisTerm_ << "\n";
+  LOG(INFO) << "lastLogIndex_: " << lastLogIndex_ << "\n";
+  LOG(INFO) << "commitIndex_: " << commitIndex_ << "\n";
+  LOG(INFO) << "lastApplied_: " << lastApplied_ << "\n";
+  LOG(INFO) << "role_: " << static_cast<int>(role_) << "\n";
+
+  LOG(INFO) << "votes_: [";
+  for (size_t i = 0; i < votes_.size(); ++i) {
+    LOG(INFO) << votes_[i];
+    if (i + 1 != votes_.size()) LOG(INFO) << ", ";
+  }
+  LOG(INFO) << "]\n";
+
+  LOG(INFO) << "--------------------------\n";
 }
 
 }  // namespace raft

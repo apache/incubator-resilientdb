@@ -22,7 +22,7 @@ import { useState, useEffect, useRef } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceArea, CartesianGrid } from "recharts";
 import { Button } from "../ui/button"
 import { ChartContainer, ChartTooltipContent } from "../ui/LineGraphChart"
-import { middlewareApi } from "@/lib/api"
+import { useMode } from "@/contexts/ModeContext"
 import { RefreshCcw } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card"
 
@@ -42,6 +42,7 @@ const getAxisYDomain = (data, left, right, offset) => {
 }
 
 export default function TransactionZoomChart() {
+  const { api, refreshTrigger } = useMode();
   const chartRef = useRef(null)
   const [chartData, setChartData] = useState([])
   const [refAreaLeft, setRefAreaLeft] = useState(null)
@@ -56,7 +57,7 @@ export default function TransactionZoomChart() {
     const fetchTransactionHistory = async () => {
       const { default: downsample } = await import("downsample-lttb")
       try {
-        const response = await middlewareApi.get("/explorer/getAllEncodedBlocks")
+        const response = await api.get("/explorer/getAllEncodedBlocks")
         const decoded = decodeDeltaEncoding(response?.data)
 
         const points = decoded.map((d) => [d.epoch / 1000, d.volume])
@@ -82,7 +83,7 @@ export default function TransactionZoomChart() {
     }
 
     fetchTransactionHistory()
-  }, [])
+  }, [refreshTrigger])
 
   const zoom = () => {
     if (refAreaLeft === null || refAreaRight === null || refAreaLeft === refAreaRight) {

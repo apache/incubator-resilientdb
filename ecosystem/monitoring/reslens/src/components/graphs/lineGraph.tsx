@@ -37,7 +37,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../ui/LineGraphChart";
-import { middlewareApi } from "@/lib/api";
 import { Loader } from "../ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Cpu, Info, RefreshCcw } from "lucide-react";
@@ -50,7 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { ModeContext } from "@/hooks/context";
+import { useMode } from "@/contexts/ModeContext";
 import { ModeType } from "../toggle";
 
 interface DataPoint {
@@ -114,26 +113,26 @@ interface CpuLineGraphProps {
 }
 
 export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
-  const mode = useContext<ModeType>(ModeContext);
+  const { mode, api, refreshTrigger } = useMode();
   const { toast } = useToast();
   const [data, setData] = useState<DataPoint[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
-  const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [refresh, setRefresh] = useState(false);
+  const [hour, setHour] = useState(1);
   const [left, setLeft] = useState<number>(0);
   const [right, setRight] = useState<number>(0);
-  const [top, setTop] = useState<number>(0);
   const [bottom, setBottom] = useState<number>(0);
-  const [refresh, setRefresh] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [hour, setHour] = useState(1);
+  const [top, setTop] = useState<number>(0);
+  const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
+  const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
 
   const fetchData = async () => {
     try {
       const until = new Date().getTime();
       const from = new Date(until - hour * 60 * 60 * 1000).getTime();
 
-      const response = await middlewareApi.post("/nodeExporter/getCpuUsage", {
+      const response = await api.post("/nodeExporter/getCpuUsage", {
         query:
           "sum(rate(namedprocess_namegroup_cpu_seconds_total{groupname=~'.+'}[5m])) by (groupname) * 100",
         from: parseFloat((from / 1000).toFixed(3)),
@@ -198,13 +197,13 @@ export const CpuLineGraphFunc: React.FC<CpuLineGraphProps> = ({ setDate }) => {
   }
 
   useEffect(() => {
-    if (mode === "offline") {
+    if (mode === "development") {
       setError("no data available");
       return;
     }
 
     fetchData();
-  }, [refresh, hour, mode]);
+  }, [refresh, hour, refreshTrigger]);
 
   const formatXAxis = (tickItem: number) => {
     const date = new Date(tickItem);

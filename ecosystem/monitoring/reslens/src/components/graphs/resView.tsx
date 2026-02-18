@@ -45,7 +45,7 @@ export function ResView() {
       <CardContent className="p-0 h-screen">
       <div className="w-full h-full overflow-hidden">
         <iframe
-          src="https://www.memlensapi.run.place/pages/visualizer"
+          src="https://dev-res-view.vercel.app/pages/visualizer"
           className="w-full h-full"
           style={{
             border: "none",

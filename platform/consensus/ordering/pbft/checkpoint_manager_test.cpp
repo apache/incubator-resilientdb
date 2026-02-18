@@ -108,7 +108,8 @@ class CheckPointManagerTest : public Test {
 TEST_F(CheckPointManagerTest, SendCheckPoint) {
   config_.SetViewchangeCommitTimeout(100);
   SystemInfo sys_info;
-  CheckPointManager manager(config_, &replica_communicator_, nullptr, &sys_info);
+  CheckPointManager manager(config_, &replica_communicator_, nullptr,
+                            &sys_info);
 
   for (int i = 1; i <= 5; ++i) {
     std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -135,7 +136,8 @@ TEST_F(CheckPointManagerTest, SendCheckPointOnce) {
   }));
 
   SystemInfo sys_info;
-  CheckPointManager manager(config_, &replica_communicator_, nullptr, &sys_info);
+  CheckPointManager manager(config_, &replica_communicator_, nullptr,
+                            &sys_info);
   for (int i = 1; i <= 5; ++i) {
     std::unique_ptr<Request> request = std::make_unique<Request>();
     request->set_seq(i);
@@ -163,7 +165,8 @@ TEST_F(CheckPointManagerTest, SendCheckPointTwo) {
   }));
 
   SystemInfo sys_info;
-  CheckPointManager manager(config_, &replica_communicator_, nullptr, &sys_info);
+  CheckPointManager manager(config_, &replica_communicator_, nullptr,
+                            &sys_info);
   std::unique_ptr<Request> request = std::make_unique<Request>();
   for (int i = 1; i <= 5; ++i) {
     std::unique_ptr<Request> request = std::make_unique<Request>();
@@ -261,7 +264,8 @@ TEST_F(CheckPointManagerTest, Votes) {
   std::future<bool> propose_done_future = propose_done.get_future();
 
   SystemInfo sys_info;
-  CheckPointManager manager(config_, &replica_communicator_, &mock_verifier, &sys_info);
+  CheckPointManager manager(config_, &replica_communicator_, &mock_verifier,
+                            &sys_info);
   EXPECT_CALL(replica_communicator_, BroadCast)
       .WillRepeatedly(Invoke([&](const google::protobuf::Message& message) {
         for (int i = 1; i <= 3; ++i) {

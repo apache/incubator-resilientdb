@@ -1,0 +1,38 @@
+[
+  {
+    "name": "resvault",
+    "code_root": "ecosystem/tools/resvault",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/resvault.mdx"
+  },
+  {
+    "name": "rescli",
+    "code_root": "ecosystem/tools/rescli",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/rescli.mdx"
+  },
+  {
+    "name": "reslens",
+    "code_root": "ecosystem/monitoring/reslens",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/reslens.mdx"
+  },
+  {
+    "name": "rescontract",
+    "code_root": "ecosystem/smart-contract/rescontract",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/rescontract.mdx"
+  },
+  {
+    "name": "resilient-node-cache",
+    "code_root": "ecosystem/cache/resilient-node-cache",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/resilient-node-cache.mdx"
+  },
+  {
+    "name": "resilient-python-cache",
+    "code_root": "ecosystem/cache/resilient-python-cache",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/resilient-python-cache.mdx"
+  },
+  {
+    "name": "resdb-orm",
+    "code_root": "ecosystem/sdk/resdb-orm",
+    "doc_path": "ecosystem/AI-Tooling/beacon/content/resdb-orm.mdx"
+  }
+]
+

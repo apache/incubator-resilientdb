@@ -256,8 +256,8 @@ cc_library(
 )
 
 cc_library(
-    name = "pre_very_consensus_service_pbft",
-    hdrs = ["pre_very_consensus_service_pbft.h"],
+    name = "pre_very_consensus_manager_pbft",
+    hdrs = ["pre_very_consensus_manager_pbft.h"],
     visibility = [
         "//platform:__subpackages__",
         "//service:__subpackages__",

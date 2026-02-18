@@ -41,3 +41,107 @@ cc_library(
         "//platform/proto:viewchange_message_cc_proto",
     ],
 )
+
+cc_library(
+    name = "mock_raft",
+    hdrs = ["mock_raft.h"],
+    deps = [
+        ":raft",
+    ],
+)
+
+cc_library(
+    name = "mock_leader_election_manager",
+    hdrs = ["mock_leader_election_manager.h"],
+    deps = [
+        ":raft",
+    ],
+)
+
+cc_test(
+    name = "leader_election_test",
+    srcs = ["leader_election_manager_test.cpp"],
+    deps = [
+        ":raft",
+        ":mock_raft",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main"
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_append_entries_test",
+    srcs = [
+        "raft_append_entries_test.cpp",
+        "raft_tests.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_append_entries_response_test",
+    srcs = [
+        "raft_append_entries_response_test.cpp",
+        "raft_tests.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_request_vote_test",
+    srcs = [
+        "raft_request_vote_test.cpp",
+        "raft_tests.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_request_vote_response_test",
+    srcs = [
+        "raft_request_vote_response_test.cpp",
+        "raft_tests.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)

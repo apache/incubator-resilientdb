@@ -45,8 +45,7 @@ import {
 } from "@/components/ui/table";
 import { NotFound } from "@/components/ui/not-found";
 import { useToast } from "@/hooks/use-toast";
-import { ModeType } from "@/components/toggle";
-import { ModeContext } from "@/hooks/context";
+import { useMode } from "@/contexts/ModeContext";
 
 interface LevelDBStat {
   Level: string;
@@ -89,6 +88,7 @@ interface LevelDBStatsTableProps {
   stats: LevelDBStat[];
 }
 const CacheHitGauge = () => {
+  const { api, refreshTrigger } = useMode();
   const [isCalculating, setIsCalculating] = useState(false);
   const [p99Value, setP99Value] = useState(0);
   const [animatedValue, setAnimatedValue] = useState(0);
@@ -99,7 +99,7 @@ const CacheHitGauge = () => {
     setAnimatedValue(0);
 
     try {
-      const response = await middlewareApi.post("/transactions/calculateP99", {
+      const response = await api.post("/transactions/calculateP99", {
         samples: 100,
       });
       const data = response?.data;
@@ -169,28 +169,21 @@ const CacheHitGauge = () => {
 };
 
 export function StorageEngineMetrics() {
-  const mode = useContext<ModeType>(ModeContext);
   const { toast } = useToast();
+  const { mode, api, refreshTrigger } = useMode();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [data, setData] = useState<StorageMetrics>(null);
 
   useEffect(() => {
-    if (mode === "offline") {
-      toast({
-        title: "Offline Mode",
-        description: "Storage Engine Metrics Cannot be fetched in offline mode",
-      });
-      return;
-    }
     fetchTransactionData();
-  }, [refresh]);
+  }, [refresh, refreshTrigger]);
 
   async function fetchTransactionData() {
     try {
       setLoading(true);
-      const response = await middlewareApi.post(
+      const response = await api.post(
         "/statsExporter/getTransactionData"
       );
       setData(response?.data);
@@ -228,7 +221,6 @@ export function StorageEngineMetrics() {
               <TooltipTrigger asChild>
                 <button
                   className="p-2 bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-colors duration-200 ease-in-out rounded"
-                  //onClick={() => window.open("https://gmail.com", "_blank")}
                 >
                   <Info size={18.5} />
                 </button>

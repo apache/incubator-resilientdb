@@ -21,4 +21,5 @@
 import { ModeType } from "@/components/toggle";
 import { createContext } from "react";
 
-export const ModeContext = createContext<ModeType>("live");
+// Default mode for consumers not wrapped in `ModeProvider`
+export const ModeContext = createContext<ModeType>("development");
