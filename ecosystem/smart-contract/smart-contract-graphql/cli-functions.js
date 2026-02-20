@@ -80,7 +80,12 @@ export async function createAccount(config, type = 'path') {
     if (type === 'data') {
       fs.unlinkSync(configPath);
     }
-    const address = result.match(/address: \"(0x[0-9a-fA-F]+)\"/)[1];
+    // Parse address: works for JSON {"address":"0x..."} or log line address: "0x..."
+    const match = result.match(/"?address"?\s*:\s*"(0x[0-9a-fA-F]+)"/);
+    const address = match ? match[1] : null;
+    if (!address) {
+      throw new Error(`Failed to parse address from output: ${result}`);
+    }
     return address;
   } catch (error) {
     if (type === 'data' && fs.existsSync(configPath)) {

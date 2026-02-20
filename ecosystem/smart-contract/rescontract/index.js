@@ -168,14 +168,28 @@ program
       const jsonConfigPath = path.join(os.tmpdir(), `create_account_${Date.now()}.json`);
       fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
 
+      let output = '';
       try {
-        await handleExecFile(commandPath, ['-c', configPath, '--config_file', jsonConfigPath]);
+        output = await handleSpawnProcess(commandPath, ['-c', configPath, '--config_file', jsonConfigPath]);
       } finally {
         // Clean up temporary file
         if (fs.existsSync(jsonConfigPath)) {
           fs.unlinkSync(jsonConfigPath);
         }
       }
+
+      // Parse address from output (C++ tool prints to stderr as address: "0x...")
+      const match = output.match(/"?address"?\s*:\s*"(0x[0-9a-fA-F]+)"/);
+      const address = match ? match[1] : '';
+      if (!address) {
+        console.error(
+          JSON.stringify({
+            error: 'Failed to parse account address from output.',
+          })
+        );
+        process.exit(1);
+      }
+      console.log(JSON.stringify({ address }));
     } catch (error) {
       logger.error(`Error executing create command: ${error.message}`);
       console.error(`Error: ${error.message}`);
