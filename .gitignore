@@ -5,6 +5,7 @@ deploy/kv_server/output/
 .idea/
 .vscode/
 .DS_Store
+node_modules/
 bazel-*
 *.log
 *.bak
