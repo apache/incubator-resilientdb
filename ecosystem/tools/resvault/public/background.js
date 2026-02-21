@@ -97,6 +97,25 @@ async function decryptData(ciphertextBase64, ivBase64, key) {
     return dec.decode(decrypted);
 }
 
+/**
+ * Converts ResilientDB config shorthand "N IP PORT" to the JSON format
+ * expected by the contract service (RegionInfo: replica_info array).
+ * Example: "5 127.0.0.1 10005" -> {"replica_info":[{"id":1,"ip":"127.0.0.1","port":10005}],"region_id":1}
+ */
+function getResDBConfigJson(shorthand) {
+    const trimmed = (shorthand || '5 127.0.0.1 10005').trim();
+    const match = trimmed.match(/^\s*(\d+)\s+([^\s]+)\s+(\d+)\s*$/);
+    if (match) {
+        const [, _n, ip, port] = match;
+        const config = {
+            replica_info: [{ id: 1, ip, port: parseInt(port, 10) }],
+            region_id: 1
+        };
+        return JSON.stringify(config);
+    }
+    return trimmed.startsWith('{') ? trimmed : JSON.stringify({ replica_info: [{ id: 1, ip: '127.0.0.1', port: 10005 }], region_id: 1 });
+}
+
 // Function to get full hostname from URL
 function getBaseDomain(url) {
     try {
@@ -184,7 +203,13 @@ async function callKVService(url, configData, signerPublicKey) {
             throw new Error(`Network response was not ok: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            throw new Error('Server returned non-JSON: ' + (text ? text.slice(0, 200) : response.statusText));
+        }
 
         if (result.data && result.data.postTransaction) {
             return { success: true, transactionId: result.data.postTransaction.id };
@@ -265,7 +290,13 @@ async function callContractService(url, configData) {
             throw new Error(`Network response was not ok: ${response.statusText}`);
         }
 
-        const result = await response.json();
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            throw new Error('Server returned non-JSON: ' + (text ? text.slice(0, 200) : response.statusText));
+        }
 
         // Convert GraphQL response to expected format
         if (result.data) {
@@ -802,66 +833,92 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         command: "create_account"
                     };
 
+                    const resdbConfigJson = getResDBConfigJson('5 127.0.0.1 10005');
+                    const escapedConfig = resdbConfigJson.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
                     const createAccountResponse = await fetch(decryptedUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ query: `mutation { createAccount(config: "5 127.0.0.1 10005", type: "data") }` }),
+                        body: JSON.stringify({ query: `mutation { createAccount(config: "${escapedConfig}", type: "data") }` }),
                     });
 
-                    const createAccountResult = await createAccountResponse.json();
-                    if (createAccountResult.errors) {
+                    const createAccountText = await createAccountResponse.text();
+                    let createAccountResult;
+                    try {
+                        createAccountResult = JSON.parse(createAccountText);
+                    } catch (e) {
+                        console.error('CreateAccount response was not JSON:', createAccountText.substring(0, 300));
                         sendResponse({
                             success: false,
-                            error: 'Error creating account: ' + createAccountResult.errors[0].message,
+                            error: 'Server returned invalid response (not JSON) for createAccount. Check the GraphQL endpoint.',
+                        });
+                        return;
+                    }
+                    if (createAccountResult.errors && createAccountResult.errors.length) {
+                        sendResponse({
+                            success: false,
+                            error: 'Error creating account: ' + (createAccountResult.errors[0].message || String(createAccountResult.errors[0])),
                         });
                         return;
                     }
 
                     // Step 1.5: Use the created account address for deployment
-                    const createdAccountAddress = createAccountResult.data.createAccount;
+                    const createdAccountAddress = createAccountResult.data && createAccountResult.data.createAccount;
+                    if (!createdAccountAddress) {
+                        sendResponse({
+                            success: false,
+                            error: 'Create account did not return an address. Response: ' + (createAccountText.substring(0, 200) || 'empty'),
+                        });
+                        return;
+                    }
                     console.log('Using created account:', createdAccountAddress);
 
                     // Step 2: Deploy the contract using the new unified service
                     const { arguments: args, contract_name } = request.deployConfig;
 
-                    // Step 2: Compile the Solidity contract on the server
-                    const escapedSoliditySource = soliditySource.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
-
-                    const compileContractMutation = `
-                    mutation {
-                      compileContract(
-                                source: "${escapedSoliditySource}",
-                        type: "data"
-                      )
-                    }
-                    `;
+                    // Step 2: Compile the Solidity contract on the server.
+                    // Match ecosystem/smart-contract/smart-contract-graphql: inline source with GraphQL triple-quoted string.
+                    const sourceEscapedForGraphQL = soliditySource.replace(/\\/g, '\\\\').replace(/"""/g, '\\"""');
+                    const compileContractQuery = 'mutation { compileContract(source: """\n' + sourceEscapedForGraphQL + '\n""", type: "data") }';
 
                     const compileContractResponse = await fetch(decryptedUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ query: compileContractMutation }),
+                        body: JSON.stringify({ query: compileContractQuery }),
                     });
 
                     if (!compileContractResponse.ok) {
                         throw new Error(`Network response was not ok: ${compileContractResponse.statusText}`);
                     }
 
-                    const compileContractResult = await compileContractResponse.json();
-                    if (compileContractResult.errors) {
-                        console.error('GraphQL errors in compileContract:', compileContractResult.errors);
+                    const compileContractText = await compileContractResponse.text();
+                    let compileContractResult;
+                    try {
+                        compileContractResult = JSON.parse(compileContractText);
+                    } catch (parseErr) {
+                        console.error('Compile response was not JSON:', compileContractText.substring(0, 500));
                         sendResponse({
                             success: false,
-                            error: 'Error in compileContract mutation.',
-                            errors: compileContractResult.errors,
+                            error: 'Server returned invalid response (not JSON). Check the server URL (e.g. .../graphql) and that the Smart Contract GraphQL API is running.',
+                            detail: parseErr.message
                         });
                         return;
                     }
 
-                    const contractFilename = compileContractResult.data.compileContract;
+                    if (compileContractResult.errors && compileContractResult.errors.length) {
+                        const errMsg = compileContractResult.errors[0].message || JSON.stringify(compileContractResult.errors[0]);
+                        console.error('GraphQL errors in compileContract:', JSON.stringify(compileContractResult.errors));
+                        sendResponse({
+                            success: false,
+                            error: 'Compile failed: ' + errMsg,
+                        });
+                        return;
+                    }
+
+                    const contractFilename = compileContractResult.data && compileContractResult.data.compileContract;
                     if (!contractFilename) {
                         sendResponse({
                             success: false,
@@ -876,10 +933,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                     const escapedOwnerAddress = createdAccountAddress.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
                     const escapedContractFilename = contractFilename.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
+                    const deployConfigJson = getResDBConfigJson('5 127.0.0.1 10005');
+                    const escapedDeployConfig = deployConfigJson.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
                     const deployContractMutation = `
                     mutation {
                       deployContract(
-                                config: "5 127.0.0.1 10005",
+                                config: "${escapedDeployConfig}",
                                 contract: "${escapedContractFilename}",
                                 name: "/tmp/${contractFilename.replace('.json', '.sol')}:${contract_name.split(':')[1] || contract_name}",
                                 arguments: "${escapedArgs}",
@@ -905,16 +964,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                         throw new Error(`Network response was not ok: ${deployContractResponse.statusText}`);
                     }
 
-                    const deployContractResult = await deployContractResponse.json();
-
-                    // Debug logging to see what we actually receive
-                    console.log('Deploy contract response:', deployContractResult);
-
-                    if (deployContractResult.errors) {
-                        console.error('GraphQL errors in deployContract:', deployContractResult.errors);
+                    const deployContractText = await deployContractResponse.text();
+                    let deployContractResult;
+                    try {
+                        deployContractResult = JSON.parse(deployContractText);
+                    } catch (e) {
+                        console.error('DeployContract response was not JSON:', deployContractText.substring(0, 300));
                         sendResponse({
                             success: false,
-                            error: 'Error in deployContract mutation: ' + deployContractResult.errors[0].message,
+                            error: 'Server returned invalid response (not JSON) for deploy. Deployment may have succeeded; check the server. If this persists, check the GraphQL endpoint.',
+                        });
+                        return;
+                    }
+
+                    if (deployContractResult.errors && deployContractResult.errors.length) {
+                        const errMsg = deployContractResult.errors[0].message || String(deployContractResult.errors[0]);
+                        console.error('GraphQL errors in deployContract:', JSON.stringify(deployContractResult.errors));
+                        sendResponse({
+                            success: false,
+                            error: 'Deploy failed: ' + errMsg,
                         });
                         return;
                     }

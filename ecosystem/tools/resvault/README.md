@@ -100,17 +100,81 @@ npm install --legacy-peer-deps
 CI= npm run build
 ```
 
+### Build and test in Chrome (this repo)
+To build ResVault from this repo and load it in Chrome for testing (before publishing to the Chrome Web Store):
+
+1. **Install dependencies and build**
+   ```shell
+   cd ecosystem/tools/resvault
+   npm install --legacy-peer-deps
+   npm run build
+   ```
+   This produces a `build` folder with the extension (React app in `index.html` + `static/js/`, `manifest.json`, `content.js`, `background.js`, and icons). **You must run the full build**—loading only the `public` folder or an incomplete `build` will show a blank popup.
+
+2. **Load the extension in Chrome**
+   - Open [chrome://extensions/](chrome://extensions/) in Google Chrome.
+   - Turn **Developer mode** on (toggle in the top-right).
+   - Click **Load unpacked**.
+   - Choose the **`build`** folder (e.g. `incubator-resilientdb/ecosystem/tools/resvault/build`).
+
+3. **Test**
+   - Use the ResVault icon in the toolbar to open the wallet popup and test flows.
+   - After changes, run `npm run build` again, then in `chrome://extensions/` click the **Refresh** icon on the ResVault card to reload.
+
+4. **Publish to Chrome Web Store**
+   - When ready, zip the contents of the `build` folder (not the folder itself) and upload that zip in the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole).
+
 ## Smart Contract Usage
+
+Compile/deploy uses the Smart Contract GraphQL server. That server must have **solc** installed (non-snap, e.g. the static binary from [Solidity releases](https://github.com/ethereum/solidity/releases)) and, when starting the server, set **SOLC_PATH** to that binary (e.g. `SOLC_PATH=/usr/local/bin/solc`). ResVault itself does not need any solc-related configuration.
 
 ### Deploying Contracts
 1. Navigate to the **Contract** tab in ResVault
-2. Enter your ResilientDB server URL:
-   - **Mainnet**: Use the production ResilientDB endpoint
-   - **Local Development**: Use your local server (e.g., `http://localhost:8400`)
-   - **Custom Server**: Use any ResilientDB instance (e.g., `http://your-server:8400`)
-3. Paste your Solidity contract code
-4. Provide constructor arguments if needed
-5. Click **Deploy** - the contract will be deployed using your wallet address
+2. Enter your ResilientDB GraphQL server URL (e.g. `http://your-server:8400/graphql`)
+3. Upload two files:
+   - **Solidity contract (`.sol`)** – your contract source
+   - **Configuration (`.json`)** – deployment config (see format below)
+4. Click **Deploy** – the contract is compiled on the server and deployed using your wallet address
+
+#### Contract file (`.sol`)
+Standard Solidity source. No special naming; the config file references the contract by `filename:ContractName`.
+
+Example (`SimpleStorage.sol`):
+```solidity
+pragma solidity >=0.5.0;
+
+contract SimpleStorage {
+    uint256 public value;
+
+    constructor(uint256 _value) public {
+        value = _value;
+    }
+
+    function setValue(uint256 _value) public {
+        value = _value;
+    }
+
+    function getValue() public view returns (uint256) {
+        return value;
+    }
+}
+```
+
+#### Configuration file (`.json`)
+Must be valid JSON with exactly these fields:
+
+| Field            | Description |
+|------------------|-------------|
+| `contract_name`  | `"<filename>:<ContractName>"` – the `.sol` filename and the contract name (e.g. `"simple.sol:SimpleStorage"`) |
+| `arguments`      | Constructor arguments as a single string; comma-separated if multiple (e.g. `"100"` or `"100,0x123..."`) |
+
+Example (`config.json`):
+```json
+{
+  "arguments": "100",
+  "contract_name": "simple.sol:SimpleStorage"
+}
+```
 
 ## Example Usage
 #### Demo Video
