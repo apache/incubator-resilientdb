@@ -213,7 +213,8 @@ program
         process.exit(1);
       }
 
-      const command = 'solc';
+      const command = process.env.SOLC_PATH || 'solc';
+
       const args = [
         '--evm-version',
         'homestead',
