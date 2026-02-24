@@ -13,3 +13,12 @@ sdk_validator/venv
 __pycache__
 MODULE.*
 apache_release
+*.out.*
+*.data.*
+*.pb.*
+.cache/
+resdb/
+100*_db/
+gmon.out
+.history/
+service/tools/data/cert

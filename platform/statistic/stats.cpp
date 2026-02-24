@@ -37,7 +37,7 @@ Stats* Stats::GetGlobalStats(int seconds) {
   std::unique_lock<std::mutex> lk(g_mutex);
   static Stats stats(seconds);
   return &stats;
-}
+}  // gets a singelton instance of Stats Class
 
 Stats::Stats(int sleep_time) {
   monitor_sleep_time_ = sleep_time;
@@ -96,6 +96,30 @@ Stats::~Stats() {
   }
 }
 
+int64_t GetRSS() {
+  int64_t rss = 0;
+  FILE* fp = NULL;
+  if ((fp = fopen("/proc/self/statm", "r")) == NULL) {
+    return 0;
+  }
+
+  uint64_t size, resident, share, text, lib, data, dt;
+  if (fscanf(fp, "%lu %lu %lu %lu %lu %lu %lu", &size, &resident, &share, &text,
+             &lib, &data, &dt) != 7) {
+    fclose(fp);
+    return 0;
+  }
+  fclose(fp);
+
+  int64_t page_size = sysconf(_SC_PAGESIZE);
+  rss = resident * page_size;
+
+  // Convert to MB
+  rss = rss / (1024 * 1024);
+
+  return rss;
+}
+
 void Stats::CrowRoute() {
   crow::SimpleApp app;
   while (!stop_) {
@@ -151,6 +175,41 @@ void Stats::CrowRoute() {
             res.body = "Success";
             res.end();
           });
+      CROW_ROUTE(app, "/transaction_data")
+          .methods("GET"_method)([this](const crow::request& req,
+                                        crow::response& res) {
+            LOG(ERROR) << "API 4";
+            res.set_header("Access-Control-Allow-Origin",
+                           "*");  // Allow requests from any origin
+            res.set_header("Access-Control-Allow-Methods",
+                           "GET, POST, OPTIONS");  // Specify allowed methods
+            res.set_header(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization");  // Specify allowed headers
+
+            nlohmann::json mem_view_json;
+            int status =
+                getrusage(RUSAGE_SELF, &transaction_summary_.process_stats_);
+            if (status == 0) {
+              mem_view_json["resident_set_size"] = GetRSS();
+              mem_view_json["max_resident_set_size"] =
+                  transaction_summary_.process_stats_.ru_maxrss;
+              mem_view_json["num_reads"] =
+                  transaction_summary_.process_stats_.ru_inblock;
+              mem_view_json["num_writes"] =
+                  transaction_summary_.process_stats_.ru_oublock;
+            }
+
+            mem_view_json["ext_cache_hit_ratio"] =
+                transaction_summary_.ext_cache_hit_ratio_;
+            mem_view_json["level_db_stats"] =
+                transaction_summary_.level_db_stats_;
+            mem_view_json["level_db_approx_mem_size"] =
+                transaction_summary_.level_db_approx_mem_size_;
+            res.body = mem_view_json.dump();
+            mem_view_json.clear();
+            res.end();
+          });
       app.port(8500 + transaction_summary_.port).multithreaded().run();
       sleep(1);
     } catch (const std::exception& e) {
@@ -180,6 +239,14 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
 
 void Stats::SetPrimaryId(int primary_id) {
   transaction_summary_.primary_id = primary_id;
+}
+
+void Stats::SetStorageEngineMetrics(double ext_cache_hit_ratio,
+                                    std::string level_db_stats,
+                                    std::string level_db_approx_mem_size) {
+  transaction_summary_.ext_cache_hit_ratio_ = ext_cache_hit_ratio;
+  transaction_summary_.level_db_stats_ = level_db_stats;
+  transaction_summary_.level_db_approx_mem_size_ = level_db_approx_mem_size;
 }
 
 void Stats::RecordStateTime(std::string state) {
@@ -275,6 +342,8 @@ void Stats::SendSummary() {
     summary_json_["txn_values"].push_back(transaction_summary_.txn_value[i]);
   }
 
+  summary_json_["ext_cache_hit_ratio"] =
+      transaction_summary_.ext_cache_hit_ratio_;
   consensus_history_[std::to_string(transaction_summary_.txn_number)] =
       summary_json_;
 

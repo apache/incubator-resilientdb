@@ -25,4 +25,6 @@ message LevelDBInfo {
   uint32 write_buffer_size_mb = 2;
   uint32 write_batch_size = 3;
   string path = 4;
+  optional bool enable_block_cache = 5;
+  optional uint32 block_cache_capacity = 6;
 }

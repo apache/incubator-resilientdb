@@ -1,23 +1,58 @@
-<!--
-  - Licensed to the Apache Software Foundation (ASF) under one
-  - or more contributor license agreements.  See the NOTICE file
-  - distributed with this work for additional information
-  - regarding copyright ownership.  The ASF licenses this file
-  - to you under the Apache License, Version 2.0 (the
-  - "License"); you may not use this file except in compliance
-  - with the License.  You may obtain a copy of the License at
-  -
-  -   http://www.apache.org/licenses/LICENSE-2.0
-  -
-  - Unless required by applicable law or agreed to in writing,
-  - software distributed under the License is distributed on an
-  - "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  - KIND, either express or implied.  See the License for the
-  - specific language governing permissions and limitations
-  - under the License.
-  -->
+<!-- #
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#  -->
 
 # Change Log
+
+### Apache ResilientDB v1.12.0
+
+Apache ResilientDB v1.12.0 ([2026-2-04](https://github.com/resilientdb/resilientdb/releases/tag/v1.12.0))
+
+#### Core
+* **Support Securing Consensus from Long-Range Attacks through Collaboration** – PoC implementation merged ([#215](https://github.com/apache/incubator-resilientdb/pull/215), closes [#216](https://github.com/apache/incubator-resilientdb/issues/216)). ([Junchao Chen](https://github.com/cjcchen))
+* **Support LevelDB with recovery data locally** ([#208](https://github.com/apache/incubator-resilientdb/pull/208)). ResilientDB records every operation in the log and redoes the log on startup. Previously, the default memory storage required scanning all logs (not just from the latest checkpoint) to reconstruct state, so startup time grew with log size. This change adds LevelDB as a persistent storage backend: on startup, ResilientDB loads state from the data storage and only replays missing logs, reducing recovery time. ([Junchao Chen](https://github.com/cjcchen))
+* **Configuration format** – Added support in existing config files for license headers.([Junchao Chen](https://github.com/cjcchen))
+* **Remove public/private certificate files from source distribution** – Dropped committed `.pub`/`.pri` cert and key files; replaced with a script to generate keys and certificates at setup time. ([#228](https://github.com/apache/incubator-resilientdb/pull/228)) ([Harish Krishnakumar](https://github.com/harish876))
+
+#### Ecosystem
+* **GraphQL server and Python SDK** – Resolved compatibility of the GraphQL server with the new config format; fixed a GraphQL bug in the Python SDK. ([#228](https://github.com/apache/incubator-resilientdb/pull/228))([Harish Krishnakumar](https://github.com/harish876))
+* **Deployment of ecosystem projects to Vercel using GitHub Actions** – Automated deployment of ecosystem tools (ResLens, Beacon, Nexus, etc.) from the monorepo via GitHub Actions and Vercel. ([#228](https://github.com/apache/incubator-resilientdb/pull/228)) ([Harish Krishnakumar](https://github.com/harish876))
+* **Automated Document Generation Workflow** – Workflow to keep documentation up to date using Pocketflow. ([#229](https://github.com/apache/incubator-resilientdb/pull/229)) ([Bismanpal Anand](https://github.com/Bismanpal-Singh))
+* **ResLens** – CPU and memory profiler with flame graphs and real-time metrics; Vercel deployment from monorepo. ([Harish Krishnakumar](https://github.com/harish876), [Bismanpal Anand](https://github.com/Bismanpal-Singh))
+* **Beacon** – Documentation site, supplemented by AI-generated and human-verified insights from the codebase. ([Harish Krishnakumar](https://github.com/harish876))([Bismanpal Anand](https://github.com/Bismanpal-Singh))
+* **Nexus** – RAG application supporting chatting with documents ranging from consensus books, papers, and other materials related to PBFT and consensus research at ResilientDB. ([Harish Krishnakumar](https://github.com/harish876))
+* **GraphQ-LLM** – MCP server and HTTP API: AI query tutor for ResilientDB GraphQL (RAG over docs, explanations, efficiency metrics). ([Harish Krishnakumar](https://github.com/harish876))
+* **ResilientDB MCP** – MCP server for direct ResilientDB operations: GraphQL (asset/blockchain transactions) and HTTP REST key-value (Crow). ([Harish Krishnakumar](https://github.com/harish876))
+
+#### Contributors
+
+The following contributors developed and maintained ecosystem components integrated into this repository. Attribution was lost during subtree merges; this section restores it.
+
+* [Rust SDK](/ecosystem/sdk/rust-sdk/) - [Dhruv Sangamwar](https://github.com/dhruvsangamwar),[Prashansa Goel](https://github.com/pgoel-02),[dharora](https://github.com/dharora)
+* [ResCanvas-Library](/ecosystem/tools/drawing-lib/) - [Chris Ruan](https://github.com/chris315654)
+* [Beacon](/ecosystem/ai-tools/beacon/) - [Krishnanand Yadav](https://github.com/Kriishna1)
+* [Nexus](/ecosystem/ai-tools/nexus/) - [Paiman Nejrabi](https://github.com/PNejr10)
+* [Graphql](/ecosystem/graphql) - [Haskell Macaraig](https://github.com/AwesomenessXP)
+* [ResVault](/ecosystem/tools/resvault/) - [Amey Gohil](https://github.com/AmeyGohil) 
+
+### Apache ResilientDB v1.11.0 ([2025-4-27](https://github.com/resilientdb/resilientdb/releases/tag/v1.11.0))
+* Support Combined Runtime for SmartContact and Key-value Service. ([Junchao Chen](https://github.com/cjcchen))
+
 
 ### Apache ResilientDB v1.10.1 ([2024-4-16](https://github.com/resilientdb/resilientdb/releases/tag/v1.10.1))
 * Remove the binary keys from the source code. ([Junchao Chen](https://github.com/cjcchen))

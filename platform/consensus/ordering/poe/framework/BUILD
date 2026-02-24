@@ -26,8 +26,19 @@ cc_library(
         "//visibility:public",
     ],
     deps = [
+        ":performance_manager",
         "//common/utils",
         "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/ordering/poe/algorithm:poe",
+    ],
+)
+
+cc_library(
+    name = "performance_manager",
+    srcs = ["performance_manager.cpp"],
+    hdrs = ["performance_manager.h"],
+    deps = [
+        "//platform/consensus/ordering/common/framework:performance_manager",
+        "//platform/consensus/ordering/poe/proto:proposal_cc_proto",
     ],
 )

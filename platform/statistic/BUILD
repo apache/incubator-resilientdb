@@ -17,6 +17,7 @@
 #
 
 package(default_visibility = [
+    "//chain/storage:__subpackages__",
     "//platform:__subpackages__",
     "//service:__subpackages__",
 ])

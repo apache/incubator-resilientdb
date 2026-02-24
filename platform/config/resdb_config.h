@@ -139,7 +139,6 @@ class ResDBConfig {
   uint64_t viewchange_commit_timeout_ms_ =
       60000;  // default 60s to change viewchange
 
-
   // This is the default settings.
   // change these parameters in the configuration.
   uint32_t max_process_txn_ = 64;

@@ -30,10 +30,7 @@ namespace resdb {
 namespace storage {
 namespace {
 
-enum StorageType {
-  MEM = 0,
-  LEVELDB = 1,
-};
+enum StorageType { MEM = 0, LEVELDB = 1, LEVELDB_WITH_BLOCK_CACHE = 2 };
 
 class KVStorageTest : public ::testing::TestWithParam<StorageType> {
  protected:
@@ -46,6 +43,12 @@ class KVStorageTest : public ::testing::TestWithParam<StorageType> {
       case LEVELDB:
         Reset();
         storage = NewResLevelDB(path_);
+        break;
+      case LEVELDB_WITH_BLOCK_CACHE:
+        Reset();
+        LevelDBInfo config;
+        config.set_enable_block_cache(true);
+        storage = NewResLevelDB(path_, config);
         break;
     }
   }
@@ -100,7 +103,7 @@ TEST_P(KVStorageTest, SetValueWithVersion) {
 
 TEST_P(KVStorageTest, GetAllValueWithVersion) {
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("test_key", std::make_pair("test_value", 1))};
 
     EXPECT_EQ(storage->SetValueWithVersion("test_key", "test_value", 0), 0);
@@ -108,18 +111,95 @@ TEST_P(KVStorageTest, GetAllValueWithVersion) {
   }
 
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("test_key", std::make_pair("test_value_v2", 2))};
     EXPECT_EQ(storage->SetValueWithVersion("test_key", "test_value_v2", 1), 0);
     EXPECT_EQ(storage->GetAllItems(), expected_list);
   }
 
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("test_key_v1", std::make_pair("test_value1", 1)),
         std::make_pair("test_key", std::make_pair("test_value_v2", 2))};
     EXPECT_EQ(storage->SetValueWithVersion("test_key_v1", "test_value1", 0), 0);
     EXPECT_EQ(storage->GetAllItems(), expected_list);
+  }
+}
+
+TEST_P(KVStorageTest, SetValueWithSeq) {
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value", 2), 0);
+
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value", 1), -2);
+
+  EXPECT_EQ(storage->GetValueWithSeq("test_key", static_cast<uint64_t>(1)),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 2),
+      std::make_pair(std::string("test_value"), static_cast<uint64_t>(2)));
+
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value_v2", 3), 0);
+
+  EXPECT_EQ(storage->GetValueWithSeq("test_key", 1),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 2),
+      std::make_pair(std::string("test_value"), static_cast<uint64_t>(2)));
+
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 3),
+      std::make_pair(std::string("test_value_v2"), static_cast<uint64_t>(3)));
+
+  EXPECT_EQ(storage->GetValueWithSeq("test_key", 4),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 0),
+      std::make_pair(std::string("test_value_v2"), static_cast<uint64_t>(3)));
+}
+
+TEST_P(KVStorageTest, GetAllValueWithSeq) {
+  typedef std::vector<std::pair<std::string, uint64_t>> List;
+  {
+    std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+        expected_list{
+            std::make_pair("test_key", List{std::make_pair("test_value", 1)})};
+
+    EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value", 1), 0);
+    EXPECT_EQ(storage->GetAllItemsWithSeq(), expected_list);
+  }
+
+  {
+    std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+        expected_list{std::make_pair("test_key",
+                                     List{std::make_pair("test_value", 1),
+                                          std::make_pair("test_value_v2", 2)})};
+    EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value_v2", 2), 0);
+    EXPECT_EQ(storage->GetAllItemsWithSeq(), expected_list);
+  }
+
+  {
+    std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+        expected_list{std::make_pair("test_key_v1",
+                                     List{std::make_pair("test_value1", 1)}),
+                      std::make_pair("test_key",
+                                     List{std::make_pair("test_value", 1),
+                                          std::make_pair("test_value_v2", 2)})};
+    EXPECT_EQ(storage->SetValueWithSeq("test_key_v1", "test_value1", 1), 0);
+    EXPECT_EQ(storage->GetAllItemsWithSeq(), expected_list);
+  }
+
+  {
+    storage->SetMaxHistoryNum(2);
+    std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+        expected_list{
+            std::make_pair("test_key_v1",
+                           List{std::make_pair("test_value1", 1)}),
+            std::make_pair("test_key", List{std::make_pair("test_value3", 3),
+                                            std::make_pair("test_value4", 4)})};
+    EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value3", 3), 0);
+    EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value4", 4), 0);
+    EXPECT_EQ(storage->GetAllItemsWithSeq(), expected_list);
   }
 }
 
@@ -130,7 +210,7 @@ TEST_P(KVStorageTest, GetKeyRange) {
   EXPECT_EQ(storage->SetValueWithVersion("4", "value4", 0), 0);
 
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("1", std::make_pair("value1", 1)),
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3", 1)),
@@ -140,7 +220,7 @@ TEST_P(KVStorageTest, GetKeyRange) {
 
   EXPECT_EQ(storage->SetValueWithVersion("3", "value3_1", 1), 0);
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("1", std::make_pair("value1", 1)),
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3_1", 2)),
@@ -148,7 +228,7 @@ TEST_P(KVStorageTest, GetKeyRange) {
     EXPECT_EQ(storage->GetKeyRange("1", "4"), expected_list);
   }
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("1", std::make_pair("value1", 1)),
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3_1", 2)),
@@ -156,14 +236,14 @@ TEST_P(KVStorageTest, GetKeyRange) {
     EXPECT_EQ(storage->GetKeyRange("1", "3"), expected_list);
   }
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3_1", 2)),
         std::make_pair("4", std::make_pair("value4", 1))};
     EXPECT_EQ(storage->GetKeyRange("2", "4"), expected_list);
   }
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("1", std::make_pair("value1", 1)),
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3_1", 2)),
@@ -171,7 +251,7 @@ TEST_P(KVStorageTest, GetKeyRange) {
     EXPECT_EQ(storage->GetKeyRange("0", "5"), expected_list);
   }
   {
-    std::map<std::string, std::pair<std::string, int> > expected_list{
+    std::map<std::string, std::pair<std::string, int>> expected_list{
         std::make_pair("2", std::make_pair("value2", 1)),
         std::make_pair("3", std::make_pair("value3_1", 2)),
     };
@@ -181,11 +261,11 @@ TEST_P(KVStorageTest, GetKeyRange) {
 
 TEST_P(KVStorageTest, GetHistory) {
   {
-    std::vector<std::pair<std::string, int> > expected_list{};
+    std::vector<std::pair<std::string, int>> expected_list{};
     EXPECT_EQ(storage->GetHistory("1", 1, 5), expected_list);
   }
   {
-    std::vector<std::pair<std::string, int> > expected_list{
+    std::vector<std::pair<std::string, int>> expected_list{
         std::make_pair("value3", 3), std::make_pair("value2", 2),
         std::make_pair("value1", 1)};
 
@@ -197,7 +277,7 @@ TEST_P(KVStorageTest, GetHistory) {
   }
 
   {
-    std::vector<std::pair<std::string, int> > expected_list{
+    std::vector<std::pair<std::string, int>> expected_list{
         std::make_pair("value5", 5), std::make_pair("value4", 4),
         std::make_pair("value3", 3), std::make_pair("value2", 2),
         std::make_pair("value1", 1)};
@@ -211,15 +291,23 @@ TEST_P(KVStorageTest, GetHistory) {
   }
 
   {
-    std::vector<std::pair<std::string, int> > expected_list{
+    std::vector<std::pair<std::string, int>> expected_list{
         std::make_pair("value7", 7), std::make_pair("value6", 6)};
 
     EXPECT_EQ(storage->GetTopHistory("1", 2), expected_list);
   }
 }
 
+TEST_P(KVStorageTest, BlockCacheSpecificTest) {
+  if (GetParam() == LEVELDB_WITH_BLOCK_CACHE) {
+    std::cout << "Running BlockCacheSpecificTest for LEVELDB_WITH_BLOCK_CACHE"
+              << std::endl;
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
-                        ::testing::Values(MEM, LEVELDB));
+                        ::testing::Values(MEM, LEVELDB,
+                                          LEVELDB_WITH_BLOCK_CACHE));
 
 }  // namespace
 }  // namespace storage

@@ -52,16 +52,32 @@ cc_library(
         "//chain/storage/proto:kv_cc_proto",
         "//chain/storage/proto:leveldb_config_cc_proto",
         "//common:comm",
+        "//common/lru:lru_cache",
+        "//platform/statistic:stats",
         "//third_party:leveldb",
     ],
 )
 
 cc_test(
     name = "kv_storage_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
     srcs = ["kv_storage_test.cpp"],
     deps = [
         ":leveldb",
         ":memory_db",
         "//common/test:test_main",
+    ],
+)
+
+cc_test(
+    name = "leveldb_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
+    srcs = ["leveldb_test.cpp"],
+    deps = [
+        ":leveldb",
+        "//common/test:test_main",
+        "//platform/statistic:stats",
     ],
 )

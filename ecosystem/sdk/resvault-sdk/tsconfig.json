@@ -1,0 +1,64 @@
+// Licensed to the Apache Software Foundation (ASF) under one
+// or more contributor license agreements.  See the NOTICE file
+// distributed with this work for additional information
+// regarding copyright ownership.  The ASF licenses this file
+// to you under the Apache License, Version 2.0 (the
+// "License"); you may not use this file except in compliance
+// with the License.  You may obtain a copy of the License at
+//
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+{
+    "compilerOptions": {
+      // JavaScript language version to which TypeScript will compile
+      "target": "ES6",
+      
+      // Module system to use in the generated JavaScript code
+      "module": "CommonJS",
+      
+      // Output directory for compiled files
+      "outDir": "./dist",
+      
+      // Generates corresponding '.d.ts' files along with '.js'
+      "declaration": true,
+      
+      // Root directory of your source files
+      "rootDir": "./src",
+      
+      // Enables strict type-checking options
+      "strict": true,
+      
+      // Ensures compatibility with CommonJS and ES Modules
+      "esModuleInterop": true,
+      
+      // Includes definition files like DOM, ES6, etc.
+      "lib": ["ES6", "DOM"],
+      
+      // Enables support for newer ECMAScript features
+      "moduleResolution": "node",
+      
+      // Exclude source maps for easier debugging
+      "sourceMap": false,
+  
+      // Avoid emitting unnecessary comments in the output
+      "removeComments": true,
+  
+      // Ensure TypeScript knows you're using modern JS syntax and libraries
+      "allowSyntheticDefaultImports": true
+    },
+    "include": [
+      "src/**/*" // Include all TypeScript files in the src directory
+    ],
+    "exclude": [
+      "node_modules",  // Exclude node_modules
+      "**/*.test.ts",  // Exclude test files, if any
+      "dist"          // Exclude output directory
+    ]
+}
+  

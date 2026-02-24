@@ -58,7 +58,8 @@ class CommitmentTest : public Test {
         global_stats_(Stats::GetGlobalStats(1)),
         config_(GenerateConfig()),
         system_info_(config_),
-        checkpoint_manager_(config_, &replica_communicator_, &verifier_),
+        checkpoint_manager_(config_, &replica_communicator_, &verifier_,
+                            &system_info_),
         message_manager_(std::make_unique<MessageManager>(
             config_, nullptr, &checkpoint_manager_, &system_info_)),
         commitment_(

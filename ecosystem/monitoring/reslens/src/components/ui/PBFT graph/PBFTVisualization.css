@@ -1,0 +1,139 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*
+*/
+
+.pbft-container {
+  background-color: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.pbft-visualization {
+  background-color: #1a1a1a;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  overflow: visible;
+  position: relative;
+}
+
+.pbft-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.timeline {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+}
+
+.node {
+  stroke-width: 2;
+}
+
+.node.client {
+  fill: #FFC107;
+  stroke: #FFA000;
+}
+
+.node.primary {
+  fill: #4CAF50;
+  stroke: #388E3C;
+}
+
+.node.secondary {
+  fill: #2196F3;
+  stroke: #1976D2;
+}
+
+.node-label {
+  fill: #ffffff;
+  font-size: 14px;
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.message-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.message-dot {
+  opacity: 0.8;
+}
+
+.reply-path {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+}
+
+.phase-line {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+}
+
+.phase-label {
+  fill: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.replay-button {
+  cursor: pointer;
+}
+
+.replay-button:hover circle {
+  fill: #3a3a3a;
+}
+
+.replay-button:hover path {
+  stroke: #cccccc;
+}
+
+.full-screen-button-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.full-screen-button {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  padding: 8px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.full-screen-button:hover {
+  background-color: #ffffff;
+  color: #2a2a2a;
+}
+

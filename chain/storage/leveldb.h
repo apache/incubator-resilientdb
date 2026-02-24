@@ -25,8 +25,10 @@
 
 #include "chain/storage/proto/leveldb_config.pb.h"
 #include "chain/storage/storage.h"
+#include "common/lru/lru_cache.h"
 #include "leveldb/db.h"
 #include "leveldb/write_batch.h"
+#include "platform/statistic/stats.h"
 
 namespace resdb {
 namespace storage {
@@ -41,9 +43,12 @@ class ResLevelDB : public Storage {
   ResLevelDB(std::optional<LevelDBInfo> config_data = std::nullopt);
 
   virtual ~ResLevelDB();
+  int SetValueWithSeq(const std::string& key, const std::string& value,
+                      uint64_t seq) override;
   int SetValue(const std::string& key, const std::string& value) override;
   std::string GetValue(const std::string& key) override;
-  std::string GetAllValues(void) override;
+  std::pair<std::string, uint64_t> GetValueWithSeq(const std::string& key,
+                                                   uint64_t seq) override;
   std::string GetRange(const std::string& min_key,
                        const std::string& max_key) override;
 
@@ -53,6 +58,8 @@ class ResLevelDB : public Storage {
                                                   int version) override;
 
   // Return a map of <key, <value, version>>
+  std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+  GetAllItemsWithSeq() override;
   std::map<std::string, std::pair<std::string, int>> GetAllItems() override;
   std::map<std::string, std::pair<std::string, int>> GetKeyRange(
       const std::string& min_key, const std::string& max_key) override;
@@ -65,16 +72,30 @@ class ResLevelDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int top_number) override;
 
+  bool UpdateMetrics();
+
   bool Flush() override;
+
+  virtual uint64_t GetLastCheckpoint() override;
+
+  virtual int SetLastCheckpoint(uint64_t ckpt);
 
  private:
   void CreateDB(const std::string& path);
+  uint64_t GetLastCheckpointInternal();
+  void UpdateLastCkpt(uint64_t seq);
 
  private:
   std::unique_ptr<leveldb::DB> db_ = nullptr;
   ::leveldb::WriteBatch batch_;
   unsigned int write_buffer_size_ = 64 << 20;
   unsigned int write_batch_size_ = 1;
+
+ protected:
+  Stats* global_stats_ = nullptr;
+  std::unique_ptr<LRUCache<std::string, std::string>> block_cache_;
+  uint64_t last_ckpt_;
+  int update_time_ = 0;
 };
 
 }  // namespace storage

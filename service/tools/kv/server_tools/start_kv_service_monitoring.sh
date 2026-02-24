@@ -24,7 +24,8 @@ WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
 GRAFANA_PORT=8090
 
-bazel build //service/kv:kv_service $@
+
+bazel build //service/kv:kv_service --define enable_leveldb=True $@
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert 8090 > server0.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert 8091 > server1.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert 8092 > server2.log &

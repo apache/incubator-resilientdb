@@ -31,6 +31,11 @@
 using namespace resdb;
 using namespace resdb::storage;
 
+void SignalHandler(int sig_num) {
+  LOG(ERROR) << " signal:" << sig_num << " call"
+             << " ======================";
+}
+
 void ShowUsage() {
   printf("<config> <private_key> <cert_file> [logging_dir]\n");
 }
@@ -39,9 +44,8 @@ std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";
-  return NewResLevelDB(db_path, config_data);
+  return NewResLevelDB(db_path, config_data.leveldb_info());
 #endif
-
   LOG(INFO) << "use memory storage.";
   return NewMemoryDB();
 }
@@ -52,7 +56,9 @@ int main(int argc, char** argv) {
     exit(0);
   }
   google::InitGoogleLogging(argv[0]);
-  FLAGS_minloglevel = 1;
+  FLAGS_minloglevel = 0;
+  signal(SIGINT, SignalHandler);
+  signal(SIGKILL, SignalHandler);
 
   char* config_file = argv[1];
   char* private_key_file = argv[2];
@@ -64,7 +70,7 @@ int main(int argc, char** argv) {
 
     auto monitor_port = Stats::GetGlobalStats(5);
     monitor_port->SetPrometheus(grafana_address);
-    LOG(ERROR) << "monitoring prot:" << grafana_address;
+    LOG(ERROR) << "monitoring port:" << grafana_address;
   }
 
   std::unique_ptr<ResDBConfig> config =
@@ -72,7 +78,7 @@ int main(int argc, char** argv) {
   ResConfigData config_data = config->GetConfigData();
 
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
-  LOG(INFO) << "db path:" << db_path;
+  LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
