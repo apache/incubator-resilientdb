@@ -1,0 +1,4 @@
+node_modules/
+coverage/
+examples/out/*
+!examples/out/.gitkeep
