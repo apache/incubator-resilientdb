@@ -1,0 +1,42 @@
+{
+  "name": "resshare-toolkit",
+  "version": "0.1.0",
+  "description": "Universal JavaScript toolkit for ResShare file sharing APIs",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "examples"
+  ],
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "keywords": [
+    "resilientdb",
+    "reshare",
+    "file-sharing",
+    "toolkit",
+    "sdk",
+    "decentralized"
+  ],
+  "author": "ResilientDB Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apache/incubator-resilientdb"
+  },
+  "bugs": {
+    "url": "https://github.com/apache/incubator-resilientdb/issues"
+  },
+  "homepage": "https://github.com/apache/incubator-resilientdb/tree/master/ecosystem/tools/reshare-lib",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0"
+}
