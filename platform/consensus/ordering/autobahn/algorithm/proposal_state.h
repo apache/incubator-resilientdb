@@ -7,7 +7,7 @@
 //#define NOPOA
 
 namespace resdb {
-namespace cassandra {
+namespace autobahn {
 
 /*
 enum ProposalState {

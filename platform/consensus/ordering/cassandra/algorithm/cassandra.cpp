@@ -18,8 +18,8 @@ Cassandra::Cassandra(int id, int f, int total_num, int block_size, SignatureVeri
   total_num_ = total_num;
   f_ = f;
   is_stop_ = false;
-  timeout_ms_ = 100;
-  //timeout_ms_ = 60000;
+  //timeout_ms_ = 100;
+  timeout_ms_ = 60000;
   local_txn_id_ = 1;
   local_proposal_id_ = 1;
   batch_size_ = block_size;
@@ -32,7 +32,7 @@ Cassandra::Cassandra(int id, int f, int total_num, int block_size, SignatureVeri
   execute_id_ = 1;
 
   graph_ = std::make_unique<ProposalGraph>(f_, id, total_num);
-  proposal_manager_ = std::make_unique<ProposalManager>(id, graph_.get());
+  proposal_manager_ = std::make_unique<ProposalManager>(id, graph_.get(), total_num_);
 
   graph_->SetCommitCallBack(
       [&](const Proposal& proposal) { CommitProposal(proposal); });
@@ -617,13 +617,16 @@ bool Cassandra::AddProposal(const Proposal& proposal) {
              << " proposal height:" << proposal.header().height()
              << " num:" << received_num_[graph_->GetCurrentHeight()].size()
              << " from:" << proposal.header().proposer_id()
-             << " last vote:" << last_vote_;
+             << " last vote?:" << last_vote_
+             << " total num:"<<total_num_
+             <<" check:"<<(received_num_[graph_->GetCurrentHeight()].size() == total_num_);
   if (received_num_[graph_->GetCurrentHeight()].size() == total_num_) {
+    LOG(ERROR)<<" last vote:"<<last_vote_<<" CurrentHeight:"<<graph_->GetCurrentHeight();
     if (last_vote_ < graph_->GetCurrentHeight()) {
       last_vote_ = graph_->GetCurrentHeight();
       can_vote_[graph_->GetCurrentHeight()] = true;
       vote_cv_.notify_all();
-      //LOG(ERROR) << "can vote:";
+      LOG(ERROR) << "can vote:";
     }
   }
    //LOG(ERROR)<<"recv done";

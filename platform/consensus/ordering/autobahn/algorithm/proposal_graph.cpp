@@ -1,4 +1,4 @@
-#include "platform/consensus/ordering/cassandra/algorithm/proposal_graph.h"
+#include "platform/consensus/ordering/autobahn/algorithm/proposal_graph.h"
 
 #include <glog/logging.h>
 
@@ -8,22 +8,13 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
-namespace cassandra {
-namespace cassandra_recv {
+namespace autobahn {
 
-/*
-std::vector<ProposalState> GetStates() {
-  return std::vector<ProposalState>{ProposalState::New, ProposalState::Prepared,
-                                    ProposalState::PreCommit};
-}
-*/
 
 ProposalGraph::ProposalGraph(int fault_num, int id, int total_num) : f_(fault_num),id_(id), total_num_(total_num) {
-  ranking_ = std::make_unique<Ranking>();
-  current_height_ = 0;
-  global_stats_ = Stats::GetGlobalStats();
 }
 
+/*
 int ProposalGraph::GetBlockNum(const std::string& hash, int local_id, int proposer_id) {
 if(num_callback_) {
   return num_callback_(hash, local_id, proposer_id);
@@ -72,15 +63,6 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
              << " current height:" << current_height_<<" from:"<<proposal.header().proposer_id()<<" proposal id:"<<proposal.header().proposal_id();
   assert(current_height_ >= latest_commit_.header().height());
 
-
-  /*
-  if (proposal.header().height() < current_height_) {
-    LOG(ERROR) << "height not match:" << current_height_
-               << " proposal height:" << proposal.header().height();
-    return false;
-  }
-  */
-
   if (proposal.header().height() > current_height_) {
     pending_header_[proposal.header().height()].insert(
         proposal.header().proposer_id());
@@ -124,13 +106,6 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
   }
 
   //LOG(ERROR)<<"history size:"<<proposal.history_size();
-   /*
-  for (const auto& history : proposal.history()) {
-    std::string hash = history.hash();
-    auto node_it = node_info_.find(hash);
-    assert(node_it != node_info_.end());
-  }
-  */
 
   //LOG(ERROR)<<" proposal history:"<<proposal.history_size();
   if(proposal.history_size()>0){
@@ -139,7 +114,7 @@ int ProposalGraph::AddProposal(const Proposal& proposal) {
     auto node_it = node_info_.find(hash);
     node_it->second->votes[ProposalState::New].insert(proposal.header().proposer_id());
     CheckState(node_it->second.get(),
-        static_cast<resdb::cassandra::ProposalState>(history.state()));
+        static_cast<resdb::autobahn::ProposalState>(history.state()));
 
     if (node_it->second->state == ProposalState::PoR 
       && node_it->second->proposal.header().proposer_id() == id_){
@@ -289,11 +264,6 @@ void ProposalGraph::Commit(const std::string& hash) {
       }
 
       //LOG(ERROR)<<" bfs sub block size :"<<p->sub_block_size();
-      /*
-      for(auto block : p->sub_block()){
-        LOG(ERROR)<<" get sub block proposer:"<<p->header().proposer_id()<<" local id:"<<block.local_id();
-      }
-    */
       it->second->state = ProposalState::Committed;
       if (is_main_hash.find(c_hash) != is_main_hash.end()) {
         commit_num_[p->header().proposer_id()]++;
@@ -322,14 +292,6 @@ void ProposalGraph::Commit(const std::string& hash) {
   int p_num = 0;
   for (int i = commit_p.size() - 1; i >= 0; i--) {
     for (int j = 0; j < commit_p[i].size(); ++j) {
-      /*
-      if (j == 0) {
-        LOG(ERROR) << "commmit proposal lead from:"
-                   << commit_p[i][j]->header().proposer_id()
-                   << " height:" << commit_p[i][j]->header().height()
-                   << " size:" << commit_p[i].size();
-      }
-      */
       //LOG(ERROR) << "commmit proposal:"
        //          << commit_p[i][j]->header().proposer_id()
         //         << " height:" << commit_p[i][j]->header().height()
@@ -508,21 +470,6 @@ Proposal* ProposalGraph::GetStrongestProposal() {
       }
     }
 
-    /*
-    if(node_info->proposal.header().proposer_id() == sp->proposal.header().proposer_id()) {
-      continue;
-    }
-
-    if(sp == node_info) {
-      continue;
-    }
-    */
-
-        /*
-    if(node_info_.find(last_hash) != node_info_.end()){
-      node_info_.erase(node_info_.find(last_hash));
-    }
-    */
   }
 
 
@@ -645,11 +592,6 @@ int ProposalGraph::GetCurrentHeight() { return current_height_; }
 std::vector<Proposal*> ProposalGraph::GetNewProposals(int height) {
   std::vector<Proposal*> ps;
   for (auto it : new_proposals_) {
-  /*
-    if (it.second->header().height() >= height) {
-      continue;
-    }
-    */
     ps.push_back(it.second);
   }
   for (Proposal* p : ps) {
@@ -667,7 +609,7 @@ std::vector<Block> ProposalGraph::GetNewBlocks() {
   return ps;
 }
 
+*/
 
-}  // namespace cassandra_recv
-}  // namespace cassandra
+}  // namespace autobahn
 }  // namespace resdb

@@ -21,8 +21,8 @@ std::string Encode(const std::string& hash) {
 
 }
 
-ProposalManager::ProposalManager(int32_t id, ProposalGraph* graph)
-    : id_(id), graph_(graph) {
+ProposalManager::ProposalManager(int32_t id, ProposalGraph* graph, int total_num)
+    : id_(id), graph_(graph), total_num_(total_num) {
   local_proposal_id_ = 1;
   global_stats_ = Stats::GetGlobalStats();
 }
@@ -190,12 +190,22 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int round,
       return nullptr;
       // LOG(ERROR) << "generate wait proposal block size:" << blocks_.size();
     }
+
     int max_block = 1;
+
+    int h = round % total_num_;
+    if ( h == 0) h = total_num_;
+    if (id_ != h ) {
+      max_block = 0;
+    }
+
+
     int num = 0;
     int64_t current_time = GetCurrentTime();
     proposal->set_create_time(current_time);
     //LOG(ERROR)<<"block size:"<<blocks_.size();
     for (auto& block : blocks_) {
+      if (max_block <= 0) break;
       data += block->hash();
       Block* ab = proposal->add_block();
       *ab = *block;

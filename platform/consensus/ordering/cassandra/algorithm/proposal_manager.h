@@ -13,7 +13,7 @@ namespace cassandra_recv {
 
 class ProposalManager {
  public:
-  ProposalManager(int32_t id, ProposalGraph* graph);
+  ProposalManager(int32_t id, ProposalGraph* graph, int total_num);
 
   int VerifyProposal(const Proposal& proposal);
 
@@ -68,6 +68,7 @@ class ProposalManager {
   std::mutex t_mutex_;
   std::map<std::string, std::unique_ptr<Proposal>> local_proposal_;
   Stats* global_stats_;
+  int total_num_;
 };
 
 }  // namespace cassandra_recv
