@@ -97,15 +97,35 @@ void AutoBahn::AsyncDissemination() {
     if(next_block == 1) {
       next_block++;
     }
-    LOG(ERROR)<<" get block :"<<next_block-1;
+    //LOG(ERROR)<<" get block :"<<next_block-1;
+
+    std::vector<std::unique_ptr<Transaction>> txns;
+    while (!IsStop()) {
+      std::unique_ptr<Transaction> txn = txns_.Pop();
+      if (txn == nullptr) {
+        continue;
+      }
+      txns.push_back(std::move(txn));
+      for(int i = 1; i < batch_size_; ++i){
+        std::unique_ptr<Transaction> txn = txns_.Pop(100);
+        if(txn == nullptr){
+          break;
+        }
+        txns.push_back(std::move(txn));
+      }
+
+      proposal_manager_->MakeBlock(txns);
+      txns.clear();
+      break;
+    }
     const Block* block = proposal_manager_->GetLocalBlock(next_block-1);
     if(block == nullptr) {
       next_block--;
       continue;
     }
-    LOG(ERROR)<<" broadcast block :"<<next_block-1<<" id:"<<block->local_id();
+    //LOG(ERROR)<<" broadcast block :"<<next_block-1<<" id:"<<block->local_id();
     Broadcast(MessageType::NewBlocks, *block);
-    LOG(ERROR)<<" broadcast block :"<<next_block-1<<" id:"<<block->local_id()<<" done";
+    //LOG(ERROR)<<" broadcast block :"<<next_block-1<<" id:"<<block->local_id()<<" done";
   }
 }
 
@@ -194,7 +214,7 @@ bool AutoBahn::ReceiveProposal(std::unique_ptr<Proposal> proposal) {
 }
 
 bool AutoBahn::ReceiveVote(std::unique_ptr<Proposal> vote) {
-  LOG(ERROR)<<"recv vote ack:"<<vote->slot_id()<<" from:"<<vote->sender_id(); 
+  //LOG(ERROR)<<"recv vote ack:"<<vote->slot_id()<<" from:"<<vote->sender_id(); 
 
   std::unique_ptr<Proposal> vote_cpy = std::make_unique<Proposal>(*vote);
 
@@ -203,13 +223,13 @@ bool AutoBahn::ReceiveVote(std::unique_ptr<Proposal> vote) {
   int sender = vote->sender_id();
   vote_ack_[vote->slot_id()].insert(std::make_pair(vote->sender_id(), std::move(vote)));
 
-  LOG(ERROR)<<"recv vote ack:"<<slot_id<<" from:"<<sender
-    << " num:"<<vote_ack_[slot_id].size();
+  //LOG(ERROR)<<"recv vote ack:"<<slot_id<<" from:"<<sender
+  //  << " num:"<<vote_ack_[slot_id].size();
 
   if (vote_ack_[slot_id].size() >= 2*f_ + 1){
       PrepareDone(std::move(vote_cpy));
   }
-  LOG(ERROR)<<"recv vote ack done";
+  //LOG(ERROR)<<"recv vote ack done";
   return true;
 }
 
@@ -291,7 +311,7 @@ void AutoBahn::AsyncPrepare() {
       int delay = 1000;
       int wait_time = GetCurrentTime() - votes.begin()->second.first;
       wait_time = delay - wait_time;
-      LOG(ERROR)<<" view :"<<view<<" wait time:"<<wait_time;
+      //LOG(ERROR)<<" view :"<<view<<" wait time:"<<wait_time;
       if(wait_time> 0) {
         usleep(wait_time);
       }
@@ -351,16 +371,27 @@ void AutoBahn::Commit(std::unique_ptr<Proposal> proposal) {
     int block_owner = block.sender_id();
     int block_id = block.local_id();
     //LOG(ERROR)<<" commit :"<<block_owner<<" block id :"<<block_id;
-  
-    Block * data_block = proposal_manager_->GetBlock(block_owner, block_id);
-    assert(data_block != nullptr);
 
-    //LOG(ERROR)<<" txn size:"<<data_block->mutable_data()->transaction_size();
-    for (Transaction& txn :
-        *data_block->mutable_data()->mutable_transaction()) {
-      txn.set_id(execute_id_++);
-      commit_(txn);
+    int last_block_id = commit_block_[block_owner];
+
+    for(int i = last_block_id+1; i <= block_id; i++){
+      Block * data_block = nullptr;
+      while(data_block == nullptr){
+        data_block = proposal_manager_->GetBlock(block_owner, i);
+        if(data_block == nullptr) {
+          usleep(100);
+        }
+      }
+      assert(data_block != nullptr);
+
+      //LOG(ERROR)<<" txn size:"<<data_block->mutable_data()->transaction_size()<<" block  owner:"<<block_owner<<" id:"<<i;
+      for (Transaction& txn :
+          *data_block->mutable_data()->mutable_transaction()) {
+        txn.set_id(execute_id_++);
+        commit_(txn);
+      }
     }
+    commit_block_[block_owner] = block_id;
   }
 }
 

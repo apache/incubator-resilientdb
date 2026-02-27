@@ -68,6 +68,7 @@ class AutoBahn: public common::ProtocolBase {
   std::map<int, std::map<int, std::unique_ptr<Proposal>>> vote_ack_ ;
   std::map<int, std::set<int>>  commit_ack_;
   Stats* global_stats_;
+  std::map<int, int64_t> commit_block_;
 };
 
 }  // namespace autobahn

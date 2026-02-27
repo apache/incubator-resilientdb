@@ -66,6 +66,9 @@ Block* ProposalManager::GetBlock(int sender, int64_t block_id) {
   std::unique_lock<std::mutex> lk(mutex_);
   //LOG(ERROR)<<" get block from sender:"<<sender<<" block id:"<<block_id;
   auto it = pending_blocks_[sender].find(block_id);
+  if(it == pending_blocks_[sender].end()) {
+    return nullptr;
+  }
   assert(it != pending_blocks_[sender].end());
   return it->second.get();
 }
@@ -201,11 +204,13 @@ void ProposalManager::IncreaseView() {
 
 std::pair<int, std::map<int, int64_t>> ProposalManager::GetCut() {
   std::map<int, int64_t> blocks;
-  std::unique_lock<std::mutex> lk(slot_mutex_);
-  for(auto it : slot_state_) {
-    if(it.second.first == current_slot_) {
-      blocks[it.first]=it.second.second;
-      //LOG(ERROR)<<"get cut sender:"<<it.first<<" block:"<<it.second.second;
+  {
+    std::unique_lock<std::mutex> lk(slot_mutex_);
+    for(auto it : slot_state_) {
+      if(it.second.first == current_slot_) {
+        blocks[it.first]=it.second.second;
+        //LOG(ERROR)<<"get cut sender:"<<it.first<<" block:"<<it.second.second;
+      }
     }
   }
   current_slot_++;
@@ -219,6 +224,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(int slot, const std:
     for (auto& it: blocks) {
       Block* block = proposal->add_block();
       Block* data_block = GetBlock(it.first, it.second);
+      assert(data_block != nullptr);
       data_hash += data_block->hash();
       //LOG(ERROR)<<" gene proposal block from:"<<data_block->sender_id()<<" block id:"<<data_block->local_id();
       *block->mutable_sign_info() = data_block->sign_info();
