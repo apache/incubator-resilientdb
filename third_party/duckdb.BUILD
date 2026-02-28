@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -18,38 +19,25 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@rules_cc//cc:defs.bzl", "cc_proto_library")
-load("@rules_proto//proto:defs.bzl", "proto_library")
-
-proto_library(
-    name = "kv_proto",
-    srcs = ["kv.proto"],
-    visibility = ["//chain/storage:__subpackages__"],
+cc_library(
+    name = "duckdb",
+    # The amalgamation zip usually just has these three at the root.
+    srcs = ["duckdb.cpp"],
+    hdrs = [
+        "duckdb.hpp",
+        "duckdb.h",
+    ],
+    includes = ["."],
+    # ResilientDB already builds with modern C++; C++17 is safe for DuckDB.
+    copts = [
+        "-std=c++17",
+        # Optional: silence some noisy warnings that big amalgamations usually trigger.
+        "-Wno-unused-parameter",
+        "-Wno-unused-variable",
+        "-Wno-sign-compare",
+    ],
 )
 
-cc_proto_library(
-    name = "kv_cc_proto",
-    visibility = ["//chain/storage:__subpackages__"],
-    deps = [":kv_proto"],
-)
 
-proto_library(
-    name = "leveldb_config_proto",
-    srcs = ["leveldb_config.proto"],
-)
 
-cc_proto_library(
-    name = "leveldb_config_cc_proto",
-    deps = [":leveldb_config_proto"],
-)
-
-proto_library(
-    name = "duckdb_config_proto",
-    srcs = ["duckdb_config.proto"],
-)
-
-cc_proto_library(
-    name = "duckdb_config_cc_proto",
-    deps = [":duckdb_config_proto"],
-)
 

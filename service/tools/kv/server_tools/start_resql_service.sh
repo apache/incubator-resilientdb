@@ -1,0 +1,59 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+# 
+#   http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+# Launcher for the KV service with optional DuckDB flags.
+# Uses the same topology as start_kv_service.sh but injects DuckDB flags
+# when present.
+
+set -euo pipefail
+
+killall -9 kv_service >/dev/null 2>&1 || true
+
+SERVER_PATH=./bazel-bin/service/kv/kv_service
+SERVER_CONFIG=service/tools/config/server/server.config
+WORK_PATH=$PWD
+CERT_PATH=${WORK_PATH}/service/tools/data/cert/
+
+# Always enable DuckDB with a default path per node.
+DEFAULT_DUCKDB_PATH=/tmp
+EXTRA_FLAGS="--enable_duckdb"
+
+
+# No additional flag parsing; DuckDB is always enabled.
+bazel build //service/kv:kv_service
+
+for port in {20001..20005}; do
+    DIR="${WORK_PATH}/${port}_db"
+    if [ ! -d "$DIR" ]; then
+        echo "Creating directory $DIR"
+        mkdir -p "$DIR"
+    else
+        echo "Directory $DIR already exists. Skipping."
+    fi
+done
+
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert $EXTRA_FLAGS > server0.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert $EXTRA_FLAGS > server1.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert $EXTRA_FLAGS > server2.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert $EXTRA_FLAGS > server3.log 2>&1 &
+
+# Optional client node
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert $EXTRA_FLAGS > client.log 2>&1 &
+
+echo "Started KV service with DuckDB enabled."
