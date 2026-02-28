@@ -11,13 +11,16 @@
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANYß
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
 #
 
-export server=//benchmark/protocols/poe:kv_server_performance
-export TEMPLATE_PATH=$PWD/config/poe.config
+protocol=poe
+export server=//benchmark/protocols/$protocol:kv_server_performance
+export service_tools=//benchmark/protocols/pbft:kv_service_tools
+export TEMPLATE_PATH=$PWD/config/$protocol.config
+export performance=true
 
 ./performance_local/run_performance.sh $*
