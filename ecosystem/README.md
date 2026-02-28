@@ -47,6 +47,7 @@ ecosystem/
     ├── resvault/                    # ResVault tool
     ├── create-resilient-app/        # App scaffolding tool
     └── drawing-lib/                 # Drawing library tool
+    └── reshare-lib                  # Cloud storage tool
 ```
 
 ## Clone Without Ecosystem
