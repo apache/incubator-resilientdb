@@ -49,8 +49,12 @@ class AutoBahn: public common::ProtocolBase {
 
   bool IsFastCommit(const Proposal& proposal);
 
+  bool WaitForNextLeader();
+  void StartNextLeader(int slot);
+
+
  private:
-  std::condition_variable bc_block_cv_, view_cv_;
+  std::condition_variable bc_block_cv_, view_cv_, leader_cv_;
   LockFreeQueue<Transaction> txns_;
   LockFreeQueue<Proposal> prepare_queue_, commit_queue_;
   std::unique_ptr<ProposalManager> proposal_manager_;
@@ -63,12 +67,16 @@ class AutoBahn: public common::ProtocolBase {
 
   std::thread block_thread_, dissemi_thread_, consensus_thread_, prepare_thread_, commit_thread_;
 
-  std::mutex block_mutex_, bc_mutex_, view_mutex_, vote_mutex_, commit_mutex_;
+  std::mutex block_mutex_, bc_mutex_, view_mutex_, vote_mutex_, commit_mutex_, leader_mutex_;
   std::map<int, std::map<int, SignInfo>> block_ack_;
   std::map<int, std::map<int, std::unique_ptr<Proposal>>> vote_ack_ ;
   std::map<int, std::set<int>>  commit_ack_;
   Stats* global_stats_;
   std::map<int, int64_t> commit_block_;
+
+  bool is_leader_;
+  int cur_slot_;
+  bool use_hs_;
 };
 
 }  // namespace autobahn

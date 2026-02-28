@@ -51,7 +51,7 @@ void ProposalManager::AddBlock(std::unique_ptr<Block> block) {
   int sender = block->sender_id();
   int block_id = block->local_id();
 
-  //LOG(ERROR)<<"add block from sender:"<<sender<<" id:"<<block_id; 
+  LOG(ERROR)<<"add block from sender:"<<sender<<" id:"<<block_id; 
   
   if(block_id>1) {
     assert(block->last_sign_info_size() >= f_+1);

@@ -21,6 +21,9 @@ AutoBahn::AutoBahn(int id, int f, int total_num, int block_size, SignatureVerifi
   timeout_ms_ = 60000;
   batch_size_ = block_size;
   execute_id_ = 1;
+  is_leader_ = id_ == 1;
+  cur_slot_ = 1;
+  use_hs_ = true;
 
   proposal_manager_ = std::make_unique<ProposalManager>(id, total_num_, f_, verifier);
 
@@ -142,17 +145,48 @@ bool AutoBahn::WaitForNextView(int view) {
   return proposal_manager_->ReadyView(view);
 }
 
+bool AutoBahn::WaitForNextLeader() {
+  std::unique_lock<std::mutex> lk(leader_mutex_);
+  //LOG(ERROR)<<"wait for next view:"<<view;
+  leader_cv_.wait_for(lk, std::chrono::microseconds(timeout_ms_ * 1000),
+      [&] { return is_leader_; });
+  return is_leader_;
+}
+
+void AutoBahn::StartNextLeader(int slot_id) {
+  //LOG(ERROR)<<" start leader slot:"<<slot_id;
+  std::unique_lock<std::mutex> lk(leader_mutex_);
+  cur_slot_ = slot_id;
+  is_leader_ = true;
+  leader_cv_.notify_all();
+}
+
 void AutoBahn::AsyncConsensus() {
   while (!IsStop()) {
-    if (id_ != 1) {
-      break;
+    if(use_hs_){
+      if(!WaitForNextLeader()){
+        continue;
+      }
+      {
+        std::unique_lock<std::mutex> lk(leader_mutex_);
+        is_leader_ = false;
+      }
+    }
+    else {
+      if (!is_leader_) {
+        break;
+      }
     }
     int view = proposal_manager_->GetCurrentView();
     if(!WaitForNextView(view)) {
       continue;
     }
     std::pair<int, std::map<int, int64_t>> blocks = proposal_manager_->GetCut();
-    auto proposal = proposal_manager_->GenerateProposal(blocks.first, blocks.second);
+    int slot_id = blocks.first;
+    if(use_hs_){
+      slot_id = cur_slot_;
+    }
+    auto proposal = proposal_manager_->GenerateProposal(slot_id, blocks.second);
     Broadcast(MessageType::NewProposal, *proposal);
   }
 }
@@ -303,12 +337,15 @@ void AutoBahn::AsyncPrepare() {
     //LOG(ERROR)<<" obtain slot vote:"<<p->slot_id();
     int slot_id = p->slot_id();
     votes[slot_id] = std::make_pair(GetCurrentTime(), std::move(p));
+    if(use_hs_){
+      view = slot_id;
+    }
     while(!votes.empty() && votes.begin()->first <= view) {
       if(votes.begin()->first < view) {
         votes.erase(votes.begin());
         continue;
       }
-      int delay = 1000;
+      int delay = 10000;
       int wait_time = GetCurrentTime() - votes.begin()->second.first;
       wait_time = delay - wait_time;
       //LOG(ERROR)<<" view :"<<view<<" wait time:"<<wait_time;
@@ -316,8 +353,13 @@ void AutoBahn::AsyncPrepare() {
         usleep(wait_time);
       }
       Prepare(std::move(votes.begin()->second.second));
+      if(use_hs_){
+        view = votes.begin()->first+1;
+      }
+      else {
+        view++;
+      }
       votes.erase(votes.begin());
-      view++;
     }
   }
 }
@@ -366,6 +408,7 @@ void AutoBahn::Prepare(std::unique_ptr<Proposal> vote) {
 void AutoBahn::Commit(std::unique_ptr<Proposal> proposal) {
   auto raw_proposal = proposal_manager_->GetProposalData(proposal->slot_id());
   assert(raw_proposal != nullptr);
+  int slot_id = proposal->slot_id();
   //LOG(ERROR)<<" proposal proposal slot id:"<<proposal->slot_id();
   for(const auto& block : raw_proposal->block()) {
     int block_owner = block.sender_id();
@@ -379,6 +422,7 @@ void AutoBahn::Commit(std::unique_ptr<Proposal> proposal) {
       while(data_block == nullptr){
         data_block = proposal_manager_->GetBlock(block_owner, i);
         if(data_block == nullptr) {
+          //LOG(ERROR)<<" wait block:"<<block_owner<<" id:"<<i;
           usleep(100);
         }
       }
@@ -392,6 +436,14 @@ void AutoBahn::Commit(std::unique_ptr<Proposal> proposal) {
       }
     }
     commit_block_[block_owner] = block_id;
+  }
+  if(use_hs_){
+    int view = (slot_id+1) % total_num_;
+    if(view == 0)  view = total_num_;
+    //LOG(ERROR)<<" next view:"<<view<<" id:"<<id_<<" total num:"<<total_num_;
+    if(view == id_){
+      StartNextLeader(slot_id+1);
+    }
   }
 }
 
