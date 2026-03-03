@@ -50,11 +50,11 @@ class LogEntry {
   uint64_t term;
   std::string command;
 
-  uint32_t GetSerializedSize();
+  uint32_t GetSerializedSize() const;
   uint32_t ComputeSerializedEntrySize() const;
   
   private:
-  uint32_t serializedSize = 0;
+  mutable uint32_t serializedSize = 0;
 };
 
 struct AeFields {
@@ -81,7 +81,7 @@ struct RaftStatePatch {
   std::optional<uint64_t> lastApplied;
   std::optional<Role> role;
 
-  std::optional<std::vector<std::unique_ptr<LogEntry>>> log;
+  std::optional<std::vector<LogEntry>> log;
   std::optional<std::vector<uint64_t>> nextIndex;
   std::optional<std::vector<uint64_t>> matchIndex;
   std::optional<std::vector<int>> votes;
@@ -112,6 +112,12 @@ class Raft : public common::ProtocolBase {
   virtual Role GetRoleSnapshot() const;
   virtual void SetRole(Role role);
   virtual void PrintDebugState() const;
+  virtual void SetCurrentTerm(uint64_t currentTerm, bool writeMetadata = true);
+  virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
+  void AddToLog(LogEntry logEntry, bool writeMetadata = true);
+  void TruncateLog(std::vector<LogEntry>::iterator first,
+                          std::vector<LogEntry>::iterator last,
+                          bool writeMetadata = true);
 
  private:
   mutable std::mutex mutex_;
@@ -140,7 +146,7 @@ class Raft : public common::ProtocolBase {
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
-  std::vector<std::unique_ptr<LogEntry>> log_; // Protected by mutex_
+  std::vector<LogEntry> log_; // Protected by mutex_
 
   // Volatile state on leaders:
   std::vector<uint64_t> nextIndex_; // Protected by mutex_
@@ -185,7 +191,7 @@ class Raft : public common::ProtocolBase {
     if (patch.role)         role_         = *patch.role;
 
     if (patch.log) {
-      log_ = std::move(*patch.log);
+      log_ = *patch.log;
       lastLogIndex_ = log_.empty() ? 0 : log_.size() - 1;
     }
 
@@ -204,7 +210,7 @@ class Raft : public common::ProtocolBase {
     return votedFor_;
   }
 
-  const std::vector<std::unique_ptr<LogEntry>>& GetLog() const {
+  const std::vector<LogEntry>& GetLog() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return log_;
   }
@@ -214,14 +220,10 @@ class Raft : public common::ProtocolBase {
 
     for (size_t i = 0; i < log_.size(); ++i) {
       const auto& entry = log_[i];
-      if (!entry) {
-        os << "  [" << i << "] <null entry>\n";
-        continue;
-      }
 
       os << "  [" << i << "] "
-         << "term=" << entry->term << ", command=\"" << entry->command << "\""
-         << ", serializedSize=" << entry->GetSerializedSize() << "\n";
+         << "term=" << entry.term << ", command=\"" << entry.command << "\""
+         << ", serializedSize=" << entry.GetSerializedSize() << "\n";
     }
   }
 

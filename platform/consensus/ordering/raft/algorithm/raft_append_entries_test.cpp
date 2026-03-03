@@ -315,15 +315,15 @@ TEST_F(RaftTest, FollowerAddsAppendEntriesAndTruncatesLog) {
       std::make_unique<AppendEntries>(std::move(aemessage)));
 
   const auto& raft_log = raft_->GetLog();
-  EXPECT_EQ(raft_log[0]->term, 0);
-  EXPECT_EQ(raft_log[0]->command, "COMMON_PREFIX");
-  EXPECT_EQ(raft_log[1]->term, 0);
+  EXPECT_EQ(raft_log[0].term, 0);
+  EXPECT_EQ(raft_log[0].command, "COMMON_PREFIX");
+  EXPECT_EQ(raft_log[1].term, 0);
   // TODO: Use serialized string instead of manually doing it.
-  EXPECT_EQ(raft_log[1]->command, "\n\x14Term 0 Transaction 1");
-  EXPECT_EQ(raft_log[2]->term, 1);
-  EXPECT_EQ(raft_log[2]->command, "\n\x14Term 1 Transaction 1");
-  EXPECT_EQ(raft_log[3]->term, 1);
-  EXPECT_EQ(raft_log[3]->command, "\n\x14Term 1 Transaction 2");
+  EXPECT_EQ(raft_log[1].command, "\n\x14Term 0 Transaction 1");
+  EXPECT_EQ(raft_log[2].term, 1);
+  EXPECT_EQ(raft_log[2].command, "\n\x14Term 1 Transaction 1");
+  EXPECT_EQ(raft_log[3].term, 1);
+  EXPECT_EQ(raft_log[3].command, "\n\x14Term 1 Transaction 2");
   EXPECT_TRUE(success);
 }
 

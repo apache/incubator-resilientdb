@@ -69,7 +69,7 @@ class RaftTest : public ::testing::Test {
 
   AeFields CreateAeFields(uint64_t term, int leaderId, uint64_t prevLogIndex,
                           uint64_t prevLogTerm,
-                          const std::vector<std::unique_ptr<LogEntry>>& entries,
+                          const std::vector<LogEntry>& entries,
                           uint64_t leaderCommit, int followerId) {
     AeFields fields{};
     fields.term = term;
@@ -81,8 +81,8 @@ class RaftTest : public ::testing::Test {
 
     for (const auto& logEntry : entries) {
       LogEntry entry;
-      entry.term = logEntry->term;
-      entry.command = logEntry->command;
+      entry.term = logEntry.term;
+      entry.command = logEntry.command;
       fields.entries.push_back(std::move(entry));
     }
 
@@ -90,38 +90,41 @@ class RaftTest : public ::testing::Test {
   };
 
   // Helper to create a single log entry.
-  std::unique_ptr<LogEntry> CreateLogEntry(uint64_t term,
+  LogEntry CreateLogEntry(uint64_t term,
                                            const std::string& command_data) {
-    auto entry = std::make_unique<LogEntry>();
-    entry->term = term;
-    entry->command = command_data;
+    LogEntry entry;
+    entry.term = term;
+    entry.command = command_data;
     return entry;
   }
 
   // Helper to create a vector of log entries for testing.
-  std::vector<std::unique_ptr<LogEntry>> CreateLogEntries(
+  std::vector<LogEntry> CreateLogEntries(
       const std::vector<std::pair<uint64_t, std::string>>& term_and_cmds,
       bool usedForLogPatch = false) {
-    std::vector<std::unique_ptr<LogEntry>> entries;
+    std::vector<LogEntry> entries;
 
     if (usedForLogPatch) {
-      std::unique_ptr<LogEntry> first_entry = std::make_unique<LogEntry>();
-      first_entry->term = 0;
-      first_entry->command = "COMMON_PREFIX";
-      entries.push_back(std::move(first_entry));
+      LogEntry first_entry;
+      first_entry.term = 0;
+      first_entry.command = "COMMON_PREFIX";
+      entries.push_back(first_entry);
     }
 
     for (const auto& [term, cmd] : term_and_cmds) {
-      std::unique_ptr<LogEntry> entry = std::make_unique<LogEntry>();
-      entry->term = term;
+      LogEntry entry;
+      entry.term = term;
 
       ClientTestRequest req;
       req.set_value(cmd);
+
       std::string serialized;
       req.SerializeToString(&serialized);
-      entry->command = serialized;
-      entries.push_back(std::move(entry));
+      entry.command = serialized;
+
+      entries.push_back(entry);
     }
+
     return entries;
   }
 
