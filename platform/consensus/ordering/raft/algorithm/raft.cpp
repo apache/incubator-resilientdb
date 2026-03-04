@@ -51,9 +51,6 @@ uint32_t LogEntry::GetSerializedSize() const {
 }
 
 uint32_t LogEntry::ComputeSerializedEntrySize() const {
-  Entry entry;
-  entry.set_term(term);
-  entry.set_command(command);
   return entry.ByteSizeLong();
 }
 
@@ -79,8 +76,8 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   //last_heartbeat_time_ = std::chrono::steady_clock::now();
 
   LogEntry sentinel;
-  sentinel.term = 0;
-  sentinel.command = "COMMON_PREFIX";
+  sentinel.entry.set_term(0);
+  sentinel.entry.set_command("COMMON_PREFIX");
   AddToLog(sentinel);
 
   inflightVecs_.resize(total_num_ + 1);
@@ -112,14 +109,18 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       return false;
     }
       // append new transaction to log
-      LogEntry entry;
-      entry.term = currentTerm_;
-      if (!req->SerializeToString(&entry.command)) {
+      LogEntry logEntry;
+      logEntry.entry.set_term(currentTerm_);
+      
+      std::string serialized;
+      if (!req->SerializeToString(&serialized)) {
         LOG(INFO) << "JIM -> " << __FUNCTION__ << ": req could not be serialized";
         return false;
       }
-      entry.GetSerializedSize();
-      AddToLog(std::move(entry));
+
+      logEntry.entry.set_command(std::move(serialized));
+      logEntry.GetSerializedSize();
+      AddToLog(logEntry);
       
 
 
@@ -181,7 +182,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     
     if (tr != TermRelation::STALE && role_ == Role::FOLLOWER) {
       uint64_t i = ae->prevlogindex();
-      if (i < static_cast<uint64_t>(log_.size()) && ae->prevlogterm() == log_[i].term) {
+      if (i < static_cast<uint64_t>(log_.size()) && ae->prevlogterm() == log_[i].entry.term()) {
         success = true; 
       }
     }
@@ -199,7 +200,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     // if conflict, delete suffix and short circuit out of loop
     while (logIdx < log_.size() && entriesIdx < entriesSize) {
       uint64_t term = ae->entries(entriesIdx).term();
-      if (term != log_[logIdx].term) {
+      if (term != log_[logIdx].entry.term()) {
         auto first = log_.begin() + logIdx;
         auto last = log_.begin() + lastLogIndex_ + 1;
         TruncateLog(first, last);
@@ -337,7 +338,7 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
       std::sort(sorted.begin(), sorted.end(), std::greater<uint64_t>());
       uint64_t lastReplicatedIndex = sorted[quorum_ - 1];
       // Need to check the lastReplicatedIndex contains entry from current term
-      if (lastReplicatedIndex > commitIndex_ && log_[lastReplicatedIndex].term == currentTerm_) {
+      if (lastReplicatedIndex > commitIndex_ && log_[lastReplicatedIndex].entry.term() == currentTerm_) {
         LOG(INFO) << "JIM -> " << parent_fn << ": Raised commitIndex_ from "
                  << commitIndex_ << " to " << lastReplicatedIndex;
         commitIndex_ = lastReplicatedIndex;
@@ -642,7 +643,7 @@ TermRelation Raft::TermCheckLocked(uint64_t term) const {
 
 // requires raft mutex to be held
 uint64_t Raft::getLastLogTermLocked() const {
-  return log_[lastLogIndex_].term;
+  return log_[lastLogIndex_].entry.term();
 }
 
 // requires raft mutex to be held
@@ -653,7 +654,7 @@ std::vector<std::unique_ptr<Request>> Raft::PrepareCommitLocked() {
   while (lastApplied_ < commitIndex_) {
     ++lastApplied_;
     auto command = std::make_unique<Request>();
-    if (!command->ParseFromString(log_[lastApplied_].command)) {
+    if (!command->ParseFromString(log_[lastApplied_].entry.command())) {
       LOG(INFO) << "JIM -> " << __FUNCTION__ << ": Failed to parse command";
       continue;
     }
@@ -681,7 +682,7 @@ AeFields Raft::GatherAeFieldsLocked(int followerId, bool heartBeat) const {
   fields.leaderId = id_;
   fields.leaderCommit = commitIndex_;
   fields.prevLogIndex = nextIndex_[followerId] - 1;
-  fields.prevLogTerm = log_[fields.prevLogIndex].term;
+  fields.prevLogTerm = log_[fields.prevLogIndex].entry.term();
   fields.followerId = followerId;
   if (heartBeat) {
     return fields;
@@ -696,8 +697,7 @@ AeFields Raft::GatherAeFieldsLocked(int followerId, bool heartBeat) const {
       break;
     }
     LogEntry entry;
-    entry.term = log_[i].term;
-    entry.command = log_[i].command;
+    entry.entry = log_[i].entry;
     fields.entries.push_back(entry);
   }
   return fields;
@@ -733,9 +733,9 @@ void Raft::CreateAndSendAppendEntryMsg(const AeFields& fields) {
   ae.set_prevlogterm(fields.prevLogTerm);
   ae.set_leadercommitindex(fields.leaderCommit);
   for (const auto& entry : fields.entries) {
-    auto* newEntry = ae.add_entries();
-    newEntry->set_term(entry.term);
-    newEntry->set_command(entry.command);
+    Entry* newEntry = ae.add_entries();
+    newEntry->set_term(entry.entry.term());
+    newEntry->set_command(entry.entry.command());
   }
   SendMessage(MessageType::AppendEntriesMsg, ae, followerId);
   if (replicationLoggingFlag_) {
@@ -746,8 +746,7 @@ void Raft::CreateAndSendAppendEntryMsg(const AeFields& fields) {
 
 LogEntry Raft::CreateLogEntry(const Entry& entry) const {
   LogEntry newEntry;
-  newEntry.term = entry.term();
-  newEntry.command = entry.command();
+  newEntry.entry = entry;
   return newEntry;
 }
 
@@ -858,8 +857,7 @@ void Raft::PrintDebugState() const {
 
   LOG(INFO) << "log_ (size " << log_.size() << "): [";
   for (size_t i = 0; i < log_.size(); ++i) {
-    LOG(INFO) << "{term: " << log_[i].term
-              << ", cmd_size: " << log_[i].command.size() << "}";
+    LOG(INFO) << "{term: " << log_[i].entry.term();
     if (i + 1 != log_.size()) LOG(INFO) << ", ";
   }
   LOG(INFO) << "]\n";

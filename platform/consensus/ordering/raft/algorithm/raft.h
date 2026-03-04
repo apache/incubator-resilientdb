@@ -47,8 +47,7 @@ enum class TermRelation { STALE, CURRENT, NEW };
 
 class LogEntry {
   public:
-  uint64_t term;
-  std::string command;
+  Entry entry;
 
   uint32_t GetSerializedSize() const;
   uint32_t ComputeSerializedEntrySize() const;
