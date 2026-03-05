@@ -55,7 +55,7 @@ uint32_t LogEntry::ComputeSerializedEntrySize() const {
 }
 
 Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
-  LeaderElectionManager* leaderelection_manager, ReplicaCommunicator* replica_communicator)
+  LeaderElectionManager* leaderelection_manager, ReplicaCommunicator* replica_communicator, RaftRecovery* recovery)
     : ProtocolBase(id, f, total_num),
     currentTerm_(0),
     votedFor_(-1),
@@ -63,11 +63,13 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
     commitIndex_(0),
     lastApplied_(0),
     role_(Role::FOLLOWER),
+    seqAfterCheckpoint_(0),
     is_stop_(false),
     quorum_((total_num/2) + 1),
     verifier_(verifier),
     leader_election_manager_(leaderelection_manager),
-    replica_communicator_(replica_communicator) {
+    replica_communicator_(replica_communicator),
+    recovery_(recovery) {
   
   id_ = id;
   total_num_ = total_num;
@@ -523,6 +525,7 @@ void Raft::StartElection() {
       roleChanged = true;
     }
     heartBeatsSentThisTerm_ = 0;
+    LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
     SetCurrentTerm(currentTerm_ + 1, false);
     SetVotedFor(id_);
     votes_.clear();
@@ -617,6 +620,7 @@ void Raft::SendHeartBeat() {
 // returns true if demoted
 bool Raft::DemoteSelfLocked(uint64_t term) {
   if (term > currentTerm_) {
+    LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
     SetCurrentTerm(term, false);
     SetVotedFor(-1);
   }
@@ -831,14 +835,31 @@ bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
 }
 
 void Raft::SetCurrentTerm(uint64_t currentTerm, bool writeMetadata) {
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   currentTerm_ = currentTerm;
+  // if (writeMetadata) {
+  //   recovery_->WriteMetadata(currentTerm_, votedFor_);
+  // }
 }
 
 void Raft::SetVotedFor(int votedFor, bool writeMetadata) {
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   votedFor_ = votedFor;
+  // if (writeMetadata) {
+  //   recovery_->WriteMetadata(currentTerm_, votedFor_);
+  // }
+}
+
+void Raft::SetSeqIndexCoveredBySnapshot(int seq) {
+  seqAfterCheckpoint_ = seq;
 }
 
 void Raft::AddToLog(LogEntry logEntryToAdd, bool writeMetadata) {
+  // Entry* entry;
+  // entry = &logEntryToAdd.entry;
+  // if (writeMetadata) {
+  //   recovery_->AddLogEntry(entry);
+  // }
   log_.push_back(logEntryToAdd);
 }
 

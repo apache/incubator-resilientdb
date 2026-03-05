@@ -38,6 +38,7 @@
 #include "platform/statistic/stats.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/networkstrate/replica_communicator.h"
+#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
 
 namespace resdb {
 namespace raft {
@@ -92,7 +93,8 @@ class Raft : public common::ProtocolBase {
   Raft(int id, int f, int total_num,
     SignatureVerifier* verifier,
     LeaderElectionManager* leaderelection_manager,
-    ReplicaCommunicator* replica_communicator
+    ReplicaCommunicator* replica_communicator,
+    RaftRecovery* recovery
   );
   ~Raft();
 
@@ -113,6 +115,7 @@ class Raft : public common::ProtocolBase {
   virtual void PrintDebugState() const;
   virtual void SetCurrentTerm(uint64_t currentTerm, bool writeMetadata = true);
   virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
+  virtual void SetSeqIndexCoveredBySnapshot(int seq);
   void AddToLog(LogEntry logEntry, bool writeMetadata = true);
   void TruncateLog(std::vector<LogEntry>::iterator first,
                           std::vector<LogEntry>::iterator last,
@@ -162,6 +165,7 @@ class Raft : public common::ProtocolBase {
   std::vector<std::vector<InFlightMsg>> inflightVecs_; // Protected by mutex_
   //std::chrono::steady_clock::time_point last_ae_time_;
   //std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
+  int seqAfterCheckpoint_;
 
   bool is_stop_;
   const uint64_t quorum_;
@@ -177,6 +181,7 @@ class Raft : public common::ProtocolBase {
   LeaderElectionManager* leader_election_manager_;
   //Stats* global_stats_;
   ReplicaCommunicator* replica_communicator_;
+  RaftRecovery* recovery_;
 
 #ifdef RAFT_TEST_MODE
  public:

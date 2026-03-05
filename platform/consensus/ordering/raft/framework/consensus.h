@@ -25,6 +25,9 @@
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/networkstrate/consensus_manager.h"
 
+#include "platform/consensus/ordering/raft/framework/checkpoint_manager.h"
+#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
+
 namespace resdb {
 namespace raft {
 
@@ -38,11 +41,15 @@ class Consensus : public common::Consensus {
   int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
+  // int CommitMsg(const std::unique_ptr<Request> request);
   int CommitMsgInternal(const AppendEntries& txn);
 
  protected:
   std::unique_ptr<Raft> raft_;
   std::unique_ptr<LeaderElectionManager> leader_election_manager_;
+  std::unique_ptr<SystemInfo> system_info_;
+  std::unique_ptr<CheckPointManager> checkpoint_manager_;
+  std::unique_ptr<RaftRecovery> recovery_;
 };
 
 }  // namespace raft

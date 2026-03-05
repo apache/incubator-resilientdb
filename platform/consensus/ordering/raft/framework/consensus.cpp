@@ -32,7 +32,14 @@ namespace raft {
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)),
-    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)) {
+    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)),
+    system_info_(std::make_unique<SystemInfo>(config_)),
+    checkpoint_manager_(std::make_unique<CheckPointManager>(
+          config_, GetBroadCastClient(), GetSignatureVerifier(),
+          system_info_.get())),
+    recovery_(std::make_unique<RaftRecovery>(config_, checkpoint_manager_.get(),
+                                         system_info_.get(),
+                                         transaction_executor_->GetStorage())) {
   //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
@@ -45,10 +52,22 @@ Consensus::Consensus(const ResDBConfig& config,
           .type() != CertificateKeyInfo::CLIENT) {
     raft_ = std::make_unique<Raft>(config_.GetSelfInfo().id(), f, total_replicas,
                                  GetSignatureVerifier(), leader_election_manager_.get(),
-                                replica_communicator_);
+                                 replica_communicator_, recovery_.get());
 
     leader_election_manager_->SetRaft(raft_.get());
     leader_election_manager_->MayStart();
+
+    recovery_->ReadLogs(
+      [&](const RaftMetadata& metadata) {
+        LOG(ERROR) << " read current term: " << metadata.current_term
+                   << " voted for: " << metadata.voted_for;
+        raft_->SetCurrentTerm(metadata.current_term, false);
+        raft_->SetVotedFor(metadata.voted_for, false);
+      },
+      [&](std::unique_ptr<Request> request) {
+        return CommitMsg(std::move(request));
+      },
+      [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
     
     InitProtocol(raft_.get());
   }
@@ -107,6 +126,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     performance_manager_->SetPrimary(dtl->leaderid());
     return 0;
   }
+  LOG(ERROR) << "Unknown message type";
   return 0;
 }
 
@@ -124,6 +144,11 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   transaction_executor_->Commit(std::move(execReq));
   return 0;
 }
+
+// int Consensus::CommitMsg(std::unique_ptr<Request> request) {
+//   transaction_executor_->Commit(std::move(request));
+//   return 0;
+// }
 
 }  // namespace raft
 }  // namespace resdb

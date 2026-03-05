@@ -37,7 +37,7 @@ class Recovery {
            SystemInfo* system_info, Storage* storage);
   virtual ~Recovery();
 
-  void Init();
+  virtual void Init();
 
   virtual void AddRequest(const Context* context, const Request* request);
   void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
@@ -55,33 +55,31 @@ class Recovery {
                                            std::unique_ptr<Request>>>>
   GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
 
- private:
+ protected:
   struct RecoveryData {
     std::unique_ptr<Context> context;
     std::unique_ptr<Request> request;
   };
 
+ private:
+
   void WriteLog(const Context* context, const Request* request);
-  void AppendData(const std::string& data);
+
   std::vector<std::unique_ptr<RecoveryData>> ParseData(const std::string& data);
   std::vector<std::string> ParseRawData(const std::string& data);
-  void Flush();
+
   void MayFlush();
 
   void Write(const char* data, size_t len);
-  bool Read(int fd, size_t len, char* data);
+  
 
   std::string GenerateFile(int64_t seq, int64_t min_seq, int64_t max_seq);
   void GetLastFile();
   void WriteSystemInfo();
 
-  void OpenFile(const std::string& path);
   void FinishFile(int64_t seq);
-  void SwitchFile(const std::string& path);
 
   void UpdateStableCheckPoint();
-  std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t>
-  GetRecoveryFiles(int64_t ckpt);
   void ReadLogsFromFiles(
       const std::string& path, int64_t ckpt, int file_idx,
       std::function<void(const SystemInfoData& data)> system_callback,
@@ -92,6 +90,13 @@ class Recovery {
   void InsertCache(const Context& context, const Request& request);
 
  protected:
+  void Flush();
+  void AppendData(const std::string& data);
+  bool Read(int fd, size_t len, char* data);
+  std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t> GetRecoveryFiles(int64_t ckpt);
+  virtual void SwitchFile(const std::string& path);
+  void OpenFile(const std::string& path);
+
   ResDBConfig config_;
   CheckPoint* checkpoint_;
   std::thread ckpt_thread_;
