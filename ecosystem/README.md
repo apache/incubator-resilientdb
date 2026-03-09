@@ -25,28 +25,37 @@ This directory contains the ResilientDB ecosystem components organized as git su
 
 ```
 ecosystem/
-├── graphql/                          # GraphQL service
-├── smart-contract/                   # Smart contract ecosystem
-│   ├── rescontract/                  # ResContract repository
-│   ├── smart-contract-graphql/       # Smart contract GraphQL service
-│   └── resilient-contract-kit/       # Contract development toolkit
-├── monitoring/                       # Monitoring and observability
-│   ├── reslens/                      # ResLens monitoring tool
-│   └── reslens-middleware/           # ResLens middleware
-├── cache/                           # Caching implementations
-│   ├── resilient-node-cache/        # Node.js caching
-│   └── resilient-python-cache/      # Python caching
-├── sdk/                             # Software Development Kits
-│   ├── rust-sdk/                    # Rust SDK
-│   ├── resvault-sdk/                # ResVault SDK
-│   └── resdb-orm/                   # Python ORM
-├── deployment/                      # Deployment and infrastructure
-│   ├── ansible/                     # Ansible playbooks
-│   └── orbit/                       # Orbit deployment tool
-└── tools/                           # Development and operational tools
-    ├── resvault/                    # ResVault tool
-    ├── create-resilient-app/        # App scaffolding tool
-    └── drawing-lib/                 # Drawing library tool
+├── ai-tools/
+│   ├── beacon/
+│   ├── mcp/
+│   │   ├── graphq-llm/
+│   │   ├── resilientdb-mcp/
+│   │   └── ResInsight/
+│   └── nexus/
+├── cache/
+│   ├── resilient-node-cache/
+│   └── resilient-python-cache/
+├── deployment/
+│   ├── ansible/
+│   └── orbit/
+├── graphql/
+├── monitoring/
+│   ├── reslens/
+│   └── reslens-middleware/
+├── sdk/
+│   ├── resdb-orm/
+│   ├── resvault-sdk/
+│   └── rust-sdk/
+├── smart-contract/
+│   ├── rescontract/
+│   ├── resilient-contract-kit/
+│   └── smart-contract-graphql/
+├── third_party/
+│   └── pocketflow/
+└── tools/
+    ├── create-resilient-app/
+    ├── drawing-lib/
+    └── resvault/
 ```
 
 ## Clone Without Ecosystem
