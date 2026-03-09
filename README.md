@@ -76,7 +76,7 @@ The latest ResilientDB documentation, including a programming guide, is availabl
    - Continuous Integration & Testing 
 
 <div align = "center">
-<img src="./img/nexres.png" width="600">
+<img src="./img/nexres_architecture.png" width="600">
 </div>
 
 ## OS Requirements
