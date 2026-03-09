@@ -60,6 +60,9 @@ class KVClient : public TransactionConstructor {
   std::unique_ptr<std::string> Get(const std::string& key);
   std::unique_ptr<std::string> GetRange(const std::string& min_key,
                                         const std::string& max_key);
+
+  // Execute an arbitrary SQL query when the KV service is backed by DuckDB.
+  std::unique_ptr<std::string> ExecuteSQL(const std::string& sql_query);
 };
 
 }  // namespace resdb

@@ -23,6 +23,7 @@ package resdb;
 
 import "common/proto/signature_info.proto";
 import "chain/storage/proto/leveldb_config.proto";
+import "chain/storage/proto/duckdb_config.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -40,6 +41,7 @@ message ResConfigData{
   repeated RegionInfo region = 1;
   int32 self_region_id = 2;
   optional storage.LevelDBInfo leveldb_info = 4;
+  optional storage.DuckDBInfo duckdb_info = 25;
   optional bool enable_viewchange = 5;
   optional int32 view_change_timeout_ms = 10;
   optional bool not_need_signature = 6; // when delivering messages, it should be signed or not.
