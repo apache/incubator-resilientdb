@@ -38,7 +38,6 @@ Consensus::Consensus(const ResDBConfig& config,
           config_, GetBroadCastClient(), GetSignatureVerifier(),
           system_info_.get())),
     recovery_(std::make_unique<RaftRecovery>(config_, checkpoint_manager_.get(),
-                                         system_info_.get(),
                                          transaction_executor_->GetStorage())) {
   //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
@@ -57,17 +56,7 @@ Consensus::Consensus(const ResDBConfig& config,
     leader_election_manager_->SetRaft(raft_.get());
     leader_election_manager_->MayStart();
 
-    recovery_->ReadLogs(
-      [&](const RaftMetadata& metadata) {
-        LOG(ERROR) << " read current term: " << metadata.current_term
-                   << " voted for: " << metadata.voted_for;
-        raft_->SetCurrentTerm(metadata.current_term, false);
-        raft_->SetVotedFor(metadata.voted_for, false);
-      },
-      [&](std::unique_ptr<Request> request) {
-        return CommitMsg(std::move(request));
-      },
-      [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
+    RecoverFromLogs();
     
     InitProtocol(raft_.get());
   }
@@ -130,6 +119,20 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
   return 0;
 }
 
+void Consensus::RecoverFromLogs() {
+  recovery_->ReadLogs<RaftMetadata>(
+      [&](const RaftMetadata& metadata) {
+        LOG(ERROR) << " read current term: " << metadata.current_term
+                   << " voted for: " << metadata.voted_for;
+        raft_->SetCurrentTerm(metadata.current_term, false);
+        raft_->SetVotedFor(metadata.voted_for, false);
+      },
+      [&](std::unique_ptr<Request> request) {
+        return CommitMsg(*request);
+      },
+      [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
+}
+
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
     return raft_->ReceiveTransaction(std::move(request));
 }
@@ -145,10 +148,6 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   return 0;
 }
 
-// int Consensus::CommitMsg(std::unique_ptr<Request> request) {
-//   transaction_executor_->Commit(std::move(request));
-//   return 0;
-// }
 
 }  // namespace raft
 }  // namespace resdb

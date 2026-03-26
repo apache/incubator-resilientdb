@@ -19,9 +19,8 @@
 package(default_visibility = ["//platform/consensus:__subpackages__"])
 
 cc_library(
-    name = "recovery",
-    srcs = ["recovery.cpp"],
-    hdrs = ["recovery.h"],
+    name = "recovery_base",
+    hdrs = ["recovery.h", "recovery_impl.h", "recovery_template_functions.h"],
     deps = [
         "//chain/storage",
         "//common/utils",
@@ -31,6 +30,15 @@ cc_library(
         "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
         "//platform/proto:system_info_data_cc_proto",
+    ],
+)
+
+cc_library(
+    name = "recovery",
+    srcs = ["pbft_recovery.cpp"],
+    hdrs = ["pbft_recovery.h"],
+    deps = [
+        ":recovery_base",
     ],
 )
 

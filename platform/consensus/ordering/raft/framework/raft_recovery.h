@@ -40,25 +40,32 @@ struct RaftMetadata {
   int32_t voted_for = -1;
 };
 
-class RaftRecovery : public Recovery {
+class RaftRecovery : public RecoveryBase<RaftRecovery> {
+  friend class RecoveryBase<RaftRecovery>;
  public:
-  RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
-               SystemInfo* system_info, Storage* storage);
+  RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage);
   ~RaftRecovery();
 
   RaftMetadata ReadMetadata();
   void Init();
   void WriteMetadata(int64_t current_term, int32_t voted_for);
-  void ReadLogs(std::function<void(const RaftMetadata& data)> system_callback,std::function<void(std::unique_ptr<Request> request)> call_back, std::function<void(int)> set_start_point);
   void AddLogEntry(const Entry* entry);
+  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>>
+  GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
 
  private:
   void OpenMetadataFile();
-  std::vector<std::unique_ptr<RaftRecovery::RecoveryData>> ParseData(const std::string& data);
+  void WriteSystemInfo();
+  std::vector<std::unique_ptr<RecoveryData>> ParseDataListItem(
+    std::vector<std::string> &data_list);
   void WriteLog(const Entry* entry);
-  void ReadLogsFromFiles(const std::string& path, int64_t ckpt, int file_idx, std::function<void(const RaftMetadata& data)> system_callback, std::function<void(std::unique_ptr<Request> request)> call_back);
-  std::map<uint64_t, std::vector<std::unique_ptr<Request>>> GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
-  void SwitchFile(const std::string& path);
+
+  void PerformCallback(
+  std::vector<std::unique_ptr<RecoveryData>> &request_list,
+  std::function<void(std::unique_ptr<Request> request)>
+      call_back, int64_t ckpt);
+ 
+  bool PerformSystemCallback(std::vector<std::string> data_list, std::function<void(const RaftMetadata&)> system_callback);
 
   int metadata_fd_;
   std::string meta_file_path_;

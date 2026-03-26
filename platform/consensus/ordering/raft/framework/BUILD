@@ -78,3 +78,22 @@ cc_library(
         "//platform/consensus/ordering/raft/algorithm:raft",
     ],
 )
+
+cc_test(
+    name = "raft_recovery_test",
+    srcs = [
+        "raft_recovery_test.cpp",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft_recovery",
+        "//chain/storage:mock_storage",
+        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
+        "//platform/consensus/checkpoint:mock_checkpoint",
+        ":transaction_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+        "//platform/consensus/ordering/raft/algorithm:raft"
+    ],
+    size="small"
+)

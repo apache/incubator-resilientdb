@@ -25,7 +25,7 @@ ResDBConfig GenerateConfig() {
                      GenerateReplicaInfo(1, "127.0.0.1", 1234), data);
 }
 
-class RaftTest : public ::testing::Test {
+class RecoveryTest : public ::testing::Test {
  private:
   class MockSendMessageFunction {
    public:
@@ -42,11 +42,12 @@ class RaftTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
+    auto config = GenerateConfig();
     verifier_ = std::make_unique<MockSignatureVerifier>();
     leader_election_manager_ =
-        std::make_unique<MockLeaderElectionManager>(GenerateConfig());
+        std::make_unique<MockLeaderElectionManager>(config);
     replica_communicator_ = std::make_unique<MockReplicaCommunicator>();
-    recovery_ = std::make_unique<MockRaftRecovery>();
+    recovery_ = std::make_unique<MockRaftRecovery>(config, CheckPoint* checkpoint, SystemInfo* system_info, Storage* storage);
     raft_ = std::make_unique<Raft>(
         /*id=*/1,
         /*f=*/1,

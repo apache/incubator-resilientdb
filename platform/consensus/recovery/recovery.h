@@ -24,26 +24,32 @@
 #include "chain/storage/storage.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/checkpoint/checkpoint.h"
-#include "platform/consensus/execution/system_info.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
-#include "platform/proto/system_info_data.pb.h"
+#include <glog/logging.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
+#include "common/utils/utils.h"
 
 namespace resdb {
 
-class Recovery {
+template<typename TDerived>
+class RecoveryBase {
  public:
-  Recovery(const ResDBConfig& config, CheckPoint* checkpoint,
-           SystemInfo* system_info, Storage* storage);
-  virtual ~Recovery();
-
-  virtual void Init();
-
-  virtual void AddRequest(const Context* context, const Request* request);
-  void ReadLogs(std::function<void(const SystemInfoData& data)> system_callback,
-                std::function<void(std::unique_ptr<Context> context,
-                                   std::unique_ptr<Request> request)>
-                    call_back,
+  RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage);
+  ~RecoveryBase();
+  // void Init();
+  template<typename TSystemInfoData, typename TCallback>
+  void ReadLogs(std::function<void(const TSystemInfoData& data)> system_callback,
+                TCallback call_back,
                 std::function<void(int)> start_point);
 
   int64_t GetMaxSeq();
@@ -51,11 +57,8 @@ class Recovery {
 
   int GetData(const RecoveryRequest& request, RecoveryResponse& response);
 
-  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>,
-                                           std::unique_ptr<Request>>>>
-  GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
-
  protected:
+  std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
   struct RecoveryData {
     std::unique_ptr<Context> context;
     std::unique_ptr<Request> request;
@@ -72,37 +75,48 @@ class Recovery {
 
   void Write(const char* data, size_t len);
   
-
   std::string GenerateFile(int64_t seq, int64_t min_seq, int64_t max_seq);
-  void GetLastFile();
-  void WriteSystemInfo();
 
   void FinishFile(int64_t seq);
-
-  void UpdateStableCheckPoint();
-  void ReadLogsFromFiles(
-      const std::string& path, int64_t ckpt, int file_idx,
-      std::function<void(const SystemInfoData& data)> system_callback,
-      std::function<void(std::unique_ptr<Context> context,
-                         std::unique_ptr<Request> request)>
-          call_back);
 
   void InsertCache(const Context& context, const Request& request);
 
  protected:
+  void GetLastFile();
+  void UpdateStableCheckPoint();
   void Flush();
+
   void AppendData(const std::string& data);
   bool Read(int fd, size_t len, char* data);
   std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t> GetRecoveryFiles(int64_t ckpt);
-  virtual void SwitchFile(const std::string& path);
+
+  template<typename TSystemInfoData, typename TCallback>
+  void SwitchFile(const std::string& path, TCallback call_back);
   void OpenFile(const std::string& path);
 
+  template<typename TSystemInfoData, typename TCallback>
+  void ReadLogsFromFiles(
+    const std::string& path, int64_t ckpt, int file_idx,
+    std::function<void(const TSystemInfoData& data)> system_callback,
+    TCallback call_back);
+
+  std::string file_path_;
   ResDBConfig config_;
+  // Derived class must implement these
+  std::vector<std::unique_ptr<RecoveryData>> ParseDataListItem(std::vector<std::string>& data_list);
+
+  template<typename TCallback>
+  void PerformCallback(std::vector<std::unique_ptr<RecoveryData>>& request_list, TCallback call_back);
+
+  void WriteSystemInfo();
+
+
   CheckPoint* checkpoint_;
   std::thread ckpt_thread_;
   bool recovery_enabled_ = false;
   std::string buffer_;
-  std::string file_path_, base_file_path_;
+
+  std::string base_file_path_;
   size_t buffer_size_ = 0;
   int fd_;
   std::mutex mutex_, data_mutex_;
@@ -112,8 +126,10 @@ class Recovery {
   std::mutex ckpt_mutex_;
   std::atomic<bool> stop_;
   int recovery_ckpt_time_s_;
-  SystemInfo* system_info_;
   Storage* storage_;
 };
+
+#include "platform/consensus/recovery/recovery_impl.h"
+#include "platform/consensus/recovery/recovery_template_functions.h"
 
 }  // namespace resdb

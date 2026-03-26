@@ -41,8 +41,11 @@ class Consensus : public common::Consensus {
   int ProcessCustomConsensus(std::unique_ptr<Request> request) override;
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
-  // int CommitMsg(const std::unique_ptr<Request> request);
   int CommitMsgInternal(const AppendEntries& txn);
+#ifdef RAFT_TEST_MODE
+ public:
+#endif
+  void RecoverFromLogs();
 
  protected:
   std::unique_ptr<Raft> raft_;

@@ -837,17 +837,17 @@ bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
 void Raft::SetCurrentTerm(uint64_t currentTerm, bool writeMetadata) {
   LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   currentTerm_ = currentTerm;
-  // if (writeMetadata) {
-  //   recovery_->WriteMetadata(currentTerm_, votedFor_);
-  // }
+  if (writeMetadata) {
+    recovery_->WriteMetadata(currentTerm_, votedFor_);
+  }
 }
 
 void Raft::SetVotedFor(int votedFor, bool writeMetadata) {
   LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   votedFor_ = votedFor;
-  // if (writeMetadata) {
-  //   recovery_->WriteMetadata(currentTerm_, votedFor_);
-  // }
+  if (writeMetadata) {
+    recovery_->WriteMetadata(currentTerm_, votedFor_);
+  }
 }
 
 void Raft::SetSeqIndexCoveredBySnapshot(int seq) {
@@ -855,11 +855,11 @@ void Raft::SetSeqIndexCoveredBySnapshot(int seq) {
 }
 
 void Raft::AddToLog(LogEntry logEntryToAdd, bool writeMetadata) {
-  // Entry* entry;
-  // entry = &logEntryToAdd.entry;
-  // if (writeMetadata) {
-  //   recovery_->AddLogEntry(entry);
-  // }
+  Entry* entry;
+  entry = &logEntryToAdd.entry;
+  if (writeMetadata) {
+    recovery_->AddLogEntry(entry);
+  }
   log_.push_back(logEntryToAdd);
 }
 

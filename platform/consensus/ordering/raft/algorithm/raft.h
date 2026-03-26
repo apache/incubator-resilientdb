@@ -226,7 +226,7 @@ class Raft : public common::ProtocolBase {
       const auto& entry = log_[i];
 
       os << "  [" << i << "] "
-         << "term=" << entry.term << ", command=\"" << entry.command << "\""
+         << "term=" << entry.entry.term() << ", command=\"" << entry.entry.command() << "\""
          << ", serializedSize=" << entry.GetSerializedSize() << "\n";
     }
   }

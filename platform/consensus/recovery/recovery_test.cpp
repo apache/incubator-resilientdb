@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#include "platform/consensus/recovery/recovery.h"
+#include "platform/consensus/recovery/pbft_recovery.h"
 
 #include <glog/logging.h>
 #include <gmock/gmock.h>
@@ -87,7 +87,7 @@ TEST_F(RecoveryTest, ReadLog) {
   };
 
   {
-    Recovery recovery(config_, &checkpoint_, &system_info_, nullptr);
+    PBFTRecovery recovery(config_, &checkpoint_, &system_info_, nullptr);
 
     for (int t : types) {
       std::unique_ptr<Request> request =
@@ -98,12 +98,19 @@ TEST_F(RecoveryTest, ReadLog) {
   }
   {
     std::vector<Request> list;
-    Recovery recovery(config_, &checkpoint_, &system_info_, nullptr);
-    recovery.ReadLogs(
+    PBFTRecovery recovery(config_, &checkpoint_, &system_info_, nullptr);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
         [&](const SystemInfoData &data) {},
-        [&](std::unique_ptr<Context> context,
-            std::unique_ptr<Request> request) { list.push_back(*request); },
-        nullptr);
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -127,7 +134,7 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
   };
 
   {
-    Recovery recovery(config, &checkpoint_, &system_info_, nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
 
     for (int t : types) {
       std::unique_ptr<Request> request =
@@ -138,14 +145,19 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
   }
   {
     std::vector<Request> list;
-    Recovery recovery(config, &checkpoint_, &system_info_, nullptr);
-    recovery.ReadLogs([&](const SystemInfoData &data) {},
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        LOG(ERROR) << "call back:" << request->seq();
-                        list.push_back(*request);
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &data) {},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -180,7 +192,7 @@ TEST_F(RecoveryTest, CheckPoint) {
   }));
 
   {
-    Recovery recovery(config, &checkpoint_, &system_info_, nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
 
     for (int i = 1; i < 10; ++i) {
       for (int t : types) {
@@ -205,14 +217,19 @@ TEST_F(RecoveryTest, CheckPoint) {
   EXPECT_EQ(log_list.size(), 2);
   {
     std::vector<Request> list;
-    Recovery recovery(config, &checkpoint_, &system_info_, nullptr);
-    recovery.ReadLogs([&](const SystemInfoData &data) {},
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        list.push_back(*request);
-                        // LOG(ERROR)<<"call back:"<<request->seq();
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &data) {},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -258,7 +275,7 @@ TEST_F(RecoveryTest, CheckPoint2) {
   }));
 
   {
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
 
     for (int i = 1; i < 10; ++i) {
       for (int t : types) {
@@ -283,14 +300,19 @@ TEST_F(RecoveryTest, CheckPoint2) {
   EXPECT_EQ(log_list.size(), 2);
   {
     std::vector<Request> list;
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
-    recovery.ReadLogs([&](const SystemInfoData &data) {},
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        list.push_back(*request);
-                        // LOG(ERROR)<<"call back:"<<request->seq();
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &data) {},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -321,14 +343,19 @@ TEST_F(RecoveryTest, CheckPoint2) {
 
   {
     std::vector<Request> list;
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
-    recovery.ReadLogs([&](const SystemInfoData &data) {},
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        list.push_back(*request);
-                        // LOG(ERROR)<<"call back:"<<request->seq();
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &data) {},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), types.size() * 9);
 
@@ -376,7 +403,7 @@ TEST_F(RecoveryTest, SystemInfo) {
   }));
 
   {
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
     system_info_.SetCurrentView(2);
     system_info_.SetPrimary(2);
 
@@ -404,14 +431,19 @@ TEST_F(RecoveryTest, SystemInfo) {
   {
     std::vector<Request> list;
     SystemInfoData data;
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
-    recovery.ReadLogs([&](const SystemInfoData &r_data) { data = r_data; },
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        list.push_back(*request);
-                        // LOG(ERROR)<<"call back:"<<request->seq();
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &r_data) {data = r_data;},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -443,14 +475,19 @@ TEST_F(RecoveryTest, SystemInfo) {
   {
     std::vector<Request> list;
     SystemInfoData data;
-    Recovery recovery(config, &checkpoint_, &system_info_, &storage);
-    recovery.ReadLogs([&](const SystemInfoData &r_data) { data = r_data; },
-                      [&](std::unique_ptr<Context> context,
-                          std::unique_ptr<Request> request) {
-                        list.push_back(*request);
-                        // LOG(ERROR)<<"call back:"<<request->seq();
-                      },
-                      nullptr);
+    PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
+
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
+    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        list.push_back(*request);
+        // LOG(ERROR) << "call back:" << request->seq();
+    };
+
+    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
+        [&](const SystemInfoData &r_data) {data = r_data;},
+        call_back,
+        nullptr
+    );
 
     EXPECT_EQ(data.view(), 2);
     EXPECT_EQ(data.primary_id(), 2);
