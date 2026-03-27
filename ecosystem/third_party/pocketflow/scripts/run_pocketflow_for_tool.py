@@ -5,7 +5,7 @@ using only the generated index.md content.
 
 Usage (from repo root):
 
-    python ecosystem/pocketflow/scripts/run_pocketflow_for_tool.py --tool rescontract
+    python ecosystem/third_party/pocketflow/scripts/run_pocketflow_for_tool.py --tool rescontract
 
 This will:
   - Look up `rescontract` in tool-doc-map.json
@@ -23,10 +23,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Repo root is three levels up from this script:
-# ecosystem/pocketflow/scripts/run_pocketflow_for_tool.py
-REPO_ROOT = Path(__file__).resolve().parents[3]
-POCKETFLOW_DIR = REPO_ROOT / "ecosystem" / "pocketflow"
+# .../ecosystem/third_party/pocketflow/scripts/run_pocketflow_for_tool.py
+POCKETFLOW_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = POCKETFLOW_DIR.parents[2]
 OUTPUT_BASE = POCKETFLOW_DIR / ".pf-output"
 
 
@@ -55,7 +54,7 @@ def run_pocketflow_for_dir(
     single_file: bool = False,
 ) -> Path:
     """
-    Invoke ecosystem/pocketflow/main.py pointing at code_root and
+    Invoke ecosystem/third_party/pocketflow/main.py pointing at code_root and
     returning the expected path to index.md for the generated project.
     """
     main_py = POCKETFLOW_DIR / "main.py"

@@ -4,7 +4,7 @@ Replace the auto-generated documentation block inside an MDX file
 with fresh content produced by Pocketflow.
 
 Usage:
-    python ecosystem/pocketflow/scripts/update_mdx_section.py \
+    python ecosystem/third_party/pocketflow/scripts/update_mdx_section.py \
         --tool rescontract \
         --body-file /tmp/rescontract_body.md
 """
@@ -18,9 +18,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Repo root is three levels up from this script:
-# ecosystem/pocketflow/scripts/update_mdx_section.py
-REPO_ROOT = Path(__file__).resolve().parents[3]
+# .../ecosystem/third_party/pocketflow/scripts/update_mdx_section.py
+POCKETFLOW_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = POCKETFLOW_DIR.parents[2]
 DEFAULT_TEMPLATE = """# {title}
 
 {{/* BEGIN AUTO_DOC: {name} */}}
@@ -32,7 +32,7 @@ DEFAULT_TEMPLATE = """# {title}
 
 
 def load_tool_map() -> list[dict]:
-    tool_map_path = REPO_ROOT / "ecosystem" / "pocketflow" / "tool-doc-map.json"
+    tool_map_path = POCKETFLOW_DIR / "tool-doc-map.json"
     try:
         with tool_map_path.open("r", encoding="utf-8") as fh:
             return json.load(fh)
