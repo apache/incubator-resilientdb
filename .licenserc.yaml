@@ -17,7 +17,6 @@ header:
     - 'ecosystem/**/*.mdx'
     - 'ecosystem/**/*.json'
     - 'ecosystem/**/LICENSE*'
-    - 'ecosystem/monitoring/reslens/src/lib/**'
     - 'ecosystem/third_party/**'
 
 
