@@ -368,6 +368,111 @@ program
   });
 
 program
+  .command('execute')
+  .description('Execute a function on a deployed smart contract')
+  .requiredOption('-c, --config <configPath>', 'Client configuration path')
+  .requiredOption(
+    '-m, --sender <senderAddress>',
+    'Address of the account calling the function'
+  )
+  .requiredOption(
+    '-s, --contract <contractAddress>',
+    'Address of the deployed contract'
+  )
+  .requiredOption(
+    '-f, --function-name <name>',
+    'Function to call (include parameter types), e.g. transfer(address,uint256)'
+  )
+  .requiredOption(
+    '-a, --arguments <parameters>',
+    'Function arguments as a comma-separated list (no spaces unless inside quotes)'
+  )
+  .action(async (options) => {
+    try {
+      const {
+        config: configPath,
+        sender,
+        contract: contractAddress,
+        functionName,
+        arguments: funcArgs,
+      } = options;
+
+      if (!fs.existsSync(configPath)) {
+        logger.error(`Config file not found at ${configPath}`);
+        console.error(`Error: Config file not found at ${configPath}`);
+        process.exit(1);
+      }
+
+      const resDBHome = await ensureResDBHome();
+      const commandPath = path.join(
+        resDBHome,
+        'bazel-bin',
+        'service',
+        'tools',
+        'kv',
+        'api_tools',
+        'contract_service_tools'
+      );
+
+      const jsonConfig = {
+        command: 'execute',
+        caller_address: sender,
+        contract_address: contractAddress,
+        func_name: functionName,
+        params: funcArgs,
+      };
+      const jsonConfigPath = path.join(
+        os.tmpdir(),
+        `execute_${Date.now()}.json`
+      );
+      fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
+
+      let output;
+      try {
+        output = await handleSpawnProcess(commandPath, [
+          '-c',
+          configPath,
+          '--config_file',
+          jsonConfigPath,
+        ]);
+      } finally {
+        if (fs.existsSync(jsonConfigPath)) {
+          fs.unlinkSync(jsonConfigPath);
+        }
+      }
+
+      if (output.includes('execute contract fail')) {
+        console.error(
+          JSON.stringify({
+            error: 'Contract execution failed (see stderr output above).',
+          })
+        );
+        process.exit(1);
+      }
+
+      let result = null;
+      const idx = output.lastIndexOf('execute result:');
+      if (idx !== -1) {
+        result = output.slice(idx + 'execute result:'.length).trim();
+        result = result.replace(/^\[[^\]]+\]\s*/m, '').trim();
+      }
+
+      if (result !== null && result.length > 0) {
+        console.log(JSON.stringify({ result }));
+      } else {
+        console.log(JSON.stringify({ output: output.trim() }));
+      }
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          error: error.message,
+        })
+      );
+      process.exit(1);
+    }
+  });
+
+program
   .command('add_address')
   .description('Add an external address to the system')
   .requiredOption('-c, --config <path>', 'Path to the config file')
