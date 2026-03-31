@@ -78,5 +78,27 @@ do
   idx=$(($idx+1))
 done
 
+#python3 ${CONFIG_TOOLS_BIN} ./client.config ./client.config.json ${TEMPLATE_PATH}
+#mv client.config.json client.config
+
+# Rewrite client.config into RegionInfo JSON for ReadConfig()
+python3 - <<'PY'
+import json
+
+path = "client.config"
+replicas = []
+with open(path) as f:
+    for line in f:
+        line = line.strip()
+        if not line:
+            continue
+        i, ip, port = line.split()
+        replicas.append({"id": int(i), "ip": ip, "port": int(port)})
+
+with open(path, "w") as out:
+    json.dump({"replicaInfo": replicas}, out)
+    out.write("\n")
+PY
+
 python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json ${TEMPLATE_PATH}
 mv server.config.json server.config
