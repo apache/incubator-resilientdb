@@ -102,7 +102,7 @@ TEST_F(RecoveryTest, ReadLog) {
     recovery.ReadLogs(
         [&](const SystemInfoData &data) {},
         [&](std::unique_ptr<Context> context,
-            std::unique_ptr<Request> request) { LOG(ERROR)<<"read type:"<<request->type(); list.push_back(*request); },
+            std::unique_ptr<Request> request) { list.push_back(*request); },
         nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
@@ -112,7 +112,6 @@ TEST_F(RecoveryTest, ReadLog) {
     }
   }
 }
-
 
 TEST_F(RecoveryTest, ReadLog_FlushOnce) {
   ResDBConfig config(GetConfigData(1024), ReplicaInfo(), KeyInfo(),
@@ -143,7 +142,6 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
     recovery.ReadLogs([&](const SystemInfoData &data) {},
                       [&](std::unique_ptr<Context> context,
                           std::unique_ptr<Request> request) {
-                        LOG(ERROR) << "call back:" << request->seq()<<" type:"<<request->type();
                         list.push_back(*request);
                       },
                       nullptr);
