@@ -452,9 +452,11 @@ void Recovery::ReadLogs(
   if (recovery_enabled_ == false) {
     return;
   }
-  assert(storage_);
-  int64_t storage_ckpt = storage_->GetLastCheckpoint();
-  LOG(ERROR) << " storage ckpt:" << storage_ckpt;
+
+  int64_t storage_ckpt = 0;
+  if(storage_) {
+    storage_ckpt = storage_->GetLastCheckpoint();
+  }
   std::unique_lock<std::mutex> lk(mutex_);
 
   auto recovery_files_pair = GetRecoveryFiles(storage_ckpt);
