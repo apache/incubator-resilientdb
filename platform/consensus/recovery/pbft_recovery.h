@@ -19,16 +19,17 @@
 
 #pragma once
 
-#include "platform/consensus/recovery/recovery.h"
 #include "platform/consensus/execution/system_info.h"
+#include "platform/consensus/recovery/recovery.h"
 
 namespace resdb {
 
 class PBFTRecovery : public RecoveryBase<PBFTRecovery> {
   friend class RecoveryBase<PBFTRecovery>;
+
  public:
   PBFTRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
-           SystemInfo* system_info, Storage* storage);
+               SystemInfo* system_info, Storage* storage);
   ~PBFTRecovery() = default;
 
   void AddRequest(const Context* context, const Request* request);
@@ -50,15 +51,17 @@ class PBFTRecovery : public RecoveryBase<PBFTRecovery> {
   void WriteSystemInfo();
 
   std::vector<std::unique_ptr<RecoveryData>> ParseDataListItem(
-    std::vector<std::string> &data_list);
+      std::vector<std::string>& data_list);
 
-  void PerformCallback(
-    std::vector<std::unique_ptr<RecoveryData>> &request_list,
-    std::function<void(std::unique_ptr<Context> context,
-                       std::unique_ptr<Request> request)>
-        call_back, int64_t ckpt);
+  void PerformCallback(std::vector<std::unique_ptr<RecoveryData>>& request_list,
+                       std::function<void(std::unique_ptr<Context> context,
+                                          std::unique_ptr<Request> request)>
+                           call_back,
+                       int64_t ckpt);
 
-  bool PerformSystemCallback(std::vector<std::string> data_list, std::function<void(const SystemInfoData&)> system_callback);
+  bool PerformSystemCallback(
+      std::vector<std::string> data_list,
+      std::function<void(const SystemInfoData&)> system_callback);
 
   SystemInfo* system_info_;
 };

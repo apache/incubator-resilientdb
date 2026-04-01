@@ -868,16 +868,15 @@ void Raft::AddToLog(LogEntry logEntryToAdd, bool writeMetadata) {
 void Raft::AddToLog(std::vector<LogEntry> logEntriesToAdd, bool writeMetadata) {
   if (writeMetadata) {
     std::vector<Entry> entries_to_add;
-    for (const auto &entry : logEntriesToAdd) {
+    for (const auto& entry : logEntriesToAdd) {
       entries_to_add.push_back(entry.entry);
     }
-    
+
     recovery_->AddLogEntry(entries_to_add);
   }
 
   log_.reserve(log_.size() + logEntriesToAdd.size());
-  log_.insert(log_.end(),
-              std::make_move_iterator(logEntriesToAdd.begin()),
+  log_.insert(log_.end(), std::make_move_iterator(logEntriesToAdd.begin()),
               std::make_move_iterator(logEntriesToAdd.end()));
 }
 

@@ -19,17 +19,17 @@
 
 #pragma once
 
-template<typename TDerived>
-template<typename TSystemInfoData, typename TCallback>
-void RecoveryBase<TDerived>::ReadLogs(std::function<void(const TSystemInfoData& data)> system_callback,
-                TCallback call_back,
-                std::function<void(int)> set_start_point) {
+template <typename TDerived>
+template <typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived>::ReadLogs(
+    std::function<void(const TSystemInfoData& data)> system_callback,
+    TCallback call_back, std::function<void(int)> set_start_point) {
   if (recovery_enabled_ == false) {
     return;
   }
 
   int64_t storage_ckpt = 0;
-  if(storage_) {
+  if (storage_) {
     storage_ckpt = storage_->GetLastCheckpoint();
   }
   std::unique_lock<std::mutex> lk(mutex_);
@@ -41,27 +41,27 @@ void RecoveryBase<TDerived>::ReadLogs(std::function<void(const TSystemInfoData& 
   }
   int idx = 0;
   for (auto path : recovery_files_pair.first) {
-    ReadLogsFromFiles<TSystemInfoData, TCallback>(path.second, ckpt, idx++, system_callback, call_back);
+    ReadLogsFromFiles<TSystemInfoData, TCallback>(path.second, ckpt, idx++,
+                                                  system_callback, call_back);
   }
 }
 
-template<typename TDerived>
-template<typename TSystemInfoData, typename TCallback>
-void RecoveryBase<TDerived>::SwitchFile(const std::string& file_path, TCallback call_back) {
+template <typename TDerived>
+template <typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived>::SwitchFile(const std::string& file_path,
+                                        TCallback call_back) {
   std::unique_lock<std::mutex> lk(mutex_);
 
   min_seq_ = -1;
   max_seq_ = -1;
   ReadLogsFromFiles<TSystemInfoData, TCallback>(
-      file_path, 0, 0,
-      [&](const TSystemInfoData& data) {},
-      call_back);
+      file_path, 0, 0, [&](const TSystemInfoData& data) {}, call_back);
   OpenFile(file_path);
   LOG(INFO) << "switch to file:" << file_path << " seq:"
             << "[" << min_seq_ << "," << max_seq_ << "]";
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::OpenFile(const std::string& path) {
   if (fd_ >= 0) {
     close(fd_);
@@ -84,8 +84,8 @@ void RecoveryBase<TDerived>::OpenFile(const std::string& path) {
   assert(fd_ >= 0);
 }
 
-template<typename TDerived>
-template<typename TSystemInfoData, typename TCallback>
+template <typename TDerived>
+template <typename TSystemInfoData, typename TCallback>
 void RecoveryBase<TDerived>::ReadLogsFromFiles(
     const std::string& path, int64_t ckpt, int file_idx,
     std::function<void(const TSystemInfoData& data)> system_callback,
@@ -111,7 +111,9 @@ void RecoveryBase<TDerived>::ReadLogsFromFiles(
       delete buf;
       std::vector<std::string> data_list = ParseRawData(data);
 
-      bool successful_callback = static_cast<TDerived*>(this)->PerformSystemCallback(data_list, system_callback);
+      bool successful_callback =
+          static_cast<TDerived*>(this)->PerformSystemCallback(data_list,
+                                                              system_callback);
 
       if (!successful_callback) {
         LOG(ERROR) << "parse info fail:" << data.size();

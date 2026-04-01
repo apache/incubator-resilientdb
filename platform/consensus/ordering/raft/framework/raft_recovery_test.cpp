@@ -1,15 +1,15 @@
-#include <filesystem>
+#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
+
 #include <glog/logging.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 
-#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
-#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 #include "chain/storage/mock_storage.h"
 #include "platform/consensus/checkpoint/mock_checkpoint.h"
 #include "platform/consensus/ordering/raft/framework/transaction_utils.h"
-
+#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 
 namespace resdb {
 namespace raft {
@@ -62,18 +62,18 @@ TEST_F(RaftRecoveryTest, ReadLog) {
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
 
     for (int i = 0; i < entries_to_add; i++) {
-        // Set up the Log Entry to be added
-        Entry logEntry;
-        logEntry.set_term(i + 1);
-        auto req = std::make_unique<Request>();
-        req->set_seq(i + 1);
-        std::string serialized;
-        if (!req->SerializeToString(&serialized)) {
-            assert(false);
-        }
-        logEntry.set_command(std::move(serialized));
+      // Set up the Log Entry to be added
+      Entry logEntry;
+      logEntry.set_term(i + 1);
+      auto req = std::make_unique<Request>();
+      req->set_seq(i + 1);
+      std::string serialized;
+      if (!req->SerializeToString(&serialized)) {
+        assert(false);
+      }
+      logEntry.set_command(std::move(serialized));
 
-        recovery.AddLogEntry(&logEntry);
+      recovery.AddLogEntry(&logEntry);
     }
   }
   {
@@ -81,8 +81,7 @@ TEST_F(RaftRecoveryTest, ReadLog) {
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
     recovery.ReadLogs<RaftMetadata>(
         [&](const RaftMetadata &data) {},
-        [&](std::unique_ptr<Entry> entry) { list.push_back(*entry); },
-        nullptr);
+        [&](std::unique_ptr<Entry> entry) { list.push_back(*entry); }, nullptr);
 
     EXPECT_EQ(list.size(), entries_to_add);
 

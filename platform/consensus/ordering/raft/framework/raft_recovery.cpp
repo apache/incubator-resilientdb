@@ -37,7 +37,8 @@ namespace raft {
 
 using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
 
-RaftRecovery::RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage)
+RaftRecovery::RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
+                           Storage* storage)
     : RecoveryBase<RaftRecovery>(config, checkpoint, storage) {
   Init();
 }
@@ -51,27 +52,26 @@ void RaftRecovery::Init() {
   LOG(ERROR) << " init";
   GetLastFile();
 
-  CallbackType callback =
-    [this](std::unique_ptr<Entry> entry) {
-        min_seq_ == -1
-            ? min_seq_ = entry->term()
-            : std::min(min_seq_, static_cast<int64_t>(entry->term()));
-        max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
-    };
+  CallbackType callback = [this](std::unique_ptr<Entry> entry) {
+    min_seq_ == -1 ? min_seq_ = entry->term()
+                   : std::min(min_seq_, static_cast<int64_t>(entry->term()));
+    max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
+  };
 
   SwitchFile<RaftMetadata, CallbackType>(file_path_, callback);
   LOG(ERROR) << " init done";
-  
+
   meta_file_path_ = std::filesystem::path(base_file_path_).parent_path() 
                     / "raft_metadata.dat";
   LOG(INFO) << "Meta file path: " << meta_file_path_;
   OpenMetadataFile();
 
-  ckpt_thread_ = std::thread([this]{ this->UpdateStableCheckPoint(); });
+  ckpt_thread_ = std::thread([this] { this->UpdateStableCheckPoint(); });
 }
 
 RaftRecovery::~RaftRecovery() {
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
+            << __func__ << "\n";
   if (recovery_enabled_ == false) {
     return;
   }
@@ -82,7 +82,8 @@ RaftRecovery::~RaftRecovery() {
 }
 
 void RaftRecovery::OpenMetadataFile() {
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
+            << __func__ << "\n";
   metadata_fd_ = open(meta_file_path_.c_str(), O_CREAT | O_RDWR, 0666);
   if (metadata_fd_ < 0) {
     LOG(ERROR) << "Failed to open metadata file: " << strerror(errno);
@@ -114,7 +115,8 @@ void RaftRecovery::WriteMetadata(int64_t current_term, int32_t voted_for) {
 }
 
 RaftMetadata RaftRecovery::ReadMetadata() {
-    LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
+            << __func__ << "\n";
   RaftMetadata metadata;
   if (metadata_fd_ < 0) {
     LOG(ERROR) << "Metadata file not open";
@@ -130,7 +132,7 @@ RaftMetadata RaftRecovery::ReadMetadata() {
   return metadata;
 }
 
-void RaftRecovery::WriteSystemInfo() { }
+void RaftRecovery::WriteSystemInfo() {}
 
 void RaftRecovery::AddLogEntry(const Entry* entry) {
   if (recovery_enabled_ == false) {
@@ -141,18 +143,19 @@ void RaftRecovery::AddLogEntry(const Entry* entry) {
   Flush();
 }
 
-void RaftRecovery::AddLogEntry(std::vector<Entry> &entries_to_add) {
+void RaftRecovery::AddLogEntry(std::vector<Entry>& entries_to_add) {
   if (recovery_enabled_ == false) {
     return;
   }
-  for (const auto &entry : entries_to_add) {
+  for (const auto& entry : entries_to_add) {
     WriteLog(&entry);
   }
   Flush();
 }
 
 void RaftRecovery::WriteLog(const Entry* entry) {
-LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
+            << __func__ << "\n";
   std::string data;
   if (entry) {
     entry->SerializeToString(&data);
@@ -167,7 +170,7 @@ LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __
 }
 
 std::vector<std::unique_ptr<Entry>> RaftRecovery::ParseDataListItem(
-    std::vector<std::string> &data_list) {
+    std::vector<std::string>& data_list) {
   std::vector<std::unique_ptr<Entry>> request_list;
 
   for (size_t i = 0; i < data_list.size(); i++) {
@@ -184,8 +187,8 @@ std::vector<std::unique_ptr<Entry>> RaftRecovery::ParseDataListItem(
 }
 
 void RaftRecovery::PerformCallback(
-    std::vector<std::unique_ptr<Entry>> &request_list,
-    CallbackType call_back, int64_t ckpt) {
+    std::vector<std::unique_ptr<Entry>>& request_list, CallbackType call_back,
+    int64_t ckpt) {
   uint64_t max_seq = 0;
   for (std::unique_ptr<Entry>& entry : request_list) {
     // LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data
@@ -200,7 +203,9 @@ void RaftRecovery::PerformCallback(
   LOG(ERROR) << " recovery max seq:" << max_seq;
 }
 
-bool RaftRecovery::PerformSystemCallback(std::vector<std::string> data_list, std::function<void(const RaftMetadata&)> system_callback) {
+bool RaftRecovery::PerformSystemCallback(
+    std::vector<std::string> data_list,
+    std::function<void(const RaftMetadata&)> system_callback) {
   RaftMetadata info = ReadMetadata();
   system_callback(info);
   return true;
@@ -210,17 +215,17 @@ bool RaftRecovery::PerformSystemCallback(std::vector<std::string> data_list, std
 
 template class RecoveryBase<raft::RaftRecovery>;
 
-template void RecoveryBase<raft::RaftRecovery>::ReadLogs<raft::RaftMetadata, raft::CallbackType>(
-    std::function<void(const raft::RaftMetadata&)>,
-    raft::CallbackType,
+template void RecoveryBase<raft::RaftRecovery>::ReadLogs<raft::RaftMetadata,
+                                                         raft::CallbackType>(
+    std::function<void(const raft::RaftMetadata&)>, raft::CallbackType,
     std::function<void(int)>);
 
-template void RecoveryBase<raft::RaftRecovery>::SwitchFile<raft::RaftMetadata, raft::CallbackType>(
-    const std::string&,
-    raft::CallbackType);
+template void RecoveryBase<raft::RaftRecovery>::SwitchFile<
+    raft::RaftMetadata, raft::CallbackType>(const std::string&,
+                                            raft::CallbackType);
 
-template void RecoveryBase<raft::RaftRecovery>::ReadLogsFromFiles<raft::RaftMetadata, raft::CallbackType>(
+template void RecoveryBase<raft::RaftRecovery>::ReadLogsFromFiles<
+    raft::RaftMetadata, raft::CallbackType>(
     const std::string&, int64_t, int,
-    std::function<void(const raft::RaftMetadata&)>,
-    raft::CallbackType);
+    std::function<void(const raft::RaftMetadata&)>, raft::CallbackType);
 }  // namespace resdb

@@ -31,11 +31,10 @@
 
 // namespace resdb {
 
-template<typename TDerived>
-RecoveryBase<TDerived>::RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage)
-    : config_(config),
-      checkpoint_(checkpoint),
-      storage_(storage) {
+template <typename TDerived>
+RecoveryBase<TDerived>::RecoveryBase(const ResDBConfig& config,
+                                     CheckPoint* checkpoint, Storage* storage)
+    : config_(config), checkpoint_(checkpoint), storage_(storage) {
   recovery_enabled_ = config_.GetConfigData().recovery_enabled();
   file_path_ = config_.GetConfigData().recovery_path();
   if (file_path_.empty()) {
@@ -78,7 +77,7 @@ RecoveryBase<TDerived>::RecoveryBase(const ResDBConfig& config, CheckPoint* chec
   stop_ = false;
 }
 
-template<typename TDerived>
+template <typename TDerived>
 RecoveryBase<TDerived>::~RecoveryBase() {
   if (recovery_enabled_ == false) {
     return;
@@ -91,13 +90,17 @@ RecoveryBase<TDerived>::~RecoveryBase() {
   }
 }
 
-template<typename TDerived>
-int64_t RecoveryBase<TDerived>::GetMaxSeq() { return max_seq_; }
+template <typename TDerived>
+int64_t RecoveryBase<TDerived>::GetMaxSeq() {
+  return max_seq_;
+}
 
-template<typename TDerived>
-int64_t RecoveryBase<TDerived>::GetMinSeq() { return min_seq_; }
+template <typename TDerived>
+int64_t RecoveryBase<TDerived>::GetMinSeq() {
+  return min_seq_;
+}
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::UpdateStableCheckPoint() {
   if (checkpoint_ == nullptr) {
     return;
@@ -114,7 +117,7 @@ void RecoveryBase<TDerived>::UpdateStableCheckPoint() {
   }
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::GetLastFile() {
   std::string dir = std::filesystem::path(file_path_).parent_path();
   last_ckpt_ = -1;
@@ -153,9 +156,9 @@ void RecoveryBase<TDerived>::GetLastFile() {
   }
 }
 
-template<typename TDerived>
+template <typename TDerived>
 std::string RecoveryBase<TDerived>::GenerateFile(int64_t seq, int64_t min_seq,
-                                   int64_t max_seq) {
+                                                 int64_t max_seq) {
   std::string dir = std::filesystem::path(file_path_).parent_path();
   std::string file_name = std::filesystem::path(base_file_path_).stem();
   int64_t time = GetCurrentTime();
@@ -167,7 +170,7 @@ std::string RecoveryBase<TDerived>::GenerateFile(int64_t seq, int64_t min_seq,
   return dir + "/" + file_name + "." + ext;
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::FinishFile(int64_t seq) {
   std::unique_lock<std::mutex> lk(mutex_);
   Flush();
@@ -191,14 +194,14 @@ void RecoveryBase<TDerived>::FinishFile(int64_t seq) {
   OpenFile(file_path_);
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::AppendData(const std::string& data) {
   size_t len = data.size();
   buffer_.append(reinterpret_cast<const char*>(&len), sizeof(len));
   buffer_.append(data);
 }
 
-template<typename TDerived>
+template <typename TDerived>
 auto RecoveryBase<TDerived>::ParseData(const std::string& data) {
   std::vector<std::string> data_list;
   int pos = 0;
@@ -215,8 +218,9 @@ auto RecoveryBase<TDerived>::ParseData(const std::string& data) {
   return static_cast<TDerived*>(this)->ParseDataListItem(data_list);
 }
 
-template<typename TDerived>
-std::vector<std::string> RecoveryBase<TDerived>::ParseRawData(const std::string& data) {
+template <typename TDerived>
+std::vector<std::string> RecoveryBase<TDerived>::ParseRawData(
+    const std::string& data) {
   std::vector<std::string> data_list;
   int pos = 0;
   while (pos < data.size()) {
@@ -231,14 +235,14 @@ std::vector<std::string> RecoveryBase<TDerived>::ParseRawData(const std::string&
   return data_list;
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::MayFlush() {
   if (buffer_.size() > buffer_size_) {
     Flush();
   }
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::Flush() {
   size_t len = buffer_.size();
   if (len == 0) {
@@ -251,7 +255,7 @@ void RecoveryBase<TDerived>::Flush() {
   fsync(fd_);
 }
 
-template<typename TDerived>
+template <typename TDerived>
 void RecoveryBase<TDerived>::Write(const char* data, size_t len) {
   int pos = 0;
   while (len > 0) {
@@ -261,7 +265,7 @@ void RecoveryBase<TDerived>::Write(const char* data, size_t len) {
   }
 }
 
-template<typename TDerived>
+template <typename TDerived>
 bool RecoveryBase<TDerived>::Read(int fd, size_t len, char* data) {
   int pos = 0;
   while (len > 0) {
@@ -275,7 +279,7 @@ bool RecoveryBase<TDerived>::Read(int fd, size_t len, char* data) {
   return true;
 }
 
-template<typename TDerived>
+template <typename TDerived>
 std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t>
 RecoveryBase<TDerived>::GetRecoveryFiles(int64_t ckpt) {
   std::string dir = std::filesystem::path(file_path_).parent_path();
@@ -329,11 +333,10 @@ RecoveryBase<TDerived>::GetRecoveryFiles(int64_t ckpt) {
   return std::make_pair(list, last_ckpt);
 }
 
-
-template<typename TDerived>
+template <typename TDerived>
 std::vector<std::pair<int64_t, std::string>>
 RecoveryBase<TDerived>::GetSortedRecoveryFiles(uint64_t need_min_seq,
-                                   uint64_t need_max_seq) {
+                                               uint64_t need_max_seq) {
   std::string dir = std::filesystem::path(file_path_).parent_path();
 
   std::vector<std::pair<int64_t, std::string>> list;

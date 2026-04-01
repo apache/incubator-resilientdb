@@ -117,7 +117,8 @@ class Raft : public common::ProtocolBase {
   virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
   virtual void SetSeqIndexCoveredBySnapshot(int seq);
   void AddToLog(LogEntry logEntry, bool writeMetadata = true);
-  void AddToLog(std::vector<LogEntry> logEntriesToAdd, bool writeMetadata = true);
+  void AddToLog(std::vector<LogEntry> logEntriesToAdd,
+                bool writeMetadata = true);
   void TruncateLog(std::vector<LogEntry>::iterator first,
                           std::vector<LogEntry>::iterator last,
                           bool writeMetadata = true);
@@ -227,7 +228,8 @@ class Raft : public common::ProtocolBase {
       const auto& entry = log_[i];
 
       os << "  [" << i << "] "
-         << "term=" << entry.entry.term() << ", command=\"" << entry.entry.command() << "\""
+         << "term=" << entry.entry.term() << ", command=\""
+         << entry.entry.command() << "\""
          << ", serializedSize=" << entry.GetSerializedSize() << "\n";
     }
   }

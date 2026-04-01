@@ -34,10 +34,11 @@
 
 namespace resdb {
 
-using CallbackType = std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>;
-  
+using CallbackType =
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>;
+
 PBFTRecovery::PBFTRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
-                   SystemInfo* system_info, Storage* storage)
+                           SystemInfo* system_info, Storage* storage)
     : RecoveryBase<PBFTRecovery>(config, checkpoint, storage),
       system_info_(system_info) {
   Init();
@@ -52,19 +53,18 @@ void PBFTRecovery::Init() {
   LOG(ERROR) << " init";
   GetLastFile();
 
-  CallbackType callback =
-    [this](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        min_seq_ == -1
-            ? min_seq_ = request->seq()
-            : std::min(min_seq_, static_cast<int64_t>(request->seq()));
-        max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
-    };
+  CallbackType callback = [this](std::unique_ptr<Context> context,
+                                 std::unique_ptr<Request> request) {
+    min_seq_ == -1 ? min_seq_ = request->seq()
+                   : std::min(min_seq_, static_cast<int64_t>(request->seq()));
+    max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
+  };
 
   SwitchFile<SystemInfoData, CallbackType>(file_path_, callback);
 
   LOG(ERROR) << " init done";
 
-  ckpt_thread_ = std::thread([this]{ this->UpdateStableCheckPoint(); });
+  ckpt_thread_ = std::thread([this] { this->UpdateStableCheckPoint(); });
 }
 
 void PBFTRecovery::WriteSystemInfo() {
@@ -119,8 +119,8 @@ void PBFTRecovery::WriteLog(const Context* context, const Request* request) {
   Flush();
 }
 
-std::vector<std::unique_ptr<PBFTRecovery::RecoveryData>> PBFTRecovery::ParseDataListItem(
-    std::vector<std::string> &data_list) {
+std::vector<std::unique_ptr<PBFTRecovery::RecoveryData>>
+PBFTRecovery::ParseDataListItem(std::vector<std::string>& data_list) {
   std::vector<std::unique_ptr<RecoveryData>> request_list;
 
   for (size_t i = 0; i < data_list.size(); i += 2) {
@@ -145,7 +145,7 @@ std::vector<std::unique_ptr<PBFTRecovery::RecoveryData>> PBFTRecovery::ParseData
 }
 
 void PBFTRecovery::PerformCallback(
-    std::vector<std::unique_ptr<RecoveryData>> &request_list,
+    std::vector<std::unique_ptr<RecoveryData>>& request_list,
     CallbackType call_back, int64_t ckpt) {
   uint64_t max_seq = 0;
   for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
@@ -164,8 +164,9 @@ void PBFTRecovery::PerformCallback(
   LOG(ERROR) << " recovery max seq:" << max_seq;
 }
 
-
-bool PBFTRecovery::PerformSystemCallback(std::vector<std::string> data_list, std::function<void(const SystemInfoData&)> system_callback) {
+bool PBFTRecovery::PerformSystemCallback(
+    std::vector<std::string> data_list,
+    std::function<void(const SystemInfoData&)> system_callback) {
   SystemInfoData info;
   if (data_list.empty() || !info.ParseFromString(data_list[0])) {
     return false;
@@ -179,22 +180,21 @@ std::map<
     uint64_t,
     std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>>
 PBFTRecovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
-                                   uint64_t need_max_seq) {
+                                       uint64_t need_max_seq) {
   auto list = GetSortedRecoveryFiles(need_min_seq, need_max_seq);
 
   std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>,
                                            std::unique_ptr<Request>>>>
       res;
   for (const auto& path : list) {
-    CallbackType callback =
-        [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-            if (request->seq() >= need_min_seq &&
-                request->seq() <= need_max_seq) {
-                LOG(ERROR) << "get data from recovery file seq:" << request->seq();
-                res[request->seq()].push_back(
-                    std::make_pair(std::move(context), std::move(request)));
-            }
-        };
+    CallbackType callback = [&](std::unique_ptr<Context> context,
+                                std::unique_ptr<Request> request) {
+      if (request->seq() >= need_min_seq && request->seq() <= need_max_seq) {
+        LOG(ERROR) << "get data from recovery file seq:" << request->seq();
+        res[request->seq()].push_back(
+            std::make_pair(std::move(context), std::move(request)));
+      }
+    };
 
     ReadLogsFromFiles<SystemInfoData, CallbackType>(
         path.second, need_min_seq - 1, 0,
@@ -206,7 +206,7 @@ PBFTRecovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
 }
 
 int PBFTRecovery::GetData(const RecoveryRequest& request,
-                      RecoveryResponse& response) {
+                          RecoveryResponse& response) {
   auto res = GetDataFromRecoveryFiles(request.min_seq(), request.max_seq());
 
   for (const auto& it : res) {
@@ -218,21 +218,18 @@ int PBFTRecovery::GetData(const RecoveryRequest& request,
   return 0;
 }
 
-
 template class RecoveryBase<PBFTRecovery>;
 
-template void RecoveryBase<PBFTRecovery>::ReadLogs<SystemInfoData, CallbackType>(
-    std::function<void(const SystemInfoData&)>,
-    CallbackType,
-    std::function<void(int)>);
+template void RecoveryBase<PBFTRecovery>::ReadLogs<
+    SystemInfoData, CallbackType>(std::function<void(const SystemInfoData&)>,
+                                  CallbackType, std::function<void(int)>);
 
-template void RecoveryBase<PBFTRecovery>::SwitchFile<SystemInfoData, CallbackType>(
-    const std::string&,
-    CallbackType);
+template void RecoveryBase<PBFTRecovery>::SwitchFile<
+    SystemInfoData, CallbackType>(const std::string&, CallbackType);
 
-template void RecoveryBase<PBFTRecovery>::ReadLogsFromFiles<SystemInfoData, CallbackType>(
+template void
+RecoveryBase<PBFTRecovery>::ReadLogsFromFiles<SystemInfoData, CallbackType>(
     const std::string&, int64_t, int,
-    std::function<void(const SystemInfoData&)>,
-    CallbackType);
+    std::function<void(const SystemInfoData&)>, CallbackType);
 
 }  // namespace resdb

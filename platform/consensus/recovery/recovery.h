@@ -19,16 +19,8 @@
 
 #pragma once
 
-#include <thread>
-
-#include "chain/storage/storage.h"
-#include "platform/config/resdb_config.h"
-#include "platform/consensus/checkpoint/checkpoint.h"
-#include "platform/networkstrate/server_comm.h"
-#include "platform/proto/resdb.pb.h"
-#include "platform/proto/system_info_data.pb.h"
-#include <glog/logging.h>
 #include <fcntl.h>
+#include <glog/logging.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -37,21 +29,29 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <thread>
 
+#include "chain/storage/storage.h"
 #include "common/utils/utils.h"
+#include "platform/config/resdb_config.h"
+#include "platform/consensus/checkpoint/checkpoint.h"
+#include "platform/networkstrate/server_comm.h"
+#include "platform/proto/resdb.pb.h"
+#include "platform/proto/system_info_data.pb.h"
 
 namespace resdb {
 
-template<typename TDerived>
+template <typename TDerived>
 class RecoveryBase {
  public:
-  RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage);
+  RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint,
+               Storage* storage);
   ~RecoveryBase();
   // void Init();
-  template<typename TSystemInfoData, typename TCallback>
-  void ReadLogs(std::function<void(const TSystemInfoData& data)> system_callback,
-                TCallback call_back,
-                std::function<void(int)> start_point);
+  template <typename TSystemInfoData, typename TCallback>
+  void ReadLogs(
+      std::function<void(const TSystemInfoData& data)> system_callback,
+      TCallback call_back, std::function<void(int)> start_point);
 
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
@@ -59,7 +59,8 @@ class RecoveryBase {
   // int GetData(const RecoveryRequest& request, RecoveryResponse& response);
 
  protected:
-  std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
+  std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(
+      uint64_t need_min_seq, uint64_t need_max_seq);
 
  private:
 
@@ -87,26 +88,25 @@ class RecoveryBase {
   bool Read(int fd, size_t len, char* data);
   std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t> GetRecoveryFiles(int64_t ckpt);
 
-  template<typename TSystemInfoData, typename TCallback>
+  template <typename TSystemInfoData, typename TCallback>
   void SwitchFile(const std::string& path, TCallback call_back);
   void OpenFile(const std::string& path);
 
-  template<typename TSystemInfoData, typename TCallback>
+  template <typename TSystemInfoData, typename TCallback>
   void ReadLogsFromFiles(
-    const std::string& path, int64_t ckpt, int file_idx,
-    std::function<void(const TSystemInfoData& data)> system_callback,
-    TCallback call_back);
+      const std::string& path, int64_t ckpt, int file_idx,
+      std::function<void(const TSystemInfoData& data)> system_callback,
+      TCallback call_back);
 
   std::string file_path_;
   ResDBConfig config_;
   // Derived class must implement these
   auto ParseDataListItem(std::vector<std::string>& data_list);
 
-  template<typename TCallback>
+  template <typename TCallback>
   void PerformCallback(auto& request_list, TCallback call_back);
 
   void WriteSystemInfo();
-
 
   CheckPoint* checkpoint_;
   std::thread ckpt_thread_;

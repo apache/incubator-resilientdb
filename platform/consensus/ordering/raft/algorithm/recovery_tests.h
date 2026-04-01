@@ -47,7 +47,9 @@ class RecoveryTest : public ::testing::Test {
     leader_election_manager_ =
         std::make_unique<MockLeaderElectionManager>(config);
     replica_communicator_ = std::make_unique<MockReplicaCommunicator>();
-    recovery_ = std::make_unique<MockRaftRecovery>(config, CheckPoint* checkpoint, SystemInfo* system_info, Storage* storage);
+    recovery_ = std::make_unique<MockRaftRecovery>(
+        config, CheckPoint * checkpoint, SystemInfo * system_info,
+        Storage * storage);
     raft_ = std::make_unique<Raft>(
         /*id=*/1,
         /*f=*/1,
@@ -92,8 +94,7 @@ class RecoveryTest : public ::testing::Test {
   };
 
   // Helper to create a single log entry.
-  LogEntry CreateLogEntry(uint64_t term,
-                                           const std::string& command_data) {
+  LogEntry CreateLogEntry(uint64_t term, const std::string& command_data) {
     LogEntry entry;
     entry.term = term;
     entry.command = command_data;

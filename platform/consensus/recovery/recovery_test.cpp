@@ -17,8 +17,6 @@
  * under the License.
  */
 
-#include "platform/consensus/recovery/pbft_recovery.h"
-
 #include <glog/logging.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -30,6 +28,7 @@
 #include "common/test/test_macros.h"
 #include "platform/consensus/checkpoint/mock_checkpoint.h"
 #include "platform/consensus/ordering/common/transaction_utils.h"
+#include "platform/consensus/recovery/pbft_recovery.h"
 
 namespace resdb {
 namespace {
@@ -82,7 +81,9 @@ TEST_F(RecoveryTest, ReadLog) {
                             Request::TYPE_NEWVIEW,     Request::TYPE_NEW_TXNS};
 
   std::vector<int> expected_types = {
-      Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
+      Request::TYPE_PRE_PREPARE,
+      Request::TYPE_PREPARE,
+      Request::TYPE_COMMIT,
       Request::TYPE_NEWVIEW,
   };
 
@@ -100,17 +101,15 @@ TEST_F(RecoveryTest, ReadLog) {
     std::vector<Request> list;
     PBFTRecovery recovery(config_, &checkpoint_, &system_info_, nullptr);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -129,7 +128,9 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
                             Request::TYPE_NEWVIEW,     Request::TYPE_NEW_TXNS};
 
   std::vector<int> expected_types = {
-      Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
+      Request::TYPE_PRE_PREPARE,
+      Request::TYPE_PREPARE,
+      Request::TYPE_COMMIT,
       Request::TYPE_NEWVIEW,
   };
 
@@ -147,16 +148,13 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
     std::vector<Request> list;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back =
+            [&](std::unique_ptr<Context> context,
+                std::unique_ptr<Request> request) { list.push_back(*request); };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -218,17 +216,15 @@ TEST_F(RecoveryTest, CheckPoint) {
     std::vector<Request> list;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, nullptr);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -301,17 +297,15 @@ TEST_F(RecoveryTest, CheckPoint2) {
     std::vector<Request> list;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -344,17 +338,15 @@ TEST_F(RecoveryTest, CheckPoint2) {
     std::vector<Request> list;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 9);
 
@@ -432,17 +424,16 @@ TEST_F(RecoveryTest, SystemInfo) {
     SystemInfoData data;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &r_data) {data = r_data;},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &r_data) { data = r_data; }, call_back,
+        nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -476,17 +467,16 @@ TEST_F(RecoveryTest, SystemInfo) {
     SystemInfoData data;
     PBFTRecovery recovery(config, &checkpoint_, &system_info_, &storage);
 
-    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-        list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
-    };
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>
+        call_back = [&](std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request) {
+          list.push_back(*request);
+          // LOG(ERROR) << "call back:" << request->seq();
+        };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &r_data) {data = r_data;},
-        call_back,
-        nullptr
-    );
+        [&](const SystemInfoData &r_data) { data = r_data; }, call_back,
+        nullptr);
 
     EXPECT_EQ(data.view(), 2);
     EXPECT_EQ(data.primary_id(), 2);
