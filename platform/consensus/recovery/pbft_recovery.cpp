@@ -39,7 +39,8 @@ using CallbackType =
 
 PBFTRecovery::PBFTRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
                            SystemInfo* system_info, Storage* storage)
-    : RecoveryBase<PBFTRecovery>(config, checkpoint, storage),
+    : RecoveryBase<PBFTRecovery, SystemInfoData, CallbackType>(
+          config, checkpoint, storage),
       system_info_(system_info) {
   Init();
 }
@@ -60,7 +61,7 @@ void PBFTRecovery::Init() {
     max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
   };
 
-  SwitchFile<SystemInfoData, CallbackType>(file_path_, callback);
+  SwitchFile(file_path_, callback);
 
   LOG(ERROR) << " init done";
 
@@ -196,10 +197,9 @@ PBFTRecovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
       }
     };
 
-    ReadLogsFromFiles<SystemInfoData, CallbackType>(
-        path.second, need_min_seq - 1, 0,
-        [&](const SystemInfoData& data) {},  // system callback
-        callback);                           // typed callback
+    ReadLogsFromFiles(
+        path.second, need_min_seq - 1, 0, [&](const SystemInfoData& data) {},
+        callback);
   }
 
   return res;
@@ -217,19 +217,5 @@ int PBFTRecovery::GetData(const RecoveryRequest& request,
   }
   return 0;
 }
-
-template class RecoveryBase<PBFTRecovery>;
-
-template void RecoveryBase<PBFTRecovery>::ReadLogs<
-    SystemInfoData, CallbackType>(std::function<void(const SystemInfoData&)>,
-                                  CallbackType, std::function<void(int)>);
-
-template void RecoveryBase<PBFTRecovery>::SwitchFile<
-    SystemInfoData, CallbackType>(const std::string&, CallbackType);
-
-template void
-RecoveryBase<PBFTRecovery>::ReadLogsFromFiles<SystemInfoData, CallbackType>(
-    const std::string&, int64_t, int,
-    std::function<void(const SystemInfoData&)>, CallbackType);
 
 }  // namespace resdb

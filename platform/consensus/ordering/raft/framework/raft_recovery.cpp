@@ -39,7 +39,8 @@ using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
 
 RaftRecovery::RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
                            Storage* storage)
-    : RecoveryBase<RaftRecovery>(config, checkpoint, storage) {
+    : RecoveryBase<RaftRecovery, RaftMetadata, CallbackType>(config, checkpoint,
+                                                             storage) {
   Init();
 }
 
@@ -58,7 +59,7 @@ void RaftRecovery::Init() {
     max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
   };
 
-  SwitchFile<RaftMetadata, CallbackType>(file_path_, callback);
+  SwitchFile(file_path_, callback);
   LOG(ERROR) << " init done";
 
   meta_file_path_ = std::filesystem::path(base_file_path_).parent_path() 
@@ -191,9 +192,6 @@ void RaftRecovery::PerformCallback(
     int64_t ckpt) {
   uint64_t max_seq = 0;
   for (std::unique_ptr<Entry>& entry : request_list) {
-    // LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data
-    // seq:"<<recovery_data->request->seq()<<"
-    // type:"<<recovery_data->request->type();
     if (ckpt < entry->term()) {
       max_seq = entry->term();
       call_back(std::move(entry));
@@ -213,19 +211,4 @@ bool RaftRecovery::PerformSystemCallback(
 
 }  // namespace raft
 
-template class RecoveryBase<raft::RaftRecovery>;
-
-template void RecoveryBase<raft::RaftRecovery>::ReadLogs<raft::RaftMetadata,
-                                                         raft::CallbackType>(
-    std::function<void(const raft::RaftMetadata&)>, raft::CallbackType,
-    std::function<void(int)>);
-
-template void RecoveryBase<raft::RaftRecovery>::SwitchFile<
-    raft::RaftMetadata, raft::CallbackType>(const std::string&,
-                                            raft::CallbackType);
-
-template void RecoveryBase<raft::RaftRecovery>::ReadLogsFromFiles<
-    raft::RaftMetadata, raft::CallbackType>(
-    const std::string&, int64_t, int,
-    std::function<void(const raft::RaftMetadata&)>, raft::CallbackType);
 }  // namespace resdb

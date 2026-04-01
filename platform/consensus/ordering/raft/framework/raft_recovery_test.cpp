@@ -79,7 +79,7 @@ TEST_F(RaftRecoveryTest, ReadLog) {
   {
     std::vector<Entry> list;
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
-    recovery.ReadLogs<RaftMetadata>(
+    recovery.ReadLogs(
         [&](const RaftMetadata &data) {},
         [&](std::unique_ptr<Entry> entry) { list.push_back(*entry); }, nullptr);
 

@@ -41,22 +41,19 @@
 
 namespace resdb {
 
-template <typename TDerived>
+template <typename TDerived, typename TSystemInfoData, typename TCallback>
 class RecoveryBase {
  public:
   RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint,
                Storage* storage);
   ~RecoveryBase();
-  // void Init();
-  template <typename TSystemInfoData, typename TCallback>
+
   void ReadLogs(
       std::function<void(const TSystemInfoData& data)> system_callback,
       TCallback call_back, std::function<void(int)> start_point);
 
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
-
-  // int GetData(const RecoveryRequest& request, RecoveryResponse& response);
 
  protected:
   std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(
@@ -88,11 +85,9 @@ class RecoveryBase {
   bool Read(int fd, size_t len, char* data);
   std::pair<std::vector<std::pair<int64_t, std::string>>, int64_t> GetRecoveryFiles(int64_t ckpt);
 
-  template <typename TSystemInfoData, typename TCallback>
   void SwitchFile(const std::string& path, TCallback call_back);
   void OpenFile(const std::string& path);
 
-  template <typename TSystemInfoData, typename TCallback>
   void ReadLogsFromFiles(
       const std::string& path, int64_t ckpt, int file_idx,
       std::function<void(const TSystemInfoData& data)> system_callback,
@@ -103,7 +98,6 @@ class RecoveryBase {
   // Derived class must implement these
   auto ParseDataListItem(std::vector<std::string>& data_list);
 
-  template <typename TCallback>
   void PerformCallback(auto& request_list, TCallback call_back);
 
   void WriteSystemInfo();

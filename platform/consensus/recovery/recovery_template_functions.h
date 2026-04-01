@@ -19,9 +19,8 @@
 
 #pragma once
 
-template <typename TDerived>
-template <typename TSystemInfoData, typename TCallback>
-void RecoveryBase<TDerived>::ReadLogs(
+template <typename TDerived, typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived, TSystemInfoData, TCallback>::ReadLogs(
     std::function<void(const TSystemInfoData& data)> system_callback,
     TCallback call_back, std::function<void(int)> set_start_point) {
   if (recovery_enabled_ == false) {
@@ -41,28 +40,27 @@ void RecoveryBase<TDerived>::ReadLogs(
   }
   int idx = 0;
   for (auto path : recovery_files_pair.first) {
-    ReadLogsFromFiles<TSystemInfoData, TCallback>(path.second, ckpt, idx++,
-                                                  system_callback, call_back);
+    ReadLogsFromFiles(path.second, ckpt, idx++, system_callback, call_back);
   }
 }
 
-template <typename TDerived>
-template <typename TSystemInfoData, typename TCallback>
-void RecoveryBase<TDerived>::SwitchFile(const std::string& file_path,
-                                        TCallback call_back) {
+template <typename TDerived, typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived, TSystemInfoData, TCallback>::SwitchFile(
+    const std::string& file_path, TCallback call_back) {
   std::unique_lock<std::mutex> lk(mutex_);
 
   min_seq_ = -1;
   max_seq_ = -1;
-  ReadLogsFromFiles<TSystemInfoData, TCallback>(
+  ReadLogsFromFiles(
       file_path, 0, 0, [&](const TSystemInfoData& data) {}, call_back);
   OpenFile(file_path);
   LOG(INFO) << "switch to file:" << file_path << " seq:"
             << "[" << min_seq_ << "," << max_seq_ << "]";
 }
 
-template <typename TDerived>
-void RecoveryBase<TDerived>::OpenFile(const std::string& path) {
+template <typename TDerived, typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived, TSystemInfoData, TCallback>::OpenFile(
+    const std::string& path) {
   if (fd_ >= 0) {
     close(fd_);
   }
@@ -84,9 +82,8 @@ void RecoveryBase<TDerived>::OpenFile(const std::string& path) {
   assert(fd_ >= 0);
 }
 
-template <typename TDerived>
-template <typename TSystemInfoData, typename TCallback>
-void RecoveryBase<TDerived>::ReadLogsFromFiles(
+template <typename TDerived, typename TSystemInfoData, typename TCallback>
+void RecoveryBase<TDerived, TSystemInfoData, TCallback>::ReadLogsFromFiles(
     const std::string& path, int64_t ckpt, int file_idx,
     std::function<void(const TSystemInfoData& data)> system_callback,
     TCallback call_back) {

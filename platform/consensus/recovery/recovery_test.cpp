@@ -108,8 +108,7 @@ TEST_F(RecoveryTest, ReadLog) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {}, call_back, nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -153,8 +152,7 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
             [&](std::unique_ptr<Context> context,
                 std::unique_ptr<Request> request) { list.push_back(*request); };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {}, call_back, nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), expected_types.size());
 
@@ -223,8 +221,7 @@ TEST_F(RecoveryTest, CheckPoint) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {}, call_back, nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -304,8 +301,7 @@ TEST_F(RecoveryTest, CheckPoint2) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {}, call_back, nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -345,8 +341,7 @@ TEST_F(RecoveryTest, CheckPoint2) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &data) {}, call_back, nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &data) {}, call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 9);
 
@@ -431,9 +426,8 @@ TEST_F(RecoveryTest, SystemInfo) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &r_data) { data = r_data; }, call_back,
-        nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &r_data) { data = r_data; },
+                      call_back, nullptr);
 
     EXPECT_EQ(list.size(), types.size() * 14);
 
@@ -474,9 +468,8 @@ TEST_F(RecoveryTest, SystemInfo) {
           // LOG(ERROR) << "call back:" << request->seq();
         };
 
-    recovery.ReadLogs<SystemInfoData, decltype(call_back)>(
-        [&](const SystemInfoData &r_data) { data = r_data; }, call_back,
-        nullptr);
+    recovery.ReadLogs([&](const SystemInfoData &r_data) { data = r_data; },
+                      call_back, nullptr);
 
     EXPECT_EQ(data.view(), 2);
     EXPECT_EQ(data.primary_id(), 2);

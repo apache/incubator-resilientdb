@@ -40,8 +40,11 @@ struct RaftMetadata {
   int32_t voted_for = -1;
 };
 
-class RaftRecovery : public RecoveryBase<RaftRecovery> {
-  friend class RecoveryBase<RaftRecovery>;
+using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
+
+class RaftRecovery
+    : public RecoveryBase<RaftRecovery, RaftMetadata, CallbackType> {
+  friend class RecoveryBase<RaftRecovery, RaftMetadata, CallbackType>;
 
  public:
   RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint,

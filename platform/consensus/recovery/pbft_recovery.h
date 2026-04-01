@@ -23,9 +23,12 @@
 #include "platform/consensus/recovery/recovery.h"
 
 namespace resdb {
+using CallbackType =
+    std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)>;
 
-class PBFTRecovery : public RecoveryBase<PBFTRecovery> {
-  friend class RecoveryBase<PBFTRecovery>;
+class PBFTRecovery
+    : public RecoveryBase<PBFTRecovery, SystemInfoData, CallbackType> {
+  friend class RecoveryBase<PBFTRecovery, SystemInfoData, CallbackType>;
 
  public:
   PBFTRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
@@ -54,10 +57,7 @@ class PBFTRecovery : public RecoveryBase<PBFTRecovery> {
       std::vector<std::string>& data_list);
 
   void PerformCallback(std::vector<std::unique_ptr<RecoveryData>>& request_list,
-                       std::function<void(std::unique_ptr<Context> context,
-                                          std::unique_ptr<Request> request)>
-                           call_back,
-                       int64_t ckpt);
+                       CallbackType call_back, int64_t ckpt);
 
   bool PerformSystemCallback(
       std::vector<std::string> data_list,
