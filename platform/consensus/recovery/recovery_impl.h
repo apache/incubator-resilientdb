@@ -199,9 +199,7 @@ void RecoveryBase<TDerived>::AppendData(const std::string& data) {
 }
 
 template<typename TDerived>
-std::vector<std::unique_ptr<typename RecoveryBase<TDerived>::RecoveryData>> RecoveryBase<TDerived>::ParseData(
-    const std::string& data) {
-
+auto RecoveryBase<TDerived>::ParseData(const std::string& data) {
   std::vector<std::string> data_list;
   int pos = 0;
   while (pos < data.size()) {
@@ -331,19 +329,6 @@ RecoveryBase<TDerived>::GetRecoveryFiles(int64_t ckpt) {
   return std::make_pair(list, last_ckpt);
 }
 
-template<typename TDerived>
-int RecoveryBase<TDerived>::GetData(const RecoveryRequest& request,
-                      RecoveryResponse& response) {
-  auto res = static_cast<TDerived*>(this)->GetDataFromRecoveryFiles(request.min_seq(), request.max_seq());
-
-  for (const auto& it : res) {
-    for (const auto& req : it.second) {
-      *response.add_signature() = req.first->signature;
-      *response.add_request() = *req.second;
-    }
-  }
-  return 0;
-}
 
 template<typename TDerived>
 std::vector<std::pair<int64_t, std::string>>

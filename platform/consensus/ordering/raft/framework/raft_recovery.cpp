@@ -35,7 +35,7 @@
 namespace resdb {
 namespace raft {
 
-using CallbackType = std::function<void(std::unique_ptr<Request>)>;
+using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
 
 RaftRecovery::RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage)
     : RecoveryBase<RaftRecovery>(config, checkpoint, storage) {
@@ -52,11 +52,11 @@ void RaftRecovery::Init() {
   GetLastFile();
 
   CallbackType callback =
-    [this](std::unique_ptr<Request> request) {
+    [this](std::unique_ptr<Entry> entry) {
         min_seq_ == -1
-            ? min_seq_ = request->seq()
-            : std::min(min_seq_, static_cast<int64_t>(request->seq()));
-        max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
+            ? min_seq_ = entry->term()
+            : std::min(min_seq_, static_cast<int64_t>(entry->term()));
+        max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
     };
 
   SwitchFile<RaftMetadata, CallbackType>(file_path_, callback);
@@ -136,7 +136,19 @@ void RaftRecovery::AddLogEntry(const Entry* entry) {
   if (recovery_enabled_ == false) {
     return;
   }
-  return WriteLog(entry);
+
+  WriteLog(entry);
+  Flush();
+}
+
+void RaftRecovery::AddLogEntry(std::vector<Entry> &entries_to_add) {
+  if (recovery_enabled_ == false) {
+    return;
+  }
+  for (const auto &entry : entries_to_add) {
+    WriteLog(&entry);
+  }
+  Flush();
 }
 
 void RaftRecovery::WriteLog(const Entry* entry) {
@@ -152,42 +164,36 @@ LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __
                  : std::min(min_seq_, static_cast<int64_t>(entry->term()));
   max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
   AppendData(data);
-
-  Flush();
 }
 
-std::vector<std::unique_ptr<typename RecoveryBase<RaftRecovery>::RecoveryData>> RaftRecovery::ParseDataListItem(
+std::vector<std::unique_ptr<Entry>> RaftRecovery::ParseDataListItem(
     std::vector<std::string> &data_list) {
-  std::vector<std::unique_ptr<RecoveryData>> request_list;
+  std::vector<std::unique_ptr<Entry>> request_list;
 
-  for (size_t i = 0; i < data_list.size(); i += 2) {
-    std::unique_ptr<RecoveryData> recovery_data =
-        std::make_unique<RecoveryData>();
-    recovery_data->request = std::make_unique<Request>();
+  for (size_t i = 0; i < data_list.size(); i++) {
+    std::unique_ptr<Entry> entry = std::make_unique<Entry>();
 
-    if (!recovery_data->request->ParseFromString(data_list[i])) {
+    if (!entry->ParseFromString(data_list[i])) {
       LOG(ERROR) << "Parse from data fail";
       break;
     }
 
-    request_list.push_back(std::move(recovery_data));
+    request_list.push_back(std::move(entry));
   }
   return request_list;
 }
 
 void RaftRecovery::PerformCallback(
-    std::vector<std::unique_ptr<RecoveryData>> &request_list,
+    std::vector<std::unique_ptr<Entry>> &request_list,
     CallbackType call_back, int64_t ckpt) {
   uint64_t max_seq = 0;
-  for (std::unique_ptr<RecoveryData>& recovery_data : request_list) {
+  for (std::unique_ptr<Entry>& entry : request_list) {
     // LOG(ERROR)<<" ckpt :"<<ckpt<<" recovery data
     // seq:"<<recovery_data->request->seq()<<"
     // type:"<<recovery_data->request->type();
-    if (ckpt < recovery_data->request->seq() ||
-        recovery_data->request->type() == Request::TYPE_NEWVIEW) {
-      recovery_data->request->set_is_recovery(true);
-      max_seq = recovery_data->request->seq();
-      call_back(std::move(recovery_data->request));
+    if (ckpt < entry->term()) {
+      max_seq = entry->term();
+      call_back(std::move(entry));
     }
   }
 
@@ -198,37 +204,6 @@ bool RaftRecovery::PerformSystemCallback(std::vector<std::string> data_list, std
   RaftMetadata info = ReadMetadata();
   system_callback(info);
   return true;
-}
-
-std::map<
-    uint64_t,
-    std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>>
-RaftRecovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
-                                   uint64_t need_max_seq) {
-  auto list = GetSortedRecoveryFiles(need_min_seq, need_max_seq);
-
-  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>,
-                                           std::unique_ptr<Request>>>>
-      res;
-  std::function<void(const RaftMetadata&)> system_cb = [&](const RaftMetadata&) {};
-  for (const auto& path : list) {
-    CallbackType callback =
-        [&](std::unique_ptr<Request> request) {
-            if (request->seq() >= need_min_seq &&
-                request->seq() <= need_max_seq) {
-                LOG(ERROR) << "get data from recovery file seq:" << request->seq();
-                res[request->seq()].push_back(
-                    std::make_pair(nullptr, std::move(request)));
-            }
-        };
-        
-    this->template ReadLogsFromFiles<RaftMetadata, CallbackType>(
-        path.second, need_min_seq - 1, 0,
-        system_cb,  // system callback
-        callback);                           // typed callback
-  }
-
-  return res;
 }
 
 }  // namespace raft

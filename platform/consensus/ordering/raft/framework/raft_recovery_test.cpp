@@ -57,25 +57,16 @@ class RaftRecoveryTest : public Test {
 };
 
 TEST_F(RaftRecoveryTest, ReadLog) {
-  std::vector<int> types = {Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE,
-                            Request::TYPE_COMMIT,      Request::TYPE_CHECKPOINT,
-                            Request::TYPE_NEWVIEW,     Request::TYPE_NEW_TXNS};
-
-  std::vector<int> expected_types = {
-      Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
-      Request::TYPE_CHECKPOINT,  Request::TYPE_NEWVIEW,
-  };
-
   int entries_to_add = 3;
   {
-    RaftRecovery recovery(config_, &checkpoint_, &system_info_, nullptr);
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
 
     for (int i = 0; i < entries_to_add; i++) {
         // Set up the Log Entry to be added
         Entry logEntry;
-        logEntry.set_term(i);
+        logEntry.set_term(i + 1);
         auto req = std::make_unique<Request>();
-        req->set_seq(i);
+        req->set_seq(i + 1);
         std::string serialized;
         if (!req->SerializeToString(&serialized)) {
             assert(false);
@@ -86,17 +77,17 @@ TEST_F(RaftRecoveryTest, ReadLog) {
     }
   }
   {
-    std::vector<Request> list;
-    RaftRecovery recovery(config_, &checkpoint_, &system_info_, nullptr);
-    recovery.ReadLogs(
+    std::vector<Entry> list;
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
+    recovery.ReadLogs<RaftMetadata>(
         [&](const RaftMetadata &data) {},
-        [&](std::unique_ptr<Request> request) { list.push_back(*request); },
+        [&](std::unique_ptr<Entry> entry) { list.push_back(*entry); },
         nullptr);
 
     EXPECT_EQ(list.size(), entries_to_add);
 
     for (size_t i = 0; i < entries_to_add; ++i) {
-      EXPECT_EQ(list[i].seq(), i);
+      EXPECT_EQ(list[i].term(), i + 1);
     }
   }
 }

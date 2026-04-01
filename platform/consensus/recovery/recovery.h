@@ -26,6 +26,7 @@
 #include "platform/consensus/checkpoint/checkpoint.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
+#include "platform/proto/system_info_data.pb.h"
 #include <glog/logging.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -55,20 +56,16 @@ class RecoveryBase {
   int64_t GetMaxSeq();
   int64_t GetMinSeq();
 
-  int GetData(const RecoveryRequest& request, RecoveryResponse& response);
+  // int GetData(const RecoveryRequest& request, RecoveryResponse& response);
 
  protected:
   std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
-  struct RecoveryData {
-    std::unique_ptr<Context> context;
-    std::unique_ptr<Request> request;
-  };
 
  private:
 
   void WriteLog(const Context* context, const Request* request);
 
-  std::vector<std::unique_ptr<RecoveryData>> ParseData(const std::string& data);
+  auto ParseData(const std::string& data);
   std::vector<std::string> ParseRawData(const std::string& data);
 
   void MayFlush();
@@ -103,10 +100,10 @@ class RecoveryBase {
   std::string file_path_;
   ResDBConfig config_;
   // Derived class must implement these
-  std::vector<std::unique_ptr<RecoveryData>> ParseDataListItem(std::vector<std::string>& data_list);
+  auto ParseDataListItem(std::vector<std::string>& data_list);
 
   template<typename TCallback>
-  void PerformCallback(std::vector<std::unique_ptr<RecoveryData>>& request_list, TCallback call_back);
+  void PerformCallback(auto& request_list, TCallback call_back);
 
   void WriteSystemInfo();
 

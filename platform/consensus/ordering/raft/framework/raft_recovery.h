@@ -50,19 +50,18 @@ class RaftRecovery : public RecoveryBase<RaftRecovery> {
   void Init();
   void WriteMetadata(int64_t current_term, int32_t voted_for);
   void AddLogEntry(const Entry* entry);
-  std::map<uint64_t, std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>>
-  GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
+  void AddLogEntry(std::vector<Entry> &entries_to_add);
 
  private:
   void OpenMetadataFile();
   void WriteSystemInfo();
-  std::vector<std::unique_ptr<RecoveryData>> ParseDataListItem(
+  std::vector<std::unique_ptr<Entry>> ParseDataListItem(
     std::vector<std::string> &data_list);
   void WriteLog(const Entry* entry);
 
   void PerformCallback(
-  std::vector<std::unique_ptr<RecoveryData>> &request_list,
-  std::function<void(std::unique_ptr<Request> request)>
+  std::vector<std::unique_ptr<Entry>> &request_list,
+  std::function<void(std::unique_ptr<Entry> entry)>
       call_back, int64_t ckpt);
  
   bool PerformSystemCallback(std::vector<std::string> data_list, std::function<void(const RaftMetadata&)> system_callback);

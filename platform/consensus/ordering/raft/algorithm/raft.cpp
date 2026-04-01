@@ -221,9 +221,11 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     // append remaining entries
     const auto appendSize = entriesSize - entriesIdx;
     log_.reserve(log_.size() + appendSize);
+    std::vector<LogEntry> log_entries_to_add;
     for (uint64_t i = entriesIdx; i < entriesSize; ++i) {
-      AddToLog(CreateLogEntry(ae->entries(i)));
+      log_entries_to_add.push_back(CreateLogEntry(ae->entries(i)));
     }
+    AddToLog(log_entries_to_add);
     // update lastLogIndex after appends
     uint64_t firstAppendIdx = lastLogIndex_ + 1;
     lastLogIndex_ = log_.size() - 1;
@@ -861,6 +863,22 @@ void Raft::AddToLog(LogEntry logEntryToAdd, bool writeMetadata) {
     recovery_->AddLogEntry(entry);
   }
   log_.push_back(logEntryToAdd);
+}
+
+void Raft::AddToLog(std::vector<LogEntry> logEntriesToAdd, bool writeMetadata) {
+  if (writeMetadata) {
+    std::vector<Entry> entries_to_add;
+    for (const auto &entry : logEntriesToAdd) {
+      entries_to_add.push_back(entry.entry);
+    }
+    
+    recovery_->AddLogEntry(entries_to_add);
+  }
+
+  log_.reserve(log_.size() + logEntriesToAdd.size());
+  log_.insert(log_.end(),
+              std::make_move_iterator(logEntriesToAdd.begin()),
+              std::make_move_iterator(logEntriesToAdd.end()));
 }
 
 void Raft::TruncateLog(std::vector<LogEntry>::iterator first,

@@ -83,7 +83,7 @@ TEST_F(RecoveryTest, ReadLog) {
 
   std::vector<int> expected_types = {
       Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
-      Request::TYPE_CHECKPOINT,  Request::TYPE_NEWVIEW,
+      Request::TYPE_NEWVIEW,
   };
 
   {
@@ -130,7 +130,7 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
 
   std::vector<int> expected_types = {
       Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
-      Request::TYPE_CHECKPOINT,  Request::TYPE_NEWVIEW,
+      Request::TYPE_NEWVIEW,
   };
 
   {
@@ -150,7 +150,6 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
     std::function<void(std::unique_ptr<Context>, std::unique_ptr<Request>)> call_back =
     [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
         list.push_back(*request);
-        // LOG(ERROR) << "call back:" << request->seq();
     };
 
     recovery.ReadLogs<SystemInfoData, decltype(call_back)>(

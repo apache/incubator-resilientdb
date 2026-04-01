@@ -117,6 +117,7 @@ class Raft : public common::ProtocolBase {
   virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
   virtual void SetSeqIndexCoveredBySnapshot(int seq);
   void AddToLog(LogEntry logEntry, bool writeMetadata = true);
+  void AddToLog(std::vector<LogEntry> logEntriesToAdd, bool writeMetadata = true);
   void TruncateLog(std::vector<LogEntry>::iterator first,
                           std::vector<LogEntry>::iterator last,
                           bool writeMetadata = true);

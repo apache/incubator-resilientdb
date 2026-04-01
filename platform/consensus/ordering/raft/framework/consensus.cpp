@@ -122,12 +122,15 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
 void Consensus::RecoverFromLogs() {
   recovery_->ReadLogs<RaftMetadata>(
       [&](const RaftMetadata& metadata) {
-        LOG(ERROR) << " read current term: " << metadata.current_term
+        LOG(INFO) << " read current term: " << metadata.current_term
                    << " voted for: " << metadata.voted_for;
         raft_->SetCurrentTerm(metadata.current_term, false);
         raft_->SetVotedFor(metadata.voted_for, false);
       },
-      [&](std::unique_ptr<Request> request) {
+      [&](std::unique_ptr<Entry> entry) {
+        auto request = std::make_unique<Request>();
+        if (!request->ParseFromString(entry->command()))
+           LOG(ERROR) << "Error parsing entry in Recovery";
         return CommitMsg(*request);
       },
       [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });

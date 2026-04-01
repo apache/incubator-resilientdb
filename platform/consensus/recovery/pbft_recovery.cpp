@@ -119,7 +119,7 @@ void PBFTRecovery::WriteLog(const Context* context, const Request* request) {
   Flush();
 }
 
-std::vector<std::unique_ptr<typename RecoveryBase<PBFTRecovery>::RecoveryData>> PBFTRecovery::ParseDataListItem(
+std::vector<std::unique_ptr<PBFTRecovery::RecoveryData>> PBFTRecovery::ParseDataListItem(
     std::vector<std::string> &data_list) {
   std::vector<std::unique_ptr<RecoveryData>> request_list;
 
@@ -203,6 +203,19 @@ PBFTRecovery::GetDataFromRecoveryFiles(uint64_t need_min_seq,
   }
 
   return res;
+}
+
+int PBFTRecovery::GetData(const RecoveryRequest& request,
+                      RecoveryResponse& response) {
+  auto res = GetDataFromRecoveryFiles(request.min_seq(), request.max_seq());
+
+  for (const auto& it : res) {
+    for (const auto& req : it.second) {
+      *response.add_signature() = req.first->signature;
+      *response.add_request() = *req.second;
+    }
+  }
+  return 0;
 }
 
 

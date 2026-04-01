@@ -20,7 +20,6 @@
 #pragma once
 
 #include "platform/consensus/recovery/recovery.h"
-#include "platform/proto/system_info_data.pb.h"
 #include "platform/consensus/execution/system_info.h"
 
 namespace resdb {
@@ -38,7 +37,14 @@ class PBFTRecovery : public RecoveryBase<PBFTRecovery> {
                                            std::unique_ptr<Request>>>>
   GetDataFromRecoveryFiles(uint64_t need_min_seq, uint64_t need_max_seq);
 
+  int GetData(const RecoveryRequest& request, RecoveryResponse& response);
+
  private:
+  struct RecoveryData {
+    std::unique_ptr<Context> context;
+    std::unique_ptr<Request> request;
+  };
+
   void Init();
   void WriteLog(const Context* context, const Request* request);
   void WriteSystemInfo();

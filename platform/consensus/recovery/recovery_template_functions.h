@@ -27,9 +27,11 @@ void RecoveryBase<TDerived>::ReadLogs(std::function<void(const TSystemInfoData& 
   if (recovery_enabled_ == false) {
     return;
   }
-  // assert(storage_);
-  int64_t storage_ckpt = storage_ ? storage_->GetLastCheckpoint() : -1;
-  LOG(ERROR) << " storage ckpt:" << storage_ckpt;
+
+  int64_t storage_ckpt = 0;
+  if(storage_) {
+    storage_ckpt = storage_->GetLastCheckpoint();
+  }
   std::unique_lock<std::mutex> lk(mutex_);
 
   auto recovery_files_pair = GetRecoveryFiles(storage_ckpt);
@@ -96,26 +98,28 @@ void RecoveryBase<TDerived>::ReadLogsFromFiles(
   assert(fd >= 0);
 
   size_t data_len = 0;
-  Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len));
-  {
-    std::string data;
-    char* buf = new char[data_len];
-    if (!Read(fd, data_len, buf)) {
-      LOG(ERROR) << "Read system info fail";
-      return;
-    }
-    data = std::string(buf, data_len);
-    delete buf;
-    std::vector<std::string> data_list = ParseRawData(data);
+  if constexpr (std::is_same_v<TSystemInfoData, SystemInfoData>) {
+    Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len));
+    {
+      std::string data;
+      char* buf = new char[data_len];
+      if (!Read(fd, data_len, buf)) {
+        LOG(ERROR) << "Read system info fail";
+        return;
+      }
+      data = std::string(buf, data_len);
+      delete buf;
+      std::vector<std::string> data_list = ParseRawData(data);
 
-    bool successful_callback = static_cast<TDerived*>(this)->PerformSystemCallback(data_list, system_callback);
+      bool successful_callback = static_cast<TDerived*>(this)->PerformSystemCallback(data_list, system_callback);
 
-    if (!successful_callback) {
-      LOG(ERROR) << "parse info fail:" << data.size();
+      if (!successful_callback) {
+        LOG(ERROR) << "parse info fail:" << data.size();
+      }
     }
   }
 
-  std::vector<std::unique_ptr<RecoveryBase<TDerived>::RecoveryData>> request_list;
+  decltype(ParseData(std::string{})) request_list;
 
   while (Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len))) {
     std::string data;
@@ -127,7 +131,7 @@ void RecoveryBase<TDerived>::ReadLogsFromFiles(
     data = std::string(buf, data_len);
     delete buf;
 
-    std::vector<std::unique_ptr<RecoveryBase<TDerived>::RecoveryData>> list = ParseData(data);
+    auto list = ParseData(data);
     if (list.size() == 0) {
       request_list.clear();
       break;
