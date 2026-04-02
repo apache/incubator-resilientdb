@@ -21,12 +21,11 @@
 
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
-#include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
-#include "platform/networkstrate/consensus_manager.h"
-
+#include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include "platform/consensus/ordering/raft/framework/checkpoint_manager.h"
-#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
+#include "platform/consensus/recovery/raft_recovery.h"
+#include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
 namespace raft {

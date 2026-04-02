@@ -64,7 +64,7 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
 
   view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
 
-  recovery_->ReadLogs<SystemInfoData>(
+  recovery_->ReadLogs(
       [&](const SystemInfoData& data) {
         LOG(ERROR) << " read data info:" << data.view()
                    << " primary:" << data.primary_id();

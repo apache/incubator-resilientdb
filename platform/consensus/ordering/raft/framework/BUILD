@@ -46,7 +46,7 @@ cc_library(
     ],
     deps = [
         ":checkpoint_manager",
-        ":raft_recovery",
+        "//platform/consensus/recovery:raft_recovery",
         "//common/utils",
         "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/ordering/raft/algorithm:raft",

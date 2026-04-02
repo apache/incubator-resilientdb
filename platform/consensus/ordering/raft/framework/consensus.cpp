@@ -120,7 +120,7 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
 }
 
 void Consensus::RecoverFromLogs() {
-  recovery_->ReadLogs<RaftMetadata>(
+  recovery_->ReadLogs(
       [&](const RaftMetadata& metadata) {
         LOG(INFO) << " read current term: " << metadata.current_term
                   << " voted for: " << metadata.voted_for;
