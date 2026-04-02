@@ -1,4 +1,4 @@
-#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
+#include "platform/consensus/recovery/raft_recovery.h"
 
 #include <glog/logging.h>
 #include <gmock/gmock.h>
@@ -8,7 +8,7 @@
 
 #include "chain/storage/mock_storage.h"
 #include "platform/consensus/checkpoint/mock_checkpoint.h"
-#include "platform/consensus/ordering/raft/framework/transaction_utils.h"
+#include "platform/consensus/ordering/common/transaction_utils.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 
 namespace resdb {

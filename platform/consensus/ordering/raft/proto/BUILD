@@ -31,15 +31,6 @@ proto_library(
 cc_proto_library(
     name = "proposal_cc_proto",
     deps = [":proposal_proto"],
-)
-
-proto_library(
-    name = "persistent_state_proto",
-    srcs = ["persistent_state.proto"],
-    #visibility = ["//visibility:public"],
-)
-
-cc_proto_library(
-    name = "persistent_state_cc_proto",
-    deps = [":persistent_state_proto"],
+    visibility = ["//platform/consensus/ordering/raft:__subpackages__",
+                  "//platform/consensus/recovery:__subpackages__"],
 )

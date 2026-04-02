@@ -33,12 +33,12 @@
 
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
+#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/consensus/recovery/raft_recovery.h"
+#include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
-#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
-#include "platform/networkstrate/replica_communicator.h"
-#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
 
 namespace resdb {
 namespace raft {

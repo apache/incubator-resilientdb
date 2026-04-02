@@ -18,21 +18,13 @@
 
 package(default_visibility = ["//platform/consensus/ordering/raft:__subpackages__"])
 
-cc_library(
-    name = "transaction_utils",
-    srcs = ["transaction_utils.cpp"],
-    hdrs = ["transaction_utils.h"],
-    deps = [
-        "//platform/proto:resdb_cc_proto",
-    ],
-)
 
 cc_library(
     name = "checkpoint_manager",
     srcs = ["checkpoint_manager.cpp"],
     hdrs = ["checkpoint_manager.h"],
     deps = [
-        ":transaction_utils",
+        "//platform/consensus/ordering/common:transaction_utils",
         "//chain/state:chain_state",
         "//common/crypto:signature_verifier",
         "//interface/common:resdb_txn_accessor",
@@ -42,24 +34,6 @@ cc_library(
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
         "//platform/proto:checkpoint_info_cc_proto",
-    ],
-)
-
-cc_library(
-    name = "raft_recovery",
-    srcs = ["raft_recovery.cpp"],
-    hdrs = ["raft_recovery.h"],
-    deps = [
-        "//chain/storage",
-        "//common/utils",
-        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
-        "//platform/config:resdb_config",
-        "//platform/consensus/checkpoint",
-        "//platform/consensus/execution:system_info",
-        "//platform/networkstrate:server_comm",
-        "//platform/proto:resdb_cc_proto",
-        "//platform/proto:system_info_data_cc_proto",
-        "//platform/consensus/recovery:recovery"
     ],
 )
 
@@ -77,23 +51,4 @@ cc_library(
         "//platform/consensus/ordering/common/framework:consensus",
         "//platform/consensus/ordering/raft/algorithm:raft",
     ],
-)
-
-cc_test(
-    name = "raft_recovery_test",
-    srcs = [
-        "raft_recovery_test.cpp",
-    ],
-    copts = ["-DRAFT_TEST_MODE"],
-    deps = [
-        ":raft_recovery",
-        "//chain/storage:mock_storage",
-        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
-        "//platform/consensus/checkpoint:mock_checkpoint",
-        ":transaction_utils",
-        "//common/test:test_main",
-        "//platform/proto:client_test_cc_proto",
-        "//platform/consensus/ordering/raft/algorithm:raft"
-    ],
-    size="small"
 )

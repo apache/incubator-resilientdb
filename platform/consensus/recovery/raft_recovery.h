@@ -25,11 +25,11 @@
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/checkpoint/checkpoint.h"
 #include "platform/consensus/execution/system_info.h"
+#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/consensus/recovery/recovery.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
-#include "platform/consensus/recovery/recovery.h"
 #include "platform/proto/system_info_data.pb.h"
-#include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 
 namespace resdb {
 

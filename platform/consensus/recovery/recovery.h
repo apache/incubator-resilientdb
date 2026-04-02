@@ -121,6 +121,5 @@ class RecoveryBase {
 };
 
 #include "platform/consensus/recovery/recovery_impl.h"
-#include "platform/consensus/recovery/recovery_template_functions.h"
 
 }  // namespace resdb

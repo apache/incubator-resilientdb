@@ -20,7 +20,7 @@ package(default_visibility = ["//platform/consensus:__subpackages__"])
 
 cc_library(
     name = "recovery_base",
-    hdrs = ["recovery.h", "recovery_impl.h", "recovery_template_functions.h"],
+    hdrs = ["recovery.h", "recovery_impl.h"],
     deps = [
         "//chain/storage",
         "//common/utils",
@@ -52,4 +52,41 @@ cc_test(
         "//platform/consensus/checkpoint:mock_checkpoint",
         "//platform/consensus/ordering/common:transaction_utils",
     ],
+)
+
+cc_library(
+    name = "raft_recovery",
+    srcs = ["raft_recovery.cpp"],
+    hdrs = ["raft_recovery.h"],
+    deps = [
+        "//chain/storage",
+        "//common/utils",
+        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
+        "//platform/config:resdb_config",
+        "//platform/consensus/checkpoint",
+        "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:server_comm",
+        "//platform/proto:resdb_cc_proto",
+        "//platform/proto:system_info_data_cc_proto",
+        "//platform/consensus/recovery:recovery_base"
+    ],
+)
+
+cc_test(
+    name = "raft_recovery_test",
+    srcs = [
+        "raft_recovery_test.cpp",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft_recovery",
+        "//chain/storage:mock_storage",
+        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
+        "//platform/consensus/checkpoint:mock_checkpoint",
+        "//platform/consensus/ordering/common:transaction_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+        "//platform/consensus/ordering/raft/algorithm:raft"
+    ],
+    size="small"
 )

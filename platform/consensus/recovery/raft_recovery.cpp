@@ -17,7 +17,7 @@
  * under the License.
  */
 
-#include "platform/consensus/ordering/raft/framework/raft_recovery.h"
+#include "platform/consensus/recovery/raft_recovery.h"
 
 #include <fcntl.h>
 #include <glog/logging.h>
@@ -62,8 +62,8 @@ void RaftRecovery::Init() {
   SwitchFile(file_path_, callback);
   LOG(ERROR) << " init done";
 
-  meta_file_path_ = std::filesystem::path(base_file_path_).parent_path() 
-                    / "raft_metadata.dat";
+  meta_file_path_ = std::filesystem::path(base_file_path_).parent_path() /
+                    "raft_metadata.dat";
   LOG(INFO) << "Meta file path: " << meta_file_path_;
   OpenMetadataFile();
 
