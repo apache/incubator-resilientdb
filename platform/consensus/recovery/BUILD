@@ -26,10 +26,8 @@ cc_library(
         "//common/utils",
         "//platform/config:resdb_config",
         "//platform/consensus/checkpoint",
-        "//platform/consensus/execution:system_info",
         "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
-        "//platform/proto:system_info_data_cc_proto",
     ],
 )
 
@@ -39,6 +37,8 @@ cc_library(
     hdrs = ["pbft_recovery.h"],
     deps = [
         ":recovery_base",
+        "//platform/consensus/execution:system_info",
+        "//platform/proto:system_info_data_cc_proto",
     ],
 )
 
@@ -64,10 +64,8 @@ cc_library(
         "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
         "//platform/config:resdb_config",
         "//platform/consensus/checkpoint",
-        "//platform/consensus/execution:system_info",
         "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
-        "//platform/proto:system_info_data_cc_proto",
         "//platform/consensus/recovery:recovery_base"
     ],
 )

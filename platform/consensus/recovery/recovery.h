@@ -37,7 +37,6 @@
 #include "platform/consensus/checkpoint/checkpoint.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
-#include "platform/proto/system_info_data.pb.h"
 
 namespace resdb {
 
@@ -59,12 +58,10 @@ class RecoveryBase {
   std::vector<std::pair<int64_t, std::string>> GetSortedRecoveryFiles(
       uint64_t need_min_seq, uint64_t need_max_seq);
 
- private:
-
-  void WriteLog(const Context* context, const Request* request);
-
-  auto ParseData(const std::string& data);
   std::vector<std::string> ParseRawData(const std::string& data);
+
+ private:
+  auto ParseData(const std::string& data);
 
   void MayFlush();
 

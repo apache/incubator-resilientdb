@@ -177,6 +177,27 @@ bool PBFTRecovery::PerformSystemCallback(
   return true;
 }
 
+void PBFTRecovery::HandleSystemInfo(
+    int fd, std::function<void(const SystemInfoData&)> system_callback) {
+  size_t data_len = 0;
+  Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len));
+  std::string data;
+  char* buf = new char[data_len];
+  if (!Read(fd, data_len, buf)) {
+    LOG(ERROR) << "Read system info fail";
+    return;
+  }
+  data = std::string(buf, data_len);
+  delete buf;
+  std::vector<std::string> data_list = ParseRawData(data);
+
+  bool successful_callback = PerformSystemCallback(data_list, system_callback);
+
+  if (!successful_callback) {
+    LOG(ERROR) << "parse info fail:" << data.size();
+  }
+}
+
 std::map<
     uint64_t,
     std::vector<std::pair<std::unique_ptr<Context>, std::unique_ptr<Request>>>>

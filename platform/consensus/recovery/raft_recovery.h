@@ -24,12 +24,10 @@
 #include "chain/storage/storage.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/checkpoint/checkpoint.h"
-#include "platform/consensus/execution/system_info.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
 #include "platform/consensus/recovery/recovery.h"
 #include "platform/networkstrate/server_comm.h"
 #include "platform/proto/resdb.pb.h"
-#include "platform/proto/system_info_data.pb.h"
 
 namespace resdb {
 
@@ -69,9 +67,8 @@ class RaftRecovery
       std::function<void(std::unique_ptr<Entry> entry)> call_back,
       int64_t ckpt);
 
-  bool PerformSystemCallback(
-      std::vector<std::string> data_list,
-      std::function<void(const RaftMetadata&)> system_callback);
+  void HandleSystemInfo(
+      int /*fd*/, std::function<void(const RaftMetadata&)> system_callback);
 
   int metadata_fd_;
   std::string meta_file_path_;

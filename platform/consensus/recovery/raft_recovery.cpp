@@ -201,12 +201,12 @@ void RaftRecovery::PerformCallback(
   LOG(ERROR) << " recovery max seq:" << max_seq;
 }
 
-bool RaftRecovery::PerformSystemCallback(
-    std::vector<std::string> data_list,
-    std::function<void(const RaftMetadata&)> system_callback) {
+void RaftRecovery::HandleSystemInfo(
+    int /*fd*/, std::function<void(const RaftMetadata&)> system_callback) {
   RaftMetadata info = ReadMetadata();
+  LOG(ERROR) << " info.voted_for: " << info.voted_for << "\ninfo.current_term "
+             << info.current_term;
   system_callback(info);
-  return true;
 }
 
 }  // namespace raft

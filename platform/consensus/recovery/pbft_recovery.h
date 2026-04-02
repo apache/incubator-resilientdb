@@ -21,6 +21,7 @@
 
 #include "platform/consensus/execution/system_info.h"
 #include "platform/consensus/recovery/recovery.h"
+#include "platform/proto/system_info_data.pb.h"
 
 namespace resdb {
 using CallbackType =
@@ -62,6 +63,9 @@ class PBFTRecovery
   bool PerformSystemCallback(
       std::vector<std::string> data_list,
       std::function<void(const SystemInfoData&)> system_callback);
+
+  void HandleSystemInfo(
+      int fd, std::function<void(const SystemInfoData&)> system_callback);
 
   SystemInfo* system_info_;
 };

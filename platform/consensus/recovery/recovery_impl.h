@@ -450,28 +450,7 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::ReadLogsFromFiles(
   assert(fd >= 0);
 
   size_t data_len = 0;
-  if constexpr (std::is_same_v<TSystemInfoData, SystemInfoData>) {
-    Read(fd, sizeof(data_len), reinterpret_cast<char*>(&data_len));
-    {
-      std::string data;
-      char* buf = new char[data_len];
-      if (!Read(fd, data_len, buf)) {
-        LOG(ERROR) << "Read system info fail";
-        return;
-      }
-      data = std::string(buf, data_len);
-      delete buf;
-      std::vector<std::string> data_list = ParseRawData(data);
-
-      bool successful_callback =
-          static_cast<TDerived*>(this)->PerformSystemCallback(data_list,
-                                                              system_callback);
-
-      if (!successful_callback) {
-        LOG(ERROR) << "parse info fail:" << data.size();
-      }
-    }
-  }
+  static_cast<TDerived*>(this)->HandleSystemInfo(fd, system_callback);
 
   decltype(ParseData(std::string{})) request_list;
 

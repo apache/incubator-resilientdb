@@ -44,29 +44,27 @@ std::vector<std::string> Listlogs(const std::string &path) {
 class RaftRecoveryTest : public Test {
  public:
   RaftRecoveryTest()
-      : config_(GetConfigData(), ReplicaInfo(), KeyInfo(), CertificateInfo()),
-        system_info_() {
+      : config_(GetConfigData(), ReplicaInfo(), KeyInfo(), CertificateInfo()) {
     std::string dir = std::filesystem::path(log_path).parent_path();
     std::filesystem::remove_all(dir);
   }
 
  protected:
   ResDBConfig config_;
-  SystemInfo system_info_;
   MockCheckPoint checkpoint_;
 };
 
-TEST_F(RaftRecoveryTest, ReadLog) {
+TEST_F(RaftRecoveryTest, WriteAndReadLog) {
   int entries_to_add = 3;
   {
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
 
     for (int i = 0; i < entries_to_add; i++) {
-      // Set up the Log Entry to be added
       Entry logEntry;
       logEntry.set_term(i + 1);
       auto req = std::make_unique<Request>();
       req->set_seq(i + 1);
+      req->set_data("Request " + std::to_string(i + 1));
       std::string serialized;
       if (!req->SerializeToString(&serialized)) {
         assert(false);
@@ -87,7 +85,32 @@ TEST_F(RaftRecoveryTest, ReadLog) {
 
     for (size_t i = 0; i < entries_to_add; ++i) {
       EXPECT_EQ(list[i].term(), i + 1);
+      Request req;
+      req.ParseFromString(list[i].command());
+      EXPECT_EQ(req.data(), "Request " + std::to_string(i + 1));
     }
+  }
+}
+
+TEST_F(RaftRecoveryTest, WriteAndReadMetadata) {
+  {
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
+
+    recovery.WriteMetadata(2, 1);
+  }
+  {
+    int64_t current_term;
+    int32_t voted_for;
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
+    recovery.ReadLogs(
+        [&](const RaftMetadata &data) {
+          current_term = data.current_term;
+          voted_for = data.voted_for;
+        },
+        [&](std::unique_ptr<Entry> entry) {}, nullptr);
+
+    EXPECT_EQ(current_term, 2);
+    EXPECT_EQ(voted_for, 1);
   }
 }
 
