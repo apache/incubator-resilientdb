@@ -151,6 +151,5 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   return 0;
 }
 
-
 }  // namespace raft
 }  // namespace resdb

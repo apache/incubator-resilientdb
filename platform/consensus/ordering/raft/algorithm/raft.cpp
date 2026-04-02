@@ -123,13 +123,6 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       logEntry.entry.set_command(std::move(serialized));
       logEntry.GetSerializedSize();
       AddToLog(logEntry);
-      
-
-
-      // TODO
-      // durably store the new entry somehow
-      // otherwise it is a safety violation to treat it as "appended"
-      // should not be responding to RPCs before durable.
 
       lastLogIndex_++;
       nextIndex_[id_] = lastLogIndex_ + 1;
@@ -229,7 +222,6 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     // update lastLogIndex after appends
     uint64_t firstAppendIdx = lastLogIndex_ + 1;
     lastLogIndex_ = log_.size() - 1;
-    // TODO: have to actually store the entry durably before follower can respond to RPC
     lastLogIndex = lastLogIndex_;
 
     if (replicationLoggingFlag_ && appendSize > 0) {

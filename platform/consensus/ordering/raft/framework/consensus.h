@@ -41,9 +41,6 @@ class Consensus : public common::Consensus {
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const AppendEntries& txn);
-#ifdef RAFT_TEST_MODE
- public:
-#endif
   void RecoverFromLogs();
 
  protected:
