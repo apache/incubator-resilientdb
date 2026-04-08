@@ -322,7 +322,9 @@ RecoveryBase<TDerived, TSystemInfoData, TCallback>::GetRecoveryFiles(
   }
 
   sort(e_list.begin(), e_list.end());
-  list.push_back(e_list.back());
+  if (!e_list.empty()) {
+    list.push_back(e_list.back());
+  }
 
   sort(list.begin(), list.end());
   return std::make_pair(list, last_ckpt);
@@ -466,7 +468,6 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::ReadLogsFromFiles(
 
     auto list = ParseData(data);
     if (list.size() == 0) {
-      request_list.clear();
       break;
     }
     for (auto& l : list) {

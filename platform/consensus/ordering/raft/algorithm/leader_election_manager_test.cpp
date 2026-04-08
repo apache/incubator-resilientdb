@@ -7,6 +7,7 @@
 #include "platform/config/resdb_config_utils.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/consensus/ordering/raft/algorithm/mock_raft.h"
+#include "platform/consensus/recovery/mock_raft_recovery.h"
 
 namespace resdb {
 namespace raft {
@@ -52,9 +53,11 @@ class LeaderElectionManagerTest : public ::testing::Test {
     replica_communicator_ = nullptr;
     leader_election_manager_ =
         std::make_unique<TestLeaderElectionManager>(config_);
+    mock_recovery_ = std::make_unique<MockRaftRecovery>(config_);
     mock_raft_ = std::make_unique<MockRaft>(1, 1, 3, verifier_.get(),
                                             leader_election_manager_.get(),
-                                            replica_communicator_.get());
+                                            replica_communicator_.get(),
+                                            mock_recovery_.get());
   }
 
   void TearDown() override {
@@ -71,6 +74,7 @@ class LeaderElectionManagerTest : public ::testing::Test {
   std::unique_ptr<ReplicaCommunicator> replica_communicator_;
   std::unique_ptr<TestLeaderElectionManager> leader_election_manager_;
   std::unique_ptr<MockRaft> mock_raft_;
+  std::unique_ptr<MockRaftRecovery> mock_recovery_;
 };
 
 // Test 1: Follower timeout should trigger election.

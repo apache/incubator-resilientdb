@@ -6,6 +6,7 @@
 #include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include "platform/networkstrate/mock_replica_communicator.h"
 #include "platform/proto/client_test.pb.h"
+#include "platform/consensus/recovery/mock_raft_recovery.h"
 
 namespace resdb {
 namespace raft {
@@ -43,10 +44,11 @@ class RaftTest : public ::testing::Test {
  protected:
   void SetUp() override {
     verifier_ = std::make_unique<MockSignatureVerifier>();
+    ResDBConfig config_ = GenerateConfig();
     leader_election_manager_ =
-        std::make_unique<MockLeaderElectionManager>(GenerateConfig());
+        std::make_unique<MockLeaderElectionManager>(config_);
     replica_communicator_ = std::make_unique<MockReplicaCommunicator>();
-    recovery_ = std::make_unique<MockRaftRecovery>();
+    recovery_ = std::make_unique<MockRaftRecovery>(config_);
     raft_ = std::make_unique<Raft>(
         /*id=*/1,
         /*f=*/1,
@@ -81,10 +83,10 @@ class RaftTest : public ::testing::Test {
     fields.followerId = followerId;
 
     for (const auto& logEntry : entries) {
-      LogEntry entry;
-      entry.term = logEntry.term;
-      entry.command = logEntry.command;
-      fields.entries.push_back(std::move(entry));
+      LogEntry log_entry;
+      log_entry.entry.set_term(logEntry.entry.term());
+      log_entry.entry.set_command(logEntry.entry.command());
+      fields.entries.push_back(std::move(log_entry));
     }
 
     return fields;
@@ -93,10 +95,10 @@ class RaftTest : public ::testing::Test {
   // Helper to create a single log entry.
   LogEntry CreateLogEntry(uint64_t term,
                                            const std::string& command_data) {
-    LogEntry entry;
-    entry.term = term;
-    entry.command = command_data;
-    return entry;
+    LogEntry log_entry;
+    log_entry.entry.set_term(term);
+    log_entry.entry.set_command(command_data);
+    return log_entry;
   }
 
   // Helper to create a vector of log entries for testing.
@@ -107,23 +109,23 @@ class RaftTest : public ::testing::Test {
 
     if (usedForLogPatch) {
       LogEntry first_entry;
-      first_entry.term = 0;
-      first_entry.command = "COMMON_PREFIX";
+      first_entry.entry.set_term(0);
+      first_entry.entry.set_command("COMMON_PREFIX");
       entries.push_back(first_entry);
     }
 
     for (const auto& [term, cmd] : term_and_cmds) {
-      LogEntry entry;
-      entry.term = term;
+      LogEntry log_entry;
+      log_entry.entry.set_term(term);
 
       ClientTestRequest req;
       req.set_value(cmd);
 
       std::string serialized;
       req.SerializeToString(&serialized);
-      entry.command = serialized;
+      log_entry.entry.set_command(serialized);
 
-      entries.push_back(entry);
+      entries.push_back(log_entry);
     }
 
     return entries;
@@ -136,10 +138,10 @@ class RaftTest : public ::testing::Test {
     ae.set_prevlogindex(fields.prevLogIndex);
     ae.set_prevlogterm(fields.prevLogTerm);
     ae.set_leadercommitindex(fields.leaderCommit);
-    for (const auto& entry : fields.entries) {
+    for (const auto& log_entry : fields.entries) {
       auto* newEntry = ae.add_entries();
-      newEntry->set_term(entry.term);
-      newEntry->set_command(entry.command);
+      newEntry->set_term(log_entry.entry.term());
+      newEntry->set_command(log_entry.entry.command());
     }
 
     return ae;
@@ -148,7 +150,7 @@ class RaftTest : public ::testing::Test {
   std::unique_ptr<MockSignatureVerifier> verifier_;
   std::unique_ptr<MockLeaderElectionManager> leader_election_manager_;
   std::unique_ptr<MockReplicaCommunicator> replica_communicator_;
-  std::unique_ptr<MockRecovery> recovery_;
+  std::unique_ptr<MockRaftRecovery> recovery_;
   std::unique_ptr<Raft> raft_;
   MockSendMessageFunction mock_call;
   MockBroadcastFunction mock_broadcast;

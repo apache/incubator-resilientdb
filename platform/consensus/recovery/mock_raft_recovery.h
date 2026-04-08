@@ -21,26 +21,25 @@
 
 #include <gmock/gmock.h>
 
-#include "platform/consensus/ordering/raft/algorithm/raft.h"
+#include "platform/consensus/recovery/raft_recovery.h"
+#include "platform/consensus/checkpoint/mock_checkpoint.h"
+#include "chain/storage/mock_storage.h"
 
 namespace resdb {
 namespace raft {
 
-class MockRaft : public Raft {
+class MockRaftRecovery : public RaftRecovery {
  public:
-  MockRaft(int id, int f, int total_num, SignatureVerifier* verifier,
-           LeaderElectionManager* leaderelection_manager,
-           ReplicaCommunicator* replica_communicator, RaftRecovery* recovery)
-      : Raft(id, f, total_num, verifier, leaderelection_manager,
-             replica_communicator, recovery) {}
+  MockRaftRecovery(const ResDBConfig& config)
+      : RaftRecovery(config, mock_checkpoint_.get(), mock_storage_.get()) {}
 
-  MOCK_METHOD(void, SendHeartBeat, (), ());
-  MOCK_METHOD(void, StartElection, (), ());
-  MOCK_METHOD(int, Broadcast,
-              (int msg_type, const google::protobuf::Message& msg), (override));
-  MOCK_METHOD(int, SendMessage,
-              (int msg_type, const google::protobuf::Message& msg, int node_id),
-              (override));
+  MOCK_METHOD(void, AddLogEntry, (const Entry* entry), ());
+  MOCK_METHOD(void, WriteMetadata, (int64_t current_term, int32_t voted_for), ());
+  MOCK_METHOD(void, AddLogEntry, (std::vector<Entry>& entries_to_add), ());
+  MOCK_METHOD(void, TruncateLog, (TruncationRecord truncate_beginning_at), ());
+
+  std::unique_ptr<MockCheckPoint> mock_checkpoint_;
+  std::unique_ptr<MockStorage> mock_storage_;
 };
 
 }  // namespace raft

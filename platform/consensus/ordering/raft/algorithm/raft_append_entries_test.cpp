@@ -240,7 +240,7 @@ TEST_F(RaftTest, FollowerRejectsMismatchedTermAtPrevLogIndex) {
   EXPECT_TRUE(success);
 }
 
-// Test 7: A follower rejects Append Entries because it does not have a term at
+// Test 7: A follower rejects Append Entries because it does not have an entry at
 // prevLogIndex.
 TEST_F(RaftTest, FollowerRejectsMissingIndex) {
   EXPECT_CALL(mock_call, Call(_, _, _))
@@ -315,15 +315,15 @@ TEST_F(RaftTest, FollowerAddsAppendEntriesAndTruncatesLog) {
       std::make_unique<AppendEntries>(std::move(aemessage)));
 
   const auto& raft_log = raft_->GetLog();
-  EXPECT_EQ(raft_log[0].term, 0);
-  EXPECT_EQ(raft_log[0].command, "COMMON_PREFIX");
-  EXPECT_EQ(raft_log[1].term, 0);
+  EXPECT_EQ(raft_log[0].entry.term(), 0);
+  EXPECT_EQ(raft_log[0].entry.command(), "COMMON_PREFIX");
+  EXPECT_EQ(raft_log[1].entry.term(), 0);
   // TODO: Use serialized string instead of manually doing it.
-  EXPECT_EQ(raft_log[1].command, "\n\x14Term 0 Transaction 1");
-  EXPECT_EQ(raft_log[2].term, 1);
-  EXPECT_EQ(raft_log[2].command, "\n\x14Term 1 Transaction 1");
-  EXPECT_EQ(raft_log[3].term, 1);
-  EXPECT_EQ(raft_log[3].command, "\n\x14Term 1 Transaction 2");
+  EXPECT_EQ(raft_log[1].entry.command(), "\n\x14Term 0 Transaction 1");
+  EXPECT_EQ(raft_log[2].entry.term(), 1);
+  EXPECT_EQ(raft_log[2].entry.command(), "\n\x14Term 1 Transaction 1");
+  EXPECT_EQ(raft_log[3].entry.term(), 1);
+  EXPECT_EQ(raft_log[3].entry.command(), "\n\x14Term 1 Transaction 2");
   EXPECT_TRUE(success);
 }
 
@@ -559,7 +559,7 @@ TEST_F(RaftTest, CandidateReceivesSameTermWithAppendEntriesItCanAccept) {
   EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(1);
 
   auto aefields = CreateAeFields(
-      /*term=*/1,
+      /*term=*/2,
       /*leaderId=*/2,
       /*prevLogIndex=*/2,
       /*prevLogTerm=*/0,

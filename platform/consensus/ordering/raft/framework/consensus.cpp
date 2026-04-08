@@ -127,11 +127,21 @@ void Consensus::RecoverFromLogs() {
         raft_->SetCurrentTerm(metadata.current_term, false);
         raft_->SetVotedFor(metadata.voted_for, false);
       },
-      [&](std::unique_ptr<Entry> entry) {
-        auto request = std::make_unique<Request>();
-        if (!request->ParseFromString(entry->command()))
-          LOG(ERROR) << "Error parsing entry in Recovery";
-        return CommitMsg(*request);
+      [&](std::unique_ptr<WALRecord> record) {
+          switch (record->payload_case()) {
+            case WALRecord::kEntry: {
+              LogEntry logEntry;
+              logEntry.entry = record->entry();
+              raft_->AddToLog(logEntry, false);
+              break;
+            }
+            case WALRecord::kTruncation:
+              raft_->TruncateLog(record->truncation().truncate_from_index(), false);
+              break;
+            case WALRecord::PAYLOAD_NOT_SET:
+              assert(false && "WALRecord does not contain Truncation or Entry");
+              break;
+          }
       },
       [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
 }

@@ -59,12 +59,12 @@ TEST_F(RaftRecoveryTest, WriteAndReadLog) {
   {
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
 
-    for (int i = 0; i < entries_to_add; i++) {
+    for (int i = 1; i <= entries_to_add; i++) {
       Entry logEntry;
-      logEntry.set_term(i + 1);
+      logEntry.set_term(i);
       auto req = std::make_unique<Request>();
-      req->set_seq(i + 1);
-      req->set_data("Request " + std::to_string(i + 1));
+      req->set_seq(i);
+      req->set_data("Request " + std::to_string(i));
       std::string serialized;
       if (!req->SerializeToString(&serialized)) {
         assert(false);
@@ -75,18 +75,20 @@ TEST_F(RaftRecoveryTest, WriteAndReadLog) {
     }
   }
   {
-    std::vector<Entry> list;
+    std::vector<WALRecord> list;
     RaftRecovery recovery(config_, &checkpoint_, nullptr);
     recovery.ReadLogs(
         [&](const RaftMetadata &data) {},
-        [&](std::unique_ptr<Entry> entry) { list.push_back(*entry); }, nullptr);
+        [&](std::unique_ptr<WALRecord> record) { list.push_back(*record); }, nullptr);
 
     EXPECT_EQ(list.size(), entries_to_add);
 
     for (size_t i = 0; i < entries_to_add; ++i) {
-      EXPECT_EQ(list[i].term(), i + 1);
+      EXPECT_EQ(list[i].payload_case(), WALRecord::kEntry);
+
+      EXPECT_EQ(list[i].entry().term(), i + 1);
       Request req;
-      req.ParseFromString(list[i].command());
+      req.ParseFromString(list[i].entry().command());
       EXPECT_EQ(req.data(), "Request " + std::to_string(i + 1));
     }
   }
@@ -107,10 +109,95 @@ TEST_F(RaftRecoveryTest, WriteAndReadMetadata) {
           current_term = data.current_term;
           voted_for = data.voted_for;
         },
-        [&](std::unique_ptr<Entry> entry) {}, nullptr);
+        [&](std::unique_ptr<WALRecord> record) {}, nullptr);
 
     EXPECT_EQ(current_term, 2);
     EXPECT_EQ(voted_for, 1);
+  }
+}
+
+TEST_F(RaftRecoveryTest, TruncateLog) {
+  int entries_to_add = 4;
+  {
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
+
+    for (int i = 1; i <= entries_to_add; i++) {
+      Entry logEntry;
+      logEntry.set_term(i);
+      auto req = std::make_unique<Request>();
+      req->set_seq(i);
+      req->set_data("Request " + std::to_string(i));
+      std::string serialized;
+      if (!req->SerializeToString(&serialized)) {
+        assert(false);
+      }
+      logEntry.set_command(std::move(serialized));
+
+      recovery.AddLogEntry(&logEntry);
+    }
+
+    TruncationRecord truncation;
+    truncation.set_truncate_from_index(3);
+    truncation.set_truncate_from_term(3);
+    recovery.TruncateLog(truncation);
+
+    for (int i = 5; i <= entries_to_add*2; i++) {
+      Entry logEntry;
+      logEntry.set_term(i + 1);
+      auto req = std::make_unique<Request>();
+      req->set_seq(i);
+      req->set_data("Request " + std::to_string(i));
+      std::string serialized;
+      if (!req->SerializeToString(&serialized)) {
+        assert(false);
+      }
+      logEntry.set_command(std::move(serialized));
+
+      recovery.AddLogEntry(&logEntry);
+    }
+
+  }
+  /* Recovery WAL
+              Term   Seq    Data
+     list[0]  1      1      Request 1
+     list[1]  2      2      Request 2
+     list[2]  3      3      Request 3
+     list[3]  4      4      Request 4
+     list[4]  Truncate beginning at Seq 3
+     list[5]  6      5      Request 5
+     list[6]  7      6      Request 6
+     list[7]  8      7      Request 7
+     list[8]  9      8      Request 8
+  */
+  {
+    std::vector<WALRecord> list;
+    RaftRecovery recovery(config_, &checkpoint_, nullptr);
+    recovery.ReadLogs(
+        [&](const RaftMetadata &data) {},
+        [&](std::unique_ptr<WALRecord> record) { list.push_back(*record); }, nullptr);
+
+    EXPECT_EQ(list.size(), 2*entries_to_add + 1);
+
+    for (size_t i = 0; i < entries_to_add; ++i) {
+      EXPECT_EQ(list[i].payload_case(), WALRecord::kEntry);
+      EXPECT_EQ(list[i].entry().term(), i + 1);
+      Request req;
+      req.ParseFromString(list[i].entry().command());
+      EXPECT_EQ(req.data(), "Request " + std::to_string(i + 1));
+      EXPECT_EQ(req.seq(), i + 1);
+    }
+
+    EXPECT_EQ(list[4].payload_case(), WALRecord::kTruncation);
+    EXPECT_EQ(list[4].truncation().truncate_from_index(), 3);
+
+    for (size_t i = entries_to_add + 1; i < 2*entries_to_add + 1; ++i) {
+      EXPECT_EQ(list[i].payload_case(), WALRecord::kEntry);
+      EXPECT_EQ(list[i].entry().term(), i + 1);
+      Request req;
+      req.ParseFromString(list[i].entry().command());
+      EXPECT_EQ(req.data(), "Request " + std::to_string(i));
+      EXPECT_EQ(req.seq(), i);
+    }
   }
 }
 

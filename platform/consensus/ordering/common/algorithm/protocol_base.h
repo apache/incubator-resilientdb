@@ -63,9 +63,9 @@ class ProtocolBase {
   }
 
  protected:
-  int SendMessage(int msg_type, const google::protobuf::Message& msg,
+  virtual int SendMessage(int msg_type, const google::protobuf::Message& msg,
                   int node_id);
-  int Broadcast(int msg_type, const google::protobuf::Message& msg);
+  virtual int Broadcast(int msg_type, const google::protobuf::Message& msg);
   int Commit(const google::protobuf::Message& msg);
 
   bool IsStop();

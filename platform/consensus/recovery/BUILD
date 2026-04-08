@@ -55,6 +55,17 @@ cc_test(
 )
 
 cc_library(
+    name = "mock_raft_recovery",
+    hdrs = ["mock_raft_recovery.h"],
+    testonly = True,
+    deps = [
+        ":raft_recovery",
+        "//chain/storage:mock_storage",
+        "//platform/consensus/checkpoint:mock_checkpoint"
+    ],
+)
+
+cc_library(
     name = "raft_recovery",
     srcs = ["raft_recovery.cpp"],
     hdrs = ["raft_recovery.h"],

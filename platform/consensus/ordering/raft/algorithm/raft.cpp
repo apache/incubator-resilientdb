@@ -59,7 +59,7 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
     : ProtocolBase(id, f, total_num),
     currentTerm_(0),
     votedFor_(-1),
-    lastLogIndex_(0),
+    lastLogIndex_(-1),
     commitIndex_(0),
     lastApplied_(0),
     role_(Role::FOLLOWER),
@@ -80,7 +80,8 @@ Raft::Raft(int id, int f, int total_num, SignatureVerifier* verifier,
   LogEntry sentinel;
   sentinel.entry.set_term(0);
   sentinel.entry.set_command("COMMON_PREFIX");
-  AddToLog(sentinel);
+  AddToLog(sentinel, false);
+  lastLogIndex_ = 0;
 
   inflightVecs_.resize(total_num_ + 1);
   for (auto& vec : inflightVecs_) {
@@ -124,7 +125,6 @@ bool Raft::ReceiveTransaction(std::unique_ptr<Request> req) {
       logEntry.GetSerializedSize();
       AddToLog(logEntry);
 
-      lastLogIndex_++;
       nextIndex_[id_] = lastLogIndex_ + 1;
       matchIndex_[id_] = lastLogIndex_;
 
@@ -196,10 +196,7 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
     while (logIdx < log_.size() && entriesIdx < entriesSize) {
       uint64_t term = ae->entries(entriesIdx).term();
       if (term != log_[logIdx].entry.term()) {
-        auto first = log_.begin() + logIdx;
-        auto last = log_.begin() + lastLogIndex_ + 1;
-        TruncateLog(first, last);
-        lastLogIndex_ = log_.size() - 1;
+        TruncateLog(logIdx);
 
         if (replicationLoggingFlag_) {
           LOG(INFO) << "JIM -> " << parent_fn << ": follower saw term mismatch at index " << logIdx << ". Suffix erased from log";
@@ -213,15 +210,13 @@ bool Raft::ReceiveAppendEntries(std::unique_ptr<AppendEntries> ae) {
 
     // append remaining entries
     const auto appendSize = entriesSize - entriesIdx;
-    log_.reserve(log_.size() + appendSize);
     std::vector<LogEntry> log_entries_to_add;
     for (uint64_t i = entriesIdx; i < entriesSize; ++i) {
       log_entries_to_add.push_back(CreateLogEntry(ae->entries(i)));
     }
-    AddToLog(log_entries_to_add);
-    // update lastLogIndex after appends
+
     uint64_t firstAppendIdx = lastLogIndex_ + 1;
-    lastLogIndex_ = log_.size() - 1;
+    AddToLog(std::move(log_entries_to_add));
     lastLogIndex = lastLogIndex_;
 
     if (replicationLoggingFlag_ && appendSize > 0) {
@@ -346,6 +341,7 @@ bool Raft::ReceiveAppendEntriesResponse(std::unique_ptr<AppendEntriesResponse> a
     if (!aer->success() || (nextIndex_[followerId] < lastLogIndex_ + 1)) {
       if (!aer->success()) {
         LOG(INFO) << "AppendEntriesResponse indicates FAILURE from follower " << followerId;
+        LOG(INFO) << "NextIndex is: " << nextIndex_[followerId] << " their lastLogIndex is: " << aer->lastlogindex();
       }
       if (!InFlightPerFollowerLimitReachedLocked(followerId)) {
         fields = GatherAeFieldsLocked(followerId);
@@ -829,7 +825,6 @@ bool Raft::InFlightPerFollowerLimitReachedLocked(int followerId) const {
 }
 
 void Raft::SetCurrentTerm(uint64_t currentTerm, bool writeMetadata) {
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   currentTerm_ = currentTerm;
   if (writeMetadata) {
     recovery_->WriteMetadata(currentTerm_, votedFor_);
@@ -837,7 +832,6 @@ void Raft::SetCurrentTerm(uint64_t currentTerm, bool writeMetadata) {
 }
 
 void Raft::SetVotedFor(int votedFor, bool writeMetadata) {
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
   votedFor_ = votedFor;
   if (writeMetadata) {
     recovery_->WriteMetadata(currentTerm_, votedFor_);
@@ -848,39 +842,55 @@ void Raft::SetSeqIndexCoveredBySnapshot(int seq) {
   seqAfterCheckpoint_ = seq;
 }
 
-void Raft::AddToLog(LogEntry logEntryToAdd, bool writeMetadata) {
+void Raft::AddToLog(LogEntry &logEntryToAdd, bool writeMetadata) {
   Entry* entry;
   entry = &logEntryToAdd.entry;
   if (writeMetadata) {
     recovery_->AddLogEntry(entry);
   }
   log_.push_back(logEntryToAdd);
+  lastLogIndex_++;
 }
 
 void Raft::AddToLog(std::vector<LogEntry> logEntriesToAdd, bool writeMetadata) {
   if (writeMetadata) {
     std::vector<Entry> entries_to_add;
     for (const auto& entry : logEntriesToAdd) {
+      LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
       entries_to_add.push_back(entry.entry);
     }
-
+    LOG(INFO) << "Entries to add: " << logEntriesToAdd.size();
     recovery_->AddLogEntry(entries_to_add);
   }
+  lastLogIndex_ += logEntriesToAdd.size();
 
   log_.reserve(log_.size() + logEntriesToAdd.size());
   log_.insert(log_.end(), std::make_move_iterator(logEntriesToAdd.begin()),
               std::make_move_iterator(logEntriesToAdd.end()));
+
+  assert(lastLogIndex_ == log_.size() - 1);
 }
 
-void Raft::TruncateLog(std::vector<LogEntry>::iterator first,
-                          std::vector<LogEntry>::iterator last,
-                          bool writeMetadata) {
-    log_.erase(first, last);
+void Raft::TruncateLog(uint64_t firstIndex, bool writeMetadata) {
+  auto first = log_.begin() + firstIndex;
+  auto last = log_.begin() + lastLogIndex_ + 1;
+  if (writeMetadata) {
+    TruncationRecord truncation;
+    truncation.set_truncate_from_index(firstIndex);
+    truncation.set_truncate_from_term(log_[firstIndex].entry.term());
+    recovery_->TruncateLog(truncation);
+  }
+
+  log_.erase(first, last);
+  lastLogIndex_ = log_.size() - 1;
+}
+
+void Raft::PrintDebugStateLocked() const {
+  std::lock_guard<std::mutex> lk(mutex_);
+  PrintDebugState();
 }
 
 void Raft::PrintDebugState() const {
-  std::lock_guard<std::mutex> lk(mutex_);
-
   LOG(INFO) << "---- Raft Debug State ----\n";
   LOG(INFO) << "currentTerm_: " << currentTerm_ << "\n";
   LOG(INFO) << "votedFor_: " << votedFor_ << "\n";

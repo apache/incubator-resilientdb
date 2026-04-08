@@ -38,7 +38,7 @@ struct RaftMetadata {
   int32_t voted_for = -1;
 };
 
-using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
+using CallbackType = std::function<void(std::unique_ptr<WALRecord>)>;
 
 class RaftRecovery
     : public RecoveryBase<RaftRecovery, RaftMetadata, CallbackType> {
@@ -54,17 +54,18 @@ class RaftRecovery
   void WriteMetadata(int64_t current_term, int32_t voted_for);
   void AddLogEntry(const Entry* entry);
   void AddLogEntry(std::vector<Entry>& entries_to_add);
+  void TruncateLog(TruncationRecord truncate_beginning_at);
 
  private:
   void OpenMetadataFile();
   void WriteSystemInfo();
-  std::vector<std::unique_ptr<Entry>> ParseDataListItem(
+  std::vector<std::unique_ptr<WALRecord>> ParseDataListItem(
       std::vector<std::string>& data_list);
-  void WriteLog(const Entry* entry);
+  void WriteLog(const WALRecord& record);
 
   void PerformCallback(
-      std::vector<std::unique_ptr<Entry>>& request_list,
-      std::function<void(std::unique_ptr<Entry> entry)> call_back,
+      std::vector<std::unique_ptr<WALRecord>>& request_list,
+      std::function<void(std::unique_ptr<WALRecord> record)> call_back,
       int64_t ckpt);
 
   void HandleSystemInfo(
@@ -73,6 +74,7 @@ class RaftRecovery
   int metadata_fd_;
   std::string meta_file_path_;
   RaftMetadata metadata_;
+  uint64_t wal_seq_;
 };
 
 }  // namespace raft

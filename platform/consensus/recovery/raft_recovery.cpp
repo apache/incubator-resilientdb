@@ -35,7 +35,7 @@
 namespace resdb {
 namespace raft {
 
-using CallbackType = std::function<void(std::unique_ptr<Entry>)>;
+using CallbackType = std::function<void(std::unique_ptr<WALRecord>)>;
 
 RaftRecovery::RaftRecovery(const ResDBConfig& config, CheckPoint* checkpoint,
                            Storage* storage)
@@ -50,22 +50,24 @@ void RaftRecovery::Init() {
     return;
   }
 
+  wal_seq_ = 0;
+
   LOG(ERROR) << " init";
   GetLastFile();
-
-  CallbackType callback = [this](std::unique_ptr<Entry> entry) {
-    min_seq_ == -1 ? min_seq_ = entry->term()
-                   : std::min(min_seq_, static_cast<int64_t>(entry->term()));
-    max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
-  };
-
-  SwitchFile(file_path_, callback);
-  LOG(ERROR) << " init done";
 
   meta_file_path_ = std::filesystem::path(base_file_path_).parent_path() /
                     "raft_metadata.dat";
   LOG(INFO) << "Meta file path: " << meta_file_path_;
   OpenMetadataFile();
+
+  CallbackType callback = [this](std::unique_ptr<WALRecord> record) {
+    min_seq_ == -1 ? min_seq_ = record->seq()
+                   : std::min(min_seq_, static_cast<int64_t>(record->seq()));
+    max_seq_ = std::max(max_seq_, static_cast<int64_t>(record->seq()));
+  };
+
+  SwitchFile(file_path_, callback);
+  LOG(ERROR) << " init done";
 
   ckpt_thread_ = std::thread([this] { this->UpdateStableCheckPoint(); });
 }
@@ -98,24 +100,47 @@ void RaftRecovery::OpenMetadataFile() {
 }
 
 void RaftRecovery::WriteMetadata(int64_t current_term, int32_t voted_for) {
+  if (recovery_enabled_ == false) {
+    return;
+  }
+
+  std::string tmp_path = meta_file_path_ + ".tmp";
+  LOG(ERROR) << "tmp_path = [" << tmp_path << "]";
+  LOG(ERROR) << "meta_file_path_ = [" << meta_file_path_ << "]";
+  int temp_fd = open(tmp_path.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0666);
   if (metadata_fd_ < 0) {
     LOG(ERROR) << "Metadata file not open";
+    return;
+  }
+  if (temp_fd < 0) {
+    LOG(ERROR) << "Failed to open tmp metadata file: " << strerror(errno);
     return;
   }
 
   metadata_.current_term = current_term;
   metadata_.voted_for = voted_for;
 
-  lseek(metadata_fd_, 0, SEEK_SET);
-  write(metadata_fd_, &metadata_, sizeof(metadata_));
-  fsync(metadata_fd_);
+  lseek(temp_fd, 0, SEEK_SET);
+  write(temp_fd, &metadata_, sizeof(metadata_));
+  fsync(temp_fd);
+  close(temp_fd);
 
+  rename(tmp_path.c_str(), meta_file_path_.c_str());
+
+  std::string dir_path = std::filesystem::path(meta_file_path_).parent_path().string();
+  int dir_fd = open(dir_path.c_str(), O_RDONLY);
+  fsync(dir_fd);
+  close(dir_fd);
+  
   LOG(INFO) << "Wrote metadata: term: " << current_term
             << " votedFor: " << voted_for;
   LOG(INFO) << "METADATA location: " << meta_file_path_;
 }
 
 RaftMetadata RaftRecovery::ReadMetadata() {
+  if (recovery_enabled_ == false) {
+    return RaftMetadata{};
+  }
   LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
             << __func__ << "\n";
   RaftMetadata metadata;
@@ -140,61 +165,96 @@ void RaftRecovery::AddLogEntry(const Entry* entry) {
     return;
   }
 
-  WriteLog(entry);
+  std::unique_lock<std::mutex> lk(mutex_);
+  WALRecord record;
+  *record.mutable_entry() = *entry;
+  record.set_seq(++wal_seq_);
+  WriteLog(record);
   Flush();
 }
 
 void RaftRecovery::AddLogEntry(std::vector<Entry>& entries_to_add) {
-  if (recovery_enabled_ == false) {
+  if (recovery_enabled_ == false || entries_to_add.size() == 0) {
     return;
   }
+
+  std::unique_lock<std::mutex> lk(mutex_);
   for (const auto& entry : entries_to_add) {
-    WriteLog(&entry);
+    LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function " << __func__ << "\n";
+    WALRecord record;
+    *record.mutable_entry() = entry;
+    record.set_seq(++wal_seq_);
+    WriteLog(record);
   }
   Flush();
 }
 
-void RaftRecovery::WriteLog(const Entry* entry) {
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
-            << __func__ << "\n";
-  std::string data;
-  if (entry) {
-    entry->SerializeToString(&data);
+void RaftRecovery::TruncateLog(TruncationRecord truncate_beginning_at) {
+  if (recovery_enabled_ == false) {
+    return;
   }
 
   std::unique_lock<std::mutex> lk(mutex_);
-  min_seq_ = min_seq_ == -1
-                 ? entry->term()
-                 : std::min(min_seq_, static_cast<int64_t>(entry->term()));
-  max_seq_ = std::max(max_seq_, static_cast<int64_t>(entry->term()));
+
+  WALRecord record;
+  record.set_seq(++wal_seq_);
+  *record.mutable_truncation() = std::move(truncate_beginning_at);
+
+  WriteLog(record);
+  Flush();
+}
+
+void RaftRecovery::WriteLog(const WALRecord& record) {
+  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
+            << __func__ << "\n";
+  std::string data;
+  
+  record.SerializeToString(&data);
+  
+
+  switch (record.payload_case()) {
+    case WALRecord::kEntry:
+      min_seq_ = min_seq_ == -1
+                  ? record.seq()
+                  : std::min(min_seq_, static_cast<int64_t>(record.seq()));
+      max_seq_ = std::max(max_seq_, static_cast<int64_t>(record.seq()));
+      break;
+    case WALRecord::kTruncation:
+      max_seq_ = record.seq();
+      break;
+    case WALRecord::PAYLOAD_NOT_SET:
+      assert(false && "WALRecord does not contain Truncation or Entry");
+      break;
+  }
+
   AppendData(data);
 }
 
-std::vector<std::unique_ptr<Entry>> RaftRecovery::ParseDataListItem(
+std::vector<std::unique_ptr<WALRecord>> RaftRecovery::ParseDataListItem(
     std::vector<std::string>& data_list) {
-  std::vector<std::unique_ptr<Entry>> request_list;
+  std::vector<std::unique_ptr<WALRecord>> record_list;
 
   for (size_t i = 0; i < data_list.size(); i++) {
-    std::unique_ptr<Entry> entry = std::make_unique<Entry>();
+    std::unique_ptr<WALRecord> record = std::make_unique<WALRecord>();
 
-    if (!entry->ParseFromString(data_list[i])) {
+    if (!record->ParseFromString(data_list[i])) {
       LOG(ERROR) << "Parse from data fail";
       break;
     }
 
-    request_list.push_back(std::move(entry));
+    record_list.push_back(std::move(record));
   }
-  return request_list;
+  return record_list;
 }
 
 void RaftRecovery::PerformCallback(
-    std::vector<std::unique_ptr<Entry>>& request_list, CallbackType call_back,
+    std::vector<std::unique_ptr<WALRecord>>& record_list, CallbackType call_back,
     int64_t ckpt) {
   uint64_t max_seq = 0;
-  for (std::unique_ptr<Entry>& entry : request_list) {
-    if (ckpt < entry->term()) {
-      max_seq = entry->term();
-      call_back(std::move(entry));
+  for (std::unique_ptr<WALRecord>& record : record_list) {
+    if (ckpt < record->seq()) {
+      max_seq = record->seq();
+      call_back(std::move(record));
     }
   }
 

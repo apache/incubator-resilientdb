@@ -112,16 +112,15 @@ class Raft : public common::ProtocolBase {
   virtual void SendHeartBeat();
   virtual Role GetRoleSnapshot() const;
   virtual void SetRole(Role role);
+  virtual void PrintDebugStateLocked() const;
   virtual void PrintDebugState() const;
   virtual void SetCurrentTerm(uint64_t currentTerm, bool writeMetadata = true);
   virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
   virtual void SetSeqIndexCoveredBySnapshot(int seq);
-  void AddToLog(LogEntry logEntry, bool writeMetadata = true);
+  void AddToLog(LogEntry &logEntry, bool writeMetadata = true);
   void AddToLog(std::vector<LogEntry> logEntriesToAdd,
                 bool writeMetadata = true);
-  void TruncateLog(std::vector<LogEntry>::iterator first,
-                          std::vector<LogEntry>::iterator last,
-                          bool writeMetadata = true);
+  void TruncateLog(uint64_t first, bool writeMetadata = true);
 
  private:
   mutable std::mutex mutex_;
