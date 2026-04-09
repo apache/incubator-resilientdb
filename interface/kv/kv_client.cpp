@@ -133,7 +133,7 @@ std::unique_ptr<Items> KVClient::GetKeyTopHistory(const std::string& key,
   return std::make_unique<Items>(response.items());
 }
 
-std::unique_ptr<std::string> KVClient::ExecuteSQL(const std::string& sql_query) {
+std::unique_ptr<std::string> KVClient::QueryResQL(const std::string& sql_query) {
   if (sql_query.empty()) {
     LOG(ERROR) << "SQL query is empty";
     return nullptr;

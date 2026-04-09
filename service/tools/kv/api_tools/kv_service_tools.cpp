@@ -280,7 +280,7 @@ int main(int argc, char** argv) {
       ShowUsage();
       return 0;
     }
-    auto res = client.ExecuteSQL(sql);
+    auto res = client.QueryResQL(sql);
     if (res != nullptr) {
       printf("SQL result:\n%s\n", res->c_str());
     } else {

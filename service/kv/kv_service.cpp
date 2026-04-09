@@ -60,7 +60,7 @@ std::unique_ptr<Storage> NewStorage(const std::string& db_path,
     LOG(INFO) << "use duckdb storage, path=" << path;
     resdb::storage::DuckDBInfo duckdb_info;
     duckdb_info.set_path(path);
-    return NewResQL(path, duckdb_info);
+    return NewDuckDB(path, duckdb_info);
   }
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";

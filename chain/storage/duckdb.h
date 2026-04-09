@@ -15,10 +15,10 @@
 namespace resdb {
 namespace storage {
 
-class ResQL : public Storage {
+class DuckDB : public Storage {
  public:
-  explicit ResQL(const DuckDBInfo& config);
-  ~ResQL() override;
+  explicit DuckDB(const DuckDBInfo& config);
+  ~DuckDB() override;
 
   // Main functionality
   std::string ExecuteSQL(const std::string& sql_string) override;
@@ -63,7 +63,7 @@ class ResQL : public Storage {
 
 
 // Factory function
-std::unique_ptr<Storage> NewResQL(
+std::unique_ptr<Storage> NewDuckDB(
     const std::string& path,
     const DuckDBInfo& config = DuckDBInfo());
 }  // namespace storage

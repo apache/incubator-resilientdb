@@ -11,15 +11,15 @@
 namespace resdb {
 namespace storage {
 
-std::unique_ptr<Storage> NewResQL(const std::string& path,
+std::unique_ptr<Storage> NewDuckDB(const std::string& path,
                                   const DuckDBInfo& config) {
   DuckDBInfo cfg = config;
   cfg.set_path(path);
 
-  return std::make_unique<ResQL>(cfg);
+  return std::make_unique<DuckDB>(cfg);
 }
 
-ResQL::ResQL(const DuckDBInfo& config) : config_(config) {
+DuckDB::DuckDB(const DuckDBInfo& config) : config_(config) {
   std::string path = "/tmp/resql-duckdb";
   if (!config.path().empty()) {
     path = config.path();
@@ -27,9 +27,9 @@ ResQL::ResQL(const DuckDBInfo& config) : config_(config) {
   CreateDB(config);
 }
 
-ResQL::~ResQL() = default;
+DuckDB::~DuckDB() = default;
 
-void ResQL::CreateDB(const DuckDBInfo& config) {
+void DuckDB::CreateDB(const DuckDBInfo& config) {
   std::string db_path = config.path();
 
   duckdb::DBConfig db_config;
@@ -59,7 +59,7 @@ void ResQL::CreateDB(const DuckDBInfo& config) {
   }
 }
 
-std::string ResQL::ExecuteSQL(const std::string& sql_string){
+std::string DuckDB::ExecuteSQL(const std::string& sql_string){
     if (sql_string.empty()) {
         return "Error: empty SQL query";
     }

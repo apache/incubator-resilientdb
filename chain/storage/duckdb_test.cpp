@@ -11,15 +11,16 @@ int main() {
 
     // 1. Create a DuckDBInfo proto for file-backed DB
     DuckDBInfo config;
-    config.set_path("/home/aryan/resilientdb-resql/dtest/dtest.db");
+    // COmmented, when testing it set path according to your database, as provided below:
+    // config.set_path("/home/namespace/resilientdb-duckdb/dtest/dtest.db");
 
-    // 2. Construct ResQL instance
-    std::unique_ptr<ResQL> my_db;
+    // 2. Construct DuckDB instance
+    std::unique_ptr<DuckDB> my_db;
     try {
-        my_db = std::make_unique<ResQL>(config);
-        std::cout << "ResQL (DuckDB) created successfully!" << std::endl;
+        my_db = std::make_unique<DuckDB>(config);
+        std::cout << "DuckDB created successfully!" << std::endl;
     } catch (std::exception& e) {
-        std::cerr << "Failed to create ResQL: " << e.what() << std::endl;
+        std::cerr << "Failed to create DuckDB: " << e.what() << std::endl;
         return 1;
     }
     
