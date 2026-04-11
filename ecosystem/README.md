@@ -55,6 +55,7 @@ ecosystem/
 └── tools/
     ├── create-resilient-app/
     ├── drawing-lib/
+    ├── reshare-lib/                # ResShare SDK
     └── resvault/
 ```
 
