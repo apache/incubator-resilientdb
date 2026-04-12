@@ -15,34 +15,34 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Core MCP dependencies
-mcp>=1.0.0
-fastmcp>=0.1.0
+# ResInsight MCP — container image
+#
+# Build:  docker build -t resinsight-mcp .
+# Run:    docker run --rm -p 8005:8005 --env-file .env resinsight-mcp
+#
+# Required env (see README): GITHUB_TOKEN, MCP_TOKEN
+# Listen on all interfaces inside the container:
+#   FASTMCP_HOST=0.0.0.0
 
-# Web and API
-fastapi>=0.100.0
-uvicorn>=0.20.0
-pydantic>=2.0.0
+FROM python:3.11-slim-bookworm
 
-# Docker integration for labs
-docker>=6.0.0
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    MPLBACKEND=Agg \
+    FASTMCP_HOST=0.0.0.0
 
-# Repository analysis
-GitPython>=3.1.0
-requests>=2.31.0
-httpx>=0.24.0
+WORKDIR /app
 
-# Advanced code analysis
-faiss-cpu>=1.7.4
-sentence-transformers>=2.2.0
-networkx>=3.0
-matplotlib>=3.7.0
+# faiss / numpy wheels often need OpenMP at runtime
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Data handling
-python-dateutil>=2.8.0
-pathlib>=1.0.1
-numpy>=1.24.0
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Logging and utilities
-colorlog>=6.7.0
-python-dotenv>=1.0.0
+COPY . .
+
+EXPOSE 8005
+
+CMD ["python", "server.py"]
