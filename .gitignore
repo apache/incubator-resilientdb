@@ -10,6 +10,7 @@ bazel-*
 *.bak
 venv
 sdk_validator/venv
+node_modules/
 __pycache__
 MODULE.*
 apache_release

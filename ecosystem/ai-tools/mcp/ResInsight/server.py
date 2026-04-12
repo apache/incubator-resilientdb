@@ -31,6 +31,10 @@ import numpy as np
 import os
 import json
 from dotenv import load_dotenv
+from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 load_dotenv() # Load environment variables from .env file
 
@@ -125,77 +129,65 @@ class RepoInsights(BaseModel):
 mcp = FastMCP(name="ResInsight: AI-driven developer onboarding ecosystem")
 
 # -------------------------
-# Authentication Setup Function
+# HTTP Bearer authentication (FastMCP 3.x: pass middleware into mcp.run)
 # -------------------------
-def setup_authentication():
-    """Setup authentication middleware after FastMCP initialization"""
-    from starlette.middleware.base import BaseHTTPMiddleware
-    from starlette.requests import Request
-    from starlette.responses import JSONResponse
-    
-    class AuthMiddleware(BaseHTTPMiddleware):
-        async def dispatch(self, request: Request, call_next):
-            # Skip authentication for docs/health endpoints
-            if request.url.path in ["/health", "/", "/docs", "/openapi.json", "/redoc"]:
-                return await call_next(request)
-            
-            # Check Authorization header
-            auth_header = request.headers.get("Authorization")
-            
-            if not auth_header:
-                return JSONResponse(
-                    status_code=401,
-                    content={
-                        "error": "unauthorized",
-                        "message": "Missing Authorization header",
-                        "hint": "Include header: Authorization: Bearer YOUR_LAB_TOKEN"
-                    }
-                )
-            
-            if not auth_header.startswith("Bearer "):
-                return JSONResponse(
-                    status_code=401,
-                    content={
-                        "error": "unauthorized", 
-                        "message": "Invalid Authorization format",
-                        "hint": "Use: Authorization: Bearer YOUR_LAB_TOKEN"
-                    }
-                )
-            
-            token = auth_header.replace("Bearer ", "")
-            
-            if not MCP_TOKEN:
-                return JSONResponse(
-                    status_code=500,
-                    content={
-                        "error": "server_error",
-                        "message": "Server not configured with MCP_TOKEN"
-                    }
-                )
-            
-            if token != MCP_TOKEN:
-                return JSONResponse(
-                    status_code=403,
-                    content={
-                        "error": "forbidden",
-                        "message": "Invalid authentication token"
-                    }
-                )
-            
-            response = await call_next(request)
-            return response
-    
-    try:
-        if hasattr(mcp, '_app'):
-            mcp._app.add_middleware(AuthMiddleware)
-            print("[✓] Authentication middleware enabled")
-            return True
-        else:
-            print("[✗] Warning: Could not add auth middleware - FastMCP API changed")
-            return False
-    except Exception as e:
-        print(f"[✗] Error adding auth middleware: {e}")
-        return False
+class ResInsightAuthMiddleware(BaseHTTPMiddleware):
+    """Require Authorization: Bearer <MCP_TOKEN> except for health/docs paths."""
+
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path in ["/health", "/", "/docs", "/openapi.json", "/redoc"]:
+            return await call_next(request)
+
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "error": "unauthorized",
+                    "message": "Missing Authorization header",
+                    "hint": "Include header: Authorization: Bearer YOUR_LAB_TOKEN",
+                },
+            )
+
+        if not auth_header.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={
+                    "error": "unauthorized",
+                    "message": "Invalid Authorization format",
+                    "hint": "Use: Authorization: Bearer YOUR_LAB_TOKEN",
+                },
+            )
+
+        token = auth_header.replace("Bearer ", "")
+
+        if not MCP_TOKEN:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": "server_error",
+                    "message": "Server not configured with MCP_TOKEN",
+                },
+            )
+
+        if token != MCP_TOKEN:
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "error": "forbidden",
+                    "message": "Invalid authentication token",
+                },
+            )
+
+        return await call_next(request)
+
+
+def get_http_auth_middleware() -> list:
+    """Starlette middleware list for mcp.run(..., middleware=...)."""
+    if not MCP_TOKEN:
+        return []
+    return [Middleware(ResInsightAuthMiddleware)]
 
 # -------------------------
 # ResilientDB Knowledge Base Initialization
@@ -998,21 +990,18 @@ if __name__ == "__main__":
     
     if not MCP_TOKEN:
         print("\n⚠️  WARNING: MCP_TOKEN not set!")
-        print("   Server will start but authentication will fail")
-        print("   Set MCP_TOKEN in your .env file\n")
+        print("   HTTP API will not require a Bearer token (not recommended if exposed)\n")
     
     if not GITHUB_TOKEN:
         print("\n⚠️  WARNING: GITHUB_TOKEN not set!")
         print("   GitHub API calls may be rate limited\n")
     
-    # Setup authentication
-    auth_enabled = setup_authentication()
-    
-    if auth_enabled:
+    auth_middleware = get_http_auth_middleware()
+    if auth_middleware:
         print("\n🔒 Authentication: ENABLED")
         print("   Clients must include: Authorization: Bearer <LAB_TOKEN>")
     else:
-        print("\n⚠️  Authentication: DISABLED (middleware setup failed)")
+        print("\n⚠️  Authentication: DISABLED (set MCP_TOKEN to require Bearer auth)")
     
     print(f"\n🚀 Starting server on http://localhost:8005/mcp")
     print("=" * 60)
@@ -1023,4 +1012,9 @@ if __name__ == "__main__":
     print("    curl -H 'Authorization: Bearer YOUR_TOKEN' http://localhost:8005/mcp/tools")
     print("=" * 60)
     
-    mcp.run(transport="streamable-http", path="/mcp", port=8005)
+    mcp.run(
+        transport="streamable-http",
+        path="/mcp",
+        port=8005,
+        middleware=auth_middleware,
+    )
