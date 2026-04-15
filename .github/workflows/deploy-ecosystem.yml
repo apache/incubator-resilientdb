@@ -123,7 +123,7 @@ jobs:
   deploy:
     name: Deploy ${{ matrix.project.name }}
     needs: determine-projects
-    if: needs.determine-projects.outputs.projects != '[]'
+    if: ${{ needs.determine-projects.outputs.projects != '[]' && secrets.VERCEL_TOKEN != '' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
