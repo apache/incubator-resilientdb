@@ -49,18 +49,11 @@ void ShowUsage() {
 }
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
-                                    const ResConfigData& config_data,
-                                    bool enable_duckdb,
-                                    const std::string& duckdb_path) {
-  if (enable_duckdb) {
-    std::string path = duckdb_path;
-    if (path.empty()) {
-      path = db_path + "duckdb.db";
-    }
-    LOG(INFO) << "use duckdb storage, path=" << path;
-    resdb::storage::DuckDBInfo duckdb_info;
-    duckdb_info.set_path(path);
-    return NewDuckDB(path, duckdb_info);
+                                    const ResConfigData& config_data) {
+  if (config_data.has_duckdb_info()) {
+    const auto& duckdb_info = config_data.duckdb_info();
+    LOG(INFO) << "use duckdb storage, path=" << duckdb_info.path();
+    return NewDuckDB(duckdb_info.path(), duckdb_info);
   }
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";
@@ -84,16 +77,18 @@ int main(int argc, char** argv) {
   char* private_key_file = argv[2];
   char* cert_file = argv[3];
 
-  bool enable_duckdb = false;
-  std::string duckdb_path;
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+  ResConfigData config_data = config->GetConfigData();
   std::string grafana_port;
 
   for (int i = 4; i < argc; ++i) {
     std::string arg = argv[i];
     if (arg == "--enable_duckdb") {
-      enable_duckdb = true;
+      config_data.mutable_duckdb_info();
     } else if (arg.rfind("--duckdb_path=", 0) == 0) {
-      duckdb_path = arg.substr(std::string("--duckdb_path=").size());
+      config_data.mutable_duckdb_info()->set_path(
+          arg.substr(std::string("--duckdb_path=").size()));
     } else if (arg.rfind("--grafana_port=", 0) == 0) {
       grafana_port = arg.substr(std::string("--grafana_port=").size());
     } else if (grafana_port.empty() &&
@@ -115,17 +110,18 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "monitoring port:" << grafana_address;
   }
 
-  std::unique_ptr<ResDBConfig> config =
-      GenerateResDBConfig(config_file, private_key_file, cert_file);
-  ResConfigData config_data = config->GetConfigData();
-
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+  if (config_data.has_duckdb_info() &&
+      config_data.duckdb_info().path().empty()) {
+    config_data.mutable_duckdb_info()->set_path(db_path + "duckdb.db");
+  }
   LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(
-          NewStorage(db_path, config_data, enable_duckdb, duckdb_path)),
-      nullptr);
+      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr,
+      [config_data](ResDBConfig* config) {
+        config->SetConfigData(config_data);
+      });
   server->Run();
 }
