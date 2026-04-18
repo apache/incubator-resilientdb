@@ -29,22 +29,41 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Check Docker credentials
+        id: docker_creds
+        shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -n "$DOCKERHUB_USERNAME" ] && [ -n "$DOCKERHUB_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Docker publish skipped: missing DOCKERHUB_USERNAME/DOCKERHUB_TOKEN secrets." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      -
         name: Checkout
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: actions/checkout@v3
       -
         name: Set up QEMU
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: docker/setup-qemu-action@v3
       -
         name: Set up Docker Buildx
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: docker/setup-buildx-action@v3
       -
         name: Login to Docker Hub
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
         name: Build and push Dockerfile
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Docker/Dockerfile
@@ -55,6 +74,7 @@ jobs:
 
       -
         name: Build and push Dockerfile mac
+        if: steps.docker_creds.outputs.enabled == 'true'
         uses: docker/build-push-action@v5
         with:
           file: ./Docker/Dockerfile_mac

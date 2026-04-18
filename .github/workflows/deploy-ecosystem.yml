@@ -130,24 +130,42 @@ jobs:
       matrix:
         project: ${{ fromJson(needs.determine-projects.outputs.projects_json) }}
     steps:
+      - name: Check Vercel token
+        id: vercel_token
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Vercel deploy skipped: missing VERCEL_TOKEN secret." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Checkout repository
+        if: steps.vercel_token.outputs.enabled == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: steps.vercel_token.outputs.enabled == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install Vercel CLI
+        if: steps.vercel_token.outputs.enabled == 'true'
         run: npm install --global vercel@latest
 
       - name: Configure Git for Vercel
+        if: steps.vercel_token.outputs.enabled == 'true'
         working-directory: ${{ matrix.project.path }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "support@resilientdb.com"
 
       - name: Pull Vercel Environment Information
+        if: steps.vercel_token.outputs.enabled == 'true'
         working-directory: ${{ matrix.project.path }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -163,6 +181,7 @@ jobs:
           vercel pull --yes --environment=production --token=$VERCEL_TOKEN || echo "Could not pull Vercel config, continuing..."
 
       - name: Create deployment commit with correct author
+        if: steps.vercel_token.outputs.enabled == 'true'
         run: |
           # Configure git user
           git config user.name "github-actions[bot]"
@@ -171,6 +190,7 @@ jobs:
           git commit --allow-empty -m "ci: authorize deploy for ${{ matrix.project.name }}" || echo "Skipping commit creation"
 
       - name: Deploy to Vercel
+        if: steps.vercel_token.outputs.enabled == 'true'
         working-directory: ${{ matrix.project.path }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
