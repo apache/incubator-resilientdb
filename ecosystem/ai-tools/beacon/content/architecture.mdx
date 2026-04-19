@@ -1,0 +1,46 @@
+---
+title: Architecture
+description: ResilientDB system architecture and data flow
+---
+
+# ResilientDB Architecture
+
+ResilientDB uses a modular, layered architecture that separates client interfaces, service logic, and execution. The diagram below illustrates how data flows through the system from client SDKs down to blockchain state and storage.
+
+## Data Flow Overview
+
+<DataFlowDiagram compact={true} />
+
+The architecture is organized into these main layers:
+
+### Client Interfaces
+
+Applications interact with ResilientDB through multiple interfaces:
+
+- **SDKs** — Native client libraries for C++, Python, and Go
+- **RESTful APIs** — HTTP/JSON endpoints for standard web integration
+- **GraphQL** — Queries and mutations for flexible data access
+
+### Service Layer
+
+The service layer exposes different data models and the unified RDBC API:
+
+- **Key-Value** — Simple KV store operations
+- **Smart Contract** — EVM-compatible Solidity execution
+- **UTXO** — Unspent transaction output model
+
+### Execution Layer
+
+The execution layer handles consensus, transaction processing, and storage:
+
+- **Network Substrate** — P2P communication between replicas
+- **RDBC Driver** — Connects service requests to the consensus engine
+- **Consensus & Ordering** — Pbft, Geo-Pbft, and PoC algorithms
+- **Settlement Notary** — Finality and receipt generation
+- **Transaction Execution** — Key-Value, Smart Contract, and UTXO executors
+- **Blockchain State & Storage** — In-memory chain state with LevelDB and Memory DB backends
+
+## Related Documentation
+
+- [ResilientDB Overview](resilientdb/) — High-level system design
+- [Installation](installation/) — Deployment architecture and service layout

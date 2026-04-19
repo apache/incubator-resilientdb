@@ -152,9 +152,9 @@ program
         'bazel-bin',
         'service',
         'tools',
-        'contract',
+        'kv',
         'api_tools',
-        'contract_tools'
+        'contract_service_tools'
       );
 
       if (!fs.existsSync(configPath)) {
@@ -163,19 +163,33 @@ program
         process.exit(1);
       }
 
-      const tempConfigPath = path.join(os.tmpdir(), `rescontract_config_${Date.now()}.json`);
-      const tempConfig = {
-        command: 'create_account'
-      };
-      fs.writeFileSync(tempConfigPath, JSON.stringify(tempConfig));
+      // Create JSON command file
+      const jsonConfig = { command: 'create_account' };
+      const jsonConfigPath = path.join(os.tmpdir(), `create_account_${Date.now()}.json`);
+      fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
 
+      let output = '';
       try {
-        await handleExecFile(commandPath, ['-c', configPath, '--config_file', tempConfigPath]);
+        output = await handleSpawnProcess(commandPath, ['-c', configPath, '--config_file', jsonConfigPath]);
       } finally {
-        if (fs.existsSync(tempConfigPath)) {
-          fs.unlinkSync(tempConfigPath);
+        // Clean up temporary file
+        if (fs.existsSync(jsonConfigPath)) {
+          fs.unlinkSync(jsonConfigPath);
         }
       }
+
+      // Parse address from output (C++ tool prints to stderr as address: "0x...")
+      const match = output.match(/"?address"?\s*:\s*"(0x[0-9a-fA-F]+)"/);
+      const address = match ? match[1] : '';
+      if (!address) {
+        console.error(
+          JSON.stringify({
+            error: 'Failed to parse account address from output.',
+          })
+        );
+        process.exit(1);
+      }
+      console.log(JSON.stringify({ address }));
     } catch (error) {
       logger.error(`Error executing create command: ${error.message}`);
       console.error(`Error: ${error.message}`);
@@ -199,7 +213,8 @@ program
         process.exit(1);
       }
 
-      const command = 'solc';
+      const command = process.env.SOLC_PATH || 'solc';
+
       const args = [
         '--evm-version',
         'homestead',
@@ -272,30 +287,31 @@ program
         'bazel-bin',
         'service',
         'tools',
-        'contract',
+        'kv',
         'api_tools',
-        'contract_tools'
+        'contract_service_tools'
       );
-
-      const tempConfigPath = path.join(os.tmpdir(), `rescontract_config_${Date.now()}.json`);
-      const tempConfig = {
+      // Create JSON command file
+      const jsonConfig = {
         command: 'deploy',
         contract_path: contract,
         contract_name: name,
-        contract_address: owner,
-        init_params: args
+        init_params: args,
+        owner_address: owner
       };
-      fs.writeFileSync(tempConfigPath, JSON.stringify(tempConfig));
+      const jsonConfigPath = path.join(os.tmpdir(), `deploy_${Date.now()}.json`);
+      fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
 
-      const argList = [
-        '-c',
-        configPath,
-        '--config_file',
-        tempConfigPath
-      ];
-
-      const output = await handleSpawnProcess(commandPath, argList);
-
+      let output;
+      try {
+        output = await handleSpawnProcess(commandPath, ['-c', configPath, '--config_file', jsonConfigPath]);
+      } finally {
+        // Clean up temporary file
+        if (fs.existsSync(jsonConfigPath)) {
+          fs.unlinkSync(jsonConfigPath);
+        }
+      }
+               
       const outputLines = output.split('\n');
       let ownerAddress = '';
       let contractAddress = '';
@@ -352,6 +368,111 @@ program
   });
 
 program
+  .command('execute')
+  .description('Execute a function on a deployed smart contract')
+  .requiredOption('-c, --config <configPath>', 'Client configuration path')
+  .requiredOption(
+    '-m, --sender <senderAddress>',
+    'Address of the account calling the function'
+  )
+  .requiredOption(
+    '-s, --contract <contractAddress>',
+    'Address of the deployed contract'
+  )
+  .requiredOption(
+    '-f, --function-name <name>',
+    'Function to call (include parameter types), e.g. transfer(address,uint256)'
+  )
+  .requiredOption(
+    '-a, --arguments <parameters>',
+    'Function arguments as a comma-separated list (no spaces unless inside quotes)'
+  )
+  .action(async (options) => {
+    try {
+      const {
+        config: configPath,
+        sender,
+        contract: contractAddress,
+        functionName,
+        arguments: funcArgs,
+      } = options;
+
+      if (!fs.existsSync(configPath)) {
+        logger.error(`Config file not found at ${configPath}`);
+        console.error(`Error: Config file not found at ${configPath}`);
+        process.exit(1);
+      }
+
+      const resDBHome = await ensureResDBHome();
+      const commandPath = path.join(
+        resDBHome,
+        'bazel-bin',
+        'service',
+        'tools',
+        'kv',
+        'api_tools',
+        'contract_service_tools'
+      );
+
+      const jsonConfig = {
+        command: 'execute',
+        caller_address: sender,
+        contract_address: contractAddress,
+        func_name: functionName,
+        params: funcArgs,
+      };
+      const jsonConfigPath = path.join(
+        os.tmpdir(),
+        `execute_${Date.now()}.json`
+      );
+      fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
+
+      let output;
+      try {
+        output = await handleSpawnProcess(commandPath, [
+          '-c',
+          configPath,
+          '--config_file',
+          jsonConfigPath,
+        ]);
+      } finally {
+        if (fs.existsSync(jsonConfigPath)) {
+          fs.unlinkSync(jsonConfigPath);
+        }
+      }
+
+      if (output.includes('execute contract fail')) {
+        console.error(
+          JSON.stringify({
+            error: 'Contract execution failed (see stderr output above).',
+          })
+        );
+        process.exit(1);
+      }
+
+      let result = null;
+      const idx = output.lastIndexOf('execute result:');
+      if (idx !== -1) {
+        result = output.slice(idx + 'execute result:'.length).trim();
+        result = result.replace(/^\[[^\]]+\]\s*/m, '').trim();
+      }
+
+      if (result !== null && result.length > 0) {
+        console.log(JSON.stringify({ result }));
+      } else {
+        console.log(JSON.stringify({ output: output.trim() }));
+      }
+    } catch (error) {
+      console.error(
+        JSON.stringify({
+          error: error.message,
+        })
+      );
+      process.exit(1);
+    }
+  });
+
+program
   .command('add_address')
   .description('Add an external address to the system')
   .requiredOption('-c, --config <path>', 'Path to the config file')
@@ -366,9 +487,9 @@ program
         'bazel-bin',
         'service',
         'tools',
-        'contract',
+        'kv',
         'api_tools',
-        'contract_tools'
+        'contract_service_tools'
       );
 
       if (!fs.existsSync(configPath)) {
@@ -377,13 +498,21 @@ program
         process.exit(1);
       }
 
-      await handleExecFile(commandPath, [
-        'add_address',
-        '-c',
-        configPath,
-        '-e',
-        externalAddress,
-      ]);
+      const jsonConfig = {
+        command: 'add_address',
+        address: externalAddress
+      };
+      const jsonConfigPath = path.join(os.tmpdir(), `add_address_${Date.now()}.json`);
+      fs.writeFileSync(jsonConfigPath, JSON.stringify(jsonConfig, null, 2));
+      
+      try {
+        await handleExecFile(commandPath, ['-c', configPath, '--config_file', jsonConfigPath]);
+      } finally {
+        // Clean up temporary file
+        if (fs.existsSync(jsonConfigPath)) {
+          fs.unlinkSync(jsonConfigPath);
+        }
+      }
     } catch (error) {
       logger.error(`Error executing add_address command: ${error.message}`);
       console.error(`Error: ${error.message}`);

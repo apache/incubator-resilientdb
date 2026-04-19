@@ -5,6 +5,7 @@ deploy/kv_server/output/
 .idea/
 .vscode/
 .DS_Store
+node_modules/
 bazel-*
 *.log
 *.bak
@@ -13,6 +14,7 @@ sdk_validator/venv
 node_modules/
 __pycache__
 MODULE.*
+ecosystem/tools/resvault/build
 apache_release
 *.out.*
 *.data.*
@@ -23,3 +25,5 @@ resdb/
 gmon.out
 .history/
 service/tools/data/cert
+ecosystem/smart-contract/smart-contract-graphql/compiled_contracts/
+ecosystem/smart-contract/rescontract/compiled_contracts/

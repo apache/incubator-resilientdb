@@ -80,7 +80,12 @@ export async function createAccount(config, type = 'path') {
     if (type === 'data') {
       fs.unlinkSync(configPath);
     }
-    const address = result.match(/address: \"(0x[0-9a-fA-F]+)\"/)[1];
+    // Parse address: works for JSON {"address":"0x..."} or log line address: "0x..."
+    const match = result.match(/"?address"?\s*:\s*"(0x[0-9a-fA-F]+)"/);
+    const address = match ? match[1] : null;
+    if (!address) {
+      throw new Error(`Failed to parse address from output: ${result}`);
+    }
     return address;
   } catch (error) {
     if (type === 'data' && fs.existsSync(configPath)) {
@@ -229,9 +234,43 @@ export async function executeContract(config, sender, contract, functionName, ar
 
   try {
     const result = await handleExecFile(command, cliArgs);
-    const success = result.includes("0x0000000000000000000000000000000000000000000000000000000000000001");
-    return success ? "Execution successful" : "Execution failed";
-    return result;
+    if (result.includes('execute contract fail')) {
+      throw new Error(result);
+    }
+
+    const lines = result.split('\n');
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const line = lines[i].trim();
+      if (line.startsWith('{') && line.includes('"result"')) {
+        try {
+          const o = JSON.parse(line);
+          if (o.error) {
+            throw new Error(o.error);
+          }
+          if (o.result != null) {
+            const firstLine = String(o.result).split('\n')[0].trim();
+            return firstLine || String(o.result).trim();
+          }
+        } catch (e) {
+          if (e instanceof SyntaxError) {
+            /* not valid JSON on this line */
+          } else {
+            throw e;
+          }
+        }
+      }
+    }
+
+    const idx = result.lastIndexOf('execute result:');
+    if (idx !== -1) {
+      const after = result.slice(idx + 'execute result:'.length).trim();
+      const firstLine = after.split('\n')[0].trim();
+      if (firstLine) {
+        return firstLine;
+      }
+    }
+
+    return result.trim();
   } catch (error) {
     throw error;
   } finally {

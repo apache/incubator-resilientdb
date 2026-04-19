@@ -88,7 +88,7 @@ Beyond the core NexRes engine, ResilientDB ships with a rich ecosystem of tools 
 - **Core Node (NexRes)**: High-throughput, BFT-replicated state machine that orders and executes transactions with strong consistency and durability.
 - **APIs (GraphQL & REST)**: ResilientDB exposes HTTP and GraphQL services for committing and querying transactions, making it easy to integrate with web backends, data services, and AI workflows.
 - **ResVault (Wallet & Extension)**: Browser extension wallet that manages keys, lets users authenticate, and approve transactions from web apps, tying writes on-chain to user-controlled identities.
-- **SDKs & ORMs**: Language-specific libraries (e.g., Python ORM, Rust SDK, ResVault SDK) that provide higher-level APIs for modeling assets, talking to GraphQL/REST, and wiring ResVault into applications.
+- **SDKs & ORMs**: Language-specific libraries and client toolkits (e.g., Python ORM, Rust SDK, ResVault SDK, ResShare SDK) that provide higher-level APIs for modeling assets, talking to GraphQL/REST, and wiring ResilientDB services into applications.
 - **Monitoring (ResLens & dashboards)**: Monitoring UIs and middleware (ResLens stack) that surface cluster health, performance metrics, and profiling data for running deployments.
 - **Deployment Tooling (Orbit, Ansible, Docker)**: Tools and playbooks for bringing up ResilientDB clusters and supporting services (GraphQL, Nginx, etc.) on local and cloud environments using Docker, Ansible, and the Orbit desktop deployer.
 
@@ -144,6 +144,7 @@ incubator-resilientdb/
 │   └── tools/                       # Dev and app tools
 │       ├── create-resilient-app/    # App scaffolding CLI
 │       ├── drawing-lib/             # Shared drawing widget
+│       ├── reshare-lib/             # ResShare SDK
 │       └── resvault/                # ResVault wallet extension
 ├── executor/                        # Transaction execution engine
 │   ├── common/                      # Common execution utilities
@@ -537,4 +538,3 @@ ResilientDB includes a built‑in smart contract service that lets you deploy an
 In addition, you can use the **Key‑Value interfaces** to query or update associated balances via `get_balance` and `set_balance` commands when needed.
 
 For a full, step‑by‑step tutorial (including example JSON files, commands, and responses), see **[Getting Started with Smart Contract on ResilientDB](https://blog.resilientdb.com/2025/02/14/GettingStartedSmartContract.html)**.
-
