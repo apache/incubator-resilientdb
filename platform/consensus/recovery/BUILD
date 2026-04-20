@@ -69,6 +69,7 @@ cc_library(
     name = "raft_recovery",
     srcs = ["raft_recovery.cpp"],
     hdrs = ["raft_recovery.h"],
+    copts = ["-DRAFT_TEST_MODE"],
     deps = [
         "//chain/storage",
         "//common/utils",

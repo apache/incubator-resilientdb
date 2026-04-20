@@ -59,7 +59,7 @@ class Storage {
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
 
-  virtual bool Flush() { return true; };
+  virtual bool Flush(bool should_sync = false) { return true; };
 
   virtual uint64_t GetLastCheckpoint() { return 0; }
 

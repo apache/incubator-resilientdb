@@ -56,6 +56,12 @@ class RaftRecovery
   void AddLogEntry(std::vector<Entry>& entries_to_add);
   void TruncateLog(TruncationRecord truncate_beginning_at);
 
+#ifdef RAFT_RECOVERY_TEST_MODE
+  std::string GetMetadataFilePath() { return meta_file_path_; }
+
+  std::string GetFilePath() { return file_path_; }
+#endif
+
  private:
   void OpenMetadataFile();
   void WriteSystemInfo();

@@ -163,7 +163,7 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::FinishFile(
   std::unique_lock<std::mutex> lk(mutex_);
   Flush();
   if (storage_) {
-    if (!storage_->Flush()) {
+    if (!storage_->Flush(true)) {
       return;
     }
   }
@@ -174,6 +174,12 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::FinishFile(
   max_seq_ = -1;
 
   std::rename(file_path_.c_str(), new_file_path.c_str());
+
+  std::string dir_path =
+      std::filesystem::path(file_path_).parent_path().string();
+  int dir_fd = open(dir_path.c_str(), O_RDONLY);
+  fsync(dir_fd);
+  close(dir_fd);
 
   LOG(INFO) << "rename:" << file_path_ << " to:" << new_file_path;
   std::string next_file_path = GenerateFile(seq, -1, -1);

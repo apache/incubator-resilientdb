@@ -95,6 +95,10 @@ void RaftRecovery::OpenMetadataFile() {
 
   // Read existing metadata if it exists, otherwise defaults are used
   metadata_ = ReadMetadata();
+
+  close(metadata_fd_);
+  metadata_fd_ = -1;
+
   LOG(INFO) << "Opened metadata file: term: " << metadata_.current_term
             << " votedFor: " << metadata_.voted_for;
 }
@@ -105,33 +109,56 @@ void RaftRecovery::WriteMetadata(int64_t current_term, int32_t voted_for) {
   }
 
   std::string tmp_path = meta_file_path_ + ".tmp";
-  LOG(ERROR) << "tmp_path = [" << tmp_path << "]";
-  LOG(ERROR) << "meta_file_path_ = [" << meta_file_path_ << "]";
+  LOG(INFO) << "tmp_path = [" << tmp_path << "]";
+  LOG(INFO) << "meta_file_path_ = [" << meta_file_path_ << "]";
+
   int temp_fd = open(tmp_path.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0666);
-  if (metadata_fd_ < 0) {
-    LOG(ERROR) << "Metadata file not open";
-    return;
-  }
   if (temp_fd < 0) {
     LOG(ERROR) << "Failed to open tmp metadata file: " << strerror(errno);
     return;
   }
 
-  metadata_.current_term = current_term;
-  metadata_.voted_for = voted_for;
+  RaftMetadata new_metadata;
+  new_metadata.current_term = current_term;
+  new_metadata.voted_for = voted_for;
 
-  lseek(temp_fd, 0, SEEK_SET);
-  write(temp_fd, &metadata_, sizeof(metadata_));
-  fsync(temp_fd);
+  ssize_t bytes_written = write(temp_fd, &new_metadata, sizeof(new_metadata));
+  if (bytes_written != static_cast<ssize_t>(sizeof(new_metadata))) {
+    LOG(ERROR) << "Failed to write metadata (wrote " << bytes_written << " of "
+               << sizeof(new_metadata) << " bytes): " << strerror(errno);
+    close(temp_fd);
+    unlink(tmp_path.c_str());
+    return;
+  }
+
+  if (fsync(temp_fd) < 0) {
+    LOG(ERROR) << "Failed to fsync tmp metadata file: " << strerror(errno);
+    close(temp_fd);
+    unlink(tmp_path.c_str());
+    return;
+  }
   close(temp_fd);
 
-  rename(tmp_path.c_str(), meta_file_path_.c_str());
+  if (rename(tmp_path.c_str(), meta_file_path_.c_str()) < 0) {
+    LOG(ERROR) << "Failed to rename tmp metadata file: " << strerror(errno);
+    unlink(tmp_path.c_str());
+    return;
+  }
 
+  // Only fsync and close the dir if it opens properly
   std::string dir_path = std::filesystem::path(meta_file_path_).parent_path().string();
   int dir_fd = open(dir_path.c_str(), O_RDONLY);
-  fsync(dir_fd);
-  close(dir_fd);
-  
+  if (dir_fd < 0) {
+    LOG(ERROR) << "Failed to open directory for fsync: " << strerror(errno);
+  } else {
+    if (fsync(dir_fd) < 0) {
+      LOG(ERROR) << "Failed to fsync directory: " << strerror(errno);
+    }
+    close(dir_fd);
+  }
+
+  metadata_ = new_metadata;
+
   LOG(INFO) << "Wrote metadata: term: " << current_term
             << " votedFor: " << voted_for;
   LOG(INFO) << "METADATA location: " << meta_file_path_;
@@ -141,11 +168,11 @@ RaftMetadata RaftRecovery::ReadMetadata() {
   if (recovery_enabled_ == false) {
     return RaftMetadata{};
   }
-  LOG(INFO) << "Debug at " << __FILE__ << ":" << __LINE__ << " in function "
-            << __func__ << "\n";
+
   RaftMetadata metadata;
   if (metadata_fd_ < 0) {
-    LOG(ERROR) << "Metadata file not open";
+    LOG(ERROR) << "Metadata file either never opened or already closed "
+                  "(meaning ReadMetadata() has been called before)";
     return metadata;
   }
 
