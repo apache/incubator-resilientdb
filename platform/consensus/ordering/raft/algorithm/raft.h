@@ -145,6 +145,8 @@ class Raft : public common::ProtocolBase {
   virtual void RecordNewInFlightMsgLocked(
       const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
   virtual bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
+  int GetLogicalLogSize() const;
+  const LogEntry& GetLogEntryAtIndex(uint64_t index) const;
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_

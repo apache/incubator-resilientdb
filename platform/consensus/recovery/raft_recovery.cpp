@@ -92,15 +92,6 @@ void RaftRecovery::OpenMetadataFile() {
     LOG(ERROR) << "Failed to open metadata file: " << strerror(errno);
     return;
   }
-
-  // Read existing metadata if it exists, otherwise defaults are used
-  metadata_ = ReadMetadata();
-
-  close(metadata_fd_);
-  metadata_fd_ = -1;
-
-  LOG(INFO) << "Opened metadata file: term: " << metadata_.current_term
-            << " votedFor: " << metadata_.voted_for;
 }
 
 void RaftRecovery::WriteMetadata(int64_t current_term, int32_t voted_for) {
@@ -182,6 +173,9 @@ RaftMetadata RaftRecovery::ReadMetadata() {
     LOG(INFO) << "No existing metadata, using defaults";
     return RaftMetadata{};
   }
+
+  LOG(INFO) << "Read metadata file: term: " << metadata.current_term
+            << " votedFor: " << metadata.voted_for;
   return metadata;
 }
 
@@ -290,10 +284,10 @@ void RaftRecovery::PerformCallback(
 
 void RaftRecovery::HandleSystemInfo(
     int /*fd*/, std::function<void(const RaftMetadata&)> system_callback) {
-  RaftMetadata info = ReadMetadata();
-  LOG(ERROR) << " info.voted_for: " << info.voted_for << "\ninfo.current_term "
-             << info.current_term;
-  system_callback(info);
+  metadata_ = ReadMetadata();
+  LOG(ERROR) << " metadata_.voted_for: " << metadata_.voted_for
+             << "\nmetadata_.current_term " << metadata_.current_term;
+  system_callback(metadata_);
 }
 
 }  // namespace raft

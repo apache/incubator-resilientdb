@@ -128,20 +128,21 @@ void Consensus::RecoverFromLogs() {
         raft_->SetVotedFor(metadata.voted_for, false);
       },
       [&](std::unique_ptr<WALRecord> record) {
-          switch (record->payload_case()) {
-            case WALRecord::kEntry: {
-              LogEntry logEntry;
-              logEntry.entry = record->entry();
-              raft_->AddToLog(logEntry, false);
-              break;
-            }
-            case WALRecord::kTruncation:
-              raft_->TruncateLog(record->truncation().truncate_from_index(), false);
-              break;
-            case WALRecord::PAYLOAD_NOT_SET:
-              assert(false && "WALRecord does not contain Truncation or Entry");
-              break;
+        switch (record->payload_case()) {
+          case WALRecord::kEntry: {
+            LogEntry logEntry;
+            logEntry.entry = record->entry();
+            raft_->AddToLog(logEntry, false);
+            break;
           }
+          case WALRecord::kTruncation:
+            raft_->TruncateLog(record->truncation().truncate_from_index(),
+                               false);
+            break;
+          case WALRecord::PAYLOAD_NOT_SET:
+            assert(false && "WALRecord does not contain Truncation or Entry");
+            break;
+        }
       },
       [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
 }
