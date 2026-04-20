@@ -39,6 +39,7 @@ class PerformanceManager {
   virtual ~PerformanceManager();
 
   int StartEval();
+  void SetPrimary(int id);
 
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
@@ -89,7 +90,7 @@ class PerformanceManager {
   std::mutex response_lock_[response_set_size_];
   int replica_num_;
   int id_;
-  int primary_;
+  std::atomic<int> primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
 };
