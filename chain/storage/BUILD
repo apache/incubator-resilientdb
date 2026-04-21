@@ -58,6 +58,30 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "ipfs_client",
+    srcs = ["ipfs_client.cpp"],
+    hdrs = ["ipfs_client.h"],
+    deps = [
+        ":storage",
+        "//chain/storage/proto:ipfs_config_cc_proto",
+        "//common:comm",
+    ],
+)
+
+cc_library(
+    name = "tiered_storage",
+    srcs = ["tiered_storage.cpp"],
+    hdrs = ["tiered_storage.h"],
+    deps = [
+        ":storage",
+        ":ipfs_client",
+        "//chain/storage/proto:ipfs_config_cc_proto",
+        "//chain/storage/proto:tiered_index_cc_proto",
+        "//common:comm",
+    ],
+)
+
 cc_test(
     name = "kv_storage_test",
     size = "small",  # Set the size to "small"
@@ -79,5 +103,19 @@ cc_test(
         ":leveldb",
         "//common/test:test_main",
         "//platform/statistic:stats",
+    ],
+)
+
+cc_test(
+    name = "tiered_storage_test",
+    size = "small",
+    timeout = "short",
+    srcs = ["tiered_storage_test.cpp"],
+    deps = [
+        ":leveldb",
+        ":memory_db",
+        ":tiered_storage",
+        ":ipfs_client",
+        "//common/test:test_main",
     ],
 )

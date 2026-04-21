@@ -1,0 +1,185 @@
+version: '3.8'
+
+services:
+  resilientdb-0:
+    image: ${RESDB_IMAGE:-resilientdb:latest}
+    hostname: resilientdb-0
+    container_name: resilientdb-0
+    ports:
+      - "18001:18001"
+      - "18000:18000"
+    volumes:
+      - ./configs/node0:/app/config
+      - leveldb0:/app/data
+    environment:
+      - NODE_ID=0
+      - NODE_HOST=resilientdb-0
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-LEVELDB_ONLY}
+      - IPFS_ENDPOINT=http://ipfs-0:5001
+      - TIERED_ENABLED=${TIERED_ENABLED:-false}
+      - COLD_THRESHOLD=${COLD_THRESHOLD:-2}
+    networks:
+      - resdb-net
+    depends_on:
+      - ipfs-0
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  ipfs-0:
+    image: ${IPFS_IMAGE:-ipfs/kubo:latest}
+    hostname: ipfs-0
+    container_name: ipfs-0
+    volumes:
+      - ipfs0:/data/ipfs
+    environment:
+      - IPFS_SWARM_ADDRS=/ip4/0.0.0.0/tcp/4001
+    ports:
+      - "5001:5001"
+      - "8080:8080"
+    networks:
+      - resdb-net
+
+  resilientdb-1:
+    image: ${RESDB_IMAGE:-resilientdb:latest}
+    hostname: resilientdb-1
+    container_name: resilientdb-1
+    ports:
+      - "18011:18001"
+      - "18010:18000"
+    volumes:
+      - ./configs/node1:/app/config
+      - leveldb1:/app/data
+    environment:
+      - NODE_ID=1
+      - NODE_HOST=resilientdb-1
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-LEVELDB_ONLY}
+      - IPFS_ENDPOINT=http://ipfs-1:5001
+      - TIERED_ENABLED=${TIERED_ENABLED:-false}
+      - COLD_THRESHOLD=${COLD_THRESHOLD:-2}
+    networks:
+      - resdb-net
+    depends_on:
+      - ipfs-1
+
+  ipfs-1:
+    image: ${IPFS_IMAGE:-ipfs/kubo:latest}
+    hostname: ipfs-1
+    container_name: ipfs-1
+    volumes:
+      - ipfs1:/data/ipfs
+    environment:
+      - IPFS_SWARM_ADDRS=/ip4/0.0.0.0/tcp/4001
+    ports:
+      - "5011:5001"
+      - "8081:8080"
+    networks:
+      - resdb-net
+
+  resilientdb-2:
+    image: ${RESDB_IMAGE:-resilientdb:latest}
+    hostname: resilientdb-2
+    container_name: resilientdb-2
+    ports:
+      - "18021:18001"
+      - "18020:18000"
+    volumes:
+      - ./configs/node2:/app/config
+      - leveldb2:/app/data
+    environment:
+      - NODE_ID=2
+      - NODE_HOST=resilientdb-2
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-LEVELDB_ONLY}
+      - IPFS_ENDPOINT=http://ipfs-2:5001
+      - TIERED_ENABLED=${TIERED_ENABLED:-false}
+      - COLD_THRESHOLD=${COLD_THRESHOLD:-2}
+    networks:
+      - resdb-net
+    depends_on:
+      - ipfs-2
+
+  ipfs-2:
+    image: ${IPFS_IMAGE:-ipfs/kubo:latest}
+    hostname: ipfs-2
+    container_name: ipfs-2
+    volumes:
+      - ipfs2:/data/ipfs
+    environment:
+      - IPFS_SWARM_ADDRS=/ip4/0.0.0.0/tcp/4001
+    ports:
+      - "5021:5001"
+      - "8082:8080"
+    networks:
+      - resdb-net
+
+  resilientdb-3:
+    image: ${RESDB_IMAGE:-resilientdb:latest}
+    hostname: resilientdb-3
+    container_name: resilientdb-3
+    ports:
+      - "18031:18001"
+      - "18030:18000"
+    volumes:
+      - ./configs/node3:/app/config
+      - leveldb3:/app/data
+    environment:
+      - NODE_ID=3
+      - NODE_HOST=resilientdb-3
+      - STORAGE_BACKEND=${STORAGE_BACKEND:-LEVELDB_ONLY}
+      - IPFS_ENDPOINT=http://ipfs-3:5001
+      - TIERED_ENABLED=${TIERED_ENABLED:-false}
+      - COLD_THRESHOLD=${COLD_THRESHOLD:-2}
+    networks:
+      - resdb-net
+    depends_on:
+      - ipfs-3
+
+  ipfs-3:
+    image: ${IPFS_IMAGE:-ipfs/kubo:latest}
+    hostname: ipfs-3
+    container_name: ipfs-3
+    volumes:
+      - ipfs3:/data/ipfs
+    environment:
+      - IPFS_SWARM_ADDRS=/ip4/0.0.0.0/tcp/4001
+    ports:
+      - "5031:5001"
+      - "8083:8080"
+    networks:
+      - resdb-net
+
+  prometheus:
+    image: ${PROMETHEUS_IMAGE:-prom/prometheus:latest}
+    hostname: prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./configs/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - resdb-net
+
+volumes:
+  leveldb0:
+  leveldb1:
+  leveldb2:
+  leveldb3:
+  ipfs0:
+  ipfs1:
+  ipfs2:
+  ipfs3:
+  prometheus-data:
+
+networks:
+  resdb-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

@@ -38,6 +38,7 @@ proto_library(
     srcs = ["replica_info.proto"],
     deps = [
         "//chain/storage/proto:leveldb_config_proto",
+        "//chain/storage/proto:ipfs_config_proto",
         "//common/proto:signature_info_proto",
     ],
 )

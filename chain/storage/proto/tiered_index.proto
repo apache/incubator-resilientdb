@@ -1,0 +1,55 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+syntax = "proto3";
+
+package resdb.storage;
+
+message TieredIndexEntry {
+  string key = 1;
+  string key_range_start = 2;
+  string key_range_end = 3;
+  string ipfs_cid = 4;
+  uint64 checkpoint_height = 5;
+  int64 migrated_at_timestamp = 6;
+  bool has_versions = 7;
+  string versions_cid = 8;
+}
+
+message TieredIndex {
+  repeated TieredIndexEntry entries = 1;
+  int32 version = 2;
+  int64 last_updated_timestamp = 3;
+}
+
+message IndexManifest {
+  message RangeMapping {
+    string start_key = 1;
+    string end_key = 2;
+    string ipfs_cid = 3;
+    uint64 min_checkpoint = 4;
+    uint64 max_checkpoint = 5;
+  }
+  
+  repeated RangeMapping range_mappings = 1;
+  uint64 total_keys = 2;
+  uint64 cold_keys = 3;
+  int32 version = 4;
+  int64 last_updated_timestamp = 5;
+}

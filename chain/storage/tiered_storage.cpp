@@ -1,0 +1,359 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+#include "chain/storage/tiered_storage.h"
+
+#include <chrono>
+#include <google/protobuf/util/json_util.h>
+#include <glog/logging.h>
+
+namespace resdb {
+namespace storage {
+
+namespace {
+
+constexpr const char* kManifestKey = "_tiered_manifest";
+constexpr const char* kColdThresholdKey = "_cold_threshold";
+constexpr int kDefaultColdThreshold = 2;
+
+}
+
+TieredStorage::TieredStorage(
+    std::unique_ptr<Storage> hot_storage,
+    std::unique_ptr<Storage> warm_storage,
+    std::unique_ptr<IPFSClient> cold_client,
+    const TieredStorageConfig& config)
+    : hot_storage_(std::move(hot_storage)),
+      warm_storage_(std::move(warm_storage)),
+      cold_client_(std::move(cold_client)),
+      config_(config),
+      manifest_key_(kManifestKey) {
+  if (!config_.enabled()) {
+    LOG(WARNING) << "TieredStorage created but tiering is disabled";
+  } else {
+    LOG(INFO) << "TieredStorage enabled with cold_threshold = "
+              << config_.cold_threshold_checkpoint();
+  }
+
+  if (config_.cold_threshold_checkpoint() <= 0) {
+    config_.set_cold_threshold_checkpoint(kDefaultColdThreshold);
+  }
+
+  if (config_.enabled() && cold_client_ && cold_client_->IsEnabled()) {
+    LoadManifestFromStorage(warm_storage_.get());
+  }
+}
+
+int TieredStorage::SetValue(const std::string& key, const std::string& value) {
+  return SetValueInternal(hot_storage_.get(), key, value);
+}
+
+int TieredStorage::SetValueWithSeq(const std::string& key,
+                                   const std::string& value, uint64_t seq) {
+  return hot_storage_->SetValueWithSeq(key, value, seq);
+}
+
+std::string TieredStorage::GetValue(const std::string& key) {
+  return GetValueWithFallback(key);
+}
+
+std::pair<std::string, uint64_t> TieredStorage::GetValueWithSeq(
+    const std::string& key, uint64_t seq) {
+  auto hot_result = hot_storage_->GetValueWithSeq(key, seq);
+  if (!hot_result.first.empty()) {
+    return hot_result;
+  }
+
+  auto warm_result = warm_storage_->GetValueWithSeq(key, seq);
+  if (!warm_result.first.empty()) {
+    return warm_result;
+  }
+
+  std::string cold_value = GetValueFromCold(key);
+  if (!cold_value.empty()) {
+    return {cold_value, 0};
+  }
+
+  return {"", 0};
+}
+
+std::string TieredStorage::GetRange(const std::string& min_key,
+                                  const std::string& max_key) {
+  std::string result = warm_storage_->GetRange(min_key, max_key);
+  if (!result.empty()) {
+    return result;
+  }
+
+  return result;
+}
+
+int TieredStorage::SetValueWithVersion(const std::string& key,
+                                    const std::string& value, int version) {
+  return hot_storage_->SetValueWithVersion(key, value, version);
+}
+
+std::pair<std::string, int> TieredStorage::GetValueWithVersion(
+    const std::string& key, int version) {
+  auto result = hot_storage_->GetValueWithVersion(key, version);
+  if (!result.first.empty()) {
+    return result;
+  }
+
+  return warm_storage_->GetValueWithVersion(key, version);
+}
+
+std::map<std::string, std::vector<std::pair<std::string, uint64_t>>>
+TieredStorage::GetAllItemsWithSeq() {
+  return warm_storage_->GetAllItemsWithSeq();
+}
+
+std::map<std::string, std::pair<std::string, int>> TieredStorage::GetAllItems() {
+  return warm_storage_->GetAllItems();
+}
+
+std::map<std::string, std::pair<std::string, int>> TieredStorage::GetKeyRange(
+    const std::string& min_key, const std::string& max_key) {
+  return warm_storage_->GetKeyRange(min_key, max_key);
+}
+
+std::vector<std::pair<std::string, int>> TieredStorage::GetHistory(
+    const std::string& key, int min_version, int max_version) {
+  auto result = hot_storage_->GetHistory(key, min_version, max_version);
+  if (!result.empty()) {
+    return result;
+  }
+
+  return warm_storage_->GetHistory(key, min_version, max_version);
+}
+
+std::vector<std::pair<std::string, int>> TieredStorage::GetTopHistory(
+    const std::string& key, int number) {
+  auto result = hot_storage_->GetTopHistory(key, number);
+  if (!result.empty()) {
+    return result;
+  }
+
+  return warm_storage_->GetTopHistory(key, number);
+}
+
+bool TieredStorage::Flush() {
+  hot_storage_->Flush();
+  warm_storage_->Flush();
+  return true;
+}
+
+uint64_t TieredStorage::GetLastCheckpoint() {
+  if (warm_storage_) {
+    return warm_storage_->GetLastCheckpoint();
+  }
+  return 0;
+}
+
+void TieredStorage::SetColdThreshold(int checkpoint_threshold) {
+  config_.set_cold_threshold_checkpoint(checkpoint_threshold);
+  LOG(INFO) << "Set cold threshold to " << checkpoint_threshold;
+}
+
+int TieredStorage::GetColdThreshold() const {
+  return config_.cold_threshold_checkpoint();
+}
+
+bool TieredStorage::IsColdData(const std::string& key) const {
+  return !GetIndexCID(key).empty();
+}
+
+bool TieredStorage::IsColdEnabled() const {
+  return config_.enabled() && cold_client_ && cold_client_->IsEnabled();
+}
+
+std::string TieredStorage::GetCID(const std::string& key) const {
+  return GetIndexCID(key);
+}
+
+std::unique_ptr<Storage> TieredStorage::Create(
+    std::unique_ptr<Storage> hot_storage,
+    std::unique_ptr<Storage> warm_storage,
+    const IPFSConfig& ipfs_config,
+    const TieredStorageConfig& tiered_config) {
+  if (!tiered_config.enabled()) {
+    LOG(INFO) << "Tiered storage disabled, using warm storage only";
+    return warm_storage;
+  }
+
+  auto cold_client = IPFSClient::Create(ipfs_config);
+  if (!cold_client->IsEnabled()) {
+    LOG(WARNING) << "IPFS client not enabled, falling back to warm storage";
+    return warm_storage;
+  }
+
+  return std::make_unique<TieredStorage>(
+      std::move(hot_storage),
+      std::move(warm_storage),
+      std::move(cold_client),
+      tiered_config);
+}
+
+std::string TieredStorage::GetValueWithFallback(const std::string& key) {
+  std::string value = GetValueInternal(hot_storage_.get(), key);
+  if (!value.empty()) {
+    LOG(INFO) << "TieredStorage: found value in hot storage for key: " << key;
+    return value;
+  }
+
+  value = GetValueInternal(warm_storage_.get(), key);
+  if (!value.empty()) {
+    LOG(INFO) << "TieredStorage: found value in warm storage for key: " << key;
+    return value;
+  }
+
+  if (IsColdEnabled()) {
+    value = GetValueFromCold(key);
+    if (!value.empty()) {
+      LOG(INFO) << "TieredStorage: found value in cold storage for key: " << key;
+      return value;
+    }
+  }
+
+  LOG(INFO) << "TieredStorage: key not found: " << key;
+  return "";
+}
+
+std::string TieredStorage::GetValueFromCold(const std::string& key) {
+  std::string cid = GetIndexCID(key);
+  if (cid.empty()) {
+    LOG(INFO) << "TieredStorage: no CID found for key: " << key;
+    return "";
+  }
+
+  return cold_client_->Cat(cid);
+}
+
+std::string TieredStorage::GetIndexCID(const std::string& key) const {
+  for (const auto& mapping : manifest_.range_mappings()) {
+    if (key >= mapping.start_key() && key <= mapping.end_key()) {
+      return mapping.ipfs_cid();
+    }
+  }
+  return "";
+}
+
+int TieredStorage::SetValueInternal(Storage* storage,
+                                  const std::string& key,
+                                  const std::string& value) {
+  if (!storage) {
+    LOG(ERROR) << "TieredStorage: storage is null";
+    return -1;
+  }
+  return storage->SetValue(key, value);
+}
+
+std::string TieredStorage::GetValueInternal(Storage* storage,
+                                             const std::string& key) {
+  if (!storage) {
+    LOG(ERROR) << "TieredStorage: storage is null";
+    return "";
+  }
+  return storage->GetValue(key);
+}
+
+bool TieredStorage::LoadManifest() {
+  return LoadManifestFromStorage(warm_storage_.get());
+}
+
+bool TieredStorage::SaveManifest() {
+  return SaveManifestToStorage(warm_storage_.get());
+}
+
+bool TieredStorage::AddToIndex(const std::string& key, const std::string& cid,
+                          uint64_t min_seq, uint64_t max_seq) {
+  if (!IsColdEnabled()) {
+    LOG(WARNING) << "TieredStorage: cold storage not enabled";
+    return false;
+  }
+
+  auto* mapping = manifest_.add_range_mappings();
+  mapping->set_start_key(key);
+  mapping->set_end_key(key);
+  mapping->set_ipfs_cid(cid);
+  mapping->set_min_checkpoint(min_seq);
+  mapping->set_max_checkpoint(max_seq);
+
+  manifest_.set_total_keys(manifest_.total_keys() + 1);
+  manifest_.set_cold_keys(manifest_.cold_keys() + 1);
+  manifest_.set_last_updated_timestamp(time(nullptr));
+
+  LOG(INFO) << "TieredStorage: added to index, key=" << key
+            << ", cid=" << cid << ", range=[" << min_seq << "," << max_seq << "]";
+
+  return SaveManifestToStorage(warm_storage_.get());
+}
+
+bool TieredStorage::LoadManifestFromStorage(Storage* storage) {
+  if (!storage) {
+    LOG(ERROR) << "TieredStorage: cannot load manifest, storage is null";
+    return false;
+  }
+
+  std::string manifest_data = storage->GetValue(manifest_key_);
+  if (manifest_data.empty()) {
+    LOG(INFO) << "TieredStorage: no manifest found, starting fresh";
+    manifest_.set_version(1);
+    manifest_.set_total_keys(0);
+    manifest_.set_cold_keys(0);
+    manifest_.set_last_updated_timestamp(time(nullptr));
+    return true;
+  }
+
+  if (!manifest_.ParseFromString(manifest_data)) {
+    LOG(ERROR) << "TieredStorage: failed to parse manifest";
+    return false;
+  }
+
+  LOG(INFO) << "TieredStorage: loaded manifest, "
+            << "total_keys=" << manifest_.total_keys()
+            << ", cold_keys=" << manifest_.cold_keys();
+  manifest_loaded_ = true;
+  return true;
+}
+
+bool TieredStorage::SaveManifestToStorage(Storage* storage) {
+  if (!storage) {
+    LOG(ERROR) << "TieredStorage: cannot save manifest, storage is null";
+    return false;
+  }
+
+  std::string manifest_data;
+  if (!manifest_.SerializeToString(&manifest_data)) {
+    LOG(ERROR) << "TieredStorage: failed to serialize manifest";
+    return false;
+  }
+
+  int ret = storage->SetValue(manifest_key_, manifest_data);
+  if (ret != 0) {
+    LOG(ERROR) << "TieredStorage: failed to save manifest, ret=" << ret;
+    return false;
+  }
+
+  LOG(INFO) << "TieredStorage: saved manifest, "
+            << "size=" << manifest_data.size() << " bytes";
+  return true;
+}
+
+}  // namespace storage
+}  // namespace resdb

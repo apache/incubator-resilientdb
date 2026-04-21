@@ -42,3 +42,23 @@ cc_proto_library(
     name = "leveldb_config_cc_proto",
     deps = [":leveldb_config_proto"],
 )
+
+proto_library(
+    name = "ipfs_config_proto",
+    srcs = ["ipfs_config.proto"],
+)
+
+cc_proto_library(
+    name = "ipfs_config_cc_proto",
+    deps = [":ipfs_config_proto"],
+)
+
+proto_library(
+    name = "tiered_index_proto",
+    srcs = ["tiered_index.proto"],
+)
+
+cc_proto_library(
+    name = "tiered_index_cc_proto",
+    deps = [":tiered_index_proto"],
+)

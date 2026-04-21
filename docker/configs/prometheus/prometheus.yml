@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'resilientdb'
+    static_configs:
+      - targets:
+        - 'resilientdb-0:18000'
+        - 'resilientdb-1:18010'
+        - 'resilientdb-2:18020'
+        - 'resilientdb-3:18030'
+    
+  - job_name: 'ipfs'
+    static_configs:
+      - targets:
+        - 'ipfs-0:5001'
+        - 'ipfs-1:5001'
+        - 'ipfs-2:5001'
+        - 'ipfs-3:5001'

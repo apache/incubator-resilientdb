@@ -23,6 +23,7 @@ package resdb;
 
 import "common/proto/signature_info.proto";
 import "chain/storage/proto/leveldb_config.proto";
+import "chain/storage/proto/ipfs_config.proto";
 
 message ReplicaInfo {
     int64 id = 1;
@@ -34,6 +35,19 @@ message ReplicaInfo {
 message RegionInfo {
   repeated ReplicaInfo replica_info = 1;
   int32 region_id = 2;
+}
+
+message StorageConfig {
+  enum StorageBackend {
+    LEVELDB_ONLY = 0;
+    MEMORYDB = 1;
+    TIERED = 2;
+  }
+  
+  StorageBackend backend = 1;
+  storage.LevelDBInfo leveldb_info = 2;
+  storage.IPFSConfig ipfs_info = 3;
+  storage.TieredStorageConfig tiered_info = 4;
 }
 
 message ResConfigData{
@@ -57,8 +71,11 @@ message ResConfigData{
   optional int32 recovery_ckpt_time_s = 20;
   optional bool enable_resview = 23;
   optional bool enable_faulty_switch = 24;
+  
+  // For tiered storage
+  optional StorageConfig storage_config = 25;
 
-// for hotstuff.
+ // for hotstuff.
   optional bool use_chain_hotstuff = 9;
 
   optional int32 max_client_complaint_num = 21;
