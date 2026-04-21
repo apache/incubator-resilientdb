@@ -33,11 +33,12 @@
 
 #include "platform/common/queue/lock_free_queue.h"
 #include "platform/consensus/ordering/common/algorithm/protocol_base.h"
+#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
 #include "platform/consensus/ordering/raft/proto/proposal.pb.h"
+#include "platform/consensus/recovery/raft_recovery.h"
+#include "platform/networkstrate/replica_communicator.h"
 #include "platform/proto/resdb.pb.h"
 #include "platform/statistic/stats.h"
-#include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
-#include "platform/networkstrate/replica_communicator.h"
 
 namespace resdb {
 namespace raft {
@@ -47,14 +48,13 @@ enum class TermRelation { STALE, CURRENT, NEW };
 
 class LogEntry {
   public:
-  uint64_t term;
-  std::string command;
+  Entry entry;
 
-  uint32_t GetSerializedSize();
+  uint32_t GetSerializedSize() const;
   uint32_t ComputeSerializedEntrySize() const;
   
   private:
-  uint32_t serializedSize = 0;
+  mutable uint32_t serializedSize = 0;
 };
 
 struct AeFields {
@@ -81,7 +81,7 @@ struct RaftStatePatch {
   std::optional<uint64_t> lastApplied;
   std::optional<Role> role;
 
-  std::optional<std::vector<std::unique_ptr<LogEntry>>> log;
+  std::optional<std::vector<LogEntry>> log;
   std::optional<std::vector<uint64_t>> nextIndex;
   std::optional<std::vector<uint64_t>> matchIndex;
   std::optional<std::vector<int>> votes;
@@ -93,7 +93,8 @@ class Raft : public common::ProtocolBase {
   Raft(int id, int f, int total_num,
     SignatureVerifier* verifier,
     LeaderElectionManager* leaderelection_manager,
-    ReplicaCommunicator* replica_communicator
+    ReplicaCommunicator* replica_communicator,
+    RaftRecovery* recovery
   );
   ~Raft();
 
@@ -111,7 +112,15 @@ class Raft : public common::ProtocolBase {
   virtual void SendHeartBeat();
   virtual Role GetRoleSnapshot() const;
   virtual void SetRole(Role role);
+  virtual void PrintDebugStateLocked() const;
   virtual void PrintDebugState() const;
+  virtual void SetCurrentTerm(uint64_t currentTerm, bool writeMetadata = true);
+  virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
+  virtual void SetSeqIndexCoveredBySnapshot(int seq);
+  void AddToLog(LogEntry &logEntry, bool writeMetadata = true);
+  void AddToLog(std::vector<LogEntry> logEntriesToAdd,
+                bool writeMetadata = true);
+  void TruncateLog(uint64_t first, bool writeMetadata = true);
 
  private:
   mutable std::mutex mutex_;
@@ -136,11 +145,13 @@ class Raft : public common::ProtocolBase {
   virtual void RecordNewInFlightMsgLocked(
       const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
   virtual bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
+  int GetLogicalLogSize() const;
+  const LogEntry& GetLogEntryAtIndex(uint64_t index) const;
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
   int votedFor_; // Protected by mutex_
-  std::vector<std::unique_ptr<LogEntry>> log_; // Protected by mutex_
+  std::vector<LogEntry> log_; // Protected by mutex_
 
   // Volatile state on leaders:
   std::vector<uint64_t> nextIndex_; // Protected by mutex_
@@ -157,6 +168,7 @@ class Raft : public common::ProtocolBase {
   std::vector<std::vector<InFlightMsg>> inflightVecs_; // Protected by mutex_
   //std::chrono::steady_clock::time_point last_ae_time_;
   //std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
+  int seqAfterCheckpoint_;
 
   bool is_stop_;
   const uint64_t quorum_;
@@ -172,6 +184,7 @@ class Raft : public common::ProtocolBase {
   LeaderElectionManager* leader_election_manager_;
   //Stats* global_stats_;
   ReplicaCommunicator* replica_communicator_;
+  RaftRecovery* recovery_;
 
 #ifdef RAFT_TEST_MODE
  public:
@@ -185,7 +198,7 @@ class Raft : public common::ProtocolBase {
     if (patch.role)         role_         = *patch.role;
 
     if (patch.log) {
-      log_ = std::move(*patch.log);
+      log_ = *patch.log;
       lastLogIndex_ = log_.empty() ? 0 : log_.size() - 1;
     }
 
@@ -204,7 +217,7 @@ class Raft : public common::ProtocolBase {
     return votedFor_;
   }
 
-  const std::vector<std::unique_ptr<LogEntry>>& GetLog() const {
+  const std::vector<LogEntry>& GetLog() const {
     std::lock_guard<std::mutex> lock(mutex_);
     return log_;
   }
@@ -214,14 +227,11 @@ class Raft : public common::ProtocolBase {
 
     for (size_t i = 0; i < log_.size(); ++i) {
       const auto& entry = log_[i];
-      if (!entry) {
-        os << "  [" << i << "] <null entry>\n";
-        continue;
-      }
 
       os << "  [" << i << "] "
-         << "term=" << entry->term << ", command=\"" << entry->command << "\""
-         << ", serializedSize=" << entry->GetSerializedSize() << "\n";
+         << "term=" << entry.entry.term() << ", command=\""
+         << entry.entry.command() << "\""
+         << ", serializedSize=" << entry.GetSerializedSize() << "\n";
     }
   }
 

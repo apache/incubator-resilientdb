@@ -21,8 +21,10 @@
 
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
-#include "platform/consensus/ordering/raft/algorithm/raft.h"
 #include "platform/consensus/ordering/raft/algorithm/leaderelection_manager.h"
+#include "platform/consensus/ordering/raft/algorithm/raft.h"
+#include "platform/consensus/ordering/raft/framework/checkpoint_manager.h"
+#include "platform/consensus/recovery/raft_recovery.h"
 #include "platform/networkstrate/consensus_manager.h"
 
 namespace resdb {
@@ -39,10 +41,14 @@ class Consensus : public common::Consensus {
   int ProcessNewTransaction(std::unique_ptr<Request> request) override;
   int CommitMsg(const google::protobuf::Message& msg) override;
   int CommitMsgInternal(const AppendEntries& txn);
+  void RecoverFromLogs();
 
  protected:
   std::unique_ptr<Raft> raft_;
   std::unique_ptr<LeaderElectionManager> leader_election_manager_;
+  std::unique_ptr<SystemInfo> system_info_;
+  std::unique_ptr<CheckPointManager> checkpoint_manager_;
+  std::unique_ptr<RaftRecovery> recovery_;
 };
 
 }  // namespace raft

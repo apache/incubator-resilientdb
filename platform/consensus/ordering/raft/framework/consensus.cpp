@@ -32,7 +32,13 @@ namespace raft {
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)),
-    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)) {
+    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)),
+    system_info_(std::make_unique<SystemInfo>(config_)),
+    checkpoint_manager_(std::make_unique<CheckPointManager>(
+          config_, GetBroadCastClient(), GetSignatureVerifier(),
+          system_info_.get())),
+    recovery_(std::make_unique<RaftRecovery>(config_, checkpoint_manager_.get(),
+                                         transaction_executor_->GetStorage())) {
   //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
@@ -45,11 +51,13 @@ Consensus::Consensus(const ResDBConfig& config,
           .type() != CertificateKeyInfo::CLIENT) {
     raft_ = std::make_unique<Raft>(config_.GetSelfInfo().id(), f, total_replicas,
                                  GetSignatureVerifier(), leader_election_manager_.get(),
-                                replica_communicator_);
+                                 replica_communicator_, recovery_.get());
 
     leader_election_manager_->SetRaft(raft_.get());
     leader_election_manager_->MayStart();
-    
+
+    RecoverFromLogs();
+
     InitProtocol(raft_.get());
   }
 }
@@ -107,7 +115,36 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     performance_manager_->SetPrimary(dtl->leaderid());
     return 0;
   }
+  LOG(ERROR) << "Unknown message type";
   return 0;
+}
+
+void Consensus::RecoverFromLogs() {
+  recovery_->ReadLogs(
+      [&](const RaftMetadata& metadata) {
+        LOG(INFO) << " read current term: " << metadata.current_term
+                  << " voted for: " << metadata.voted_for;
+        raft_->SetCurrentTerm(metadata.current_term, false);
+        raft_->SetVotedFor(metadata.voted_for, false);
+      },
+      [&](std::unique_ptr<WALRecord> record) {
+        switch (record->payload_case()) {
+          case WALRecord::kEntry: {
+            LogEntry logEntry;
+            logEntry.entry = record->entry();
+            raft_->AddToLog(logEntry, false);
+            break;
+          }
+          case WALRecord::kTruncation:
+            raft_->TruncateLog(record->truncation().truncate_from_index(),
+                               false);
+            break;
+          case WALRecord::PAYLOAD_NOT_SET:
+            assert(false && "WALRecord does not contain Truncation or Entry");
+            break;
+        }
+      },
+      [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
 }
 
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {

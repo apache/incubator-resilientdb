@@ -228,8 +228,10 @@ bool ResLevelDB::UpdateMetrics() {
   return true;
 }
 
-bool ResLevelDB::Flush() {
-  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+bool ResLevelDB::Flush(bool should_sync) {
+  leveldb::WriteOptions opts = leveldb::WriteOptions();
+  opts.sync = should_sync;
+  leveldb::Status status = db_->Write(opts, &batch_);
   if (status.ok()) {
     batch_.Clear();
     return true;

@@ -39,12 +39,16 @@ cc_library(
         "//platform/consensus/execution:system_info",
         "//platform/networkstrate:replica_communicator",
         "//platform/proto:viewchange_message_cc_proto",
+        "//platform/consensus/recovery:raft_recovery"
     ],
+    visibility = ["//platform/consensus/ordering/raft:__subpackages__",
+                  "//platform/consensus/recovery:__subpackages__"],
 )
 
 cc_library(
     name = "mock_raft",
     hdrs = ["mock_raft.h"],
+    testonly = True,
     deps = [
         ":raft",
     ],
@@ -53,6 +57,7 @@ cc_library(
 cc_library(
     name = "mock_leader_election_manager",
     hdrs = ["mock_leader_election_manager.h"],
+    testonly = True,
     deps = [
         ":raft",
     ],
@@ -64,6 +69,7 @@ cc_test(
     deps = [
         ":raft",
         ":mock_raft",
+        "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/config:resdb_config_utils",
         "//common/test:test_main"
     ],
@@ -80,6 +86,7 @@ cc_test(
     deps = [
         ":raft",
         ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/networkstrate:mock_replica_communicator",
         "//common/crypto:mock_signature_verifier",
         "//platform/config:resdb_config_utils",
@@ -99,6 +106,7 @@ cc_test(
     deps = [
         ":raft",
         ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/networkstrate:mock_replica_communicator",
         "//common/crypto:mock_signature_verifier",
         "//platform/config:resdb_config_utils",
@@ -118,6 +126,7 @@ cc_test(
     deps = [
         ":raft",
         ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/networkstrate:mock_replica_communicator",
         "//common/crypto:mock_signature_verifier",
         "//platform/config:resdb_config_utils",
@@ -137,6 +146,7 @@ cc_test(
     deps = [
         ":raft",
         ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/networkstrate:mock_replica_communicator",
         "//common/crypto:mock_signature_verifier",
         "//platform/config:resdb_config_utils",

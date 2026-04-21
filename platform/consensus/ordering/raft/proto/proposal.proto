@@ -26,6 +26,19 @@ message Entry {
   bytes command = 2;
 }
 
+message TruncationRecord {
+  uint64 truncate_from_index = 1;
+  uint64 truncate_from_term  = 2;
+}
+
+message WALRecord {
+  uint64 seq = 1;
+  oneof payload {
+    Entry            entry      = 2;
+    TruncationRecord truncation = 3;
+  }
+}
+
 message AppendEntries{
   uint64 term = 1;
   int32 leaderId = 2;

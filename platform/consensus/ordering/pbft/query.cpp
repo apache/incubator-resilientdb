@@ -24,7 +24,7 @@
 
 namespace resdb {
 
-Query::Query(const ResDBConfig& config, Recovery* recovery,
+Query::Query(const ResDBConfig& config, PBFTRecovery* recovery,
              std::unique_ptr<CustomQuery> executor)
     : config_(config),
       recovery_(recovery),

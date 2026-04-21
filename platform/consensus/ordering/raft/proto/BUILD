@@ -31,4 +31,6 @@ proto_library(
 cc_proto_library(
     name = "proposal_cc_proto",
     deps = [":proposal_proto"],
+    visibility = ["//platform/consensus/ordering/raft:__subpackages__",
+                  "//platform/consensus/recovery:__subpackages__"],
 )
