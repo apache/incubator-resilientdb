@@ -77,6 +77,9 @@ class MessageManager {
   // pre-prepare messages.
   std::vector<RequestInfo> GetPreparedProof(uint64_t seq);
 
+  // Request execution hook that is not PBFT-specific: works with 3PC.
+  int ExecuteOrderedRequest(std::unique_ptr<Request> request);
+
   void SetNextCommitSeq(int seq);
 
   // =============  System information ========

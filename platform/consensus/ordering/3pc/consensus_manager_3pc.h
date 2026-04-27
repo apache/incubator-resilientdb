@@ -5,7 +5,7 @@
 #include "executor/common/custom_query.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/pbft/consensus_manager_pbft.h"
-#include "platform/consensus/ordering/3_pc/commitment_3pc.h"
+#include "platform/consensus/ordering/3pc/commitment_3pc.h"
 
 namespace resdb {
 
@@ -22,6 +22,7 @@ class ConsensusManager3PC : public ConsensusManagerPBFT {
                       std::unique_ptr<Request> request) override;
 
  private:
+  void InitRecovery3PC();
   int InternalConsensusCommit3PC(std::unique_ptr<Context> context,
                                  std::unique_ptr<Request> request);
 

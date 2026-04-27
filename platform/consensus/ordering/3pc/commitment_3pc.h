@@ -11,7 +11,7 @@
 
 namespace resdb {
 
-enum class 3PCPhase {
+enum class ThreePCPhase {
   kInitial = 0,
   kReady,
   kPreCommit,
@@ -21,7 +21,7 @@ enum class 3PCPhase {
 
 struct ThreePCTxnState {
   uint64_t seq = 0;
-  3PCPhase phase = 3PCPhase::kInitial;
+  ThreePCPhase phase = ThreePCPhase::kInitial;
   std::string hash;
   uint32_t coordinator_id = 0;
   uint32_t proxy_id = 0;
@@ -45,8 +45,26 @@ class Commitment3PC : public Commitment {
   int ProcessNewRequest(std::unique_ptr<Context> context,
                         std::unique_ptr<Request> user_request) override;
 
-  // Called from your TYPE_3PC_VOTE_COMMIT handler.
-  int RecordVoteCommit(uint64_t seq, uint32_t voter_id);
+  int ProcessPrepareMsg(std::unique_ptr<Context> context,
+                        std::unique_ptr<Request> request);
+
+  int ProcessVoteCommitMsg(std::unique_ptr<Context> context,
+                           std::unique_ptr<Request> request);
+
+  int ProcessVoteAbortMsg(std::unique_ptr<Context> context,
+                          std::unique_ptr<Request> request);
+
+  int ProcessPreCommitMsg(std::unique_ptr<Context> context,
+                          std::unique_ptr<Request> request);
+
+  int ProcessPreCommitAckMsg(std::unique_ptr<Context> context,
+                             std::unique_ptr<Request> request);
+
+  int ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
+                             std::unique_ptr<Request> request);
+
+  int ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
+                            std::unique_ptr<Request> request);
 
  private:
   bool IsCoordinator() const {
@@ -58,6 +76,9 @@ class Commitment3PC : public Commitment {
   }
 
   int MaybeBroadcastPreCommit(uint64_t seq);
+  int MaybeBroadcastGlobalCommit(uint64_t seq);
+
+  int ExecuteCommittedTxn(const Request& committed_request);
 
   std::mutex txn_mu_;
   std::unordered_map<uint64_t, ThreePCTxnState> txn_state_;

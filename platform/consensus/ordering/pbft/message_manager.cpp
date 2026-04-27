@@ -219,6 +219,43 @@ std::vector<RequestInfo> MessageManager::GetPreparedProof(uint64_t seq) {
   return collector_pool_->GetCollector(seq)->GetPreparedProof();
 }
 
+
+int MessageManager::ExecuteOrderedRequest(std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "ExecuteOrderedRequest(): null request";
+    return -2;
+  }
+
+  if (!IsValidMsg(*request)) {
+    LOG(ERROR) << "ExecuteOrderedRequest(): invalid request, seq:"
+               << request->seq() << " view:" << request->current_view();
+    return -2;
+  }
+
+  const uint64_t seq = request->seq();
+  const uint64_t proxy_id = request->proxy_id();
+
+  // If this sequence is already committed, do not execute again.
+  if (checkpoint_manager_ && checkpoint_manager_->IsCommitted(seq)) {
+    LOG(ERROR) << "ExecuteOrderedRequest(): seq already committed: " << seq;
+    return 0;
+  }
+
+  // Mirror the PBFT path: mark the sequence committed before handing it to
+  // the executor. In PBFT this happens when TYPE_COMMIT changes state.
+  if (checkpoint_manager_) {
+    checkpoint_manager_->AddCommitState(seq);
+  }
+
+  SetLastCommittedTime(proxy_id);
+
+  // Send directly to the executor. The executor callback already pushes
+  // BatchUserResponse objects into queue_ and checkpoint_manager_->AddCommitData
+  // when execution completes.
+  transaction_executor_->Commit(std::move(request));
+  return 0;
+}
+
 int MessageManager::GetReplicaState(ReplicaState* state) {
   *state->mutable_replica_config() = config_.GetConfigData();
   return 0;

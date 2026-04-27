@@ -37,6 +37,7 @@ class ConsensusManagerPBFT : public ConsensusManager {
  public:
   ConsensusManagerPBFT(const ResDBConfig& config,
                        std::unique_ptr<TransactionManager> executor,
+                       bool defer_recovery_init = false,
                        std::unique_ptr<CustomQuery> query_executor = nullptr);
   virtual ~ConsensusManagerPBFT() = default;
 
@@ -62,6 +63,9 @@ class ConsensusManagerPBFT : public ConsensusManager {
                                   std::unique_ptr<Request> request);
 
  protected:
+  //void InitModules(std::unique_ptr<TransactionManager> executor,
+  //                 std::unique_ptr<CustomQuery> custom_query);
+  void InitRecoveryPBFT();
   int InternalConsensusCommit(std::unique_ptr<Context> context,
                               std::unique_ptr<Request> request);
   void AddPendingRequest(std::unique_ptr<Context> context,

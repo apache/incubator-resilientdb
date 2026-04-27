@@ -1,4 +1,4 @@
-#include "platform/consensus/ordering/3_pc/consensus_manager_3pc.h"
+#include "platform/consensus/ordering/3pc/consensus_manager_3pc.h"
 
 #include <utility>
 
@@ -7,7 +7,7 @@ namespace resdb {
 ConsensusManager3PC::ConsensusManager3PC(
     const ResDBConfig& config, std::unique_ptr<TransactionManager> executor,
     std::unique_ptr<CustomQuery> query_executor)
-    : ConsensusManagerPBFT(config, std::move(executor),
+    : ConsensusManagerPBFT(config, std::move(executor), true,
                            std::move(query_executor)) {
   // Replace the PBFT commitment module with the 3PC one, but keep the rest of
   // the scaffolding from ConsensusManagerPBFT intact.
@@ -23,27 +23,33 @@ ConsensusManager3PC::ConsensusManager3PC(
 
   // IMPORTANT:
   // The stock PBFT PerformanceManager generates PBFT-specific traffic.
-  // For 3PC implementation, this will not work and a new PerformanceManager3PC would have to be created.
-  // To avoid this, performance can be measured in normal kv mode through running a custom script that 
-  // generates requests and calculates throughput and latency.
+  // For 3PC implementation, this will not work and a new PerformanceManager3PC
+  // would have to be created. To avoid this, performance can be measured in
+  // normal kv mode through running a custom script that generates requests and
+  // calculates throughput and latency.
   if (config_.IsPerformanceRunning()) {
     LOG(WARNING) << "3PC running with PBFT performance mode enabled. "
                  << "PBFT PerformanceManager is not protocol-compatible with 3PC. "
                  << "Use normal request path or implement PerformanceManager3PC.";
   }
 
+  InitRecovery3PC();
+}
+
+void ConsensusManager3PC::InitRecovery3PC() {
   // Mirror PBFT recovery process, but with 3PC-specific commit path.
   recovery_->ReadLogs(
-    [&](const SystemInfoData& data) {
-      LOG(ERROR) << " read data info:" << data.view()
-                 << " primary/coordinator:" << data.primary_id();
-      system_info_->SetCurrentView(data.view());
-      system_info_->SetPrimary(data.primary_id());
-    },
-    [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
-      return InternalConsensusCommit3PC(std::move(context), std::move(request));
-    },
-    [&](int seq) { message_manager_->SetNextCommitSeq(seq + 1); });
+      [&](const SystemInfoData& data) {
+        LOG(ERROR) << " read data info:" << data.view()
+                   << " primary/coordinator:" << data.primary_id();
+        system_info_->SetCurrentView(data.view());
+        system_info_->SetPrimary(data.primary_id());
+      },
+      [&](std::unique_ptr<Context> context, std::unique_ptr<Request> request) {
+        return InternalConsensusCommit3PC(std::move(context),
+                                          std::move(request));
+      },
+      [&](int seq) { message_manager_->SetNextCommitSeq(seq + 1); });
   LOG(ERROR) << "3PC recovery is done";
 }
 
@@ -158,8 +164,8 @@ int ConsensusManager3PC::InternalConsensusCommit3PC(
 
     // Coordinator receives a participant's VOTE_COMMIT.
     case Request::TYPE_3PC_VOTE_COMMIT:
-      return GetCommitment3PC()->RecordVoteCommit(request->seq(),
-                                                  request->sender_id());
+      return GetCommitment3PC()->ProcessVoteCommitMsg(std::move(context),
+                                                      std::move(request));
 
     // Coordinator receives a participant's VOTE_ABORT.
     case Request::TYPE_3PC_VOTE_ABORT:

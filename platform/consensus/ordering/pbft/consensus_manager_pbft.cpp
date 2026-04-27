@@ -28,7 +28,7 @@ namespace resdb {
 
 ConsensusManagerPBFT::ConsensusManagerPBFT(
     const ResDBConfig& config, std::unique_ptr<TransactionManager> executor,
-    std::unique_ptr<CustomQuery> query_executor)
+    bool defer_recovery_init, std::unique_ptr<CustomQuery> query_executor)
     : ConsensusManager(config),
       system_info_(std::make_unique<SystemInfo>(config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
@@ -64,6 +64,12 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
 
   view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
 
+  if (!defer_recovery_init) {
+    InitRecoveryPBFT();
+  }
+}
+
+void ConsensusManagerPBFT::InitRecoveryPBFT() {
   recovery_->ReadLogs(
       [&](const SystemInfoData& data) {
         LOG(ERROR) << " read data info:" << data.view()
@@ -371,5 +377,7 @@ void ConsensusManagerPBFT::RemoteRecoveryProcess() {
     }
   }
 }
+
+
 
 }  // namespace resdb
