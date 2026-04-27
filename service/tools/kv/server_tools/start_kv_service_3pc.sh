@@ -4,6 +4,7 @@ SERVER_PATH=./bazel-bin/service/kv/kv_service_3pc
 SERVER_CONFIG=service/tools/config/server/server.config
 CERT_PATH=$PWD/service/tools/data/cert
 
+bazel build //service/kv:kv_service_3pc $@
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > server0.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > server1.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert > server2.log 2>&1 &
