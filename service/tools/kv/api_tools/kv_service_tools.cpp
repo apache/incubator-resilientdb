@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
   std::string value;
   std::string client_config_file;
   int top = 0;
-  char c;
+  int c;
   std::string cmd;
 
   if (argc >= 3) {
