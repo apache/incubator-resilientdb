@@ -7,7 +7,9 @@ namespace resdb {
 ConsensusManager3PC::ConsensusManager3PC(
     const ResDBConfig& config, std::unique_ptr<TransactionManager> executor,
     std::unique_ptr<CustomQuery> query_executor)
-    : ConsensusManagerPBFT(config, std::move(executor), true,
+    : ConsensusManagerPBFT(config, std::move(executor),
+                           /*defer_recovery_init=*/true,
+                           /*defer_commitment_init=*/true,
                            std::move(query_executor)) {
   // Replace the PBFT commitment module with the 3PC one, but keep the rest of
   // the scaffolding from ConsensusManagerPBFT intact.
@@ -15,8 +17,7 @@ ConsensusManager3PC::ConsensusManager3PC(
       config_, message_manager_.get(), GetBroadCastClient(),
       GetSignatureVerifier());
 
-  // PBFT constructor registered the PBFT duplicate manager with the view-change
-  // manager. Refresh that pointer to the new commitment module.
+  // Register the 3PC duplicate manager with the reused view-change scaffolding.
   if (view_change_manager_ != nullptr) {
     view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
   }

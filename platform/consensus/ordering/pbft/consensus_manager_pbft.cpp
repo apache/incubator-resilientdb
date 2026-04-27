@@ -28,7 +28,8 @@ namespace resdb {
 
 ConsensusManagerPBFT::ConsensusManagerPBFT(
     const ResDBConfig& config, std::unique_ptr<TransactionManager> executor,
-    bool defer_recovery_init, std::unique_ptr<CustomQuery> query_executor)
+    bool defer_recovery_init, bool defer_commitment_init,
+    std::unique_ptr<CustomQuery> query_executor)
     : ConsensusManager(config),
       system_info_(std::make_unique<SystemInfo>(config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
@@ -37,9 +38,6 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
       message_manager_(std::make_unique<MessageManager>(
           config, std::move(executor), checkpoint_manager_.get(),
           system_info_.get())),
-      commitment_(std::make_unique<Commitment>(config_, message_manager_.get(),
-                                               GetBroadCastClient(),
-                                               GetSignatureVerifier())),
       response_manager_(config_.IsPerformanceRunning()
                             ? nullptr
                             : std::make_unique<ResponseManager>(
@@ -62,7 +60,13 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
 
-  view_change_manager_->SetDuplicateManager(commitment_->GetDuplicateManager());
+  if (!defer_commitment_init) {
+    commitment_ = std::make_unique<Commitment>(
+        config_, message_manager_.get(), GetBroadCastClient(),
+        GetSignatureVerifier());
+    view_change_manager_->SetDuplicateManager(
+        commitment_->GetDuplicateManager());
+  }
 
   if (!defer_recovery_init) {
     InitRecoveryPBFT();

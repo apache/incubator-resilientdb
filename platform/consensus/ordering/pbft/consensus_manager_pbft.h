@@ -38,6 +38,7 @@ class ConsensusManagerPBFT : public ConsensusManager {
   ConsensusManagerPBFT(const ResDBConfig& config,
                        std::unique_ptr<TransactionManager> executor,
                        bool defer_recovery_init = false,
+                       bool defer_commitment_init = false,
                        std::unique_ptr<CustomQuery> query_executor = nullptr);
   virtual ~ConsensusManagerPBFT() = default;
 
