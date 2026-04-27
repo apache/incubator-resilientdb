@@ -4,6 +4,11 @@ namespace resdb {
 
 int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
                                      std::unique_ptr<Request> user_request) {
+  if (user_request == nullptr) {
+    LOG(ERROR) << "3PC GLOBAL_COMMIT missing request";
+    return -2;
+  }
+
   // Keep the existing PBFT ingress checks exactly the same.
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "user request doesn't contain signature, reject";
@@ -106,6 +111,17 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,
                                      std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC PREPARE missing request";
+    return -2;
+  }
+
+  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+    LOG(INFO) << "ignore coordinator self PREPARE broadcast for seq:"
+              << request->seq();
+    return 0;
+  }
+
   if (global_stats_->IsFaulty() || context == nullptr ||
       context->signature.signature().empty()) {
     LOG(ERROR) << "3PC PREPARE missing valid signed context";
@@ -174,6 +190,11 @@ int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessVoteCommitMsg(std::unique_ptr<Context> context,
                                         std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC VOTE_COMMIT missing request";
+    return -2;
+  }
+                                          
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC VOTE_COMMIT missing valid signed context";
     return -2;
@@ -224,6 +245,11 @@ int Commitment3PC::ProcessVoteCommitMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessVoteAbortMsg(std::unique_ptr<Context> context,
                                        std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC VOTE_ABORT missing request";
+    return -2;
+  }
+
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC VOTE_ABORT missing valid signed context";
     return -2;
@@ -268,6 +294,17 @@ int Commitment3PC::ProcessVoteAbortMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessPreCommitMsg(std::unique_ptr<Context> context,
                                        std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC PRECOMMIT missing request";
+    return -2;
+  }
+
+  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+    LOG(INFO) << "ignore coordinator self PRECOMMIT broadcast for seq:"
+              << request->seq();
+    return 0;
+  }
+
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC PRECOMMIT missing valid signed context";
     return -2;
@@ -316,6 +353,11 @@ int Commitment3PC::ProcessPreCommitMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessPreCommitAckMsg(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC PRECOMMIT_ACK missing request";
+    return -2;
+  }
+                                            
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC PRECOMMIT_ACK missing valid signed context";
     return -2;
@@ -346,6 +388,17 @@ int Commitment3PC::ProcessPreCommitAckMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
                                           std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC GLOBAL_COMMIT missing request";
+    return -2;
+  }
+
+  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+    LOG(INFO) << "ignore coordinator self GLOBAL_COMMIT broadcast for seq:"
+              << request->seq();
+    return 0;
+  }
+
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC GLOBAL_COMMIT missing valid signed context";
     return -2;
@@ -380,6 +433,11 @@ int Commitment3PC::ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
 
 int Commitment3PC::ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
                                          std::unique_ptr<Request> request) {
+  if (request == nullptr) {
+    LOG(ERROR) << "3PC GLOBAL_ABORT missing request";
+    return -2;
+  }
+
   if (context == nullptr || context->signature.signature().empty()) {
     LOG(ERROR) << "3PC GLOBAL_ABORT missing valid signed context";
     return -2;
