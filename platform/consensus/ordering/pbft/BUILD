@@ -101,6 +101,9 @@ cc_library(
     name = "commitment",
     srcs = ["commitment.cpp"],
     hdrs = ["commitment.h"],
+    visibility = [
+        "//platform/consensus/ordering/3pc:__pkg__",
+    ],
     deps = [
         ":message_manager",
         ":response_manager",
