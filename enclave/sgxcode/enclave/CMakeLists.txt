@@ -13,12 +13,16 @@ add_custom_command(
 set(COUNTER_SRC simulated_counter_src)
 set(RANDOM_SRC random_src)
 set(DECRYPTOR_SRC decryptor_src)
+set(CHECKER_SRC checker_src)
+set(ACCUMULATOR_SRC accumulator_src)
 
 add_executable(
-  enclave common/ecalls.cpp common/dispatcher.cpp 
+  enclave common/ecalls.cpp common/dispatcher.cpp
           ${COUNTER_SRC}/simulated_counter.cpp
           ${RANDOM_SRC}/random.cpp
           ${DECRYPTOR_SRC}/decryptor.cpp
+          ${CHECKER_SRC}/checker.cpp
+          ${ACCUMULATOR_SRC}/accumulator.cpp
           ${CMAKE_CURRENT_BINARY_DIR}/sgx_cpp_t.c)
 if (WIN32)
   maybe_build_using_clangw(enclave)

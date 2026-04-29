@@ -1,0 +1,359 @@
+#include "platform/consensus/ordering/sync_fides/algorithm/proposal_manager.h"
+
+#include <glog/logging.h>
+
+#include "common/crypto/signature_verifier.h"
+#include "common/utils/utils.h"
+
+namespace resdb {
+namespace sync_fides {
+
+ProposalManager::ProposalManager(int32_t id, int limit_count, oe_enclave_t* enclave, const ResDBConfig& config)
+    : id_(id), limit_count_(limit_count), enclave_(enclave), config_(config)  {
+  round_ = 0;
+}
+
+bool ProposalManager::VerifyHash(const Proposal &proposal){
+  std::string data;
+  for (const auto& txn : proposal.transactions()) {
+    std::string tmp;
+    txn.SerializeToString(&tmp);
+    data += tmp;
+  }
+
+  std::string header_data;
+  proposal.header().SerializeToString(&header_data);
+  data += header_data;
+
+  std::string hash = SignatureVerifier::CalculateHash(data);
+  return hash == proposal.hash();
+}
+
+// TODO: 4.Add counter value into block
+std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
+    const std::vector<std::unique_ptr<Transaction>>& txns) {
+  std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
+  {
+    std::unique_lock<std::mutex> lk(txn_mutex_);
+    for (const auto& txn : txns) {
+      *proposal->add_transactions() = *txn;
+    }
+    proposal->mutable_header()->set_proposer_id(id_);
+    proposal->mutable_header()->set_create_time(GetCurrentTime());
+    proposal->mutable_header()->set_round(round_);
+    proposal->set_sender(id_);
+
+    GetMetaData(proposal.get());
+  }
+
+  // Single serialization for hash (avoids N redundant SerializeToString calls)
+  std::string proposal_data;
+  proposal->SerializeToString(&proposal_data);
+  std::string hash = SignatureVerifier::CalculateHash(proposal_data);
+  proposal->set_hash(hash);
+  
+  // Send counter value and attestation to enclave
+  size_t previous_cert_size = proposal->header().strong_cert().cert().size();
+  unsigned char** attestation_array = new unsigned char*[previous_cert_size];
+  size_t* attestation_size_array = new size_t[previous_cert_size];
+  uint32_t* counter_value_array = new uint32_t[previous_cert_size];
+  int i = 0;
+
+  std::string serialized_data;
+  for(auto& link : proposal->header().strong_cert().cert()) {
+    // LOG(ERROR)<<"attestation is: "<<link.counter().attestation();
+    counter_value_array[i] = link.counter().value();
+    serialized_data = link.counter().attestation();
+    size_t size = serialized_data.size();
+    attestation_array[i] = new unsigned char[size];
+    std::memcpy(attestation_array[i], serialized_data.data(), size);
+    attestation_size_array[i] = size;
+    i++;
+  }
+
+  if (config_.GetMCEnabled() || config_.GetRACEnabled()) {
+    int ret;
+    uint32_t counter_value = 10*config_.GetMCEnabled() + config_.GetRACEnabled();
+    uint32_t default_index = 0;
+    oe_result_t result = get_counter(enclave_, &ret, &default_index, previous_cert_size, limit_count_,
+                                     counter_value_array, attestation_size_array, attestation_array, &counter_value);
+    if (result != OE_OK) {
+      ret = 1;
+    }
+    if (ret != 0) {
+      // Enclave counter failed (e.g. insufficient previous certs at startup),
+      // fall back to using round number as counter value for forward progress.
+      counter_value = round_;
+    }
+
+    CounterInfo* counter = proposal->mutable_header()->mutable_counter();
+    counter->set_value(counter_value);
+    counter->set_attestation("Fake Attestation");
+  }
+
+  // Clean up allocated memory
+  for (size_t j = 0; j < previous_cert_size; ++j) {
+    delete[] attestation_array[j];
+  }
+  delete[] attestation_array;
+  delete[] attestation_size_array;
+  delete[] counter_value_array;
+
+  round_++;
+  return proposal;
+}
+
+int ProposalManager::CurrentRound() { return round_; }
+
+void ProposalManager::AddLocalBlock(std::unique_ptr<Proposal> proposal) {
+  std::unique_lock<std::mutex> lk(local_mutex_);
+  local_block_[proposal->hash()] = std::move(proposal);
+}
+
+const Proposal* ProposalManager::GetLocalBlock(const std::string& hash) {
+  std::unique_lock<std::mutex> lk(local_mutex_);
+  auto bit = local_block_.find(hash);
+  if (bit == local_block_.end()) {
+    LOG(ERROR) << " block not exist:" << hash.size();
+    return nullptr;
+  }
+  return bit->second.get();
+}
+
+std::unique_ptr<Proposal> ProposalManager::FetchLocalBlock(
+    const std::string& hash) {
+  std::unique_lock<std::mutex> lk(local_mutex_);
+  auto bit = local_block_.find(hash);
+  if (bit == local_block_.end()) {
+    //LOG(ERROR) << " block not exist:" << hash.size();
+    return nullptr;
+  }
+  auto tmp = std::move(bit->second);
+  local_block_.erase(bit);
+  return tmp;
+}
+
+void ProposalManager::AddBlock(std::unique_ptr<Proposal> proposal) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  //LOG(ERROR) << "add block hash :" << proposal->hash().size()
+ //            << " round:" << proposal->header().round()
+ //            << " proposer:" << proposal->header().proposer_id();
+  block_[proposal->hash()] = std::move(proposal);
+}
+
+bool ProposalManager::CheckBlock(const std::string& hash){
+    std::unique_lock<std::mutex> lk(txn_mutex_);
+    //LOG(ERROR)<<"add block hash :"<<proposal->hash().size()<<" round:"<<proposal->header().round()<<" proposer:"<<proposal->header().proposer_id();
+    return block_.find(hash) != block_.end();
+}
+
+int ProposalManager::GetReferenceNum(const Proposal& req) {
+  int round = req.header().round();
+  int round_1 = round + 1;
+  int proposer = req.header().proposer_id();
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  // return reference_[std::make_pair(round, proposer)];
+  std::unordered_set<int> reference_proposer;
+  for (auto& proposer_1 : reference_[std::make_pair(round, proposer)]) {
+    for (auto& proposer_2 : reference_[std::make_pair(round_1, proposer_1)]) {
+      if (reference_proposer.count(proposer_2) == 0)
+        reference_proposer.insert(proposer_2);
+    }
+  }
+  return reference_proposer.size();
+}
+
+int ProposalManager::GetDirectReferenceNum(int round, int proposer) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  std::unordered_set<int> uniq;
+  for (auto& p : reference_[std::make_pair(round, proposer)]) {
+    uniq.insert(p);
+  }
+  return uniq.size();
+}
+
+std::unique_ptr<Proposal> ProposalManager::FetchRequest(int round, int sender) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  auto it = cert_list_[round].find(sender);
+  if (it == cert_list_[round].end()) {
+    // LOG(ERROR)<<" cert from sender:"<<sender<<" round:"<<round<<" not exist";
+    return nullptr;
+  }
+  std::string hash = it->second->hash();
+  auto bit = block_.find(hash);
+  if (bit == block_.end()) {
+    LOG(ERROR) << " block from sender:" << sender << " round:" << round
+               << " not exist";
+    assert(false);
+    return nullptr;
+  }
+  auto tmp = std::move(bit->second);
+  //cert_list_[round].erase(sender);
+  //LOG(ERROR)<<" featch sender done, round:"<<round<<" sender:"<<sender;
+  if (sender == id_) {
+    FetchLocalBlock(hash);
+  }
+  return tmp;
+}
+
+const Proposal* ProposalManager::GetRequest(int round, int sender) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  auto it = cert_list_[round].find(sender);
+  if (it == cert_list_[round].end()) {
+    //LOG(ERROR) << " cert from sender:" << sender << " round:" << round
+    //           << " not exist";
+    return nullptr;
+  }
+  std::string hash = it->second->hash();
+  auto bit = block_.find(hash);
+  if (bit == block_.end()) {
+    LOG(ERROR) << " block from sender:" << sender << " round:" << round
+               << " not exist";
+    return nullptr;
+  }
+  return bit->second.get();
+}
+
+
+// TODO: 6.Remove Cert Check counter value instead.
+void ProposalManager::AddCert(std::unique_ptr<Certificate> cert) {
+  int proposer = cert->proposer();
+  int round = cert->round();
+  std::string hash = cert->hash();
+
+  // LOG(ERROR)<<"add cert sender:"<<proposer<<" round:"<<round;
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+
+  // LOG(ERROR)<<"strong cert size:"<<cert->strong_cert().cert_size();
+  std::unordered_set<int> refered_proposer;
+  for (auto& link : cert->strong_cert().cert()) {
+    int link_round = link.round();
+    int link_proposer = link.proposer();
+    reference_[std::make_pair(link_round, link_proposer)].push_back(cert->proposer());
+  }
+  // Sync Fides: also count weak_cert links toward the direct commit
+  // reference table. This lets a leader whose cert was missed by the
+  // strong_cert quorum at round (r+1) still get committed when it
+  // shows up in round (r+2)'s weak_cert.
+  for (auto& link : cert->weak_cert().cert()) {
+    int link_round = link.round();
+    int link_proposer = link.proposer();
+    reference_[std::make_pair(link_round, link_proposer)].push_back(cert->proposer());
+  }
+
+  cert->mutable_strong_cert()->Clear();
+  cert->mutable_weak_cert()->Clear();
+  cert->mutable_metadata()->Clear();
+
+  auto tmp = std::make_unique<Certificate>(*cert);
+  cert_list_[round][proposer] = std::move(cert);
+  latest_cert_from_sender_[proposer] = std::move(tmp);
+}
+
+bool ProposalManager::CheckCert(int round, int sender) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  return cert_list_[round].find(sender) != cert_list_[round].end();
+}
+
+void ProposalManager::GetMetaData(Proposal* proposal) {
+  if (round_ == 0) {
+    return;
+  }
+  assert(cert_list_[round_ - 1].size() >= limit_count_);
+  assert(cert_list_[round_ - 1].find(id_) != cert_list_[round_ - 1].end());
+
+  // Sync Fides specialization: ROTATE the cert_list_ iteration start
+  // position so that no sender id is permanently biased into the
+  // strong_cert. The original code iterated cert_list_ in std::map
+  // sender_id order and broke at f+1, so the first (f+1) senders were
+  // always picked and the leader (under round-robin) for high ids was
+  // never referenced -> direct commit rule never fired -> commit_round
+  // latency exploded.
+  //
+  // We start the iteration at L(round_-1) (the previous round's leader)
+  // and wrap around, so the leader is picked FIRST whenever its cert
+  // is already in cert_list_[round_-1]. We do NOT wait for the leader
+  // cert to arrive (that would serialize the pipeline at leader speed
+  // and drop throughput by 30+%). When the leader cert is missing at
+  // proposal-generation time, the direct commit will be slightly
+  // delayed but recursive commit picks up the slack.
+  std::set<int> meta_ids;
+  int total_num = config_.GetReplicaNum();
+  int prev_leader = ((round_ - 1) % total_num) + 1;
+  for (int offset = 0; offset < total_num; ++offset) {
+    int sender = ((prev_leader - 1 + offset) % total_num) + 1;
+    auto it = cert_list_[round_ - 1].find(sender);
+    if (it == cert_list_[round_ - 1].end()) continue;
+    *proposal->mutable_header()->mutable_strong_cert()->add_cert() =
+        *it->second;
+    meta_ids.insert(sender);
+    if (meta_ids.size() >= static_cast<size_t>(limit_count_)) break;
+  }
+  //LOG(ERROR)<<"strong link:"<<proposal->header().strong_cert().cert_size()<<" round:"<<proposal->header().round();
+
+  for (const auto& meta : latest_cert_from_sender_) {
+    // LOG(ERROR)<<"check:"<<meta.first<<" proposal
+    // round:"<<proposal->header().round();
+    if (meta_ids.find(meta.first) != meta_ids.end()) {
+      continue;
+    }
+    if (meta.second->round() >= round_) {
+      for (int j = round_-1; j >= 0; --j) {
+        if (cert_list_[j].find(meta.first) != cert_list_[j].end()) {
+          //LOG(ERROR) << " add weak cert from his:" << j
+          //           << " proposer:" << meta.first<< " cert round:"<<cert_list_[j][meta.first]->round()<< " proposal round:"<<proposal->header().round();
+          *proposal->mutable_header()->mutable_weak_cert()->add_cert() =
+              *cert_list_[j][meta.first];
+          break;
+        }
+      }
+    } else {
+      assert(meta.second->round() <= round_);
+      //LOG(ERROR)<<"add weak cert:"<<meta.second->round()<<" proposer:"<<meta.second->proposer()<<" proposal round:"<<proposal->header().round();
+      *proposal->mutable_header()->mutable_weak_cert()->add_cert() =
+          *meta.second;
+    }
+  }
+    //LOG(ERROR)<<"weak link:"<<proposal->header().weak_cert().cert_size()<<" round:"<<proposal->header().round();
+}
+
+bool ProposalManager::Ready() {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (round_ == 0) {
+    return true;
+  }
+  if (cert_list_[round_ - 1].size() < static_cast<size_t>(limit_count_)) {
+    return false;
+  }
+  if (cert_list_[round_ - 1].find(id_) == cert_list_[round_ - 1].end()) {
+    return false;
+  }
+
+  return true;
+}
+
+int ProposalManager::GetCertListSize(int round) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (round < 0) return -1;
+  return cert_list_[round].size();
+}
+
+bool ProposalManager::HasSelfCert(int round) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (round < 0) return false;
+  return cert_list_[round].find(id_) != cert_list_[round].end();
+}
+
+std::vector<CounterInfo> ProposalManager::GetCounterFromRound(int round) {
+  std::vector<CounterInfo> counters;
+  for (const auto& preview_cert : cert_list_[round]) {
+    counters.push_back(preview_cert.second->counter());
+    if (counters.size() == limit_count_) {
+      break;
+    }
+  }
+  return counters;
+}
+
+}  // namespace sync_fides
+}  // namespace resdb

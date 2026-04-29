@@ -34,11 +34,11 @@ namespace resdb {
 namespace fides {
 
 FidesConsensus::FidesConsensus(const ResDBConfig& config,
-                             std::unique_ptr<TransactionManager> executor,
-                             oe_enclave_t* enclave)
+                               std::unique_ptr<TransactionManager> executor,
+                               oe_enclave_t* enclave)
     : Consensus(config, std::move(executor)) {
   int total_replicas = config_.GetReplicaNum();
-  int f = (total_replicas - 1) / 3;
+  int f = (total_replicas - 1) / 2;  // TEE protocol: n = 2f+1
 
   Init();
 
@@ -74,18 +74,16 @@ int FidesConsensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     std::unique_ptr<Proposal> p = std::make_unique<Proposal>();
     if (!p->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
+      assert(false);
       return -1;
     }
     fides_->ReceiveBlock(std::move(p));
   } 
-  // Only 1 type of message: NewBlock.
-  /* 
   else if (request->user_type() == MessageType::BlockACK) {
     std::unique_ptr<Metadata> metadata = std::make_unique<Metadata>();
     if (!metadata->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
+      assert(false);
       return -1;
     }
     fides_->ReceiveBlockACK(std::move(metadata));
@@ -93,12 +91,11 @@ int FidesConsensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
     std::unique_ptr<Certificate> cert = std::make_unique<Certificate>();
     if (!cert->ParseFromString(request->data())) {
       LOG(ERROR) << "parse proposal fail";
-      assert(1 == 0);
+      assert(false);
       return -1;
     }
     fides_->ReceiveBlockCert(std::move(cert));
   } 
-  */
   return 0;
 }
 

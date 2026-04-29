@@ -40,22 +40,26 @@ int ecall_dispatcher::generate_rand(size_t previous_size,
         goto exit;
     }
 
-    // Check previous counter info and attestation here
-    for (size_t i = 0; i < previous_size; i++)
-    {
-        if (!std::strncmp((const char*)previous_attestation[i], "Fake Attestation", buffer_size_array[i]) == 0) {
-            TRACE_ENCLAVE("Could not verify the attestation");
-            goto exit;
+    if (*randNum == 1) {
+
+        // Check previous counter info and attestation here
+        for (size_t i = 0; i < previous_size; i++)
+        {
+            if (!std::strncmp((const char*)previous_attestation[i], "Fake Attestation", buffer_size_array[i]) == 0) {
+                TRACE_ENCLAVE("Could not verify the attestation");
+                goto exit;
+            }
+            if (counter_value_array[i]/3 + 1 != randUseCount) {
+                TRACE_ENCLAVE("counter_value:%d, randUseCount:%d, Counter value invalid",counter_value_array[i],randUseCount);
+                goto exit;
+            }
+            // TRACE_ENCLAVE("previous_size: %d, counter: %d, attestation: %.*s", previous_size, 
+            //             counter_value_array[i], buffer_size_array[i], previous_attestation[i]);
         }
-        if (counter_value_array[i]/3 + 1 != randUseCount) {
-            TRACE_ENCLAVE("counter_value:%d, randUseCount:%d, Counter value invalid",counter_value_array[i],randUseCount);
-            goto exit;
-        }
-        // TRACE_ENCLAVE("previous_size: %d, counter: %d, attestation: %.*s", previous_size, 
-        //             counter_value_array[i], buffer_size_array[i], previous_attestation[i]);
-    }
+    } 
 
     *randNum = eng() % range;
+    // TRACE_ENCLAVE("randNum:%d",*randNum);
     randUseCount++;
 
 exit:

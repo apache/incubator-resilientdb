@@ -48,6 +48,17 @@ message ResConfigData{
 
 // for fides failure.
   optional int32 failure_num = 23;
+// for fides component breakdown
+  optional int32 mc_enabled = 24;
+  optional int32 rac_enabled = 25;
+  optional int32 rng_enabled = 26;
+  reserved 27;
+// for controlling target throughput
+  optional float target_throughput = 28;
+// for adversarial experiments: 0=honest, 1=crash, 2=equivocate, 3=withhold, 4=selective
+  optional int32 byzantine_mode = 29;
+// comma-separated list of target node indices for selective delivery
+  optional string byzantine_target = 30;
 }
 
 message ReplicaStates {

@@ -1,0 +1,11 @@
+{
+  "name": "Network partition (2f+1 vs f)",
+  "description": "Split into majority and minority groups for 30s, then heal",
+  "duration_s": 60,
+  "phases": [
+    {"time_s": 0, "action": "set_delay", "delay_ms": 40, "jitter_ms": 0},
+    {"time_s": 10, "action": "partition", "group_a": [1,2,3,4,5,6,7,8,9,10,11], "group_b": [12,13,14,15,16]},
+    {"time_s": 40, "action": "heal"},
+    {"time_s": 41, "action": "set_delay", "delay_ms": 40, "jitter_ms": 0}
+  ]
+}

@@ -40,7 +40,9 @@ PerformanceManager::PerformanceManager(
      : config_(config),
       replica_communicator_(replica_communicator),
       batch_queue_("user request"),
-      verifier_(verifier) {
+      verifier_(verifier),
+      batch_limiter_(config_.GetTargetThroughput() *
++                     1.0 / config_.ClientBatchNum()) {
   stop_ = false;
   eval_started_ = false;
   eval_ready_future_ = eval_ready_promise_.get_future();
@@ -94,17 +96,17 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
+
+
   for (int i = 0; i < 5000000; ++i) {
-    // if (i%1000000 == 0) {
-    //   LOG(ERROR) << "i: " << i;
-    // }
+  // for (int i = 0; i < 60000000000; ++i) {
     
-    // for (int i = 0; i < 60000000000; ++i) {
+    // LOG(WARNING) << "Sending request:" << i;
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 200000) {
+    if (i == 1000) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -225,9 +227,11 @@ int PerformanceManager::BatchProposeMsg() {
       }
     }
     start = true;
-    for(int i = 0; i < 1;++i){
-      int ret = DoBatch(batch_req);
-    }
+    // for(int i = 0; i < 1;++i){
+    //   int ret = DoBatch(batch_req);
+    // }
+    batch_limiter_.Acquire();
+    DoBatch(batch_req);
     batch_req.clear();
   }
   return 0;

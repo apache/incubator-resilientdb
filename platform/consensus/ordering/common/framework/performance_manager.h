@@ -26,6 +26,7 @@
 #pragma once
 
 #include <future>
+#include <chrono>
 
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/common/framework/transaction_utils.h"
@@ -36,6 +37,55 @@
 namespace resdb {
 namespace common {
 
+class FineGrainedRateLimiter {
+  public:
+    explicit FineGrainedRateLimiter(double rate_tps)
+        : rate_(rate_tps),
+          max_tokens_(rate_tps),
+          tokens_(rate_tps),
+          last_time_(std::chrono::steady_clock::now()) {}
+  
+    // Acquire a token; if none are available, wait (hybrid of sleep_for and busy-wait)
+    void Acquire() {
+      using namespace std::chrono;
+      auto now = steady_clock::now();
+      // Replenish tokens based on elapsed time
+      duration<double> delta = now - last_time_;
+      tokens_ = std::min(max_tokens_, tokens_ + delta.count() * rate_);
+      last_time_ = now;
+  
+      // If no whole token is available, calculate how long to wait
+      if (tokens_ < 1.0) {
+        double need_sec = (1.0 - tokens_) / rate_;
+        auto need_dur = duration<double>(need_sec);
+  
+        // If the wait time exceeds 1ms, first sleep_for (kernel-mode sleep)
+        if (need_dur > milliseconds(1)) {
+          std::this_thread::sleep_for(need_dur - milliseconds(1));
+        }
+        // For the remaining <1ms, use busy-wait + yield for higher precision
+        auto end = steady_clock::now() + need_dur;
+        while (steady_clock::now() < end) {
+          std::this_thread::yield();
+        }
+  
+        // Update the timestamp and reset tokens to zero
+        last_time_ = steady_clock::now();
+        tokens_ = 0.0;
+      }
+  
+      // Consume one token
+      tokens_ -= 1.0;
+    }
+  
+  private:
+    const double rate_;
+    const double max_tokens_;
+    double tokens_;
+    std::chrono::steady_clock::time_point last_time_;
+};
+
+  
 class PerformanceManager {
  public:
   PerformanceManager(const ResDBConfig& config,
@@ -97,7 +147,9 @@ class PerformanceManager {
   int primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
+  FineGrainedRateLimiter batch_limiter_;
 };
 
+ 
 }  // namespace common
 }  // namespace resdb

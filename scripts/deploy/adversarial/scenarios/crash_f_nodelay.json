@@ -1,0 +1,8 @@
+{
+  "name": "Crash f replicas after 30s (no delay)",
+  "description": "Dynamic crash fault without network delay. 30s baseline + crash + 60s post-crash steady state.",
+  "duration_s": 90,
+  "phases": [
+    {"time_s": 30, "action": "crash", "nodes": [1, 2, 3, 4, 5]}
+  ]
+}

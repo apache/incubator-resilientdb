@@ -39,8 +39,9 @@ std::unique_ptr<google::protobuf::Message> KVExecutor::ParseData(
 std::unique_ptr<std::string> KVExecutor::ExecuteRequest(
     const google::protobuf::Message& request) {
   KVResponse kv_response;
+
+  
   const KVRequest& kv_request = dynamic_cast<const KVRequest&>(request);
-  // LOG(ERROR)<<"execute request:";
 
   if (kv_request.cmd() == KVRequest::SET) {
     Set(kv_request.key(), kv_request.value());

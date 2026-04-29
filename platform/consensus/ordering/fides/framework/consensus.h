@@ -38,8 +38,8 @@ namespace fides {
 class FidesConsensus : public common::Consensus {
  public:
   FidesConsensus(const ResDBConfig& config,
-                std::unique_ptr<TransactionManager> transaction_manager,
-                oe_enclave_t* enclave);
+                 std::unique_ptr<TransactionManager> transaction_manager,
+                 oe_enclave_t* enclave);
 
  protected:
   int ProcessCustomConsensus(std::unique_ptr<Request> request) override;

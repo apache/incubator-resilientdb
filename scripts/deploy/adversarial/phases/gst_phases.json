@@ -1,0 +1,10 @@
+{
+  "phases": [
+    {"name": "baseline", "start_s": 0, "end_s": 10},
+    {"name": "200ms", "start_s": 10, "end_s": 20},
+    {"name": "500ms", "start_s": 20, "end_s": 30},
+    {"name": "1000ms", "start_s": 30, "end_s": 40},
+    {"name": "2000ms", "start_s": 40, "end_s": 50},
+    {"name": "recovery", "start_s": 50, "end_s": 60}
+  ]
+}

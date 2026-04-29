@@ -36,6 +36,14 @@ class ecall_dispatcher
     int pubLen;
     int privLen;
 
+    // checker (Damysus)
+    bool checker_initialized_ = false;
+    uint32_t checker_node_id_ = 0;
+    uint32_t checker_view_ = 0;
+    uint32_t checker_phase_ = 0;  // 0=nv_p, 1=prep_p, 2=pcom_p
+    uint32_t checker_prepv_ = 0;
+    unsigned char checker_preph_[32] = {0};
+
   public:
     ecall_dispatcher();
 
@@ -84,4 +92,33 @@ class ecall_dispatcher
       size_t input_len,
       size_t* output_len);
 
+    // stat
+    int get_heap_stats(
+      uint64_t* current_heap,
+      uint64_t* peak_heap,
+      uint64_t* max_heap);
+
+    // checker (Damysus/Achilles)
+    int checker_init(uint32_t* node_id);
+    int checker_tee_prepare(
+      unsigned char* block_hash, size_t hash_len,
+      unsigned char* acc_data, size_t acc_len,
+      unsigned char** out_cert, size_t* out_cert_len);
+    int checker_tee_store(
+      unsigned char* block_cert, size_t cert_len,
+      unsigned char** out_cert, size_t* out_cert_len);
+    int checker_tee_sign(
+      unsigned char** out_cert, size_t* out_cert_len);
+
+    // accumulator (Damysus/Achilles)
+    int accum_tee_start(
+      unsigned char* commitment, size_t commit_len,
+      unsigned char** out_acc, size_t* out_acc_len);
+    int accum_tee_accum(
+      unsigned char* accumulator, size_t acc_len,
+      unsigned char* commitment, size_t commit_len,
+      unsigned char** out_acc, size_t* out_acc_len);
+    int accum_tee_finalize(
+      unsigned char* accumulator, size_t acc_len,
+      unsigned char** out_acc, size_t* out_acc_len);
 };

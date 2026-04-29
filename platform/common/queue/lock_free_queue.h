@@ -67,6 +67,30 @@ class LockFreeQueue {
   }
   bool Empty() { return queue_.empty(); }
 
+  // Non-blocking push: returns false if the queue is full instead of
+  // spinning. Caller is responsible for handling the back-pressure
+  // (e.g. dropping the item). This prevents InputProcess worker
+  // exhaustion when a protocol's internal queue can't drain fast enough.
+  bool TryPush(std::unique_ptr<T> data) {
+    T* ptr = data.release();
+    if (!queue_.push(ptr)) {
+      // Re-take ownership so the caller's unique_ptr destructor
+      // frees the object.
+      data.reset(ptr);
+      return false;
+    }
+    if (need_notify_.load()) {
+      bool old_v = true;
+      if (need_notify_.compare_exchange_strong(old_v, false,
+                                               std::memory_order_acq_rel,
+                                               std::memory_order_acquire)) {
+        std::lock_guard<std::mutex> lk(mutex_);
+        cv_.notify_all();
+      }
+    }
+    return true;
+  }
+
  private:
   std::string name_;
   boost::lockfree::queue<T*> queue_;

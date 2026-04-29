@@ -179,13 +179,15 @@ int ReplicaCommunicator::SendMessageFromPool(
     if (client == nullptr) {
       continue;
     }
-    //LOG(ERROR) << "send to:" << replica.ip();
+    // Skip connections known to be dead (circuit breaker open).
+    // This avoids queuing messages that will never be delivered and
+    // prevents the async send path from blocking on dead connections.
+    if (client->IsDown()) {
+      continue;
+    }
     if (client->SendMessage(data) == 0) {
       ret++;
-    } else {
-      LOG(ERROR) << "send to:" << replica.ip() << " fail";
     }
-    //LOG(ERROR) << "send to:" << replica.ip()<<" done";
   }
   return ret;
 }

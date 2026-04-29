@@ -13,4 +13,8 @@ sdk_validator/venv
 __pycache__
 build
 enclave/sgxcode/test
-
+.continue
+.claude
+adversarial_results*
+experiment_results
+normal_results

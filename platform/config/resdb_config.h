@@ -124,6 +124,22 @@ class ResDBConfig {
   uint32_t GetFailureNum() const;
   void SetFailureNum(uint32_t num);
 
+  uint32_t GetMCEnabled() const;
+  void SetMCEnabled(uint32_t parameter);
+  uint32_t GetRACEnabled() const;
+  void SetRACEnabled(uint32_t parameter);
+  uint32_t GetRNGEnabled() const;
+  void SetRNGEnabled(uint32_t parameter);
+  double GetTargetThroughput() const;
+  void SetTargetThroughput(uint32_t parameter);
+
+  // Adversarial experiment mode
+  // 0=honest, 1=crash, 2=equivocate, 3=withhold, 4=selective
+  uint32_t GetByzantineMode() const;
+  void SetByzantineMode(uint32_t mode);
+  std::string GetByzantineTarget() const;
+  void SetByzantineTarget(const std::string& target);
+
  private:
   ResConfigData config_data_;
   std::vector<ReplicaInfo> replicas_;
@@ -150,6 +166,15 @@ class ResDBConfig {
   uint32_t input_worker_num_ = 5;
   uint32_t output_worker_num_ = 5;
   uint32_t failure_num_ = 0;
+  // For fides component
+  uint32_t mc_enabled_ = 0;
+  uint32_t rac_enabled_ = 0;
+  uint32_t rng_enabled_ = 0;
+  // For controlling workload
+  double target_throughput_ = 1e6;
+  // For adversarial experiments
+  uint32_t byzantine_mode_ = 0;
+  std::string byzantine_target_;
 };
 
 }  // namespace resdb

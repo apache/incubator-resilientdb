@@ -1,0 +1,72 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.hybridset;
+
+message Transaction {
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
+  int64 create_time = 8;
+  int64 queuing_time = 9;
+}
+
+// A batch of transactions proposed by one node in one round
+message Proposal {
+  int32 proposer_id = 1;
+  int32 round = 2;
+  repeated Transaction transactions = 3;
+  bytes hash = 4;
+  int64 create_time = 5;
+}
+
+// TEE-generated certificate (counter + signature)
+message TEECertificate {
+  uint32 counter_value = 1;
+  bytes signature = 2;
+  uint32 signer = 3;
+}
+
+// Verification result: which transactions in the proposal are valid
+message VerifResult {
+  repeated int32 valid_tx_indices = 1;
+  bytes verif_hash = 2;
+}
+
+// VRB: BCAST message — proposer broadcasts to all
+message BcastMsg {
+  Proposal proposal = 1;
+  TEECertificate tee_cert = 2;
+  int32 sender = 3;
+  int32 round = 4;
+}
+
+// VRB: ECHO message — node echoes after receiving BCAST
+message EchoMsg {
+  int32 broadcaster_id = 1;
+  int32 round = 2;
+  bytes proposal_hash = 3;
+  VerifResult verif = 4;
+  TEECertificate tee_cert = 5;
+  int32 sender = 6;
+}
+
+// Binary BFT: VOTE message
+message VoteMsg {
+  int32 broadcaster_id = 1;
+  int32 round = 2;
+  bytes proposal_hash = 3;
+  bool binary_vote = 4;       // true=include(1), false=exclude(0)
+  TEECertificate tee_cert = 5;
+  int32 sender = 6;
+}
+
+enum MessageType {
+  Bcast = 0;
+  Echo = 1;
+  Vote = 2;
+}

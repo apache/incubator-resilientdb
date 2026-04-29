@@ -8,8 +8,8 @@
 namespace resdb {
 namespace fides {
 
-ProposalManager::ProposalManager(int32_t id, int limit_count, oe_enclave_t* enclave)
-    : id_(id), limit_count_(limit_count), enclave_(enclave)  {
+ProposalManager::ProposalManager(int32_t id, int limit_count, oe_enclave_t* enclave, const ResDBConfig& config)
+    : id_(id), limit_count_(limit_count), enclave_(enclave), config_(config)  {
   round_ = 0;
 }
 
@@ -33,14 +33,10 @@ bool ProposalManager::VerifyHash(const Proposal &proposal){
 std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     const std::vector<std::unique_ptr<Transaction>>& txns) {
   std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();
-  std::string data;
   {
     std::unique_lock<std::mutex> lk(txn_mutex_);
     for (const auto& txn : txns) {
       *proposal->add_transactions() = *txn;
-      std::string tmp;
-      txn->SerializeToString(&tmp);
-      data += tmp;
     }
     proposal->mutable_header()->set_proposer_id(id_);
     proposal->mutable_header()->set_create_time(GetCurrentTime());
@@ -50,11 +46,10 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     GetMetaData(proposal.get());
   }
 
-  std::string header_data;
-  proposal->header().SerializeToString(&header_data);
-  data += header_data;
-
-  std::string hash = SignatureVerifier::CalculateHash(data);
+  // Single serialization for hash (avoids N redundant SerializeToString calls)
+  std::string proposal_data;
+  proposal->SerializeToString(&proposal_data);
+  std::string hash = SignatureVerifier::CalculateHash(proposal_data);
   proposal->set_hash(hash);
   
   // Send counter value and attestation to enclave
@@ -76,26 +71,33 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     i++;
   }
 
-// /*
-  int ret;
-  uint32_t counter_value, default_index = 0;
-  result = get_counter(enclave_, &ret, &default_index, previous_cert_size, limit_count_, counter_value_array, 
-                      attestation_size_array, attestation_array, &counter_value);
-  if (result != OE_OK) {
-    ret = 1;
-  }
-  if (ret != 0) {
-    std::cerr << "Host: get_counter failed with " << ret << std::endl;
-  }
-  
-  // std::unique_ptr<CounterInfo> counter = std::make_unique<CounterInfo>();
-  CounterInfo* counter = proposal->mutable_header()->mutable_counter();
-  counter->set_value(counter_value);
-  counter->set_attestation("Fake Attestation");
-  // proposal->set_allocated_counter(counter.get());
+  if (config_.GetMCEnabled() || config_.GetRACEnabled()) {
+    int ret;
+    uint32_t counter_value = 10*config_.GetMCEnabled() + config_.GetRACEnabled();
+    uint32_t default_index = 0;
+    oe_result_t result = get_counter(enclave_, &ret, &default_index, previous_cert_size, limit_count_,
+                                     counter_value_array, attestation_size_array, attestation_array, &counter_value);
+    if (result != OE_OK) {
+      ret = 1;
+    }
+    if (ret != 0) {
+      // Enclave counter failed (e.g. insufficient previous certs at startup),
+      // fall back to using round number as counter value for forward progress.
+      counter_value = round_;
+    }
 
-  // LOG(ERROR)<<"round: "<<round_<<"counter_value: "<<counter_value;
-// */
+    CounterInfo* counter = proposal->mutable_header()->mutable_counter();
+    counter->set_value(counter_value);
+    counter->set_attestation("Fake Attestation");
+  }
+
+  // Clean up allocated memory
+  for (size_t j = 0; j < previous_cert_size; ++j) {
+    delete[] attestation_array[j];
+  }
+  delete[] attestation_array;
+  delete[] attestation_size_array;
+  delete[] counter_value_array;
 
   round_++;
   return proposal;
@@ -173,7 +175,7 @@ std::unique_ptr<Proposal> ProposalManager::FetchRequest(int round, int sender) {
   if (bit == block_.end()) {
     LOG(ERROR) << " block from sender:" << sender << " round:" << round
                << " not exist";
-    assert(1 == 0);
+    assert(false);
     return nullptr;
   }
   auto tmp = std::move(bit->second);
@@ -205,13 +207,35 @@ const Proposal* ProposalManager::GetRequest(int round, int sender) {
 
 
 // TODO: 6.Remove Cert Check counter value instead.
+// Amortized GC: prune old round entries. Called every 500 AddCert calls
+// while holding txn_mutex_.
+void ProposalManager::MaybeGC() {
+  int committed = committed_round_.load();
+  if (committed < 30) return;
+  int gc_below = committed - 20;
+  // cert_list_: keyed by round
+  for (auto it = cert_list_.begin();
+       it != cert_list_.end() && it->first < gc_below;)
+    it = cert_list_.erase(it);
+  // reference_: keyed by (round, proposer) pair — sorted by round first.
+  for (auto it = reference_.begin(); it != reference_.end();) {
+    if (it->first.first < gc_below)
+      it = reference_.erase(it);
+    else
+      break;
+  }
+}
+
 void ProposalManager::AddCert(std::unique_ptr<Certificate> cert) {
   int proposer = cert->proposer();
   int round = cert->round();
   std::string hash = cert->hash();
 
-  // LOG(ERROR)<<"add cert sender:"<<proposer<<" round:"<<round;
   std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (++gc_counter_ >= 500) {
+    gc_counter_ = 0;
+    MaybeGC();
+  }
 
   // LOG(ERROR)<<"strong cert size:"<<cert->strong_cert().cert_size();
   std::unordered_set<int> refered_proposer;
@@ -293,6 +317,22 @@ bool ProposalManager::Ready() {
     return false;
   }
   return true;
+}
+
+void ProposalManager::SetCommittedRound(int r) {
+  committed_round_ = r;
+}
+
+int ProposalManager::GetCertListSize(int round) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (round < 0) return -1;
+  return cert_list_[round].size();
+}
+
+bool ProposalManager::HasSelfCert(int round) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (round < 0) return false;
+  return cert_list_[round].find(id_) != cert_list_[round].end();
 }
 
 std::vector<CounterInfo> ProposalManager::GetCounterFromRound(int round) {

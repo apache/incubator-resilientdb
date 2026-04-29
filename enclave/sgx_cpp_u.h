@@ -91,6 +91,68 @@ oe_result_t decrypt(
     size_t input_len,
     size_t* output_len);
 
+oe_result_t enclave_get_heap_stats(
+    oe_enclave_t* enclave,
+    int* _retval,
+    uint64_t* current_heap,
+    uint64_t* peak_heap,
+    uint64_t* max_heap);
+
+oe_result_t checker_init(
+    oe_enclave_t* enclave,
+    int* _retval,
+    uint32_t* node_id);
+
+oe_result_t checker_tee_prepare(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* block_hash,
+    size_t hash_len,
+    unsigned char* acc_data,
+    size_t acc_len,
+    unsigned char** out_cert,
+    size_t* out_cert_len);
+
+oe_result_t checker_tee_store(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* block_cert,
+    size_t cert_len,
+    unsigned char** out_cert,
+    size_t* out_cert_len);
+
+oe_result_t checker_tee_sign(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char** out_cert,
+    size_t* out_cert_len);
+
+oe_result_t accum_tee_start(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* commitment,
+    size_t commit_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len);
+
+oe_result_t accum_tee_accum(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* accumulator,
+    size_t acc_len,
+    unsigned char* commitment,
+    size_t commit_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len);
+
+oe_result_t accum_tee_finalize(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* accumulator,
+    size_t acc_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len);
+
 oe_result_t oe_get_sgx_report_ecall(
     oe_enclave_t* enclave,
     oe_result_t* _retval,

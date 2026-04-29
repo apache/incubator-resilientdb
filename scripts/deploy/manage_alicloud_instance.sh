@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Sample: ./manage_alicloud_instance.sh new wan 8 write run shutdown
+# Sample: ./manage_alicloud_instance.sh new lan 22 write run shutdown
+# Sample: ./manage_alicloud_instance.sh old lan 0 shutdown
 
 # function: distribute the total number
 distribute_evenly() {
@@ -18,41 +19,6 @@ distribute_evenly() {
             echo $base_value
         fi
     done
-}
-
-rearrange_ips() {
-  local ip_list=("$@")            # 所有 IP 地址列表
-  local amount_list=("${!#}")     # 最后一个参数是以空格分隔的 amount_list
-  IFS=' ' read -r -a amount_list <<< "$amount_list"
-  
-  # 初始化子列表
-  local sublists=()
-  local start=0
-  for amount in "${amount_list[@]}"; do
-    sublists+=("$(IFS=','; echo "${ip_list[@]:$start:$amount}")")
-    start=$((start + amount))
-  done
-
-  # 获取最大 region 长度
-  local max_amount=${amount_list[0]}
-  for amount in "${amount_list[@]}"; do
-    if [[ $amount -gt $max_amount ]]; then
-      max_amount=$amount
-    fi
-  done
-
-  # 轮流排序 IP
-  local final_ips=()
-  for i in $(seq 0 $((max_amount - 1))); do
-    for j in "${!sublists[@]}"; do
-      local region_ips=(${sublists[$j]//,/ })
-      if [[ $i -lt ${#region_ips[@]} ]]; then
-        final_ips+=("${region_ips[$i]}")
-      fi
-    done
-  done
-
-  echo "${final_ips[@]}" # 返回排序后的 IP 列表
 }
 
 mode=$1
@@ -80,7 +46,7 @@ amount_list=($(distribute_evenly $amount $listsize))
 if [[ $mode == "new" ]]; then
   if [[ $network == "lan" ]]; then
     region='cn-hongkong'
-    imageid='m-j6c7k48y8pips9b3gark'
+    imageid='m-j6c05t5ubgx5p2iokg53'
     zoneid='cn-hongkong-b'
     instance_type='ecs.g7t.large'
     security_groupid='sg-j6c983lbmrcoilavm6vf'
@@ -203,6 +169,7 @@ if [[ "$need_describe" == true ]]; then
     echo "Private IPs: ${private_ips[@]}"
 
   elif [[ $network == "wan" ]]; then
+    amount_list_sd=()
     for region in "${region_list[@]}"; do
       data=$(aliyun ecs DescribeInstances \
           --region $region \
@@ -215,7 +182,9 @@ if [[ "$need_describe" == true ]]; then
       formatted_data=$(echo "$data" | sed 's/i-/\ni-/g')
 
       # Iterate each row.
+      counter=-1
       while read -r line; do
+        ((counter++))
         instance_id=$(echo "$line" | awk -F '|' '{print $1}' | xargs)
         instance_ids+=("$instance_id")
         public_ip=$(echo "$line" | awk -F '|' '{print $2}' | sed 's/.*IpAddress:\[\(.*\)\].*/\1/' | sed 's/]//g' | xargs)
@@ -223,8 +192,11 @@ if [[ "$need_describe" == true ]]; then
         private_ip=$(echo "$line" | awk -F '|' '{print $3}' | sed 's/.*IpAddress:\[\(.*\)\].*/\1/' | sed 's/]//g' | xargs)
         private_ips+=("$private_ip")
       done <<< "$(echo "$formatted_data" | grep 'i-')"
+      ((counter++))
+      amount_list_sd+=("$counter")
     done
 
+    echo "amount_list_sd: ${amount_list_sd[@]}"
     echo "Instance IDs: ${instance_ids[@]}"
     echo "Public IPs: ${public_ips[@]}"
     echo "Private IPs: ${private_ips[@]}"
@@ -232,23 +204,22 @@ if [[ "$need_describe" == true ]]; then
 
 fi
 
-# public_ips=(11 12 13 21 22 23 31 32 41 42)
-
 if [[ $1 == "write" ]]; then
   shift
   # 定义文件名
   output_file="config/kv_performance_server.conf"
   client_num=$(( ${#instance_ids[@]} / 2 ))
   # 写入到文件中
-  final_ips=()
+  shuffled_ips=()
   if [[ $network == "wan" ]]; then
-    final_ips=($(rearrange_ips "${public_ips[@]}" "${amount_list[*]}"))
+    shuffled_ips=($(shuf -e "${public_ips[@]}"))
   elif [[ $network == "lan" ]]; then
-    final_ips=("${private_ips[@]}")
+    shuffled_ips=($(shuf -e "${public_ips[@]}"))
   fi
+
   {
     echo "iplist=("
-    for ip in "${final_ips[@]}"; do
+    for ip in "${shuffled_ips[@]}"; do
       echo "$ip"
     done
     echo ")"
@@ -263,15 +234,14 @@ fi
 if [[ $1 == "run" ]]; then
   shift
   if [[ $network == "lan" ]]; then
-    # bash ./start_evaluation.sh simulate
-    bash ./start_evaluation.sh sgx
+    bash ./start_evaluation.sh simulate
   elif [[ $network == "wan" ]]; then
     bash ./start_evaluation.sh simulate
   fi
 fi
 
 
-
+# amount_list=(1 9 7 7)
 if [[ $1 == "shutdown" ]]; then
   # Form a delete command containing all the instance_ids.
   # Sample:
@@ -295,12 +265,12 @@ if [[ $1 == "shutdown" ]]; then
     echo shutdown in wan
     instance_index=0
     for ((i = 0; i < listsize; i++)); do
-      if [[ ${amount_list[$i]} -gt 0 ]]; then
+      if [[ ${amount_list_sd[$i]} -gt 0 ]]; then
         counter=1
         delete_command="aliyun ecs DeleteInstances --region ${region_list[$i]}"
         # for instance_id in "${instance_ids[@]}"; do
 
-        for ((j = 0; j < ${amount_list[$i]}; j++)); do
+        for ((j = 0; j < ${amount_list_sd[$i]}; j++)); do
           delete_command="$delete_command --InstanceId.$counter ${instance_ids[$instance_index]}"
           ((counter++))
           ((instance_index++))

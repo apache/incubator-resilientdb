@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform/consensus/ordering/fides/proto/proposal.pb.h"
+#include "platform/config/resdb_config.h"
 #include "enclave/sgx_cpp_u.h"
 
 namespace resdb {
@@ -8,7 +9,7 @@ namespace fides {
 
 class ProposalManager {
  public:
-  ProposalManager(int32_t id, int limit_count, oe_enclave_t* enclave);
+  ProposalManager(int32_t id, int limit_count, oe_enclave_t* enclave, const ResDBConfig& config);
 
   std::unique_ptr<Proposal> GenerateProposal(
       const std::vector<std::unique_ptr<Transaction>>& txns);
@@ -32,6 +33,8 @@ class ProposalManager {
   bool CheckBlock(const std::string& hash);
 
   void SetCommittedRound(int r);
+  int GetCertListSize(int round);
+  bool HasSelfCert(int round);
 
   std::vector<CounterInfo> GetCounterFromRound(int round);
 
@@ -52,8 +55,15 @@ class ProposalManager {
 
   std::atomic<int> committed_round_ = 0;
 
+  // Amortized GC: periodically prune old round entries from cert_list_
+  // and reference_ to prevent unbounded growth that causes the ~80s
+  // throughput cliff (same root cause as mysticeti's 45s degradation).
+  int gc_counter_ = 0;
+  void MaybeGC();
+
   oe_enclave_t* enclave_;
-  oe_result_t result;
+
+  ResDBConfig config_;
 };
 
 }  // namespace fides

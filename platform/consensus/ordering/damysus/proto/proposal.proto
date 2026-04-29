@@ -1,0 +1,85 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.damysus;
+
+message Transaction {
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
+  int64 create_time = 8;
+  int64 queuing_time = 9;
+}
+
+// TEE-generated certificate (commitment)
+// Used for block certificates, store certificates, and new-view certificates
+message Commitment {
+  uint32 view = 1;
+  uint32 phase = 2;        // 0=nv_p, 1=prep_p, 2=pcom_p
+  bytes block_hash = 3;
+  bytes just_hash = 4;     // justification hash (for nv_p: preph)
+  uint32 just_view = 5;    // justification view (for nv_p: prepv)
+  uint32 signer = 6;
+  bytes signature = 7;
+}
+
+// Accumulator produced by the ACCUMULATOR trusted component
+message Accumulator {
+  bytes block_hash = 1;    // hash of highest prepared block
+  uint32 view = 2;
+  uint32 just_view = 3;    // prepared view of selected block
+  uint32 count = 4;
+  repeated uint32 node_ids = 5;
+  bytes signature = 6;
+}
+
+message Header {
+  int32 proposer_id = 1;
+  uint32 view = 2;
+  bytes parent_hash = 3;
+  int64 create_time = 4;
+  Accumulator accumulator = 5;
+  Commitment block_cert = 6;    // TEEprepare output
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 2;
+  int32 sender = 3;
+  bytes hash = 4;
+  int64 queuing_time = 5;
+}
+
+// NewView: sent by all nodes to next leader
+message NewViewMsg {
+  Commitment cert = 1;      // TEEsign output (nv_p commitment)
+  int32 sender = 2;
+  uint32 view = 3;
+}
+
+// PreCommitVote: TEEstore output sent from backup to leader
+message PreCommitVote {
+  Commitment cert = 1;      // TEEstore output (pcom_p commitment)
+  int32 sender = 2;
+  uint32 view = 3;
+  bytes block_hash = 4;
+}
+
+// Decide: leader broadcasts combined pre-commit certificate
+message DecideMsg {
+  repeated Commitment certs = 1;
+  uint32 view = 2;
+  bytes block_hash = 3;
+  int32 sender = 4;
+}
+
+enum MessageType {
+  NewView = 0;
+  Prepare = 1;
+  PreCommit = 2;
+  Decide = 3;
+}

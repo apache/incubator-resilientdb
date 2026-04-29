@@ -1,0 +1,13 @@
+{
+  "name": "Incremental crash faults",
+  "description": "Crash replicas one by one to observe gradual degradation",
+  "duration_s": 60,
+  "phases": [
+    {"time_s": 0, "action": "set_delay", "delay_ms": 40, "jitter_ms": 0},
+    {"time_s": 10, "action": "crash", "nodes": [1]},
+    {"time_s": 20, "action": "crash", "nodes": [2]},
+    {"time_s": 30, "action": "crash", "nodes": [3]},
+    {"time_s": 40, "action": "crash", "nodes": [4]},
+    {"time_s": 50, "action": "crash", "nodes": [5]}
+  ]
+}

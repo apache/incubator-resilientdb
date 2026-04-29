@@ -1,0 +1,104 @@
+syntax = "proto3";
+import "common/proto/signature_info.proto";
+
+package resdb.achilles;
+
+message Transaction {
+  int32 id = 1;
+  bytes data = 2;
+  bytes hash = 3;
+  int32 proxy_id = 4;
+  int32 proposer = 5;
+  uint64 timestamp = 6;
+  int64 user_seq = 7;
+  int64 create_time = 8;
+  int64 queuing_time = 9;
+}
+
+// Block certificate: ⟨PROP, h, v⟩_σ — created by leader via TEEprepare
+message BlockCertificate {
+  bytes block_hash = 1;
+  uint32 view = 2;
+  uint32 signer = 3;
+  bytes signature = 4;
+}
+
+// Store certificate: ⟨COMMIT, h, v⟩_σ — created by node via TEEstore
+message StoreCertificate {
+  bytes block_hash = 1;
+  uint32 view = 2;
+  uint32 signer = 3;
+  bytes signature = 4;
+}
+
+// Commitment certificate: ⟨DECIDE, h, vi⟩ — f+1 store certs combined
+message CommitmentCertificate {
+  repeated StoreCertificate store_certs = 1;
+  bytes block_hash = 2;
+  uint32 view = 3;
+  uint32 sender = 4;
+}
+
+// View certificate: ⟨NEW-VIEW, h, v, v'⟩_σ — created by TEEview
+// h = hash of latest stored block, v = stored view, v' = current view
+message ViewCertificate {
+  bytes block_hash = 1;     // hash of latest stored block (preh)
+  uint32 stored_view = 2;   // view at which block was stored (prev)
+  uint32 current_view = 3;  // current view (v')
+  uint32 signer = 4;
+  bytes signature = 5;
+}
+
+// Accumulator: ⟨ACC, h, v, id_list⟩_σ — created by leader via TEEaccum
+message Accumulator {
+  bytes block_hash = 1;
+  uint32 view = 2;
+  repeated uint32 node_ids = 3;
+  uint32 count = 4;
+  bytes signature = 5;
+}
+
+message Header {
+  int32 proposer_id = 1;
+  uint32 view = 2;
+  bytes parent_hash = 3;
+  int64 create_time = 4;
+  Accumulator accumulator = 5;
+  BlockCertificate block_cert = 6;
+}
+
+message Proposal {
+  Header header = 1;
+  repeated Transaction transactions = 2;
+  int32 sender = 3;
+  bytes hash = 4;
+  int64 queuing_time = 5;
+}
+
+// Recovery messages
+message RecoveryRequest {
+  uint32 sender = 1;
+  uint64 nonce = 2;
+  bytes signature = 3;
+}
+
+message RecoveryReply {
+  uint32 sender = 1;
+  uint64 nonce = 2;
+  uint32 view = 3;
+  bytes preh = 4;          // hash of latest stored block
+  uint32 prev = 5;         // view of latest stored block
+  Proposal block = 6;
+  BlockCertificate block_cert = 7;
+  CommitmentCertificate commit_cert = 8;
+  bytes signature = 9;
+}
+
+enum MessageType {
+  NewView = 0;
+  Commit = 1;
+  Decide = 2;
+  Recovery = 3;
+  RecoveryReplyMsg = 4;
+  StoreVote = 5;
+}

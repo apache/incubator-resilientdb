@@ -1,0 +1,7 @@
+{
+  "phases": [
+    {"name": "baseline", "start_s": 0, "end_s": 10},
+    {"name": "partitioned", "start_s": 15, "end_s": 40},
+    {"name": "recovery", "start_s": 45, "end_s": 60}
+  ]
+}

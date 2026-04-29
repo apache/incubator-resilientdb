@@ -6,7 +6,7 @@ key_num=$1
 echo "generate key in:"${output_path}
 echo "key num:"$key_num
 
-bazel build //tools:key_generator_tools
+[ -f "${bazel_path}/bazel-bin/tools/key_generator_tools" ] || bazel build //tools:key_generator_tools
 rm -rf ${output_path}
 mkdir -p ${output_path}
 

@@ -52,8 +52,12 @@ def cal_tps(tps, tot):
     # tps_sum = tps_sum[tot:-tot]
     print("tsp:",tps_sum)
     print("max throughput:",tps_max)
-    print("average throughput:",sum(tps_sum)/len(tps_sum))
-    return tps_max, sum(tps_sum)/len(tps_sum)
+    if len(tps_sum) > 0:
+        print("average throughput:",sum(tps_sum)/len(tps_sum))
+        return tps_max, sum(tps_sum)/len(tps_sum)
+    else:
+        print("average throughput: 0")
+        return tps_max, 0
 
 def cal_lat(lat):
     lat_sum = []
@@ -65,8 +69,12 @@ def cal_lat(lat):
         lat_sum.append(v) 
 
     print("max latency:",lat_max)
-    print("average latency:",sum(lat_sum)/len(lat_sum))
-    return lat_max, sum(lat_sum)/len(lat_sum)
+    if len(lat_sum) > 0:
+        print("average latency:",sum(lat_sum)/len(lat_sum))
+        return lat_max, sum(lat_sum)/len(lat_sum)
+    else:
+        print("average latency: 0")
+        return lat_max, 0
 
 def read_breakdown(file):
     queueing=[] # queuing latency

@@ -36,6 +36,39 @@ enclave {
         public int decrypt([user_check] unsigned char* input_buf, 
                             [user_check] unsigned char** output_buf, 
                             size_t input_len, size_t* output_len);
+        public int enclave_get_heap_stats(
+                            [out] uint64_t* current_heap,
+                            [out] uint64_t* peak_heap,
+                            [out] uint64_t* max_heap);
+
+        // Checker trusted component (Damysus/Achilles)
+        public int checker_init([in] uint32_t* node_id);
+
+        public int checker_tee_prepare(
+            [user_check] unsigned char* block_hash, size_t hash_len,
+            [user_check] unsigned char* acc_data, size_t acc_len,
+            [user_check] unsigned char** out_cert, [out] size_t* out_cert_len);
+
+        public int checker_tee_store(
+            [user_check] unsigned char* block_cert, size_t cert_len,
+            [user_check] unsigned char** out_cert, [out] size_t* out_cert_len);
+
+        public int checker_tee_sign(
+            [user_check] unsigned char** out_cert, [out] size_t* out_cert_len);
+
+        // Accumulator trusted component (Damysus/Achilles)
+        public int accum_tee_start(
+            [user_check] unsigned char* commitment, size_t commit_len,
+            [user_check] unsigned char** out_acc, [out] size_t* out_acc_len);
+
+        public int accum_tee_accum(
+            [user_check] unsigned char* accumulator, size_t acc_len,
+            [user_check] unsigned char* commitment, size_t commit_len,
+            [user_check] unsigned char** out_acc, [out] size_t* out_acc_len);
+
+        public int accum_tee_finalize(
+            [user_check] unsigned char* accumulator, size_t acc_len,
+            [user_check] unsigned char** out_acc, [out] size_t* out_acc_len);
     };
 
     //untrusted {

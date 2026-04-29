@@ -296,9 +296,14 @@ void CheckPointManager::UpdateCheckPointStatus() {
   while (!stop_) {
     auto request = data_queue_.Pop(timeout_ms);
     if (request == nullptr) {
-      // if (last_seq > 0) {
-      //   TimeoutHandler();
-      // }
+      // Primary hasn't sent a new committed checkpoint within the
+      // timeout — fire the view change handler. This was previously
+      // commented out, which is why crash-fault PBFT showed a silent
+      // stall post-primary-crash: no Pop() timeout ever triggered a
+      // view change.
+      if (last_seq_ > 0) {
+        TimeoutHandler();
+      }
       continue;
     }
     std::string hash_ = request->hash();

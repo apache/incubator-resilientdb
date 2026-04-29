@@ -19,6 +19,7 @@
 
 #include "platform/networkstrate/async_replica_client.h"
 
+#include <glog/logging.h>
 #include <boost/bind/bind.hpp>
 
 #include "platform/common/queue/lock_free_queue.h"
@@ -31,11 +32,22 @@ AsyncReplicaClient::AsyncReplicaClient(boost::asio::io_service* io_service,
                                        bool is_use_long_conn)
     : socket_(*io_service),
       endpoint_(boost::asio::ip::address::from_string(ip), port),
+      io_service_(io_service),
       in_process_(false) {}
 
-AsyncReplicaClient::~AsyncReplicaClient() {}
+AsyncReplicaClient::~AsyncReplicaClient() {
+  if (reconnect_timer_) {
+    reconnect_timer_->cancel();
+  }
+}
 
 int AsyncReplicaClient::SendMessage(const std::string& data) {
+  // Circuit breaker: drop messages to known-dead connections instead of
+  // queuing them (the queue would fill up and never drain).
+  if (is_down_.load(std::memory_order_relaxed)) {
+    return -1;
+  }
+
   queue_.Push(std::make_unique<std::string>(data));
   if (!in_process_.load()) {
     bool old_value = false;
@@ -75,6 +87,8 @@ void AsyncReplicaClient::OnSendMessage() {
     OnSend();
   } else {
     status_ = 0;
+    // Successful send resets the reconnect counter.
+    reconnect_attempts_ = 0;
     OnSendNewMessage();
   }
 }
@@ -83,7 +97,7 @@ void AsyncReplicaClient::OnSend() {
   socket_.async_write_some(
       boost::asio::buffer(sending_data_ptr_ + sending_data_idx_,
                           sending_data_size_ - sending_data_idx_),
-      [&](const boost::system::error_code& error, size_t send_size) {
+      [this](const boost::system::error_code& error, size_t send_size) {
         if (error) {
           ReConnect();
         } else {
@@ -98,14 +112,55 @@ void AsyncReplicaClient::OnSend() {
 }
 
 void AsyncReplicaClient::ReConnect() {
-  socket_.async_connect(endpoint_, [&](const boost::system::error_code& error) {
-    if (!error) {
-      status_ = 0;
-      OnSendMessage();
-    } else {
-      usleep(10000);
-      ReConnect();
+  // Close the broken socket so async_connect starts fresh.
+  boost::system::error_code ec;
+  socket_.close(ec);
+
+  ++reconnect_attempts_;
+  if (reconnect_attempts_ > max_reconnect_attempts_) {
+    // Circuit breaker: mark this connection as DOWN.
+    // Stop retrying immediately so the io_service thread is freed for
+    // healthy connections. After a cooldown period, try once more.
+    is_down_ = true;
+    in_process_ = false;
+    ScheduleReconnect();
+    return;
+  }
+
+  socket_.async_connect(endpoint_,
+      [this](const boost::system::error_code& error) {
+        if (!error) {
+          // Connection restored.
+          reconnect_attempts_ = 0;
+          is_down_ = false;
+          status_ = 0;
+          OnSendMessage();
+        } else {
+          // Failed again. Retry via async timer (NOT usleep which blocks
+          // the io_service thread and starves all other connections).
+          ScheduleReconnect();
+        }
+      });
+}
+
+void AsyncReplicaClient::ScheduleReconnect() {
+  // Use an async timer so the io_service thread is NOT blocked.
+  // The old code did usleep(10000) inside the async callback which blocked
+  // the only worker thread and caused ALL connections to stall.
+  if (!reconnect_timer_) {
+    reconnect_timer_ = std::make_unique<boost::asio::steady_timer>(*io_service_);
+  }
+
+  int delay = is_down_ ? cooldown_ms_ : 10;  // 10ms between quick retries, 2s cooldown
+  reconnect_timer_->expires_after(std::chrono::milliseconds(delay));
+  reconnect_timer_->async_wait([this](const boost::system::error_code& error) {
+    if (error) return;  // timer cancelled
+    if (is_down_) {
+      // Cooldown expired, try once more.
+      is_down_ = false;
+      reconnect_attempts_ = 0;
     }
+    ReConnect();
   });
 }
 

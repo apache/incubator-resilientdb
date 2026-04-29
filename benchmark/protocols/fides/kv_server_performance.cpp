@@ -33,9 +33,6 @@
 #include "platform/networkstrate/service_network.h"
 #include "platform/statistic/stats.h"
 #include "proto/kv/kv.pb.h"
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-#include <openssl/err.h>
 #include <sys/timeb.h>
 
 using namespace resdb;
@@ -43,17 +40,10 @@ using namespace resdb::fides;
 using namespace resdb::storage;
 
 
-unsigned char* key_buf;
-size_t key_len = 0;
 oe_enclave_t* enclave = NULL;
 oe_result_t result;
 int ret = 0;
 uint32_t flags = OE_ENCLAVE_FLAG_DEBUG;
-
-BIO *bio = BIO_new_mem_buf(key_buf, -1);
-RSA *pub_key = NULL;
-size_t encrypted_len;
-unsigned char* encrypted_data;
 
 bool check_simulate_opt(int* argc, char* argv[]) {
   for (int i = 0; i < *argc; i++) {
@@ -77,22 +67,6 @@ std::string GetRandomKey() {
   return std::to_string(num1) + std::to_string(num2);
 }
 
-std::string GetEncryptedRandomKey() {
-  int num1 = rand() % 10;
-  int num2 = rand() % 10;
-  std::string key = std::to_string(num1) + std::to_string(num2);
-  std::cout<<"key: "<<key<<std::endl;
-  const unsigned char* key_data = reinterpret_cast<const unsigned char*>(key.c_str());
-
-  encrypted_data = new unsigned char[encrypted_len]; // Initialize buffer
-  std::cout<<"Before RSA_public_encrypt." << std::endl;
-  size_t result_len = RSA_public_encrypt(key.size(), key_data, encrypted_data, 
-                                         pub_key, RSA_PKCS1_PADDING);
-
-  std::string encrypted_key(encrypted_data, encrypted_data + result_len);
-  std::cout<<"encrypted_key: "<<encrypted_key<<std::endl;
-  return encrypted_key;
-}
 
 int main(int argc, char** argv) {
   printf("argc: %d\n", argc);
@@ -161,85 +135,12 @@ int main(int argc, char** argv) {
   if (ret != 0) {
     std::cerr << "kv_server_performance: request_counter failed with " << ret << std::endl;
   } else {
-    std::cout << "kv_server_performance: request_counter succeeded with index: " << index << std::endl;
+    std::cout << "kv_server_performance2: request_counter succeeded with index: " << index << std::endl;
   }
       
 
   auto performance_consens = std::make_unique<FidesConsensus>(
       *config, std::make_unique<KVExecutor>(std::make_unique<MemoryDB>()), enclave);
-
-/* // For transaction decryption
-  
-  std::cout << "kv_server_performance: generate key" << std::endl;
-  size_t key_size = 2048;
-  result = generate_key(enclave, &ret, &key_size);
-  std::cout << "After generate_key" << std::endl;
-  if (result != OE_OK || ret != 0) {
-    std::cerr << "kv_server_performance: generate_key failed with " << ret << std::endl;
-    // goto exit;
-  }
-  
-  result = get_pubkey(enclave, &ret, &key_buf, &key_len);
-
-  bio = BIO_new_mem_buf(key_buf, -1);
-  pub_key = NULL;
-  PEM_read_bio_RSAPublicKey(bio, &pub_key, NULL, NULL);
-  
-  encrypted_len = RSA_size(pub_key);
-  encrypted_data = new unsigned char[encrypted_len]; // Initialize buffer
-
-
-{
-  // KVRequest request;
-  // request.set_cmd(KVRequest::SET);
-  // request.set_key(GetEncryptedRandomKey());
-  // request.set_value("helloworld");
-  
-  
-  // int requestSize = request.ByteSizeLong();
-  // unsigned char* binary_data = new unsigned char[requestSize];
-
-  // if (request.SerializeToArray(binary_data, requestSize)) {
-  //   std::cout << "Serialization successful!" << std::endl;
-  // } else {
-  //   std::cerr << "Serialization failed!" << std::endl;
-  // }
-
-  // std::cout << "kv_server_performance: encrypt data" << std::endl;
-  // unsigned char* encrypted_data = nullptr;
-  // size_t encrypted_len = 0;
-  // result = encrypt(enclave, &ret, binary_data, 
-  //                 &encrypted_data, requestSize,&encrypted_len);
-
-  // printf("kv_server_performance: Finish encrypt data\n");
-  // printf("encrypted_data: %s\n", encrypted_data);
-
-  // std::string request_data(encrypted_data, encrypted_data + encrypted_len);
-  
-
-  KVRequest request;
-  request.set_cmd(KVRequest::SET);
-  request.set_key(GetRandomKey());
-  request.set_value("helloworld");
-  std::string request_data;
-  request.SerializeToString(&request_data);
-  
-  const unsigned char* request_data_char = reinterpret_cast<const unsigned char*>(request_data.c_str());
-
-  encrypted_data = new unsigned char[encrypted_len]; // Initialize buffer
-  std::cout<<"Before RSA_public_encrypt.";
-  size_t result_len = RSA_public_encrypt(request_data.size(), request_data_char, encrypted_data, 
-                                         pub_key, RSA_PKCS1_PADDING);
-
-  std::string encrypted_data_str(encrypted_data, encrypted_data + result_len);
-
-  performance_consens->SetupPerformanceDataFunc([encrypted_data_str]() {
-    return encrypted_data_str;
-  });
-}
-
-  printf("Run 4\n");
-*/
 
   performance_consens->SetupPerformanceDataFunc([]() {
     KVRequest request;
@@ -255,7 +156,4 @@ int main(int argc, char** argv) {
       std::make_unique<ServiceNetwork>(*config,
       std::move(performance_consens));
   server->Run();
-
-  BIO_free_all(bio);
-  // delete[] binary_data;
 }

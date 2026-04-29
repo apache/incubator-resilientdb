@@ -1,0 +1,7 @@
+{
+  "phases": [
+    {"name": "baseline", "start_s": 0, "end_s": 10},
+    {"name": "adversarial", "start_s": 15, "end_s": 55},
+    {"name": "post_crash_stable", "start_s": 30, "end_s": 55}
+  ]
+}

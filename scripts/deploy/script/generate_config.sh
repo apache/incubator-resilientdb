@@ -40,8 +40,8 @@ CLIENT_NUM=${client_num}
 echo "" > client.config
 echo "" > server.config
 
-bazel build //tools:certificate_tools
-bazel build //tools:generate_region_config
+[ -f "${CERT_TOOLS_BIN}" ] || bazel build //tools:certificate_tools
+[ -f "${CONFIG_TOOLS_BIN}" ] || bazel build //tools:generate_region_config
 
 idx=1
 tot=0

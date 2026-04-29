@@ -3,6 +3,10 @@
 
 // Note: Only for testing enclave !
 
+#include <thread>
+#include <atomic>
+#include <chrono>
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 #include <openssl/rsa.h>
@@ -72,6 +76,59 @@ int main(int argc, const char *argv[])
         ret = 1;
         // goto exit;
     }
+
+    std::atomic<bool> stop_sampler{false};
+
+    std::thread sampler([&]() {
+        std::ofstream fout("heap_stats.log", std::ios::out);
+        if (!fout.is_open())
+        {
+            std::cerr << "Host: failed to open heap_stats.log" << std::endl;
+            return;
+        }
+
+        auto start = std::chrono::steady_clock::now();
+
+        while (!stop_sampler.load())
+        {
+            uint64_t current_heap = 0;
+            uint64_t peak_heap = 0;
+            uint64_t max_heap = 0;
+            int ecall_ret = 0;
+
+            oe_result_t r = enclave_get_heap_stats(
+                enclave,
+                &ecall_ret,
+                &current_heap,
+                &peak_heap,
+                &max_heap);
+
+            auto now = std::chrono::steady_clock::now();
+            auto ms =
+                std::chrono::duration_cast<std::chrono::milliseconds>(now - start)
+                    .count();
+
+            if (r == OE_OK && ecall_ret == 0)
+            {
+                fout << ms
+                    << " current=" << current_heap
+                    << " peak=" << peak_heap
+                    << " max=" << max_heap
+                    << std::endl;
+            }
+            else
+            {
+                fout << ms
+                    << " get_heap_stats failed, oe_result=" << r
+                    << " ecall_ret=" << ecall_ret
+                    << std::endl;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        }
+
+        fout.close();
+    });
 
     // counter test
     {
@@ -265,8 +322,15 @@ int main(int argc, const char *argv[])
 
     }
 */
+    std::this_thread::sleep_for(std::chrono::seconds(5));
 
 exit:
+    stop_sampler.store(true);
+    if (sampler.joinable())
+    {
+        sampler.join();
+    }
+
     cout << "Host: terminate the enclave" << endl;
     cout << "Host: Sample completed successfully." << endl;
     oe_terminate_enclave(enclave);

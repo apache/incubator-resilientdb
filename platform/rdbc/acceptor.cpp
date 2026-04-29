@@ -68,7 +68,14 @@ void Acceptor::Run() {
         item->socket = std::move(client_socket);
         item->data = std::move(request_info);
         global_stats_->ServerCall();
-        input_queue_->Push(std::move(item));
+        // Non-blocking push: if input_queue_ is full, drop the request
+        // rather than blocking this Acceptor worker. Blocking here
+        // freezes ALL client-facing connections when the InputProcess
+        // workers can't drain fast enough (crash-fault transition).
+        // The client will retry on timeout.
+        if (!input_queue_->TryPush(std::move(item))) {
+          // dropped — client retries
+        }
       }
     }));
   }
@@ -78,7 +85,9 @@ void Acceptor::Run() {
     if (client_socket == nullptr) {
       continue;
     }
-    socket_queue.Push(std::move(client_socket));
+    if (!socket_queue.TryPush(std::move(client_socket))) {
+      // Connection dropped when overloaded — client retries
+    }
   }
 
   for (auto& th : threads) {

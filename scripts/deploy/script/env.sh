@@ -3,7 +3,7 @@ set +e
 
 CURRENT_PATH=$PWD
 
-ssh_options_cloud='-o StrictHostKeyChecking=no -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=60'
+ssh_options_cloud='-o StrictHostKeyChecking=no -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o ConnectTimeout=10'
 
 i=0
 while [ ! -f "WORKSPACE" ]

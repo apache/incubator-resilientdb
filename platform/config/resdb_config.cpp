@@ -265,4 +265,78 @@ void ResDBConfig::SetFailureNum(uint32_t num) {
   failure_num_ = num;
 }
 
+uint32_t ResDBConfig::GetMCEnabled() const {
+  if (config_data_.mc_enabled()) {
+    return config_data_.mc_enabled();
+  }
+  return mc_enabled_;
+}
+
+void ResDBConfig::SetMCEnabled(uint32_t parameter) {
+  config_data_.set_mc_enabled(parameter);
+  mc_enabled_ = parameter;
+}
+
+
+uint32_t ResDBConfig::GetRACEnabled() const {
+  if (config_data_.rac_enabled()) {
+    return config_data_.rac_enabled();
+  }
+  return rac_enabled_;
+}
+
+void ResDBConfig::SetRACEnabled(uint32_t parameter) {
+  config_data_.set_rac_enabled(parameter);
+  rac_enabled_ = parameter;
+}
+
+
+uint32_t ResDBConfig::GetRNGEnabled() const {
+  if (config_data_.rng_enabled()) {
+    return config_data_.rng_enabled();
+  }
+  return rng_enabled_;
+}
+
+void ResDBConfig::SetRNGEnabled(uint32_t parameter) {
+  config_data_.set_rng_enabled(parameter);
+  rng_enabled_ = parameter;
+}
+
+double ResDBConfig::GetTargetThroughput() const {
+  if (config_data_.target_throughput()) {
+    return config_data_.target_throughput();
+  }
+  return target_throughput_;
+}
+
+void ResDBConfig::SetTargetThroughput(uint32_t parameter) {
+  config_data_.set_target_throughput(parameter);
+  target_throughput_ = parameter;
+}
+
+uint32_t ResDBConfig::GetByzantineMode() const {
+  if (config_data_.byzantine_mode()) {
+    return config_data_.byzantine_mode();
+  }
+  return byzantine_mode_;
+}
+
+void ResDBConfig::SetByzantineMode(uint32_t mode) {
+  config_data_.set_byzantine_mode(mode);
+  byzantine_mode_ = mode;
+}
+
+std::string ResDBConfig::GetByzantineTarget() const {
+  if (!config_data_.byzantine_target().empty()) {
+    return config_data_.byzantine_target();
+  }
+  return byzantine_target_;
+}
+
+void ResDBConfig::SetByzantineTarget(const std::string& target) {
+  config_data_.set_byzantine_target(target);
+  byzantine_target_ = target;
+}
+
 }  // namespace resdb

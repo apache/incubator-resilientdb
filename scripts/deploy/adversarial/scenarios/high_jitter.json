@@ -1,0 +1,13 @@
+{
+  "name": "High jitter experiment",
+  "description": "Fixed base delay with increasing jitter to test variance tolerance",
+  "duration_s": 60,
+  "phases": [
+    {"time_s": 0, "action": "set_delay", "delay_ms": 40, "jitter_ms": 0},
+    {"time_s": 10, "action": "set_delay", "delay_ms": 40, "jitter_ms": 50, "distribution": "normal"},
+    {"time_s": 20, "action": "set_delay", "delay_ms": 40, "jitter_ms": 100, "distribution": "normal"},
+    {"time_s": 30, "action": "set_delay", "delay_ms": 40, "jitter_ms": 200, "distribution": "normal"},
+    {"time_s": 40, "action": "set_delay", "delay_ms": 40, "jitter_ms": 400, "distribution": "normal"},
+    {"time_s": 50, "action": "set_delay", "delay_ms": 40, "jitter_ms": 0}
+  ]
+}

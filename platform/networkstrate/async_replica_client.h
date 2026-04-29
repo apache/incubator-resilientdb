@@ -35,8 +35,12 @@ class AsyncReplicaClient {
 
   virtual int SendMessage(const std::string& data);
 
+  // Returns true if this connection is known to be dead (circuit breaker open).
+  bool IsDown() const { return is_down_.load(std::memory_order_relaxed); }
+
  private:
   void ReConnect();
+  void ScheduleReconnect();
   void OnSendNewMessage();
   void OnSendMessage();
   void OnSend();
@@ -46,8 +50,26 @@ class AsyncReplicaClient {
   std::unique_ptr<NetChannel> client_;
   boost::asio::ip::tcp::socket socket_;
   boost::asio::ip::tcp::endpoint endpoint_;
+  boost::asio::io_service* io_service_;
+  std::unique_ptr<boost::asio::steady_timer> reconnect_timer_;
   std::mutex mutex_;
   std::atomic<bool> in_process_;
+
+  // Circuit breaker: after max_reconnect_attempts_ consecutive failures,
+  // mark the connection as down and stop retrying for cooldown_ms_.
+  // This prevents a dead connection from blocking the io_service thread
+  // (the old code did usleep(10000) inside the async callback which starved
+  // ALL async I/O including healthy connections).
+  //
+  // We keep a relatively generous retry budget because startup races on
+  // a 16-node cluster can spike reconnects before every peer is ready.
+  // Tripping the breaker too early leaves live peers disconnected, which
+  // is catastrophic for protocols like Bullshark that need 2f+1=11 live
+  // parents every round — a single missing connection blocks Ready().
+  std::atomic<bool> is_down_{false};
+  int reconnect_attempts_ = 0;
+  static constexpr int max_reconnect_attempts_ = 1000;
+  static constexpr int cooldown_ms_ = 2000;
 
   // ===== for async send =====
   std::unique_ptr<std::string> pending_data_;

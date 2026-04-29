@@ -20,11 +20,19 @@ enum
     sgx_cpp_fcn_id_get_pubkey = 7,
     sgx_cpp_fcn_id_encrypt = 8,
     sgx_cpp_fcn_id_decrypt = 9,
-    sgx_cpp_fcn_id_oe_get_sgx_report_ecall = 10,
-    sgx_cpp_fcn_id_oe_get_report_v2_ecall = 11,
-    sgx_cpp_fcn_id_oe_verify_local_report_ecall = 12,
-    sgx_cpp_fcn_id_oe_sgx_init_context_switchless_ecall = 13,
-    sgx_cpp_fcn_id_oe_sgx_switchless_enclave_worker_thread_ecall = 14,
+    sgx_cpp_fcn_id_enclave_get_heap_stats = 10,
+    sgx_cpp_fcn_id_checker_init = 11,
+    sgx_cpp_fcn_id_checker_tee_prepare = 12,
+    sgx_cpp_fcn_id_checker_tee_store = 13,
+    sgx_cpp_fcn_id_checker_tee_sign = 14,
+    sgx_cpp_fcn_id_accum_tee_start = 15,
+    sgx_cpp_fcn_id_accum_tee_accum = 16,
+    sgx_cpp_fcn_id_accum_tee_finalize = 17,
+    sgx_cpp_fcn_id_oe_get_sgx_report_ecall = 18,
+    sgx_cpp_fcn_id_oe_get_report_v2_ecall = 19,
+    sgx_cpp_fcn_id_oe_verify_local_report_ecall = 20,
+    sgx_cpp_fcn_id_oe_sgx_init_context_switchless_ecall = 21,
+    sgx_cpp_fcn_id_oe_sgx_switchless_enclave_worker_thread_ecall = 22,
     sgx_cpp_fcn_id_trusted_call_id_max = OE_ENUM_MAX
 };
 
@@ -41,6 +49,14 @@ static const oe_ecall_info_t _sgx_cpp_ecall_info_table[] =
     { "get_pubkey" },
     { "encrypt" },
     { "decrypt" },
+    { "enclave_get_heap_stats" },
+    { "checker_init" },
+    { "checker_tee_prepare" },
+    { "checker_tee_store" },
+    { "checker_tee_sign" },
+    { "accum_tee_start" },
+    { "accum_tee_accum" },
+    { "accum_tee_finalize" },
     { "oe_get_sgx_report_ecall" },
     { "oe_get_report_v2_ecall" },
     { "oe_verify_local_report_ecall" },
@@ -160,6 +176,100 @@ typedef struct _decrypt_args_t
     size_t input_len;
     size_t* output_len;
 } decrypt_args_t;
+
+typedef struct _enclave_get_heap_stats_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    uint64_t* current_heap;
+    uint64_t* peak_heap;
+    uint64_t* max_heap;
+} enclave_get_heap_stats_args_t;
+
+typedef struct _checker_init_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    uint32_t* node_id;
+} checker_init_args_t;
+
+typedef struct _checker_tee_prepare_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char* block_hash;
+    size_t hash_len;
+    unsigned char* acc_data;
+    size_t acc_len;
+    unsigned char** out_cert;
+    size_t* out_cert_len;
+} checker_tee_prepare_args_t;
+
+typedef struct _checker_tee_store_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char* block_cert;
+    size_t cert_len;
+    unsigned char** out_cert;
+    size_t* out_cert_len;
+} checker_tee_store_args_t;
+
+typedef struct _checker_tee_sign_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char** out_cert;
+    size_t* out_cert_len;
+} checker_tee_sign_args_t;
+
+typedef struct _accum_tee_start_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char* commitment;
+    size_t commit_len;
+    unsigned char** out_acc;
+    size_t* out_acc_len;
+} accum_tee_start_args_t;
+
+typedef struct _accum_tee_accum_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char* accumulator;
+    size_t acc_len;
+    unsigned char* commitment;
+    size_t commit_len;
+    unsigned char** out_acc;
+    size_t* out_acc_len;
+} accum_tee_accum_args_t;
+
+typedef struct _accum_tee_finalize_args_t
+{
+    oe_result_t oe_result;
+    uint8_t* deepcopy_out_buffer;
+    size_t deepcopy_out_buffer_size;
+    int oe_retval;
+    unsigned char* accumulator;
+    size_t acc_len;
+    unsigned char** out_acc;
+    size_t* out_acc_len;
+} accum_tee_finalize_args_t;
 
 typedef struct _oe_get_sgx_report_ecall_args_t
 {
@@ -1250,6 +1360,841 @@ done:
 }
 
 OE_WEAK_ALIAS(sgx_cpp_decrypt, decrypt);
+
+oe_result_t sgx_cpp_enclave_get_heap_stats(
+    oe_enclave_t* enclave,
+    int* _retval,
+    uint64_t* current_heap,
+    uint64_t* peak_heap,
+    uint64_t* max_heap)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    enclave_get_heap_stats_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.current_heap = (uint64_t*)current_heap;
+    _args.peak_heap = (uint64_t*)peak_heap;
+    _args.max_heap = (uint64_t*)max_heap;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(enclave_get_heap_stats_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(enclave_get_heap_stats_args_t));
+    if (current_heap)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(uint64_t));
+    if (peak_heap)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(uint64_t));
+    if (max_heap)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(uint64_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (enclave_get_heap_stats_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_enclave_get_heap_stats].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (enclave_get_heap_stats_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(current_heap, 1, sizeof(uint64_t));
+    OE_READ_OUT_PARAM(peak_heap, 1, sizeof(uint64_t));
+    OE_READ_OUT_PARAM(max_heap, 1, sizeof(uint64_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_enclave_get_heap_stats, enclave_get_heap_stats);
+
+oe_result_t sgx_cpp_checker_init(
+    oe_enclave_t* enclave,
+    int* _retval,
+    uint32_t* node_id)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    checker_init_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.node_id = (uint32_t*)node_id;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(checker_init_args_t));
+    if (node_id)
+        OE_ADD_ARG_SIZE(_input_buffer_size, 1, sizeof(uint32_t));
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(checker_init_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (checker_init_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    if (node_id)
+        OE_WRITE_IN_PARAM(node_id, 1, sizeof(uint32_t), uint32_t*);
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_checker_init].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (checker_init_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    /* There were no out nor in-out parameters. */
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_checker_init, checker_init);
+
+oe_result_t sgx_cpp_checker_tee_prepare(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* block_hash,
+    size_t hash_len,
+    unsigned char* acc_data,
+    size_t acc_len,
+    unsigned char** out_cert,
+    size_t* out_cert_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    checker_tee_prepare_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.block_hash = (unsigned char*)block_hash;
+    _args.hash_len = hash_len;
+    _args.acc_data = (unsigned char*)acc_data;
+    _args.acc_len = acc_len;
+    _args.out_cert = (unsigned char**)out_cert;
+    _args.out_cert_len = (size_t*)out_cert_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(checker_tee_prepare_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(checker_tee_prepare_args_t));
+    if (out_cert_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (checker_tee_prepare_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_checker_tee_prepare].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (checker_tee_prepare_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_cert_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_checker_tee_prepare, checker_tee_prepare);
+
+oe_result_t sgx_cpp_checker_tee_store(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* block_cert,
+    size_t cert_len,
+    unsigned char** out_cert,
+    size_t* out_cert_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    checker_tee_store_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.block_cert = (unsigned char*)block_cert;
+    _args.cert_len = cert_len;
+    _args.out_cert = (unsigned char**)out_cert;
+    _args.out_cert_len = (size_t*)out_cert_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(checker_tee_store_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(checker_tee_store_args_t));
+    if (out_cert_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (checker_tee_store_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_checker_tee_store].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (checker_tee_store_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_cert_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_checker_tee_store, checker_tee_store);
+
+oe_result_t sgx_cpp_checker_tee_sign(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char** out_cert,
+    size_t* out_cert_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    checker_tee_sign_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.out_cert = (unsigned char**)out_cert;
+    _args.out_cert_len = (size_t*)out_cert_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(checker_tee_sign_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(checker_tee_sign_args_t));
+    if (out_cert_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (checker_tee_sign_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_checker_tee_sign].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (checker_tee_sign_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_cert_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_checker_tee_sign, checker_tee_sign);
+
+oe_result_t sgx_cpp_accum_tee_start(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* commitment,
+    size_t commit_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    accum_tee_start_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.commitment = (unsigned char*)commitment;
+    _args.commit_len = commit_len;
+    _args.out_acc = (unsigned char**)out_acc;
+    _args.out_acc_len = (size_t*)out_acc_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(accum_tee_start_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(accum_tee_start_args_t));
+    if (out_acc_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (accum_tee_start_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_accum_tee_start].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (accum_tee_start_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_acc_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_accum_tee_start, accum_tee_start);
+
+oe_result_t sgx_cpp_accum_tee_accum(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* accumulator,
+    size_t acc_len,
+    unsigned char* commitment,
+    size_t commit_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    accum_tee_accum_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.accumulator = (unsigned char*)accumulator;
+    _args.acc_len = acc_len;
+    _args.commitment = (unsigned char*)commitment;
+    _args.commit_len = commit_len;
+    _args.out_acc = (unsigned char**)out_acc;
+    _args.out_acc_len = (size_t*)out_acc_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(accum_tee_accum_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(accum_tee_accum_args_t));
+    if (out_acc_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (accum_tee_accum_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_accum_tee_accum].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (accum_tee_accum_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_acc_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_accum_tee_accum, accum_tee_accum);
+
+oe_result_t sgx_cpp_accum_tee_finalize(
+    oe_enclave_t* enclave,
+    int* _retval,
+    unsigned char* accumulator,
+    size_t acc_len,
+    unsigned char** out_acc,
+    size_t* out_acc_len)
+{
+    oe_result_t _result = OE_FAILURE;
+
+    static uint64_t global_id = OE_GLOBAL_ECALL_ID_NULL;
+
+    /* Marshalling struct. */
+    accum_tee_finalize_args_t _args, *_pargs_in = NULL, *_pargs_out = NULL;
+    /* Marshalling buffer and sizes. */
+    size_t _input_buffer_size = 0;
+    size_t _output_buffer_size = 0;
+    size_t _total_buffer_size = 0;
+    uint8_t* _buffer = NULL;
+    uint8_t* _input_buffer = NULL;
+    uint8_t* _output_buffer = NULL;
+    size_t _input_buffer_offset = 0;
+    size_t _output_buffer_offset = 0;
+    size_t _output_bytes_written = 0;
+
+    /* Fill marshalling struct. */
+    memset(&_args, 0, sizeof(_args));
+    _args.accumulator = (unsigned char*)accumulator;
+    _args.acc_len = acc_len;
+    _args.out_acc = (unsigned char**)out_acc;
+    _args.out_acc_len = (size_t*)out_acc_len;
+
+    /* Compute input buffer size. Include in and in-out parameters. */
+    OE_ADD_SIZE(_input_buffer_size, sizeof(accum_tee_finalize_args_t));
+    /* There were no corresponding parameters. */
+    
+    /* Compute output buffer size. Include out and in-out parameters. */
+    OE_ADD_SIZE(_output_buffer_size, sizeof(accum_tee_finalize_args_t));
+    if (out_acc_len)
+        OE_ADD_ARG_SIZE(_output_buffer_size, 1, sizeof(size_t));
+    
+    /* Allocate marshalling buffer. */
+    _total_buffer_size = _input_buffer_size;
+    OE_ADD_SIZE(_total_buffer_size, _output_buffer_size);
+    _buffer = (uint8_t*)oe_malloc(_total_buffer_size);
+    _input_buffer = _buffer;
+    _output_buffer = _buffer + _input_buffer_size;
+    if (_buffer == NULL)
+    {
+        _result = OE_OUT_OF_MEMORY;
+        goto done;
+    }
+    
+    /* Serialize buffer inputs (in and in-out parameters). */
+    _pargs_in = (accum_tee_finalize_args_t*)_input_buffer;
+    OE_ADD_SIZE(_input_buffer_offset, sizeof(*_pargs_in));
+    /* There were no in nor in-out parameters. */
+    
+    /* Copy args structure (now filled) to input buffer. */
+    memcpy(_pargs_in, &_args, sizeof(*_pargs_in));
+
+    /* Call enclave function. */
+    if ((_result = oe_call_enclave_function(
+             enclave,
+             &global_id,
+             _sgx_cpp_ecall_info_table[sgx_cpp_fcn_id_accum_tee_finalize].name,
+             _input_buffer,
+             _input_buffer_size,
+             _output_buffer,
+             _output_buffer_size,
+             &_output_bytes_written)) != OE_OK)
+        goto done;
+
+    /* Setup output arg struct pointer. */
+    _pargs_out = (accum_tee_finalize_args_t*)_output_buffer;
+    OE_ADD_SIZE(_output_buffer_offset, sizeof(*_pargs_out));
+    
+    /* Check if the call succeeded. */
+    if ((_result = _pargs_out->oe_result) != OE_OK)
+        goto done;
+
+    /* Currently exactly _output_buffer_size bytes must be written. */
+    if (_output_bytes_written != _output_buffer_size)
+    {
+        _result = OE_FAILURE;
+        goto done;
+    }
+
+    /* Unmarshal return value and out, in-out parameters. */
+    *_retval = _pargs_out->oe_retval;
+
+    OE_READ_OUT_PARAM(out_acc_len, 1, sizeof(size_t));
+
+    _result = OE_OK;
+
+done:
+    if (_buffer)
+        oe_free(_buffer);
+
+    return _result;
+}
+
+OE_WEAK_ALIAS(sgx_cpp_accum_tee_finalize, accum_tee_finalize);
 
 oe_result_t sgx_cpp_oe_get_sgx_report_ecall(
     oe_enclave_t* enclave,
@@ -7990,7 +8935,7 @@ oe_result_t oe_create_sgx_cpp_enclave(
                _sgx_cpp_ocall_function_table,
                83,
                _sgx_cpp_ecall_info_table,
-                15,
+                23,
                enclave);
 }
 

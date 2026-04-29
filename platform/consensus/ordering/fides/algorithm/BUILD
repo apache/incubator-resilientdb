@@ -11,6 +11,7 @@ cc_library(
         "//common/utils",
         "//platform/consensus/ordering/fides/proto:proposal_cc_proto",
         "//enclave:headers",
+        "//platform/config:resdb_config"
     ],
 )
 
@@ -20,6 +21,7 @@ cc_library(
     hdrs = ["fides.h"],
     copts = ["-Iexternal/openenclave"],
     deps = [
+        ":utility",
         ":proposal_manager",
         "//common:comm",
         "//common/crypto:signature_verifier",
@@ -29,7 +31,15 @@ cc_library(
         "//enclave:headers",
         "//platform/proto:resdb_cc_proto",
         "//executor/kv:kv_executor",
+        "//platform/config:resdb_config"
     ],
+)
+
+cc_library(
+    name = "utility",
+    srcs = ["utility.cpp"],
+    hdrs = ["utility.h"],
+    visibility  = ["//platform/consensus/ordering/fides:__subpackages__"],
 )
 
 cc_library(

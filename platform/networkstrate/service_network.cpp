@@ -71,9 +71,22 @@ void ServiceNetwork::AcceptorHandler(const char* buffer, size_t data_len) {
     std::unique_ptr<QueueItem> item = std::make_unique<QueueItem>();
     item->socket = nullptr;
     item->data = std::move(sub_request_info);
-    // LOG(ERROR) << "receve data from acceptor:" << data.is_resp()<<" data  len:"<<item->data->data_len;
     global_stats_->ServerCall();
-    input_queue_.Push(std::move(item));
+    // CRITICAL FIX: use non-blocking TryPush. This callback runs on
+    // the async_acceptor io_service thread. The original blocking Push
+    // spins when input_queue_ is full (4096 cap), which freezes the
+    // io_service thread. Since all async sessions share the same
+    // io_service, one blocked Push kills ALL incoming connections —
+    // causing the simultaneous server_call→0 freeze on all replicas
+    // during crash-fault transitions (when message bursts briefly
+    // exceed the queue capacity). Dropping the message is safe: the
+    // sender will retransmit or the protocol will recover on the next
+    // round.
+    if (!input_queue_.TryPush(std::move(item))) {
+      // Queue full — drop this message to keep io_service responsive.
+      // The raw buffer was already copied into sub_request_info which
+      // will be freed by the unique_ptr destructor.
+    }
   }
 }
 

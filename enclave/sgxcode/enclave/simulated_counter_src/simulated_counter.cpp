@@ -27,24 +27,28 @@ int ecall_dispatcher::get_counter(
     
     if (counters[*index]!=0 && previous_size < limit_count) {
         TRACE_ENCLAVE("%d,%d: Insufficient previous cert number",previous_size,limit_count);
+        ret = 1;
         goto exit;
     }
 
-    // Check previous counter info and attestation here
-    for (size_t i = 0; i < previous_size; i++)
-    {
-        if (!std::strncmp((const char*)previous_attestation[i], "Fake Attestation", buffer_size_array[i]) == 0) {
-            TRACE_ENCLAVE("Could not verify the attestation");
-            goto exit;
+    if (*counter_value >= 10) {
+        // Check previous counter info and attestation here
+        for (size_t i = 0; i < previous_size; i++)
+        {
+            if (!std::strncmp((const char*)previous_attestation[i], "Fake Attestation", buffer_size_array[i]) == 0) {
+                TRACE_ENCLAVE("Could not verify the attestation");
+                goto exit;
+            }
+            if (counter_value_array[i] != counters[*index] - 1) {
+                TRACE_ENCLAVE("Counter value invalid");
+                goto exit;
+            }
+            // TRACE_ENCLAVE("previous_size: %d, counter: %d, attestation: %.*s", previous_size, 
+            //             counter_value_array[i], buffer_size_array[i], previous_attestation[i]);
         }
-        if (counter_value_array[i] != counters[*index] - 1) {
-            TRACE_ENCLAVE("Counter value invalid");
-            goto exit;
-        }
-        // TRACE_ENCLAVE("previous_size: %d, counter: %d, attestation: %.*s", previous_size, 
-        //             counter_value_array[i], buffer_size_array[i], previous_attestation[i]);
+        // */
     }
-    // */
+
 
     if (*index < 0 || *index >= counterNum) {
         // TRACE_ENCLAVE("Counter index out of range");

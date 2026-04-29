@@ -149,7 +149,11 @@ class ViewChangeManager {
       viewchange_timeout_min_heap_;
   std::map<uint64_t, ComplaningClients> complaining_clients_;
   std::atomic<bool> stop_;
-  uint64_t timeout_length_ = 10000000;
+  // Viewchange rebroadcast timeout — shortened from the original 10s
+  // hard-code to 2s so crash-fault recovery can cycle through dead
+  // primaries fast enough to reach an alive primary within a 60-second
+  // post-crash observation window.
+  uint64_t timeout_length_ = 2000000;
 
   LockFreeCollectorPool* collector_pool_;
   DuplicateManager* duplicate_manager_;

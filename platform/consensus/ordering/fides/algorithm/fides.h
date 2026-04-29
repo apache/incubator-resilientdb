@@ -4,6 +4,12 @@
 #include <map>
 #include <queue>
 #include <thread>
+#include <fstream>
+#include <atomic>
+#include <chrono>
+#include <mutex>
+#include <string>
+#include <iostream>
 
 #include "common/crypto/signature_verifier.h"
 #include "platform/statistic/stats.h"
@@ -13,26 +19,24 @@
 #include "platform/consensus/ordering/fides/algorithm/proposal_manager.h"
 #include "enclave/sgx_cpp_u.h"
 #include "platform/config/resdb_config.h"
-/* // For transaction decryption
-// #include "platform/proto/resdb.pb.h"
-// #include "platform/proto/resdb.pb.h"
-// #include "proto/kv/kv.pb.h"
-*/
+#include "platform/consensus/ordering/fides/algorithm/utility.h"
 
 namespace resdb {
 namespace fides {
 
 class Fides : public common::ProtocolBase {
  public:
-  Fides(int id, int f, int total_num, SignatureVerifier* verifier, 
-       const ResDBConfig& config, oe_enclave_t* enclave);
+  Fides(int id, int f, int total_num, SignatureVerifier* verifier,
+        const ResDBConfig& config, oe_enclave_t* enclave);
   ~Fides();
 
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   bool ReceiveBlock(std::unique_ptr<Proposal> proposal);
   void ReceiveBlockACK(std::unique_ptr<Metadata> metadata);
   void ReceiveBlockCert(std::unique_ptr<Certificate> cert);
-
+  bool GetEnclaveStatOnce(uint64_t* current, uint64_t* peak, uint64_t* max);
+  void StartEnclaveStatMonitor(const std::string& log_path = "heap_stats.log");
+  void StopEnclaveStatMonitor();
 
  private:
   void CommitProposal(int round, int proposer);
@@ -42,6 +46,7 @@ class Fides : public common::ProtocolBase {
   void AsyncExecute();
 
   bool VerifyCert(const Certificate& cert);
+  bool VerifyCertSimulation(const Certificate& cert);
   bool VerifyCounter(int round, const CounterInfo& counter);
 
   bool CheckBlock(const Proposal& p);
@@ -55,6 +60,14 @@ class Fides : public common::ProtocolBase {
 
   int GetLeader(int r);
 
+  uint32_t TEECommonCoin(int r);
+
+  // Byzantine behavior helpers
+  bool IsByzantine() const;
+  void ByzantineBroadcast(int msg_type, const google::protobuf::Message& msg);
+  std::vector<int> GetByzantineTargetNodes() const;
+
+
  private:
   LockFreeQueue<Proposal> execute_queue_, pending_block_;
   LockFreeQueue<int> commit_queue_;
@@ -63,7 +76,6 @@ class Fides : public common::ProtocolBase {
   std::unique_ptr<ProposalManager> proposal_manager_;
   SignatureVerifier* verifier_;
   oe_enclave_t* enclave_;
-  oe_result_t result;
 
   std::thread send_thread_;
   std::thread commit_thread_, execute_thread_;
@@ -89,6 +101,14 @@ class Fides : public common::ProtocolBase {
   std::unordered_map<int, int> leader_list_;
 
   ResDBConfig config_;
+
+  std::optional<std::string> fakemessage_;
+  std::optional<resdb::SignatureInfo> fakesign_;
+
+  std::atomic<bool> stop_sampler_{true};
+  std::atomic<bool> sampler_running_{false};
+  std::thread sampler_thread_;
+  std::mutex sampler_mutex_;
 };
 
 }  // namespace fides
