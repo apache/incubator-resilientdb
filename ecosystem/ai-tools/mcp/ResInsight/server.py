@@ -830,6 +830,177 @@ Helps developers quickly understand large complex repos visually in simple easy 
     # Return base64 PNG string so clients can display
     return {"image_base64": img_data}
 
+
+def parse_python_imports_v2(file_content: str) -> List[str]:
+    """Parse Python imports using AST with a fallback line parser."""
+    imports: List[str] = []
+
+    try:
+        tree = ast.parse(file_content)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    if alias.name:
+                        imports.append(alias.name)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    imports.append(node.module)
+    except Exception:
+        for raw_line in file_content.splitlines():
+            line = raw_line.strip()
+            if line.startswith("import "):
+                rhs = line[len("import "):]
+                for part in rhs.split(","):
+                    mod = part.strip().split(" as ")[0].strip()
+                    if mod:
+                        imports.append(mod)
+            elif line.startswith("from ") and " import " in line:
+                mod = line[len("from "):].split(" import ", 1)[0].strip()
+                if mod:
+                    imports.append(mod)
+
+    deduped: List[str] = []
+    seen = set()
+    for name in imports:
+        if name not in seen:
+            seen.add(name)
+            deduped.append(name)
+    return deduped
+
+
+async def analyze_imports_v2(
+    owner: str,
+    repo: str,
+    branch: str = "main",
+    max_python_files: int = 50,
+) -> Dict[str, Any]:
+    """Build a repo-backed dependency graph plus provenance metadata."""
+    try:
+        files_meta = await fetch_repo_tree(owner, repo, branch)
+    except Exception as e:
+        return {"error": f"Could not fetch repository tree: {str(e)}"}
+
+    if not files_meta:
+        return {"error": "Repository tree is empty or unavailable."}
+
+    python_files = [f.get("path", "") for f in files_meta if f.get("path", "").endswith(".py")]
+    selected_files = python_files[:max_python_files]
+
+    g = nx.DiGraph()
+    edges_preview: List[Dict[str, str]] = []
+    processed_files = 0
+
+    for filepath in selected_files:
+        content = await fetch_raw_file(owner, repo, filepath, branch)
+        if not content:
+            continue
+
+        processed_files += 1
+        g.add_node(filepath)
+
+        imports = parse_python_imports_v2(content)
+        for imp in imports:
+            g.add_edge(filepath, imp)
+            if len(edges_preview) < 200:
+                edges_preview.append({"source": filepath, "target": imp})
+
+    if g.number_of_nodes() == 0:
+        return {
+            "error": "No analyzable Python files found.",
+            "provenance": {
+                "owner": owner,
+                "repo": repo,
+                "branch": branch,
+                "total_repo_python_files": len(python_files),
+                "selected_files": selected_files,
+                "processed_files": 0,
+            },
+        }
+
+    pos = nx.spring_layout(g, k=0.55, iterations=80, seed=42)
+    plt.figure(figsize=(16, 12))
+    nx.draw_networkx(
+        g,
+        pos=pos,
+        with_labels=True,
+        font_size=9,
+        node_size=650,
+        node_color="#BFE8D6",
+        edge_color="#666666",
+        arrowsize=14,
+        arrowstyle="->",
+    )
+    plt.axis("off")
+    plt.tight_layout()
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+    image_base64 = base64.b64encode(buf.read()).decode("utf-8")
+    plt.close()
+
+    return {
+        "image_base64": image_base64,
+        "provenance": {
+            "owner": owner,
+            "repo": repo,
+            "branch": branch,
+            "source": "github_api_only",
+            "total_repo_python_files": len(python_files),
+            "selected_files": selected_files,
+            "processed_files": processed_files,
+            "selected_file_limit": max_python_files,
+            "graph_nodes": g.number_of_nodes(),
+            "graph_edges": g.number_of_edges(),
+            "edges_preview": edges_preview,
+        },
+    }
+
+
+@mcp.tool(name="ShowDependencyGraphV2")
+async def show_dependency_graph_v2(
+    owner: str,
+    repo: str,
+    branch: str = "main",
+    max_python_files: int = 50,
+) -> dict:
+    """
+    Trusted graph generation that is strictly built from repository file content
+    fetched through this MCP server. Includes provenance metadata for auditability.
+    """
+    result = await analyze_imports_v2(owner, repo, branch, max_python_files=max_python_files)
+    if "error" in result:
+        return result
+    return result
+
+
+@mcp.tool(name="KGraphQueryV2")
+async def kgraph_query_v2(
+    owner: str,
+    repo: str,
+    node_name: str,
+    branch: str = "main",
+    max_python_files: int = 50,
+) -> dict:
+    """
+    Query neighbors for a node from a graph built from current repository content.
+    """
+    result = await analyze_imports_v2(owner, repo, branch, max_python_files=max_python_files)
+    if "error" in result:
+        return result
+
+    edges_preview = result.get("provenance", {}).get("edges_preview", [])
+    outgoing = [e["target"] for e in edges_preview if e.get("source") == node_name]
+    incoming = [e["source"] for e in edges_preview if e.get("target") == node_name]
+
+    return {
+        "node": node_name,
+        "outgoing_neighbors": outgoing,
+        "incoming_neighbors": incoming,
+        "note": "Neighbors are computed from the previewed subset of graph edges.",
+        "provenance": result.get("provenance", {}),
+    }
+
 def get_file_type(filepath: str) -> str:
     """Helper to identify file type by extension."""
     ext_map = {

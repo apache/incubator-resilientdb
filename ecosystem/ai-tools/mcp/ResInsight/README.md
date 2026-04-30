@@ -158,6 +158,72 @@ Ensure `.env` contains `GITHUB_TOKEN`, `MCP_TOKEN`, and any other variables you 
 
 ---
 
+## ResInsight MCP Access
+
+### Hosted deployment
+
+If you only want to use ResInsight, no clone is required. Connect your MCP client to:
+
+`http://52.45.172.212:8005/mcp`
+
+Use the lab-issued Bearer token in your client configuration. The hosted server runs in Docker as `resinsight` with port mapping `8005:8005`.
+
+### Local setup
+
+To run ResInsight locally or modify the server:
+
+1. Clone this fork or the upstream repository.
+2. Create and activate a Python virtual environment.
+3. Install dependencies from `requirements.txt`.
+4. Create a `.env` file with `GITHUB_TOKEN` and `MCP_TOKEN`.
+5. Start the server with `python server.py`, or build and run the Docker image.
+
+### Claude Desktop configuration
+
+For local, self-hosted Claude Desktop usage, use the direct Python MCP server entry:
+
+```json
+{
+  "mcpServers": {
+    "resilientdb-assistant": {
+      "command": "python",
+      "args": ["C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight/server.py"],
+      "env": {
+        "PYTHONPATH": "C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight",
+        "GITHUB_TOKEN": "ghp_...",
+        "MCP_TOKEN": "same_as_server_env_or_cloud_issued_token"
+      }
+    }
+  }
+}
+```
+
+For remote/deployed usage in Claude builds that require a bridge, use the hosted `/mcp` URL with `mcp-remote`:
+
+```json
+{
+  "mcpServers": {
+    "ResInsight: AI-driven developer onboarding ecosystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://52.45.172.212:8005/mcp",
+        "--header",
+        "Authorization: Bearer MCP_TOKEN"
+      ],
+      "env": {
+        "MCP_REMOTE_CONFIG_DIR": "C:/Users/your-user/.mcp-auth"
+      }
+    }
+  }
+}
+```
+
+`MCP_REMOTE_CONFIG_DIR` is optional and only controls where the bridge stores auth/session files. If your client supports native remote HTTP MCP fields, you can use `url` + `headers` instead of the bridge.
+
+---
+
 ## Authentication & Security
 
 ResInsight uses **two complementary credentials**:
