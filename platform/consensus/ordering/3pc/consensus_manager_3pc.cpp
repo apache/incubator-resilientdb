@@ -105,7 +105,7 @@ int ConsensusManager3PC::InternalConsensusCommit3PC(
       if (config_.IsPerformanceRunning()) {
         // Perfromance path is unaivailable for 3PC unless we implement a
         // 3PC-specific performance manager.
-        if (response_manager_ != nullptr) {
+        if (performance_manager_ != nullptr) { return performance_manager_->StartEval(); } if (response_manager_ != nullptr) {
           return response_manager_->NewUserRequest(std::move(context),
                                                   std::move(request));
         }
@@ -118,7 +118,7 @@ int ConsensusManager3PC::InternalConsensusCommit3PC(
 
     // Keep the existing reply path.
     case Request::TYPE_RESPONSE:
-      if (config_.IsPerformanceRunning() && performance_manager_ != nullptr) {
+      if (config_.IsPerformanceRunning() && performance_manager_ != nullptr) { return performance_manager_->ProcessResponseMsg(std::move(context), std::move(request)); } if (false) {
         // If we later add PerformanceManager3PC, this branch can be reenabled
         // with the new performance manager. 
         return performance_manager_->ProcessResponseMsg(std::move(context),

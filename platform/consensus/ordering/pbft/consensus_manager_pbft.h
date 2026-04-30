@@ -53,6 +53,7 @@ class ConsensusManagerPBFT : public ConsensusManager {
 
   void Start() override;
   void SetupPerformanceDataFunc(std::function<std::string()> func);
+  void StartPerformanceWorkload();
 
   void SetPreVerifyFunc(std::function<bool(const Request&)>);
   void SetNeedCommitQC(bool need_qc);

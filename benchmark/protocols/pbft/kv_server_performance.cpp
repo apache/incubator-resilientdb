@@ -75,7 +75,14 @@ int main(int argc, char** argv) {
     return request_data;
   });
 
+  auto pbft_manager = performance_consens.get();
   auto server =
       std::make_unique<ServiceNetwork>(*config, std::move(performance_consens));
+  
+  // Start the performance workload explicitly for the client
+  if (config->IsPerformanceRunning()) {
+    pbft_manager->StartPerformanceWorkload();
+  }
+
   server->Run();
 }

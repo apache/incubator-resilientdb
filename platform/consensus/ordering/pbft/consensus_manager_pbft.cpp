@@ -290,6 +290,12 @@ void ConsensusManagerPBFT::SetupPerformanceDataFunc(
   performance_manager_->SetDataFunc(func);
 }
 
+void ConsensusManagerPBFT::StartPerformanceWorkload() {
+  if (performance_manager_ != nullptr) {
+    performance_manager_->StartEval();
+  }
+}
+
 void ConsensusManagerPBFT::SetPreVerifyFunc(
     std::function<bool(const Request&)> func) {
   commitment_->SetPreVerifyFunc(func);
