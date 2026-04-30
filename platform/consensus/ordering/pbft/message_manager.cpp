@@ -226,6 +226,7 @@ int MessageManager::ExecuteOrderedRequest(std::unique_ptr<Request> request) {
     return -2;
   }
 
+  // Check if the request is valid before executing (sanity check as request should already be validated). 
   if (!IsValidMsg(*request)) {
     LOG(ERROR) << "ExecuteOrderedRequest(): invalid request, seq:"
                << request->seq() << " view:" << request->current_view();

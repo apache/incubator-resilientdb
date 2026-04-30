@@ -35,6 +35,12 @@ namespace resdb {
 
 class ConsensusManagerPBFT : public ConsensusManager {
  public:
+  /**************************
+  * New Parameters for defering module initialization in case of 3PC utilization:
+  * - defer_recovery_init: Suspend PBFT recovery modeule initialization.
+  * - defer_commitment_init: Suspend PBFT commitment module initialization.
+  *   - This is because the 3PC initialization will replace the PBFT commitment and recovery modules.
+  ***************************/
   ConsensusManagerPBFT(const ResDBConfig& config,
                        std::unique_ptr<TransactionManager> executor,
                        bool defer_recovery_init = false,

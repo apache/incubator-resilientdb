@@ -60,6 +60,7 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
 
+  // Initialize the commitment and recovery modules unless deferred for 3PC. The 3PC implementation will replace this with a 3PC-specific commitment module.
   if (!defer_commitment_init) {
     commitment_ = std::make_unique<Commitment>(
         config_, message_manager_.get(), GetBroadCastClient(),

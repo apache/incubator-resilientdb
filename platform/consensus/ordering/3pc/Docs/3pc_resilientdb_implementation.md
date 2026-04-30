@@ -531,18 +531,6 @@ This approach ensures that only the consensus protocol changed, while the rest o
 
 - client request ingress is still reused where possible
 - execution/reply path is unchanged outside the protocol boundary
-- performance mode is not falsely claimed to be 3PC-compatible unless a separate `PerformanceManager3PC` is actually implemented
+- performance mode is not 3PC-compatible unless a separate `PerformanceManager3PC` is actually implemented
 
 ---
-
-## Known Caveats / Review Notes
-
-1. `ConsensusManager3PC` may inherit substantial PBFT scaffolding. Review should confirm that PBFT-specific message dispatch and recovery assumptions have been neutralized where necessary.
-
-2. If `PerformanceManager3PC` was not implemented, throughput and latency measurement should come from normal-mode external measurement, not PBFT performance benchmark output.
-
-3. If the coordinator ignores its own broadcasted request states.
-
----
-
-
