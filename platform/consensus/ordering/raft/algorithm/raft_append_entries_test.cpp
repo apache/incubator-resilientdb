@@ -2,10 +2,6 @@
 
 namespace resdb {
 namespace raft {
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Invoke;
-using ::testing::Matcher;
 
 // Test 1: A follower receiving a client transaction should reject it.
 TEST_F(RaftTest, FollowerRejectsClientTransaction) {
@@ -14,7 +10,11 @@ TEST_F(RaftTest, FollowerRejectsClientTransaction) {
 
   auto req = std::make_unique<Request>();
   req->set_seq(1);
-  raft_->SetRole(Role::FOLLOWER);
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries({}, true),
+  });
 
   bool success = raft_->ReceiveTransaction(std::move(req));
   EXPECT_FALSE(success);
@@ -28,7 +28,11 @@ TEST_F(RaftTest, LeaderSendsAppendEntriesUponClientTransaction) {
 
   auto req = std::make_unique<Request>();
   req->set_seq(1);
-  raft_->SetRole(Role::LEADER);
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .role = Role::LEADER,
+      .log = CreateLogEntries({}, true),
+  });
 
   bool success = raft_->ReceiveTransaction(std::move(req));
   EXPECT_TRUE(success);
@@ -73,7 +77,7 @@ TEST_F(RaftTest, LeaderSendsAppendEntriesBasedOnNextIndex) {
                                   {0, "Term 0 Transaction 4"},
                               },
                               true),
-                          .nextIndex = std::vector<uint64_t>{0, 4, 3, 2, 1}});
+                          .nextIndex = std::vector<uint64_t>{1, 4, 3, 2, 1}});
 
   auto req = std::make_unique<Request>();
   req->set_seq(5);
@@ -110,7 +114,11 @@ TEST_F(RaftTest, FollowerAddsAppendEntriesWithMultipleEntries) {
       /*followerId=*/1);
 
   auto aemessage = CreateAeMessage(aefields);
-  raft_->SetRole(Role::FOLLOWER);
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries({}, true),
+  });
 
   bool success = raft_->ReceiveAppendEntries(
       std::make_unique<AppendEntries>(std::move(aemessage)));
@@ -182,7 +190,12 @@ TEST_F(RaftTest, FollowerAddsMultipleAppendEntries) {
   auto aemessage1 = CreateAeMessage(aefields1);
   auto aemessage2 = CreateAeMessage(aefields2);
   auto aemessage3 = CreateAeMessage(aefields3);
-  raft_->SetRole(Role::FOLLOWER);
+
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries({}, true),
+  });
 
   bool success1 = raft_->ReceiveAppendEntries(
       std::make_unique<AppendEntries>(std::move(aemessage1)));
@@ -233,7 +246,6 @@ TEST_F(RaftTest, FollowerRejectsMismatchedTermAtPrevLogIndex) {
   });
 
   auto aemessage = CreateAeMessage(aefields);
-  raft_->SetRole(Role::FOLLOWER);
 
   bool success = raft_->ReceiveAppendEntries(
       std::make_unique<AppendEntries>(std::move(aemessage)));
@@ -266,7 +278,12 @@ TEST_F(RaftTest, FollowerRejectsMissingIndex) {
       /*followerId=*/1);
 
   auto aemessage = CreateAeMessage(aefields);
-  raft_->SetRole(Role::FOLLOWER);
+
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries({}, true),
+  });
 
   bool success = raft_->ReceiveAppendEntries(
       std::make_unique<AppendEntries>(std::move(aemessage)));
@@ -353,7 +370,7 @@ TEST_F(RaftTest, FollowerIncreasesCommitIndex) {
   raft_->SetStateForTest({
       .currentTerm = 1,
       .commitIndex = 1,
-      .lastApplied = 1,
+      .lastCommitted = 1,
       .role = Role::FOLLOWER,
       .log = CreateLogEntries(
           {
@@ -399,7 +416,7 @@ TEST_F(RaftTest, FollowerIncreasesCommitIndexCappedAtLogSize) {
   raft_->SetStateForTest({
       .currentTerm = 1,
       .commitIndex = 1,
-      .lastApplied = 1,
+      .lastCommitted = 1,
       .role = Role::FOLLOWER,
       .log = CreateLogEntries(
           {
@@ -528,7 +545,7 @@ TEST_F(RaftTest, CandidateReceivesNewerTermWithAppendEntriesItCanAccept) {
 
   raft_->SetStateForTest({
       .currentTerm = 1,
-      .lastApplied = 2,
+      .lastCommitted = 2,
       .role = Role::CANDIDATE,
       .log = CreateLogEntries(
           {
@@ -544,7 +561,7 @@ TEST_F(RaftTest, CandidateReceivesNewerTermWithAppendEntriesItCanAccept) {
   EXPECT_EQ(raft_->GetRoleSnapshot(), Role::FOLLOWER);
 }
 
-// Test 14: A candidate receiving an AppendEntries that it can accept from a the
+// Test 14: A candidate receiving an AppendEntries that it can accept from the
 // same term but further along.
 TEST_F(RaftTest, CandidateReceivesSameTermWithAppendEntriesItCanAccept) {
   EXPECT_CALL(mock_call, Call(_, _, _))
@@ -572,8 +589,8 @@ TEST_F(RaftTest, CandidateReceivesSameTermWithAppendEntriesItCanAccept) {
   auto aemessage = CreateAeMessage(aefields);
 
   raft_->SetStateForTest({
-      .currentTerm = 1,
-      .lastApplied = 2,
+      .currentTerm = 2,
+      .lastCommitted = 2,
       .role = Role::CANDIDATE,
       .log = CreateLogEntries(
           {
@@ -587,6 +604,180 @@ TEST_F(RaftTest, CandidateReceivesSameTermWithAppendEntriesItCanAccept) {
       std::make_unique<AppendEntries>(std::move(aemessage)));
   EXPECT_TRUE(success);
   EXPECT_EQ(raft_->GetRoleSnapshot(), Role::FOLLOWER);
+}
+
+// Test 15: A follower receiving a leaderCommit whose index is less than its own
+// commitIndex does not lower its commitIndex.
+TEST_F(RaftTest, FollowerWillNotLowerCommitIndex) {
+  EXPECT_CALL(mock_call, Call(_, _, _))
+      .WillOnce(
+          ::testing::Invoke([](int type, const google::protobuf::Message& msg,
+                               int node_id) { return 0; }));
+  EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
+  EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(1);
+
+  auto aefields = CreateAeFields(
+      /*term=*/1,
+      /*leaderId=*/2,
+      /*prevLogIndex=*/0,
+      /*prevLogTerm=*/2,
+      /*entries=*/
+      CreateLogEntries({}),
+      /*leaderCommit=*/2,
+      /*followerId=*/1);
+  auto aemessage = CreateAeMessage(aefields);
+
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .commitIndex = 4,
+      .lastCommitted = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries(
+          {
+              {0, "Transaction 1"},
+              {0, "Transaction 2"},
+          },
+          true),
+  });
+
+  raft_->PrintDebugStateLocked();
+
+  bool success = raft_->ReceiveAppendEntries(
+      std::make_unique<AppendEntries>(std::move(aemessage)));
+  EXPECT_TRUE(success);
+}
+
+// Test 16: A leader ignores an AppendEntries from itself
+TEST_F(RaftTest, LeaderIgnoresAppendEntriesFromSelf) {
+  EXPECT_CALL(mock_call, Call(_, _, _)).Times(0);
+  EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
+  EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(0);
+
+  auto aefields = CreateAeFields(
+      /*term=*/0,
+      /*leaderId=*/1,
+      /*prevLogIndex=*/0,
+      /*prevLogTerm=*/0,
+      /*entries=*/
+      CreateLogEntries({
+          {0, "Transaction 1"},
+      }),
+      /*leaderCommit=*/0,
+      /*followerId=*/1);
+  auto aemessage = CreateAeMessage(aefields);
+
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .lastCommitted = 0,
+      .role = Role::LEADER,
+      .log = CreateLogEntries({}, true),
+  });
+
+  bool success = raft_->ReceiveAppendEntries(
+      std::make_unique<AppendEntries>(std::move(aemessage)));
+  EXPECT_FALSE(success);
+}
+
+// Test 17: A follower receiving a heartbeat will advance its commit index.
+TEST_F(RaftTest, FollowerAdvancesCommitIndexOnHeartbeat) {
+  EXPECT_CALL(mock_call, Call(_, _, _))
+      .WillOnce(
+          ::testing::Invoke([](int type, const google::protobuf::Message& msg,
+                               int node_id) { return 0; }));
+  EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
+  EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(1);
+
+  auto aefields = CreateAeFields(
+      /*term=*/0,
+      /*leaderId=*/2,
+      /*prevLogIndex=*/2,
+      /*prevLogTerm=*/0,
+      /*entries=*/
+      CreateLogEntries({}),
+      /*leaderCommit=*/2,
+      /*followerId=*/1);
+  auto aemessage = CreateAeMessage(aefields);
+
+  raft_->SetStateForTest({
+      .currentTerm = 0,
+      .commitIndex = 0,
+      .lastCommitted = 0,
+      .role = Role::FOLLOWER,
+      .log = CreateLogEntries(
+          {
+              {0, "Transaction 1"},
+              {0, "Transaction 2"},
+          },
+          true),
+  });
+
+  raft_->PrintDebugStateLocked();
+
+  bool success = raft_->ReceiveAppendEntries(
+      std::make_unique<AppendEntries>(std::move(aemessage)));
+  EXPECT_TRUE(success);
+  EXPECT_EQ(raft_->GetCommitIndex(), 2);
+}
+
+// Test 17: A leader correctly sends a heartbeat.
+TEST_F(RaftTest, LeaderCorrectlySendsHeartbeat) {
+  EXPECT_CALL(mock_call, Call(_, _, _))
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& ae = dynamic_cast<const AppendEntries&>(msg);
+            EXPECT_EQ(node_id, 2);
+            EXPECT_EQ(ae.prevlogindex(), 2);
+            EXPECT_EQ(ae.entries().size(), 0);
+            return 0;
+          }))
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& ae = dynamic_cast<const AppendEntries&>(msg);
+            EXPECT_EQ(node_id, 3);
+            EXPECT_EQ(ae.prevlogindex(), 1);
+            EXPECT_EQ(ae.entries().size(), 0);
+            return 0;
+          }))
+      .WillOnce(::testing::Invoke(
+          [](int type, const google::protobuf::Message& msg, int node_id) {
+            const auto& ae = dynamic_cast<const AppendEntries&>(msg);
+            EXPECT_EQ(node_id, 4);
+            EXPECT_EQ(ae.prevlogindex(), 0);
+            EXPECT_EQ(ae.entries().size(), 0);
+            return 0;
+          }));
+  EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
+  EXPECT_CALL(*leader_election_manager_, OnHeartBeat()).Times(0);
+
+  raft_->SetStateForTest({.currentTerm = 1,
+                          .votedFor = 1,
+                          .commitIndex = 0,
+                          .lastCommitted = 0,
+                          .role = Role::LEADER,
+                          .log = CreateLogEntries(
+                              {
+                                  {0, "Transaction 1"},
+                                  {1, "Transaction 2"},
+                              },
+                              true),
+                          .nextIndex = std::vector<uint64_t>{1, 4, 3, 2, 1},
+                          .matchIndex = std::vector<uint64_t>{0, 2, 0, 1, 0},
+                          .votes = std::vector<int>{1, 3, 2}});
+
+  raft_->SendHeartBeat();
+
+  EXPECT_EQ(raft_->GetCurrentTerm(), 1);
+  EXPECT_EQ(raft_->GetVotedFor(), 1);
+  EXPECT_EQ(raft_->GetCommitIndex(), 0);
+  EXPECT_EQ(raft_->GetLastCommitted(), 0);
+  EXPECT_EQ(raft_->GetRole(), Role::LEADER);
+  auto log = raft_->GetLog();
+  // Maybe check that the log itself is equal
+  EXPECT_EQ(log.size(), 3);
+  EXPECT_EQ(raft_->GetLastLogIndex(), log.size() - 1);
+  EXPECT_THAT(raft_->GetNextIndex(), ::testing::ElementsAre(1, 4, 3, 2, 1));
+  EXPECT_THAT(raft_->GetMatchIndex(), ::testing::ElementsAre(0, 2, 0, 1, 0));
+  EXPECT_THAT(raft_->GetVotes(), ::testing::ElementsAre(1, 3, 2));
 }
 
 }  // namespace raft

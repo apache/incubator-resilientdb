@@ -177,9 +177,10 @@ http_archive(
     sha256 = "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
     strip_prefix = "zlib-1.3.1",
     urls = [
-        "https://zlib.net/zlib-1.3.1.tar.gz",
-        "https://zlib.net/fossils/zlib-1.3.1.tar.gz",
-        "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
+        "https://zlib.net/fossils/zlib-1.2.12.tar.gz",
+        "https://downloads.sourceforge.net/project/libpng/zlib/1.2.12/zlib-1.2.12.tar.gz",
+        "https://zlib.net/fossils/zlib-1.2.12.tar.gz",
+        "https://storage.googleapis.com/bazel-mirror/zlib.net/zlib-1.2.12.tar.gz",
     ],
 )
 
@@ -190,6 +191,19 @@ http_archive(
     strip_prefix = "leveldb-1.23",
     url = "https://github.com/google/leveldb/archive/refs/tags/1.23.zip",
 )
+http_archive(
+    name = "duckdb",
+    urls = [
+        # pick one version and stick to it
+        "https://github.com/duckdb/duckdb/releases/download/v1.4.0/libduckdb-src.zip",
+    ],
+    # This zip is just flat: duckdb.cpp, duckdb.hpp, duckdb.h at the root.
+    # So no strip_prefix is needed.
+    build_file = "//third_party:duckdb.BUILD",
+    # Optional: you can add sha256 once Bazel prints it for you.
+    # sha256 = "<FILL_ME_FROM_BAZEL_ERROR>",
+)
+
 
 bind(
     name = "snappy",

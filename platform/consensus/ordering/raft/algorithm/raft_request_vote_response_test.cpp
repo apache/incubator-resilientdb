@@ -2,10 +2,6 @@
 
 namespace resdb {
 namespace raft {
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Invoke;
-using ::testing::Matcher;
 
 // Test 1: A candidate gets elected.
 TEST_F(RaftTest, CandidateGetsElected) {
@@ -50,7 +46,7 @@ TEST_F(RaftTest, CandidateGetsElected) {
 
   raft_->SetStateForTest({.currentTerm = 2,
                           .commitIndex = 1,
-                          .lastApplied = 1,
+                          .lastCommitted = 1,
                           .role = Role::CANDIDATE,
                           .log = CreateLogEntries(
                               {
@@ -185,7 +181,7 @@ TEST_F(RaftTest, CandidateIgnoresDuplicateVote) {
 
   raft_->SetStateForTest({.currentTerm = 2,
                           .commitIndex = 1,
-                          .lastApplied = 1,
+                          .lastCommitted = 1,
                           .role = Role::CANDIDATE,
                           .log = CreateLogEntries(
                               {

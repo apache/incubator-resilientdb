@@ -44,7 +44,8 @@ Download address for run-directly software package: https://downloads.apache.org
 4. ResilientDB exposes a wide range of interfaces such as a **Key-Value** store, **Smart Contracts**, **UTXO**, and **Python SDK**. Following are some of the decentralized applications (DApps) built on top of ResilientDB: **[NFT Marketplace](https://nft.resilientdb.com/)** and **[Debitable](https://debitable.resilientdb.com/)**.
 5. To persist blockchain, chain state, and metadata, ResilientDB provides durability through  **LevelDB**.
 6. ResilientDB provides access to a seamless **GUI display** for deployment and maintenance, and supports  **Grafana** for plotting monitoring data. 
-7. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://expolab.resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
+7. ResilientDB ships with a rich **ecosystem** of first‑class tools under the `ecosystem/` directory, including **wallets (ResVault)**, **SDKs and ORMs (Python, Rust, ResDB‑ORM)**, **APIs (GraphQL, REST)**, and **monitoring & deployment tooling (ResLens, Ansible/Docker, Orbit, etc.)**, making it easy to build, observe, and operate applications on top of ResilientDB.
+8. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely re-written and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect along with the entire [NexRes Team](https://expolab.resilientdb.com/)), paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**.
 
 <div align = "center">
 <img src="./img/resdb-v2.png" width="220">
@@ -56,8 +57,9 @@ Download address for run-directly software package: https://downloads.apache.org
 
 
 ## Online Documentation:
-
-The latest ResilientDB documentation, including a programming guide, is available on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**. This README file provides basic setup instructions.
+The latest ResilientDB documentation is available on **[Beacon](https://beacon.resilientdb.com/docs/installation)**, our unified documentation portal.  
+For a deep, chapter‑wise explanation of how ResilientDB works, see the **[ResilientDB overview and chapters](https://beacon.resilientdb.com/docs/resilientdb)**.  
+Historical and supplementary guides are also available on our **[blog repository](https://blog.resilientdb.com/archive.html?tag=NexRes)**.
 
 #### Table of Contents
 1. Software Stack Architecture 
@@ -76,8 +78,21 @@ The latest ResilientDB documentation, including a programming guide, is availabl
    - Continuous Integration & Testing 
 
 <div align = "center">
-<img src="./img/nexres.png" width="600">
+<img src="./img/nexres_architecture.png" width="600">
 </div>
+
+## Ecosystem Overview
+
+Beyond the core NexRes engine, ResilientDB ships with a rich ecosystem of tools that make it easier to build applications and data/AI pipelines on top of the ledger:
+
+- **Core Node (NexRes)**: High-throughput, BFT-replicated state machine that orders and executes transactions with strong consistency and durability.
+- **APIs (GraphQL & REST)**: ResilientDB exposes HTTP and GraphQL services for committing and querying transactions, making it easy to integrate with web backends, data services, and AI workflows.
+- **ResVault (Wallet & Extension)**: Browser extension wallet that manages keys, lets users authenticate, and approve transactions from web apps, tying writes on-chain to user-controlled identities.
+- **SDKs & ORMs**: Language-specific libraries and client toolkits (e.g., Python ORM, Rust SDK, ResVault SDK, ResShare SDK) that provide higher-level APIs for modeling assets, talking to GraphQL/REST, and wiring ResilientDB services into applications.
+- **Monitoring (ResLens & dashboards)**: Monitoring UIs and middleware (ResLens stack) that surface cluster health, performance metrics, and profiling data for running deployments.
+- **Deployment Tooling (Orbit, Ansible, Docker)**: Tools and playbooks for bringing up ResilientDB clusters and supporting services (GraphQL, Nginx, etc.) on local and cloud environments using Docker, Ansible, and the Orbit desktop deployer.
+
+Together, these components provide an end-to-end path from user-facing applications (web, services, or AI agents) through wallets and APIs down to the ResilientDB core.
 
 ## OS Requirements
 Ubuntu 20+
@@ -103,27 +118,34 @@ incubator-resilientdb/
 │   ├── test/                        # Testing utilities
 │   └── utils/                       # General utilities
 ├── ecosystem/                       # Ecosystem components (git subtrees)
-│   ├── cache/                       # Caching implementations
-│   │   ├── resilient-node-cache/    # Node.js caching
-│   │   └── resilient-python-cache/  # Python caching
-│   ├── deployment/                  # Deployment and infrastructure
+│   ├── ai-tools/                    # AI, docs, and MCP tools
+│   │   ├── beacon/                  # Beacon docs site
+│   │   ├── nexus/                   # Nexus research / LLM tools
+│   │   └── mcp/                     # MCP integrations (GraphQL, ResInsight)
+│   ├── cache/                       # Caching libraries
+│   │   ├── resilient-node-cache/    # Node.js cache
+│   │   └── resilient-python-cache/  # Python cache
+│   ├── deployment/                  # Deployment tooling
 │   │   ├── ansible/                 # Ansible playbooks
-│   │   └── orbit/                   # Orbit deployment tool
-│   ├── graphql/                     # GraphQL service
-│   ├── monitoring/                  # Monitoring and observability
-│   │   ├── reslens/                 # ResLens monitoring tool
-│   │   └── reslens-middleware/      # ResLens middleware
-│   ├── sdk/                         # Software Development Kits
+│   │   └── orbit/                   # Orbit desktop deployer
+│   ├── graphql/                     # GraphQL + HTTP services
+│   ├── monitoring/                  # Monitoring stack
+│   │   ├── reslens/                 # ResLens UI
+│   │   └── reslens-middleware/      # ResLens backend
+│   ├── sdk/                         # SDKs and ORMs
 │   │   ├── resdb-orm/               # Python ORM
 │   │   ├── resvault-sdk/            # ResVault SDK
 │   │   └── rust-sdk/                # Rust SDK
-│   ├── smart-contract/              # Smart contract ecosystem
-│   │   ├── rescontract/             # ResContract repository
-│   │   ├── resilient-contract-kit/  # Contract development toolkit
-│   │   └── smart-contract-graphql/  # Smart contract GraphQL service
-│   └── tools/                       # Development and operational tools
-│       ├── create-resilient-app/    # App scaffolding tool
-│       └── resvault/                # ResVault tool
+│   ├── smart-contract/              # Smart contract stack
+│   │   ├── rescontract/             # Contracts and examples
+│   │   ├── resilient-contract-kit/  # Contract dev toolkit
+│   │   └── smart-contract-graphql/  # Contract GraphQL service
+│   ├── third_party/                 # External tools (e.g., PocketFlow)
+│   └── tools/                       # Dev and app tools
+│       ├── create-resilient-app/    # App scaffolding CLI
+│       ├── drawing-lib/             # Shared drawing widget
+│       ├── reshare-lib/             # ResShare SDK
+│       └── resvault/                # ResVault wallet extension
 ├── executor/                        # Transaction execution engine
 │   ├── common/                      # Common execution utilities
 │   ├── contract/                    # Smart contract execution
@@ -477,8 +499,42 @@ Then re-run the start script:
   ./service/tools/kv/server_tools/start_kv_service.sh
   ```
 
-
-
 ## Smart Contract ##
-If you want to use smart contracts, please go to:
-https://blog.resilientdb.com/2025/02/14/GettingStartedSmartContract.html
+
+ResilientDB includes a built‑in smart contract service that lets you deploy and execute Solidity contracts on top of NexRes. There are two primary ways to work with smart contracts:
+
+1. **Low‑level flow via `contract_service_tools`**  
+   This flow uses the `contract_service_tools` client and JSON payloads:
+
+   - **Create an owner account**: call `contract_service_tools` with a JSON file containing `{"command": "create_account"}` to obtain an on‑chain owner address.
+   - **Compile and deploy your contract**:
+     - Write your contract in Solidity (e.g., `token.sol`).
+     - Compile to JSON using `solc`, for example:  
+       `solc --evm-version homestead --combined-json bin,hashes --pretty-json --optimize token.sol > token.json`
+     - Deploy with a JSON payload that includes:
+       - `command: "deploy"`
+       - `contract_path`: path to the compiled JSON (e.g., `service/tools/kv/api_tools/example_contract/token.json`)
+       - `contract_name`: contract identifier (e.g., `"token.sol:Token"`)
+       - `init_params`: constructor parameters (if any)
+       - `owner_address`: the owner account address  
+     - The response returns a **contract address** for future calls.
+   - **Execute contract functions**: call `contract_service_tools` with a JSON payload that includes:
+     - `command: "execute"`
+     - `contract_address`: deployed contract address
+     - `caller_address`: account invoking the function
+     - `func_name`: function signature (e.g., `"transfer(address,uint256)"`)
+     - `params`: encoded parameters
+
+2. **Higher‑level tools: ResContract CLI and ResVault**  
+   Instead of crafting JSON by hand, you can use tools from the `ecosystem/` directory that wrap this functionality:
+
+   - **ResContract CLI** (`ecosystem/smart-contract/rescontract/`):  
+     Command‑line interface for creating accounts, deploying contracts, and invoking methods, with a friendlier UX and helpers around contract artifacts.
+   - **ResVault** (`ecosystem/tools/resvault/`):  
+     Browser wallet and extension that can create accounts, approve transactions, and drive contract interactions from web apps, tying on‑chain activity to user identities.
+
+   These tools provide full functionality up to and including **deployment and interaction with smart contracts**. See their individual READMEs for detailed usage and examples.
+
+In addition, you can use the **Key‑Value interfaces** to query or update associated balances via `get_balance` and `set_balance` commands when needed.
+
+For a full, step‑by‑step tutorial (including example JSON files, commands, and responses), see **[Getting Started with Smart Contract on ResilientDB](https://blog.resilientdb.com/2025/02/14/GettingStartedSmartContract.html)**.

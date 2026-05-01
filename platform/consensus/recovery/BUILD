@@ -75,7 +75,7 @@ cc_library(
         "//common/utils",
         "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
         "//platform/config:resdb_config",
-        "//platform/consensus/checkpoint",
+        "//platform/consensus/ordering/raft/framework:raft_checkpoint_manager",
         "//platform/networkstrate:server_comm",
         "//platform/proto:resdb_cc_proto",
         "//platform/consensus/recovery:recovery_base"

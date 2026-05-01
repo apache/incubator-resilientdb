@@ -2,10 +2,6 @@
 
 namespace resdb {
 namespace raft {
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Invoke;
-using ::testing::Matcher;
 
 // Test 1: A leader receiving an AppendEntriesResponse success and updating the
 // follower's matchIndex.
@@ -69,7 +65,7 @@ TEST_F(RaftTest, LeaderReceivesAppendEntriesResponseSuccessAndCommits) {
 
   raft_->SetStateForTest({.currentTerm = 1,
                           .commitIndex = 0,
-                          .lastApplied = 0,
+                          .lastCommitted = 0,
                           .role = Role::LEADER,
                           .log = CreateLogEntries(
                               {
@@ -77,7 +73,7 @@ TEST_F(RaftTest, LeaderReceivesAppendEntriesResponseSuccessAndCommits) {
                                   {1, "Transaction 2"},
                               },
                               true),
-                          .nextIndex = std::vector<uint64_t>{0, 2, 2, 2, 2},
+                          .nextIndex = std::vector<uint64_t>{1, 2, 2, 2, 2},
                           .matchIndex = std::vector<uint64_t>{0, 2, 0, 1, 0}});
 
   bool success = raft_->ReceiveAppendEntriesResponse(
@@ -111,7 +107,7 @@ TEST_F(RaftTest, LeaderCatchesUpFollowerThatIsBehind) {
   raft_->SetStateForTest({
       .currentTerm = 1,
       .commitIndex = 0,
-      .lastApplied = 0,
+      .lastCommitted = 0,
       .role = Role::LEADER,
       .log = CreateLogEntries(
           {
@@ -151,7 +147,7 @@ TEST_F(RaftTest, LeaderCatchesUpFollowerThatIsBehindFailure) {
   raft_->SetStateForTest({
       .currentTerm = 1,
       .commitIndex = 0,
-      .lastApplied = 0,
+      .lastCommitted = 0,
       .role = Role::LEADER,
       .log = CreateLogEntries(
           {
@@ -200,6 +196,39 @@ TEST_F(RaftTest, LeaderIgnoresAppendEntriesResponseFromOutdatedTerm) {
   bool success = raft_->ReceiveAppendEntriesResponse(
       std::make_unique<AppendEntriesResponse>(aeResponse));
   EXPECT_TRUE(success);
+}
+
+// Test 8: A leader does not advance its commit index from a previous term if it
+// has not replicated an entry from its current term.
+TEST_F(RaftTest,
+       LeaderReceivesAppendEntriesResponseSuccessAndDoesNotCommitOldTerm) {
+  EXPECT_CALL(*leader_election_manager_, OnRoleChange()).Times(0);
+  EXPECT_CALL(mock_commit, Commit(_)).Times(0);
+
+  AppendEntriesResponse aeResponse;
+  aeResponse.set_success(true);
+  aeResponse.set_term(1);
+  aeResponse.set_id(2);
+  aeResponse.set_lastlogindex(2);
+
+  raft_->SetStateForTest({.currentTerm = 1,
+                          .commitIndex = 0,
+                          .lastCommitted = 0,
+                          .role = Role::LEADER,
+                          .log = CreateLogEntries(
+                              {
+                                  {0, "Transaction 1"},
+                                  {0, "Transaction 2"},
+                              },
+                              true),
+                          .nextIndex = std::vector<uint64_t>{0, 2, 2, 2, 2},
+                          .matchIndex = std::vector<uint64_t>{0, 2, 0, 1, 0}});
+
+  bool success = raft_->ReceiveAppendEntriesResponse(
+      std::make_unique<AppendEntriesResponse>(aeResponse));
+  EXPECT_TRUE(success);
+  EXPECT_THAT(raft_->GetMatchIndex(), ::testing::ElementsAre(0, 2, 2, 1, 0));
+  EXPECT_EQ(raft_->GetCommitIndex(), 0);
 }
 
 }  // namespace raft

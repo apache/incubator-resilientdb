@@ -81,9 +81,7 @@ TEST_F(RecoveryTest, ReadLog) {
                             Request::TYPE_NEWVIEW,     Request::TYPE_NEW_TXNS};
 
   std::vector<int> expected_types = {
-      Request::TYPE_PRE_PREPARE,
-      Request::TYPE_PREPARE,
-      Request::TYPE_COMMIT,
+      Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
       Request::TYPE_NEWVIEW,
   };
 
@@ -127,9 +125,7 @@ TEST_F(RecoveryTest, ReadLog_FlushOnce) {
                             Request::TYPE_NEWVIEW,     Request::TYPE_NEW_TXNS};
 
   std::vector<int> expected_types = {
-      Request::TYPE_PRE_PREPARE,
-      Request::TYPE_PREPARE,
-      Request::TYPE_COMMIT,
+      Request::TYPE_PRE_PREPARE, Request::TYPE_PREPARE, Request::TYPE_COMMIT,
       Request::TYPE_NEWVIEW,
   };
 

@@ -44,7 +44,8 @@ template <typename TDerived, typename TSystemInfoData, typename TCallback>
 class RecoveryBase {
  public:
   RecoveryBase(const ResDBConfig& config, CheckPoint* checkpoint,
-               Storage* storage);
+               Storage* storage,
+               std::function<void(uint64_t)> on_checkpoint = nullptr);
   ~RecoveryBase();
 
   void ReadLogs(
@@ -95,7 +96,8 @@ class RecoveryBase {
   // Derived class must implement these
   auto ParseDataListItem(std::vector<std::string>& data_list);
 
-  void PerformCallback(auto& request_list, TCallback call_back);
+  template <typename RequestList>
+  void PerformCallback(RequestList& request_list, TCallback call_back);
 
   void WriteSystemInfo();
 
@@ -115,6 +117,7 @@ class RecoveryBase {
   std::atomic<bool> stop_;
   int recovery_ckpt_time_s_;
   Storage* storage_;
+  std::function<void(uint64_t)> on_checkpoint_callback_;
 };
 
 #include "platform/consensus/recovery/recovery_impl.h"

@@ -4,7 +4,7 @@ Detect which tools have changed in the current commit/push
 by checking git diff against the tool-doc-map.json.
 
 Usage:
-    python ecosystem/pocketflow/scripts/detect_changed_tools.py [--base-ref <ref>]
+    python ecosystem/third_party/pocketflow/scripts/detect_changed_tools.py [--base-ref <ref>]
 
 Returns a list of tool names (one per line) that have changed.
 """
@@ -17,15 +17,15 @@ import subprocess
 import sys
 from pathlib import Path
 
-# Repo root is three levels up from this script
-REPO_ROOT = Path(__file__).resolve().parents[3]
-POCKETFLOW_DIR = REPO_ROOT / "ecosystem" / "pocketflow"
+# .../ecosystem/third_party/pocketflow/scripts/this_file.py
+POCKETFLOW_DIR = Path(__file__).resolve().parents[1]
+REPO_ROOT = POCKETFLOW_DIR.parents[2]
 TOOL_MAP_PATH = POCKETFLOW_DIR / "tool-doc-map.json"
 
 # Exclude these paths from triggering updates
 EXCLUDE_PATTERNS = [
     "ecosystem/AI-Tooling/beacon/**",  # Don't trigger on doc changes
-    "ecosystem/pocketflow/**",  # Don't trigger on pocketflow changes
+    "ecosystem/third_party/pocketflow/**",  # Don't trigger on pocketflow changes
 ]
 
 

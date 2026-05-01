@@ -78,7 +78,7 @@ struct RaftStatePatch {
   std::optional<uint64_t> currentTerm;
   std::optional<int> votedFor;
   std::optional<uint64_t> commitIndex;
-  std::optional<uint64_t> lastApplied;
+  std::optional<uint64_t> lastCommitted;
   std::optional<Role> role;
 
   std::optional<std::vector<LogEntry>> log;
@@ -114,13 +114,24 @@ class Raft : public common::ProtocolBase {
   virtual void SetRole(Role role);
   virtual void PrintDebugStateLocked() const;
   virtual void PrintDebugState() const;
+  void WriteMetadata();
+  uint64_t GetSnapshotLastIndex();
+
+  // These functions with writeMetadata are also used to replay information upon
+  // recovery. So, they are called with false during recovery, and true
+  // everywhere else.
   virtual void SetCurrentTerm(uint64_t currentTerm, bool writeMetadata = true);
   virtual void SetVotedFor(int votedFor, bool writeMetadata = true);
-  virtual void SetSeqIndexCoveredBySnapshot(int seq);
+  virtual void SetCurrentTermAndVotedFor(uint64_t currentTerm, int votedFor,
+                                         bool writeMetadata = true);
+  void SetSnapshotLastIndexAndTerm(uint64_t snapshot_last_index,
+                                   uint64_t snapshot_last_term,
+                                   bool writeMetadata = true);
   void AddToLog(LogEntry &logEntry, bool writeMetadata = true);
   void AddToLog(std::vector<LogEntry> logEntriesToAdd,
                 bool writeMetadata = true);
   void TruncateLog(uint64_t first, bool writeMetadata = true);
+  void TruncatePrefix(uint64_t index);
 
  private:
   mutable std::mutex mutex_;
@@ -146,7 +157,17 @@ class Raft : public common::ProtocolBase {
       const AeFields& msg, std::chrono::steady_clock::time_point timestamp);
   virtual bool InFlightPerFollowerLimitReachedLocked(int followerId) const;
   int GetLogicalLogSize() const;
+#ifdef RAFT_TEST_MODE
+ public:
+#endif
   const LogEntry& GetLogEntryAtIndex(uint64_t index) const;
+  const uint64_t GetLogTermAtIndex(uint64_t index) const;
+#ifdef RAFT_TEST_MODE
+ private:
+#endif
+  void SendInstallSnapshot(int followerId);
+  void TruncatePrefixLocked(uint64_t index);
+  void SetRoleLocked(Role role);
 
   // Persistent state on all servers:
   uint64_t currentTerm_; // Protected by mutex_
@@ -161,14 +182,17 @@ class Raft : public common::ProtocolBase {
 
   // Volatile state on all servers:
   uint64_t commitIndex_; // Protected by mutex_
-  uint64_t lastApplied_; // Protected by mutex_
+  // lastCommitted stores the last entry that has been passed to commit_, but it
+  // may not yet have been executed. Raft's Consensus file holds lastApplied_
+  uint64_t lastCommitted_;  // Protected by mutex_
   Role role_; // Protected by mutex_
   //int leaderId_; // Protected by mutex_
   std::vector<int> votes_; // Protected by mutex_
   std::vector<std::vector<InFlightMsg>> inflightVecs_; // Protected by mutex_
   //std::chrono::steady_clock::time_point last_ae_time_;
   //std::chrono::steady_clock::time_point last_heartbeat_time_; // Protected by mutex_
-  int seqAfterCheckpoint_;
+  int64_t snapshot_last_index_;
+  int64_t snapshot_last_term_;
 
   bool is_stop_;
   const uint64_t quorum_;
@@ -190,11 +214,10 @@ class Raft : public common::ProtocolBase {
  public:
   void SetStateForTest(RaftStatePatch patch) {
     std::lock_guard lk(mutex_);
-
     if (patch.currentTerm)  currentTerm_  = *patch.currentTerm;
     if (patch.votedFor)     votedFor_     = *patch.votedFor;
     if (patch.commitIndex)  commitIndex_  = *patch.commitIndex;
-    if (patch.lastApplied)  lastApplied_  = *patch.lastApplied;
+    if (patch.lastCommitted) lastCommitted_ = *patch.lastCommitted;
     if (patch.role)         role_         = *patch.role;
 
     if (patch.log) {
@@ -270,9 +293,9 @@ class Raft : public common::ProtocolBase {
     return commitIndex_;
   }
 
-  uint64_t GetLastApplied() const {
+  uint64_t GetLastCommitted() const {
     std::lock_guard<std::mutex> lock(mutex_);
-    return lastApplied_;
+    return lastCommitted_;
   }
 
   Role GetRole() const {

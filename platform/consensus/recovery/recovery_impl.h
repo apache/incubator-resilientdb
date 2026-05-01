@@ -19,8 +19,12 @@
 
 template <typename TDerived, typename TSystemInfoData, typename TCallback>
 RecoveryBase<TDerived, TSystemInfoData, TCallback>::RecoveryBase(
-    const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage)
-    : config_(config), checkpoint_(checkpoint), storage_(storage) {
+    const ResDBConfig& config, CheckPoint* checkpoint, Storage* storage,
+    std::function<void(uint64_t)> on_checkpoint)
+    : config_(config),
+      checkpoint_(checkpoint),
+      storage_(storage),
+      on_checkpoint_callback_(on_checkpoint) {
   recovery_enabled_ = config_.GetConfigData().recovery_enabled();
   file_path_ = config_.GetConfigData().recovery_path();
   if (file_path_.empty()) {
@@ -50,7 +54,7 @@ RecoveryBase<TDerived, TSystemInfoData, TCallback>::RecoveryBase(
 
   recovery_ckpt_time_s_ = config_.GetConfigData().recovery_ckpt_time_s();
   if (recovery_ckpt_time_s_ == 0) {
-    recovery_ckpt_time_s_ = 60;
+    recovery_ckpt_time_s_ = 30;
   }
 
   int ret =
@@ -160,32 +164,38 @@ std::string RecoveryBase<TDerived, TSystemInfoData, TCallback>::GenerateFile(
 template <typename TDerived, typename TSystemInfoData, typename TCallback>
 void RecoveryBase<TDerived, TSystemInfoData, TCallback>::FinishFile(
     int64_t seq) {
-  std::unique_lock<std::mutex> lk(mutex_);
-  Flush();
-  if (storage_) {
-    if (!storage_->Flush(true)) {
-      return;
+  {
+    std::unique_lock<std::mutex> lk(mutex_);
+    Flush();
+    if (storage_) {
+      if (!storage_->Flush(true)) {
+        return;
+      }
     }
+    std::string new_file_path = GenerateFile(seq, min_seq_, max_seq_);
+    close(fd_);
+
+    min_seq_ = -1;
+    max_seq_ = -1;
+
+    std::rename(file_path_.c_str(), new_file_path.c_str());
+
+    std::string dir_path =
+        std::filesystem::path(file_path_).parent_path().string();
+    int dir_fd = open(dir_path.c_str(), O_RDONLY);
+    fsync(dir_fd);
+    close(dir_fd);
+
+    LOG(INFO) << "rename:" << file_path_ << " to:" << new_file_path;
+    std::string next_file_path = GenerateFile(seq, -1, -1);
+    file_path_ = next_file_path;
+
+    OpenFile(file_path_);
   }
-  std::string new_file_path = GenerateFile(seq, min_seq_, max_seq_);
-  close(fd_);
 
-  min_seq_ = -1;
-  max_seq_ = -1;
-
-  std::rename(file_path_.c_str(), new_file_path.c_str());
-
-  std::string dir_path =
-      std::filesystem::path(file_path_).parent_path().string();
-  int dir_fd = open(dir_path.c_str(), O_RDONLY);
-  fsync(dir_fd);
-  close(dir_fd);
-
-  LOG(INFO) << "rename:" << file_path_ << " to:" << new_file_path;
-  std::string next_file_path = GenerateFile(seq, -1, -1);
-  file_path_ = next_file_path;
-
-  OpenFile(file_path_);
+  if (on_checkpoint_callback_) {
+    on_checkpoint_callback_(seq);
+  }
 }
 
 template <typename TDerived, typename TSystemInfoData, typename TCallback>
@@ -258,6 +268,7 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::Write(const char* data,
   int pos = 0;
   while (len > 0) {
     int write_len = write(fd_, data + pos, len);
+    if (write_len <= 0) break;
     len -= write_len;
     pos += write_len;
   }
@@ -377,7 +388,9 @@ RecoveryBase<TDerived, TSystemInfoData, TCallback>::GetSortedRecoveryFiles(
   }
 
   sort(e_list.begin(), e_list.end());
-  list.push_back(e_list.back());
+  if (!e_list.empty()) {
+    list.push_back(e_list.back());
+  }
   sort(list.begin(), list.end());
   return list;
 }
@@ -481,6 +494,15 @@ void RecoveryBase<TDerived, TSystemInfoData, TCallback>::ReadLogsFromFiles(
     }
   }
   if (request_list.size() == 0) {
+    LOG(ERROR) << " Request list is empty";
+    close(fd);
+    fd = open(path.c_str(), O_RDWR);
+    if (fd < 0) {
+      LOG(ERROR) << " open file as O_RDWR to truncate fail:" << path;
+    }
+    if (ftruncate(fd, 0) != 0) {
+      LOG(ERROR) << " Failed to truncate file";
+    }
     ftruncate(fd, 0);
   }
 

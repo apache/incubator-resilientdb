@@ -31,10 +31,14 @@ namespace raft {
 class MockRaftRecovery : public RaftRecovery {
  public:
   MockRaftRecovery(const ResDBConfig& config)
-      : RaftRecovery(config, mock_checkpoint_.get(), mock_storage_.get()) {}
+      : RaftRecovery(config, mock_checkpoint_.get(), mock_storage_.get(),
+                     nullptr) {}
 
   MOCK_METHOD(void, AddLogEntry, (const Entry* entry), ());
-  MOCK_METHOD(void, WriteMetadata, (int64_t current_term, int32_t voted_for), ());
+  MOCK_METHOD(void, WriteMetadata,
+              (int64_t current_term, int32_t voted_for,
+               uint64_t snapshot_last_index, uint64_t snapshot_last_term),
+              ());
   MOCK_METHOD(void, AddLogEntry, (std::vector<Entry>& entries_to_add), ());
   MOCK_METHOD(void, TruncateLog, (TruncationRecord truncate_beginning_at), ());
 

@@ -19,7 +19,13 @@
 
 #include <glog/logging.h>
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+
 #include "chain/storage/memory_db.h"
+#include "chain/storage/duckdb.h"
+#include "chain/storage/proto/duckdb_config.pb.h"
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
@@ -37,11 +43,18 @@ void SignalHandler(int sig_num) {
 }
 
 void ShowUsage() {
-  printf("<config> <private_key> <cert_file> [logging_dir]\n");
+  printf("<config> <private_key> <cert_file> "
+         "[--enable_duckdb] [--duckdb_path=<path>] "
+         "[--grafana_port=<port> | <grafana_port>]\n");
 }
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
+  if (config_data.has_duckdb_info()) {
+    const auto& duckdb_info = config_data.duckdb_info();
+    LOG(INFO) << "use duckdb storage, path=" << duckdb_info.path();
+    return NewDuckDB(duckdb_info.path(), duckdb_info);
+  }
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";
   return NewResLevelDB(db_path, config_data.leveldb_info());
@@ -64,8 +77,32 @@ int main(int argc, char** argv) {
   char* private_key_file = argv[2];
   char* cert_file = argv[3];
 
-  if (argc == 5) {
-    std::string grafana_port = argv[4];
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+  ResConfigData config_data = config->GetConfigData();
+  std::string grafana_port;
+
+  for (int i = 4; i < argc; ++i) {
+    std::string arg = argv[i];
+    if (arg == "--enable_duckdb") {
+      config_data.mutable_duckdb_info();
+    } else if (arg.rfind("--duckdb_path=", 0) == 0) {
+      config_data.mutable_duckdb_info()->set_path(
+          arg.substr(std::string("--duckdb_path=").size()));
+    } else if (arg.rfind("--grafana_port=", 0) == 0) {
+      grafana_port = arg.substr(std::string("--grafana_port=").size());
+    } else if (grafana_port.empty() &&
+               std::all_of(arg.begin(), arg.end(),
+                           [](unsigned char ch) { return std::isdigit(ch); })) {
+      // Backward-compatible: allow bare grafana port as 4th arg.
+      grafana_port = arg;
+    } else {
+      ShowUsage();
+      exit(1);
+    }
+  }
+
+  if (!grafana_port.empty()) {
     std::string grafana_address = "0.0.0.0:" + grafana_port;
 
     auto monitor_port = Stats::GetGlobalStats(5);
@@ -73,15 +110,18 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "monitoring port:" << grafana_address;
   }
 
-  std::unique_ptr<ResDBConfig> config =
-      GenerateResDBConfig(config_file, private_key_file, cert_file);
-  ResConfigData config_data = config->GetConfigData();
-
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+  if (config_data.has_duckdb_info() &&
+      config_data.duckdb_info().path().empty()) {
+    config_data.mutable_duckdb_info()->set_path(db_path + "duckdb.db");
+  }
   LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(
       config_file, private_key_file, cert_file,
-      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr);
+      std::make_unique<KVExecutor>(NewStorage(db_path, config_data)), nullptr,
+      [config_data](ResDBConfig* config) {
+        config->SetConfigData(config_data);
+      });
   server->Run();
 }

@@ -32,13 +32,14 @@ namespace raft {
 Consensus::Consensus(const ResDBConfig& config,
                      std::unique_ptr<TransactionManager> executor)
     : common::Consensus(config, std::move(executor)),
-    leader_election_manager_(std::make_unique<LeaderElectionManager>(config_)),
-    system_info_(std::make_unique<SystemInfo>(config_)),
-    checkpoint_manager_(std::make_unique<CheckPointManager>(
-          config_, GetBroadCastClient(), GetSignatureVerifier(),
-          system_info_.get())),
-    recovery_(std::make_unique<RaftRecovery>(config_, checkpoint_manager_.get(),
-                                         transaction_executor_->GetStorage())) {
+      leader_election_manager_(
+          std::make_unique<LeaderElectionManager>(config_)),
+      system_info_(std::make_unique<SystemInfo>(config_)),
+      raft_checkpoint_manager_(std::make_unique<RaftCheckPoint>()),
+      recovery_(std::make_unique<RaftRecovery>(
+          config_, raft_checkpoint_manager_.get(),
+          transaction_executor_->GetStorage(),
+          [this](uint64_t seq) { OnCheckpointFinish(seq); })) {
   //LOG(INFO) << "JIM -> " << __FUNCTION__ << ": In consensus constructor";
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
@@ -126,6 +127,8 @@ void Consensus::RecoverFromLogs() {
                   << " voted for: " << metadata.voted_for;
         raft_->SetCurrentTerm(metadata.current_term, false);
         raft_->SetVotedFor(metadata.voted_for, false);
+        raft_->SetSnapshotLastIndexAndTerm(metadata.snapshot_last_index,
+                                           metadata.snapshot_last_term, false);
       },
       [&](std::unique_ptr<WALRecord> record) {
         switch (record->payload_case()) {
@@ -144,7 +147,7 @@ void Consensus::RecoverFromLogs() {
             break;
         }
       },
-      [&](int seq) { raft_->SetSeqIndexCoveredBySnapshot(seq); });
+      [](int) {});
 }
 
 int Consensus::ProcessNewTransaction(std::unique_ptr<Request> request) {
@@ -160,6 +163,29 @@ int Consensus::CommitMsg(const google::protobuf::Message& msg) {
   auto execReq = std::make_unique<Request>(*req);
   transaction_executor_->Commit(std::move(execReq));
   return 0;
+}
+
+int Consensus::ResponseMsg(const BatchUserResponse& batch_resp) {
+  // While we may receive these ResponseMsg's out of order, we do know the
+  // execution of transactions are guaranteed to be in order, so we know all
+  // transactions before batch_resp.seq() have been executed.
+  last_applied_ = std::max(batch_resp.seq(), last_applied_);
+
+  // raft_checkpoint_manager_->SetStableCheckpoint(batch_resp.seq());
+  if (batch_resp.seq() >= snapshot_interval_ + last_snapshot_initiated_at_) {
+    LOG(INFO) << "Initiating checkpoint at seq: " << batch_resp.seq();
+    // Update the checkpoint in the manager
+    raft_checkpoint_manager_->SetStableCheckpoint(batch_resp.seq());
+    last_snapshot_initiated_at_ = batch_resp.seq();
+    LOG(INFO) << "Next Checkpoint will be after "
+              << (snapshot_interval_ + last_snapshot_initiated_at_);
+  }
+  return common::Consensus::ResponseMsg(batch_resp);
+};
+
+void Consensus::OnCheckpointFinish(uint64_t seq) {
+  LOG(INFO) << "Checkpointed all entries up to " << seq;
+  // raft_->TruncatePrefix(seq);
 }
 
 }  // namespace raft

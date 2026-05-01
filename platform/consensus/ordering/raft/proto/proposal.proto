@@ -27,6 +27,7 @@ message Entry {
 }
 
 message TruncationRecord {
+  // Including this index, remove it and everything after it.
   uint64 truncate_from_index = 1;
   uint64 truncate_from_term  = 2;
 }

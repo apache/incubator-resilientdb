@@ -56,7 +56,8 @@ void PBFTRecovery::Init() {
 
   CallbackType callback = [this](std::unique_ptr<Context> context,
                                  std::unique_ptr<Request> request) {
-    min_seq_ == -1 ? min_seq_ = request->seq()
+    min_seq_ = (min_seq_ == -1)
+                   ? request->seq()
                    : std::min(min_seq_, static_cast<int64_t>(request->seq()));
     max_seq_ = std::max(max_seq_, static_cast<int64_t>(request->seq()));
   };

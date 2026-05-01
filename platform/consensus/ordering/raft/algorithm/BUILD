@@ -81,6 +81,7 @@ cc_test(
     srcs = [
         "raft_append_entries_test.cpp",
         "raft_tests.h",
+        "raft_test_util.h"
     ],
     copts = ["-DRAFT_TEST_MODE"],
     deps = [
@@ -101,6 +102,7 @@ cc_test(
     srcs = [
         "raft_append_entries_response_test.cpp",
         "raft_tests.h",
+        "raft_test_util.h"
     ],
     copts = ["-DRAFT_TEST_MODE"],
     deps = [
@@ -121,6 +123,7 @@ cc_test(
     srcs = [
         "raft_request_vote_test.cpp",
         "raft_tests.h",
+        "raft_test_util.h"
     ],
     copts = ["-DRAFT_TEST_MODE"],
     deps = [
@@ -141,6 +144,7 @@ cc_test(
     srcs = [
         "raft_request_vote_response_test.cpp",
         "raft_tests.h",
+        "raft_test_util.h"
     ],
     copts = ["-DRAFT_TEST_MODE"],
     deps = [
@@ -148,6 +152,28 @@ cc_test(
         ":mock_leader_election_manager",
         "//platform/consensus/recovery:mock_raft_recovery",
         "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_integration_test",
+    srcs = [
+        "raft_integration_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//platform/consensus/checkpoint:mock_checkpoint",
         "//common/crypto:mock_signature_verifier",
         "//platform/config:resdb_config_utils",
         "//common/test:test_main",

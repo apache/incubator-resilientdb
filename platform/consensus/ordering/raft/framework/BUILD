@@ -20,20 +20,13 @@ package(default_visibility = ["//platform/consensus/ordering/raft:__subpackages_
 
 
 cc_library(
-    name = "checkpoint_manager",
-    srcs = ["checkpoint_manager.cpp"],
-    hdrs = ["checkpoint_manager.h"],
+    name = "raft_checkpoint_manager",
+    hdrs = ["raft_checkpoint_manager.h"],
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [
-        "//platform/consensus/ordering/common:transaction_utils",
-        "//chain/state:chain_state",
-        "//common/crypto:signature_verifier",
-        "//interface/common:resdb_txn_accessor",
-        "//platform/config:resdb_config",
-        "//platform/consensus/checkpoint",
-        "//platform/consensus/execution:transaction_executor",
-        "//platform/networkstrate:replica_communicator",
-        "//platform/networkstrate:server_comm",
-        "//platform/proto:checkpoint_info_cc_proto",
+        "//platform/consensus/checkpoint:checkpoint"
     ],
 )
 
@@ -45,7 +38,7 @@ cc_library(
         "//visibility:public",
     ],
     deps = [
-        ":checkpoint_manager",
+        ":raft_checkpoint_manager",
         "//platform/consensus/recovery:raft_recovery",
         "//common/utils",
         "//platform/consensus/ordering/common/framework:consensus",
