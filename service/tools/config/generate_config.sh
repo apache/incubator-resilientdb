@@ -87,6 +87,28 @@ done
 
 python3 ${CONFIG_TOOLS_BIN} ./server.config ./server.config.json 
 mv server.config.json ${output_path}/server/server.config
-mv client.config ${output_path}/interface/service.config
+
+python3 - <<'PY'
+import json
+
+replicas = []
+with open("client.config.raw", "r") as f:
+    for line in f:
+        line = line.strip()
+        if not line:
+            continue
+        idx, ip, port = line.split()
+        replicas.append({
+            "id": int(idx),
+            "ip": ip,
+            "port": int(port)
+        })
+
+with open("client.config", "w") as f:
+    json.dump({"replica_info": replicas}, f, indent=2)
+PY
+
+rm -f client.config.raw
+
 echo "config done:" ${output_path}/server/server.config
 
