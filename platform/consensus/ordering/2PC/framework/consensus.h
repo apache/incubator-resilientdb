@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <chrono>
+
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/common/framework/consensus.h"
 #include "platform/consensus/ordering/2PC/algorithm/twopc.h"
@@ -42,6 +45,9 @@ class Consensus : public common::Consensus {
  private:
   std::unique_ptr<TwoPC> twopc_;
   int coordinator_id_ = 0;
+  std::atomic<uint64_t> coordinator_commits_{0};
+  std::atomic<uint64_t> participant_commits_{0};
+  std::chrono::steady_clock::time_point eval_start_;
 };
 
 }  // namespace twopc
