@@ -9,9 +9,9 @@ nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cer
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > server1.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert > server2.log 2>&1 &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert > server3.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_5.cert > server4.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_6.cert > server5.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_7.cert > server6.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_8.cert > server7.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert > server4.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node6.key.pri $CERT_PATH/cert_6.cert > server5.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node7.key.pri $CERT_PATH/cert_7.cert > server6.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node8.key.pri $CERT_PATH/cert_8.cert > server7.log 2>&1 &
 
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_9.cert > client.log 2>&1 &
+nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node9.key.pri $CERT_PATH/cert_9.cert > client.log 2>&1 &
