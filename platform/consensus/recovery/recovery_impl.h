@@ -54,7 +54,7 @@ RecoveryBase<TDerived, TSystemInfoData, TCallback>::RecoveryBase(
 
   recovery_ckpt_time_s_ = config_.GetConfigData().recovery_ckpt_time_s();
   if (recovery_ckpt_time_s_ == 0) {
-    recovery_ckpt_time_s_ = 30;
+    recovery_ckpt_time_s_ = 60;
   }
 
   int ret =
