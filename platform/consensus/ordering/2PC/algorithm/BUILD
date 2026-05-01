@@ -16,10 +16,15 @@
 # under the License.
 #
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = ["//platform/consensus/ordering:__subpackages__"])
 
-alias(
-    name = "consensus",
-    actual = "//platform/consensus/ordering/2PC/framework:consensus",
-    visibility = ["//visibility:public"],
+
+cc_library(
+    name = "twopc",
+    srcs = ["twopc.cpp"],
+    hdrs = ["twopc.h"],
+    deps = [
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
+        "//platform/proto:resdb_cc_proto",
+    ],
 )
