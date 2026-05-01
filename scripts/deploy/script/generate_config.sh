@@ -97,7 +97,7 @@ with open("client.config.raw", "r") as f:
             "port": int(port)
         })
 
-with open("client.config", "w") as f:
+with open("interface/service.config", "w") as f:
     json.dump({"replica_info": replicas}, f, indent=2)
 PY
 
