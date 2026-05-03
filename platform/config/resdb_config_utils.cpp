@@ -96,7 +96,7 @@ ReplicaInfo GenerateReplicaInfo(int id, const std::string& ip, int port) {
 std::string RemoveJsonComments(const std::string& jsonWithComments) {
   std::string result =
       std::regex_replace(jsonWithComments, std::regex("/\\*.*?\\*/"), "");
-  result = std::regex_replace(result, std::regex("//.*?\\n"), "\n");
+  result = std::regex_replace(result, std::regex("(^|\n)//[^\n]*"), "");
   return result;
 }
 

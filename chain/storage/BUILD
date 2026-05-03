@@ -66,6 +66,8 @@ cc_library(
         ":storage",
         "//chain/storage/proto:ipfs_config_cc_proto",
         "//common:comm",
+        "@boost//:asio",
+        "@boost//:beast",
     ],
 )
 
@@ -117,5 +119,14 @@ cc_test(
         ":tiered_storage",
         ":ipfs_client",
         "//common/test:test_main",
+    ],
+)
+
+cc_binary(
+    name = "ipfs_integration_test",
+    srcs = ["ipfs_integration_test.cpp"],
+    deps = [
+        ":ipfs_client",
+        "//chain/storage/proto:ipfs_config_cc_proto",
     ],
 )

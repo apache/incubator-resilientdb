@@ -26,6 +26,8 @@
 #include "service/utils/server_factory.h"
 #ifdef ENABLE_LEVELDB
 #include "chain/storage/leveldb.h"
+#include "chain/storage/tiered_storage.h"
+#include "chain/storage/ipfs_client.h"
 #endif
 
 using namespace resdb;
@@ -42,12 +44,53 @@ void ShowUsage() {
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
+  LOG(ERROR) << "NewStorage: has_storage_config=" << config_data.has_storage_config();
 #ifdef ENABLE_LEVELDB
-  LOG(INFO) << "use leveldb storage.";
+  int backend_val = -1;
+  if (config_data.has_storage_config()) {
+    backend_val = (int)config_data.storage_config().backend();
+  }
+  LOG(ERROR) << "NewStorage: ENABLE_LEVELDB is defined, backend_val=" << backend_val
+            << " TIERED=" << (int)StorageConfig::TIERED
+            << " MEMORYDB=" << (int)StorageConfig::MEMORYDB
+            << " LEVELDB_ONLY=" << (int)StorageConfig::LEVELDB_ONLY;
+  if (config_data.has_storage_config() &&
+      config_data.storage_config().backend() == StorageConfig::TIERED) {
+    const auto& storage_config = config_data.storage_config();
+    LOG(ERROR) << "Using tiered storage with backend: TIERED";
+
+    auto warm = NewResLevelDB(db_path, config_data.leveldb_info());
+    auto hot = NewMemoryDB();
+    auto ipfs = IPFSClient::Create(storage_config.ipfs_info());
+
+    TieredStorageConfig tiered_config;
+    if (storage_config.has_tiered_info()) {
+      tiered_config = storage_config.tiered_info();
+    }
+    tiered_config.set_enabled(true);
+
+    auto tiered = TieredStorage::Create(
+        std::move(hot), std::move(warm),
+        storage_config.ipfs_info(), tiered_config);
+
+    LOG(ERROR) << "TieredStorage created: cold_threshold="
+              << tiered_config.cold_threshold_checkpoint()
+              << " ipfs_endpoint=" << storage_config.ipfs_info().api_endpoint();
+    return tiered;
+  }
+
+  if (config_data.has_storage_config() &&
+      config_data.storage_config().backend() == StorageConfig::MEMORYDB) {
+    LOG(ERROR) << "use memory storage.";
+    return NewMemoryDB();
+  }
+
+  LOG(ERROR) << "use leveldb storage.";
   return NewResLevelDB(db_path, config_data.leveldb_info());
-#endif
-  LOG(INFO) << "use memory storage.";
+#else
+  LOG(ERROR) << "use memory storage.";
   return NewMemoryDB();
+#endif
 }
 
 int main(int argc, char** argv) {

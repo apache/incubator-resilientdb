@@ -36,7 +36,12 @@ cc_binary(
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
     ] + select({
-        "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
+        "//chain/storage/setting:enable_leveldb_setting": [
+            "//chain/storage:leveldb",
+            "//chain/storage:tiered_storage",
+            "//chain/storage:ipfs_client",
+            "//chain/storage/proto:ipfs_config_cc_proto",
+        ],
         "//conditions:default": [],
     }),
 )

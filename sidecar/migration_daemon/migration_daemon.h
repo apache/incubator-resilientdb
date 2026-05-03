@@ -19,10 +19,11 @@
 
 #pragma once
 
+#include <atomic>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <thread>
-#include <atomic>
 
 #include "chain/storage/storage.h"
 #include "chain/storage/ipfs_client.h"

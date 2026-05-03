@@ -18,9 +18,11 @@
  */
 
 #include <glog/logging.h>
+#include <chrono>
 #include <iostream>
 #include <memory>
 #include <cstring>
+#include <thread>
 
 #include "chain/storage/leveldb.h"
 #include "chain/storage/ipfs_client.h"
@@ -53,6 +55,26 @@ void ShowUsage() {
 
 int main(int argc, char** argv) {
   google::InitGoogleLogging(argv[0]);
+
+  for (int i = 1; i < argc - 1; i += 2) {
+    std::string arg = argv[i];
+    if (arg == "--leveldb_path") {
+      g_leveldb_path = argv[i + 1];
+    } else if (arg == "--ipfs_endpoint") {
+      g_ipfs_endpoint = argv[i + 1];
+    } else if (arg == "--cold_threshold") {
+      g_cold_threshold = std::stoi(argv[i + 1]);
+    } else if (arg == "--poll_interval") {
+      g_poll_interval = std::stoi(argv[i + 1]);
+    } else if (arg == "--batch_size") {
+      g_batch_size = std::stoi(argv[i + 1]);
+    } else if (arg == "--enable_migration") {
+      g_enable_migration = (std::string(argv[i + 1]) == "true");
+    } else if (arg == "--help") {
+      ShowUsage();
+      return 0;
+    }
+  }
   
   LOG(INFO) << "Starting Migration Sidecar Daemon";
   LOG(INFO) << "LevelDB path: " << g_leveldb_path;
@@ -66,7 +88,7 @@ int main(int argc, char** argv) {
   
   auto storage = resdb::storage::NewResLevelDB(
       leveldb_config.path(),
-      leveldb_config);
+      std::make_optional(leveldb_config));
   
   if (!storage) {
     LOG(ERROR) << "Failed to create LevelDB storage";
