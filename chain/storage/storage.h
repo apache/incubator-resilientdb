@@ -25,6 +25,12 @@
 
 namespace resdb {
 
+class DeletableStorage {
+ public:
+  virtual ~DeletableStorage() = default;
+  virtual bool DeleteKey(const std::string& key) = 0;
+};
+
 class Storage {
  public:
   Storage() = default;

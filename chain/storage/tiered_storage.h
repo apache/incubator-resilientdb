@@ -19,8 +19,10 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include "chain/storage/storage.h"
 #include "chain/storage/ipfs_client.h"
@@ -36,6 +38,7 @@ class TieredStorage : public Storage {
                 std::unique_ptr<Storage> warm_storage,
                 std::unique_ptr<IPFSClient> cold_client,
                 const TieredStorageConfig& config);
+  ~TieredStorage() override;
 
   int SetValue(const std::string& key, const std::string& value) override;
   int SetValueWithSeq(const std::string& key, const std::string& value,
@@ -85,16 +88,26 @@ class TieredStorage : public Storage {
                 uint64_t min_seq, uint64_t max_seq);
   uint64_t GetColdKeyCount() const { return manifest_.cold_keys(); }
 
+  void StartMigration();
+  void StopMigration();
+  uint64_t GetMigratedKeyCount() const { return migrated_keys_.load(); }
+
+  bool LoadManifestFromStorage(Storage* storage);
+
  private:
   std::string GetValueWithFallback(const std::string& key);
   std::string GetValueFromCold(const std::string& key);
   std::string GetIndexCID(const std::string& key) const;
 
   int SetValueInternal(Storage* storage, const std::string& key,
-                      const std::string& value);
+                       const std::string& value);
   std::string GetValueInternal(Storage* storage, const std::string& key);
-  bool LoadManifestFromStorage(Storage* storage);
   bool SaveManifestToStorage(Storage* storage);
+
+  void MigrationLoop();
+  bool MigrateColdData();
+  bool MigrateKey(const std::string& key, const std::string& value, uint64_t seq);
+  bool DeleteKeyFromWarm(const std::string& key);
 
   std::unique_ptr<Storage> hot_storage_;
   std::unique_ptr<Storage> warm_storage_;
@@ -104,6 +117,11 @@ class TieredStorage : public Storage {
   IndexManifest manifest_;
   std::string manifest_key_;
   bool manifest_loaded_ = false;
+
+  std::thread migration_thread_;
+  std::atomic<bool> migration_running_{false};
+  std::atomic<uint64_t> migrated_keys_{0};
+  uint64_t last_migrated_seq_ = 0;
 };
 
 }  // namespace storage

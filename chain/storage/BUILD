@@ -55,6 +55,8 @@ cc_library(
         "//common/lru:lru_cache",
         "//platform/statistic:stats",
         "//third_party:leveldb",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 
@@ -76,11 +78,14 @@ cc_library(
     srcs = ["tiered_storage.cpp"],
     hdrs = ["tiered_storage.h"],
     deps = [
+        ":leveldb",
         ":storage",
         ":ipfs_client",
         "//chain/storage/proto:ipfs_config_cc_proto",
         "//chain/storage/proto:tiered_index_cc_proto",
         "//common:comm",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/synchronization",
     ],
 )
 

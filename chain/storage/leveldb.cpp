@@ -162,6 +162,8 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
   if (block_cache_) {
     block_cache_->Put(key, value);
   }
+
+  absl::MutexLock lock(&batch_mutex_);
   batch_.Put(key, value);
 
   if (batch_.ApproximateSize() >= write_batch_size_) {
@@ -229,6 +231,7 @@ bool ResLevelDB::UpdateMetrics() {
 }
 
 bool ResLevelDB::Flush() {
+  absl::MutexLock lock(&batch_mutex_);
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
   if (status.ok()) {
     batch_.Clear();
@@ -423,6 +426,20 @@ void ResLevelDB::UpdateLastCkpt(uint64_t seq) {
 int ResLevelDB::SetLastCheckpoint(uint64_t ckpt) {
   LOG(ERROR) << " update last ckpt :" << ckpt;
   return SetValue(ckpt_key, std::to_string(ckpt));
+}
+
+bool ResLevelDB::DeleteKey(const std::string& key) {
+  absl::MutexLock lock(&batch_mutex_);
+  batch_.Delete(key);
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
+  if (status.ok()) {
+    batch_.Clear();
+    LOG(INFO) << "Deleted key from LevelDB: " << key;
+    return true;
+  }
+  LOG(ERROR) << "Failed to delete key from LevelDB: " << key
+             << ", error: " << status.ToString();
+  return false;
 }
 
 uint64_t ResLevelDB::GetLastCheckpointInternal() {

@@ -1,4 +1,11 @@
 /*
+ * DEPRECATED: This file is no longer used.
+ * Migration logic has been integrated directly into TieredStorage as a background thread.
+ * The standalone migration daemon is obsolete because LevelDB does not support concurrent
+ * access from multiple processes (LOCK file conflict).
+ *
+ * This file is preserved for reference only. Do not modify.
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information

@@ -23,6 +23,8 @@
 #include <google/protobuf/util/json_util.h>
 #include <glog/logging.h>
 
+#include "chain/storage/leveldb.h"
+
 namespace resdb {
 namespace storage {
 
@@ -31,6 +33,8 @@ namespace {
 constexpr const char* kManifestKey = "_tiered_manifest";
 constexpr const char* kColdThresholdKey = "_cold_threshold";
 constexpr int kDefaultColdThreshold = 2;
+constexpr int kDefaultPollIntervalSeconds = 60;
+constexpr int kDefaultBatchSize = 100;
 
 }
 
@@ -57,7 +61,12 @@ TieredStorage::TieredStorage(
 
   if (config_.enabled() && cold_client_ && cold_client_->IsEnabled()) {
     LoadManifestFromStorage(warm_storage_.get());
+    StartMigration();
   }
+}
+
+TieredStorage::~TieredStorage() {
+  StopMigration();
 }
 
 int TieredStorage::SetValue(const std::string& key, const std::string& value) {
@@ -353,6 +362,176 @@ bool TieredStorage::SaveManifestToStorage(Storage* storage) {
   LOG(INFO) << "TieredStorage: saved manifest, "
             << "size=" << manifest_data.size() << " bytes";
   return true;
+}
+
+void TieredStorage::StartMigration() {
+  if (!IsColdEnabled()) {
+    LOG(WARNING) << "TieredStorage: cannot start migration, cold storage not enabled";
+    return;
+  }
+
+  if (migration_running_.load()) {
+    LOG(WARNING) << "TieredStorage: migration thread already running";
+    return;
+  }
+
+  if (!config_.auto_migration_enabled()) {
+    LOG(INFO) << "TieredStorage: auto migration not enabled in config";
+    return;
+  }
+
+  migration_running_.store(true);
+  migration_thread_ = std::thread(&TieredStorage::MigrationLoop, this);
+  LOG(INFO) << "TieredStorage: migration thread started";
+}
+
+void TieredStorage::StopMigration() {
+  if (!migration_running_.load()) {
+    return;
+  }
+
+  migration_running_.store(false);
+  if (migration_thread_.joinable()) {
+    migration_thread_.join();
+  }
+  LOG(INFO) << "TieredStorage: migration thread stopped, "
+            << "total_migrated=" << migrated_keys_.load();
+}
+
+void TieredStorage::MigrationLoop() {
+  int poll_interval = config_.poll_interval_seconds();
+  if (poll_interval <= 0) {
+    poll_interval = kDefaultPollIntervalSeconds;
+  }
+
+  LOG(INFO) << "TieredStorage: migration polling started, interval="
+            << poll_interval << "s";
+
+  while (migration_running_.load()) {
+    try {
+      MigrateColdData();
+    } catch (const std::exception& e) {
+      LOG(ERROR) << "TieredStorage: migration error: " << e.what();
+    }
+
+    for (int i = 0; i < poll_interval && migration_running_.load(); ++i) {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  }
+
+  LOG(INFO) << "TieredStorage: migration polling stopped";
+}
+
+bool TieredStorage::MigrateColdData() {
+  uint64_t current_checkpoint = GetLastCheckpoint();
+  uint64_t threshold = config_.cold_threshold_checkpoint();
+
+  if (current_checkpoint <= threshold) {
+    LOG(INFO) << "TieredStorage: checkpoint " << current_checkpoint
+              << " not past threshold " << threshold;
+    return false;
+  }
+
+  uint64_t cold_threshold_seq = current_checkpoint - threshold;
+
+  if (cold_threshold_seq <= last_migrated_seq_) {
+    LOG(INFO) << "TieredStorage: no new data to migrate, last_migrated_seq="
+              << last_migrated_seq_ << ", cold_threshold_seq=" << cold_threshold_seq;
+    return false;
+  }
+
+  LOG(INFO) << "TieredStorage: migrating data with seq < " << cold_threshold_seq
+            << " (last_migrated_seq=" << last_migrated_seq_ << ")";
+
+  int batch_size = config_.batch_size();
+  if (batch_size <= 0) {
+    batch_size = kDefaultBatchSize;
+  }
+
+  int migrated = 0;
+  uint64_t max_seq_migrated = last_migrated_seq_;
+
+  auto all_items = warm_storage_->GetAllItemsWithSeq();
+
+  for (const auto& [key, value_list] : all_items) {
+    for (const auto& [value, seq] : value_list) {
+      if (seq >= cold_threshold_seq) {
+        continue;
+      }
+
+      if (seq <= last_migrated_seq_) {
+        continue;
+      }
+
+      if (GetIndexCID(key) != "") {
+        continue;
+      }
+
+      if (MigrateKey(key, value, seq)) {
+        if (seq > max_seq_migrated) {
+          max_seq_migrated = seq;
+        }
+        migrated++;
+      }
+
+      if (migrated >= batch_size) {
+        LOG(INFO) << "TieredStorage: batch size reached: " << migrated;
+        break;
+      }
+    }
+
+    if (migrated >= batch_size) {
+      break;
+    }
+  }
+
+  if (max_seq_migrated > last_migrated_seq_) {
+    last_migrated_seq_ = max_seq_migrated;
+  }
+
+  LOG(INFO) << "TieredStorage: migration cycle complete: " << migrated
+            << " keys migrated, last_migrated_seq=" << last_migrated_seq_;
+
+  return migrated > 0;
+}
+
+bool TieredStorage::MigrateKey(const std::string& key, const std::string& value, uint64_t seq) {
+  std::string cid = cold_client_->Add(value);
+  if (cid.empty()) {
+    LOG(ERROR) << "TieredStorage: failed to upload to IPFS: key=" << key;
+    return false;
+  }
+
+  LOG(INFO) << "TieredStorage: uploaded to IPFS: key=" << key << ", cid=" << cid;
+
+  if (!AddToIndex(key, cid, seq, seq)) {
+    LOG(ERROR) << "TieredStorage: failed to add to index: key=" << key;
+    return false;
+  }
+
+  if (!DeleteKeyFromWarm(key)) {
+    LOG(ERROR) << "TieredStorage: failed to delete from warm storage: key=" << key;
+    return false;
+  }
+
+  migrated_keys_.fetch_add(1);
+  LOG(INFO) << "TieredStorage: key migrated successfully: key=" << key;
+  return true;
+}
+
+bool TieredStorage::DeleteKeyFromWarm(const std::string& key) {
+  if (!IsTiered() || !IsColdEnabled()) {
+    LOG(ERROR) << "TieredStorage: delete attempted but tiered storage not enabled";
+    return false;
+  }
+
+  auto* deletable = dynamic_cast<DeletableStorage*>(warm_storage_.get());
+  if (!deletable) {
+    LOG(ERROR) << "TieredStorage: warm storage does not support deletion";
+    return false;
+  }
+
+  return deletable->DeleteKey(key);
 }
 
 }  // namespace storage
