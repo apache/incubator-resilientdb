@@ -21,12 +21,14 @@
 
 #include <glog/logging.h>
 
+#include "eEVM/util.h"
+
 namespace resdb {
 namespace contract {
 
 ContractTransactionManager::ContractTransactionManager(Storage* storage)
     : contract_manager_(std::make_unique<ContractManager>(storage)),
-      address_manager_(std::make_unique<AddressManager>()) {}
+      address_manager_(std::make_unique<AddressManager>(storage)) {}
 
 std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     const std::string& client_request) {
@@ -72,6 +74,13 @@ std::unique_ptr<std::string> ContractTransactionManager::ExecuteData(
     auto res_or = SetBalance(request);
     if (res_or.ok()) {
       response.set_res("1");
+    } else {
+      ret = -1;
+    }
+  } else if (request.cmd() == resdb::contract::Request::TRANSFER_ROK) {
+    auto res_or = TransferRoK(request);
+    if (res_or.ok()) {
+      response.set_res(*res_or);
     } else {
       ret = -1;
     }
@@ -144,6 +153,69 @@ absl::StatusOr<std::string> ContractTransactionManager::SetBalance(
   Address balance = AddressManager::HexToAddress(request.balance());
   int ret = contract_manager_->SetBalance(account, balance);
   return std::to_string(ret);
+}
+
+absl::StatusOr<std::string> ContractTransactionManager::TransferRoK(
+    const Request& request) {
+  if (!request.has_from_account() || !request.has_to_account() ||
+      !request.has_amount() || request.from_account().empty() ||
+      request.to_account().empty() || request.amount().empty()) {
+    return absl::InvalidArgumentError(
+        "from_account, to_account, and amount (hex) are required.");
+  }
+
+  Address from = AddressManager::HexToAddress(request.from_account());
+  Address to = AddressManager::HexToAddress(request.to_account());
+  if (!address_manager_->Exist(from)) {
+    return absl::InvalidArgumentError("From account not exist.");
+  }
+  if (!address_manager_->Exist(to)) {
+    return absl::InvalidArgumentError("To account not exist.");
+  }
+  if (from == to) {
+    return absl::InvalidArgumentError("From and to must differ.");
+  }
+
+  uint256_t amount = 0;
+  try {
+    amount = eevm::to_uint256(request.amount());
+  } catch (...) {
+    return absl::InvalidArgumentError("Invalid amount.");
+  }
+  if (amount == 0) {
+    return absl::InvalidArgumentError("Amount must be positive.");
+  }
+
+  std::string from_bal_str = contract_manager_->GetBalance(from);
+  std::string to_bal_str = contract_manager_->GetBalance(to);
+  uint256_t from_bal = 0;
+  uint256_t to_bal = 0;
+  try {
+    if (!from_bal_str.empty()) {
+      from_bal = eevm::to_uint256(from_bal_str);
+    }
+    if (!to_bal_str.empty()) {
+      to_bal = eevm::to_uint256(to_bal_str);
+    }
+  } catch (...) {
+    return absl::InvalidArgumentError("Invalid persisted balance encoding.");
+  }
+
+  if (from_bal < amount) {
+    return absl::InvalidArgumentError("Insufficient RoK balance.");
+  }
+
+  uint256_t new_from = from_bal - amount;
+  uint256_t new_to = to_bal + amount;
+  if (new_to < to_bal) {
+    return absl::InvalidArgumentError("Transfer would overflow recipient balance.");
+  }
+
+  if (contract_manager_->SetBalance(from, new_from) != 0 ||
+      contract_manager_->SetBalance(to, new_to) != 0) {
+    return absl::InternalError("Failed to persist RoK transfer.");
+  }
+  return std::string("1");
 }
 
 }  // namespace contract

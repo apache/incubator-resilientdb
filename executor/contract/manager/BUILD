@@ -59,6 +59,7 @@ cc_library(
     hdrs = ["address_manager.h"],
     deps = [
         ":utils",
+        "//chain/storage",
         "//common:comm",
     ],
 )

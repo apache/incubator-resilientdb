@@ -47,6 +47,10 @@ class ContractClient : public TransactionConstructor {
   absl::StatusOr<std::string> SetBalance(const std::string& address,
                                          const std::string& balance);
 
+  absl::StatusOr<std::string> TransferRoK(const std::string& from_address,
+                                          const std::string& to_address,
+                                          const std::string& amount_hex);
+
  private:
   int SendRequestInternal(const resdb::contract::Request& request,
                           resdb::contract::Response* response);

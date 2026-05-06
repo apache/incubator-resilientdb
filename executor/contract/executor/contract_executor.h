@@ -43,6 +43,7 @@ class ContractTransactionManager : public TransactionManager {
 
   absl::StatusOr<std::string> GetBalance(const Request& request);
   absl::StatusOr<std::string> SetBalance(const Request& request);
+  absl::StatusOr<std::string> TransferRoK(const Request& request);
 
  private:
   std::unique_ptr<ContractManager> contract_manager_;

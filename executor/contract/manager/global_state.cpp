@@ -21,6 +21,8 @@
 
 #include <glog/logging.h>
 
+#include "eEVM/util.h"
+
 namespace resdb {
 namespace contract {
 
@@ -52,7 +54,16 @@ AccountState GlobalState::get(const Address& addr) {
   const auto acc = accounts.find(addr);
   if (acc != accounts.cend()) return acc->second;
 
-  return create(addr, 0, {});
+  uint256_t bal = 0;
+  std::string bal_str = GetBalance(addr);
+  if (!bal_str.empty()) {
+    try {
+      bal = eevm::to_uint256(bal_str);
+    } catch (...) {
+      LOG(ERROR) << "Invalid persisted balance; treating as 0 for address load.";
+    }
+  }
+  return create(addr, bal, {});
 }
 
 AccountState GlobalState::create(const Address& addr, const uint256_t& balance,

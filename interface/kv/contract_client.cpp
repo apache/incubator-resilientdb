@@ -149,6 +149,23 @@ absl::StatusOr<std::string> ContractClient::SetBalance(
   return response.res();
 }
 
+absl::StatusOr<std::string> ContractClient::TransferRoK(
+    const std::string& from_address, const std::string& to_address,
+    const std::string& amount_hex) {
+  Request request;
+  Response response;
+  request.set_from_account(from_address);
+  request.set_to_account(to_address);
+  request.set_amount(amount_hex);
+  request.set_cmd(Request::TRANSFER_ROK);
+
+  int ret = SendRequestInternal(request, &response);
+  if (ret != 0 || response.ret() != 0) {
+    return absl::InternalError("RoK transfer failed.");
+  }
+  return response.res();
+}
+
 int ContractClient::SendRequestInternal(const Request& request,
                                         Response* response) {
   KVRequest kv_request;

@@ -24,11 +24,15 @@
 #include "executor/contract/manager/utils.h"
 
 namespace resdb {
+
+class Storage;
+
 namespace contract {
 
 class AddressManager {
  public:
-  AddressManager() {}
+  AddressManager() : storage_(nullptr) {}
+  explicit AddressManager(Storage* storage);
 
   // Create an address holding a 20 byte value
   Address CreateRandomAddress();
@@ -40,6 +44,10 @@ class AddressManager {
   static Address HexToAddress(const std::string& address);
 
  private:
+  void PersistAccount(const Address& address);
+  void LoadAccountsFromStorage();
+
+  Storage* storage_;
   std::set<Address> users_;
 };
 

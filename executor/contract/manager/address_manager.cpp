@@ -21,21 +21,37 @@
 
 #include <glog/logging.h>
 
+#include <sstream>
+#include <string>
+
+#include "chain/storage/storage.h"
 #include "eEVM/util.h"
 
 namespace resdb {
 namespace contract {
+
+namespace {
+
+constexpr char kKnownAccountsKey[] = "state/known_accounts";
+
+}  // namespace
+
+AddressManager::AddressManager(Storage* storage) : storage_(storage) {
+  LoadAccountsFromStorage();
+}
 
 Address AddressManager::CreateRandomAddress() {
   std::vector<uint8_t> raw(20);
   std::generate(raw.begin(), raw.end(), []() { return rand(); });
   Address address = eevm::from_big_endian(raw.data(), raw.size());
   users_.insert(address);
+  PersistAccount(address);
   return address;
 }
 
 void AddressManager::AddExternalAddress(const Address& address) {
   users_.insert(address);  // New method implementation
+  PersistAccount(address);
 }
 
 bool AddressManager::Exist(const Address& address) {
@@ -52,6 +68,51 @@ std::string AddressManager::AddressToHex(const Address& address) {
 
 Address AddressManager::HexToAddress(const std::string& address) {
   return eevm::to_uint256(address);
+}
+
+void AddressManager::PersistAccount(const Address& address) {
+  if (!storage_) {
+    return;
+  }
+  const std::string hex = AddressToHex(address);
+  std::string blob = storage_->GetValue(kKnownAccountsKey);
+  std::set<std::string> existing;
+  std::istringstream in(blob);
+  std::string line;
+  while (std::getline(in, line)) {
+    if (!line.empty()) {
+      existing.insert(line);
+    }
+  }
+  if (existing.count(hex)) {
+    return;
+  }
+  existing.insert(hex);
+  std::ostringstream out;
+  bool first = true;
+  for (const auto& h : existing) {
+    if (!first) {
+      out << '\n';
+    }
+    first = false;
+    out << h;
+  }
+  storage_->SetValue(kKnownAccountsKey, out.str());
+}
+
+void AddressManager::LoadAccountsFromStorage() {
+  if (!storage_) {
+    return;
+  }
+  std::string blob = storage_->GetValue(kKnownAccountsKey);
+  std::istringstream in(blob);
+  std::string line;
+  while (std::getline(in, line)) {
+    if (line.empty()) {
+      continue;
+    }
+    users_.insert(HexToAddress(line));
+  }
 }
 
 }  // namespace contract

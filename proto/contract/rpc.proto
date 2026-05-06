@@ -33,6 +33,7 @@ message Request {
         EXECUTE = 3; // execute contract
         GETBALANCE = 4; // get balance directly (key-value)
         SETBALANCE = 5; // set balance directly (key-value)
+        TRANSFER_ROK = 6; // atomic native RoK transfer (debit/credit)
     };
 
     CMD cmd = 1;
@@ -47,6 +48,11 @@ message Request {
     optional string account = 6;
     // hex string
     optional string balance = 7;
+
+    // TRANSFER_ROK: from/to addresses (hex) and amount (hex uint256)
+    optional string from_account = 8;
+    optional string to_account = 9;
+    optional string amount = 10;
 }
 
 
