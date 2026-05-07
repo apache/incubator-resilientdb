@@ -32,6 +32,7 @@ class ResilientDBKnowledgeBase:
         self.architecture_knowledge = self._initialize_architecture_knowledge()
         self.performance_benchmarks = self._initialize_performance_data()
         self.use_case_database = self._initialize_use_cases()
+        self.developer_guides = self._initialize_developer_guides()
         
     def _initialize_applications_catalog(self) -> Dict[str, Any]:
         """Comprehensive catalog of all ResilientDB applications and their capabilities"""
@@ -385,6 +386,33 @@ class ResilientDBKnowledgeBase:
                 "research_significance": "Demonstrates how BFT systems can handle sensitive healthcare data",
                 "regulatory_compliance": "Designed to meet strict healthcare privacy regulations"
             }
+            ,
+            "resvault": {
+                "name": "ResVault",
+                "category": "Security & Developer Tools",
+                "description": "A secure vault application demonstrating encrypted storage patterns and ledger-backed auditability built on ResilientDB.",
+                "key_features": [
+                    "Encrypted off-chain storage with on-chain references",
+                    "Audit trails and tamper-evident logs",
+                    "Permissioned access control via on-chain policies",
+                    "High-throughput secure transaction processing"
+                ],
+                "technical_details": {
+                    "consensus_mechanism": "PBFT",
+                    "data_structure": "On-chain references + off-chain encrypted blobs",
+                    "storage": "Encrypted objects stored off-chain; hashes stored on ledger",
+                },
+                "use_cases": [
+                    "Secret storage for keys and certificates",
+                    "Compliance-oriented audit trails",
+                    "Enterprise-grade secure vault services"
+                ],
+                "research_significance": "Demonstrates combining encrypted off-chain storage with BFT ledger guarantees",
+                "implementation_highlights": [
+                    "Example integration with ResilientDB SDKs",
+                    "Design patterns for secure access and audit"
+                ]
+            }
         }
     
     def _initialize_research_database(self) -> Dict[str, Any]:
@@ -555,6 +583,36 @@ class ResilientDBKnowledgeBase:
             }
         }
 
+    def _initialize_developer_guides(self) -> Dict[str, Any]:
+        """Developer-focused guides and blog summaries extracted from community resources"""
+        return {
+            "resvault": {
+                "title": "ResVault - Developer Guide (blog summary)",
+                "content": (
+                    "ResVault is a secure vault built on ResilientDB that demonstrates how to build apps leveraging the ledger and consensus guarantees. "
+                    "Key developer takeaways:\n"
+                    "- Use ResilientDB SDKs to interact with the ledger and submit transactions.\n"
+                    "- Architect secret storage with on-chain references and off-chain encrypted blobs.\n"
+                    "- Leverage permissioned replicas and PBFT for tamper-evidence and audit trails.\n"
+                    "- Design access control and audit logging as on-chain policies or smart-contract-like policies.\n\n"
+                    "See full blog: https://blog.resilientdb.com/2025/03/13/ResVault.html"
+                )
+            },
+            "building_apps": {
+                "title": "How to build apps on ResilientDB (developer guide)",
+                "content": (
+                    "This guide summarizes best practices for building applications on ResilientDB (from community posts and developer blogs):\n"
+                    "1) Choose SDK and interaction model: use ResilientDB Python/Java/JS SDKs for submitting transactions and querying state.\n"
+                    "2) Data model: store references/hashes on-chain, keep large blobs off-chain and encrypted; design Merkle/DAG structures for complex objects.\n"
+                    "3) Consensus-aware design: assume PBFT ordering and plan idempotent operations and retry semantics.\n"
+                    "4) Access control and auditing: implement ACLs as on-chain policies and record audit trails via transaction logs.\n"
+                    "5) Performance: batch transactions, tune batching parameters and network topology, use sharding for scale.\n"
+                    "6) Testing and dev workflow: use local clusters, deterministic replay testing, and integration tests with mocked network partitions.\n\n"
+                    "For full examples, consult community blog posts and project READMEs (e.g., ResVault)."
+                )
+            }
+        }
+
     async def query_knowledge(self, query: str, domain: str = "general") -> Dict[str, Any]:
         """Advanced knowledge query processing with deep domain expertise"""
         query_lower = query.lower()
@@ -563,6 +621,9 @@ class ResilientDBKnowledgeBase:
         for app_name, app_data in self.applications_catalog.items():
             if app_name.lower() in query_lower or app_data["name"].lower() in query_lower:
                 return await self._generate_application_response(app_name, app_data, query)
+        # Developer guidance queries (how to build, SDK, developer guide)
+        if any(word in query_lower for word in ["build", "develop", "developer", "sdk", "how to build", "getting started", "guide", "tutorial"]):
+            return await self._generate_developer_guidance_response(query)
         
         # Research and academic queries
         if any(word in query_lower for word in ["research", "paper", "academic", "study"]):
@@ -808,6 +869,33 @@ ResilientDB represents cutting-edge research in Byzantine fault-tolerant systems
         return {
             "type": "consensus_research",
             "content": "PBFT consensus in ResilientDB is optimized for high throughput and low latency. Key innovations include pipeline processing, batch optimization, and hierarchical consensus architectures. Ask for more details!"
+        }
+
+    async def _generate_developer_guidance_response(self, query: str) -> Dict[str, Any]:
+        """Provide actionable developer guidance for building apps on ResilientDB."""
+        q = query.lower()
+        # If the query mentions ResVault specifically
+        if "resvault" in q or "res vault" in q:
+            guide = self.developer_guides.get("resvault")
+            return {
+                "type": "developer_guide",
+                "content": guide["content"],
+                "implementation_guidance": (
+                    "Developer steps:\n1. Install ResilientDB SDKs.\n2. Prototype data model with on-chain references.\n"
+                    "3. Implement access control and auditing.\n4. Test on a local cluster.\n"
+                ),
+                "further_exploration": "Read the ResVault blog for architecture and examples: https://blog.resilientdb.com/2025/03/13/ResVault.html"
+            }
+
+        # Generic developer guidance
+        guide = self.developer_guides.get("building_apps")
+        return {
+            "type": "developer_guide",
+            "content": guide["content"],
+            "implementation_guidance": (
+                "Starter checklist:\n- Pick SDK (Python/JS/Java).\n- Define transaction schemas.\n- Use off-chain encrypted storage for large blobs.\n- Add retries and idempotency for clients.\n"
+            ),
+            "further_exploration": "Ask for specific examples (e.g., how to store keys, build a vault, or design audits)."
         }
 
     async def _generate_performance_response(self, query: str) -> Dict[str, Any]:
