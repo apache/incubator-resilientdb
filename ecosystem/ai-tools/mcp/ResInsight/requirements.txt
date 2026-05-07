@@ -45,3 +45,4 @@ numpy>=1.24.0
 
 # Logging and utilities
 colorlog>=6.7.0
+python-dotenv>=1.0.0

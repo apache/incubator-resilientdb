@@ -28,6 +28,7 @@ An **interactive, conversational educational assistant** built with the Model Co
 - [Architecture](#architecture)
 - [Quick Start](#quick-start)
 - [How to Run](#how-to-run)
+- [Authentication & Security](#authentication--security)
 - [How to Use](#how-to-use)
 - [Example Scenarios](#example-scenarios)
 - [MCP Client Setup](#mcp-client-setup)
@@ -83,16 +84,17 @@ GitHub Repo
 
 ### Prerequisites
 
-- **Python 3.8+** (3.9+ recommended)
-- **Docker** (optional but recommended for ResilientDB examples)
-- **MCP-compatible client** (Claude Desktop, Continue, or any MCP client)
+- **Python 3.9+** (3.10+ recommended; the provided `Dockerfile` uses 3.11)
+- **Docker** (optional; use it to [run ResInsight in a container](#docker-optional))
+- **MCP-compatible client** (Claude Desktop, Continue, Cursor, or any MCP client)
+- **Tokens** — a **GitHub token** you create yourself, and an **`MCP_TOKEN`** for Bearer auth. **Locally**, you choose any strong secret (e.g. a random string) and use the same value in the server `.env` and your client. **To connect to the team’s cloud instance**, you must use the **`MCP_TOKEN` issued by the ResilientDB team** (see [Authentication & Security](#authentication--security))
 
 ### Installation Steps
 
-1. **Clone the repository**
+1. **Clone the repository** (from the Apache ResilientDB monorepo, ResInsight lives under `ecosystem/ai-tools/mcp/ResInsight`)
    ```bash
-   git clone <repository-url>
-   cd ResInsight
+   git clone https://github.com/apache/incubator-resilientdb.git
+   cd incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight
    ```
 
 2. **Create virtual environment**
@@ -116,53 +118,144 @@ GitHub Repo
 
 5. **Configure environment variables**
    
-   Create a `.env` file in the ResInsight directory:
+   Create a `.env` file in the ResInsight directory (same names the server reads in `server.py`):
+
+   - **`MCP_TOKEN`** — Any strong secret **you define** when running the server yourself (must match what clients send as `Authorization: Bearer …`). If you use **ResilientDB’s hosted (cloud) endpoint**, use the token **we give you**—do not invent one for that URL.
+   - **`GITHUB_TOKEN`** — **Strongly recommended.** A [GitHub Personal Access Token](https://github.com/settings/tokens) so the server can call the GitHub API without harsh rate limits.
+
    ```env
-   GITHUB_TOKEN=ghp_your_token_here
-   MCP_TOKEN=your_mcp_token_here
+   GITHUB_TOKEN=ghp_your_github_token_here
+   MCP_TOKEN=your_chosen_secret_or_team_issued_token
    ```
+
+   Optional: if you use **GitHub Enterprise**, you can set `GITHUB_ENTERPRISE_TOKEN` instead of `GITHUB_TOKEN` (the server prefers the enterprise token when set).
 
 ---
 
 ## How to Run
 
-### Direct Python Execution
+Configure **`.env`** before starting the server: set **`GITHUB_TOKEN`** for GitHub API access, and **`MCP_TOKEN`** to a secret you pick when self-hosting (or the value issued by the team if you only connect to cloud)—see [Authentication & Security](#authentication--security).
+
+### Direct Python execution
 
 ```bash
-# Ensure virtual environment is activated
+# Ensure virtual environment is activated and you are in this directory
 python server.py
 ```
+
+The server listens on **port 8005** with MCP over **streamable HTTP** at path **`/mcp`** (e.g. `http://localhost:8005/mcp`).
+
+### Docker (optional)
+
+From the `ResInsight` directory (where the `Dockerfile` is):
+
+```bash
+docker build -t resinsight-mcp .
+docker run -d --name resinsight --restart unless-stopped -p 8005:8005 --env-file .env resinsight-mcp
+```
+
+Ensure `.env` contains `GITHUB_TOKEN`, `MCP_TOKEN`, and any other variables you need. The image exposes port **8005**.
+
+---
+
+## ResInsight MCP Access
+
+### Hosted deployment
+
+If you only want to use ResInsight, no clone is required. Connect your MCP client to:
+
+`http://52.45.172.212:8005/mcp`
+
+Use the lab-issued Bearer token in your client configuration. The hosted server runs in Docker as `resinsight` with port mapping `8005:8005`.
+
+### Local setup
+
+To run ResInsight locally or modify the server:
+
+1. Clone this fork or the upstream repository.
+2. Create and activate a Python virtual environment.
+3. Install dependencies from `requirements.txt`.
+4. Create a `.env` file with `GITHUB_TOKEN` and `MCP_TOKEN`.
+5. Start the server with `python server.py`, or build and run the Docker image.
+
+### Claude Desktop configuration
+
+For local, self-hosted Claude Desktop usage, use the direct Python MCP server entry:
+
+```json
+{
+  "mcpServers": {
+    "resilientdb-assistant": {
+      "command": "python",
+      "args": ["C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight/server.py"],
+      "env": {
+        "PYTHONPATH": "C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight",
+        "GITHUB_TOKEN": "ghp_...",
+        "MCP_TOKEN": "same_as_server_env_or_cloud_issued_token"
+      }
+    }
+  }
+}
+```
+
+For remote/deployed usage in Claude builds that require a bridge, use the hosted `/mcp` URL with `mcp-remote`:
+
+```json
+{
+  "mcpServers": {
+    "ResInsight: AI-driven developer onboarding ecosystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://52.45.172.212:8005/mcp",
+        "--header",
+        "Authorization: Bearer MCP_TOKEN"
+      ],
+      "env": {
+        "MCP_REMOTE_CONFIG_DIR": "C:/Users/your-user/.mcp-auth"
+      }
+    }
+  }
+}
+```
+
+`MCP_REMOTE_CONFIG_DIR` is optional and only controls where the bridge stores auth/session files. If your client supports native remote HTTP MCP fields, you can use `url` + `headers` instead of the bridge.
 
 ---
 
 ## Authentication & Security
 
-ResInsight implements a **two-layer authentication system** for secure operation:
+ResInsight uses **two complementary credentials**:
 
-### 1. MCP Access Token (Client Authentication)
+### 1. MCP access token (`MCP_TOKEN`)
 
-**Purpose:** Authenticates clients connecting to the MCP server
+**Purpose:** Authenticates clients to the MCP HTTP server (`Authorization: Bearer …`).
 
-**Setup:**
-- Contact ExpoLab administrator (Harish or Bisman) to receive an MCP access token
-- Add to your `.env` file: `MCP_TOKEN=your_token_here`
-- Keep your token confidential and do not share it
+**Two cases:**
 
-### 2. GitHub Personal Access Token (Server-Side)
+| Scenario | Who sets `MCP_TOKEN` |
+|----------|----------------------|
+| **You run ResInsight locally** (your machine, Docker on your host, etc.) | **You.** Pick any strong random value, put it in the server’s `.env`, and configure your MCP client to send the **same** token. No need to contact the team. |
+| **You connect to ResilientDB’s cloud / team-hosted instance** | **The ResilientDB team.** Use the token we provide for that endpoint; clients must not use a self-made token against our server unless we’ve told you to. |
 
-**Purpose:** Enables the server to access GitHub repositories via API
+Treat every token as a secret: do not commit `.env` or share tokens in chat.
 
-**Required Scopes:**
-- `public_repo` - For accessing public repositories
-- `repo` - For accessing private repositories (if needed)
+If `MCP_TOKEN` is unset on **your own** server, it can start without Bearer enforcement (only for local, non-exposed use).
 
-**How to Generate:**
+### 2. GitHub Personal Access Token (`GITHUB_TOKEN`)
 
-1. Go to GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
-2. Click "Generate new token"
-3. Select required scopes: `repo` or `public_repo`
-4. Copy the token immediately (it won't be shown again)
-5. Add to your `.env` file: `GITHUB_PAT=ghp_your_token_here`
+**Purpose:** Lets the server call the GitHub API to analyze repositories.
+
+**Typical scopes:**
+- `public_repo` — public repositories
+- `repo` — private repositories, if needed
+
+**How to create:**
+
+1. GitHub → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)** → **Generate new token**
+2. Choose the scopes above as needed.
+3. Copy the token once and add to `.env`: `GITHUB_TOKEN=ghp_...`
 
 ---
 
@@ -248,14 +341,18 @@ Add the following to your Claude Desktop MCP configuration file:
   "mcpServers": {
     "resilientdb-assistant": {
       "command": "python",
-      "args": ["C:/path/to/your/project/server.py"],
+      "args": ["C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight/server.py"],
       "env": {
-        "PYTHONPATH": "C:/path/to/your/project"
+        "PYTHONPATH": "C:/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight",
+        "GITHUB_TOKEN": "ghp_...",
+        "MCP_TOKEN": "same_as_server_env_or_cloud_issued_token"
       }
     }
   }
 }
 ```
+
+Set `GITHUB_TOKEN` and `MCP_TOKEN` to match your setup: **same self-chosen secret as the server** when local, or the **team-issued token** when pointing the client at the cloud instance (or rely on `.env` if the client loads it).
 
 ### VS Code with Continue Extension
 
@@ -268,7 +365,11 @@ Add the following to your Continue configuration:
       "serverName": "resilientdb-assistant",
       "command": "python",
       "args": ["server.py"],
-      "cwd": "/path/to/your/project"
+      "cwd": "/path/to/incubator-resilientdb/ecosystem/ai-tools/mcp/ResInsight",
+      "env": {
+        "GITHUB_TOKEN": "ghp_...",
+        "MCP_TOKEN": "same_as_server_env_or_cloud_issued_token"
+      }
     }
   ]
 }
@@ -307,7 +408,7 @@ Add the following to your Continue configuration:
   "Explain Byzantine fault tolerance"
   "How does consensus work?"
   "Show me code examples"
-  "How is inventory uplaod implemented in Arrayan?"
+  "How is inventory upload implemented in Arrayan?"
   ```
 
 #### 🔴 Advanced Level
@@ -352,10 +453,10 @@ pip install -r requirements.txt
 
 #### MCP client connection issues
 
-- Check file paths in MCP configuration
+- Check file paths in MCP configuration (paths should point at `ecosystem/ai-tools/mcp/ResInsight` in the monorepo)
 - Ensure Python path is correct
 - Verify server starts without errors
-- Review `.env` file for required tokens
+- Ensure **`MCP_TOKEN`** matches the server: **your chosen secret** for local runs, or the **team-issued token** for the cloud instance; set **`GITHUB_TOKEN`** in `.env` or the client `env` block
 
 ---
 
@@ -371,14 +472,16 @@ pip install -r requirements.txt
 
 ### Quick Launch
 
-1. **Start the server**
+1. **Create `.env`** with `GITHUB_TOKEN` and `MCP_TOKEN` (pick your own secret for local runs; use the **team-issued token** only when connecting to the hosted cloud instance).
+
+2. **Start the server**
    ```bash
    python server.py
    ```
 
-2. **Configure your MCP client** (Claude Desktop or VS Code)
+3. **Configure your MCP client** (Claude Desktop, VS Code, or Cursor)
 
-3. **Ask your first question**
+4. **Ask your first question**
    ```
    "I'm new to ResilientDB, where should I start?"
    ```

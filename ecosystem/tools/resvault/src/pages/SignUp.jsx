@@ -22,11 +22,11 @@
 /*global chrome*/
 import '../css/App.css';
 import CryptoJS from "crypto-js";
-import IconButton from "@material-ui/core/IconButton";
-import Visibility from "@material-ui/icons/Visibility";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import Input from "@material-ui/core/Input";
+import IconButton from "@mui/material/IconButton";
+import Visibility from "@mui/icons-material/Visibility";
+import InputAdornment from "@mui/material/InputAdornment";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Input from "@mui/material/Input";
 import PasswordStrengthBar from 'react-password-strength-bar';
 import backicon from "../images/icons/arrow-back.svg";
 import React, { useContext, useState, useEffect } from 'react'; // Note the import of useEffect

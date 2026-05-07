@@ -45,13 +45,20 @@ function sendMessageToPage(request) {
 // Add event listener to listen for messages from the web page
 window.addEventListener('message', (event) => {
   if (event.source === window) {
-    const { direction } = event.data;
+    const { direction, type } = event.data;
     if (direction === 'commit') {
       handleCommitOperation(event);
     } else if (direction === 'login') {
       handleLoginOperation(event);
     } else if (direction === 'custom') {
       handleCustomOperation(event);
+    } else if (direction === 'request' && type === 'getPublicKey') {
+      handleGetPublicKeyOperation(event);
+    } else if (direction === 'request' && type === 'sign') {
+      handleSignOperation(event);
+    } else if (direction === 'info' && type === 'siteSignerInfo') {
+      // Handle signer info updates from the web app (optional, can be ignored)
+      console.log('[ResVault] Received siteSignerInfo:', event.data);
     }
   }
 });
@@ -469,6 +476,78 @@ function handleTransactionSubmit({ amount, data, recipient }) {
       if (response) {
         // Send the response to the page script
         window.postMessage({ type: 'FROM_CONTENT_SCRIPT', data: response }, '*');
+      }
+    }
+  );
+}
+
+// Handle getPublicKey request
+function handleGetPublicKeyOperation(event) {
+  const domain = window.location.hostname;
+
+  chrome.runtime.sendMessage(
+    {
+      action: 'getPublicKey',
+      domain: domain
+    },
+    (response) => {
+      if (response) {
+        // Send the response back to the page
+        window.postMessage({
+          type: 'FROM_CONTENT_SCRIPT',
+          data: {
+            type: 'getPublicKey',
+            direction: 'response',
+            publicKey: response.publicKey || null,
+            pubkey: response.publicKey || null,
+            success: response.success || false,
+            error: response.error || null
+          }
+        }, '*');
+      }
+    }
+  );
+}
+
+// Handle sign request
+function handleSignOperation(event) {
+  const domain = window.location.hostname;
+  const { payload } = event.data;
+
+  // Send message to background to get the private key for signing
+  chrome.runtime.sendMessage(
+    {
+      action: 'getSigningKeys',
+      domain: domain,
+      message: payload
+    },
+    (response) => {
+      if (response && response.success) {
+        // We have the keys, now sign in the page context using the web app's nacl library
+        // We'll send the keys back to the page and let it sign
+        window.postMessage({
+          type: 'FROM_CONTENT_SCRIPT',
+          data: {
+            type: 'signWithKeys',
+            direction: 'request',
+            privateKey: response.privateKey,
+            publicKey: response.publicKey,
+            message: payload
+          }
+        }, '*');
+      } else {
+        // Send error response
+        window.postMessage({
+          type: 'FROM_CONTENT_SCRIPT',
+          data: {
+            type: 'sign',
+            direction: 'response',
+            signature: null,
+            sig: null,
+            success: false,
+            error: response.error || 'Failed to retrieve keys for signing'
+          }
+        }, '*');
       }
     }
   );
