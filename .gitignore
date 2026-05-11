@@ -22,3 +22,6 @@ resdb/
 gmon.out
 .history/
 service/tools/data/cert
+service/tools/config/interface/service.config
+service/tools/config/server.config
+service/tools/config/server/server.config
