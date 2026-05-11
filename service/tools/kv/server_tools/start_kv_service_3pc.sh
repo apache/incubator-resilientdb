@@ -1,43 +1,111 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REPLICA_NUM=4
+CLIENT_NUM=1
+DO_BUILD=1
+BAZEL_ARGS=()
+
+usage() {
+  cat <<'USAGE'
+Usage: ./service/tools/kv/server_tools/start_kv_service_3pc.sh [options] [-- bazel_args...]
+
+Options:
+  --replicas N    Number of replica nodes to launch. Default: 4
+  --clients N     Number of client/proxy nodes to launch. Default: 1
+  --no-build      Skip bazel build and launch the existing binary.
+  -h, --help      Show this help message.
+
+Examples:
+  ./service/tools/kv/server_tools/start_kv_service_3pc.sh --replicas 32 --clients 1
+  ./service/tools/kv/server_tools/start_kv_service_3pc.sh --replicas 4 --clients 1 -- --define enable_leveldb=True
+USAGE
+}
+
+is_positive_int() {
+  [[ "$1" =~ ^[0-9]+$ ]] && (( "$1" >= 1 ))
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --replicas)
+      [[ $# -ge 2 ]] || { echo "Missing value for --replicas" >&2; exit 1; }
+      REPLICA_NUM="$2"
+      shift 2
+      ;;
+    --clients)
+      [[ $# -ge 2 ]] || { echo "Missing value for --clients" >&2; exit 1; }
+      CLIENT_NUM="$2"
+      shift 2
+      ;;
+    --no-build)
+      DO_BUILD=0
+      shift
+      ;;
+    --)
+      shift
+      BAZEL_ARGS=("$@")
+      break
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+is_positive_int "${REPLICA_NUM}" || {
+  echo "--replicas must be an integer >= 1" >&2
+  exit 1
+}
+is_positive_int "${CLIENT_NUM}" || {
+  echo "--clients must be an integer >= 1" >&2
+  exit 1
+}
+
 killall -9 kv_service kv_service_3pc 2>/dev/null || true
+
+echo "Cleaning old 3PC KV launch logs"
+rm -f server[0-9]*.log client.log client[0-9]*.log
 
 SERVER_PATH=./bazel-bin/service/kv/kv_service_3pc
 SERVER_CONFIG=service/tools/config/server/server.config
 CERT_PATH=$PWD/service/tools/data/cert
 
-bazel build //service/kv:kv_service_3pc $@
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > server0.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > server1.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert > server2.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node4.key.pri $CERT_PATH/cert_4.cert > server3.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node5.key.pri $CERT_PATH/cert_5.cert > server4.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node6.key.pri $CERT_PATH/cert_6.cert > server5.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node7.key.pri $CERT_PATH/cert_7.cert > server6.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node8.key.pri $CERT_PATH/cert_8.cert > server7.log 2>&1 &
+if [[ "${DO_BUILD}" -eq 1 ]]; then
+  bazel build //service/kv:kv_service_3pc "${BAZEL_ARGS[@]}"
+fi
 
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node9.key.pri $CERT_PATH/cert_9.cert > server8.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node10.key.pri $CERT_PATH/cert_10.cert > server9.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node11.key.pri $CERT_PATH/cert_11.cert > server10.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node12.key.pri $CERT_PATH/cert_12.cert > server11.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node13.key.pri $CERT_PATH/cert_13.cert > server12.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node14.key.pri $CERT_PATH/cert_14.cert > server13.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node15.key.pri $CERT_PATH/cert_15.cert > server14.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node16.key.pri $CERT_PATH/cert_16.cert > server15.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node17.key.pri $CERT_PATH/cert_17.cert > server16.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node18.key.pri $CERT_PATH/cert_18.cert > server17.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node19.key.pri $CERT_PATH/cert_19.cert > server18.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node20.key.pri $CERT_PATH/cert_20.cert > server19.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node21.key.pri $CERT_PATH/cert_21.cert > server20.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node22.key.pri $CERT_PATH/cert_22.cert > server21.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node23.key.pri $CERT_PATH/cert_23.cert > server22.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node24.key.pri $CERT_PATH/cert_24.cert > server23.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node25.key.pri $CERT_PATH/cert_25.cert > server24.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node26.key.pri $CERT_PATH/cert_26.cert > server25.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node27.key.pri $CERT_PATH/cert_27.cert > server26.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node28.key.pri $CERT_PATH/cert_28.cert > server27.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node29.key.pri $CERT_PATH/cert_29.cert > server28.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node30.key.pri $CERT_PATH/cert_30.cert > server29.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node31.key.pri $CERT_PATH/cert_31.cert > server30.log 2>&1 &
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node32.key.pri $CERT_PATH/cert_32.cert > server31.log 2>&1 &
+echo "Launching 3PC KV service: replicas=${REPLICA_NUM} clients=${CLIENT_NUM}"
 
+for ((node_id = 1; node_id <= REPLICA_NUM; node_id++)); do
+  log_id=$((node_id - 1))
+  log_file="server${log_id}.log"
+  nohup "${SERVER_PATH}" \
+    "${SERVER_CONFIG}" \
+    "${CERT_PATH}/node${node_id}.key.pri" \
+    "${CERT_PATH}/cert_${node_id}.cert" \
+    > "${log_file}" 2>&1 &
+  echo "Started replica node ${node_id}, log=${log_file}"
+done
 
-nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node33.key.pri $CERT_PATH/cert_33.cert > client.log 2>&1 &
+for ((client_idx = 0; client_idx < CLIENT_NUM; client_idx++)); do
+  node_id=$((REPLICA_NUM + client_idx + 1))
+  if [[ "${CLIENT_NUM}" -eq 1 ]]; then
+    log_file="client.log"
+  else
+    log_file="client${client_idx}.log"
+  fi
+  nohup "${SERVER_PATH}" \
+    "${SERVER_CONFIG}" \
+    "${CERT_PATH}/node${node_id}.key.pri" \
+    "${CERT_PATH}/cert_${node_id}.cert" \
+    > "${log_file}" 2>&1 &
+  echo "Started client/proxy node ${node_id}, log=${log_file}"
+done
