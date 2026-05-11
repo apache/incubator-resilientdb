@@ -46,6 +46,20 @@ class ServerFactory {
       std::unique_ptr<TransactionManager> executor,
       std::unique_ptr<CustomQuery> query_executor,
       std::function<void(ResDBConfig* config)> config_handler);
+
+  template <typename ConsensusProtocol = ConsensusManagerPBFT>
+  std::unique_ptr<ServiceNetwork> CustomCreateResDBServerWithShardConfig(
+      char* config_file, char* shard_config_file, char* private_key_file,
+      char* cert_file, std::unique_ptr<TransactionManager> executor,
+      char* logging_dir,
+      std::function<void(ResDBConfig* config)> config_handler);
+
+  template <typename ConsensusProtocol = ConsensusManagerPBFT>
+  std::unique_ptr<ServiceNetwork> CustomCreateResDBServerWithShardConfig(
+      char* config_file, char* shard_config_file, char* private_key_file,
+      char* cert_file, std::unique_ptr<TransactionManager> executor,
+      std::unique_ptr<CustomQuery> query_executor,
+      std::function<void(ResDBConfig* config)> config_handler);
 };
 
 std::unique_ptr<ServiceNetwork> GenerateResDBServer(
@@ -63,6 +77,20 @@ template <typename ConsensusProtocol>
 std::unique_ptr<ServiceNetwork> CustomGenerateResDBServer(
     char* config_file, char* private_key_file, char* cert_file,
     std::unique_ptr<TransactionManager> executor,
+    std::unique_ptr<CustomQuery> query_executor,
+    std::function<void(ResDBConfig* config)> config_handler = nullptr);
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork> CustomGenerateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
+    char* logging_dir = nullptr,
+    std::function<void(ResDBConfig* config)> config_handler = nullptr);
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork> CustomGenerateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
     std::unique_ptr<CustomQuery> query_executor,
     std::function<void(ResDBConfig* config)> config_handler = nullptr);
 
@@ -101,6 +129,44 @@ std::unique_ptr<ServiceNetwork> ServerFactory::CustomCreateResDBServer(
 }
 
 template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork>
+ServerFactory::CustomCreateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
+    char* logging_dir,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+
+  if (config_handler) {
+    config_handler(config.get());
+  }
+  return std::make_unique<ServiceNetwork>(
+      *config, std::make_unique<ConsensusProtocol>(
+                   *config, shard_config_file, std::move(executor)));
+}
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork>
+ServerFactory::CustomCreateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
+    std::unique_ptr<CustomQuery> query_executor,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+
+  if (config_handler) {
+    config_handler(config.get());
+  }
+  return std::make_unique<ServiceNetwork>(
+      *config,
+      std::make_unique<ConsensusProtocol>(*config, shard_config_file,
+                                           std::move(executor),
+                                           std::move(query_executor)));
+}
+
+template <typename ConsensusProtocol>
 std::unique_ptr<ServiceNetwork> CustomGenerateResDBServer(
     char* config_file, char* private_key_file, char* cert_file,
     std::unique_ptr<TransactionManager> executor, char* logging_dir,
@@ -119,6 +185,31 @@ std::unique_ptr<ServiceNetwork> CustomGenerateResDBServer(
   return ServerFactory().CustomCreateResDBServer<ConsensusProtocol>(
       config_file, private_key_file, cert_file, std::move(executor),
       std::move(query_executor), config_handler);
+}
+
+template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork> CustomGenerateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
+    char* logging_dir,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  return ServerFactory().CustomCreateResDBServerWithShardConfig<
+      ConsensusProtocol>(config_file, shard_config_file, private_key_file,
+                         cert_file, std::move(executor), logging_dir,
+                         config_handler);
+}
+
+// Specific implementation for 3PC with shard config.
+template <typename ConsensusProtocol>
+std::unique_ptr<ServiceNetwork> CustomGenerateResDBServerWithShardConfig(
+    char* config_file, char* shard_config_file, char* private_key_file,
+    char* cert_file, std::unique_ptr<TransactionManager> executor,
+    std::unique_ptr<CustomQuery> query_executor,
+    std::function<void(ResDBConfig* config)> config_handler) {
+  return ServerFactory().CustomCreateResDBServerWithShardConfig<
+      ConsensusProtocol>(config_file, shard_config_file, private_key_file,
+                         cert_file, std::move(executor),
+                         std::move(query_executor), config_handler);
 }
 
 }  // namespace resdb

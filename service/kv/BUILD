@@ -61,3 +61,24 @@ cc_binary(
         "//conditions:default": [],
     }),
 )
+
+cc_binary(
+    name = "kv_service_sharded_3pc",
+    srcs = ["kv_service_sharded_3pc.cpp"],
+    copts = select({
+        "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        "//platform/config:resdb_config_utils",
+        "//platform/consensus/ordering/sharded_3pc:consensus_manager_sharded_3pc",
+        "//executor/kv:kv_executor",
+        "//service/utils:server_factory",
+        "//common:comm",
+        "//proto/kv:kv_cc_proto",
+        "//chain/storage:memory_db",
+    ] + select({
+        "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
+        "//conditions:default": [],
+    }),
+)

@@ -1,0 +1,46 @@
+Running ResilientDB in Sharded 3PC Mode
+
+Build
+bazel build //platform/consensus/ordering/sharded:consensus_manager_sharded_3pc
+bazel build //service/kv:kv_service_sharded_3pc
+bazel build //service/tools/kv/api_tools:kv_service_tools
+
+Keys and Certs
+./service/tools/kv/server_tools/generate_keys_and_certs.sh
+
+Config 
+./service/tools/kv/server_tools/generate_config_sharded_3pc.sh
+    -- shards N               Number of shards. Default: 4
+    -- replicas-per-shard N   Number of replicas per shard. Default: 4
+    -- clients N              Number of client/proxy nodes to configure. Default: 1
+
+    (Also calls generate_config.sh)
+
+Run Sharded 3PC Script
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh
+    -- shards N              Number of shards. Default: 4
+    -- replicas-per-shard N  Number of replicas per shard. Default: 4
+    -- clients N             Number of client/proxy nodes to launch. Default: 1
+
+Check For Live Processes
+ps aux | grep '[k]v_service_sharded_3pc'
+grep -R "3PC recovery is done\\|recv 3PC\\|db path" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
+grep -R "3pc_prepare\\|3pc_precommit\\|3pc_global_commit\\|TYPE_3PC\\|recv 3PC" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
+
+Kill
+killall -9 kv_service kv_service_3pc kv_service_sharded_3pc
+
+Send Requests
+
+Set
+bazel-bin/service/tools/kv/api_tools/kv_service_tools \
+  --config service/tools/config/interface/service.config \
+  --cmd set \
+  --key test_3pc_key \
+  --value hello_3pc
+
+Get
+bazel-bin/service/tools/kv/api_tools/kv_service_tools \
+  --config service/tools/config/interface/service.config \
+  --cmd get \
+  --key test_3pc_key

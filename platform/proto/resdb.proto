@@ -67,7 +67,9 @@ message Request {
         TYPE_3PC_GLOBAL_COMMIT = 26;
         TYPE_3PC_GLOBAL_ABORT = 27;
 
-        NUM_OF_TYPE = 28; // the total number of types.
+        TYPE_SHARD_PBFT_NEW_TXN = 28;
+
+        NUM_OF_TYPE = 29; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -99,6 +101,19 @@ message Request {
     int64 commit_time = 25;
     bytes data_hash = 26;
     bool force_recovery =27;
+
+    // Correlates one logical transaction across global 3PC and local PBFT.
+    optional uint64 global_txn_id = 28;
+    // Shard responsible for returning the client/proxy response.
+    optional uint32 coordinator_shard_id = 29;
+    // Node id of the shard leader coordinating global 3PC.
+    optional uint32 global_coordinator_id = 30;
+    // Target shard for local shard PBFT.
+    optional uint32 local_shard_id = 31;
+    // Marks global leader-to-leader 3PC traffic.
+    optional bool is_global_3pc = 32;
+    // Marks shard-local PBFT traffic.
+    optional bool is_local_shard_pbft = 33;
 
 }
 
