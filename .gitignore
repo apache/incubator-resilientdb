@@ -27,3 +27,6 @@ report.aux
 report.out
 report.pdf
 report.tex
+service/tools/config/interface/service.config
+service/tools/config/server.config
+service/tools/config/server/server.config
