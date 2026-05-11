@@ -201,5 +201,12 @@ std::vector<std::pair<std::string, int>> MemoryDB::GetTopHistory(
   return resp;
 }
 
+bool MemoryDB::DeleteKey(const std::string& key) {
+  kv_map_.erase(key);
+  kv_map_with_seq_.erase(key);
+  kv_map_with_v_.erase(key);
+  return true;
+}
+
 }  // namespace storage
 }  // namespace resdb

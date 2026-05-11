@@ -24,6 +24,7 @@
 #include <string>
 #include <thread>
 
+#include "chain/storage/interface/secondary_index.h"
 #include "chain/storage/storage.h"
 #include "chain/storage/ipfs_client.h"
 #include "chain/storage/proto/ipfs_config.pb.h"
@@ -108,6 +109,7 @@ class TieredStorage : public Storage {
   bool MigrateColdData();
   bool MigrateKey(const std::string& key, const std::string& value, uint64_t seq);
   bool DeleteKeyFromWarm(const std::string& key);
+  bool DeleteKeyFromHot(const std::string& key);
 
   std::unique_ptr<Storage> hot_storage_;
   std::unique_ptr<Storage> warm_storage_;
@@ -117,6 +119,9 @@ class TieredStorage : public Storage {
   IndexManifest manifest_;
   std::string manifest_key_;
   bool manifest_loaded_ = false;
+
+  std::unique_ptr<SecondaryIndex> index_;
+  std::atomic<uint64_t> max_seq_{0};
 
   std::thread migration_thread_;
   std::atomic<bool> migration_running_{false};

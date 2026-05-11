@@ -74,10 +74,26 @@ cc_library(
 )
 
 cc_library(
+    name = "secondary_index",
+    hdrs = ["interface/secondary_index.h"],
+    deps = [],
+)
+
+cc_library(
+    name = "in_memory_index",
+    srcs = ["in_memory_index.cpp"],
+    hdrs = ["in_memory_index.h"],
+    deps = [
+        ":secondary_index",
+    ],
+)
+
+cc_library(
     name = "tiered_storage",
     srcs = ["tiered_storage.cpp"],
     hdrs = ["tiered_storage.h"],
     deps = [
+        ":in_memory_index",
         ":leveldb",
         ":storage",
         ":ipfs_client",

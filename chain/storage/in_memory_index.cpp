@@ -17,30 +17,30 @@
  * under the License.
  */
 
-syntax = "proto3";
+#include "chain/storage/in_memory_index.h"
 
-package resdb.storage;
+namespace resdb {
+namespace storage {
 
-message IPFSConfig {
-  string api_endpoint = 1;
-  bool enabled = 2;
-  string gateway_endpoint = 3;
-  int32 timeout_ms = 4;
-  int32 max_retries = 5;
+void InMemoryHashIndex::Add(const std::string& key, const std::string& cid) {
+  index_[key] = cid;
 }
 
-message TieredStorageConfig {
-  enum HotStorageBackend {
-    MEMORYDB = 0;
-    LEVELDB = 1;
+std::string InMemoryHashIndex::Get(const std::string& key) const {
+  auto it = index_.find(key);
+  if (it != index_.end()) {
+    return it->second;
   }
-
-  int32 cold_threshold_checkpoint = 1;
-  bool enabled = 2;
-  int32 poll_interval_seconds = 3;
-  int32 batch_size = 4;
-  int64 max_cold_storage_bytes = 5;
-  bool auto_migration_enabled = 6;
-  HotStorageBackend hot_backend = 7;
-  int32 checkpoint_watermark = 8;
+  return "";
 }
+
+void InMemoryHashIndex::Clear() {
+  index_.clear();
+}
+
+size_t InMemoryHashIndex::Size() const {
+  return index_.size();
+}
+
+}  // namespace storage
+}  // namespace resdb

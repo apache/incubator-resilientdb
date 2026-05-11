@@ -49,7 +49,7 @@ namespace storage {
 
 std::unique_ptr<Storage> NewMemoryDB();
 
-class MemoryDB : public Storage {
+class MemoryDB : public Storage, public DeletableStorage {
  public:
   MemoryDB();
 
@@ -82,6 +82,8 @@ class MemoryDB : public Storage {
 
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
+
+  bool DeleteKey(const std::string& key) override;
 
  private:
   std::unordered_map<std::string, std::string> kv_map_;

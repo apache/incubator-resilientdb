@@ -17,30 +17,21 @@
  * under the License.
  */
 
-syntax = "proto3";
+#pragma once
 
-package resdb.storage;
+#include <string>
 
-message IPFSConfig {
-  string api_endpoint = 1;
-  bool enabled = 2;
-  string gateway_endpoint = 3;
-  int32 timeout_ms = 4;
-  int32 max_retries = 5;
-}
+namespace resdb {
+namespace storage {
 
-message TieredStorageConfig {
-  enum HotStorageBackend {
-    MEMORYDB = 0;
-    LEVELDB = 1;
-  }
+class SecondaryIndex {
+ public:
+  virtual ~SecondaryIndex() = default;
+  virtual void Add(const std::string& key, const std::string& cid) = 0;
+  virtual std::string Get(const std::string& key) const = 0;
+  virtual void Clear() = 0;
+  virtual size_t Size() const = 0;
+};
 
-  int32 cold_threshold_checkpoint = 1;
-  bool enabled = 2;
-  int32 poll_interval_seconds = 3;
-  int32 batch_size = 4;
-  int64 max_cold_storage_bytes = 5;
-  bool auto_migration_enabled = 6;
-  HotStorageBackend hot_backend = 7;
-  int32 checkpoint_watermark = 8;
-}
+}  // namespace storage
+}  // namespace resdb

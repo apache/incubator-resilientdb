@@ -17,30 +17,26 @@
  * under the License.
  */
 
-syntax = "proto3";
+#pragma once
 
-package resdb.storage;
+#include <string>
+#include <unordered_map>
 
-message IPFSConfig {
-  string api_endpoint = 1;
-  bool enabled = 2;
-  string gateway_endpoint = 3;
-  int32 timeout_ms = 4;
-  int32 max_retries = 5;
-}
+#include "chain/storage/interface/secondary_index.h"
 
-message TieredStorageConfig {
-  enum HotStorageBackend {
-    MEMORYDB = 0;
-    LEVELDB = 1;
-  }
+namespace resdb {
+namespace storage {
 
-  int32 cold_threshold_checkpoint = 1;
-  bool enabled = 2;
-  int32 poll_interval_seconds = 3;
-  int32 batch_size = 4;
-  int64 max_cold_storage_bytes = 5;
-  bool auto_migration_enabled = 6;
-  HotStorageBackend hot_backend = 7;
-  int32 checkpoint_watermark = 8;
-}
+class InMemoryHashIndex : public SecondaryIndex {
+ public:
+  void Add(const std::string& key, const std::string& cid) override;
+  std::string Get(const std::string& key) const override;
+  void Clear() override;
+  size_t Size() const override;
+
+ private:
+  std::unordered_map<std::string, std::string> index_;
+};
+
+}  // namespace storage
+}  // namespace resdb

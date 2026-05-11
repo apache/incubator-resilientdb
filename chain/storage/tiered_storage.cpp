@@ -23,6 +23,7 @@
 #include <google/protobuf/util/json_util.h>
 #include <glog/logging.h>
 
+#include "chain/storage/in_memory_index.h"
 #include "chain/storage/leveldb.h"
 
 namespace resdb {
@@ -35,6 +36,7 @@ constexpr const char* kColdThresholdKey = "_cold_threshold";
 constexpr int kDefaultColdThreshold = 2;
 constexpr int kDefaultPollIntervalSeconds = 60;
 constexpr int kDefaultBatchSize = 100;
+constexpr int kDefaultCheckpointWatermark = 5;
 
 }
 
@@ -55,9 +57,15 @@ TieredStorage::TieredStorage(
               << config_.cold_threshold_checkpoint();
   }
 
-  if (config_.cold_threshold_checkpoint() <= 0) {
+  if (config_.cold_threshold_checkpoint() < 0) {
     config_.set_cold_threshold_checkpoint(kDefaultColdThreshold);
   }
+
+  if (config_.checkpoint_watermark() <= 0) {
+    config_.set_checkpoint_watermark(kDefaultCheckpointWatermark);
+  }
+
+  index_ = std::make_unique<InMemoryHashIndex>();
 
   if (config_.enabled() && cold_client_ && cold_client_->IsEnabled()) {
     LoadManifestFromStorage(warm_storage_.get());
@@ -75,7 +83,13 @@ int TieredStorage::SetValue(const std::string& key, const std::string& value) {
 
 int TieredStorage::SetValueWithSeq(const std::string& key,
                                    const std::string& value, uint64_t seq) {
-  return hot_storage_->SetValueWithSeq(key, value, seq);
+  int ret = hot_storage_->SetValueWithSeq(key, value, seq);
+  if (ret == 0) {
+    uint64_t prev = max_seq_.load();
+    while (seq > prev && !max_seq_.compare_exchange_weak(prev, seq)) {
+    }
+  }
+  return ret;
 }
 
 std::string TieredStorage::GetValue(const std::string& key) {
@@ -168,10 +182,10 @@ bool TieredStorage::Flush() {
 }
 
 uint64_t TieredStorage::GetLastCheckpoint() {
-  if (warm_storage_) {
-    return warm_storage_->GetLastCheckpoint();
+  if (config_.hot_backend() == TieredStorageConfig::LEVELDB && hot_storage_) {
+    return hot_storage_->GetLastCheckpoint();
   }
-  return 0;
+  return max_seq_.load();
 }
 
 void TieredStorage::SetColdThreshold(int checkpoint_threshold) {
@@ -254,10 +268,8 @@ std::string TieredStorage::GetValueFromCold(const std::string& key) {
 }
 
 std::string TieredStorage::GetIndexCID(const std::string& key) const {
-  for (const auto& mapping : manifest_.range_mappings()) {
-    if (key >= mapping.start_key() && key <= mapping.end_key()) {
-      return mapping.ipfs_cid();
-    }
+  if (index_) {
+    return index_->Get(key);
   }
   return "";
 }
@@ -296,6 +308,8 @@ bool TieredStorage::AddToIndex(const std::string& key, const std::string& cid,
     return false;
   }
 
+  index_->Add(key, cid);
+
   auto* mapping = manifest_.add_range_mappings();
   mapping->set_start_key(key);
   mapping->set_end_key(key);
@@ -332,6 +346,13 @@ bool TieredStorage::LoadManifestFromStorage(Storage* storage) {
   if (!manifest_.ParseFromString(manifest_data)) {
     LOG(ERROR) << "TieredStorage: failed to parse manifest";
     return false;
+  }
+
+  if (index_) {
+    index_->Clear();
+    for (const auto& mapping : manifest_.range_mappings()) {
+      index_->Add(mapping.start_key(), mapping.ipfs_cid());
+    }
   }
 
   LOG(INFO) << "TieredStorage: loaded manifest, "
@@ -424,7 +445,11 @@ void TieredStorage::MigrationLoop() {
 
 bool TieredStorage::MigrateColdData() {
   uint64_t current_checkpoint = GetLastCheckpoint();
-  uint64_t threshold = config_.cold_threshold_checkpoint();
+  int watermark = config_.checkpoint_watermark();
+  if (watermark <= 0) {
+    watermark = kDefaultCheckpointWatermark;
+  }
+  uint64_t threshold = config_.cold_threshold_checkpoint() * watermark;
 
   if (current_checkpoint <= threshold) {
     LOG(INFO) << "TieredStorage: checkpoint " << current_checkpoint
@@ -451,11 +476,11 @@ bool TieredStorage::MigrateColdData() {
   int migrated = 0;
   uint64_t max_seq_migrated = last_migrated_seq_;
 
-  auto all_items = warm_storage_->GetAllItemsWithSeq();
+  auto all_items = hot_storage_->GetAllItemsWithSeq();
 
   for (const auto& [key, value_list] : all_items) {
     for (const auto& [value, seq] : value_list) {
-      if (seq >= cold_threshold_seq) {
+      if (seq > cold_threshold_seq) {
         continue;
       }
 
@@ -509,9 +534,8 @@ bool TieredStorage::MigrateKey(const std::string& key, const std::string& value,
     return false;
   }
 
-  if (!DeleteKeyFromWarm(key)) {
-    LOG(ERROR) << "TieredStorage: failed to delete from warm storage: key=" << key;
-    return false;
+  if (DeleteKeyFromHot(key)) {
+    LOG(INFO) << "TieredStorage: evicted from hot storage: key=" << key;
   }
 
   migrated_keys_.fetch_add(1);
@@ -531,6 +555,15 @@ bool TieredStorage::DeleteKeyFromWarm(const std::string& key) {
     return false;
   }
 
+  return deletable->DeleteKey(key);
+}
+
+bool TieredStorage::DeleteKeyFromHot(const std::string& key) {
+  auto* deletable = dynamic_cast<DeletableStorage*>(hot_storage_.get());
+  if (!deletable) {
+    LOG(WARNING) << "TieredStorage: hot storage does not support deletion";
+    return false;
+  }
   return deletable->DeleteKey(key);
 }
 
