@@ -27,6 +27,9 @@ cc_binary(
     copts = select({
         "//chain/storage/setting:enable_leveldb_setting": ["-DENABLE_LEVELDB"],
         "//conditions:default": [],
+    }) + select({
+        "//chain/storage/setting:disable_duckdb_setting": ["-DDISABLE_DUCKDB"],
+        "//conditions:default": [],
     }),
     deps = [
         "//platform/config:resdb_config_utils",
@@ -35,9 +38,13 @@ cc_binary(
         "//common:comm",
         "//proto/kv:kv_cc_proto",
         "//chain/storage:memory_db",
-        "//chain/storage:duckdb_storage",
-        "//chain/storage/proto:duckdb_config_cc_proto",
-	] + select({
+    ] + select({
+        "//chain/storage/setting:disable_duckdb_setting": [],
+        "//conditions:default": [
+            "//chain/storage:duckdb_storage",
+            "//chain/storage/proto:duckdb_config_cc_proto",
+        ],
+    }) + select({
         "//chain/storage/setting:enable_leveldb_setting": ["//chain/storage:leveldb"],
         "//conditions:default": [],
     }),

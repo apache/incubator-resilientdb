@@ -24,8 +24,9 @@
 #include <string>
 
 #include "chain/storage/memory_db.h"
+#ifndef DISABLE_DUCKDB
 #include "chain/storage/duckdb.h"
-#include "chain/storage/proto/duckdb_config.pb.h"
+#endif
 #include "executor/kv/kv_executor.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
@@ -43,18 +44,30 @@ void SignalHandler(int sig_num) {
 }
 
 void ShowUsage() {
+#ifdef DISABLE_DUCKDB
+  printf("<config> <private_key> <cert_file> "
+         "[--grafana_port=<port> | <grafana_port>]\n");
+#else
   printf("<config> <private_key> <cert_file> "
          "[--enable_duckdb] [--duckdb_path=<path>] "
          "[--grafana_port=<port> | <grafana_port>]\n");
+#endif
 }
 
 std::unique_ptr<Storage> NewStorage(const std::string& db_path,
                                     const ResConfigData& config_data) {
+#ifndef DISABLE_DUCKDB
   if (config_data.has_duckdb_info()) {
     const auto& duckdb_info = config_data.duckdb_info();
     LOG(INFO) << "use duckdb storage, path=" << duckdb_info.path();
     return NewDuckDB(duckdb_info.path(), duckdb_info);
   }
+#else
+  if (config_data.has_duckdb_info()) {
+    LOG(FATAL) << "Config enables DuckDB but this binary was built with "
+                  "enable_duckdb=False (no DuckDB support).";
+  }
+#endif
 #ifdef ENABLE_LEVELDB
   LOG(INFO) << "use leveldb storage.";
   return NewResLevelDB(db_path, config_data.leveldb_info());
@@ -84,12 +97,15 @@ int main(int argc, char** argv) {
 
   for (int i = 4; i < argc; ++i) {
     std::string arg = argv[i];
+#ifndef DISABLE_DUCKDB
     if (arg == "--enable_duckdb") {
       config_data.mutable_duckdb_info();
     } else if (arg.rfind("--duckdb_path=", 0) == 0) {
       config_data.mutable_duckdb_info()->set_path(
           arg.substr(std::string("--duckdb_path=").size()));
-    } else if (arg.rfind("--grafana_port=", 0) == 0) {
+    } else
+#endif
+    if (arg.rfind("--grafana_port=", 0) == 0) {
       grafana_port = arg.substr(std::string("--grafana_port=").size());
     } else if (grafana_port.empty() &&
                std::all_of(arg.begin(), arg.end(),
@@ -111,10 +127,12 @@ int main(int argc, char** argv) {
   }
 
   std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+#ifndef DISABLE_DUCKDB
   if (config_data.has_duckdb_info() &&
       config_data.duckdb_info().path().empty()) {
     config_data.mutable_duckdb_info()->set_path(db_path + "duckdb.db");
   }
+#endif
   LOG(ERROR) << "db path:" << db_path;
 
   auto server = GenerateResDBServer(

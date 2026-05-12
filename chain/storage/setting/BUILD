@@ -33,3 +33,14 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+# When set, kv_service is built without linking chain/storage:duckdb_storage
+# (avoids compiling the large @duckdb dependency). Use with LevelDB-only
+# deployments: --define enable_leveldb=True --define enable_duckdb=False
+config_setting(
+    name = "disable_duckdb_setting",
+    values = {
+        "define": "enable_duckdb=False",
+    },
+    visibility = ["//visibility:public"],
+)

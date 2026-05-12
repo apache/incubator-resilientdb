@@ -23,7 +23,12 @@ SERVER_CONFIG=service/tools/config/server/server.config
 WORK_PATH=$PWD
 CERT_PATH=${WORK_PATH}/service/tools/data/cert/
 
-bazel build //service/kv:kv_service $@
+# LevelDB only by default (no DuckDB): avoids linking/compiling the large
+# @duckdb dependency. Pass --define enable_duckdb=True to restore DuckDB.
+bazel build //service/kv:kv_service \
+  --define enable_leveldb=True \
+  --define enable_duckdb=False \
+  "$@"
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node1.key.pri $CERT_PATH/cert_1.cert > server0.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node2.key.pri $CERT_PATH/cert_2.cert > server1.log &
 nohup $SERVER_PATH $SERVER_CONFIG $CERT_PATH/node3.key.pri $CERT_PATH/cert_3.cert > server2.log &
