@@ -48,6 +48,7 @@ cc_library(
     srcs = ["leveldb.cpp"],
     hdrs = ["leveldb.h"],
     deps = [
+        ":composite_key_codec",
         ":storage",
         "//chain/storage/proto:kv_cc_proto",
         "//chain/storage/proto:leveldb_config_cc_proto",
@@ -64,6 +65,7 @@ cc_test(
     timeout = "short",  # Set the timeout to "short"
     srcs = ["kv_storage_test.cpp"],
     deps = [
+        ":composite_key_codec",
         ":leveldb",
         ":memory_db",
         "//common/test:test_main",
@@ -79,5 +81,20 @@ cc_test(
         ":leveldb",
         "//common/test:test_main",
         "//platform/statistic:stats",
+    ],
+)
+
+cc_library(
+    name = "composite_key_codec",
+    srcs = ["composite_key_codec.cpp"],
+    hdrs = ["composite_key_codec.h"],
+)
+
+cc_test(
+    name = "composite_key_codec_test",
+    srcs = ["composite_key_codec_test.cpp"],
+    deps = [
+        ":composite_key_codec",
+        "//common/test:test_main",
     ],
 )

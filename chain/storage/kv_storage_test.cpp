@@ -23,6 +23,7 @@
 
 #include <filesystem>
 
+#include "chain/storage/composite_key_codec.h"
 #include "chain/storage/leveldb.h"
 #include "chain/storage/memory_db.h"
 
@@ -303,6 +304,118 @@ TEST_P(KVStorageTest, BlockCacheSpecificTest) {
     std::cout << "Running BlockCacheSpecificTest for LEVELDB_WITH_BLOCK_CACHE"
               << std::endl;
   }
+}
+
+// Composite key tests run against all three backends. Keys are built via the
+// codec because C-string literals would truncate at the embedded '\0'.
+
+TEST_P(KVStorageTest, CreateAndRetrieveCompositeKey) {
+  std::string ck1 = EncodeCompositeKey("byCity", {"Davis"}, "user:1");
+  std::string ck2 = EncodeCompositeKey("byCity", {"Davis"}, "user:2");
+  std::string ck3 = EncodeCompositeKey("byCity", {"Davis"}, "user:3");
+
+  EXPECT_EQ(storage->CreateCompositeKey(ck1), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(ck2), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(ck3), 0);
+
+  std::string davis_prefix = EncodeCompositeKeyPrefix("byCity", {"Davis"});
+  auto results = storage->GetByCompositeKeyPrefix(davis_prefix);
+
+  EXPECT_EQ(results.size(), 3u);
+  EXPECT_EQ(results[0], ck1);
+  EXPECT_EQ(results[1], ck2);
+  EXPECT_EQ(results[2], ck3);
+}
+
+TEST_P(KVStorageTest, PrefixScanOrdering) {
+  // Inserted out of order; backend must return them sorted within a prefix.
+  std::string sf_ck = EncodeCompositeKey("byCity", {"SF"}, "user:3");
+  std::string davis_ck1 = EncodeCompositeKey("byCity", {"Davis"}, "user:1");
+  std::string davis_ck2 = EncodeCompositeKey("byCity", {"Davis"}, "user:2");
+  std::string nyc_ck = EncodeCompositeKey("byCity", {"NYC"}, "user:4");
+
+  EXPECT_EQ(storage->CreateCompositeKey(sf_ck), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(davis_ck1), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(davis_ck2), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(nyc_ck), 0);
+
+  std::string davis_prefix = EncodeCompositeKeyPrefix("byCity", {"Davis"});
+  auto davis_results = storage->GetByCompositeKeyPrefix(davis_prefix);
+  EXPECT_EQ(davis_results.size(), 2u);
+  EXPECT_EQ(davis_results[0], davis_ck1);
+  EXPECT_EQ(davis_results[1], davis_ck2);
+
+  std::string sf_prefix = EncodeCompositeKeyPrefix("byCity", {"SF"});
+  auto sf_results = storage->GetByCompositeKeyPrefix(sf_prefix);
+  EXPECT_EQ(sf_results.size(), 1u);
+  EXPECT_EQ(sf_results[0], sf_ck);
+}
+
+TEST_P(KVStorageTest, DeleteRemovesEntry) {
+  std::string ck = EncodeCompositeKey("byCity", {"Davis"}, "user:1");
+  std::string davis_prefix = EncodeCompositeKeyPrefix("byCity", {"Davis"});
+
+  EXPECT_EQ(storage->CreateCompositeKey(ck), 0);
+  EXPECT_EQ(storage->GetByCompositeKeyPrefix(davis_prefix).size(), 1u);
+
+  EXPECT_EQ(storage->DeleteCompositeKey(ck), 0);
+  EXPECT_EQ(storage->GetByCompositeKeyPrefix(davis_prefix).size(), 0u);
+}
+
+TEST_P(KVStorageTest, UpdateIsAtomic) {
+  std::string old_ck = EncodeCompositeKey("byCity", {"Davis"}, "user:1");
+  std::string new_ck = EncodeCompositeKey("byCity", {"SF"}, "user:1");
+  std::string davis_prefix = EncodeCompositeKeyPrefix("byCity", {"Davis"});
+  std::string sf_prefix = EncodeCompositeKeyPrefix("byCity", {"SF"});
+
+  EXPECT_EQ(storage->CreateCompositeKey(old_ck), 0);
+  EXPECT_EQ(storage->GetByCompositeKeyPrefix(davis_prefix).size(), 1u);
+
+  EXPECT_EQ(storage->UpdateCompositeKey(old_ck, new_ck), 0);
+
+  EXPECT_EQ(storage->GetByCompositeKeyPrefix(davis_prefix).size(), 0u);
+  auto sf_results = storage->GetByCompositeKeyPrefix(sf_prefix);
+  EXPECT_EQ(sf_results.size(), 1u);
+  EXPECT_EQ(sf_results[0], new_ck);
+}
+
+TEST_P(KVStorageTest, EmptyPrefixScanReturnsNothing) {
+  EXPECT_EQ(storage->CreateCompositeKey(
+                EncodeCompositeKey("byCity", {"Davis"}, "user:1")),
+            0);
+  EXPECT_EQ(storage->CreateCompositeKey(
+                EncodeCompositeKey("byCity", {"Davis"}, "user:2")),
+            0);
+
+  std::string nyc_prefix = EncodeCompositeKeyPrefix("byCity", {"NYC"});
+  auto results = storage->GetByCompositeKeyPrefix(nyc_prefix);
+  EXPECT_EQ(results.size(), 0u);
+}
+
+// GetAllItems must not return composite-key markers. Also checks that the
+// filter is exact ("ck\0...") and doesn't drop user keys like "ck_balance".
+TEST_P(KVStorageTest, GetAllItemsExcludesCompositeKeys) {
+  EXPECT_EQ(storage->SetValueWithVersion("user:1", "alice_data", 0), 0);
+  EXPECT_EQ(storage->SetValueWithVersion("user:2", "bob_data", 0), 0);
+  EXPECT_EQ(storage->SetValueWithVersion("ck_balance", "real_user_data", 0), 0);
+
+  EXPECT_EQ(storage->CreateCompositeKey(
+                EncodeCompositeKey("byCity", {"Davis"}, "user:1")),
+            0);
+  EXPECT_EQ(storage->CreateCompositeKey(
+                EncodeCompositeKey("byCity", {"SF"}, "user:2")),
+            0);
+
+  auto all = storage->GetAllItems();
+  EXPECT_EQ(all.size(), 3u);
+  EXPECT_TRUE(all.count("user:1"));
+  EXPECT_TRUE(all.count("user:2"));
+  EXPECT_TRUE(all.count("ck_balance"));
+
+  // Markers are hidden, not deleted.
+  auto davis = storage->GetByCompositeKeyPrefix(
+      EncodeCompositeKeyPrefix("byCity", {"Davis"}));
+  EXPECT_EQ(davis.size(), 1u);
 }
 
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,

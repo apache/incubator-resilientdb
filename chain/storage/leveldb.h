@@ -72,6 +72,14 @@ class ResLevelDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int top_number) override;
 
+  // Composite key operations for secondary indexing
+  int CreateCompositeKey(const std::string& composite_key) override;
+  int DeleteCompositeKey(const std::string& composite_key) override;
+  std::vector<std::string> GetByCompositeKeyPrefix(
+      const std::string& prefix) override;
+  int UpdateCompositeKey(const std::string& old_composite_key,
+                         const std::string& new_composite_key) override;
+
   bool UpdateMetrics();
 
   bool Flush() override;
