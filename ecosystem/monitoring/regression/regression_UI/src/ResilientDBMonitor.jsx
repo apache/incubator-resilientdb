@@ -131,6 +131,21 @@ function JsonHighlight({ json }) {
   );
 }
 
+// ─── Analysis section helpers ─────────────────────────────────────────────────
+
+function Em({ children }) {
+  return <strong style={{ color: C.text, fontWeight: 600 }}>{children}</strong>;
+}
+
+function AnalysisSection({ label, children }) {
+  return (
+    <div style={{ background: C.bg3, border: `1px solid ${C.border2}`, borderRadius: 8, padding: "1.2rem 1.4rem", marginBottom: "1.2rem", position: "relative" }}>
+      <div style={{ position: "absolute", top: -8, left: 12, fontSize: 9, letterSpacing: 2, color: C.accent, background: C.bg3, padding: "0 6px", fontWeight: 700 }}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
 // ─── Detail overlay ───────────────────────────────────────────────────────────
 
 function DetailOverlay({ record, baseline, onClose }) {
@@ -139,8 +154,12 @@ function DetailOverlay({ record, baseline, onClose }) {
   const anomalies = detectAnomalies(record, baseline);
   const d         = new Date(record.timestamp);
 
-  const analysis      = record.analysis;
-  const isObject      = analysis && typeof analysis === "object" && !Array.isArray(analysis);
+  let _analysis = record.analysis;
+  if (typeof _analysis === "string") {
+    try { _analysis = JSON.parse(_analysis); } catch { /* leave as raw string */ }
+  }
+  const analysis = _analysis;
+  const isObject = analysis && typeof analysis === "object" && !Array.isArray(analysis);
   const overallStatus = isObject ? analysis.overall_status : (anomalies.some(a => a.worse) ? "needs_attention" : "stable");
   const color         = statusColor(overallStatus);
 
@@ -149,6 +168,24 @@ function DetailOverlay({ record, baseline, onClose }) {
   const warnings        = isObject ? analysis.warnings        : [];
   const histChanges     = isObject ? analysis.historical_percent_changes    : null;
   const histSummary     = isObject ? analysis.historical_baseline_summary   : null;
+
+  const HIST_KEYWORDS = ["historical baseline", "baseline", "regression"];
+  const isHistItem    = (item) => HIST_KEYWORDS.some(kw => item.toLowerCase().includes(kw));
+  const systemDiagnosis = diagnosisItems?.filter(item => !isHistItem(item)) ?? [];
+
+  // Pick the most notable system issue (skip neutral/positive observations)
+  const NEUTRAL = ["is low", "is relatively stable", "variance is low", "high throughput", "moderate throughput", "latency variance is low", "consistent request"];
+  const mainIssue = systemDiagnosis.find(item => !NEUTRAL.some(kw => item.toLowerCase().includes(kw))) ?? systemDiagnosis[0];
+
+  // Pre-compute comparison narrative values
+  const latPct  = histChanges?.avg_latency_change_pct;
+  const tpPct   = histChanges?.throughput_change_pct;
+  const swPct   = histChanges?.server_wait_change_pct;
+  const latFrom = histSummary?.historical_avg_latency_ms;
+  const tpFrom  = histSummary?.historical_avg_throughput_rps;
+  const worseOverall = (latPct ?? 0) > 10 || (tpPct ?? 0) < -10;
+
+  const prose = { fontSize: 13, lineHeight: 1.8, color: C.text2, marginBottom: 10, marginTop: 6 };
 
   return (
     <div onClick={(e) => e.target === e.currentTarget && onClose()}
@@ -168,68 +205,151 @@ function DetailOverlay({ record, baseline, onClose }) {
 
         <div style={{ padding: "1.5rem" }}>
 
-          {/* Analysis box */}
-          <div style={{ background: C.bg3, border: `1px solid ${C.border2}`, borderRadius: 8, padding: "1.2rem", marginBottom: "1.5rem", position: "relative" }}>
-            <div style={{ position: "absolute", top: -8, left: 12, fontSize: 9, letterSpacing: 2, color: C.accent, background: C.bg3, padding: "0 6px", fontWeight: 700 }}>ANALYSIS</div>
-            <div style={{ marginBottom: 12 }}>
-              <Tag color={color} bg={`${color}1a`} border={`${color}4d`}>{statusLabel(overallStatus)}</Tag>
-            </div>
-            {warnings.length > 0 && (
-              <div style={{ marginBottom: 10 }}>
-                {warnings.map((w, i) => <div key={i} style={{ fontSize: 11, color: C.orange, marginBottom: 4, paddingLeft: 12, borderLeft: `2px solid ${C.orange}` }}>{w}</div>)}
-              </div>
-            )}
-            {diagnosisItems?.length > 0 && (
-              <div style={{ marginBottom: recommendations.length ? 12 : 0 }}>
-                {diagnosisItems.map((item, i) => <div key={i} style={{ fontSize: 12, lineHeight: 1.7, color: C.text2, marginBottom: 6 }}>• {item}</div>)}
-              </div>
-            )}
-            {recommendations.length > 0 && (
-              <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 9, letterSpacing: 2, color: C.accent, marginBottom: 8, fontWeight: 700 }}>RECOMMENDATIONS</div>
-                {recommendations.map((r, i) => <div key={i} style={{ fontSize: 12, lineHeight: 1.7, color: C.text2, marginBottom: 6 }}>→ {r}</div>)}
-              </div>
-            )}
-          </div>
-
-          {/* Historical % changes */}
-          {histChanges && Object.values(histChanges).some(v => v != null) && (
-            <div style={{ background: C.bg3, border: `1px solid ${C.border}`, borderRadius: 8, padding: "1rem 1.2rem", marginBottom: "1.5rem" }}>
-              <div style={{ fontSize: 9, letterSpacing: 2, color: C.text3, textTransform: "uppercase", marginBottom: 10, fontWeight: 700 }}>vs 6-month baseline</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                {[
-                  { label: "Latency",     val: histChanges.avg_latency_change_pct,  lowerBetter: true  },
-                  { label: "Throughput",  val: histChanges.throughput_change_pct,   lowerBetter: false },
-                  { label: "Server Wait", val: histChanges.server_wait_change_pct,  lowerBetter: true  },
-                ].filter(i => i.val != null).map(({ label, val, lowerBetter }) => {
-                  const worse = lowerBetter ? val > 0 : val < 0;
-                  return (
-                    <div key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontSize: 10, color: C.text3 }}>{label}</span>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: worse ? C.red : C.green }}>{val > 0 ? "+" : ""}{val}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-              {histSummary?.record_count && <div style={{ fontSize: 10, color: C.text3, marginTop: 8 }}>Based on {histSummary.record_count} historical records</div>}
-            </div>
-          )}
-
-          {/* Metric grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: "1.5rem" }}>
-            {[
-              { label: "Avg Latency",    val: `${record.avg_latency_ms?.toFixed(2)} ms`,            sub: `p95: ${record.total_latency?.p95 ?? "—"} ms · p99: ${record.total_latency?.p99 ?? "—"} ms` },
-              { label: "Consensus Time", val: `${flat.consensus_ms_mean?.toFixed(2) ?? "—"} ms`,    sub: `p95: ${record.consensus_time_ms?.p95 ?? "—"} ms · p99: ${record.consensus_time_ms?.p99 ?? "—"} ms` },
-              { label: "Throughput",     val: `${record.throughput_rps?.toFixed(2)} r/s`,            sub: `${record.runs} transactions · ${record.success_rate}% success` },
-              { label: "TCP Connect",    val: `${record.tcp_connect_ms?.mean?.toFixed(2) ?? "—"} ms`, sub: `Transfer: ${record.transfer_time_ms?.mean?.toFixed(2) ?? "—"} ms` },
-            ].map(({ label, val, sub }) => (
-              <div key={label} style={{ background: C.bg3, border: `1px solid ${C.border}`, borderRadius: 6, padding: "10px 12px" }}>
-                <div style={{ fontSize: 9, letterSpacing: 2, color: C.text3, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{val}</div>
-                <div style={{ fontSize: 10, color: C.text3 }}>{sub}</div>
-              </div>
+          {/* Status badge + warnings */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: "1.4rem" }}>
+            <Tag color={color} bg={`${color}1a`} border={`${color}4d`}>{statusLabel(overallStatus)}</Tag>
+            {warnings.map((w, i) => (
+              <span key={i} style={{ fontSize: 11, color: C.orange, paddingLeft: 8, borderLeft: `2px solid ${C.orange}` }}>{w}</span>
             ))}
           </div>
+
+          {/* Section 1 — What the performance gave us */}
+          <AnalysisSection label="WHAT THE PERFORMANCE GAVE US">
+            <p style={prose}>
+              This run processed <Em>{record.runs?.toLocaleString()} transactions</Em> with
+              a <Em>{record.success_rate}% success rate</Em>.
+              The system sustained a throughput of <Em>{record.throughput_rps?.toFixed(2)} requests per second</Em> and
+              an average end-to-end latency of <Em>{record.avg_latency_ms?.toFixed(2)} ms</Em>.
+              At the median (p50), requests completed in <Em>{record.total_latency?.p50 ?? "—"} ms</Em>;
+              the slowest 5% took <Em>{record.total_latency?.p95 ?? "—"} ms</Em> or longer,
+              and the slowest 1% reached <Em>{record.total_latency?.p99 ?? "—"} ms</Em>.
+              {flat.consensus_ms_mean != null && (
+                <> The PBFT consensus round-trip averaged <Em>{flat.consensus_ms_mean?.toFixed(2)} ms</Em>.</>
+              )}
+              {record.tcp_connect_ms?.mean != null && (
+                <> TCP connection setup added roughly <Em>{record.tcp_connect_ms.mean.toFixed(2)} ms</Em> per request.</>
+              )}
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
+              {[
+                { label: "Avg Latency",    val: `${record.avg_latency_ms?.toFixed(2)} ms`,             sub: `p95: ${record.total_latency?.p95 ?? "—"} ms · p99: ${record.total_latency?.p99 ?? "—"} ms` },
+                { label: "Consensus Time", val: `${flat.consensus_ms_mean?.toFixed(2) ?? "—"} ms`,     sub: `p95: ${record.consensus_time_ms?.p95 ?? "—"} ms · p99: ${record.consensus_time_ms?.p99 ?? "—"} ms` },
+                { label: "Throughput",     val: `${record.throughput_rps?.toFixed(2)} r/s`,             sub: `${record.runs} transactions · ${record.success_rate}% success` },
+                { label: "TCP Connect",    val: `${record.tcp_connect_ms?.mean?.toFixed(2) ?? "—"} ms`, sub: `Transfer: ${record.transfer_time_ms?.mean?.toFixed(2) ?? "—"} ms` },
+              ].map(({ label, val, sub }) => (
+                <div key={label} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 6, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 9, letterSpacing: 2, color: C.text3, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{val}</div>
+                  <div style={{ fontSize: 10, color: C.text3 }}>{sub}</div>
+                </div>
+              ))}
+            </div>
+          </AnalysisSection>
+
+          {/* Section 2 — What this tells about the system */}
+          {systemDiagnosis.length > 0 && (
+            <AnalysisSection label="WHAT THIS TELLS ABOUT THE SYSTEM">
+              {systemDiagnosis.map((item, i) => (
+                <p key={i} style={prose}>{item}</p>
+              ))}
+            </AnalysisSection>
+          )}
+
+          {/* Section 3 — How it compares to previous runs (only when baseline data exists) */}
+          {(histSummary || histChanges) && (
+            <AnalysisSection label="HOW IT COMPARES TO PREVIOUS RUNS">
+
+              {/* Current run vs. baseline narrative */}
+              {histSummary && histChanges && (
+                <>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: C.text, letterSpacing: 0.5, marginBottom: 4, marginTop: 4 }}>Current run vs. baseline</div>
+                  <p style={prose}>
+                    This run completed{" "}
+                    <Em>
+                      {record.success_rate === 100
+                        ? `all ${record.runs?.toLocaleString()} transactions successfully`
+                        : `${record.runs?.toLocaleString()} transactions with a ${record.success_rate}% success rate`}
+                    </Em>
+                    {worseOverall
+                      ? ", but performance is worse than the historical baseline"
+                      : ", and performance is broadly in line with the historical baseline"}.
+                    {" "}
+                    {latFrom != null && record.avg_latency_ms != null && latPct != null && (
+                      <>
+                        Average latency{" "}
+                        <Em>
+                          {latPct > 0 ? "increased" : "decreased"} from {latFrom.toFixed(2)} ms to {record.avg_latency_ms.toFixed(2)} ms ({latPct > 0 ? "+" : "−"}{Math.abs(latPct)}%)
+                        </Em>
+                        {tpFrom != null && record.throughput_rps != null && tpPct != null && (
+                          <>, while throughput{" "}
+                          <Em>
+                            {tpPct < 0 ? "dropped" : "rose"} from{" "}
+                            {Number(tpFrom).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} r/s to{" "}
+                            {Number(record.throughput_rps).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} r/s ({tpPct > 0 ? "+" : "−"}{Math.abs(tpPct)}%)
+                          </Em></>
+                        )}
+                        {swPct != null && Math.abs(swPct) > 5 && (
+                          <>. Server-side wait time also{" "}
+                          <Em>{swPct > 0 ? "increased" : "decreased"} by {Math.abs(swPct)}%</Em>,
+                          {" "}{swPct > 0 ? "suggesting more delay inside the request-processing path" : "suggesting improvement in the request-processing path"}</>
+                        )}
+                        .
+                      </>
+                    )}
+                  </p>
+                </>
+              )}
+
+              {/* Main issue */}
+              {mainIssue && (
+                <>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: C.text, letterSpacing: 0.5, marginBottom: 4, marginTop: 14 }}>Main issue</div>
+                  <p style={prose}>{mainIssue}</p>
+                </>
+              )}
+
+              {/* Delta grid */}
+              {histChanges && Object.values(histChanges).some(v => v != null) && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.border}` }}>
+                  {[
+                    { label: "Latency",     val: latPct, lowerBetter: true  },
+                    { label: "Throughput",  val: tpPct,  lowerBetter: false },
+                    { label: "Server Wait", val: swPct,  lowerBetter: true  },
+                  ].filter(i => i.val != null).map(({ label, val, lowerBetter }) => {
+                    const worse = lowerBetter ? val > 0 : val < 0;
+                    return (
+                      <div key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <span style={{ fontSize: 10, color: C.text3 }}>{label}</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: worse ? C.red : C.green }}>{val > 0 ? "+" : ""}{val}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {histSummary?.record_count != null && (
+                <div style={{ fontSize: 10, color: C.text3, marginTop: 10 }}>
+                  Based on {histSummary.record_count} historical record{histSummary.record_count !== 1 ? "s" : ""}
+                  {histSummary.period_start && <> going back to {new Date(histSummary.period_start).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</>}
+                </div>
+              )}
+
+            </AnalysisSection>
+          )}
+
+          {/* Section 4 — What you can do (shown whenever recommendations exist) */}
+          {recommendations.length > 0 && (
+            <AnalysisSection label="WHAT YOU CAN DO TO IMPROVE IT">
+              <p style={{ ...prose, marginBottom: 12 }}>
+                Based on the patterns detected above, here are concrete steps to investigate and improve performance:
+              </p>
+              {recommendations.map((r, i) => (
+                <div key={i} style={{ fontSize: 12, lineHeight: 1.75, color: C.text2, marginBottom: 10, paddingLeft: 14, borderLeft: `2px solid ${C.accent}` }}>
+                  {r}
+                </div>
+              ))}
+            </AnalysisSection>
+          )}
 
           {/* JSON toggle */}
           <button onClick={() => setJsonOpen(o => !o)}
@@ -452,7 +572,9 @@ export default function ResilientDBMonitor() {
                   </div>
                 ) : (
                   [...sorted].reverse().map((r, i) => {
-                    const status     = r.analysis?.overall_status;
+                    let _a = r.analysis;
+                    if (typeof _a === "string") { try { _a = JSON.parse(_a); } catch { _a = null; } }
+                    const status     = _a?.overall_status;
                     const anomalies  = detectAnomalies(r, localBaseline);
                     const isAnomalous = anomalies.some(a => a.worse);
                     const dotColor   = status ? statusColor(status) : (isAnomalous ? C.red : C.green);
