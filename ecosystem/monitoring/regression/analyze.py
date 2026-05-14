@@ -6,6 +6,12 @@
 # Called automatically by perf_test.sh.
 # Fetches baseline from MongoDB, runs pattern-based analysis,
 # saves result to MongoDB, and prints final JSON.
+#
+# For a full explanation of how curl timing values are converted into
+# latency, throughput, percentiles, server-side wait time, and baseline
+# comparisons, see:
+#
+#   docs/metrics_explanation.md
 # =============================================================================
 
 import argparse
@@ -16,9 +22,12 @@ import sys
 import urllib.request
 import urllib.error
 
-# ─── Config ──────────────────────────────────────────────────────────────────
-
 BACKEND_URL = "http://localhost:5000"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND-LINE ARGUMENTS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Parse test metadata and curl timing data from the performance test script.
 
 # ─── Argument parsing ─────────────────────────────────────────────────────────
 
@@ -29,6 +38,13 @@ parser.add_argument("--failed",  type=int,   required=True)
 parser.add_argument("--version", type=str,   default="")
 parser.add_argument("--raw",     type=str,   required=True)
 args = parser.parse_args()
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PARSE CURL TIMING DATA
+# ═══════════════════════════════════════════════════════════════════════════════
+# Extract HTTP response codes and latency components (connect, pre-transfer,
+# start-transfer, total) from raw curl output sent by perf_test.sh. Converts raw 
+# curl output into clean Python lists that can be used for statistics.
 
 # ─── Parse curl timing output ─────────────────────────────────────────────────
 
@@ -50,6 +66,12 @@ for entry in raw_entries:
         pretransfers.append(tp * 1000)
         starttransfers.append(ts * 1000)
         totals.append(tt * 1000)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# UTILITY FUNCTIONS FOR STATISTICS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Helper functions to compute percentiles, basic statistics (mean, stddev, min, max),
+# and percentage change calculations for baseline comparisons.
 
 # ─── Stats helpers ────────────────────────────────────────────────────────────
 
@@ -83,6 +105,12 @@ def pct_change(current, baseline):
         return None
     return round(((current - baseline) / baseline) * 100, 1)
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPUTE DERIVED METRICS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Calculate throughput, latency aggregates, percentiles, and component breakdown
+# (server-side wait, TCP overhead, response transfer) from raw curl data.
+
 # ─── Derived metrics ──────────────────────────────────────────────────────────
 
 server_wait_times = [starttransfers[i] - pretransfers[i] for i in range(len(totals))]
@@ -97,6 +125,12 @@ total_stats       = stats(totals)
 server_wait_stats = stats(server_wait_times)
 tcp_stats         = stats(connects)
 transfer_stats    = stats(transfer_times)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FETCH BASELINE FROM DATABASE
+# ═══════════════════════════════════════════════════════════════════════════════
+# Request historical baseline metrics from the backend to enable regression detection
+# and performance trend analysis.
 
 p50     = total_stats["p50"]
 p95     = total_stats["p95"]
@@ -133,6 +167,12 @@ except urllib.error.URLError as e:
 except Exception as e:
     warnings.append(f"Unexpected error fetching baseline: {str(e)}")
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPUTE PERCENTAGE CHANGES VS BASELINE
+# ═══════════════════════════════════════════════════════════════════════════════
+# Calculate deltas in latency, throughput, and server-side wait time relative to
+# the historical baseline for regression detection.
+
 # ─── Compute % changes vs baseline ───────────────────────────────────────────
 
 hist_avg_latency     = baseline.get("avg_latency_ms", {}).get("mean", 0)     if baseline else 0
@@ -142,6 +182,20 @@ hist_avg_server_wait = baseline.get("consensus_time_ms", {}).get("mean", 0)  if 
 latency_change      = pct_change(avg_latency,     hist_avg_latency)     if baseline else None
 throughput_change   = pct_change(throughput_val,  hist_avg_throughput)  if baseline else None
 server_wait_change  = pct_change(server_wait_mean, hist_avg_server_wait) if baseline else None
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PATTERN-BASED PERFORMANCE ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Apply heuristic pattern matching to detect performance anomalies and bottlenecks:
+# - Tail latency amplification (p99/p50 ratio)
+# - Server-side wait dominance
+# - TCP overhead
+# - Transfer vs server-side wait imbalance
+# - Latency variance
+# - Throughput anomalies
+# - Historical regression detection
+#
+# Each pattern generates diagnosis insights and actionable recommendations.
 
 # ─── Pattern-based analysis ───────────────────────────────────────────────────
 
@@ -284,6 +338,12 @@ if baseline:
             "Check whether signature verification, disk I/O, or network round-trip time between replicas has increased since the last baseline run."
         )
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMPUTE OVERALL STATUS
+# ═══════════════════════════════════════════════════════════════════════════════
+# Aggregate severity signals from all pattern analyses to assign a final run status:
+# stable, minor_warning, needs_attention, or possible_regression.
+
 # ─── Overall status ───────────────────────────────────────────────────────────
 
 severity = 0
@@ -297,6 +357,12 @@ if   severity >= 3: overall_status = "possible_regression"
 elif severity == 2: overall_status = "needs_attention"
 elif severity == 1: overall_status = "minor_warning"
 else:               overall_status = "stable"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ASSEMBLE FINAL RESULT OBJECT
+# ═══════════════════════════════════════════════════════════════════════════════
+# Package all metrics, analysis, recommendations, and warnings into a single JSON
+# result object for storage and display in the monitoring dashboard.
 
 # ─── Assemble final result ────────────────────────────────────────────────────
 
@@ -330,6 +396,12 @@ result = {
     "analysis":         json.dumps(analysis_obj),
 }
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# PERSIST RESULT TO DATABASE
+# ═══════════════════════════════════════════════════════════════════════════════
+# Send the complete result object to the backend API for storage in MongoDB.
+# Handles network errors gracefully with warnings.
+
 # ─── Save to MongoDB ──────────────────────────────────────────────────────────
 
 try:
@@ -346,6 +418,11 @@ except urllib.error.URLError as e:
     print(f"Warning: could not save to database: {e}", file=sys.stderr)
 except Exception as e:
     print(f"Warning: unexpected error saving to database: {e}", file=sys.stderr)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# OUTPUT FINAL RESULT
+# ═══════════════════════════════════════════════════════════════════════════════
+# Print formatted JSON to stdout for consumption by perf_test.sh and the dashboard.
 
 # ─── Print final JSON ─────────────────────────────────────────────────────────
 

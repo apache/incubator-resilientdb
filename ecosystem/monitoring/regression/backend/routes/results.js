@@ -2,6 +2,10 @@ const express = require("express");
 const router  = express.Router();
 const PerfResult = require("../models/PerfResult");
 
+// GET /
+// Retrieves a list of performance test results with optional pagination and date range filtering.
+// Query parameters: limit (default 200), from (start date), to (end date)
+// Returns results sorted by timestamp in descending order.
 router.get("/", async (req, res) => {
   try {
     const { limit = 200, from, to } = req.query;
@@ -18,6 +22,10 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /baseline
+// Computes and returns baseline statistics from the last 6 months of performance data.
+// Calculates mean, standard deviation, and count for latency, throughput, success rate, and consensus time.
+// Used by the analyzer to detect performance regressions against historical trends.
 router.get("/baseline", async (req, res) => {
   try {
     const sixMonthsAgo = new Date();
@@ -44,6 +52,10 @@ router.get("/baseline", async (req, res) => {
   }
 });
 
+// POST /
+// Creates and stores a new performance test result in the database.
+// Required fields: timestamp, avg_latency_ms, throughput_rps
+// Called by the analyze.py script after each performance test run.
 router.post("/", async (req, res) => {
   try {
     const body = req.body;
@@ -56,6 +68,9 @@ router.post("/", async (req, res) => {
   }
 });
 
+// DELETE /:id
+// Deletes a performance result record by its MongoDB document ID.
+// Used for removing erroneous or invalid test results from the database.
 router.delete("/:id", async (req, res) => {
   try {
     await PerfResult.findByIdAndDelete(req.params.id);
