@@ -1,23 +1,26 @@
 Running ResilientDB with 3PC
 
-Build
-bazel build //platform/consensus/ordering/3pc:consensus_manager_3pc
-bazel build //service/kv:kv_service_3pc
+1. Build required binaries/tools
+bazel build //service/kv:kv_service_sharded_3pc
 bazel build //service/tools/kv/api_tools:kv_service_tools
 
-Keys and Certs
-./service/tools/kv/server_tools/generate_keys_and_certs.sh
+2. Generate certs for 16 server replicas + 1 proxy/client
+./service/tools/kv/server_tools/generate_keys_and_certs.sh \
+  --replicas 16 \
+  --clients 1
 
-Run 3PC Script
-./service/tools/kv/server_tools/start_kv_service_3pc.sh
+3. Generate server.config, service.config, and shard.config
+./service/tools/kv/server_tools/generate_config_sharded.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1
 
-Check For Live Processes
-ps aux | grep '[k]v_service_3pc'
-grep -R "3PC recovery is done\\|recv 3PC\\|db path" logs/3pc /tmp/*kv_service_3pc* 2>/dev/null
-grep -R "3pc_prepare\\|3pc_precommit\\|3pc_global_commit\\|TYPE_3PC\\|recv 3PC" logs/3pc /tmp/*kv_service_3pc* 2>/dev/null
-
-Kill
-killall -9 kv_service kv_service_3pc kv_service_sharded_3pc
+4. Start sharded 3PC KV service
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1 \
+  --no-build
 
 Send Requests
 
@@ -25,11 +28,21 @@ Set
 bazel-bin/service/tools/kv/api_tools/kv_service_tools \
   --config service/tools/config/interface/service.config \
   --cmd set \
-  --key test_3pc_key \
-  --value hello_3pc
+  --key sharded_key \
+  --value hello
 
 Get
 bazel-bin/service/tools/kv/api_tools/kv_service_tools \
   --config service/tools/config/interface/service.config \
   --cmd get \
-  --key test_3pc_key
+  --key sharded_key
+
+
+Kill
+killall -9 kv_service kv_service_3pc kv_service_sharded_3pc
+
+Check For Live Processes
+ps aux | grep '[k]v_service_sharded_3pc'
+grep -R "3PC recovery is done\\|recv 3PC\\|db path" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
+grep -R "3pc_prepare\\|3pc_precommit\\|3pc_global_commit\\|TYPE_3PC\\|recv 3PC" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
+

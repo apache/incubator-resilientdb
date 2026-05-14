@@ -43,6 +43,65 @@ bool NeedsLocalPBFTCommitment(int request_type) {
   }
 }
 
+// Helper functions for logging and tracing requests in the sharded 3PC protocol. 
+// Helps with debugging as 3PC and PBFT write to logs at different stages and at hand off.
+const char* TraceRequestTypeName(int request_type) {
+  switch (request_type) {
+    case Request::TYPE_NEW_TXNS:
+      return "TYPE_NEW_TXNS";
+    case Request::TYPE_3PC_PREPARE:
+      return "TYPE_3PC_PREPARE";
+    case Request::TYPE_3PC_VOTE_COMMIT:
+      return "TYPE_3PC_VOTE_COMMIT";
+    case Request::TYPE_3PC_VOTE_ABORT:
+      return "TYPE_3PC_VOTE_ABORT";
+    case Request::TYPE_3PC_PRECOMMIT:
+      return "TYPE_3PC_PRECOMMIT";
+    case Request::TYPE_3PC_PRECOMMIT_ACK:
+      return "TYPE_3PC_PRECOMMIT_ACK";
+    case Request::TYPE_3PC_GLOBAL_COMMIT:
+      return "TYPE_3PC_GLOBAL_COMMIT";
+    case Request::TYPE_3PC_GLOBAL_ABORT:
+      return "TYPE_3PC_GLOBAL_ABORT";
+    case Request::TYPE_SHARD_PBFT_NEW_TXN:
+      return "TYPE_SHARD_PBFT_NEW_TXN";
+    case Request::TYPE_PRE_PREPARE:
+      return "TYPE_PRE_PREPARE";
+    case Request::TYPE_PREPARE:
+      return "TYPE_PREPARE";
+    case Request::TYPE_COMMIT:
+      return "TYPE_COMMIT";
+    default:
+      return "UNKNOWN";
+  }
+}
+
+void TraceShardedConsensusRequest(const char* prefix,
+                                  const ShardMetadata& shard_metadata,
+                                  const Request& request) {
+  LOG(ERROR) << prefix
+             << " node:" << shard_metadata.SelfNodeId()
+             << " shard:" << shard_metadata.SelfShardId()
+             << " is_leader:" << shard_metadata.IsSelfShardLeader()
+             << " type_name:" << TraceRequestTypeName(request.type())
+             << " type_id:" << request.type()
+             << " sender_id:" << request.sender_id()
+             << " seq:" << request.seq()
+             << " global_txn_id:"
+             << (request.has_global_txn_id() ? request.global_txn_id() : 0)
+             << " coordinator_shard_id:"
+             << (request.has_coordinator_shard_id()
+                     ? request.coordinator_shard_id()
+                     : 0)
+             << " global_coordinator_id:"
+             << (request.has_global_coordinator_id()
+                     ? request.global_coordinator_id()
+                     : 0)
+             << " local_shard_id:"
+             << (request.has_local_shard_id() ? request.local_shard_id() : 0)
+             << " proxy_id:" << request.proxy_id();
+}
+
 ResDBConfig BuildConsensusConfigFromMetadata(const ResDBConfig& config,
                                              const ShardMetadata& metadata) {
   // Client/proxy nodes have no local PBFT shard. They still need the
@@ -223,6 +282,16 @@ int ConsensusManagerSharded3PC::StartLocalPBFTFromGlobalCommit(
     local_request.set_global_txn_id(local_request.seq());
   }
 
+  // Logs to Error when global 3PC commits and hands off to local PBFT.
+  LOG(ERROR) << "[sharded_handoff]"
+             << " global 3PC commit -> local PBFT"
+             << " node:" << shard_metadata_->SelfNodeId()
+             << " shard:" << shard_metadata_->SelfShardId()
+             << " seq:" << local_request.seq()
+             << " global_txn_id:" << local_request.global_txn_id()
+             << " coordinator_shard_id:"
+             << local_request.coordinator_shard_id();
+
   return GetShardPBFTCommitment()->ProcessGlobalCommittedRequest(local_request);
 }
 
@@ -285,6 +354,17 @@ int ConsensusManagerSharded3PC::InternalConsensusCommit3PC(
   if (NeedsLocalPBFTCommitment(request_type) && commitment_ == nullptr) {
     LOG(ERROR) << "local shard PBFT commitment is not initialized";
     return -2;
+  }
+
+  // Write to logs for tracking 3PC and PBFT flow and handoff.
+  if (shard_metadata_.has_value() && shard_metadata_->HasLocalShard()) {
+    if (NeedsGlobal3PCCommitment(request_type)) {
+      TraceShardedConsensusRequest("[sharded_3pc_trace]", *shard_metadata_,
+                                   *request);
+    } else if (NeedsLocalPBFTCommitment(request_type)) {
+      TraceShardedConsensusRequest("[shard_pbft_trace]", *shard_metadata_,
+                                   *request);
+    }
   }
 
   switch (request_type) {
