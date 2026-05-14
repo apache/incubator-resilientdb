@@ -26,9 +26,7 @@
 #include "common/utils/utils.h"
 
 namespace resdb {
-std::unique_ptr<BatchUserResponse> MessageManager::GetResponseMsg() {
-  return queue_.Pop();
-}
+
 MessageManager::MessageManager(
     const ResDBConfig& config,
     std::unique_ptr<TransactionManager> transaction_manager,
