@@ -39,6 +39,15 @@ ResDBConfig::ResDBConfig(const std::vector<ReplicaInfo>& replicas,
   replicas_ = replicas;
 }
 
+ResDBConfig::ResDBConfig(const std::vector<ReplicaInfo>& replicas,
+                         const ReplicaInfo& self_info,
+                         ResConfigData config_data,
+                         const KeyInfo& private_key,
+                         const CertificateInfo& public_key_cert_info)
+    : ResDBConfig(config_data, self_info, private_key, public_key_cert_info) {
+  replicas_ = replicas;
+}
+
 ResDBConfig::ResDBConfig(const ResConfigData& config_data,
                          const ReplicaInfo& self_info,
                          const KeyInfo& private_key,

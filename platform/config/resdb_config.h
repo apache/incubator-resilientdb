@@ -35,6 +35,11 @@ class ResDBConfig {
               const ReplicaInfo& self_info, const KeyInfo& private_key,
               const CertificateInfo& public_key_cert_info);
 
+  ResDBConfig(const std::vector<ReplicaInfo>& replicas,
+              const ReplicaInfo& self_info, ResConfigData config_data,
+              const KeyInfo& private_key,
+              const CertificateInfo& public_key_cert_info);
+
   ResDBConfig(const ResConfigData& config_data, const ReplicaInfo& self_info,
               const KeyInfo& private_key,
               const CertificateInfo& public_key_cert_info);

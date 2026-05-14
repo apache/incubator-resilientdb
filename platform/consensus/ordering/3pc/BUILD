@@ -23,6 +23,9 @@ cc_library(
     name = "commitment_3pc",
     srcs = ["commitment_3pc.cpp"],
     hdrs = ["commitment_3pc.h"],
+    visibility = [
+        "//platform/consensus/ordering/sharded_3pc:__pkg__",
+    ],
     deps = [
         "//platform/consensus/ordering/pbft:commitment",
     ],

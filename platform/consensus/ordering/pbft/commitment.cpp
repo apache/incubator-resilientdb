@@ -30,13 +30,19 @@ namespace resdb {
 Commitment::Commitment(const ResDBConfig& config,
                        MessageManager* message_manager,
                        ReplicaCommunicator* replica_communicator,
-                       SignatureVerifier* verifier)
+                       SignatureVerifier* verifier,
+                       bool start_response_thread)
     : config_(config),
       message_manager_(message_manager),
       stop_(false),
       replica_communicator_(replica_communicator),
       verifier_(verifier) {
-  executed_thread_ = std::thread(&Commitment::PostProcessExecutedMsg, this);
+  // Sharded 3PC creates both a local PBFT commitment and a global 3PC
+  // commitment in one process. Only the local PBFT commitment should drain
+  // executed responses and send them back to the proxy.
+  if (start_response_thread) {
+    executed_thread_ = std::thread(&Commitment::PostProcessExecutedMsg, this);
+  }
   global_stats_ = Stats::GetGlobalStats();
   duplicate_manager_ = std::make_unique<DuplicateManager>(config);
   message_manager_->SetDuplicateManager(duplicate_manager_.get());
@@ -86,8 +92,8 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     //            << " hash:" << user_request->hash();
     LOG(INFO) << "NOT PRIMARY, Primary is "
               << message_manager_->GetCurrentPrimary();
-    replica_communicator_->SendMessage(*user_request,
-                                       message_manager_->GetCurrentPrimary());
+    SendConsensusMsgToReplica(*user_request,
+                              message_manager_->GetCurrentPrimary());
     {
       std::lock_guard<std::mutex> lk(rc_mutex_);
       request_complained_.push(
@@ -131,7 +137,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
     request.set_ret(-2);
     request.set_hash(user_request->hash());
 
-    replica_communicator_->SendMessage(request, request.proxy_id());
+    SendResponseMsg(request, request.proxy_id());
     return -2;
   }
 
@@ -143,7 +149,7 @@ int Commitment::ProcessNewRequest(std::unique_ptr<Context> context,
   user_request->set_sender_id(config_.GetSelfInfo().id());
   user_request->set_primary_id(config_.GetSelfInfo().id());
 
-  replica_communicator_->BroadCast(*user_request);
+  BroadcastConsensusMsg(*user_request);
 
   return 0;
 }
@@ -240,7 +246,7 @@ int Commitment::ProcessProposeMsg(std::unique_ptr<Context> context,
   CollectorResultCode ret =
       message_manager_->AddConsensusMsg(context->signature, std::move(request));
   if (ret == CollectorResultCode::STATE_CHANGED) {
-    replica_communicator_->BroadCast(*prepare_request);
+    BroadcastConsensusMsg(*prepare_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
@@ -289,7 +295,7 @@ int Commitment::ProcessPrepareMsg(std::unique_ptr<Context> context,
       //           << commit_request->data_signature().DebugString();
     }
     global_stats_->RecordStateTime("prepare");
-    replica_communicator_->BroadCast(*commit_request);
+    BroadcastConsensusMsg(*commit_request);
   }
   return ret == CollectorResultCode::INVALID ? -2 : 0;
 }
@@ -340,13 +346,36 @@ int Commitment::PostProcessExecutedMsg() {
     request.set_primary_id(batch_resp->primary_id());
     LOG(ERROR) << "send back to proxy:" << batch_resp->proxy_id();
     batch_resp->SerializeToString(request.mutable_data());
-    replica_communicator_->SendMessage(request, request.proxy_id());
+    SendResponseMsg(request, request.proxy_id());
   }
   return 0;
 }
 
 DuplicateManager* Commitment::GetDuplicateManager() {
   return duplicate_manager_.get();
+}
+
+int Commitment::BroadcastConsensusMsg(const google::protobuf::Message& msg) {
+  // Default PBFT broadcasts to the full replica set. Sharded commitment
+  // subclasses override this to broadcast only within a shard or to leaders.
+  replica_communicator_->BroadCast(msg);
+  return 0;
+}
+
+int Commitment::SendConsensusMsgToReplica(
+    const google::protobuf::Message& msg, int64_t node_id) {
+  // Keep point-to-point consensus sends virtual so sharded code can route by
+  // ShardCommunicator while flat PBFT/3PC still uses ReplicaCommunicator.
+  replica_communicator_->SendMessage(msg, node_id);
+  return 0;
+}
+
+int Commitment::SendResponseMsg(const google::protobuf::Message& msg,
+                                int64_t node_id) {
+  // Client/proxy responses intentionally remain separate from consensus
+  // routing. Sharded subclasses should not send these through shard membership.
+  replica_communicator_->SendMessage(msg, node_id);
+  return 0;
 }
 
 }  // namespace resdb

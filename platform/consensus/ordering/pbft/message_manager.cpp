@@ -21,10 +21,14 @@
 
 #include <glog/logging.h>
 
+#include <utility>
+
 #include "common/utils/utils.h"
 
 namespace resdb {
-
+std::unique_ptr<BatchUserResponse> MessageManager::GetResponseMsg() {
+  return queue_.Pop();
+}
 MessageManager::MessageManager(
     const ResDBConfig& config,
     std::unique_ptr<TransactionManager> transaction_manager,
@@ -47,7 +51,11 @@ MessageManager::MessageManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             resp_msg->set_primary_id(GetCurrentPrimary());
+            // Flat PBFT/3PC leave response_filter_ unset, so responses are
+            // queued normally. Sharded 3PC installs a filter so only replicas
+            // in the coordinator shard send client/proxy responses.
             if (transaction_executor_->NeedResponse() &&
+                (!response_filter_ || response_filter_(*request)) &&
                 resp_msg->proxy_id() != 0) {
               queue_.Push(std::move(resp_msg));
             }
@@ -304,6 +312,13 @@ void MessageManager::SetDuplicateManager(DuplicateManager* manager) {
   transaction_executor_->SetDuplicateManager(manager);
 }
 
+void MessageManager::SetResponseFilter(
+    std::function<bool(const Request&)> filter) {
+  // Optional response gate used by sharded 3PC. The filter is evaluated after
+  // execution, before the response is placed on the send queue.
+  response_filter_ = std::move(filter);
+}
+
 void MessageManager::SendResponse(std::unique_ptr<Request> request) {
   std::unique_ptr<BatchUserResponse> response =
       std::make_unique<BatchUserResponse>();
@@ -314,7 +329,11 @@ void MessageManager::SendResponse(std::unique_ptr<Request> request) {
   response->set_seq(request->seq());
   response->set_current_view(GetCurrentView());
   response->set_primary_id(GetCurrentPrimary());
-  if (transaction_executor_->NeedResponse() && response->proxy_id() != 0) {
+  // Apply the same filter to direct response generation, such as duplicate
+  // request handling, so non-coordinator shards cannot reply through this path.
+  if (transaction_executor_->NeedResponse() &&
+      (!response_filter_ || response_filter_(*request)) &&
+      response->proxy_id() != 0) {
     queue_.Push(std::move(response));
   }
 }

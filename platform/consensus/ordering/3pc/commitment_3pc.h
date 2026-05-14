@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <optional>
@@ -25,16 +27,16 @@ struct ThreePCTxnState {
   uint64_t seq = 0;
   ThreePCPhase phase = ThreePCPhase::kInitial;
   std::string hash;
-  uint32_t coordinator_id = 0;
-  uint32_t proxy_id = 0;
+  int64_t coordinator_id = 0;           // The coordinator for this transaction, which is responsible for driving the 3PC protocol forward and making the final commit/abort decision.
+  int64_t proxy_id = 0;                 // The client proxy that originated this request, used for sending back the response after commit.
 
   // Full original client request, retained so the coordinator can later
   // send GLOBAL_COMMIT and the original request data.
   Request original_request;
 
   // 3PC vote tracking.
-  std::unordered_set<uint32_t> vote_commit_from;
-  std::unordered_set<uint32_t> precommit_ack_from;
+  std::unordered_set<int64_t> vote_commit_from;
+  std::unordered_set<int64_t> precommit_ack_from;
 };
 
 /**************************
@@ -45,10 +47,13 @@ struct ThreePCTxnState {
  ***************************/
 class Commitment3PC : public Commitment {
  public:
+  // start_response_thread is used to defer starting the response thread in cases like sharded 3PC where the commitment module is replaced and the response manager is initialized in the sharded commitment instead of the PBFT commitment.
   Commitment3PC(const ResDBConfig& config, MessageManager* message_manager,
                 ReplicaCommunicator* replica_communicator,
-                SignatureVerifier* verifier)
-      : Commitment(config, message_manager, replica_communicator, verifier) {}
+                SignatureVerifier* verifier,
+                bool start_response_thread = true)
+      : Commitment(config, message_manager, replica_communicator, verifier,
+                   start_response_thread) {}
 
   // Override PBFT commit path with 3PC-specific message handling.
   int ProcessNewRequest(std::unique_ptr<Context> context,
@@ -75,15 +80,17 @@ class Commitment3PC : public Commitment {
   int ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
                             std::unique_ptr<Request> request);
 
+ protected:
+  // Expected participant count for a 3PC transaction, for sharded deployments.
+  // In normal 3pc defaults to replica count. In sharded 3pc, this is overridden to the shard size.
+  virtual size_t ExpectedThreePCParticipantCount() const;
+  virtual int OnGlobalCommit(const Request& committed_request);
+
  private:
   // Check if the current node is the coordinator for a given request.
-  bool IsCoordinator() const {
-    return config_.GetSelfInfo().id() == message_manager_->GetCurrentPrimary();
-  }
+  bool IsCoordinator(const Request& request) const;
   // Get the current coordinator id.
-  uint32_t CoordinatorId() const {
-    return message_manager_->GetCurrentPrimary();
-  }
+  int64_t CoordinatorId(const Request& request) const;
   // Maybe broadcast a PRECOMMIT or GLOBAL_COMMIT message, return 1 if broadcast, 0 otherwise, -2 if invalid state.
   int MaybeBroadcastPreCommit(uint64_t seq);
   int MaybeBroadcastGlobalCommit(uint64_t seq);

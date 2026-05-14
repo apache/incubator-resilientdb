@@ -31,9 +31,11 @@ namespace resdb {
 
 class Commitment {
  public:
+  // start_response_thread is used to defer starting the response thread in cases like sharded 3PC where the commitment module is replaced and the response manager is initialized in the sharded commitment instead of the PBFT commitment.
   Commitment(const ResDBConfig& config, MessageManager* message_manager,
              ReplicaCommunicator* replica_communicator,
-             SignatureVerifier* verifier);
+             SignatureVerifier* verifier,
+             bool start_response_thread = true);
   virtual ~Commitment();
 
   virtual int ProcessNewRequest(std::unique_ptr<Context> context,
@@ -58,6 +60,13 @@ class Commitment {
 
  protected:
   virtual int PostProcessExecutedMsg();
+
+  // Virtual functions for sending messages, can be overridden by subclasses to change the underlying communication mechanism (e.g., for sharding).
+  virtual int BroadcastConsensusMsg(const google::protobuf::Message& msg);
+  virtual int SendConsensusMsgToReplica(const google::protobuf::Message& msg,
+                                        int64_t node_id);
+  virtual int SendResponseMsg(const google::protobuf::Message& msg,
+                              int64_t node_id);
 
  protected:
   ResDBConfig config_;

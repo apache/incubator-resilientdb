@@ -25,9 +25,13 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
 
   // Under the assignment assumptions, the current primary is the single 3PC
   // coordinator. Non-coordinator replicas forward the request there.
-  if (!IsCoordinator()) {
-    LOG(INFO) << "NOT COORDINATOR, Coordinator is " << CoordinatorId();
-    replica_communicator_->SendMessage(*user_request, CoordinatorId());
+  if (!user_request->has_global_coordinator_id()) {
+    user_request->set_global_coordinator_id(message_manager_->GetCurrentPrimary());
+  }
+  if (!IsCoordinator(*user_request)) {
+    LOG(INFO) << "NOT COORDINATOR, Coordinator is "
+              << CoordinatorId(*user_request);
+    SendConsensusMsgToReplica(*user_request, CoordinatorId(*user_request));
     {
       std::lock_guard<std::mutex> lk(rc_mutex_);
       request_complained_.push(
@@ -73,7 +77,7 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
     response.set_proxy_id(user_request->proxy_id());
     response.set_ret(-2);
     response.set_hash(user_request->hash());
-    replica_communicator_->SendMessage(response, response.proxy_id());
+    SendResponseMsg(response, response.proxy_id());
     return -2;
   }
 
@@ -96,7 +100,7 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
     txn.seq = *seq;
     txn.phase = ThreePCPhase::kReady;  // PREPARE sent, waiting on votes
     txn.hash = user_request->hash();
-    txn.coordinator_id = config_.GetSelfInfo().id();
+    txn.coordinator_id = CoordinatorId(*user_request);
     txn.proxy_id = user_request->proxy_id();
     txn.original_request = *user_request;
 
@@ -106,7 +110,7 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
 
   global_stats_->RecordStateTime("3pc_prepare");
 
-  replica_communicator_->BroadCast(*user_request);
+  BroadcastConsensusMsg(*user_request);
 
   // This will likely not do anything replicas have not responded yet,but mirrors the PBFT implementation
   return MaybeBroadcastPreCommit(*seq);
@@ -120,7 +124,8 @@ int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,
   }
 
   // Coordinator broadcasts the prepare, so ingores its own prepare messages.
-  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+  if (IsCoordinator(*request) &&
+      request->sender_id() == config_.GetSelfInfo().id()) {
     LOG(INFO) << "ignore coordinator self PREPARE broadcast for seq:"
               << request->seq();
     return 0;
@@ -134,10 +139,10 @@ int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,
   }
 
   // Only accept PREPARE messages from the coordinator.
-  if (request->sender_id() != CoordinatorId()) {
+  if (request->sender_id() != CoordinatorId(*request)) {
     LOG(ERROR) << "3PC PREPARE not from coordinator. sender:"
                << request->sender_id()
-               << " coordinator:" << CoordinatorId();
+               << " coordinator:" << CoordinatorId(*request);
     return -2;
   }
 
@@ -194,9 +199,17 @@ int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,
   vote.set_proxy_id(request->proxy_id());
   vote.set_current_view(message_manager_->GetCurrentView());
   vote.set_sender_id(config_.GetSelfInfo().id());
-  vote.set_primary_id(CoordinatorId());
+  vote.set_primary_id(CoordinatorId(*request));
+  vote.set_global_coordinator_id(CoordinatorId(*request));
+  if (request->has_coordinator_shard_id()) {
+    vote.set_coordinator_shard_id(request->coordinator_shard_id());
+  }
+  if (request->has_global_txn_id()) {
+    vote.set_global_txn_id(request->global_txn_id());
+  }
+  vote.set_is_global_3pc(true);
 
-  replica_communicator_->SendMessage(vote, CoordinatorId());
+  SendConsensusMsgToReplica(vote, CoordinatorId(*request));
   return 0;
 }
 
@@ -214,14 +227,14 @@ int Commitment3PC::ProcessVoteCommitMsg(std::unique_ptr<Context> context,
   }
 
   // Only the coordinator handles incoming VOTE_COMMIT messages.
-  if (!IsCoordinator()) {
+  if (!IsCoordinator(*request)) {
     LOG(ERROR) << "only coordinator handles 3PC VOTE_COMMIT";
     return -2;
   }
 
   // Record the VOTE_COMMIT from this voter.
   const uint64_t seq = request->seq();
-  const uint32_t voter_id = request->sender_id();
+  const int64_t voter_id = request->sender_id();
 
   {
     // Validate the vote against the coordinator's current state for this transaction.
@@ -267,7 +280,7 @@ int Commitment3PC::ProcessVoteAbortMsg(std::unique_ptr<Context> context,
   }
 
   // Only the coordinator handles incoming VOTE_ABORT messages.
-  if (!IsCoordinator()) {
+  if (!IsCoordinator(*request)) {
     LOG(ERROR) << "only coordinator handles 3PC VOTE_ABORT";
     return -2;
   }
@@ -303,8 +316,16 @@ int Commitment3PC::ProcessVoteAbortMsg(std::unique_ptr<Context> context,
   abort.set_current_view(message_manager_->GetCurrentView());
   abort.set_sender_id(config_.GetSelfInfo().id());
   abort.set_primary_id(config_.GetSelfInfo().id());
+  abort.set_global_coordinator_id(CoordinatorId(*request));
+  if (request->has_coordinator_shard_id()) {
+    abort.set_coordinator_shard_id(request->coordinator_shard_id());
+  }
+  if (request->has_global_txn_id()) {
+    abort.set_global_txn_id(request->global_txn_id());
+  }
+  abort.set_is_global_3pc(true);
 
-  replica_communicator_->BroadCast(abort);
+  BroadcastConsensusMsg(abort);
   return 0;
 }
 
@@ -316,7 +337,8 @@ int Commitment3PC::ProcessPreCommitMsg(std::unique_ptr<Context> context,
   }
 
   // The coordinator broadcasts the PRECOMMIT, so ingores its own PRECOMMIT messages.
-  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+  if (IsCoordinator(*request) &&
+      request->sender_id() == config_.GetSelfInfo().id()) {
     LOG(INFO) << "ignore coordinator self PRECOMMIT broadcast for seq:"
               << request->seq();
     return 0;
@@ -329,10 +351,10 @@ int Commitment3PC::ProcessPreCommitMsg(std::unique_ptr<Context> context,
   }
 
   // Only accept PRECOMMIT messages from the coordinator.
-  if (request->sender_id() != CoordinatorId()) {
+  if (request->sender_id() != CoordinatorId(*request)) {
     LOG(ERROR) << "3PC PRECOMMIT not from coordinator. sender:"
                << request->sender_id()
-               << " coordinator:" << CoordinatorId();
+               << " coordinator:" << CoordinatorId(*request);
     return -2;
   }
 
@@ -366,9 +388,17 @@ int Commitment3PC::ProcessPreCommitMsg(std::unique_ptr<Context> context,
   ack.set_proxy_id(request->proxy_id());
   ack.set_current_view(message_manager_->GetCurrentView());
   ack.set_sender_id(config_.GetSelfInfo().id());
-  ack.set_primary_id(CoordinatorId());
+  ack.set_primary_id(CoordinatorId(*request));
+  ack.set_global_coordinator_id(CoordinatorId(*request));
+  if (request->has_coordinator_shard_id()) {
+    ack.set_coordinator_shard_id(request->coordinator_shard_id());
+  }
+  if (request->has_global_txn_id()) {
+    ack.set_global_txn_id(request->global_txn_id());
+  }
+  ack.set_is_global_3pc(true);
 
-  replica_communicator_->SendMessage(ack, CoordinatorId());
+  SendConsensusMsgToReplica(ack, CoordinatorId(*request));
   return 0;
 }
 
@@ -386,7 +416,7 @@ int Commitment3PC::ProcessPreCommitAckMsg(std::unique_ptr<Context> context,
   }
 
   // Only the coordinator handles incoming PRECOMMIT_ACK messages.
-  if (!IsCoordinator()) {
+  if (!IsCoordinator(*request)) {
     LOG(ERROR) << "only coordinator handles 3PC PRECOMMIT_ACK";
     return -2;
   }
@@ -418,7 +448,8 @@ int Commitment3PC::ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
   }
 
   // The coordinator broadcasts the GLOBAL_COMMIT, so ingores its own GLOBAL_COMMIT messages.
-  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+  if (IsCoordinator(*request) &&
+      request->sender_id() == config_.GetSelfInfo().id()) {
     LOG(INFO) << "ignore coordinator self GLOBAL_COMMIT broadcast for seq:"
               << request->seq();
     return 0;
@@ -431,10 +462,10 @@ int Commitment3PC::ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
   }
 
   // Only accept GLOBAL_COMMIT messages from the coordinator.
-  if (request->sender_id() != CoordinatorId()) {
+  if (request->sender_id() != CoordinatorId(*request)) {
     LOG(ERROR) << "3PC GLOBAL_COMMIT not from coordinator. sender:"
                << request->sender_id()
-               << " coordinator:" << CoordinatorId();
+               << " coordinator:" << CoordinatorId(*request);
     return -2;
   }
 
@@ -465,7 +496,7 @@ int Commitment3PC::ProcessGlobalCommitMsg(std::unique_ptr<Context> context,
   global_stats_->RecordStateTime("3pc_global_commit_recv");
   duplicate_manager_->EraseProposed(exec_request.hash());
 
-  return ExecuteCommittedTxn(exec_request);
+  return OnGlobalCommit(exec_request);
 }
 
 int Commitment3PC::ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
@@ -476,7 +507,8 @@ int Commitment3PC::ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
   }
 
   // The coordinator broadcasts the GLOBAL_ABORT, so ingores its own GLOBAL_ABORT messages.
-  if (IsCoordinator() && request->sender_id() == config_.GetSelfInfo().id()) {
+  if (IsCoordinator(*request) &&
+      request->sender_id() == config_.GetSelfInfo().id()) {
     LOG(INFO) << "ignore coordinator self GLOBAL_ABORT broadcast for seq:"
               << request->seq();
     return 0;
@@ -489,10 +521,10 @@ int Commitment3PC::ProcessGlobalAbortMsg(std::unique_ptr<Context> context,
   }
 
   // Only accept GLOBAL_ABORT messages from the coordinator.
-  if (request->sender_id() != CoordinatorId()) {
+  if (request->sender_id() != CoordinatorId(*request)) {
     LOG(ERROR) << "3PC GLOBAL_ABORT not from coordinator. sender:"
                << request->sender_id()
-               << " coordinator:" << CoordinatorId();
+               << " coordinator:" << CoordinatorId(*request);
     return -2;
   }
 
@@ -529,7 +561,7 @@ int Commitment3PC::MaybeBroadcastPreCommit(uint64_t seq) {
     }
 
     // Assumption: all replicas participate.
-    const size_t expected_votes = static_cast<size_t>(config_.GetReplicaNum());
+    const size_t expected_votes = ExpectedThreePCParticipantCount();
     if (txn.vote_commit_from.size() < expected_votes) {
       return 0;
     }
@@ -546,10 +578,19 @@ int Commitment3PC::MaybeBroadcastPreCommit(uint64_t seq) {
     precommit->set_sender_id(config_.GetSelfInfo().id());
     precommit->set_primary_id(config_.GetSelfInfo().id());
     precommit->set_current_view(message_manager_->GetCurrentView());
+    precommit->set_global_coordinator_id(txn.coordinator_id);
+    if (txn.original_request.has_coordinator_shard_id()) {
+      precommit->set_coordinator_shard_id(
+          txn.original_request.coordinator_shard_id());
+    }
+    if (txn.original_request.has_global_txn_id()) {
+      precommit->set_global_txn_id(txn.original_request.global_txn_id());
+    }
+    precommit->set_is_global_3pc(true);
   }
 
   global_stats_->RecordStateTime("3pc_precommit");
-  replica_communicator_->BroadCast(*precommit);
+  BroadcastConsensusMsg(*precommit);
   return 0;
 }
 
@@ -572,7 +613,7 @@ int Commitment3PC::MaybeBroadcastGlobalCommit(uint64_t seq) {
     }
 
     // Assumption: all replicas participate.
-    const size_t expected_acks = static_cast<size_t>(config_.GetReplicaNum());
+    const size_t expected_acks = ExpectedThreePCParticipantCount();
     if (txn.precommit_ack_from.size() < expected_acks) {
       return 0;
     }
@@ -588,16 +629,25 @@ int Commitment3PC::MaybeBroadcastGlobalCommit(uint64_t seq) {
     global_commit->set_current_view(message_manager_->GetCurrentView());
     global_commit->set_sender_id(config_.GetSelfInfo().id());
     global_commit->set_primary_id(config_.GetSelfInfo().id());
+    global_commit->set_global_coordinator_id(txn.coordinator_id);
+    if (txn.original_request.has_coordinator_shard_id()) {
+      global_commit->set_coordinator_shard_id(
+          txn.original_request.coordinator_shard_id());
+    }
+    if (txn.original_request.has_global_txn_id()) {
+      global_commit->set_global_txn_id(txn.original_request.global_txn_id());
+    }
+    global_commit->set_is_global_3pc(true);
 
     exec_request = txn.original_request;
   }
 
   global_stats_->RecordStateTime("3pc_global_commit");
-  replica_communicator_->BroadCast(*global_commit);
+  BroadcastConsensusMsg(*global_commit);
 
   // Coordinator also executes once the commit decision is final.
   duplicate_manager_->EraseProposed(exec_request.hash());
-  return ExecuteCommittedTxn(exec_request);
+  return OnGlobalCommit(exec_request);
 }
 
 int Commitment3PC::ExecuteCommittedTxn(const Request& committed_request) {
@@ -608,9 +658,28 @@ int Commitment3PC::ExecuteCommittedTxn(const Request& committed_request) {
   auto exec_request = std::make_unique<Request>(committed_request);
   exec_request->set_seq(committed_request.seq());
   exec_request->set_current_view(message_manager_->GetCurrentView());
-  exec_request->set_primary_id(CoordinatorId());
+  exec_request->set_primary_id(CoordinatorId(committed_request));
 
   return message_manager_->ExecuteOrderedRequest(std::move(exec_request));
+}
+
+size_t Commitment3PC::ExpectedThreePCParticipantCount() const {
+  return static_cast<size_t>(config_.GetReplicaNum());
+}
+
+int Commitment3PC::OnGlobalCommit(const Request& committed_request) {
+  return ExecuteCommittedTxn(committed_request);
+}
+
+int64_t Commitment3PC::CoordinatorId(const Request& request) const {
+  if (request.has_global_coordinator_id()) {
+    return request.global_coordinator_id();
+  }
+  return message_manager_->GetCurrentPrimary();
+}
+
+bool Commitment3PC::IsCoordinator(const Request& request) const {
+  return config_.GetSelfInfo().id() == CoordinatorId(request);
 }
 
 }  // namespace resdb

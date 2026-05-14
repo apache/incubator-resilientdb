@@ -41,6 +41,10 @@ cc_library(
     name = "response_manager",
     srcs = ["response_manager.cpp"],
     hdrs = ["response_manager.h"],
+    visibility = [
+        "//platform/consensus/ordering/pbft:__pkg__",
+        "//platform/consensus/ordering/sharded_3pc:__pkg__",
+    ],
     deps = [
         ":lock_free_collector_pool",
         ":transaction_utils",
@@ -75,6 +79,9 @@ cc_library(
     name = "message_manager",
     srcs = ["message_manager.cpp"],
     hdrs = ["message_manager.h"],
+    visibility = [
+        "//platform/consensus/ordering/sharded_3pc:__pkg__",
+    ],
     deps = [
         ":checkpoint_manager",
         ":lock_free_collector_pool",
@@ -103,6 +110,7 @@ cc_library(
     hdrs = ["commitment.h"],
     visibility = [
         "//platform/consensus/ordering/3pc:__pkg__",
+        "//platform/consensus/ordering/sharded_3pc:__pkg__",
     ],
     deps = [
         ":message_manager",
@@ -134,6 +142,9 @@ cc_library(
     name = "checkpoint_manager",
     srcs = ["checkpoint_manager.cpp"],
     hdrs = ["checkpoint_manager.h"],
+    visibility = [
+        "//platform/consensus/ordering/sharded_3pc:__pkg__",
+    ],
     deps = [
         ":transaction_utils",
         "//chain/state:chain_state",

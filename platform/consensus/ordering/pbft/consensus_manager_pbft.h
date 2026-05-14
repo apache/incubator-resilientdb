@@ -36,16 +36,31 @@ namespace resdb {
 class ConsensusManagerPBFT : public ConsensusManager {
  public:
   /**************************
+  * PBFT Consensus Manager has two constructors:
+  * 1) A simpler constructor that takes a single ResDBConfig and initializes the consensus configuration with it. 
+  *     This is used for standard PBFT setups where the consensus configuration is the same as the overall configuration.
+  * 2) A more detailed constructor that takes both a general ResDBConfig and a specific consensus configuration ResDBConfig. 
+  *     This is used when integrating with the sharded 3PC protocol that has its own consensus configuration per shard.
   * New Parameters for defering module initialization in case of 3PC utilization:
   * - defer_recovery_init: Suspend PBFT recovery modeule initialization.
   * - defer_commitment_init: Suspend PBFT commitment module initialization.
   *   - This is because the 3PC initialization will replace the PBFT commitment and recovery modules.
+  * New Parameter for defering response manager initialization in case of sharded 3PC utilization:
+  * - defer_response_manager_init: Suspend PBFT response manager initialization so that ShardResponseManager can be initialized instead.
   ***************************/
   ConsensusManagerPBFT(const ResDBConfig& config,
                        std::unique_ptr<TransactionManager> executor,
                        bool defer_recovery_init = false,
                        bool defer_commitment_init = false,
-                       std::unique_ptr<CustomQuery> query_executor = nullptr);
+                       std::unique_ptr<CustomQuery> query_executor = nullptr,
+                       bool defer_response_manager_init = false);
+  ConsensusManagerPBFT(const ResDBConfig& config,
+                       const ResDBConfig& consensus_config,
+                       std::unique_ptr<TransactionManager> executor,
+                       bool defer_recovery_init = false,
+                       bool defer_commitment_init = false,
+                       std::unique_ptr<CustomQuery> query_executor = nullptr,
+                       bool defer_response_manager_init = false);
   virtual ~ConsensusManagerPBFT() = default;
 
   int ConsensusCommit(std::unique_ptr<Context> context,

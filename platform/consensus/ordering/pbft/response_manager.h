@@ -40,11 +40,17 @@ class ResponseClientTimeout {
 
 class ResponseManager {
  public:
+
+  // ShardedResponseManager extends ResponseManager to provide shard-aware response handling for a sharded system.
+  // It uses the ShardRouter to determine the appropriate shard for each request and manages routing information for local nodes.
+  // Routing rotates through shard leaders and mom-leader shard metadata is limited to local replicas for pbft.
   ResponseManager(const ResDBConfig& config,
                   ReplicaCommunicator* replica_communicator,
-                  SystemInfo* system_info, SignatureVerifier* verifier);
+                  SystemInfo* system_info, SignatureVerifier* verifier,
+                  bool defer_user_req_thread = false);
 
-  ~ResponseManager();
+  // Virtual destructor to allow for proper cleanup in derived classes like ShardedResponseManager.
+  virtual ~ResponseManager();
 
   int AddContextList(std::vector<std::unique_ptr<Context>> context,
                      uint64_t id);
@@ -56,7 +62,7 @@ class ResponseManager {
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
 
- private:
+ protected:
   // Add response messages which will be sent back to the caller
   // if there are f+1 same messages.
   CollectorResultCode AddResponseMsg(
@@ -70,10 +76,22 @@ class ResponseManager {
     std::unique_ptr<Context> context;
     std::unique_ptr<Request> user_request;
   };
-  bool MayConsensusChangeStatus(int type, int received_count,
-                                std::atomic<TransactionStatue>* status);
-  int DoBatch(const std::vector<std::unique_ptr<QueueItem>>& batch_req);
+
+  // Check if the consensus status can be changed based on the type of message, local_id, number of messages received, and current status.
+  // Used in sharded response manager to determine if consensus can progress based on responses received from the relevant shard.
+  virtual bool MayConsensusChangeStatus(
+      int type, uint64_t local_id, int received_count,
+      std::atomic<TransactionStatue>* status);
+  // ShardedResponseManager override to determine the target replica for a request based on its local_id and shard metadata.
+  virtual int DoBatch(const std::vector<std::unique_ptr<QueueItem>>& batch_req);
   int BatchProposeMsg();
+  void StartUserRequestThread();
+  // Check if the user request thread should be running, which is true if the response manager is initialized and not in deferred initialization mode (e.g., global 3pc mode is enabled for sharded systems).
+  bool ShouldRunUserRequestThread() const;
+  // ShardedResponseManager override to determine the target replica for a request based on its local_id and shard metadata.
+  virtual int64_t GetRequestTarget(Request* request, uint64_t local_id);
+  // ShardedResponseManager override to resend requests to the appropriate shard leader on timeout.
+  virtual void ResendRequestOnTimeout(const Request& request);
   int GetPrimary();
 
   void AddWaitingResponseRequest(std::unique_ptr<Request> request);
@@ -83,7 +101,7 @@ class ResponseManager {
   void MonitoringClientTimeOut();
   std::unique_ptr<Request> GetTimeOutRequest(std::string hash);
 
- private:
+ protected:
   ResDBConfig config_;
   ReplicaCommunicator* replica_communicator_;
   std::unique_ptr<LockFreeCollectorPool> collector_pool_, context_pool_;

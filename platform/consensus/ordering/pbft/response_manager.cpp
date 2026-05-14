@@ -45,7 +45,8 @@ bool ResponseClientTimeout::operator<(
 ResponseManager::ResponseManager(const ResDBConfig& config,
                                  ReplicaCommunicator* replica_communicator,
                                  SystemInfo* system_info,
-                                 SignatureVerifier* verifier)
+                                 SignatureVerifier* verifier,
+                                 bool defer_user_req_thread)
     : config_(config),
       replica_communicator_(replica_communicator),
       collector_pool_(std::make_unique<LockFreeCollectorPool>(
@@ -58,13 +59,16 @@ ResponseManager::ResponseManager(const ResDBConfig& config,
   stop_ = false;
   local_id_ = 1;
   timeout_length_ = 5000000;
+  // The timeout thread waits on this semaphore. Initialize it regardless of
+  // view-change mode so destruction can use one cleanup path safely.
+  sem_init(&request_sent_signal_, 0, 0);
 
-  if (config_.GetPublicKeyCertificateInfo()
-              .public_key()
-              .public_key_info()
-              .type() == CertificateKeyInfo::CLIENT ||
-      config_.IsTestMode()) {
-    user_req_thread_ = std::thread(&ResponseManager::BatchProposeMsg, this);
+  if (ShouldRunUserRequestThread()) {
+    // ShardedResponseManager needs to finish constructing its router before
+    // the inherited batching thread can call virtual routing hooks.
+    if (!defer_user_req_thread) {
+      StartUserRequestThread();
+    }
   }
   if (config_.GetConfigData().enable_viewchange()) {
     checking_timeout_thread_ =
@@ -80,8 +84,11 @@ ResponseManager::~ResponseManager() {
     user_req_thread_.join();
   }
   if (checking_timeout_thread_.joinable()) {
+    // Wake the timeout thread if it is blocked in sem_wait() so Stop can join.
+    sem_post(&request_sent_signal_);
     checking_timeout_thread_.join();
   }
+  sem_destroy(&request_sent_signal_);
 }
 
 // use system info
@@ -148,7 +155,11 @@ int ResponseManager::ProcessResponseMsg(std::unique_ptr<Context> context,
 }
 
 bool ResponseManager::MayConsensusChangeStatus(
-    int type, int received_count, std::atomic<TransactionStatue>* status) {
+    int type, uint64_t local_id, int received_count,
+    std::atomic<TransactionStatue>* status) {
+  // local_id is unused by flat PBFT, but sharded response handling uses it to
+  // look up which shard leader originally received this batch.
+  (void)local_id;
   switch (type) {
     case Request::TYPE_RESPONSE:
       // if receive f+1 response results, ack to the caller.
@@ -203,7 +214,7 @@ CollectorResultCode ResponseManager::AddResponseMsg(
       [&](const Request& request, int received_count,
           TransactionCollector::CollectorDataType* data,
           std::atomic<TransactionStatue>* status, bool force) {
-        if (MayConsensusChangeStatus(type, received_count, status)) {
+        if (MayConsensusChangeStatus(type, seq, received_count, status)) {
           resp_received_count = 1;
           response_call_back(request, data);
         }
@@ -300,6 +311,24 @@ int ResponseManager::BatchProposeMsg() {
   return 0;
 }
 
+void ResponseManager::StartUserRequestThread() {
+  // Split out of the constructor so subclasses can initialize their own state
+  // before client batching begins.
+  if (!user_req_thread_.joinable()) {
+    user_req_thread_ = std::thread(&ResponseManager::BatchProposeMsg, this);
+  }
+}
+
+bool ResponseManager::ShouldRunUserRequestThread() const {
+  // Only proxy/client nodes, plus tests, should consume user requests from the
+  // batch queue. Server replicas receive already-batched TYPE_NEW_TXNS.
+  return config_.GetPublicKeyCertificateInfo()
+                 .public_key()
+                 .public_key_info()
+                 .type() == CertificateKeyInfo::CLIENT ||
+         config_.IsTestMode();
+}
+
 int ResponseManager::DoBatch(
     const std::vector<std::unique_ptr<QueueItem>>& batch_req) {
   auto new_request =
@@ -318,16 +347,20 @@ int ResponseManager::DoBatch(
     context_list.push_back(std::move(batch_req[i]->context));
   }
 
+  // Capture the id before incrementing so routing, context storage, and
+  // response collection all agree on the same client-local transaction id.
+  uint64_t local_id = local_id_;
   if (!config_.IsPerformanceRunning()) {
     LOG(ERROR) << "add context list:" << new_request->seq()
                << " list size:" << context_list.size()
-               << " local_id:" << local_id_;
-    batch_request.set_local_id(local_id_);
-    int ret = AddContextList(std::move(context_list), local_id_++);
+               << " local_id:" << local_id;
+    batch_request.set_local_id(local_id);
+    int ret = AddContextList(std::move(context_list), local_id);
     if (ret != 0) {
       LOG(ERROR) << "add context list fail:";
       return ret;
     }
+    local_id_++;
   }
   batch_request.set_createtime(GetCurrentTime());
   std::string data;
@@ -341,15 +374,33 @@ int ResponseManager::DoBatch(
     *new_request->mutable_data_signature() = *signature_or;
   }
 
+  // Serialize once before the routing hook so sharded routing can inspect or
+  // annotate the Request while the batched payload is already present.
+  batch_request.SerializeToString(new_request->mutable_data());
+  const int64_t target = GetRequestTarget(new_request.get(), local_id);
+  // Serialize again because sharded overrides may add routing metadata to
+  // new_request; the hash below must reflect the final request data.
   batch_request.SerializeToString(new_request->mutable_data());
   new_request->set_hash(SignatureVerifier::CalculateHash(new_request->data()));
   new_request->set_proxy_id(config_.GetSelfInfo().id());
-  replica_communicator_->SendMessage(*new_request, GetPrimary());
+  replica_communicator_->SendMessage(*new_request, target);
   send_num_++;
-  LOG(INFO) << "send msg to primary:" << GetPrimary()
+  LOG(INFO) << "send msg to target:" << target
             << " batch size:" << batch_req.size();
   AddWaitingResponseRequest(std::move(new_request));
   return 0;
+}
+
+int64_t ResponseManager::GetRequestTarget(Request*, uint64_t) {
+  // Default PBFT behavior remains primary routing. ShardedResponseManager
+  // overrides this to choose shard leaders round-robin and set metadata.
+  return GetPrimary();
+}
+
+void ResponseManager::ResendRequestOnTimeout(const Request& request) {
+  // Default view-change timeout behavior rebroadcasts broadly. Sharded
+  // response handling overrides this to resend to the original shard leader.
+  replica_communicator_->BroadCast(request);
 }
 
 void ResponseManager::AddWaitingResponseRequest(
@@ -412,7 +463,7 @@ void ResponseManager::MonitoringClientTimeOut() {
     if (CheckTimeOut(client_timeout.hash)) {
       auto request = GetTimeOutRequest(client_timeout.hash);
       if (request) {
-        replica_communicator_->BroadCast(*request);
+        ResendRequestOnTimeout(*request);
       }
     }
   }

@@ -88,7 +88,7 @@ The ShardMetadata class tracks the following:
 - Node id
 - Provides access functions for convenient node/shard evaluations
 
-Each replica will keep a ShardMetada object (not client).
+Each replica will keep a ShardMetadaata object (not client).
 
 
 ```text

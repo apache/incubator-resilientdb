@@ -29,33 +29,45 @@ namespace resdb {
 ConsensusManagerPBFT::ConsensusManagerPBFT(
     const ResDBConfig& config, std::unique_ptr<TransactionManager> executor,
     bool defer_recovery_init, bool defer_commitment_init,
-    std::unique_ptr<CustomQuery> query_executor)
+    std::unique_ptr<CustomQuery> query_executor,
+    bool defer_response_manager_init)
+    : ConsensusManagerPBFT(config, config, std::move(executor),
+                           defer_recovery_init, defer_commitment_init,
+                           std::move(query_executor),
+                           defer_response_manager_init) {}
+
+ConsensusManagerPBFT::ConsensusManagerPBFT(
+    const ResDBConfig& config, const ResDBConfig& consensus_config,
+    std::unique_ptr<TransactionManager> executor, bool defer_recovery_init,
+    bool defer_commitment_init, std::unique_ptr<CustomQuery> query_executor,
+    bool defer_response_manager_init)
     : ConsensusManager(config),
-      system_info_(std::make_unique<SystemInfo>(config)),
+      system_info_(std::make_unique<SystemInfo>(consensus_config)),
       checkpoint_manager_(std::make_unique<CheckPointManager>(
-          config, GetBroadCastClient(), GetSignatureVerifier(),
+          consensus_config, GetBroadCastClient(), GetSignatureVerifier(),
           system_info_.get())),
       message_manager_(std::make_unique<MessageManager>(
-          config, std::move(executor), checkpoint_manager_.get(),
+          consensus_config, std::move(executor), checkpoint_manager_.get(),
           system_info_.get())),
-      response_manager_(config_.IsPerformanceRunning()
-                            ? nullptr
-                            : std::make_unique<ResponseManager>(
+      response_manager_(config_.IsPerformanceRunning() ||
+                                defer_response_manager_init
+                          ? nullptr
+                          : std::make_unique<ResponseManager>(
                                   config_, GetBroadCastClient(),
                                   system_info_.get(), GetSignatureVerifier())),
-      performance_manager_(config_.IsPerformanceRunning()
-                               ? std::make_unique<PerformanceManager>(
-                                     config_, GetBroadCastClient(),
-                                     system_info_.get(), GetSignatureVerifier())
-                               : nullptr),
-      view_change_manager_(std::make_unique<ViewChangeManager>(
-          config_, checkpoint_manager_.get(), message_manager_.get(),
-          system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
-      recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
-                                           system_info_.get(),
-                                           message_manager_->GetStorage())),
-      query_(std::make_unique<Query>(config_, recovery_.get(),
-                                     std::move(query_executor))) {
+                                  performance_manager_(config_.IsPerformanceRunning()
+                                    ? std::make_unique<PerformanceManager>(
+                                            config_, GetBroadCastClient(),
+                                            system_info_.get(), GetSignatureVerifier())
+                                    : nullptr),
+                                  view_change_manager_(std::make_unique<ViewChangeManager>(
+                                        consensus_config, checkpoint_manager_.get(), message_manager_.get(),
+                                        system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
+                                        recovery_(std::make_unique<Recovery>(consensus_config, checkpoint_manager_.get(),
+                                        system_info_.get(),
+                                        message_manager_->GetStorage())),
+                                        query_(std::make_unique<Query>(consensus_config, recovery_.get(),
+                                        std::move(query_executor))) {
   LOG(INFO) << "is running is performance mode:"
             << config_.IsPerformanceRunning();
   global_stats_ = Stats::GetGlobalStats();
@@ -63,7 +75,7 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
   // Initialize the commitment and recovery modules unless deferred for 3PC. The 3PC implementation will replace this with a 3PC-specific commitment module.
   if (!defer_commitment_init) {
     commitment_ = std::make_unique<Commitment>(
-        config_, message_manager_.get(), GetBroadCastClient(),
+        consensus_config, message_manager_.get(), GetBroadCastClient(),
         GetSignatureVerifier());
     view_change_manager_->SetDuplicateManager(
         commitment_->GetDuplicateManager());

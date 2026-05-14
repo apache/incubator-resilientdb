@@ -1,6 +1,5 @@
 #include "platform/consensus/ordering/sharded_3pc/shard_communicator.h"
 
-#include <limits>
 #include <stdexcept>
 
 namespace resdb {
@@ -18,12 +17,12 @@ ShardCommunicator::ShardCommunicator(
     throw std::invalid_argument("ShardCommunicator requires shard metadata");
   }
 
+  // Build a mapping of node IDs to ReplicaInfo for quick lookup when sending messages.
   for (const auto& replica : replicas) {
-    if (replica.id() < 0 ||
-        replica.id() > std::numeric_limits<uint32_t>::max()) {
-      throw std::invalid_argument("replica id is outside uint32_t range");
+    if (replica.id() < 0) {
+      throw std::invalid_argument("replica id must be non-negative");
     }
-    const uint32_t node_id = static_cast<uint32_t>(replica.id());
+    const int64_t node_id = replica.id();
     if (!replicas_by_node_id_.emplace(node_id, replica).second) {
       throw std::invalid_argument("duplicate replica id " +
                                   std::to_string(node_id));
@@ -32,10 +31,10 @@ ShardCommunicator::ShardCommunicator(
 }
 
 int ShardCommunicator::SendToNodes(const google::protobuf::Message& message,
-                                   const std::vector<uint32_t>& node_ids,
+                                   const std::vector<int64_t>& node_ids,
                                    bool include_self) {
   int success_count = 0;
-  for (const uint32_t node_id : node_ids) {
+  for (const int64_t node_id : node_ids) {
     if (!include_self && node_id == shard_metadata_->SelfNodeId()) {
       continue;
     }
@@ -45,7 +44,7 @@ int ShardCommunicator::SendToNodes(const google::protobuf::Message& message,
 }
 
 int ShardCommunicator::SendToNode(const google::protobuf::Message& message,
-                                  uint32_t node_id) {
+                                  int64_t node_id) {
   const int ret = replica_communicator_->SendMessage(message,
                                                      ReplicaForNode(node_id));
   return ret >= 0 ? 1 : 0;
@@ -75,7 +74,7 @@ int ShardCommunicator::SendToShardLeader(
   return SendToNode(message, shard_metadata_->LeaderForShard(shard_id));
 }
 
-const ReplicaInfo& ShardCommunicator::ReplicaForNode(uint32_t node_id) const {
+const ReplicaInfo& ShardCommunicator::ReplicaForNode(int64_t node_id) const {
   const auto it = replicas_by_node_id_.find(node_id);
   if (it == replicas_by_node_id_.end()) {
     throw std::invalid_argument("unknown replica id " +

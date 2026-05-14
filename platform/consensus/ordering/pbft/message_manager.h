@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <queue>
@@ -105,6 +106,7 @@ class MessageManager {
   void SetHighestPreparedSeq(uint64_t seq);
 
   void SetDuplicateManager(DuplicateManager* manager);
+  void SetResponseFilter(std::function<bool(const Request&)> filter);
 
   void SendResponse(std::unique_ptr<Request> request);
 
@@ -134,6 +136,9 @@ class MessageManager {
   std::unique_ptr<LockFreeCollectorPool> collector_pool_;
 
   Stats* global_stats_;
+
+  // Used to filter the response that will be sent back to 
+  std::function<bool(const Request&)> response_filter_;
 
   std::mutex lct_lock_;
   std::map<uint64_t, uint64_t> last_committed_time_;

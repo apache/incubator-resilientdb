@@ -232,7 +232,10 @@ void Stats::SetProps(int replica_id, std::string ip, int port,
   transaction_summary_.port = port;
   enable_resview = resview_flag;
   enable_faulty_switch_ = faulty_flag;
-  if (resview_flag) {
+  // Sharded 3PC creates separate local-PBFT and global-3PC commitment objects
+  // in one process. Both call SetProps(), but only one ResView/Crow server
+  // thread may be owned by the process.
+  if (resview_flag && !crow_thread_.joinable()) {
     crow_thread_ = std::thread(&Stats::CrowRoute, this);
   }
 }

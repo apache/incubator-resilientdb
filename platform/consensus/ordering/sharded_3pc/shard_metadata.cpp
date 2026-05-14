@@ -8,12 +8,12 @@
 
 namespace resdb {
 
-// Namespace for helper functions used in parsing and validating the shard config.
-// External JSON parsing library is used.
 namespace {
 using json = nlohmann::json;
 
-uint32_t ReadId(const json& value, const std::string& field_name) {
+uint32_t ReadShardId(const json& value, const std::string& field_name) {
+  // Shard ids are local topology labels, so keep them bounded to uint32_t even
+  // though ResilientDB node ids use int64_t.
   uint64_t id = 0;
   try {
     if (value.is_number_unsigned()) {
@@ -38,33 +38,81 @@ uint32_t ReadId(const json& value, const std::string& field_name) {
   return static_cast<uint32_t>(id);
 }
 
-uint32_t RequiredId(const json& object, const std::string& field_name,
-                    const std::string& context) {
+int64_t ReadNodeId(const json& value, const std::string& field_name) {
+  // ReplicaInfo.id is int64 in ResilientDB. Reject negative ids so the shard
+  // config cannot describe nodes that normal generated configs never create.
+  try {
+    if (value.is_number_unsigned()) {
+      const uint64_t id = value.get<uint64_t>();
+      if (id > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+        throw std::invalid_argument(field_name + " exceeds int64_t range");
+      }
+      return static_cast<int64_t>(id);
+    }
+    if (value.is_number_integer()) {
+      const int64_t id = value.get<int64_t>();
+      if (id < 0) {
+        throw std::invalid_argument(field_name + " must be non-negative");
+      }
+      return id;
+    }
+  } catch (const json::exception& e) {
+    throw std::invalid_argument(field_name + " must be an integer: " +
+                                e.what());
+  }
+
+  throw std::invalid_argument(field_name + " must be an integer");
+}
+
+uint32_t RequiredShardId(const json& object, const std::string& field_name,
+                         const std::string& context) {
   if (!object.contains(field_name)) {
     throw std::invalid_argument(context + " missing required field " +
                                 field_name);
   }
-  return ReadId(object.at(field_name), context + "." + field_name);
+  return ReadShardId(object.at(field_name), context + "." + field_name);
 }
 
-bool ContainsId(const std::vector<uint32_t>& ids, uint32_t target) {
+int64_t RequiredNodeId(const json& object, const std::string& field_name,
+                       const std::string& context) {
+  if (!object.contains(field_name)) {
+    throw std::invalid_argument(context + " missing required field " +
+                                field_name);
+  }
+  return ReadNodeId(object.at(field_name), context + "." + field_name);
+}
+
+bool ContainsId(const std::vector<int64_t>& ids, int64_t target) {
   return std::find(ids.begin(), ids.end(), target) != ids.end();
 }
 
 }  // namespace
 
 ShardMetadata::ShardMetadata(const std::string& shard_config_path,
-                             uint32_t self_node_id)
+                             int64_t self_node_id)
     : self_node_id_(self_node_id) {
   ParseConfig(shard_config_path);
   Validate();
 }
 
-uint32_t ShardMetadata::SelfNodeId() const { return self_node_id_; }
+int64_t ShardMetadata::SelfNodeId() const { return self_node_id_; }
 
-uint32_t ShardMetadata::SelfShardId() const { return self_shard_id_; }
+uint32_t ShardMetadata::SelfShardId() const {
+  if (!HasLocalShard()) {
+    throw std::invalid_argument("self node has no local shard");
+  }
+  return self_shard_id_;
+}
 
-bool ShardMetadata::IsShardLeader(uint32_t node_id) const {
+bool ShardMetadata::IsSelfClient() const { return self_is_client_; }
+
+bool ShardMetadata::IsSelfServerReplica() const {
+  return self_is_server_replica_;
+}
+
+bool ShardMetadata::HasLocalShard() const { return self_is_server_replica_; }
+
+bool ShardMetadata::IsShardLeader(int64_t node_id) const {
   return shard_leaders_.find(node_id) != shard_leaders_.end();
 }
 
@@ -72,7 +120,7 @@ bool ShardMetadata::IsSelfShardLeader() const {
   return IsShardLeader(self_node_id_);
 }
 
-uint32_t ShardMetadata::LeaderForShard(uint32_t shard_id) const {
+int64_t ShardMetadata::LeaderForShard(uint32_t shard_id) const {
   const auto it = leader_for_shard_.find(shard_id);
   if (it == leader_for_shard_.end()) {
     throw std::invalid_argument("unknown shard id " +
@@ -81,7 +129,7 @@ uint32_t ShardMetadata::LeaderForShard(uint32_t shard_id) const {
   return it->second;
 }
 
-uint32_t ShardMetadata::ShardForNode(uint32_t node_id) const {
+uint32_t ShardMetadata::ShardForNode(int64_t node_id) const {
   const auto it = shard_for_node_.find(node_id);
   if (it == shard_for_node_.end()) {
     throw std::invalid_argument("unknown server node id " +
@@ -99,8 +147,9 @@ std::vector<uint32_t> ShardMetadata::AllShardIds() const {
   return shard_ids;
 }
 
-std::vector<uint32_t> ShardMetadata::AllShardLeaders() const {
-  std::vector<uint32_t> leaders;
+std::vector<int64_t> ShardMetadata::AllShardLeaders() const {
+  std::vector<int64_t> leaders;
+  // Preserve shard order by looping through leader_for_shard_ instead of shard_leaders_ set.
   leaders.reserve(leader_for_shard_.size());
   for (const auto& [_, leader_id] : leader_for_shard_) {
     leaders.push_back(leader_id);
@@ -108,7 +157,7 @@ std::vector<uint32_t> ShardMetadata::AllShardLeaders() const {
   return leaders;
 }
 
-std::vector<uint32_t> ShardMetadata::ReplicasForShard(
+std::vector<int64_t> ShardMetadata::ReplicasForShard(
     uint32_t shard_id) const {
   const auto it = shards_by_id_.find(shard_id);
   if (it == shards_by_id_.end()) {
@@ -118,21 +167,27 @@ std::vector<uint32_t> ShardMetadata::ReplicasForShard(
   return it->second.replica_ids;
 }
 
-std::vector<uint32_t> ShardMetadata::LocalShardReplicas() const {
+std::vector<int64_t> ShardMetadata::LocalShardReplicas() const {
+  if (!HasLocalShard()) {
+    throw std::invalid_argument("self node has no local shard");
+  }
   return ReplicasForShard(self_shard_id_);
 }
 
 size_t ShardMetadata::NumShards() const { return shards_by_id_.size(); }
 
 size_t ShardMetadata::LocalShardSize() const {
-  return ReplicasForShard(self_shard_id_).size();
+  return LocalShardReplicas().size();
 }
 
-bool ShardMetadata::SameShard(uint32_t a, uint32_t b) const {
+bool ShardMetadata::SameShard(int64_t a, int64_t b) const {
   return ShardForNode(a) == ShardForNode(b);
 }
 
-bool ShardMetadata::IsLocalShardReplica(uint32_t node_id) const {
+bool ShardMetadata::IsLocalShardReplica(int64_t node_id) const {
+  if (!HasLocalShard()) {
+    throw std::invalid_argument("self node has no local shard");
+  }
   const auto it = shard_for_node_.find(node_id);
   return it != shard_for_node_.end() && it->second == self_shard_id_;
 }
@@ -155,6 +210,9 @@ void ShardMetadata::ParseConfig(const std::string& path) {
     throw std::invalid_argument("shard config missing array field shards");
   }
 
+  // Parse shard entries first but defer cross-shard validation until Validate().
+  // That lets duplicate nodes, missing self, and leader membership all be
+  // checked in one pass over the normalized in-memory ShardInfo records.
   for (const auto& shard_json : config.at("shards")) {
     if (!shard_json.is_object()) {
       throw std::invalid_argument("each shard entry must be an object");
@@ -162,8 +220,8 @@ void ShardMetadata::ParseConfig(const std::string& path) {
 
     ShardInfo shard;
     const std::string context = "shard";
-    shard.shard_id = RequiredId(shard_json, "shard_id", context);
-    shard.leader_id = RequiredId(shard_json, "leader_id", context);
+    shard.shard_id = RequiredShardId(shard_json, "shard_id", context);
+    shard.leader_id = RequiredNodeId(shard_json, "leader_id", context);
 
     if (!shard_json.contains("replica_ids") ||
         !shard_json.at("replica_ids").is_array()) {
@@ -171,11 +229,11 @@ void ShardMetadata::ParseConfig(const std::string& path) {
                                   " missing array field replica_ids");
     }
 
-    std::set<uint32_t> shard_replica_ids;
+    std::set<int64_t> shard_replica_ids;
     for (const auto& replica_json : shard_json.at("replica_ids")) {
-      const uint32_t node_id =
-          ReadId(replica_json, "shard " + std::to_string(shard.shard_id) +
-                                   ".replica_ids");
+      const int64_t node_id =
+          ReadNodeId(replica_json, "shard " + std::to_string(shard.shard_id) +
+                                       ".replica_ids");
       if (!shard_replica_ids.insert(node_id).second) {
         throw std::invalid_argument("duplicate replica id " +
                                     std::to_string(node_id) + " in shard " +
@@ -184,6 +242,8 @@ void ShardMetadata::ParseConfig(const std::string& path) {
       shard.replica_ids.push_back(node_id);
     }
 
+    // std::map gives deterministic shard order for AllShardIds(),
+    // AllShardLeaders(), and round-robin proxy routing.
     if (!shards_by_id_.emplace(shard.shard_id, shard).second) {
       throw std::invalid_argument("duplicate shard id " +
                                   std::to_string(shard.shard_id));
@@ -194,9 +254,11 @@ void ShardMetadata::ParseConfig(const std::string& path) {
     if (!config.at("client_ids").is_array()) {
       throw std::invalid_argument("client_ids must be an array when present");
     }
-    std::set<uint32_t> seen_client_ids;
+    // Client ids are retained so proxy nodes can construct ShardMetadata even
+    // though they do not belong to any local PBFT shard.
+    std::set<int64_t> seen_client_ids;
     for (const auto& client_json : config.at("client_ids")) {
-      const uint32_t client_id = ReadId(client_json, "client_ids");
+      const int64_t client_id = ReadNodeId(client_json, "client_ids");
       if (!seen_client_ids.insert(client_id).second) {
         throw std::invalid_argument("duplicate client id " +
                                     std::to_string(client_id));
@@ -211,10 +273,13 @@ void ShardMetadata::Validate() {
     throw std::invalid_argument("shard config must contain at least one shard");
   }
 
-  std::map<uint32_t, uint32_t> shard_for_node;
-  std::set<uint32_t> leaders;
-  bool self_found = false;
+  std::map<int64_t, uint32_t> shard_for_node;
+  std::set<int64_t> leaders;
+  bool self_server_found = false;
 
+  // Build temporary lookup structures first. The permanent maps are populated
+  // only after all validation passes, keeping partially valid configs from
+  // leaking into accessor state.
   for (const auto& [shard_id, shard] : shards_by_id_) {
     if (shard.replica_ids.empty()) {
       throw std::invalid_argument("shard " + std::to_string(shard_id) +
@@ -227,14 +292,16 @@ void ShardMetadata::Validate() {
     }
 
     leaders.insert(shard.leader_id);
-    for (const uint32_t node_id : shard.replica_ids) {
+    for (const int64_t node_id : shard.replica_ids) {
+      // A server replica can belong to exactly one shard. Cross-shard overlap
+      // would make PBFT quorum sizing and local routing ambiguous.
       const auto [_, inserted] = shard_for_node.emplace(node_id, shard_id);
       if (!inserted) {
         throw std::invalid_argument("server node " + std::to_string(node_id) +
                                     " appears in multiple shards");
       }
       if (node_id == self_node_id_) {
-        self_found = true;
+        self_server_found = true;
       }
     }
   }
@@ -242,19 +309,33 @@ void ShardMetadata::Validate() {
   if (leaders.empty()) {
     throw std::invalid_argument("shard config must contain at least one leader");
   }
-  if (!self_found) {
+  // Server replicas and client/proxy nodes are mutually exclusive roles. A
+  // proxy node may parse all shards, but it must not claim a local shard.
+  self_is_client_ = ContainsId(client_ids_, self_node_id_);
+  if (self_server_found && self_is_client_) {
     throw std::invalid_argument("self node " + std::to_string(self_node_id_) +
-                                " does not appear in any shard");
+                                " appears as both server and client");
   }
+  if (!self_server_found && !self_is_client_) {
+    throw std::invalid_argument("self node " + std::to_string(self_node_id_) +
+                                " does not appear in any shard or client_ids");
+  }
+  self_is_server_replica_ = self_server_found;
 
+  // Populate the permanent lookup tables used by all accessors. These maps are
+  // intentionally redundant so hot routing checks do not have to scan shards.
   for (const auto& [shard_id, shard] : shards_by_id_) {
     leader_for_shard_.emplace(shard_id, shard.leader_id);
     shard_leaders_.insert(shard.leader_id);
-    for (const uint32_t node_id : shard.replica_ids) {
+    for (const int64_t node_id : shard.replica_ids) {
       shard_for_node_.emplace(node_id, shard_id);
     }
   }
-  self_shard_id_ = ShardForNode(self_node_id_);
+  if (self_is_server_replica_) {
+    // Only server replicas get a local shard id. Client/proxy nodes make
+    // SelfShardId() and LocalShardReplicas() fail explicitly.
+    self_shard_id_ = ShardForNode(self_node_id_);
+  }
 }
 
 }  // namespace resdb

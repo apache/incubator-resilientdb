@@ -107,7 +107,7 @@ message Request {
     // Shard responsible for returning the client/proxy response.
     optional uint32 coordinator_shard_id = 29;
     // Node id of the shard leader coordinating global 3PC.
-    optional uint32 global_coordinator_id = 30;
+    optional int64 global_coordinator_id = 30;
     // Target shard for local shard PBFT.
     optional uint32 local_shard_id = 31;
     // Marks global leader-to-leader 3PC traffic.
@@ -254,4 +254,3 @@ message BatchClientResponse {
   uint64 createtime = 6;
   uint64 local_id = 7;
 }
-
