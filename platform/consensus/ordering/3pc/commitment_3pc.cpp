@@ -64,21 +64,35 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
     return -2;
   }
 
-  // Assign a sequence number and advance the request into the PREPARE phase of 3PC.
-  auto seq = message_manager_->AssignNextSeq();
-  if (!seq.ok()) {
-    LOG(ERROR) << "AssignNextSeq() failed";
-    duplicate_manager_->EraseProposed(user_request->hash());
-    global_stats_->SeqFail();
+  uint64_t seq = 0;
+  if (user_request->has_global_txn_id()) {
+    // Sharded 3PC can be coordinated by different shard leaders on consecutive
+    // requests. Use the proxy-assigned global_txn_id so all leaders track the
+    // same transaction under the same global sequence number.
+    seq = user_request->global_txn_id();
+    if (seq == 0) {
+      LOG(ERROR) << "global_txn_id must be non-zero";
+      duplicate_manager_->EraseProposed(user_request->hash());
+      return -2;
+    }
+  } else {
+    // Flat 3PC keeps the original single-coordinator sequence allocator.
+    auto assigned_seq = message_manager_->AssignNextSeq();
+    if (!assigned_seq.ok()) {
+      LOG(ERROR) << "AssignNextSeq() failed";
+      duplicate_manager_->EraseProposed(user_request->hash());
+      global_stats_->SeqFail();
 
-    Request response;
-    response.set_type(Request::TYPE_RESPONSE);
-    response.set_sender_id(config_.GetSelfInfo().id());
-    response.set_proxy_id(user_request->proxy_id());
-    response.set_ret(-2);
-    response.set_hash(user_request->hash());
-    SendResponseMsg(response, response.proxy_id());
-    return -2;
+      Request response;
+      response.set_type(Request::TYPE_RESPONSE);
+      response.set_sender_id(config_.GetSelfInfo().id());
+      response.set_proxy_id(user_request->proxy_id());
+      response.set_ret(-2);
+      response.set_hash(user_request->hash());
+      SendResponseMsg(response, response.proxy_id());
+      return -2;
+    }
+    seq = *assigned_seq;
   }
 
   // Replace PBFT PRE_PREPARE with a 3PC PREPARE.
@@ -89,15 +103,15 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
   //   - proxy_id()        return path to proxy/client
   user_request->set_type(Request::TYPE_3PC_PREPARE);
   user_request->set_current_view(message_manager_->GetCurrentView());
-  user_request->set_seq(*seq);
+  user_request->set_seq(seq);
   user_request->set_sender_id(config_.GetSelfInfo().id());
   user_request->set_primary_id(config_.GetSelfInfo().id());
 
   // Coordinator-side 3PC bookkeeping.
   {
     std::lock_guard<std::mutex> lk(txn_mu_);
-    ThreePCTxnState& txn = txn_state_[*seq];
-    txn.seq = *seq;
+    ThreePCTxnState& txn = txn_state_[seq];
+    txn.seq = seq;
     txn.phase = ThreePCPhase::kReady;  // PREPARE sent, waiting on votes
     txn.hash = user_request->hash();
     txn.coordinator_id = CoordinatorId(*user_request);
@@ -113,7 +127,7 @@ int Commitment3PC::ProcessNewRequest(std::unique_ptr<Context> context,
   BroadcastConsensusMsg(*user_request);
 
   // This will likely not do anything replicas have not responded yet,but mirrors the PBFT implementation
-  return MaybeBroadcastPreCommit(*seq);
+  return MaybeBroadcastPreCommit(seq);
 }
 
 int Commitment3PC::ProcessPrepareMsg(std::unique_ptr<Context> context,

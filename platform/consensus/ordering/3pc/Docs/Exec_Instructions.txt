@@ -17,7 +17,7 @@ grep -R "3PC recovery is done\\|recv 3PC\\|db path" logs/3pc /tmp/*kv_service_3p
 grep -R "3pc_prepare\\|3pc_precommit\\|3pc_global_commit\\|TYPE_3PC\\|recv 3PC" logs/3pc /tmp/*kv_service_3pc* 2>/dev/null
 
 Kill
-killall -9 kv_service kv_service_3pc
+killall -9 kv_service kv_service_3pc kv_service_sharded_3pc
 
 Send Requests
 
