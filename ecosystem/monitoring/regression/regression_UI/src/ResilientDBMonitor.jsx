@@ -1,11 +1,12 @@
 /**
  * ResilientDBMonitor.jsx
- * 
+ *
  * Main performance monitoring dashboard component for Apache ResilientDB.
  * Displays real-time and historical performance metrics for the PBFT consensus protocol,
  * including latency, throughput, and success rate. Features include:
  * - Live connection status and performance metrics via stat cards
  * - Interactive line charts showing performance trends over time
+ * - Time range selector (24h, 1 week, 1 month, 3 months, 6 months, all time)
  * - Anomaly detection highlighting unusual performance values
  * - Baseline comparison for detecting performance regressions
  * - Run history with detailed information overlay
@@ -13,7 +14,7 @@
  * - Dark-themed UI with grid background and monospace font
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer,
@@ -26,6 +27,15 @@ import Spinner from "./components/Spinner";
 import AnomalyDot from "./components/AnomalyDot";
 import DetailOverlay from "./components/DetailOverlay";
 
+const TIME_RANGES = [
+  { id: "24h", label: "24h",      hours: 24 },
+  { id: "1w",  label: "1 Week",   hours: 24 * 7 },
+  { id: "1m",  label: "1 Month",  hours: 24 * 30 },
+  { id: "3m",  label: "3 Months", hours: 24 * 90 },
+  { id: "6m",  label: "6 Months", hours: 24 * 180 },
+  { id: "all", label: "All Time", hours: null },
+];
+
 export default function ResilientDBMonitor() {
   const [records,      setRecords]      = useState([]);
   const [apiBaseline,  setApiBaseline]  = useState(null);
@@ -35,7 +45,11 @@ export default function ResilientDBMonitor() {
   const [selected,     setSelected]     = useState(null);
   const [lastRefresh,  setLastRefresh]  = useState(null);
   const [testRunning,  setTestRunning]  = useState(false);
-  const [notification, setNotification] = useState(null); // "running" | "completed" | "error" | null
+  const [notification, setNotification] = useState(null); 
+  const [timeRange,    setTimeRange]    = useState("6m");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const rangeInitialized = useRef(false);
+  const dropdownRef      = useRef(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -79,16 +93,44 @@ export default function ResilientDBMonitor() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Show "Chart Updated" notification whenever the time range changes (skip initial mount)
+  useEffect(() => {
+    if (!rangeInitialized.current) { rangeInitialized.current = true; return; }
+    setNotification("chart_updated");
+    setTimeout(() => setNotification(null), 3000);
+  }, [timeRange]);
+
+  // Close custom dropdown when clicking outside
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function handleOutside(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [dropdownOpen]);
+
   const sorted = [...records].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  const latest = sorted[sorted.length - 1] ?? null;
+
+  const filteredSorted = (() => {
+    const range = TIME_RANGES.find(r => r.id === timeRange);
+    if (!range || !range.hours) return sorted;
+    const cutoff = new Date(Date.now() - range.hours * 60 * 60 * 1000);
+    return sorted.filter(r => new Date(r.timestamp) >= cutoff);
+  })();
+
+  // Fall back to the global latest if the filtered window is empty
+  const latest = filteredSorted[filteredSorted.length - 1] ?? sorted[sorted.length - 1] ?? null;
   const metric = METRICS.find(m => m.id === activeMetric);
+  const activeRange = TIME_RANGES.find(r => r.id === timeRange);
 
   const localBaseline = (() => {
-    if (apiBaseline) return apiBaseline;
-    if (records.length < 2) return null;
+    // Use the API baseline only when "All Time" is selected and the API returned one
+    if (timeRange === "all" && apiBaseline) return apiBaseline;
+    if (filteredSorted.length < 2) return null;
     const bl = {};
     METRICS.forEach(({ field }) => {
-      const vals = sorted.map(r => flattenRecord(r)[field]).filter(v => v != null);
+      const vals = filteredSorted.map(r => flattenRecord(r)[field]).filter(v => v != null);
       if (!vals.length) return;
       const mean   = vals.reduce((a, b) => a + b, 0) / vals.length;
       const stddev = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length);
@@ -97,7 +139,7 @@ export default function ResilientDBMonitor() {
     return bl;
   })();
 
-  const chartData   = sorted.map(r => ({ ...flattenRecord(r), _label: new Date(r.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" }), _original: r }));
+  const chartData   = filteredSorted.map(r => ({ ...flattenRecord(r), _label: new Date(r.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" }), _original: r }));
   const baselineVal = localBaseline?.[metric.field]?.mean;
 
   function statValue(m) {
@@ -137,6 +179,12 @@ export default function ResilientDBMonitor() {
       </div>
     );
   }
+
+  const notifColor = (notification === "completed" || notification === "deleted")
+    ? C.green
+    : notification === "error"
+      ? C.red
+      : C.accent;
 
   return (
     <div style={{ background: C.bg, minHeight: "100vh", fontFamily: "'JetBrains Mono', monospace", color: C.text, position: "relative", overflowX: "hidden" }}>
@@ -187,7 +235,72 @@ export default function ResilientDBMonitor() {
             {/* Chart */}
             <div style={{ background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "1.5rem", marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 700 }}>Performance Over Time</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 13, fontWeight: 700 }}>Performance Over Time</div>
+                  {/* Custom time-range dropdown */}
+                  <div ref={dropdownRef} style={{ position: "relative" }}>
+                    <button
+                      onClick={() => setDropdownOpen(o => !o)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        background: C.bg3,
+                        border: `1px solid ${dropdownOpen ? C.accent : C.border2}`,
+                        borderRadius: 4,
+                        color: C.accent,
+                        fontSize: 10,
+                        padding: "5px 10px",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                        cursor: "pointer",
+                        outline: "none",
+                        transition: "border-color 0.15s",
+                      }}
+                    >
+                      {activeRange?.label}
+                      <svg width="8" height="5" viewBox="0 0 8 5" style={{ transition: "transform 0.15s", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }}>
+                        <path d="M0 0l4 5 4-5z" fill={C.accent} />
+                      </svg>
+                    </button>
+
+                    {dropdownOpen && (
+                      <div style={{
+                        position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 200,
+                        background: C.bg2,
+                        border: `1px solid ${C.border2}`,
+                        borderRadius: 6,
+                        overflow: "hidden",
+                        minWidth: 110,
+                        boxShadow: `0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px ${C.border}`,
+                      }}>
+                        {TIME_RANGES.map((r, i) => (
+                          <button
+                            key={r.id}
+                            onClick={() => { setTimeRange(r.id); setDropdownOpen(false); }}
+                            style={{
+                              display: "block", width: "100%", textAlign: "left",
+                              padding: "8px 12px",
+                              fontSize: 10, letterSpacing: 1,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontWeight: r.id === timeRange ? 700 : 400,
+                              color: r.id === timeRange ? C.accent : C.text2,
+                              background: r.id === timeRange ? "rgba(0,212,255,0.08)" : "transparent",
+                              border: "none",
+                              borderTop: i > 0 ? `1px solid ${C.border}` : "none",
+                              borderLeft: `2px solid ${r.id === timeRange ? C.accent : "transparent"}`,
+                              cursor: "pointer",
+                              transition: "background 0.1s, color 0.1s",
+                            }}
+                            onMouseEnter={e => { if (r.id !== timeRange) { e.currentTarget.style.background = C.bg3; e.currentTarget.style.color = C.text; } }}
+                            onMouseLeave={e => { if (r.id !== timeRange) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.text2; } }}
+                          >
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div style={{ display: "flex", gap: 4, background: C.bg3, padding: 3, borderRadius: 6, border: `1px solid ${C.border}` }}>
                   {METRICS.map(m => (
                     <button key={m.id} onClick={() => setActiveMetric(m.id)}
@@ -198,10 +311,13 @@ export default function ResilientDBMonitor() {
                 </div>
               </div>
 
-              {records.length === 0 ? (
+              {filteredSorted.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "4rem", color: C.text3, fontSize: 12 }}>
                   <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.5 }}>◎</div>
-                  No data yet. Run <code style={{ color: C.accent }}>bash perf_test.sh 500</code> to add your first result.
+                  {records.length === 0
+                    ? <>No data yet. Run <code style={{ color: C.accent }}>bash perf_test.sh 500</code> to add your first result.</>
+                    : <>No data in the last <span style={{ color: C.accent }}>{activeRange?.label}</span>. Try a wider time range.</>
+                  }
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
@@ -233,16 +349,22 @@ export default function ResilientDBMonitor() {
             {/* Run history */}
             <div style={{ background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 8, padding: "1.2rem" }}>
               <div style={{ fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: C.text3, marginBottom: "1rem", display: "flex", alignItems: "center", gap: 8 }}>
-                Run History <div style={{ flex: 1, height: 1, background: C.border }} /> <span>{records.length} total</span>
+                Run History
+                <div style={{ flex: 1, height: 1, background: C.border }} />
+                <span>
+                  {filteredSorted.length !== records.length
+                    ? `${filteredSorted.length} / ${records.length} total`
+                    : `${records.length} total`}
+                </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 320, overflowY: "auto" }}>
-                {sorted.length === 0 ? (
+                {filteredSorted.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "2rem", color: C.text3, fontSize: 12, lineHeight: 2 }}>
                     <div style={{ fontSize: 28, marginBottom: 8, opacity: 0.5 }}>◎</div>
-                    No runs yet.
+                    {records.length === 0 ? "No runs yet." : `No runs in the last ${activeRange?.label}.`}
                   </div>
                 ) : (
-                  [...sorted].reverse().map((r, i) => {
+                  [...filteredSorted].reverse().map((r, i) => {
                     let _a = r.analysis;
                     if (typeof _a === "string") { try { _a = JSON.parse(_a); } catch { _a = null; } }
                     const status      = _a?.overall_status;
@@ -274,7 +396,7 @@ export default function ResilientDBMonitor() {
       {notification && (
         <div style={{
           position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-          background: C.bg2, border: `1px solid ${notification === "completed" || notification === "deleted" ? C.green : notification === "error" ? C.red : C.accent}`,
+          background: C.bg2, border: `1px solid ${notifColor}`,
           borderRadius: 8, padding: "14px 18px", minWidth: 240,
           boxShadow: `0 4px 24px rgba(0,0,0,0.5)`,
           display: "flex", alignItems: "center", gap: 12,
@@ -290,12 +412,23 @@ export default function ResilientDBMonitor() {
           {notification === "error" && (
             <span style={{ color: C.red, fontSize: 16, flexShrink: 0 }}>✗</span>
           )}
+          {notification === "chart_updated" && (
+            <span style={{ color: C.accent, fontSize: 16, flexShrink: 0 }}>↻</span>
+          )}
           <div>
-            <div style={{ color: notification === "completed" || notification === "deleted" ? C.green : notification === "error" ? C.red : C.accent, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontSize: 10 }}>
-              {notification === "running" ? "Test Running" : notification === "completed" ? "Test Completed" : notification === "deleted" ? "Test Deleted" : "Test Failed"}
+            <div style={{ color: notifColor, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontSize: 10 }}>
+              {notification === "running"       ? "Test Running"    :
+               notification === "completed"     ? "Test Completed"  :
+               notification === "deleted"       ? "Test Deleted"    :
+               notification === "chart_updated" ? "Chart Updated"   :
+               "Test Failed"}
             </div>
             <div style={{ color: C.text2, marginTop: 2 }}>
-              {notification === "running" ? "Running perf_test.sh…" : notification === "completed" ? "Chart refreshed with new results." : notification === "deleted" ? "Run history updated." : "Check server logs for details."}
+              {notification === "running"       ? "Running perf_test.sh…"             :
+               notification === "completed"     ? "Chart refreshed with new results." :
+               notification === "deleted"       ? "Run history updated."              :
+               notification === "chart_updated" ? `Showing data for ${activeRange?.label}.` :
+               "Check server logs for details."}
             </div>
           </div>
         </div>
