@@ -34,6 +34,8 @@ export default function ResilientDBMonitor() {
   const [activeMetric, setActiveMetric] = useState("latency");
   const [selected,     setSelected]     = useState(null);
   const [lastRefresh,  setLastRefresh]  = useState(null);
+  const [testRunning,  setTestRunning]  = useState(false);
+  const [notification, setNotification] = useState(null); // "running" | "completed" | "error" | null
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -54,6 +56,26 @@ export default function ResilientDBMonitor() {
       setLoading(false);
     }
   }, []);
+
+  async function runTest() {
+    setTestRunning(true);
+    setNotification("running");
+    try {
+      const res  = await fetch(`${API_URL}/api/run-test`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const json = await res.json();
+      if (json.success) {
+        setNotification("completed");
+        fetchData();
+      } else {
+        setNotification("error");
+      }
+    } catch {
+      setNotification("error");
+    } finally {
+      setTestRunning(false);
+      setTimeout(() => setNotification(null), 4000);
+    }
+  }
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -136,10 +158,16 @@ export default function ResilientDBMonitor() {
             </div>
             <div style={{ fontSize: 11, color: C.text3 }}>{records.length} run{records.length !== 1 ? "s" : ""} in database</div>
             {lastRefresh && <div style={{ fontSize: 10, color: C.text3 }}>Last refresh: {lastRefresh.toLocaleTimeString()}</div>}
-            <button onClick={fetchData} disabled={loading}
-              style={{ padding: "6px 14px", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${C.border2}`, borderRadius: 5, cursor: loading ? "not-allowed" : "pointer", background: "transparent", color: loading ? C.text3 : C.accent }}>
-              {loading ? "Loading..." : "↻ Refresh"}
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={fetchData} disabled={loading}
+                style={{ padding: "6px 14px", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${C.border2}`, borderRadius: 5, cursor: loading ? "not-allowed" : "pointer", background: "transparent", color: loading ? C.text3 : C.accent }}>
+                {loading ? "Loading..." : "↻ Refresh"}
+              </button>
+              <button onClick={runTest} disabled={testRunning || loading}
+                style={{ padding: "6px 14px", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${testRunning ? C.border2 : C.green}`, borderRadius: 5, cursor: (testRunning || loading) ? "not-allowed" : "pointer", background: testRunning ? "transparent" : "rgba(0,230,118,0.08)", color: testRunning ? C.text3 : C.green }}>
+                {testRunning ? "Running..." : "▶ Run Test"}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -242,6 +270,41 @@ export default function ResilientDBMonitor() {
       </div>
 
       {selected && <DetailOverlay record={selected} baseline={localBaseline} onClose={() => setSelected(null)} />}
+
+      {notification && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 24, zIndex: 1000,
+          background: C.bg2, border: `1px solid ${notification === "completed" ? C.green : notification === "error" ? C.red : C.accent}`,
+          borderRadius: 8, padding: "14px 18px", minWidth: 240,
+          boxShadow: `0 4px 24px rgba(0,0,0,0.5)`,
+          display: "flex", alignItems: "center", gap: 12,
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+          animation: "slideIn 0.2s ease",
+        }}>
+          {notification === "running" && (
+            <div style={{ width: 14, height: 14, border: `2px solid ${C.accent}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+          )}
+          {notification === "completed" && (
+            <span style={{ color: C.green, fontSize: 16, flexShrink: 0 }}>✓</span>
+          )}
+          {notification === "error" && (
+            <span style={{ color: C.red, fontSize: 16, flexShrink: 0 }}>✗</span>
+          )}
+          <div>
+            <div style={{ color: notification === "completed" ? C.green : notification === "error" ? C.red : C.accent, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontSize: 10 }}>
+              {notification === "running" ? "Test Running" : notification === "completed" ? "Test Completed" : "Test Failed"}
+            </div>
+            <div style={{ color: C.text2, marginTop: 2 }}>
+              {notification === "running" ? "Running perf_test.sh…" : notification === "completed" ? "Chart refreshed with new results." : "Check server logs for details."}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 }

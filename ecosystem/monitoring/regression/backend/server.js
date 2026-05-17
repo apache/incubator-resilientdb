@@ -2,6 +2,8 @@ require("dotenv").config();
 const express  = require("express");
 const cors     = require("cors");
 const mongoose = require("mongoose");
+const { spawn } = require("child_process");
+const path     = require("path");
 
 const resultsRouter = require("./routes/results");
 
@@ -16,6 +18,30 @@ app.use(cors({
 app.use(express.json());
 
 app.use("/api/results", resultsRouter);
+
+app.post("/api/run-test", (req, res) => {
+  const scriptPath = path.join(__dirname, "..", "perf_test.sh");
+  const runs       = parseInt(req.body?.runs) || 500;
+  const version    = req.body?.version || "";
+
+  const child = spawn("bash", [scriptPath, String(runs), version], {
+    cwd: path.join(__dirname, ".."),
+  });
+
+  let stderr = "";
+  child.stderr.on("data", (data) => { stderr += data.toString(); });
+  child.on("error", (err) => {
+    if (!res.headersSent) res.status(500).json({ success: false, error: err.message });
+  });
+  child.on("close", (code) => {
+    if (res.headersSent) return;
+    if (code === 0) {
+      res.json({ success: true, message: "Test completed", output: stderr });
+    } else {
+      res.status(500).json({ success: false, error: `Test exited with code ${code}`, output: stderr });
+    }
+  });
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", db: mongoose.connection.readyState === 1 ? "connected" : "disconnected" });
