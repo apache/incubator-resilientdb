@@ -15,14 +15,17 @@
  */
 
 import { useState } from "react";
-import { C } from "../constants";
+import { C, API_URL } from "../constants";
 import { flattenRecord, detectAnomalies, statusColor, statusLabel } from "../utils";
 import Tag from "./Tag";
 import AnalysisSection, { Em } from "./AnalysisSection";
 import JsonHighlight from "./JsonHighlight";
 
-export default function DetailOverlay({ record, baseline, onClose }) {
+export default function DetailOverlay({ record, baseline, onClose, onDelete }) {
   const [jsonOpen, setJsonOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
   const flat      = flattenRecord(record);
   const anomalies = detectAnomalies(record, baseline);
   const d         = new Date(record.timestamp);
@@ -59,9 +62,10 @@ export default function DetailOverlay({ record, baseline, onClose }) {
   const prose = { fontSize: 13, lineHeight: 1.8, color: C.text2, marginBottom: 10, marginTop: 6 };
 
   return (
-    <div onClick={(e) => e.target === e.currentTarget && onClose()}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(4px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
-      <div style={{ background: C.bg2, border: `1px solid ${C.border2}`, borderRadius: 10, width: "100%", maxWidth: 720, maxHeight: "88vh", overflowY: "auto" }}>
+    <>
+      <div onClick={(e) => e.target === e.currentTarget && onClose()}
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(4px)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+        <div style={{ background: C.bg2, border: `1px solid ${C.border2}`, borderRadius: 10, width: "100%", maxWidth: 720, maxHeight: "88vh", overflowY: "auto" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1.2rem 1.5rem", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 0, background: C.bg2, zIndex: 1 }}>
@@ -219,6 +223,15 @@ export default function DetailOverlay({ record, baseline, onClose }) {
             </AnalysisSection>
           )}
 
+          {/* Delete button (opens confirmation overlay) */}
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+            <button onClick={() => { console.log("DetailOverlay: open delete confirm", record._id || record.id); setConfirmOpen(true); }}
+              style={{ background: "#ff3b30", border: `1px solid rgba(255,59,48,0.15)`, color: "#fff", fontFamily: "'JetBrains Mono', monospace", fontSize: 11, letterSpacing: 1, padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>
+              Delete Test
+            </button>
+            <div style={{ flex: 1 }} />
+          </div>
+
           {/* JSON toggle */}
           <button onClick={() => setJsonOpen(o => !o)}
             style={{ background: "transparent", border: `1px solid ${C.border2}`, color: C.text3, fontFamily: "'JetBrains Mono', monospace", fontSize: 10, letterSpacing: 1, padding: "6px 12px", borderRadius: 5, cursor: "pointer", width: "100%", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -230,7 +243,48 @@ export default function DetailOverlay({ record, baseline, onClose }) {
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+
+      {confirmOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: C.bg2, border: `1px solid ${C.border}`, borderRadius: 8, padding: 20, width: 420, boxShadow: "0 8px 30px rgba(0,0,0,0.6)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Delete this test?</div>
+            <div style={{ color: C.text2, marginBottom: 14 }}>This action will permanently remove the selected run from the database. Are you sure?</div>
+            {deleteError && <div style={{ color: C.red, marginBottom: 8 }}>{deleteError}</div>}
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setConfirmOpen(false)} disabled={deleting}
+                style={{ background: "transparent", border: `1px solid ${C.border}`, color: C.text3, padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>Cancel</button>
+              <button onClick={async () => {
+                setDeleting(true);
+                setDeleteError(null);
+                try {
+                  const id = record._id || record.id;
+                  console.log("DetailOverlay: deleting id", id);
+                  if (!id) throw new Error("Record id not found");
+                  const resp = await fetch(`${API_URL}/api/results/${id}`, { method: "DELETE" });
+                  const j = await resp.json().catch(() => ({}));
+                  if (!resp.ok) throw new Error(j.error || `HTTP ${resp.status}`);
+                  setConfirmOpen(false);
+                  onClose();
+                  try {
+                    if (onDelete) await onDelete();
+                  } catch (e) {
+                    console.warn("DetailOverlay: onDelete callback failed", e);
+                  }
+                } catch (e) {
+                  setDeleteError(e.message || String(e));
+                } finally {
+                  setDeleting(false);
+                }
+              }} disabled={deleting}
+                style={{ background: "#ff3b30", border: `1px solid rgba(255,59,48,0.15)`, color: "#fff", padding: "8px 12px", borderRadius: 6, cursor: "pointer" }}>
+                {deleting ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

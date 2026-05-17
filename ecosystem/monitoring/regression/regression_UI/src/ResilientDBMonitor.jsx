@@ -269,12 +269,12 @@ export default function ResilientDBMonitor() {
         )}
       </div>
 
-      {selected && <DetailOverlay record={selected} baseline={localBaseline} onClose={() => setSelected(null)} />}
+      {selected && <DetailOverlay record={selected} baseline={localBaseline} onClose={() => setSelected(null)} onDelete={async () => { await fetchData(); setNotification("deleted"); setTimeout(() => setNotification(null), 4000); }} />}
 
       {notification && (
         <div style={{
           position: "fixed", bottom: 24, right: 24, zIndex: 1000,
-          background: C.bg2, border: `1px solid ${notification === "completed" ? C.green : notification === "error" ? C.red : C.accent}`,
+          background: C.bg2, border: `1px solid ${notification === "completed" || notification === "deleted" ? C.green : notification === "error" ? C.red : C.accent}`,
           borderRadius: 8, padding: "14px 18px", minWidth: 240,
           boxShadow: `0 4px 24px rgba(0,0,0,0.5)`,
           display: "flex", alignItems: "center", gap: 12,
@@ -284,18 +284,18 @@ export default function ResilientDBMonitor() {
           {notification === "running" && (
             <div style={{ width: 14, height: 14, border: `2px solid ${C.accent}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
           )}
-          {notification === "completed" && (
+          {(notification === "completed" || notification === "deleted") && (
             <span style={{ color: C.green, fontSize: 16, flexShrink: 0 }}>✓</span>
           )}
           {notification === "error" && (
             <span style={{ color: C.red, fontSize: 16, flexShrink: 0 }}>✗</span>
           )}
           <div>
-            <div style={{ color: notification === "completed" ? C.green : notification === "error" ? C.red : C.accent, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontSize: 10 }}>
-              {notification === "running" ? "Test Running" : notification === "completed" ? "Test Completed" : "Test Failed"}
+            <div style={{ color: notification === "completed" || notification === "deleted" ? C.green : notification === "error" ? C.red : C.accent, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", fontSize: 10 }}>
+              {notification === "running" ? "Test Running" : notification === "completed" ? "Test Completed" : notification === "deleted" ? "Test Deleted" : "Test Failed"}
             </div>
             <div style={{ color: C.text2, marginTop: 2 }}>
-              {notification === "running" ? "Running perf_test.sh…" : notification === "completed" ? "Chart refreshed with new results." : "Check server logs for details."}
+              {notification === "running" ? "Running perf_test.sh…" : notification === "completed" ? "Chart refreshed with new results." : notification === "deleted" ? "Run history updated." : "Check server logs for details."}
             </div>
           </div>
         </div>
