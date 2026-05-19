@@ -391,7 +391,7 @@ export default function ResilientDBMonitor() {
         )}
       </div>
 
-      {selected && <DetailOverlay record={selected} baseline={localBaseline} onClose={() => setSelected(null)} onDelete={async () => { await fetchData(); setNotification("deleted"); setTimeout(() => setNotification(null), 4000); }} />}
+      {selected && <DetailOverlay record={selected} baseline={localBaseline} timeRange={activeRange} onClose={() => setSelected(null)} onDelete={async () => { await fetchData(); setNotification("deleted"); setTimeout(() => setNotification(null), 4000); }} />}
 
       {notification && (
         <div style={{

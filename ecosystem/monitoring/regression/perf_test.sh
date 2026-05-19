@@ -12,6 +12,7 @@
 # =============================================================================
 
 ENDPOINT="127.0.0.1:18000/v1/transactions/commit"
+# ENDPOINT="https://dev-crow.resilientdb.com/v1/transactions/commit"
 RUNS=${1:-500}
 VERSION=${2:-""}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -23,15 +24,17 @@ RAW_TIMES=""
 echo "Running $RUNS requests..." >&2
 
 for i in $(seq 1 $RUNS); do
+    # echo "Running $i of $RUNS requests..." >&2
   RESULT=$(curl -s -o /dev/null \
     -w "%{http_code} %{time_connect} %{time_pretransfer} %{time_starttransfer} %{time_total}" \
     -X POST \
     -H "Content-Type: application/json" \
     -d "{\"id\":\"perfkey$i\",\"value\":\"perfval$i\"}" \
     "$ENDPOINT")
+    
 
   HTTP_CODE=$(echo "$RESULT" | awk '{print $1}')
-
+echo "Request $i succeeded with HTTP code $RESULT." >&2
   if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
     SUCCESS=$((SUCCESS + 1))
   else
@@ -41,7 +44,7 @@ for i in $(seq 1 $RUNS); do
   RAW_TIMES="$RAW_TIMES|$RESULT"
 done
 
-echo "Done. Running analysis..." >&2
+echo "Done. Running analysis... " >&2
 
 # Pass raw data to analyze.py
 python3 "$SCRIPT_DIR/analyze.py" \
