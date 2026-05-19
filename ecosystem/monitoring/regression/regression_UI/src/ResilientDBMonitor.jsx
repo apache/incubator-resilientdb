@@ -37,17 +37,20 @@ const TIME_RANGES = [
 ];
 
 export default function ResilientDBMonitor() {
-  const [records,      setRecords]      = useState([]);
-  const [apiBaseline,  setApiBaseline]  = useState(null);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState(null);
-  const [activeMetric, setActiveMetric] = useState("latency");
-  const [selected,     setSelected]     = useState(null);
-  const [lastRefresh,  setLastRefresh]  = useState(null);
-  const [testRunning,  setTestRunning]  = useState(false);
-  const [notification, setNotification] = useState(null); 
-  const [timeRange,    setTimeRange]    = useState("6m");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [records,        setRecords]        = useState([]);
+  const [apiBaseline,    setApiBaseline]    = useState(null);
+  const [loading,        setLoading]        = useState(true);
+  const [error,          setError]          = useState(null);
+  const [activeMetric,   setActiveMetric]   = useState("latency");
+  const [selected,       setSelected]       = useState(null);
+  const [lastRefresh,    setLastRefresh]    = useState(null);
+  const [testRunning,    setTestRunning]    = useState(false);
+  const [notification,   setNotification]   = useState(null);
+  const [timeRange,      setTimeRange]      = useState("6m");
+  const [dropdownOpen,   setDropdownOpen]   = useState(false);
+  const [schedule,       setSchedule]       = useState(null);
+  const [scheduleInput,  setScheduleInput]  = useState("off");
+  const [scheduleSaving, setScheduleSaving] = useState(false);
   const rangeInitialized = useRef(false);
   const dropdownRef      = useRef(null);
 
@@ -55,14 +58,20 @@ export default function ResilientDBMonitor() {
     setLoading(true);
     setError(null);
     try {
-      const [resultsRes, baselineRes] = await Promise.all([
+      const [resultsRes, baselineRes, scheduleRes] = await Promise.all([
         fetch(`${API_URL}/api/results?limit=200`),
         fetch(`${API_URL}/api/results/baseline`),
+        fetch(`${API_URL}/api/schedule`),
       ]);
       const resultsJson  = await resultsRes.json();
       const baselineJson = await baselineRes.json();
+      const scheduleJson = await scheduleRes.json();
       if (resultsJson.success)                        setRecords(resultsJson.data);
       if (baselineJson.success && baselineJson.data)  setApiBaseline(baselineJson.data);
+      if (scheduleJson.success) {
+        setSchedule(scheduleJson.interval ?? null);
+        setScheduleInput(scheduleJson.interval ?? "off");
+      }
       setLastRefresh(new Date());
     } catch {
       setError(`Could not connect to backend at ${API_URL}. Make sure the server is running.`);
@@ -70,6 +79,26 @@ export default function ResilientDBMonitor() {
       setLoading(false);
     }
   }, []);
+
+  async function saveSchedule() {
+    setScheduleSaving(true);
+    try {
+      const res = scheduleInput === "off"
+        ? await fetch(`${API_URL}/api/schedule`, { method: "DELETE" })
+        : await fetch(`${API_URL}/api/schedule`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ interval: scheduleInput }),
+          });
+      const j = await res.json();
+      if (j.success) {
+        setSchedule(j.interval ?? null);
+        setScheduleInput(j.interval ?? "off");
+      }
+    } finally {
+      setScheduleSaving(false);
+    }
+  }
 
   async function runTest() {
     setTestRunning(true);
@@ -92,6 +121,22 @@ export default function ResilientDBMonitor() {
   }
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // While a schedule is active, silently poll for new results every 20 s
+  useEffect(() => {
+    if (!schedule) return;
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/results?limit=200`);
+        const j   = await res.json();
+        if (j.success) {
+          setRecords(j.data);
+          setLastRefresh(new Date());
+        }
+      } catch {}
+    }, 20000);
+    return () => clearInterval(id);
+  }, [schedule]);
 
   // Show "Chart Updated" notification whenever the time range changes (skip initial mount)
   useEffect(() => {
@@ -215,6 +260,31 @@ export default function ResilientDBMonitor() {
                 style={{ padding: "6px 14px", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${testRunning ? C.border2 : C.green}`, borderRadius: 5, cursor: (testRunning || loading) ? "not-allowed" : "pointer", background: testRunning ? "transparent" : "rgba(0,230,118,0.08)", color: testRunning ? C.text3 : C.green }}>
                 {testRunning ? "Running..." : "▶ Run Test"}
               </button>
+            </div>
+            {/* Schedule row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
+              <span style={{ fontSize: 10, color: C.text3, letterSpacing: 1, textTransform: "uppercase" }}>Schedule</span>
+              <select
+                value={scheduleInput}
+                onChange={e => setScheduleInput(e.target.value)}
+                style={{ background: C.bg3, border: `1px solid ${C.border2}`, color: scheduleInput === "off" ? C.text3 : C.accent, fontFamily: "'JetBrains Mono', monospace", fontSize: 10, padding: "5px 8px", borderRadius: 4, cursor: "pointer", letterSpacing: 0.5 }}
+              >
+                <option value="off">Off</option>
+                <option value="onemin">Every Minute</option>
+                <option value="hourly">Every Hour</option>
+                <option value="daily">Every Day</option>
+                <option value="weekly">Every Week</option>
+                <option value="monthly">Every Month</option>
+              </select>
+              {scheduleInput !== (schedule ?? "off") && (
+                <button onClick={saveSchedule} disabled={scheduleSaving}
+                  style={{ padding: "5px 10px", fontSize: 10, letterSpacing: 1, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${C.accent}40`, borderRadius: 4, cursor: scheduleSaving ? "not-allowed" : "pointer", background: `${C.accent}1a`, color: C.accent }}>
+                  {scheduleSaving ? "Saving…" : "Save"}
+                </button>
+              )}
+              {schedule && scheduleInput === schedule && (
+                <span style={{ fontSize: 10, color: C.green, letterSpacing: 0.5 }}>● Active</span>
+              )}
             </div>
           </div>
         </div>
