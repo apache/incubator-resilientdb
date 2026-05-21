@@ -34,6 +34,8 @@ message KVRequest {
         GET_KEY_RANGE = 8;
         GET_HISTORY = 9;
         GET_TOP = 10;
+        // NEW: SQL command type
+        SQL = 11;
     }
     CMD cmd = 1;
     string key = 2;
@@ -48,6 +50,8 @@ message KVRequest {
     // For top history
     int32 top_number = 9;
     bytes smart_contract_request = 10;
+     // NEW: raw SQL text for SQL commands (cmd == SQL)
+    string sql_query = 11;
 }
 
 message ValueInfo {
@@ -70,5 +74,6 @@ message KVResponse {
     ValueInfo value_info = 3;
     Items items = 4;
     bytes smart_contract_response = 10;
+    // NEW: response payload for SQL commands
+    string sql_response = 11;
 }
-

@@ -66,6 +66,8 @@ class Storage {
       const std::string& prefix) = 0;
   virtual int UpdateCompositeKey(const std::string& old_composite_key,
                                  const std::string& new_composite_key) = 0;
+  // Default no-op SQL execution for non-SQL backends.
+  virtual std::string ExecuteSQL(const std::string& sql_string) { return ""; }
 
   virtual bool Flush() { return true; };
 

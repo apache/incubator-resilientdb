@@ -674,8 +674,8 @@ For now, you can:
         
         # Format the result nicely
         if isinstance(result_dict, dict):
-            # Extract the main content
-            content = result_dict.get("content", "")
+            # Extract the main content (fall back to application overviews)
+            content = result_dict.get("content") or result_dict.get("comprehensive_overview") or ""
             result_type = result_dict.get("type", "general")
             
             # Build formatted response
@@ -701,6 +701,12 @@ For now, you can:
             
             if "further_exploration" in result_dict:
                 formatted_result += f"\n{result_dict['further_exploration']}\n"
+
+            # If the KB asks for a GitHub link or indicates project is missing, suggest ingest actions
+            lower_content = content.lower() if isinstance(content, str) else ""
+            if any(phrase in lower_content for phrase in ["provide the project's github", "provide the project's github url", "provide the project's github link", "provide the project's github url", "provide the project's github link", "provide the project's github url", "provide the project\'s github", "provide the project's github url", "provide the project's github link", "provide the project's github url", "provide the project's github link", "provide the project's github url"]) or "provide the project's git" in lower_content or "provide the project's repo" in lower_content or "provide the project's link" in lower_content or "please provide the project's github" in lower_content:
+                formatted_result += "\n**Suggested Action:** If this is about a specific project, provide the project's GitHub URL so the server can ingest and analyze it.\n"
+                formatted_result += "You can call the MCP tool `Ingest_Repo_Code(owner, repo)` or `Get_Repo_Summary(owner, repo)`, or POST to the REST ingest endpoint `/ingest-repo` with JSON `{ \"url\": \"https://github.com/owner/repo\" }`.\n"
             
             result = formatted_result
         else:
