@@ -62,6 +62,17 @@ cc_library(
 )
 
 cc_library(
+    name = "shard_poe_commitment",
+    srcs = ["shard_poe_commitment.cpp"],
+    hdrs = ["shard_poe_commitment.h"],
+    deps = [
+        ":shard_communicator",
+        ":shard_metadata",
+        "//platform/consensus/ordering/pbft:commitment",
+    ],
+)
+
+cc_library(
     name = "consensus_manager_sharded_3pc",
     srcs = ["consensus_manager_sharded_3pc.cpp"],
     hdrs = ["consensus_manager_sharded_3pc.h"],
@@ -70,6 +81,24 @@ cc_library(
         ":shard_communicator",
         ":shard_metadata",
         ":shard_pbft_commitment",
+        ":sharded_response_manager",
+        "//common:comm",
+        "//executor/common:transaction_manager",
+        "//platform/config:resdb_config",
+        "//platform/consensus/ordering/3pc:commitment_3pc",
+        "//platform/consensus/ordering/pbft:consensus_manager_pbft",
+    ],
+)
+
+cc_library(
+    name = "consensus_manager_sharded_3pc_poe",
+    srcs = ["consensus_manager_sharded_3pc_poe.cpp"],
+    hdrs = ["consensus_manager_sharded_3pc_poe.h"],
+    deps = [
+        ":shard_3pc_commitment",
+        ":shard_communicator",
+        ":shard_metadata",
+        ":shard_poe_commitment",
         ":sharded_response_manager",
         "//common:comm",
         "//executor/common:transaction_manager",
@@ -132,6 +161,24 @@ cc_test(
         ":shard_communicator",
         ":shard_metadata",
         ":shard_pbft_commitment",
+        "//common/crypto:mock_signature_verifier",
+        "//common/test:test_main",
+        "//platform/config:resdb_config_utils",
+        "//platform/consensus/execution:system_info",
+        "//platform/consensus/ordering/pbft:checkpoint_manager",
+        "//platform/consensus/ordering/pbft:message_manager",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/proto:resdb_cc_proto",
+    ],
+)
+
+cc_test(
+    name = "shard_poe_commitment_test",
+    srcs = ["shard_poe_commitment_test.cpp"],
+    deps = [
+        ":shard_communicator",
+        ":shard_metadata",
+        ":shard_poe_commitment",
         "//common/crypto:mock_signature_verifier",
         "//common/test:test_main",
         "//platform/config:resdb_config_utils",

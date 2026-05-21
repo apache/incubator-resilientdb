@@ -69,7 +69,19 @@ message Request {
 
         TYPE_SHARD_PBFT_NEW_TXN = 28;
 
-        NUM_OF_TYPE = 29; // the total number of types.
+        // Local shard POE message types. These are used only by the sharded
+        // 3PC/POE path: global 3PC still commits between shard leaders, then
+        // each shard leader starts local POE with TYPE_POE_EXECUTE.
+        TYPE_POE_EXECUTE = 29;
+        // Replica proof produced after local optimistic execution. Added for
+        // later phases; Phase 2 only routes and validates TYPE_POE_EXECUTE.
+        TYPE_POE_PROOF = 30;
+        // Leader certificate once enough matching local proofs are collected.
+        TYPE_POE_CERT = 31;
+        // Local rollback signal used when optimistic POE cannot certify.
+        TYPE_POE_ROLLBACK = 32;
+
+        NUM_OF_TYPE = 33; // the total number of types.
                        // Used to create the collector.
     };
     int32 type = 1;
@@ -102,18 +114,21 @@ message Request {
     bytes data_hash = 26;
     bool force_recovery =27;
 
-    // Correlates one logical transaction across global 3PC and local PBFT.
+    // Correlates one logical transaction across global 3PC and local
+    // shard consensus, whether the local path is PBFT or POE.
     optional uint64 global_txn_id = 28;
     // Shard responsible for returning the client/proxy response.
     optional uint32 coordinator_shard_id = 29;
     // Node id of the shard leader coordinating global 3PC.
     optional int64 global_coordinator_id = 30;
-    // Target shard for local shard PBFT.
+    // Target shard for local shard consensus.
     optional uint32 local_shard_id = 31;
     // Marks global leader-to-leader 3PC traffic.
     optional bool is_global_3pc = 32;
     // Marks shard-local PBFT traffic.
     optional bool is_local_shard_pbft = 33;
+    // Marks shard-local POE traffic.
+    optional bool is_local_shard_poe = 34;
 
 }
 
