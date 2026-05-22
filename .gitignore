@@ -26,4 +26,5 @@ gmon.out
 .history/
 service/tools/data/cert
 ecosystem/smart-contract/smart-contract-graphql/compiled_contracts/
-ecosystem/smart-contract/rescontract/compiled_contracts/
+ecosystem/smart-contract/rescontract/compiled_contracts/ecosystem/monitoring/regression/regression_UI/node_modules
+ecosystem/monitoring/regression/regression_UI/node_modules
