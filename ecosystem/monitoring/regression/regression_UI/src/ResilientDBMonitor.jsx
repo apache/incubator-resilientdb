@@ -26,6 +26,7 @@ import StatCard from "./components/StatCard";
 import Spinner from "./components/Spinner";
 import AnomalyDot from "./components/AnomalyDot";
 import DetailOverlay from "./components/DetailOverlay";
+import ScheduleModal from "./components/ScheduleModal";
 
 const TIME_RANGES = [
   { id: "24h", label: "24h",      hours: 24 },
@@ -51,6 +52,10 @@ export default function ResilientDBMonitor() {
   const [schedule,       setSchedule]       = useState(null);
   const [scheduleInput,  setScheduleInput]  = useState("off");
   const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [alertConfig,    setAlertConfig]    = useState(null);
+  const [alertEmail,     setAlertEmail]     = useState("");
+  const [alertThresholds, setAlertThresholds] = useState([{ metric: "latency", threshold: 10 }]);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const rangeInitialized = useRef(false);
   const dropdownRef      = useRef(null);
 
@@ -71,6 +76,17 @@ export default function ResilientDBMonitor() {
       if (scheduleJson.success) {
         setSchedule(scheduleJson.interval ?? null);
         setScheduleInput(scheduleJson.interval ?? "off");
+        setAlertConfig(scheduleJson.alertConfig ?? null);
+        if (scheduleJson.alertConfig) {
+          setAlertEmail(scheduleJson.alertConfig.email || "");
+          // Convert old object format to new array format
+          const thresholds = scheduleJson.alertConfig.thresholds || {};
+          const thresholdArray = Object.entries(thresholds).map(([metric, threshold]) => ({
+            metric,
+            threshold
+          }));
+          setAlertThresholds(thresholdArray.length > 0 ? thresholdArray : [{ metric: "latency", threshold: 10 }]);
+        }
       }
       setLastRefresh(new Date());
     } catch {
@@ -80,21 +96,73 @@ export default function ResilientDBMonitor() {
     }
   }, []);
 
+  // Check if alert configuration has changed
+  function hasAlertConfigChanged() {
+    if (!alertEmail.trim()) return alertConfig !== null;
+
+    // Convert array back to object format for comparison
+    const thresholdObj = alertThresholds.reduce((acc, { metric, threshold }) => {
+      acc[metric] = threshold;
+      return acc;
+    }, {});
+
+    const currentConfig = { email: alertEmail.trim(), thresholds: thresholdObj };
+    return JSON.stringify(currentConfig) !== JSON.stringify(alertConfig);
+  }
+
   async function saveSchedule() {
     setScheduleSaving(true);
     try {
+      // Prepare alert config if email is provided
+      const alertConfigPayload = alertEmail.trim()
+        ? {
+            email: alertEmail.trim(),
+            thresholds: alertThresholds.reduce((acc, { metric, threshold }) => {
+              acc[metric] = threshold;
+              return acc;
+            }, {})
+          }
+        : null;
+
       const res = scheduleInput === "off"
         ? await fetch(`${API_URL}/api/schedule`, { method: "DELETE" })
         : await fetch(`${API_URL}/api/schedule`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ interval: scheduleInput }),
+            body: JSON.stringify({
+              interval: scheduleInput,
+              alertConfig: alertConfigPayload
+            }),
           });
       const j = await res.json();
       if (j.success) {
         setSchedule(j.interval ?? null);
         setScheduleInput(j.interval ?? "off");
+        setAlertConfig(j.alertConfig ?? null);
+        setScheduleModalOpen(false);
       }
+    } finally {
+      setScheduleSaving(false);
+    }
+  }
+
+  async function deleteSchedule() {
+    setScheduleSaving(true);
+    try {
+      const res = await fetch(`${API_URL}/api/schedule`, { method: "DELETE" });
+      const j = await res.json();
+      if (j.success) {
+        // Clear all related state
+        setSchedule(null);
+        setScheduleInput("off");
+        setAlertConfig(null);
+        setAlertEmail("");
+        setAlertThresholds([{ metric: "latency", threshold: 10 }]);
+        setScheduleModalOpen(false);
+        console.log("Schedule deleted successfully");
+      }
+    } catch (error) {
+      console.error("Failed to delete schedule:", error);
     } finally {
       setScheduleSaving(false);
     }
@@ -263,27 +331,15 @@ export default function ResilientDBMonitor() {
             </div>
             {/* Schedule row */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end" }}>
-              <span style={{ fontSize: 10, color: C.text3, letterSpacing: 1, textTransform: "uppercase" }}>Schedule</span>
-              <select
-                value={scheduleInput}
-                onChange={e => setScheduleInput(e.target.value)}
-                style={{ background: C.bg3, border: `1px solid ${C.border2}`, color: scheduleInput === "off" ? C.text3 : C.accent, fontFamily: "'JetBrains Mono', monospace", fontSize: 10, padding: "5px 8px", borderRadius: 4, cursor: "pointer", letterSpacing: 0.5 }}
-              >
-                <option value="off">Off</option>
-                <option value="onemin">Every Minute</option>
-                <option value="hourly">Every Hour</option>
-                <option value="daily">Every Day</option>
-                <option value="weekly">Every Week</option>
-                <option value="monthly">Every Month</option>
-              </select>
-              {scheduleInput !== (schedule ?? "off") && (
-                <button onClick={saveSchedule} disabled={scheduleSaving}
-                  style={{ padding: "5px 10px", fontSize: 10, letterSpacing: 1, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${C.accent}40`, borderRadius: 4, cursor: scheduleSaving ? "not-allowed" : "pointer", background: `${C.accent}1a`, color: C.accent }}>
-                  {scheduleSaving ? "Saving…" : "Save"}
-                </button>
+              <button onClick={() => setScheduleModalOpen(true)}
+                style={{ padding: "6px 14px", fontSize: 10, letterSpacing: 1, textTransform: "uppercase", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, border: `1px solid ${C.border2}`, borderRadius: 5, cursor: "pointer", background: "transparent", color: C.accent }}>
+                ⚙ Schedule & Alerts
+              </button>
+              {schedule && (
+                <span style={{ fontSize: 10, color: C.green, letterSpacing: 0.5 }}>● {schedule === "onemin" ? "Every Min" : schedule === "hourly" ? "Hourly" : schedule === "daily" ? "Daily" : schedule === "weekly" ? "Weekly" : schedule === "monthly" ? "Monthly" : schedule}</span>
               )}
-              {schedule && scheduleInput === schedule && (
-                <span style={{ fontSize: 10, color: C.green, letterSpacing: 0.5 }}>● Active</span>
+              {alertConfig && (
+                <span style={{ fontSize: 10, color: C.orange, letterSpacing: 0.5 }}>📧 Alerts</span>
               )}
             </div>
           </div>
@@ -503,6 +559,22 @@ export default function ResilientDBMonitor() {
           </div>
         </div>
       )}
+
+      <ScheduleModal
+        isOpen={scheduleModalOpen}
+        onClose={() => setScheduleModalOpen(false)}
+        scheduleInput={scheduleInput}
+        setScheduleInput={setScheduleInput}
+        alertEmail={alertEmail}
+        setAlertEmail={setAlertEmail}
+        alertThresholds={alertThresholds}
+        setAlertThresholds={setAlertThresholds}
+        onSave={saveSchedule}
+        onDelete={deleteSchedule}
+        saving={scheduleSaving}
+        schedule={schedule}
+        alertConfig={alertConfig}
+      />
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }

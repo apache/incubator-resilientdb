@@ -2,6 +2,9 @@ const cron       = require("node-cron");
 const fs         = require("fs");
 const path       = require("path");
 const { spawn }  = require("child_process");
+const { detectRegressions } = require("./regressionDetector");
+const { sendRegressionAlert } = require("./alerting");
+const PerfResult = require("./models/PerfResult");
 
 const STATE_FILE  = path.join(__dirname, "schedule.json");
 const SCRIPT_PATH = path.resolve(__dirname, "../perf_test.sh");
@@ -16,6 +19,7 @@ const INTERVALS = {
 
 let activeTask     = null;
 let activeInterval = null;
+let alertConfig    = null;
 
 function runTest() {
   console.log(`[scheduler] running perf_test.sh at ${new Date().toISOString()}`);
@@ -24,45 +28,92 @@ function runTest() {
     stdio:    "ignore",
     detached: true,
   });
+
+  // If alerting is configured, check for regressions after test completes
+  if (alertConfig && alertConfig.email) {
+    child.on("close", async (code) => {
+      if (code === 0) {
+        console.log("[scheduler] Test completed, checking for regressions...");
+        await checkForRegressions();
+      }
+    });
+  }
+
   child.unref();
+}
+
+async function checkForRegressions() {
+  try {
+    // Wait a moment for the result to be saved to the database
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Get the latest result
+    const latestResult = await PerfResult.findOne().sort({ timestamp: -1 }).lean();
+    if (!latestResult) {
+      console.log("[scheduler] No results found for regression check");
+      return;
+    }
+
+    // Detect regressions
+    const regressions = await detectRegressions(alertConfig, latestResult);
+
+    if (regressions.length > 0) {
+      console.log(`[scheduler] ${regressions.length} regression(s) detected, sending alert...`);
+      await sendRegressionAlert(alertConfig, regressions, latestResult);
+    } else {
+      console.log("[scheduler] No regressions detected");
+    }
+
+  } catch (error) {
+    console.error("[scheduler] Error checking for regressions:", error);
+  }
 }
 
 function loadState() {
   try {
     const data = JSON.parse(fs.readFileSync(STATE_FILE, "utf-8"));
-    return INTERVALS[data.interval] ? data.interval : null;
-  } catch { return null; }
+    return {
+      interval: INTERVALS[data.interval] ? data.interval : null,
+      alertConfig: data.alertConfig || null
+    };
+  } catch { return { interval: null, alertConfig: null }; }
 }
 
-function saveState(interval) {
-  fs.writeFileSync(STATE_FILE, JSON.stringify({ interval: interval ?? null }), "utf-8");
+function saveState(interval, alertCfg = null) {
+  fs.writeFileSync(STATE_FILE, JSON.stringify({
+    interval: interval ?? null,
+    alertConfig: alertCfg ?? alertConfig
+  }), "utf-8");
 }
 
-function setSchedule(interval) {
+function setSchedule(interval, alertCfg = null) {
   if (activeTask) { activeTask.stop(); activeTask = null; }
 
   if (!interval || !INTERVALS[interval]) {
     activeInterval = null;
-    saveState(null);
-    return null;
+    alertConfig = null;
+    saveState(null, null);
+    return { interval: null, alertConfig: null };
   }
 
   activeTask     = cron.schedule(INTERVALS[interval], runTest);
   activeInterval = interval;
-  saveState(interval);
+  if (alertCfg !== null) alertConfig = alertCfg;
+  saveState(interval, alertConfig);
   console.log(`[scheduler] scheduled: ${interval} (${INTERVALS[interval]})`);
-  return interval;
+  return { interval, alertConfig };
 }
 
 function getSchedule() {
-  return activeInterval;
+  return { interval: activeInterval, alertConfig };
 }
 
 function init() {
   const saved = loadState();
-  if (saved) {
-    setSchedule(saved);
-    console.log(`[scheduler] restored schedule: ${saved}`);
+  if (saved.interval) {
+    alertConfig = saved.alertConfig;
+    setSchedule(saved.interval, saved.alertConfig);
+    console.log(`[scheduler] restored schedule: ${saved.interval}`);
   }
 }
 

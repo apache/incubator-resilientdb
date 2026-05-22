@@ -8,12 +8,15 @@ const path     = require("path");
 const resultsRouter   = require("./routes/results");
 const scheduleRouter  = require("./routes/schedule");
 const scheduler       = require("./scheduler");
+const { detectRegressions } = require("./regressionDetector");
+const { sendRegressionAlert } = require("./alerting");
+const PerfResult = require("./models/PerfResult");
 
 const app  = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:5000"],
+  origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"],
   methods: ["GET", "POST", "DELETE"],
   allowedHeaders: ["Content-Type"],
 }));
@@ -36,10 +39,30 @@ app.post("/api/run-test", (req, res) => {
   child.on("error", (err) => {
     if (!res.headersSent) res.status(500).json({ success: false, error: err.message });
   });
-  child.on("close", (code) => {
+  child.on("close", async (code) => {
     if (res.headersSent) return;
     if (code === 0) {
       res.json({ success: true, message: "Test completed", output: stderr });
+
+      // Check for regressions if alerting is configured
+      const schedule = scheduler.getSchedule();
+      if (schedule.alertConfig && schedule.alertConfig.email) {
+        setTimeout(async () => {
+          try {
+            console.log("[manual-test] Checking for regressions...");
+            const latestResult = await PerfResult.findOne().sort({ timestamp: -1 }).lean();
+            if (latestResult) {
+              const regressions = await detectRegressions(schedule.alertConfig, latestResult);
+              if (regressions.length > 0) {
+                console.log(`[manual-test] ${regressions.length} regression(s) detected, sending alert...`);
+                await sendRegressionAlert(schedule.alertConfig, regressions, latestResult);
+              }
+            }
+          } catch (error) {
+            console.error("[manual-test] Error checking for regressions:", error);
+          }
+        }, 2000);
+      }
     } else {
       res.status(500).json({ success: false, error: `Test exited with code ${code}`, output: stderr });
     }
@@ -51,7 +74,7 @@ app.get("/api/health", (req, res) => {
 });
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI || process.env.MONGODB_URL)
   .then(() => {
     console.log("✓ Connected to MongoDB");
     scheduler.init();
