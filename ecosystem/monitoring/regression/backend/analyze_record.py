@@ -6,12 +6,151 @@
 
 import json
 import sys
+import os
+from openai import OpenAI
+
+# Load environment variables from .env file
+def load_env_file():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key] = value
+
+# Load .env file at startup
+load_env_file()
 
 
 def pct_change(current, baseline):
     if not baseline:
         return None
     return round(((current - baseline) / baseline) * 100, 1)
+
+
+def get_ai_analysis(record, baseline, period_label=""):
+    """Get AI-powered analysis from Deepseek API"""
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        return {
+            "diagnosis": ["AI analysis unavailable: DEEPSEEK_API_KEY not configured"],
+            "recommendations": ["Please set DEEPSEEK_API_KEY environment variable to enable AI-powered analysis"],
+            "overall_status": "configuration_error"
+        }
+
+    try:
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.deepseek.com",
+        )
+
+        # Prepare data for AI analysis
+        analysis_data = {
+            "current_metrics": record,
+            "baseline_metrics": baseline,
+            "period_label": period_label
+        }
+
+        # Create prompt for AI analysis
+        prompt = f"""
+You are a ResilientDB performance expert analyzing test results. Write a clear, cohesive analysis report.
+
+Current Performance Metrics:
+- Average Latency: {record.get('avg_latency_ms', 0)}ms
+- Throughput: {record.get('throughput_rps', 0)} req/s
+- Success Rate: {record.get('success_rate', 0)}%
+- P50 Latency: {record.get('total_latency', {}).get('p50', 0)}ms
+- P99 Latency: {record.get('total_latency', {}).get('p99', 0)}ms
+- Server Wait Time: {record.get('consensus_time_ms', {}).get('mean', 0)}ms
+- TCP Connect Time: {record.get('tcp_connect_ms', {}).get('mean', 0)}ms
+
+{f"Baseline Comparison (vs {period_label}):" if baseline else "No historical baseline available."}
+{f"Historical Average Latency: {(baseline.get('avg_latency_ms') or {}).get('mean', 0)}ms" if baseline else ""}
+{f"Historical Average Throughput: {(baseline.get('throughput_rps') or {}).get('mean', 0)} req/s" if baseline else ""}
+
+Write a professional performance analysis report with these sections:
+
+PERFORMANCE SUMMARY:
+Write 2-3 sentences summarizing the overall system performance and key findings.
+
+KEY FINDINGS:
+List 3-4 main observations about bottlenecks, performance patterns, or issues.
+
+RECOMMENDATIONS:
+Provide 3-4 specific, actionable recommendations for improvement.
+
+STATUS:
+Choose one status: "stable", "minor_warning", "needs_attention", "possible_regression", or "configuration_error"
+
+Write in clear, professional language. Avoid bullet points and fragmented text. Make it flow naturally as a cohesive report.
+"""
+
+        response = client.chat.completions.create(
+            model="deepseek-v4-flash",
+            messages=[
+                {"role": "system", "content": "You are an expert ResilientDB performance analyst. Provide technical, actionable insights about PBFT consensus and database performance."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=1000,
+            timeout=20.0
+        )
+
+        ai_response = response.choices[0].message.content
+
+        # Parse AI response into structured format - use the full response as diagnosis for better readability
+        diagnosis = [ai_response]
+        recommendations = []
+        overall_status = "stable"
+
+        # Extract status from the response
+        for status in ["possible_regression", "needs_attention", "minor_warning", "stable", "configuration_error"]:
+            if status in ai_response.lower():
+                overall_status = status
+                break
+
+        # Extract recommendations section for separate display if needed
+        if "RECOMMENDATIONS" in ai_response.upper():
+            parts = ai_response.upper().split("RECOMMENDATIONS")
+            if len(parts) > 1:
+                # Find the actual recommendations text
+                rec_start = ai_response.upper().find("RECOMMENDATIONS")
+                rec_text = ai_response[rec_start:]
+                # Look for the end of recommendations (STATUS section)
+                status_start = rec_text.upper().find("STATUS")
+                if status_start > 0:
+                    rec_text = rec_text[:status_start]
+
+                # Clean up and extract just the recommendations content
+                rec_text = rec_text.replace("RECOMMENDATIONS", "").replace("**RECOMMENDATIONS**", "").strip()
+                if rec_text.startswith(":"):
+                    rec_text = rec_text[1:].strip()
+
+                if rec_text:
+                    recommendations = [rec_text]
+
+        return {
+            "diagnosis": diagnosis,
+            "recommendations": recommendations,
+            "overall_status": overall_status
+        }
+
+    except Exception as e:
+        error_msg = str(e)
+        if "timeout" in error_msg.lower() or "timed out" in error_msg.lower():
+            return {
+                "diagnosis": [f"AI analysis timed out: {error_msg}"],
+                "recommendations": ["AI service temporarily unavailable. Analysis will retry automatically on next request."],
+                "overall_status": "timeout_error"
+            }
+        else:
+            return {
+                "diagnosis": [f"AI analysis failed: {error_msg}"],
+                "recommendations": ["Check DEEPSEEK_API_KEY configuration and network connectivity"],
+                "overall_status": "configuration_error"
+            }
 
 
 def analyze(record, baseline, period_label=""):
@@ -57,157 +196,30 @@ def analyze(record, baseline, period_label=""):
         latency_change = throughput_change = server_wait_change = None
         hist_avg_latency = hist_avg_throughput = 0
 
-    diagnosis       = []
-    recommendations = []
+    # Get AI-powered analysis
+    ai_analysis = get_ai_analysis(record, baseline, period_label)
+    diagnosis = ai_analysis["diagnosis"]
+    recommendations = ai_analysis["recommendations"]
+    overall_status = ai_analysis["overall_status"]
 
-    # Tail latency
-    p99_ratio = (p99 / p50) if p50 > 0 else 0
-    if p99_ratio >= 10:
-        diagnosis.append(
-            f"Severe tail-latency amplification detected: p99 is {round(p99_ratio, 2)}x higher than p50. "
-            "This suggests intermittent PBFT consensus stalls, replica synchronisation delays, or uneven batching."
-        )
-        recommendations.append(
-            "Tail-latency outliers at this scale usually point to replica stalls or batch timeouts. "
-            "Enable per-phase PBFT logging and compare timestamps for pre-prepare, prepare, commit, and execute across replicas. "
-            "Try reducing the batch timeout (e.g. --batch-timeout 10ms) and re-run to see if the outliers shrink."
-        )
-    elif p99_ratio >= 4:
-        diagnosis.append(
-            f"Moderate tail-latency amplification: p99 is {round(p99_ratio, 2)}x higher than p50. "
-            "Most requests are fast but a small fraction experience slower PBFT completion."
-        )
-        recommendations.append(
-            "Tail latency outliers at this level are often caused by uneven batch flushing or periodic GC pauses. "
-            "Add a warmup phase before measuring (run and discard the first 10–20% of requests) and check if the p99 improves. "
-            "You can also try tuning --batch-size or --batch-timeout to reduce the frequency of slow flushes."
-        )
-    else:
-        diagnosis.append("Latency distribution is relatively stable with minimal tail amplification.")
-
-    # Server wait share
-    server_wait_share = round((server_wait_mean / avg_latency) * 100, 1) if avg_latency > 0 else 0
-    if server_wait_share >= 70:
-        diagnosis.append(
-            f"Server-side wait time accounts for {server_wait_share}% of total latency. "
-            "The primary bottleneck is inside the PBFT execution path. "
-            "Possible causes: replica coordination overhead, message sequencing delays, "
-            "signature verification cost, or commit-phase synchronisation latency."
-        )
-    elif server_wait_share >= 40:
-        diagnosis.append(
-            f"Server-side wait accounts for {server_wait_share}% of total latency. "
-            "Server processing is a meaningful contributor but not the only source of delay."
-        )
-    elif avg_latency > 0:
-        diagnosis.append(
-            f"Server-side wait accounts for only {server_wait_share}% of total latency. "
-            "The bottleneck may not be inside the server-side PBFT processing path."
-        )
-
-    # TCP overhead
-    if tcp_mean > 5:
-        diagnosis.append(
-            f"TCP connection time is elevated at {tcp_mean}ms. "
-            "Connection setup overhead may be affecting results."
-        )
-        recommendations.append(
-            "TCP setup cost at this level will inflate every request's latency. "
-            "Switch to persistent HTTP connections (curl --keep-alive or an HTTP/1.1 client with connection pooling) "
-            "to eliminate the per-request handshake overhead and get a cleaner read on server-side latency."
-        )
-    elif tcp_mean > 1:
-        diagnosis.append(f"TCP connection time is mildly elevated at {tcp_mean}ms.")
-    else:
-        diagnosis.append("TCP connection overhead is low — network setup is not the dominant bottleneck.")
-
-    # Transfer vs server wait
-    if transfer_mean > server_wait_mean and transfer_mean > 1:
-        diagnosis.append(
-            "Response transfer time exceeds server-side wait time. "
-            "Payload size or client-side transfer overhead may be contributing to total latency."
-        )
-        recommendations.append(
-            "When transfer time dominates, the bottleneck is in the response size or the network path back to the client, not the server logic. "
-            "Measure the response payload size (e.g. with curl -w '%{size_download}') and test with a stripped-down response. "
-            "Switching to persistent HTTP connections will also cut repeated handshake overhead."
-        )
-
-    # Variance
-    if avg_latency > 0 and stddev > avg_latency:
-        diagnosis.append(
-            f"High latency variance detected: stddev is {round(stddev / avg_latency, 2)}x the average. "
-            "The system is not behaving uniformly across requests — possible replica lag or uneven batching intervals."
-        )
-        recommendations.append(
-            "High variance usually means the system is in a cold state, hitting GC pauses, or experiencing intermittent replica lag. "
-            "Run the benchmark at least three times and compare — if the variance is consistent, it points to a structural issue. "
-            "Add a warmup phase (10–20% extra requests before measurement) and pin the client to a single CPU core to reduce scheduling noise."
-        )
-    elif avg_latency > 0 and stddev < avg_latency * 0.25:
-        diagnosis.append("Latency variance is low — consistent request completion times observed.")
-
-    # Throughput
-    if throughput_val < 100:
-        diagnosis.append(f"Throughput is low at {throughput_val} req/s. May reflect high per-request latency or server-side delays.")
-    elif throughput_val > 1000:
-        diagnosis.append(f"High throughput at {throughput_val} req/s under sequential single-client execution.")
-    else:
-        diagnosis.append(f"Moderate throughput at {throughput_val} req/s.")
-
-    # Historical comparison
+    # Add traditional baseline comparison data for context
     if baseline:
         period_str = f"the {period_label} " if period_label else "the historical "
 
         if latency_change is not None:
             if latency_change > 25:
-                diagnosis.append(
-                    f"Average latency is {latency_change}% higher than {period_str}baseline — possible performance regression."
-                )
-                recommendations.append(
-                    f"A {latency_change}% latency increase warrants a commit-level investigation. "
-                    "Use 'git bisect' between the last known-good commit and this one to pinpoint the change that introduced the slowdown. "
-                    "Once identified, compare the changed code paths against PBFT phase timing to find the bottleneck."
-                )
+                diagnosis.append(f"Baseline comparison: Average latency is {latency_change}% higher than {period_str}baseline.")
             elif latency_change < -25:
-                diagnosis.append(f"Average latency is {abs(latency_change)}% lower than {period_str}baseline — performance improved.")
-            else:
-                diagnosis.append(f"Average latency is within the expected {period_str}baseline range.")
+                diagnosis.append(f"Baseline comparison: Average latency is {abs(latency_change)}% lower than {period_str}baseline.")
 
         if throughput_change is not None:
             if throughput_change < -25:
-                diagnosis.append(f"Throughput is {abs(throughput_change)}% below {period_str}baseline — reduced efficiency.")
-                recommendations.append(
-                    f"A {abs(throughput_change)}% throughput drop with the same benchmark parameters usually means a new bottleneck appeared in the request path. "
-                    "Verify that the number of active replicas, network routes, and consensus configuration match historical runs. "
-                    "If configuration is unchanged, profile the request handling loop — look for new synchronisation points or lock contention introduced since the last baseline run."
-                )
+                diagnosis.append(f"Baseline comparison: Throughput is {abs(throughput_change)}% below {period_str}baseline.")
             elif throughput_change > 25:
-                diagnosis.append(f"Throughput is {throughput_change}% above {period_str}baseline — improved performance.")
+                diagnosis.append(f"Baseline comparison: Throughput is {throughput_change}% above {period_str}baseline.")
 
         if server_wait_change is not None and server_wait_change > 25:
-            diagnosis.append(
-                f"Server-side wait time is {server_wait_change}% higher than {period_str}baseline. "
-                "Increased delay between request send and first byte received — check PBFT phase logs."
-            )
-            recommendations.append(
-                f"A {server_wait_change}% increase in server-side wait time suggests the PBFT consensus path has slowed. "
-                "Inspect the pre-prepare → prepare → commit phase logs for the slowest requests. "
-                "Check whether signature verification, disk I/O, or network round-trip time between replicas has increased since the last baseline run."
-            )
-
-    # Overall status
-    severity = 0
-    if latency_change    is not None and latency_change    > 25:  severity += 1
-    if throughput_change is not None and throughput_change < -25: severity += 1
-    if avg_latency > 0   and stddev > avg_latency:                severity += 1
-    if success_rate < 100:                                         severity += 1
-    if p99_ratio >= 10:                                            severity += 1
-
-    if   severity >= 3: overall_status = "possible_regression"
-    elif severity == 2: overall_status = "needs_attention"
-    elif severity == 1: overall_status = "minor_warning"
-    else:               overall_status = "stable"
+            diagnosis.append(f"Baseline comparison: Server-side wait time is {server_wait_change}% higher than {period_str}baseline.")
 
     return {
         "overall_status":              overall_status,

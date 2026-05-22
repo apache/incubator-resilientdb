@@ -109,7 +109,7 @@ router.post("/:id/analyze", async (req, res) => {
 
     const scriptPath = path.join(__dirname, "..", "analyze_record.py");
     const input      = JSON.stringify({ record, baseline, period_label: periodLabel });
-    const proc       = spawnSync("python3", [scriptPath], { input, encoding: "utf-8", timeout: 10000 });
+    const proc       = spawnSync("python3", [scriptPath], { input, encoding: "utf-8", timeout: 30000 });
 
     if (proc.error)   throw proc.error;
     if (proc.status !== 0) throw new Error(proc.stderr || "Analysis script failed");

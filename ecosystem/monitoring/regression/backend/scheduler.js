@@ -10,7 +10,7 @@ const STATE_FILE  = path.join(__dirname, "schedule.json");
 const SCRIPT_PATH = path.resolve(__dirname, "../perf_test.sh");
 
 const INTERVALS = {
-  onemin:  "*/1 * * * *",
+  onemin:  "*/2 * * * *",
   hourly:  "0 * * * *",
   daily:   "0 0 * * *",
   weekly:  "0 0 * * 0",

@@ -1,6 +1,42 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create transporter based on provider
+function createTransporter() {
+  const provider = process.env.EMAIL_PROVIDER || "gmail";
+
+  switch (provider.toLowerCase()) {
+    case "gmail":
+      return nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD, // Use app password for Gmail
+        },
+      });
+
+    case "outlook":
+    case "hotmail":
+      return nodemailer.createTransport({
+        service: "hotmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+
+    case "smtp":
+    default:
+      return nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT || 587,
+        secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+  }
+}
 
 async function sendRegressionAlert(config, regressions, testData) {
   console.log("[alerting] sendRegressionAlert called with:", {
@@ -107,15 +143,25 @@ This alert was triggered by your ResilientDB performance monitoring system.
     `;
 
     console.log("[alerting] Attempting to send email to:", config.email);
-    console.log("[alerting] Resend API key present:", !!process.env.RESEND_API_KEY);
+    console.log("[alerting] Email user configured:", !!process.env.EMAIL_USER);
 
-    const result = await resend.emails.send({
-      from: "Acme <onboarding@resend.dev>", // Using Resend's test domain
-      to: [config.email],
+    const transporter = createTransporter();
+
+    // Verify transporter configuration
+    await transporter.verify();
+    console.log("[alerting] SMTP connection verified successfully");
+
+    const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+
+    const mailOptions = {
+      from: fromEmail,
+      to: config.email,
       subject,
       html: htmlContent,
       text: textContent,
-    });
+    };
+
+    const result = await transporter.sendMail(mailOptions);
 
     console.log("[alerting] Regression alert sent successfully:", result);
     return result;

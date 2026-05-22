@@ -1,1 +1,1 @@
-{"interval":"onemin","alertConfig":{"email":"developer@resilientdb.com","thresholds":{"throughput":1}}}
+{"interval":null,"alertConfig":null}

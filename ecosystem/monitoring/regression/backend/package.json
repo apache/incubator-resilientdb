@@ -13,7 +13,8 @@
     "express": "^4.18.2",
     "mongoose": "^8.0.0",
     "node-cron": "^4.2.1",
-    "resend": "^6.12.3"
+    "nodemailer": "^8.0.7",
+    "openai": "^6.39.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

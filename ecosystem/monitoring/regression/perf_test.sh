@@ -13,7 +13,7 @@
 
 ENDPOINT="127.0.0.1:18000/v1/transactions/commit"
 # ENDPOINT="https://dev-crow.resilientdb.com/v1/transactions/commit"
-RUNS=${1:-500}
+RUNS=${1:-100}
 VERSION=${2:-""}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
