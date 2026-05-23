@@ -333,7 +333,7 @@ export default function ResilientDBMonitor() {
                 filter: "drop-shadow(0 0 1px rgba(0, 212, 255, 0.3))"
               }}>ResPulse</span>
               <span style={{ fontSize: 11, color: "#8da3b0", letterSpacing: 1 }}>Performance Regression Detection and Explanation</span>
-            </div>
+              </div>
           </div>
           <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: C.text2 }}>

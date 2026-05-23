@@ -304,12 +304,6 @@ The system supports extensive configuration:
 
 We're continuously expanding the monitoring system's capabilities:
 
-### Short-term Roadmap
-- **Automated CI/CD Integration** for automatic performance testing on Pull Requests and code changes affecting ResilientDB
-- **Multi-node monitoring** for distributed ResilientDB deployments
-- **Custom metrics integration** for application-specific monitoring
-- **Enhanced AI analysis** with multi-model comparison capabilities
-- **Mobile dashboard** for on-the-go monitoring
 
 #### Automated Pull Request Testing
 
@@ -325,11 +319,11 @@ One of the most exciting planned features is automated performance testing trigg
 
 This automated approach ensures that performance regressions are caught early in the development cycle, maintaining ResilientDB's performance standards while enabling rapid development iteration.
 
-### Long-term Vision
-- **Predictive performance modeling** using machine learning
-- **Automated performance optimization** through AI-driven parameter tuning
-- **Cross-system performance correlation** with infrastructure metrics
-- **Integration with blockchain analytics platforms**
+## Other Developments
+- **Multi-node monitoring** for distributed ResilientDB deployments
+- **Custom metrics integration** for application-specific monitoring
+- **Enhanced AI analysis** with multi-model comparison capabilities
+- **Mobile dashboard** for on-the-go monitoring
 
 ## Contributing and Community
 
