@@ -307,10 +307,33 @@ export default function ResilientDBMonitor() {
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "2.5rem", paddingBottom: "1.5rem", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontSize: 10, color: C.accent, letterSpacing: 3, textTransform: "uppercase", fontWeight: 500 }}>Apache ResilientDB</span>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>Performance Monitor</span>
-            <span style={{ fontSize: 11, color: C.text3, letterSpacing: 1 }}>PBFT Consensus Analytics</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img
+              src="/images/simple_Logo.png"
+              alt="ResPulse Logo"
+              style={{
+                width: 110,
+                height: 110,
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 8px rgba(0, 212, 255, 0.25))"
+              }}
+            />
+            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <span style={{ fontSize: 10, color: C.accent, letterSpacing: 3, textTransform: "uppercase", fontWeight: 500 }}>PBFT Performance Monitoring</span>
+              <span style={{
+                fontFamily: "'Syne', sans-serif",
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: -0.8,
+                background: `linear-gradient(135deg, ${C.accent}, #00f5ff, #0099ff)`,
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                color: "transparent",
+                textShadow: "none",
+                filter: "drop-shadow(0 0 1px rgba(0, 212, 255, 0.3))"
+              }}>ResPulse</span>
+              <span style={{ fontSize: 11, color: "#8da3b0", letterSpacing: 1 }}>Performance Regression Detection and Explanation</span>
+            </div>
           </div>
           <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: C.text2 }}>
