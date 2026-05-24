@@ -140,6 +140,25 @@ MemoryDB::GetAllItemsWithSeq() {
   return resp;
 }
 
+int MemoryDB::RollbackToCheckpoint(uint64_t checkpoint_seq) {
+  // SetValueWithSeq appends values in sequence order, so rollback is a simple
+  // tail trim for each key's history.
+  auto it = kv_map_with_seq_.begin();
+  while (it != kv_map_with_seq_.end()) {
+    while (!it->second.empty() && it->second.back().second > checkpoint_seq) {
+      it->second.pop_back();
+    }
+    // A key with no value at or before the checkpoint did not exist in the
+    // restored state.
+    if (it->second.empty()) {
+      it = kv_map_with_seq_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  return 0;
+}
+
 std::map<std::string, std::pair<std::string, int>> MemoryDB::GetAllItems() {
   std::map<std::string, std::pair<std::string, int>> resp;
 

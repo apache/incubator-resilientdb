@@ -158,6 +158,33 @@ TEST_P(KVStorageTest, SetValueWithSeq) {
       std::make_pair(std::string("test_value_v2"), static_cast<uint64_t>(3)));
 }
 
+TEST_P(KVStorageTest, RollbackToCheckpointWithSeq) {
+  // POE rollback relies on sequence history: values after the checkpoint are
+  // speculative and must disappear, while earlier values remain readable.
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value", 1), 0);
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value_v2", 2), 0);
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value_v3", 3), 0);
+  EXPECT_EQ(storage->SetValueWithSeq("new_key", "new_value", 3), 0);
+
+  EXPECT_EQ(storage->RollbackToCheckpoint(2), 0);
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 0),
+      std::make_pair(std::string("test_value_v2"), static_cast<uint64_t>(2)));
+  EXPECT_EQ(storage->GetValueWithSeq("test_key", 3),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+  EXPECT_EQ(storage->GetValueWithSeq("new_key", 0),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+
+  EXPECT_EQ(storage->SetValueWithSeq("test_key", "test_value_v3b", 3), 0);
+  EXPECT_EQ(
+      storage->GetValueWithSeq("test_key", 0),
+      std::make_pair(std::string("test_value_v3b"), static_cast<uint64_t>(3)));
+
+  EXPECT_EQ(storage->RollbackToCheckpoint(0), 0);
+  EXPECT_EQ(storage->GetValueWithSeq("test_key", 0),
+            std::make_pair(std::string(""), static_cast<uint64_t>(0)));
+}
+
 TEST_P(KVStorageTest, GetAllValueWithSeq) {
   typedef std::vector<std::pair<std::string, uint64_t>> List;
   {

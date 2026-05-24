@@ -47,9 +47,13 @@ class ConsensusManagerSharded3PCPOE : public ConsensusManagerPBFT {
   // may enqueue client/proxy responses.
   bool ShouldEnqueueClientResponse(const Request& request) const;
 
+  // Shard-local config used by POE quorum sizing and local leader identity.
   std::optional<ResDBConfig> local_consensus_config_;
+  // Global leader-to-leader 3PC commitment. Its commit callback starts POE.
   std::unique_ptr<Commitment3PC> commitment_3pc_;
+  // Parsed shard topology for both server nodes and client/proxy nodes.
   std::optional<ShardMetadata> shard_metadata_;
+  // Outgoing target selector for shard-local POE and global shard-leader 3PC.
   std::unique_ptr<ShardCommunicator> shard_communicator_;
 };
 

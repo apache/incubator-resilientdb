@@ -192,8 +192,8 @@ ConsensusManagerSharded3PCPOE::ConsensusManagerSharded3PCPOE(
   // outgoing consensus messages to local shard replicas or shard leaders.
   shard_communicator_ = std::make_unique<ShardCommunicator>(
       GetBroadCastClient(), &(*shard_metadata_), config.GetReplicaInfos());
-  // Local consensus module for this POE variant. In Phase 2 it only validates
-  // local POE execute messages; later phases will add execution/proofs.
+  // Local consensus module for this POE variant. It executes validated local
+  // POE triggers optimistically and emits execution proofs after completion.
   commitment_ = std::make_unique<ShardPOECommitment>(
       *local_consensus_config_, message_manager_.get(), GetBroadCastClient(),
       shard_communicator_.get(), &(*shard_metadata_), GetSignatureVerifier());

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 
 #include "chain/storage/storage.h"
@@ -59,6 +60,11 @@ class TransactionManager {
   bool NeedResponse();
 
   virtual Storage* GetStorage() { return storage_ ? storage_.get() : nullptr; }
+
+  // Roll back the transaction manager's storage-backed state and sequence
+  // cursor to checkpoint_seq. POE uses this after speculative execution fails
+  // to certify.
+  virtual int RollbackToCheckpoint(uint64_t checkpoint_seq);
 
  protected:
   virtual std::unique_ptr<google::protobuf::Message> ParseData(

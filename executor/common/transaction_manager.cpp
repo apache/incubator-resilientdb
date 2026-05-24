@@ -30,6 +30,20 @@ bool TransactionManager::IsOutOfOrder() { return is_out_of_order_; }
 
 bool TransactionManager::NeedResponse() { return need_response_; }
 
+int TransactionManager::RollbackToCheckpoint(uint64_t checkpoint_seq) {
+  // TransactionManager owns the storage engine for KV executors, so rollback
+  // starts here and then resets the manager's own sequence cursor.
+  if (storage_ == nullptr) {
+    LOG(ERROR) << "rollback requested without storage";
+    return -2;
+  }
+  int ret = storage_->RollbackToCheckpoint(checkpoint_seq);
+  if (ret == 0) {
+    seq_ = checkpoint_seq;
+  }
+  return ret;
+}
+
 std::unique_ptr<std::string> TransactionManager::ExecuteData(
     const std::string& request) {
   return std::make_unique<std::string>();

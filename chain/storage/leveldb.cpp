@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <cstdint>
+#include <memory>
 
 #include "chain/storage/proto/kv.pb.h"
 #include "leveldb/options.h"
@@ -438,6 +439,73 @@ uint64_t ResLevelDB::GetLastCheckpoint() {
     return last_ckpt_;
   }
   return GetLastCheckpointInternal();
+}
+
+int ResLevelDB::RollbackToCheckpoint(uint64_t checkpoint_seq) {
+  // Flush pending writes first so the iterator sees all speculative updates
+  // that need to be truncated.
+  if (!Flush()) {
+    return -1;
+  }
+
+  leveldb::WriteBatch rollback_batch;
+  std::unique_ptr<leveldb::Iterator> it(
+      db_->NewIterator(leveldb::ReadOptions()));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    const std::string key = it->key().ToString();
+    // leveldb_checkpoint is metadata, not a user KV history. It is rewritten
+    // below after the data rollback batch is assembled.
+    if (key == ckpt_key) {
+      continue;
+    }
+
+    ValueHistory history;
+    if (!history.ParseFromString(it->value().ToString())) {
+      LOG(ERROR) << "rollback skip unparsable value history. key:" << key;
+      continue;
+    }
+
+    bool changed = false;
+    // ValueHistory is append-only by sequence, so entries after the checkpoint
+    // can be removed from the end without scanning the whole repeated field.
+    while (history.value_size() > 0 &&
+           history.value(history.value_size() - 1).seq() > checkpoint_seq) {
+      history.mutable_value()->RemoveLast();
+      changed = true;
+    }
+    if (!changed) {
+      continue;
+    }
+    // If all versions were speculative, delete the key entirely.
+    if (history.value_size() == 0) {
+      rollback_batch.Delete(key);
+      continue;
+    }
+
+    std::string value_str;
+    history.SerializeToString(&value_str);
+    rollback_batch.Put(key, value_str);
+  }
+
+  if (!it->status().ok()) {
+    LOG(ERROR) << "rollback iterator fail:" << it->status().ToString();
+    return -1;
+  }
+
+  rollback_batch.Put(ckpt_key, std::to_string(checkpoint_seq));
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), &rollback_batch);
+  if (!status.ok()) {
+    LOG(ERROR) << "rollback write fail:" << status.ToString();
+    return -1;
+  }
+  if (block_cache_) {
+    // The cache may still hold values from before the rollback batch. Flush it
+    // so future reads repopulate from the restored LevelDB state.
+    block_cache_->Flush();
+  }
+  last_ckpt_ = checkpoint_seq;
+  update_time_ = 0;
+  return 0;
 }
 
 }  // namespace storage

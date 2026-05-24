@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -62,6 +63,12 @@ class Storage {
   virtual bool Flush() { return true; };
 
   virtual uint64_t GetLastCheckpoint() { return 0; }
+
+  // Optional rollback hook used by optimistic protocols such as POE.
+  // Implementations should restore all sequence-versioned state to the latest
+  // value at or before checkpoint_seq. Storage engines that do not maintain
+  // version history keep the default unsupported return value.
+  virtual int RollbackToCheckpoint(uint64_t) { return -2; }
 
   void SetMaxHistoryNum(int num) { max_history_ = num; }
 

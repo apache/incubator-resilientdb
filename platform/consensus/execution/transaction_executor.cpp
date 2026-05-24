@@ -21,6 +21,8 @@
 
 #include <glog/logging.h>
 
+#include <mutex>
+
 #include "common/utils/utils.h"
 
 namespace resdb {
@@ -137,6 +139,58 @@ uint64_t TransactionExecutor::GetMaxPendingExecutedSeq() {
 void TransactionExecutor::SetPendingExecutedSeq(int seq) {
   // LOG(ERROR)<<" seq next pending seq:"<<seq;
   next_execute_seq_ = seq;
+}
+
+int TransactionExecutor::RollbackToCheckpoint(uint64_t checkpoint_seq) {
+  const uint64_t next_seq = checkpoint_seq + 1;
+  LOG(ERROR) << "transaction executor rollback to checkpoint:"
+             << checkpoint_seq << " next seq:" << next_seq;
+
+  // First restore application/storage state. The executor bookkeeping below is
+  // then reset to expect the first post-checkpoint sequence.
+  int ret = 0;
+  if (transaction_manager_) {
+    ret = transaction_manager_->RollbackToCheckpoint(checkpoint_seq);
+  }
+
+  {
+    std::lock_guard<std::mutex> lk(mutex_);
+    // candidates_ and blucket_ drive in-order execution readiness. Anything
+    // past the rollback point may refer to speculative work and must be
+    // discarded before accepting new commits.
+    memset(blucket_, 0, sizeof(blucket_));
+    candidates_.clear();
+    next_execute_seq_ = next_seq;
+    last_seq_ = static_cast<int32_t>(checkpoint_seq);
+    cv_.notify_all();
+  }
+
+  // Drain pending queues best-effort. A concurrent worker may already be
+  // processing one item, but new queued speculative work is removed here.
+  while (commit_queue_.Pop(0) != nullptr) {
+  }
+  while (execute_queue_.Pop(0) != nullptr) {
+  }
+  while (execute_OOO_queue_.Pop(0) != nullptr) {
+  }
+  while (prepare_queue_.Pop(0) != nullptr) {
+  }
+  while (gc_queue_.Pop(0) != nullptr) {
+  }
+
+  for (int i = 0; i < mod; ++i) {
+    std::lock(f_mutex_[i], fd_mutex_[i]);
+    std::lock_guard<std::mutex> flag_lk(f_mutex_[i], std::adopt_lock);
+    std::lock_guard<std::mutex> data_lk(fd_mutex_[i], std::adopt_lock);
+    // Clear cached prepare/promise state so prepared speculative requests do
+    // not unblock execution after the rollback.
+    pre_[i].clear();
+    pre_f_[i].clear();
+    flag_[i].clear();
+    req_[i].clear();
+    data_[i].clear();
+  }
+  return ret;
 }
 
 bool TransactionExecutor::NeedResponse() {

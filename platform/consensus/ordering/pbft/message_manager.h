@@ -26,6 +26,8 @@
 #include <memory>
 #include <queue>
 #include <set>
+#include <string>
+#include <utility>
 
 #include "chain/state/chain_state.h"
 #include "executor/common/transaction_manager.h"
@@ -44,6 +46,14 @@ namespace resdb {
 
 class MessageManager {
  public:
+  // Called after execution produces a response but before normal response
+  // queueing/checkpoint recording. POE uses this to emit execution proofs.
+  using PostExecuteHook =
+      std::function<void(const Request&, const BatchUserResponse&)>;
+  // Returns true for executed requests whose responses must wait for an
+  // external release event, such as POE certification.
+  using ResponseHoldPredicate = std::function<bool(const Request&)>;
+
   MessageManager(const ResDBConfig& config,
                  std::unique_ptr<TransactionManager> transaction_manager,
                  CheckPointManager* checkpoint_manager,
@@ -107,17 +117,40 @@ class MessageManager {
 
   void SetDuplicateManager(DuplicateManager* manager);
   void SetResponseFilter(std::function<bool(const Request&)> filter);
+  void SetPostExecuteHook(PostExecuteHook hook);
+  void SetResponseHoldPredicate(ResponseHoldPredicate predicate);
+  // Release or drop a held POE response for one transaction. Release still
+  // passes through response_filter_, preserving coordinator-shard-only replies.
+  int ReleaseHeldResponse(uint64_t seq, const std::string& hash);
+  int DropHeldResponse(uint64_t seq, const std::string& hash);
+  // Remove all held/release-pending POE responses above a rollback checkpoint.
+  int DropHeldResponsesAfter(uint64_t checkpoint_seq);
+  // Stable checkpoint is the rollback target used when local POE detects a
+  // proof conflict before a transaction becomes checkpoint-stable.
+  uint64_t GetStableCheckpoint() const;
+  // Coordinates rollback across held responses, executor state, collector
+  // sequence state, and checkpoint bookkeeping.
+  int RollbackToCheckpoint(uint64_t checkpoint_seq);
 
   void SendResponse(std::unique_ptr<Request> request);
 
   LockFreeCollectorPool* GetCollectorPool();
 
  private:
+  using HeldResponseKey = std::pair<uint64_t, std::string>;
+
+  struct HeldResponse {
+    Request request;
+    BatchUserResponse response;
+  };
+
   bool IsValidMsg(const Request& request);
 
   bool MayConsensusChangeStatus(int type, int received_count,
                                 std::atomic<TransactionStatue>* status,
                                 bool force);
+  void QueueResponseIfAllowed(const Request& request,
+                              std::unique_ptr<BatchUserResponse> response);
 
  private:
   ResDBConfig config_;
@@ -137,8 +170,24 @@ class MessageManager {
 
   Stats* global_stats_;
 
-  // Used to filter the response that will be sent back to 
+  // Used by sharded modes to decide whether an executed request should enqueue
+  // a client/proxy response. Flat PBFT/3PC leave this unset.
   std::function<bool(const Request&)> response_filter_;
+  // Optional callback after execution produces a BatchUserResponse. POE uses it
+  // to create execution proofs; normal PBFT/3PC paths leave it unset.
+  PostExecuteHook post_execute_hook_;
+  // Optional POE response gate. Matching responses are held until a POE cert
+  // releases them, while existing consensus paths leave this unset.
+  ResponseHoldPredicate response_hold_predicate_;
+  std::mutex held_response_mutex_;
+  // Responses that have executed optimistically but are waiting for POE cert.
+  std::map<HeldResponseKey, HeldResponse> held_responses_;
+  // Handles the race where a cert arrives before slow local execution reaches
+  // the hold point. Later insertion observes this set and queues immediately.
+  std::set<HeldResponseKey> released_before_hold_;
+  // Tracks held responses explicitly discarded by rollback. This prevents a
+  // late cert from re-opening a response for a rolled-back transaction.
+  std::set<HeldResponseKey> rollback_dropped_held_responses_;
 
   std::mutex lct_lock_;
   std::map<uint64_t, uint64_t> last_committed_time_;

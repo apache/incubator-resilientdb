@@ -49,13 +49,34 @@ MessageManager::MessageManager(
             resp_msg->set_seq(request->seq());
             resp_msg->set_current_view(request->current_view());
             resp_msg->set_primary_id(GetCurrentPrimary());
+            bool response_held = false;
+            if (response_hold_predicate_ &&
+                response_hold_predicate_(*request)) {
+              HeldResponseKey key(request->seq(), request->hash());
+              {
+                std::lock_guard<std::mutex> lk(held_response_mutex_);
+                auto released_it = released_before_hold_.find(key);
+                if (released_it != released_before_hold_.end()) {
+                  // A POE cert arrived before this replica finished execution.
+                  // Consume that early release and let the response continue.
+                  released_before_hold_.erase(released_it);
+                } else {
+                  // Normal POE path: hold the optimistic response until a
+                  // valid local POE certificate releases it.
+                  rollback_dropped_held_responses_.erase(key);
+                  held_responses_[key] = HeldResponse{*request, *resp_msg};
+                  response_held = true;
+                }
+              }
+            }
+            if (post_execute_hook_) {
+              post_execute_hook_(*request, *resp_msg);
+            }
             // Flat PBFT/3PC leave response_filter_ unset, so responses are
-            // queued normally. Sharded 3PC installs a filter so only replicas
+            // queued normally. Sharded modes install a filter so only replicas
             // in the coordinator shard send client/proxy responses.
-            if (transaction_executor_->NeedResponse() &&
-                (!response_filter_ || response_filter_(*request)) &&
-                resp_msg->proxy_id() != 0) {
-              queue_.Push(std::move(resp_msg));
+            if (!response_held) {
+              QueueResponseIfAllowed(*request, std::move(resp_msg));
             }
             if (checkpoint_manager_) {
               checkpoint_manager_->AddCommitData(std::move(request));
@@ -317,6 +338,131 @@ void MessageManager::SetResponseFilter(
   response_filter_ = std::move(filter);
 }
 
+void MessageManager::SetPostExecuteHook(PostExecuteHook hook) {
+  // Optional hook used by sharded 3PC/POE to create an execution proof after
+  // the executor has produced the response. Unset by default for all existing
+  // PBFT, flat 3PC, and sharded 3PC/PBFT paths.
+  post_execute_hook_ = std::move(hook);
+}
+
+void MessageManager::SetResponseHoldPredicate(
+    ResponseHoldPredicate predicate) {
+  // POE installs this predicate so optimistic execution does not immediately
+  // reach the client. Existing PBFT/3PC modes leave it unset.
+  response_hold_predicate_ = std::move(predicate);
+}
+
+int MessageManager::ReleaseHeldResponse(uint64_t seq,
+                                        const std::string& hash) {
+  HeldResponse held_response;
+  bool has_response = false;
+  HeldResponseKey key(seq, hash);
+  {
+    std::lock_guard<std::mutex> lk(held_response_mutex_);
+    auto it = held_responses_.find(key);
+    if (it == held_responses_.end()) {
+      if (rollback_dropped_held_responses_.find(key) !=
+          rollback_dropped_held_responses_.end()) {
+        // Rollback already discarded this response, so a delayed cert should
+        // not recreate the release-before-hold race.
+        return 0;
+      }
+      // Cert-before-execution race: remember the release so the later hold
+      // point can queue the response immediately.
+      released_before_hold_.insert(key);
+      return 0;
+    }
+    held_response = it->second;
+    held_responses_.erase(it);
+    released_before_hold_.erase(key);
+    has_response = true;
+  }
+
+  if (has_response) {
+    QueueResponseIfAllowed(
+        held_response.request,
+        std::make_unique<BatchUserResponse>(held_response.response));
+  }
+  return 0;
+}
+
+int MessageManager::DropHeldResponse(uint64_t seq, const std::string& hash) {
+  HeldResponseKey key(seq, hash);
+  std::lock_guard<std::mutex> lk(held_response_mutex_);
+  held_responses_.erase(key);
+  released_before_hold_.erase(key);
+  rollback_dropped_held_responses_.insert(key);
+  return 0;
+}
+
+int MessageManager::DropHeldResponsesAfter(uint64_t checkpoint_seq) {
+  // Rollback invalidates optimistic POE work after checkpoint_seq. Drop both
+  // responses already held and early releases for responses not yet held.
+  int dropped = 0;
+  std::lock_guard<std::mutex> lk(held_response_mutex_);
+  auto held_it = held_responses_.begin();
+  while (held_it != held_responses_.end()) {
+    if (held_it->first.first > checkpoint_seq) {
+      rollback_dropped_held_responses_.insert(held_it->first);
+      held_it = held_responses_.erase(held_it);
+      dropped++;
+    } else {
+      ++held_it;
+    }
+  }
+  auto released_it = released_before_hold_.begin();
+  while (released_it != released_before_hold_.end()) {
+    if (released_it->first > checkpoint_seq) {
+      rollback_dropped_held_responses_.insert(*released_it);
+      released_it = released_before_hold_.erase(released_it);
+      dropped++;
+    } else {
+      ++released_it;
+    }
+  }
+  return dropped;
+}
+
+uint64_t MessageManager::GetStableCheckpoint() const {
+  return checkpoint_manager_ == nullptr
+             ? 0
+             : checkpoint_manager_->GetStableCheckpoint();
+}
+
+int MessageManager::RollbackToCheckpoint(uint64_t checkpoint_seq) {
+  LOG(ERROR) << "message manager rollback to checkpoint:" << checkpoint_seq;
+  DropHeldResponsesAfter(checkpoint_seq);
+
+  // Restore application/executor state first, then align ordering metadata so
+  // the next accepted transaction starts at checkpoint_seq + 1.
+  int ret = transaction_executor_ == nullptr
+                ? -2
+                : transaction_executor_->RollbackToCheckpoint(checkpoint_seq);
+
+  const uint64_t next_seq = checkpoint_seq + 1;
+  SetNextSeq(next_seq);
+  if (checkpoint_manager_ != nullptr) {
+    SetHighestPreparedSeq(next_seq);
+    checkpoint_manager_->SetLastCommit(checkpoint_seq);
+  }
+  if (collector_pool_ != nullptr) {
+    collector_pool_->Reset(next_seq);
+  }
+  return ret;
+}
+
+void MessageManager::QueueResponseIfAllowed(
+    const Request& request, std::unique_ptr<BatchUserResponse> response) {
+  if (response == nullptr) {
+    return;
+  }
+  if (transaction_executor_->NeedResponse() &&
+      (!response_filter_ || response_filter_(request)) &&
+      response->proxy_id() != 0) {
+    queue_.Push(std::move(response));
+  }
+}
+
 void MessageManager::SendResponse(std::unique_ptr<Request> request) {
   std::unique_ptr<BatchUserResponse> response =
       std::make_unique<BatchUserResponse>();
@@ -329,11 +475,7 @@ void MessageManager::SendResponse(std::unique_ptr<Request> request) {
   response->set_primary_id(GetCurrentPrimary());
   // Apply the same filter to direct response generation, such as duplicate
   // request handling, so non-coordinator shards cannot reply through this path.
-  if (transaction_executor_->NeedResponse() &&
-      (!response_filter_ || response_filter_(*request)) &&
-      response->proxy_id() != 0) {
-    queue_.Push(std::move(response));
-  }
+  QueueResponseIfAllowed(*request, std::move(response));
 }
 
 LockFreeCollectorPool* MessageManager::GetCollectorPool() {

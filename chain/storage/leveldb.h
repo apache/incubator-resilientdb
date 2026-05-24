@@ -80,6 +80,10 @@ class ResLevelDB : public Storage {
 
   virtual int SetLastCheckpoint(uint64_t ckpt);
 
+  // Restores persisted KV ValueHistory records to checkpoint_seq. This is the
+  // durable counterpart to MemoryDB rollback for the sharded 3PC/POE path.
+  int RollbackToCheckpoint(uint64_t checkpoint_seq) override;
+
  private:
   void CreateDB(const std::string& path);
   uint64_t GetLastCheckpointInternal();

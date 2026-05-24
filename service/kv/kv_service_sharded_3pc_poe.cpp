@@ -1,0 +1,95 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+#include <glog/logging.h>
+
+#include "chain/storage/memory_db.h"
+#include "executor/kv/kv_executor.h"
+#include "platform/config/resdb_config_utils.h"
+#include "platform/consensus/ordering/sharded_3pc/consensus_manager_sharded_3pc_poe.h"
+#include "platform/statistic/stats.h"
+#include "service/utils/server_factory.h"
+#ifdef ENABLE_LEVELDB
+#include "chain/storage/leveldb.h"
+#endif
+
+using namespace resdb;
+using namespace resdb::storage;
+
+// POE service entrypoint mirrors kv_service_sharded_3pc, but swaps in the
+// ConsensusManagerSharded3PCPOE manager so the global 3PC path hands off to
+// local POE instead of local PBFT.
+void SignalHandler(int sig_num) {
+  LOG(ERROR) << " signal:" << sig_num << " call"
+             << " ======================";
+}
+
+void ShowUsage() {
+  printf(
+      "<server_config> <shard_config> <private_key> <cert_file> "
+      "[logging_dir]\n");
+}
+
+std::unique_ptr<Storage> NewStorage(const std::string& db_path,
+                                    const ResConfigData& config_data) {
+#ifdef ENABLE_LEVELDB
+  LOG(INFO) << "use leveldb storage.";
+  return NewResLevelDB(db_path, config_data.leveldb_info());
+#endif
+  LOG(INFO) << "use memory storage.";
+  return NewMemoryDB();
+}
+
+int main(int argc, char** argv) {
+  if (argc < 5) {
+    ShowUsage();
+    exit(0);
+  }
+  google::InitGoogleLogging(argv[0]);
+  FLAGS_minloglevel = 0;
+  signal(SIGINT, SignalHandler);
+  signal(SIGKILL, SignalHandler);
+
+  char* config_file = argv[1];
+  char* shard_config_file = argv[2];
+  char* private_key_file = argv[3];
+  char* cert_file = argv[4];
+
+  if (argc == 6) {
+    std::string grafana_port = argv[5];
+    std::string grafana_address = "0.0.0.0:" + grafana_port;
+
+    auto monitor_port = Stats::GetGlobalStats(5);
+    monitor_port->SetPrometheus(grafana_address);
+    LOG(ERROR) << "monitoring port:" << grafana_address;
+  }
+
+  std::unique_ptr<ResDBConfig> config =
+      GenerateResDBConfig(config_file, private_key_file, cert_file);
+  ResConfigData config_data = config->GetConfigData();
+
+  std::string db_path = std::to_string(config->GetSelfInfo().port()) + "_db/";
+  LOG(ERROR) << "db path:" << db_path;
+
+  auto server =
+      CustomGenerateResDBServerWithShardConfig<ConsensusManagerSharded3PCPOE>(
+          config_file, shard_config_file, private_key_file, cert_file,
+          std::make_unique<KVExecutor>(NewStorage(db_path, config_data)));
+  server->Run();
+}

@@ -73,8 +73,7 @@ message Request {
         // 3PC/POE path: global 3PC still commits between shard leaders, then
         // each shard leader starts local POE with TYPE_POE_EXECUTE.
         TYPE_POE_EXECUTE = 29;
-        // Replica proof produced after local optimistic execution. Added for
-        // later phases; Phase 2 only routes and validates TYPE_POE_EXECUTE.
+        // Replica proof produced after local optimistic execution completes.
         TYPE_POE_PROOF = 30;
         // Leader certificate once enough matching local proofs are collected.
         TYPE_POE_CERT = 31;

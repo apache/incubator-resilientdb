@@ -68,6 +68,7 @@ cc_library(
     deps = [
         ":shard_communicator",
         ":shard_metadata",
+        "//common/crypto:signature_verifier",
         "//platform/consensus/ordering/pbft:commitment",
     ],
 )
@@ -179,8 +180,9 @@ cc_test(
         ":shard_communicator",
         ":shard_metadata",
         ":shard_poe_commitment",
-        "//common/crypto:mock_signature_verifier",
+        "//common/crypto:signature_verifier",
         "//common/test:test_main",
+        "//executor/common:transaction_manager",
         "//platform/config:resdb_config_utils",
         "//platform/consensus/execution:system_info",
         "//platform/consensus/ordering/pbft:checkpoint_manager",

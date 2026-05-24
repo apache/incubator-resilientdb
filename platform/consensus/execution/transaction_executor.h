@@ -54,6 +54,9 @@ class TransactionExecutor {
   // The max seq S that can be executed (have received all the seq before S).
   uint64_t GetMaxPendingExecutedSeq();
   void SetPendingExecutedSeq(int seq);
+  // Restore executor-visible state after a speculative POE rollback. This
+  // resets sequence tracking and clears queued/cached work after checkpoint_seq.
+  int RollbackToCheckpoint(uint64_t checkpoint_seq);
 
   // When a transaction is ready to be executed (have received all the seq
   // before Txn) PreExecute func will be called.

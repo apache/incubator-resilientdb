@@ -83,10 +83,16 @@ class MemoryDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
 
+  // Trims in-memory sequence histories so reads return the state at
+  // checkpoint_seq. Keys created only after the checkpoint are removed.
+  int RollbackToCheckpoint(uint64_t checkpoint_seq) override;
+
  private:
   std::unordered_map<std::string, std::string> kv_map_;
   std::unordered_map<std::string, std::list<std::pair<std::string, int>>>
       kv_map_with_v_;
+  // Per-key append-only value history used by GetValueWithSeq and by POE
+  // rollback to discard speculative writes after a checkpoint.
   std::unordered_map<std::string, std::list<std::pair<std::string, uint64_t>>>
       kv_map_with_seq_;
 };

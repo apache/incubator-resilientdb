@@ -58,6 +58,9 @@ class MockStorage : public Storage {
   MOCK_METHOD(ValuesSeqType, GetAllItemsWithSeq, (), (override));
 
   MOCK_METHOD(bool, Flush, (), (override));
+  // Mock the optional rollback hook so POE rollback tests can verify executor
+  // and manager behavior without depending on a concrete KV engine.
+  MOCK_METHOD(int, RollbackToCheckpoint, (uint64_t checkpoint_seq), (override));
 };
 
 }  // namespace resdb
