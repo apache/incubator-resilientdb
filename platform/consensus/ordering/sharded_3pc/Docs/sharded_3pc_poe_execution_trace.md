@@ -22,7 +22,7 @@ client / proxy
   -> coordinator-shard-only response release
 ```
 
-The comparison baseline remains available:
+The PBFT/POE comparison:
 
 - `kv_service_sharded_3pc` runs global 3PC plus local PBFT.
 - `kv_service_sharded_3pc_poe` runs global 3PC plus local POE.
@@ -225,8 +225,8 @@ the local shard.
 Each replica validates `TYPE_POE_EXECUTE` in:
 
 ```cpp
-ProcessPOEExecuteMsg(...)
-ValidatePOEExecuteRequest(...)
+ShardPOECommitment::ProcessPOEExecuteMsg(...)
+ShardPOECommitment::ValidatePOEExecuteRequest(...)
 ```
 
 Validation checks the signed context, sender identity, local shard target, POE
@@ -243,7 +243,7 @@ POE proofs are produced through the generic post-execute hook added to
 `MessageManager`:
 
 ```cpp
-SetPostExecuteHook(...)
+MessageManager::SetPostExecuteHook(...)
 ```
 
 `ShardPOECommitment` installs this hook in its constructor. After local
@@ -251,6 +251,8 @@ execution produces a `BatchUserResponse`, the hook calls:
 
 ```cpp
 ShardPOECommitment::SendPOEProof(...)
+ShardPOECommitment::BuildPOEProofDigest(...)
+ShardPOECommitment::BuildPOEResultDigest(...)
 ```
 
 The proof digest binds:
@@ -271,9 +273,9 @@ payload digest is stored in `data`, the full proof digest is stored in
 Only the local shard leader collects proofs. Proof handling happens in:
 
 ```cpp
-ProcessPOEProofMsg(...)
-ValidatePOEProofRequest(...)
-BuildPOECertRequest(...)
+ShardPOECommitment::ProcessPOEProofMsg(...)
+ShardPOECommitment::ValidatePOEProofRequest(...)
+ShardPOECommitment::BuildPOECertRequest(...)
 ```
 
 Proofs are grouped by transaction and proof digest. Duplicate proofs from the
@@ -298,8 +300,8 @@ The certificate carries:
 Replicas validate certificates in:
 
 ```cpp
-ProcessPOECertMsg(...)
-ValidatePOECertRequest(...)
+ShardPOECommitment::ProcessPOECertMsg(...)
+ShardPOECommitment::ValidatePOECertRequest(...)
 ```
 
 After a valid cert, the replica releases the held response:
@@ -331,10 +333,10 @@ platform/consensus/ordering/pbft/message_manager.{h,cpp}
 
 The important hooks are:
 
-- `SetResponseHoldPredicate(...)`
-- `ReleaseHeldResponse(...)`
-- `DropHeldResponse(...)`
-- `DropHeldResponsesAfter(...)`
+- `MessageManager::SetResponseHoldPredicate(...)`
+- `MessageManager::ReleaseHeldResponse(...)`
+- `MessageManager::DropHeldResponse(...)`
+- `MessageManager::DropHeldResponsesAfter(...)`
 
 `ShardPOECommitment` installs a hold predicate for local POE executes:
 
@@ -366,15 +368,15 @@ TYPE_POE_ROLLBACK
 The local shard leader builds rollback messages with:
 
 ```cpp
-BuildPOERollbackRequest(...)
-BroadcastPOERollback(...)
+ShardPOECommitment::BuildPOERollbackRequest(...)
+ShardPOECommitment::BroadcastPOERollback(...)
 ```
 
 Followers validate rollback messages in:
 
 ```cpp
-ValidatePOERollbackRequest(...)
-ProcessPOERollbackMsg(...)
+ShardPOECommitment::ValidatePOERollbackRequest(...)
+ShardPOECommitment::ProcessPOERollbackMsg(...)
 ```
 
 The rollback request uses `request.seq()` as the checkpoint boundary. The
@@ -554,3 +556,16 @@ The intended comparison is:
   client responses;
 - only the POE mode uses response holding, POE certificates, and rollback to
   checkpoint.
+
+## Current Limitations
+
+Global rollback agreement has not been implemented. The current rollback path is
+local to one shard, so a shard-level rollback after other shards have continued
+could create cross-shard consistency problems.
+
+Proof timeout handling has also not been implemented. If enough matching
+`TYPE_POE_PROOF` messages never arrive, there is no timer-driven rollback or
+recovery path yet.
+
+These pieces are left out for now because the assignment assumes failures will
+not occur during the tested execution path.

@@ -1,46 +1,218 @@
-Running ResilientDB in Sharded 3PC Mode
+Running ResilientDB In Sharded 3PC Modes
 
-Build
-bazel build //platform/consensus/ordering/sharded:consensus_manager_sharded_3pc
-bazel build //service/kv:kv_service_sharded_3pc
+This file gives local/Docker commands for the two sharded modes:
+
+1. Sharded 3PC with local PBFT
+2. Sharded 3PC with local POE
+
+Both modes use the same sharded config and certificate generation. The default
+topology is 4 shards, 4 replicas per shard, and 1 client/proxy node.
+
+
+Common Setup
+============
+
+Choose topology values. The number of server replicas is:
+
+  replicas = shards * replicas_per_shard
+
+For the default topology:
+
+  shards = 4
+  replicas_per_shard = 4
+  replicas = 16
+  clients = 1
+
+
+Generate Keys And Certs
+-----------------------
+
+The credential generator takes the total replica count, not the shard count.
+For the default 4 x 4 topology:
+
+./service/tools/kv/server_tools/generate_keys_and_certs.sh \
+  --replicas 16 \
+  --clients 1
+
+For a different topology, compute replicas first. For example, 2 shards with 4
+replicas per shard means --replicas 8.
+
+
+Generate Sharded Config
+-----------------------
+
+./service/tools/kv/server_tools/generate_config_sharded.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1
+
+This generates:
+
+  service/tools/config/server/server.config
+  service/tools/config/interface/service.config
+  service/tools/config/shard/shard.config
+
+The shard config assigns contiguous server node ids to shards and uses the first
+replica in each shard as the shard leader.
+
+
+Build Shared Client Tool
+------------------------
+
 bazel build //service/tools/kv/api_tools:kv_service_tools
 
-Keys and Certs
-./service/tools/kv/server_tools/generate_keys_and_certs.sh
 
-Config 
-./service/tools/kv/server_tools/generate_config_sharded_3pc.sh
-    -- shards N               Number of shards. Default: 4
-    -- replicas-per-shard N   Number of replicas per shard. Default: 4
-    -- clients N              Number of client/proxy nodes to configure. Default: 1
+Mode 1: Sharded 3PC With Local PBFT
+===================================
 
-    (Also calls generate_config.sh)
+Build
+-----
 
-Run Sharded 3PC Script
-./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh
-    -- shards N              Number of shards. Default: 4
-    -- replicas-per-shard N  Number of replicas per shard. Default: 4
-    -- clients N             Number of client/proxy nodes to launch. Default: 1
+bazel build //platform/consensus/ordering/sharded_3pc:consensus_manager_sharded_3pc
+bazel build //service/kv:kv_service_sharded_3pc
 
-Check For Live Processes
+
+Run
+---
+
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1
+
+If the binary is already built:
+
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1 \
+  --no-build
+
+
+Check Live Processes
+--------------------
+
 ps aux | grep '[k]v_service_sharded_3pc'
-grep -R "3PC recovery is done\\|recv 3PC\\|db path" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
-grep -R "3pc_prepare\\|3pc_precommit\\|3pc_global_commit\\|TYPE_3PC\\|recv 3PC" logs/3pc /tmp/*kv_service_sharded_3pc* 2>/dev/null
 
-Kill
-killall -9 kv_service kv_service_3pc kv_service_sharded_3pc
 
-Send Requests
+Inspect Logs
+------------
+
+Global 3PC and local PBFT traces:
+
+grep -E "sharded_3pc_trace|shard_pbft_trace|sharded_handoff" server*.log
+
+Shard leader logs for the default topology:
+
+  server0.log   node 1
+  server4.log   node 5
+  server8.log   node 9
+  server12.log  node 13
+
+
+Stop
+----
+
+killall -9 kv_service kv_service_3pc kv_service_sharded_3pc kv_service_sharded_3pc_poe
+
+
+Mode 2: Sharded 3PC With Local POE
+==================================
+
+Build
+-----
+
+bazel build //platform/consensus/ordering/sharded_3pc:consensus_manager_sharded_3pc_poe
+bazel build //service/kv:kv_service_sharded_3pc_poe
+
+
+Run
+---
+
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc_poe.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1
+
+If the binary is already built:
+
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc_poe.sh \
+  --shards 4 \
+  --replicas-per-shard 4 \
+  --clients 1 \
+  --no-build
+
+
+Check Live Processes
+--------------------
+
+ps aux | grep '[k]v_service_sharded_3pc_poe'
+
+
+Inspect Logs
+------------
+
+Global 3PC, local POE, POE certificate, and rollback traces:
+
+grep -E "sharded_3pc_trace|shard_poe_trace|sharded_poe_handoff|POE cert|POE rollback" server*.log
+
+Shard leader logs for the default topology:
+
+  server0.log   node 1
+  server4.log   node 5
+  server8.log   node 9
+  server12.log  node 13
+
+
+Stop
+----
+
+killall -9 kv_service kv_service_3pc kv_service_sharded_3pc kv_service_sharded_3pc_poe
+
+
+Send KV Requests
+================
+
+The same client tool is used for both sharded modes. It sends to the client
+node listed in:
+
+  service/tools/config/interface/service.config
+
 
 Set
+---
+
 bazel-bin/service/tools/kv/api_tools/kv_service_tools \
   --config service/tools/config/interface/service.config \
   --cmd set \
-  --key test_3pc_key \
-  --value hello_3pc
+  --key test_sharded_key \
+  --value hello_sharded
+
 
 Get
+---
+
 bazel-bin/service/tools/kv/api_tools/kv_service_tools \
   --config service/tools/config/interface/service.config \
   --cmd get \
-  --key test_3pc_key
+  --key test_sharded_key
+
+
+Quick Default Run: PBFT Local Mode
+==================================
+
+./service/tools/kv/server_tools/generate_keys_and_certs.sh --replicas 16 --clients 1
+./service/tools/kv/server_tools/generate_config_sharded.sh --shards 4 --replicas-per-shard 4 --clients 1
+bazel build //service/tools/kv/api_tools:kv_service_tools
+bazel build //service/kv:kv_service_sharded_3pc
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc.sh --shards 4 --replicas-per-shard 4 --clients 1 --no-build
+
+
+Quick Default Run: POE Local Mode
+=================================
+
+./service/tools/kv/server_tools/generate_keys_and_certs.sh --replicas 16 --clients 1
+./service/tools/kv/server_tools/generate_config_sharded.sh --shards 4 --replicas-per-shard 4 --clients 1
+bazel build //service/tools/kv/api_tools:kv_service_tools
+bazel build //service/kv:kv_service_sharded_3pc_poe
+./service/tools/kv/server_tools/start_kv_service_sharded_3pc_poe.sh --shards 4 --replicas-per-shard 4 --clients 1 --no-build
