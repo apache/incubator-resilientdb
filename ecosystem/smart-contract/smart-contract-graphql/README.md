@@ -95,6 +95,8 @@ npm start
 
 The server will start running on port  `8400`. You can access the GraphQL API at  `http://localhost:8400/graphql`.
 
+**Public endpoint (no local server required):** The Smart Contract GraphQL API is also available at **https://contract.resilientdb.com/graphql**. Use this URL to call the API from your app or scripts without running the server locally.
+
 ## GraphQL API
 
 The GraphQL API supports the following mutations to interact with smart contracts.

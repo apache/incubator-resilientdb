@@ -42,3 +42,14 @@ cc_proto_library(
     name = "leveldb_config_cc_proto",
     deps = [":leveldb_config_proto"],
 )
+
+proto_library(
+    name = "duckdb_config_proto",
+    srcs = ["duckdb_config.proto"],
+)
+
+cc_proto_library(
+    name = "duckdb_config_cc_proto",
+    deps = [":duckdb_config_proto"],
+)
+
