@@ -55,6 +55,8 @@ export default function ResilientDBMonitor() {
   const [alertConfig,    setAlertConfig]    = useState(null);
   const [alertEmail,     setAlertEmail]     = useState("");
   const [alertThresholds, setAlertThresholds] = useState([{ metric: "latency", threshold: 10 }]);
+  const [baselinePeriod, setBaselinePeriod] = useState("6months");
+  const [baselineAvailability, setBaselineAvailability] = useState(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const rangeInitialized = useRef(false);
   const dropdownRef      = useRef(null);
@@ -63,20 +65,26 @@ export default function ResilientDBMonitor() {
     setLoading(true);
     setError(null);
     try {
-      const [resultsRes, baselineRes, scheduleRes] = await Promise.all([
+      const [resultsRes, baselineRes, scheduleRes, availabilityRes] = await Promise.all([
         fetch(`${API_URL}/api/results?limit=200`),
         fetch(`${API_URL}/api/results/baseline`),
         fetch(`${API_URL}/api/schedule`),
+        fetch(`${API_URL}/api/results/baseline-availability`),
       ]);
       const resultsJson  = await resultsRes.json();
       const baselineJson = await baselineRes.json();
       const scheduleJson = await scheduleRes.json();
-      if (resultsJson.success)                        setRecords(resultsJson.data);
-      if (baselineJson.success && baselineJson.data)  setApiBaseline(baselineJson.data);
+      const availabilityJson = await availabilityRes.json();
+
+      if (resultsJson.success) setRecords(resultsJson.data);
+      if (baselineJson.success && baselineJson.data) setApiBaseline(baselineJson.data);
+      if (availabilityJson.success) setBaselineAvailability(availabilityJson.data);
+
       if (scheduleJson.success) {
         setSchedule(scheduleJson.interval ?? null);
         setScheduleInput(scheduleJson.interval ?? "off");
         setAlertConfig(scheduleJson.alertConfig ?? null);
+        setBaselinePeriod(scheduleJson.baselinePeriod ?? "6months");
         if (scheduleJson.alertConfig) {
           setAlertEmail(scheduleJson.alertConfig.email || "");
           // Convert old object format to new array format
@@ -110,6 +118,16 @@ export default function ResilientDBMonitor() {
     return JSON.stringify(currentConfig) !== JSON.stringify(alertConfig);
   }
 
+  // Check if schedule configuration has changed (including baseline period)
+  function hasScheduleChanged() {
+    if (scheduleInput !== (schedule || "off")) return true;
+    if (hasAlertConfigChanged()) return true;
+    // Check baseline period change
+    const currentBaselinePeriod = baselinePeriod || "6months";
+    const storedBaselinePeriod = schedule ? (baselinePeriod || "6months") : "6months";
+    return currentBaselinePeriod !== storedBaselinePeriod;
+  }
+
   async function saveSchedule() {
     setScheduleSaving(true);
     try {
@@ -131,7 +149,8 @@ export default function ResilientDBMonitor() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               interval: scheduleInput,
-              alertConfig: alertConfigPayload
+              alertConfig: alertConfigPayload,
+              baselinePeriod: baselinePeriod
             }),
           });
       const j = await res.json();
@@ -139,6 +158,7 @@ export default function ResilientDBMonitor() {
         setSchedule(j.interval ?? null);
         setScheduleInput(j.interval ?? "off");
         setAlertConfig(j.alertConfig ?? null);
+        setBaselinePeriod(j.baselinePeriod ?? "6months");
         setScheduleModalOpen(false);
       }
     } finally {
@@ -592,6 +612,9 @@ export default function ResilientDBMonitor() {
         setAlertEmail={setAlertEmail}
         alertThresholds={alertThresholds}
         setAlertThresholds={setAlertThresholds}
+        baselinePeriod={baselinePeriod}
+        setBaselinePeriod={setBaselinePeriod}
+        baselineAvailability={baselineAvailability}
         onSave={saveSchedule}
         onDelete={deleteSchedule}
         saving={scheduleSaving}

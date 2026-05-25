@@ -27,7 +27,7 @@ app.use("/api/schedule", scheduleRouter);
 
 app.post("/api/run-test", (req, res) => {
   const scriptPath = path.join(__dirname, "..", "perf_test.sh");
-  const runs       = parseInt(req.body?.runs) || 500;
+  const runs       = parseInt(req.body?.runs) || 100;
   const version    = req.body?.version || "";
 
   const child = spawn("bash", [scriptPath, String(runs), version], {

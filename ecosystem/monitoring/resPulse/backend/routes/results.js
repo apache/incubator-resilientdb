@@ -25,15 +25,39 @@ router.get("/", async (req, res) => {
 });
 
 // GET /baseline
-// Computes and returns baseline statistics from the last 6 months of performance data.
+// Computes and returns baseline statistics from performance data for the specified period.
+// Query parameter: period ("1week"|"1month"|"3months"|"6months"|"1year", defaults to "6months")
 // Calculates mean, standard deviation, and count for latency, throughput, success rate, and consensus time.
 // Used by the analyzer to detect performance regressions against historical trends.
 router.get("/baseline", async (req, res) => {
   try {
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const results = await PerfResult.find({ timestamp: { $gte: sixMonthsAgo } }).lean();
-    if (!results.length) return res.json({ success: true, data: null, message: "Not enough data for baseline" });
+    const { period = "6months" } = req.query;
+    const validPeriods = ["1week", "1month", "3months", "6months", "1year"];
+    if (!validPeriods.includes(period)) {
+      return res.status(400).json({ success: false, error: `Invalid period. Valid values: ${validPeriods.join(", ")}` });
+    }
+
+    const cutoffDate = new Date();
+    switch(period) {
+      case "1week":
+        cutoffDate.setDate(cutoffDate.getDate() - 7);
+        break;
+      case "1month":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+        break;
+      case "3months":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+        break;
+      case "6months":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 6);
+        break;
+      case "1year":
+        cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+        break;
+    }
+
+    const results = await PerfResult.find({ timestamp: { $gte: cutoffDate } }).lean();
+    if (!results.length) return res.json({ success: true, data: null, message: `Not enough data for ${period} baseline` });
     function avg(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
     function stddev(arr, mean) { return Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length); }
     const baseline = {};
@@ -48,7 +72,50 @@ router.get("/baseline", async (req, res) => {
       const mean = avg(cvals);
       baseline.consensus_time_ms = { mean, stddev: stddev(cvals, mean), count: cvals.length };
     }
-    res.json({ success: true, data: baseline, period_start: sixMonthsAgo, count: results.length });
+    res.json({ success: true, data: baseline, period_start: cutoffDate, period: period, count: results.length });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /baseline-availability
+// Checks data availability for different baseline periods to help disable unavailable options in UI
+// Returns object with each period and whether it has sufficient data (>=3 results)
+router.get("/baseline-availability", async (req, res) => {
+  try {
+    const periods = ["1week", "1month", "3months", "6months", "1year"];
+    const availability = {};
+
+    const now = new Date();
+    for (const period of periods) {
+      const cutoffDate = new Date(now);
+      switch(period) {
+        case "1week":
+          cutoffDate.setDate(cutoffDate.getDate() - 7);
+          break;
+        case "1month":
+          cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+          break;
+        case "3months":
+          cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+          break;
+        case "6months":
+          cutoffDate.setMonth(cutoffDate.getMonth() - 6);
+          break;
+        case "1year":
+          cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+          break;
+      }
+
+      const count = await PerfResult.countDocuments({ timestamp: { $gte: cutoffDate } });
+      availability[period] = {
+        available: count >= 3,
+        count: count,
+        cutoffDate: cutoffDate
+      };
+    }
+
+    res.json({ success: true, data: availability });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -323,6 +323,7 @@ This automated approach ensures that performance regressions are caught early in
 
 - **Custom metrics integration** for application-specific monitoring
 - **Enhanced AI analysis** with multi-model comparison capabilities
+- **Multi-Configuration Scheduled Testing** schedule multiple independent test runs simultaneously, each with its own parameters, different request counts, different endpoints, different workload profiles, or different alert thresholds.
 
 
 ## Contributing and Community

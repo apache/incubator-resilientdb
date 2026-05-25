@@ -9,6 +9,9 @@ export default function ScheduleModal({
   setAlertEmail,
   alertThresholds,
   setAlertThresholds,
+  baselinePeriod,
+  setBaselinePeriod,
+  baselineAvailability,
   onSave,
   onDelete,
   saving,
@@ -171,6 +174,65 @@ export default function ScheduleModal({
             )}
           </div>
         </div>
+
+        {/* Baseline Period Section */}
+        {scheduleInput !== "off" && (
+          <div style={{ marginBottom: "2rem" }}>
+            <h3 style={{
+              margin: "0 0 1rem 0",
+              fontSize: 12,
+              color: C.text,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              fontWeight: 600
+            }}>
+              Baseline Comparison Period
+            </h3>
+
+            <select
+              value={baselinePeriod}
+              onChange={e => setBaselinePeriod(e.target.value)}
+              style={{
+                background: C.bg3,
+                border: `1px solid ${C.border2}`,
+                color: C.text,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 12,
+                padding: "10px 12px",
+                borderRadius: 6,
+                cursor: "pointer",
+                width: "100%"
+              }}
+            >
+              <option value="1week" disabled={!baselineAvailability?.["1week"]?.available}>
+                Last 1 Week {!baselineAvailability?.["1week"]?.available ? "(Insufficient Data)" : `(${baselineAvailability?.["1week"]?.count || 0} results)`}
+              </option>
+              <option value="1month" disabled={!baselineAvailability?.["1month"]?.available}>
+                Last 1 Month {!baselineAvailability?.["1month"]?.available ? "(Insufficient Data)" : `(${baselineAvailability?.["1month"]?.count || 0} results)`}
+              </option>
+              <option value="3months" disabled={!baselineAvailability?.["3months"]?.available}>
+                Last 3 Months {!baselineAvailability?.["3months"]?.available ? "(Insufficient Data)" : `(${baselineAvailability?.["3months"]?.count || 0} results)`}
+              </option>
+              <option value="6months" disabled={!baselineAvailability?.["6months"]?.available}>
+                Last 6 Months {!baselineAvailability?.["6months"]?.available ? "(Insufficient Data)" : `(${baselineAvailability?.["6months"]?.count || 0} results)`}
+              </option>
+              <option value="1year" disabled={!baselineAvailability?.["1year"]?.available}>
+                Last 1 Year {!baselineAvailability?.["1year"]?.available ? "(Insufficient Data)" : `(${baselineAvailability?.["1year"]?.count || 0} results)`}
+              </option>
+            </select>
+
+            <div style={{
+              fontSize: 10,
+              color: C.text3,
+              marginTop: 8,
+              letterSpacing: 0.5,
+              lineHeight: 1.4
+            }}>
+              Performance tests will be compared against results from this time period.
+              At least 3 historical results are required for meaningful baseline comparison.
+            </div>
+          </div>
+        )}
 
         {/* Alert Section */}
         {scheduleInput !== "off" && (

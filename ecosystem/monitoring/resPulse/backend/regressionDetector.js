@@ -11,13 +11,15 @@ const METRICS = [
  * Detects performance regressions by comparing the latest result to baseline
  * @param {Object} alertConfig - Configuration containing thresholds for each metric
  * @param {Object} latestResult - The most recent test result
+ * @param {String} baselinePeriod - Period to use for baseline calculation ("1week"|"1month"|"3months"|"6months"|"1year")
  * @returns {Array} Array of detected regressions
  */
-async function detectRegressions(alertConfig, latestResult) {
+async function detectRegressions(alertConfig, latestResult, baselinePeriod = "6months") {
   console.log("[regression] detectRegressions called with:", {
     hasAlertConfig: !!alertConfig,
     thresholds: alertConfig?.thresholds,
-    resultTimestamp: latestResult?.timestamp
+    resultTimestamp: latestResult?.timestamp,
+    baselinePeriod: baselinePeriod
   });
 
   if (!alertConfig || !alertConfig.thresholds) {
@@ -26,8 +28,8 @@ async function detectRegressions(alertConfig, latestResult) {
   }
 
   try {
-    // Get baseline data (average of last 10 results before the current one)
-    const baseline = await calculateBaseline(latestResult.timestamp);
+    // Get baseline data using the specified period
+    const baseline = await calculateBaseline(latestResult.timestamp, baselinePeriod);
     if (!baseline) {
       console.log("[regression] No baseline data available for comparison");
       return [];
@@ -75,15 +77,45 @@ async function detectRegressions(alertConfig, latestResult) {
 }
 
 /**
- * Calculate baseline metrics from recent test results
+ * Calculate baseline metrics from test results in the specified time period
+ * @param {Date} beforeTimestamp - Only consider results before this timestamp
+ * @param {String} baselinePeriod - Time period to consider for baseline
  */
-async function calculateBaseline(beforeTimestamp) {
+async function calculateBaseline(beforeTimestamp, baselinePeriod = "6months") {
   try {
+    // Convert baseline period to date range
+    const cutoffDate = new Date(beforeTimestamp);
+    switch(baselinePeriod) {
+      case "1week":
+        cutoffDate.setDate(cutoffDate.getDate() - 7);
+        break;
+      case "1month":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+        break;
+      case "3months":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+        break;
+      case "6months":
+        cutoffDate.setMonth(cutoffDate.getMonth() - 6);
+        break;
+      case "1year":
+        cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+        break;
+      default:
+        cutoffDate.setMonth(cutoffDate.getMonth() - 6); // Default to 6 months
+    }
+
     const recentResults = await PerfResult
-      .find({ timestamp: { $lt: beforeTimestamp } })
+      .find({
+        timestamp: {
+          $lt: beforeTimestamp,
+          $gte: cutoffDate
+        }
+      })
       .sort({ timestamp: -1 })
-      .limit(10)
       .lean();
+
+    console.log(`[regression] Found ${recentResults.length} results in ${baselinePeriod} baseline period`);
 
     if (recentResults.length < 3) {
       return null; // Need at least 3 results for a meaningful baseline
