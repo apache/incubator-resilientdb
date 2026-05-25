@@ -110,10 +110,26 @@ Our alerting system provides proactive monitoring with:
 
 #### Automated Regression Detection
 The system automatically:
-- **Compares current performance** against historical baselines
+- **Compares current performance** against configurable historical baselines
 - **Detects statistical anomalies** using configurable thresholds
 - **Identifies performance degradation** across multiple metrics simultaneously
 - **Calculates regression severity** based on multiple warning signals
+
+#### Configurable Baseline Periods
+A key innovation in our alerting system is **flexible baseline comparison periods** for scheduled tests. Instead of being locked to a fixed timeframe, users can now choose the most appropriate historical baseline:
+
+- **1 Week**: Ideal for detecting short-term performance changes and immediate impact assessment
+- **1 Month**: Balances recent trends with sufficient statistical stability
+- **3 Months**: Provides robust baseline for quarterly performance evaluation
+- **6 Months**: Default option offering comprehensive long-term trend analysis
+- **1 Year**: Maximum historical context for annual performance reviews
+
+#### Intelligent Data Validation
+The system automatically validates data availability for each baseline period:
+- **Minimum threshold enforcement**: Requires at least 3 historical results for meaningful statistical comparison
+- **Real-time availability checking**: UI dynamically shows available vs. insufficient data periods
+- **Data count indicators**: Displays the exact number of historical results available for each timeframe
+- **Smart defaults**: Automatically selects the most appropriate available period if user's choice lacks sufficient data
 
 #### Flexible Notification System
 Originally built with Resend, we've recently migrated to **Nodemailer** for greater flexibility:
@@ -133,6 +149,8 @@ function createTransporter() {
 
 #### Scheduled Monitoring
 - **Configurable test schedules** (hourly, daily, weekly, monthly)
+- **Flexible baseline comparison periods** (1 week, 1 month, 3 months, 6 months, 1 year)
+- **Intelligent baseline validation** - automatically disables insufficient data periods
 - **Automatic regression detection** after each scheduled test
 - **Email notifications** with detailed performance analysis
 - **Rich HTML reports** showing performance trends and recommendations
@@ -192,7 +210,7 @@ const METRICS = [
 ```
 
 The system:
-- **Calculates dynamic baselines** from recent performance history
+- **Calculates dynamic baselines** from configurable historical periods
 - **Applies configurable thresholds** for each metric type
 - **Considers metric interdependencies** for holistic analysis
 - **Generates severity scores** based on multiple regression signals
@@ -319,12 +337,11 @@ One of the most exciting planned features is automated performance testing trigg
 
 This automated approach ensures that performance regressions are caught early in the development cycle, maintaining ResilientDB's performance standards while enabling rapid development iteration.
 
-## Other Developments
+## Future Developments
 
 - **Custom metrics integration** for application-specific monitoring
 - **Enhanced AI analysis** with multi-model comparison capabilities
 - **Multi-Configuration Scheduled Testing** schedule multiple independent test runs simultaneously, each with its own parameters, different request counts, different endpoints, different workload profiles, or different alert thresholds.
-
 
 ## Contributing and Community
 
