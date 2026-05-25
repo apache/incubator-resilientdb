@@ -24,7 +24,6 @@ RAW_TIMES=""
 echo "Running $RUNS requests..." >&2
 
 for i in $(seq 1 $RUNS); do
-    # echo "Running $i of $RUNS requests..." >&2
   RESULT=$(curl -s -o /dev/null \
     -w "%{http_code} %{time_connect} %{time_pretransfer} %{time_starttransfer} %{time_total}" \
     -X POST \

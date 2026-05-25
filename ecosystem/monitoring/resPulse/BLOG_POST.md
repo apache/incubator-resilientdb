@@ -18,7 +18,7 @@ ResPulse addresses these challenges head-on with a comprehensive solution built 
 
 ResPulse consists of four main components:
 
-![ResPulse Architecture](/assets/images/ResPulse/Architecture.png)
+![ResPulse Architecture](images/Architecture.png)
 *Figure 1: System architecture showing the main components and data flow*
 
 ### 1. Performance Testing Engine (`perf_test.sh`)
@@ -75,7 +75,7 @@ The AI system:
 
 Built with React and Recharts, our dashboard provides:
 
-![ResPulse Dashboard](/assets/images/ResPulse/dashboard.png)
+![ResPulse Dashboard](images/dashboard.png)
 *Figure 2: Main dashboard showing real-time performance metrics and trends*
 
 #### Interactive Visualizations
@@ -89,7 +89,7 @@ Built with React and Recharts, our dashboard provides:
 - **Auto-refresh capabilities** with configurable intervals
 - **Detailed drill-down views** for individual test runs
 - **Performance trend analysis** with statistical summaries
-![Run Analysis](/assets/images/ResPulse/performance_overlay.png)
+![Run Analysis](images/performance_overlay.png)
 *Figure 3: The system's analysis of a test run*
 #### Key Dashboard Components
 
@@ -137,9 +137,9 @@ function createTransporter() {
 - **Email notifications** with detailed performance analysis
 - **Rich HTML reports** showing performance trends and recommendations
 
-![Scheduling Tests and Alert Setup](/assets/images/ResPulse/Alert_Setup.png)
+![Scheduling Tests and Alert Setup](images/Alert_Setup.png)
 *Figure 4: Scheduling Tests and Alert System*
-![Performance Regression Alert Email](/assets/images/ResPulse/example_email.png)
+![Performance Regression Alert Email](images/example_email.png)
 *Figure 5: Automated regression alert with detailed performance metrics*
 
 ## Key Features and Innovations
@@ -175,7 +175,7 @@ The AI system provides:
 - **Optimization suggestions** for consensus parameters
 - **Performance trend interpretation** with actionable insights
 
-![AI Performance Analysis Report](/assets/images/ResPulse/AI_Analysis.png)
+![AI Performance Analysis Report](images/AI_Analysis.png)
 *Figure 6: AI-generated performance analysis with actionable recommendations*
 
 ### 3. Comprehensive Regression Detection
@@ -256,7 +256,7 @@ The system architecture supports growing monitoring needs:
 
 ## Getting Started
 
-Setting up the ResilientDB Performance Monitoring System is straightforward:
+Setting up ResPulse is straightforward:
 
 ### Prerequisites
 - A ResilientDB GraphQL instance running locally. For setup instructions, see the [ResilientDB GraphQL README](https://github.com/apache/incubator-resilientdb-graphql/blob/main/README.md).
@@ -320,14 +320,14 @@ One of the most exciting planned features is automated performance testing trigg
 This automated approach ensures that performance regressions are caught early in the development cycle, maintaining ResilientDB's performance standards while enabling rapid development iteration.
 
 ## Other Developments
-- **Multi-node monitoring** for distributed ResilientDB deployments
+
 - **Custom metrics integration** for application-specific monitoring
 - **Enhanced AI analysis** with multi-model comparison capabilities
-- **Mobile dashboard** for on-the-go monitoring
+
 
 ## Contributing and Community
 
-The ResilientDB Performance Monitoring System is part of the Apache ResilientDB project and welcomes community contributions:
+ResPulse is part of the Apache ResilientDB project and welcomes community contributions:
 
 - **Feature requests** and bug reports via GitHub Issues
 - **Code contributions** through pull requests with performance validation
@@ -336,7 +336,7 @@ The ResilientDB Performance Monitoring System is part of the Apache ResilientDB 
 
 ## Conclusion
 
-The ResilientDB Performance Monitoring System represents a significant advancement in blockchain infrastructure monitoring. By combining PBFT-specific metrics collection, AI-powered analysis, and comprehensive regression detection, it provides developers and operators with the tools they need to maintain optimal performance in distributed consensus systems.
+ResPulse represents a significant advancement in blockchain infrastructure monitoring. By combining PBFT-specific metrics collection, AI-powered analysis, and comprehensive regression detection, it provides developers and operators with the tools they need to maintain optimal performance in distributed consensus systems.
 
 Whether you're developing new features for ResilientDB, operating a production deployment, or researching consensus protocol optimizations, this monitoring system provides the insights and automation needed to ensure peak performance.
 
