@@ -13,7 +13,7 @@ router.get("/", (req, res) => {
   });
 });
 
-// POST /api/schedule — body: { interval: "onemin"|"hourly"|"daily"|"weekly"|"monthly", alertConfig?: {...}, baselinePeriod?: "1week"|"1month"|"3months"|"6months"|"1year" }
+// POST /api/schedule — body: { interval: "hourly"|"daily"|"weekly"|"monthly", alertConfig?: {...}, baselinePeriod?: "1week"|"1month"|"3months"|"6months"|"1year" }
 router.post("/", (req, res) => {
   const { interval, alertConfig, baselinePeriod } = req.body;
   if (!scheduler.INTERVALS[interval])

@@ -145,7 +145,6 @@ export default function ScheduleModal({
               }}
             >
               <option value="off">Disabled</option>
-              <option value="onemin">Every Minute</option>
               <option value="hourly">Every Hour</option>
               <option value="daily">Every Day</option>
               <option value="weekly">Every Week</option>
@@ -165,8 +164,7 @@ export default function ScheduleModal({
                 gap: 8
               }}>
                 <span style={{ fontSize: 8 }}>●</span>
-                Currently scheduled: {schedule === "onemin" ? "Every Minute" :
-                                      schedule === "hourly" ? "Every Hour" :
+                Currently scheduled: {schedule === "hourly" ? "Every Hour" :
                                       schedule === "daily" ? "Every Day" :
                                       schedule === "weekly" ? "Every Week" :
                                       schedule === "monthly" ? "Every Month" : schedule}
