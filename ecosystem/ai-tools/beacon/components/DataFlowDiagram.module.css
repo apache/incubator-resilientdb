@@ -68,7 +68,7 @@
   padding: 2.5rem 2rem 4rem;
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
   background: #0f0f1a;
-  min-height: 720px;
+  min-height: 820px;
 }
 
 .frameCompact {
@@ -125,16 +125,210 @@
   gap: 0.75rem;
 }
 
-.gridExec {
+/* Architecture layout: ecosystem column aligned with main layers */
+.architectureLayout {
   display: grid;
-  grid-template-columns: minmax(0, 0.2fr) minmax(0, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: minmax(190px, 240px) 2.25rem minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto auto auto;
+  column-gap: 0.625rem;
+  row-gap: 0.5rem;
+  align-items: center;
 }
 
-.gridConsensus {
+.ecosystemHeader {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(148, 163, 184, 0.85);
+  padding: 0 0.25rem 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ecosystemRowClient {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+}
+
+.arrowRowClient,
+.arrowRowService,
+.arrowRowExec {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrowRowClient {
+  grid-row: 2;
+}
+
+.mainRowClient {
+  grid-column: 3;
+  grid-row: 2;
+  min-width: 0;
+}
+
+.connectorRpc {
+  grid-column: 3;
+  grid-row: 3;
+  display: flex;
+  justify-content: center;
+}
+
+.ecosystemRowService {
+  grid-column: 1;
+  grid-row: 4;
+  align-self: center;
+}
+
+.arrowRowService {
+  grid-row: 4;
+}
+
+.mainRowService {
+  grid-column: 3;
+  grid-row: 4;
+  min-width: 0;
+}
+
+.connectorFc {
+  grid-column: 3;
+  grid-row: 5;
+  display: flex;
+  justify-content: center;
+}
+
+.ecosystemRowExec {
+  grid-column: 1;
+  grid-row: 6;
+  align-self: start;
+}
+
+.arrowRowExec {
+  grid-row: 6;
+  align-self: start;
+  padding-top: 1.25rem;
+}
+
+.mainRowExec {
+  grid-column: 3;
+  grid-row: 6;
+  min-width: 0;
+}
+
+.ecosystemGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--group-border);
+  background: var(--group-bg);
+  transition: box-shadow 0.3s;
+}
+
+.ecosystemGroupGenAi {
+  --group-accent: #a5b4fc;
+  --group-title: rgba(199, 210, 254, 0.9);
+  --group-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.14) 0%, rgba(30, 27, 75, 0.35) 100%);
+  --group-border: rgba(129, 140, 248, 0.22);
+}
+
+.ecosystemGroupService {
+  --group-accent: #5eead4;
+  --group-title: rgba(153, 246, 228, 0.9);
+  --group-bg: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(6, 78, 59, 0.3) 100%);
+  --group-border: rgba(45, 212, 191, 0.2);
+}
+
+.ecosystemGroupMonitoring {
+  --group-accent: #60a5fa;
+  --group-title: rgba(191, 219, 254, 0.9);
+  --group-bg: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(23, 37, 84, 0.4) 100%);
+  --group-border: rgba(96, 165, 250, 0.22);
+}
+
+.ecosystemGroupTitle {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--group-title);
+  padding-bottom: 0.125rem;
+}
+
+.toolList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.toolPill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(8, 12, 24, 0.55);
+  color: rgba(226, 232, 240, 0.95);
+}
+
+.toolIconBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--group-accent);
+}
+
+.toolIconSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.toolName {
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.arrowHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.consensusGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.consensusRow {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.consensusAlgo {
+  text-align: center;
+  font-size: 0.8125rem;
+}
+
+.networkSubstrate {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: rgb(236, 254, 255);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .flexCol {
@@ -331,29 +525,6 @@
   color: rgb(148, 163, 184);
 }
 
-/* Network block */
-.networkBlock {
-  min-height: 140px;
-  padding: 1rem 0;
-  grid-row: span 2;
-}
-
-.networkBlockCompact {
-  min-height: 100px;
-  padding: 0.5rem 0;
-}
-
-/* RDBC block */
-.rdbcBlock {
-  min-height: 72px;
-  padding: 1.25rem 0;
-}
-
-.rdbcBlockCompact {
-  min-height: 56px;
-  padding: 0.75rem 0;
-}
-
 /* Spacing */
 .mb2 {
   margin-bottom: 0.5rem;
@@ -373,12 +544,12 @@
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  max-width: 900px;
+  max-width: 1200px;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
 .wrapperCompact {
-  max-width: 1100px;
+  max-width: 1320px;
 }
 
 /* Fit viewport */
