@@ -217,8 +217,8 @@ const ArrowBidirectional = ({ label }: { label?: string }) => (
 const ArrowRight = () => (
   <div className={styles.arrowHorizontal} aria-hidden>
     <svg width="40" height="24" viewBox="0 0 40 24" fill="none" className={styles.arrowSvg}>
-      <path d="M4 12h28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M32 12l4-4m-4 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 12h24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M28 8l8 4-8 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   </div>
 );
