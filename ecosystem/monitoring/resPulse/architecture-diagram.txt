@@ -1,0 +1,70 @@
+ResilientDB Performance Monitoring System - Architecture Diagram
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    ResilientDB Performance Monitoring System                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│                 │    │                 │    │                 │    │                 │
+│  Performance    │    │   Analysis      │    │   Dashboard     │    │   Alerting      │
+│  Testing Engine │───▶│   Engine        │───▶│   (React UI)    │───▶│   System        │
+│                 │    │                 │    │                 │    │                 │
+│  perf_test.sh   │    │  analyze.py +   │    │  regression_UI  │    │  alerting.js    │
+│  (Bash)         │    │  analyze_record │    │  (React/Vite)   │    │  (Nodemailer)   │
+│                 │    │  (Python + AI)  │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │                       │
+         │                       │                       │                       │
+         ▼                       ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│                 │    │                 │    │                 │    │                 │
+│ ResilientDB     │    │ Deepseek AI     │    │ Real-time       │    │ Email           │
+│ PBFT Endpoint   │    │ API             │    │ Metrics         │    │ Notifications   │
+│                 │    │                 │    │                 │    │                 │
+│ localhost:18000 │    │ AI Analysis     │    │ Charts &        │    │ Gmail/SMTP      │
+│                 │    │ Recommendations │    │ Anomaly Detect  │    │ Regression      │
+│                 │    │                 │    │                 │    │ Alerts          │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Central Data Storage                              │
+│                                                                             │
+│                MongoDB Database (Node.js Backend)                          │
+│                                                                             │
+│  • Performance test results    • Historical baselines                      │
+│  • Statistical summaries       • Regression detection data                 │
+│  • AI analysis reports         • Alert configurations                      │
+│  • Scheduling settings         • System metrics                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Key Technologies:
+┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
+│ Testing         │ Analysis        │ Frontend        │ Backend         │
+├─────────────────┼─────────────────┼─────────────────┼─────────────────┤
+│ • Bash          │ • Python 3.x    │ • React 19      │ • Node.js       │
+│ • curl timing   │ • OpenAI SDK    │ • Recharts      │ • Express       │
+│ • JSON output   │ • Deepseek AI   │ • Vite          │ • Mongoose      │
+│ • Configurable │ • Statistical   │ • Real-time     │ • MongoDB       │
+│   workloads     │   analysis      │   updates       │ • Nodemailer    │
+└─────────────────┴─────────────────┴─────────────────┴─────────────────┘
+
+Data Flow:
+1. perf_test.sh → Sends HTTP requests to ResilientDB PBFT endpoint
+2. curl timing → Raw performance data collected (latency, throughput, success rate)
+3. analyze.py → Processes raw data, calculates metrics, saves to MongoDB
+4. Backend API → Serves data to React dashboard, triggers AI analysis
+5. Deepseek AI → Generates intelligent performance insights and recommendations
+6. Dashboard → Displays real-time charts, historical trends, anomaly detection
+7. Alerting → Monitors for regressions, sends email notifications via Nodemailer
+8. Scheduler → Automates testing at configurable intervals (cron jobs)
+
+Features:
+• PBFT-specific performance metrics (consensus time, replica coordination)
+• AI-powered analysis replacing traditional pattern recognition
+• Real-time dashboard with interactive charts and anomaly detection
+• Automated regression detection with configurable thresholds
+• Email alerting system supporting Gmail, Outlook, and custom SMTP
+• Scheduled monitoring with hourly/daily/weekly/monthly intervals
+• Historical baseline comparison and trend analysis
+• RESTful API for integration with CI/CD pipelines
