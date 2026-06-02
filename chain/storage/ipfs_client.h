@@ -38,6 +38,7 @@ class IPFSClient {
   virtual std::string Cat(const std::string& cid) = 0;
   virtual std::string GetDAG(const std::string& cid) = 0;
   virtual bool Exists(const std::string& cid) = 0;
+  virtual bool Unpin(const std::string& cid) = 0;
   virtual bool IsEnabled() const = 0;
 
   static std::unique_ptr<IPFSClient> Create(

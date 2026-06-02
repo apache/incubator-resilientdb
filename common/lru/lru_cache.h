@@ -32,6 +32,7 @@ class LRUCache {
   void Put(KeyType key, ValueType value);
   int GetCapacity();
   void SetCapacity(int new_capacity);
+  void Remove(KeyType key);
   void Flush();
   int GetCacheHits() const;
   int GetCacheMisses() const;

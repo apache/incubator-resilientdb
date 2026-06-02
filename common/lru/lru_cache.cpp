@@ -87,6 +87,16 @@ int LRUCache<KeyType, ValueType>::GetCapacity() {
 }
 
 template <typename KeyType, typename ValueType>
+void LRUCache<KeyType, ValueType>::Remove(KeyType key) {
+  auto it = lookup_.find(key);
+  if (it != lookup_.end()) {
+    key_list_.erase(rlookup_[key]);
+    lookup_.erase(it);
+    rlookup_.erase(key);
+  }
+}
+
+template <typename KeyType, typename ValueType>
 void LRUCache<KeyType, ValueType>::Flush() {
   lookup_.clear();
   key_list_.clear();

@@ -338,6 +338,27 @@ class IPFSClientImpl : public IPFSClient {
     return exists;
   }
 
+  bool Unpin(const std::string& cid) override {
+    if (!enabled_) {
+      LOG(ERROR) << "IPFS is not enabled, cannot unpin";
+      return false;
+    }
+
+    LOG(INFO) << "IPFS Unpin: CID = " << cid;
+
+    std::string path = std::string("/api/v0/pin/rm?arg=") + cid;
+    std::string response = PostWithRetry(path, "", "application/octet-stream");
+    bool success = !response.empty() && response.find("\"Pins\"") != std::string::npos;
+
+    if (success) {
+      LOG(INFO) << "IPFS Unpin: successfully unpinned CID = " << cid;
+    } else {
+      LOG(ERROR) << "IPFS Unpin: failed to unpin CID = " << cid
+                 << " response: " << response;
+    }
+    return success;
+  }
+
   bool IsEnabled() const override { return enabled_; }
 
  private:

@@ -65,9 +65,8 @@ TieredStorage::TieredStorage(
     config_.set_checkpoint_watermark(kDefaultCheckpointWatermark);
   }
 
-  index_ = std::make_unique<InMemoryHashIndex>();
-
   if (config_.enabled() && cold_client_ && cold_client_->IsEnabled()) {
+    index_ = std::make_unique<InMemoryHashIndex>();
     LoadManifestFromStorage(warm_storage_.get());
     StartMigration();
   }
@@ -100,19 +99,25 @@ std::pair<std::string, uint64_t> TieredStorage::GetValueWithSeq(
     const std::string& key, uint64_t seq) {
   auto hot_result = hot_storage_->GetValueWithSeq(key, seq);
   if (!hot_result.first.empty()) {
+    LOG(INFO) << "TieredStorage: found value in hot storage for key: " << key;
     return hot_result;
   }
 
   auto warm_result = warm_storage_->GetValueWithSeq(key, seq);
   if (!warm_result.first.empty()) {
+    LOG(INFO) << "TieredStorage: found value in warm storage for key: " << key;
     return warm_result;
   }
 
-  std::string cold_value = GetValueFromCold(key);
-  if (!cold_value.empty()) {
-    return {cold_value, 0};
+  if (IsColdEnabled()) {
+    std::string cold_value = GetValueFromCold(key);
+    if (!cold_value.empty()) {
+      LOG(INFO) << "TieredStorage: found value in cold storage for key: " << key;
+      return {cold_value, 0};
+    }
   }
 
+  LOG(INFO) << "TieredStorage: key not found: " << key;
   return {"", 0};
 }
 
@@ -264,12 +269,22 @@ std::string TieredStorage::GetValueFromCold(const std::string& key) {
     return "";
   }
 
-  return cold_client_->Cat(cid);
+  auto start = std::chrono::high_resolution_clock::now();
+  std::string result = cold_client_->Cat(cid);
+  auto end = std::chrono::high_resolution_clock::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  LOG(INFO) << "[timer] cold_read key=" << key << " cid=" << cid << " us=" << us;
+  return result;
 }
 
 std::string TieredStorage::GetIndexCID(const std::string& key) const {
   if (index_) {
-    return index_->Get(key);
+    auto start = std::chrono::high_resolution_clock::now();
+    std::string cid = index_->Get(key);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+    LOG(INFO) << "[timer] index_lookup key=" << key << " us=" << us;
+    return cid;
   }
   return "";
 }
@@ -303,8 +318,8 @@ bool TieredStorage::SaveManifest() {
 
 bool TieredStorage::AddToIndex(const std::string& key, const std::string& cid,
                           uint64_t min_seq, uint64_t max_seq) {
-  if (!IsColdEnabled()) {
-    LOG(WARNING) << "TieredStorage: cold storage not enabled";
+  if (!IsColdEnabled() || !index_) {
+    LOG(WARNING) << "TieredStorage: cold storage not enabled or no index";
     return false;
   }
 
@@ -444,6 +459,7 @@ void TieredStorage::MigrationLoop() {
 }
 
 bool TieredStorage::MigrateColdData() {
+  auto cycle_start = std::chrono::high_resolution_clock::now();
   uint64_t current_checkpoint = GetLastCheckpoint();
   int watermark = config_.checkpoint_watermark();
   if (watermark <= 0) {
@@ -459,14 +475,7 @@ bool TieredStorage::MigrateColdData() {
 
   uint64_t cold_threshold_seq = current_checkpoint - threshold;
 
-  if (cold_threshold_seq <= last_migrated_seq_) {
-    LOG(INFO) << "TieredStorage: no new data to migrate, last_migrated_seq="
-              << last_migrated_seq_ << ", cold_threshold_seq=" << cold_threshold_seq;
-    return false;
-  }
-
-  LOG(INFO) << "TieredStorage: migrating data with seq < " << cold_threshold_seq
-            << " (last_migrated_seq=" << last_migrated_seq_ << ")";
+  LOG(INFO) << "TieredStorage: migrating data with seq < " << cold_threshold_seq;
 
   int batch_size = config_.batch_size();
   if (batch_size <= 0) {
@@ -474,7 +483,6 @@ bool TieredStorage::MigrateColdData() {
   }
 
   int migrated = 0;
-  uint64_t max_seq_migrated = last_migrated_seq_;
 
   auto all_items = hot_storage_->GetAllItemsWithSeq();
 
@@ -484,18 +492,7 @@ bool TieredStorage::MigrateColdData() {
         continue;
       }
 
-      if (seq <= last_migrated_seq_) {
-        continue;
-      }
-
-      if (GetIndexCID(key) != "") {
-        continue;
-      }
-
       if (MigrateKey(key, value, seq)) {
-        if (seq > max_seq_migrated) {
-          max_seq_migrated = seq;
-        }
         migrated++;
       }
 
@@ -510,18 +507,21 @@ bool TieredStorage::MigrateColdData() {
     }
   }
 
-  if (max_seq_migrated > last_migrated_seq_) {
-    last_migrated_seq_ = max_seq_migrated;
-  }
-
-  LOG(INFO) << "TieredStorage: migration cycle complete: " << migrated
-            << " keys migrated, last_migrated_seq=" << last_migrated_seq_;
+  auto cycle_end = std::chrono::high_resolution_clock::now();
+  auto cycle_us = std::chrono::duration_cast<std::chrono::microseconds>(cycle_end - cycle_start).count();
+  LOG(INFO) << "[timer] migrate_cycle keys=" << migrated << " us=" << cycle_us;
 
   return migrated > 0;
 }
 
 bool TieredStorage::MigrateKey(const std::string& key, const std::string& value, uint64_t seq) {
+  std::string old_cid = GetIndexCID(key);
+
+  auto add_start = std::chrono::high_resolution_clock::now();
   std::string cid = cold_client_->Add(value);
+  auto add_end = std::chrono::high_resolution_clock::now();
+  auto add_us = std::chrono::duration_cast<std::chrono::microseconds>(add_end - add_start).count();
+  LOG(INFO) << "[timer] ipfs_add key=" << key << " us=" << add_us;
   if (cid.empty()) {
     LOG(ERROR) << "TieredStorage: failed to upload to IPFS: key=" << key;
     return false;
@@ -536,6 +536,16 @@ bool TieredStorage::MigrateKey(const std::string& key, const std::string& value,
 
   if (DeleteKeyFromHot(key)) {
     LOG(INFO) << "TieredStorage: evicted from hot storage: key=" << key;
+  }
+
+  if (!old_cid.empty() && old_cid != cid) {
+    if (cold_client_->Unpin(old_cid)) {
+      LOG(INFO) << "TieredStorage: unpinned stale CID=" << old_cid
+                << " for key=" << key;
+    } else {
+      LOG(WARNING) << "TieredStorage: failed to unpin stale CID=" << old_cid
+                   << " for key=" << key;
+    }
   }
 
   migrated_keys_.fetch_add(1);

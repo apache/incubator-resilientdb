@@ -19,6 +19,7 @@
 
 #include "chain/storage/leveldb.h"
 
+#include <chrono>
 #include <glog/logging.h>
 #include <unistd.h>
 
@@ -159,6 +160,7 @@ std::pair<std::string, uint64_t> ResLevelDB::GetValueWithSeq(
 }
 
 int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
+  auto start = std::chrono::high_resolution_clock::now();
   if (block_cache_) {
     block_cache_->Put(key, value);
   }
@@ -171,16 +173,23 @@ int ResLevelDB::SetValue(const std::string& key, const std::string& value) {
     if (status.ok()) {
       batch_.Clear();
       UpdateMetrics();
+      auto end = std::chrono::high_resolution_clock::now();
+      auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+      LOG(INFO) << "[timer] ldb_set key=" << key << " us=" << us;
       return 0;
     } else {
       LOG(ERROR) << "flush buffer fail:" << status.ToString();
       return -1;
     }
   }
+  auto end = std::chrono::high_resolution_clock::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  LOG(INFO) << "[timer] ldb_set key=" << key << " us=" << us;
   return 0;
 }
 
 std::string ResLevelDB::GetValue(const std::string& key) {
+  auto start = std::chrono::high_resolution_clock::now();
   std::string value;
   bool found_in_cache = false;
 
@@ -192,11 +201,14 @@ std::string ResLevelDB::GetValue(const std::string& key) {
   if (!found_in_cache) {
     leveldb::Status status = db_->Get(leveldb::ReadOptions(), key, &value);
     if (!status.ok()) {
-      value.clear();  // Ensure value is empty if not found in DB
+      value.clear();
     }
   }
 
   UpdateMetrics();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  LOG(INFO) << "[timer] ldb_get key=" << key << " us=" << us;
   return value;
 }
 
@@ -434,6 +446,9 @@ bool ResLevelDB::DeleteKey(const std::string& key) {
   leveldb::Status status = db_->Write(leveldb::WriteOptions(), &batch_);
   if (status.ok()) {
     batch_.Clear();
+    if (block_cache_) {
+      block_cache_->Remove(key);
+    }
     LOG(INFO) << "Deleted key from LevelDB: " << key;
     return true;
   }

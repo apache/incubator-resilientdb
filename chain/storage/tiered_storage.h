@@ -126,7 +126,7 @@ class TieredStorage : public Storage {
   std::thread migration_thread_;
   std::atomic<bool> migration_running_{false};
   std::atomic<uint64_t> migrated_keys_{0};
-  uint64_t last_migrated_seq_ = 0;
+
 };
 
 }  // namespace storage

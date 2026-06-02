@@ -19,6 +19,7 @@
 
 #include "chain/storage/memory_db.h"
 
+#include <chrono>
 #include <glog/logging.h>
 
 namespace resdb {
@@ -50,46 +51,56 @@ std::string MemoryDB::GetRange(const std::string& min_key,
 
 std::string MemoryDB::GetValue(const std::string& key) {
   auto search = kv_map_.find(key);
-  if (search != kv_map_.end())
-    return search->second;
-  else {
-    return "";
-  }
+  return (search != kv_map_.end()) ? search->second : "";
 }
 
 std::pair<std::string, uint64_t> MemoryDB::GetValueWithSeq(
     const std::string& key, uint64_t seq) {
-  auto search_it = kv_map_with_seq_.find(key);
-  if (search_it != kv_map_with_seq_.end() && search_it->second.size()) {
-    auto it = search_it->second.end();
-    do {
-      --it;
-      if (it->second == seq || seq == 0) {
-        return *it;
-      }
-      if (it->second < seq) {
-        break;
-      }
-    } while (it != search_it->second.begin());
-    LOG(ERROR) << " key:" << key << " no seq:" << seq;
-  }
-  return std::make_pair("", 0);
+  auto start = std::chrono::high_resolution_clock::now();
+  auto result = [&]() -> std::pair<std::string, uint64_t> {
+    auto search_it = kv_map_with_seq_.find(key);
+    if (search_it != kv_map_with_seq_.end() && search_it->second.size()) {
+      auto it = search_it->second.end();
+      do {
+        --it;
+        if (it->second == seq || seq == 0) {
+          return *it;
+        }
+        if (it->second < seq) {
+          break;
+        }
+      } while (it != search_it->second.begin());
+      LOG(ERROR) << " key:" << key << " no seq:" << seq;
+    }
+    return std::make_pair("", 0);
+  }();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  LOG(INFO) << "[timer] memdb_get_seq key=" << key << " us=" << us;
+  return result;
 }
 
 int MemoryDB::SetValueWithSeq(const std::string& key, const std::string& value,
                               uint64_t seq) {
-  auto it = kv_map_with_seq_.find(key);
-  if (it != kv_map_with_seq_.end() && it->second.back().second > seq) {
-    LOG(ERROR) << " value seq not match. key:" << key << " db seq:"
-               << (it == kv_map_with_seq_.end() ? 0 : it->second.back().second)
-               << " new seq:" << seq;
-    return -2;
-  }
-  kv_map_with_seq_[key].push_back(std::make_pair(value, seq));
-  while (kv_map_with_seq_[key].size() > max_history_) {
-    kv_map_with_seq_[key].erase(kv_map_with_seq_[key].begin());
-  }
-  return 0;
+  auto start = std::chrono::high_resolution_clock::now();
+  int ret = [&]() {
+    auto it = kv_map_with_seq_.find(key);
+    if (it != kv_map_with_seq_.end() && it->second.back().second > seq) {
+      LOG(ERROR) << " value seq not match. key:" << key << " db seq:"
+                 << (it == kv_map_with_seq_.end() ? 0 : it->second.back().second)
+                 << " new seq:" << seq;
+      return -2;
+    }
+    kv_map_with_seq_[key].push_back(std::make_pair(value, seq));
+    while (kv_map_with_seq_[key].size() > max_history_) {
+      kv_map_with_seq_[key].erase(kv_map_with_seq_[key].begin());
+    }
+    return 0;
+  }();
+  auto end = std::chrono::high_resolution_clock::now();
+  auto us = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  LOG(INFO) << "[timer] memdb_set_seq key=" << key << " us=" << us;
+  return ret;
 }
 
 int MemoryDB::SetValueWithVersion(const std::string& key,
