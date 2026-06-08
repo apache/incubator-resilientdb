@@ -98,6 +98,8 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+
+cc_library(
     name = "duckdb_storage",
     srcs = ["duckdb.cpp"],
     hdrs = ["duckdb.h"],
