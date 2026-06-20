@@ -59,6 +59,13 @@ class Storage {
   virtual std::vector<std::pair<std::string, int>> GetTopHistory(
       const std::string& key, int number) = 0;
 
+  // Composite key operations for secondary indexing
+  virtual int CreateCompositeKey(const std::string& composite_key) = 0;
+  virtual int DeleteCompositeKey(const std::string& composite_key) = 0;
+  virtual std::vector<std::string> GetByCompositeKeyPrefix(
+      const std::string& prefix) = 0;
+  virtual int UpdateCompositeKey(const std::string& old_composite_key,
+                                 const std::string& new_composite_key) = 0;
   // Default no-op SQL execution for non-SQL backends.
   virtual std::string ExecuteSQL(const std::string& sql_string) { return ""; }
 

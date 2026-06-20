@@ -83,12 +83,25 @@ class MemoryDB : public Storage {
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
 
+  // Composite key operations for secondary indexing.
+  // Backed by an ordered std::map to mirror LevelDB's sorted key layout, which
+  // is what enables efficient prefix scans.
+  int CreateCompositeKey(const std::string& composite_key) override;
+  int DeleteCompositeKey(const std::string& composite_key) override;
+  std::vector<std::string> GetByCompositeKeyPrefix(
+      const std::string& prefix) override;
+  int UpdateCompositeKey(const std::string& old_composite_key,
+                         const std::string& new_composite_key) override;
+
  private:
   std::unordered_map<std::string, std::string> kv_map_;
   std::unordered_map<std::string, std::list<std::pair<std::string, int>>>
       kv_map_with_v_;
   std::unordered_map<std::string, std::list<std::pair<std::string, uint64_t>>>
       kv_map_with_seq_;
+  // Sorted map for composite keys; preserves lexicographic order so prefix
+  // scans return matching keys deterministically (matches LevelDB behavior).
+  std::map<std::string, std::string> ck_map_;
 };
 
 }  // namespace storage

@@ -201,5 +201,37 @@ std::vector<std::pair<std::string, int>> MemoryDB::GetTopHistory(
   return resp;
 }
 
+int MemoryDB::CreateCompositeKey(const std::string& composite_key) {
+  ck_map_[composite_key] = "";
+  return 0;
+}
+
+int MemoryDB::DeleteCompositeKey(const std::string& composite_key) {
+  ck_map_.erase(composite_key);
+  return 0;
+}
+
+std::vector<std::string> MemoryDB::GetByCompositeKeyPrefix(
+    const std::string& prefix) {
+  std::vector<std::string> out;
+  // std::map is sorted; lower_bound + walk mirrors the LevelDB iterator path.
+  for (auto it = ck_map_.lower_bound(prefix); it != ck_map_.end(); ++it) {
+    const std::string& key = it->first;
+    if (key.size() < prefix.size() ||
+        key.compare(0, prefix.size(), prefix) != 0) {
+      break;
+    }
+    out.push_back(key);
+  }
+  return out;
+}
+
+int MemoryDB::UpdateCompositeKey(const std::string& old_composite_key,
+                                 const std::string& new_composite_key) {
+  ck_map_.erase(old_composite_key);
+  ck_map_[new_composite_key] = "";
+  return 0;
+}
+
 }  // namespace storage
 }  // namespace resdb
