@@ -91,7 +91,7 @@ int64_t MessageManager::GetNextSeq() { return next_seq_; }
 absl::StatusOr<uint64_t> MessageManager::AssignNextSeq() {
   std::unique_lock<std::mutex> lk(seq_mutex_);
   uint32_t max_executed_seq = transaction_executor_->GetMaxPendingExecutedSeq();
-  global_stats_->SeqGap(next_seq_ - max_executed_seq);
+  //global_stats_->SeqGap(next_seq_ - max_executed_seq);
   if (next_seq_ - max_executed_seq >
       static_cast<uint64_t>(config_.GetMaxProcessTxn())) {
     // LOG(ERROR) << "next_seq_: " << next_seq_ << " max_executed_seq: " <<

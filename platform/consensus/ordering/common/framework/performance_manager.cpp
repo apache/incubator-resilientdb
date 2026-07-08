@@ -25,6 +25,9 @@
 
 #include "platform/consensus/ordering/common/framework/performance_manager.h"
 
+#include <chrono>
+#include <thread>
+
 #include <glog/logging.h>
 
 #include "common/utils/utils.h"
@@ -44,7 +47,6 @@ PerformanceManager::PerformanceManager(
   stop_ = false;
   eval_started_ = false;
   eval_ready_future_ = eval_ready_promise_.get_future();
-  LOG(ERROR)<<"?????";
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
           .public_key_info()
@@ -54,7 +56,6 @@ PerformanceManager::PerformanceManager(
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
   }
-  LOG(ERROR)<<"?????";
   global_stats_ = Stats::GetGlobalStats();
   send_num_ = 0;
   total_num_ = 0;
@@ -64,7 +65,6 @@ PerformanceManager::PerformanceManager(
   if (primary_ == 0) primary_ = replica_num_;
   local_id_ = 1;
   sum_ = 0;
-  LOG(ERROR)<<"?????";
 }
 
 PerformanceManager::~PerformanceManager() {
@@ -93,13 +93,16 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 60000000; ++i) {
+  const bool rate_limited = config_.PerformanceRateLimited();
+  int total_request_num = rate_limited ? config_.ClientBatchNum() : 60000000;
+  for (int i = 0; i < total_request_num; ++i) {
     // for (int i = 0; i < 60000000000; ++i) {
     std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
     queue_item->context = nullptr;
     queue_item->user_request = GenerateUserRequest();
     batch_queue_.Push(std::move(queue_item));
-    if (i == 200000) {
+    if ((rate_limited && i + 1 == total_request_num) ||
+        (!rate_limited && i == 200000)) {
       eval_ready_promise_.set_value(true);
     }
   }
@@ -153,7 +156,7 @@ CollectorResultCode PerformanceManager::AddResponseMsg(
   }
 
   uint64_t seq = batch_response->local_id();
-  //LOG(ERROR)<<"receive seq:"<<seq;
+  //LOG(ERROR)<<"receive seq:"<<seq<< " sender:"<<request->sender_id();
 
   bool done = false;
   {
@@ -198,6 +201,9 @@ int PerformanceManager::BatchProposeMsg() {
                << " max txn:" << config_.GetMaxProcessTxn();
   std::vector<std::unique_ptr<QueueItem>> batch_req;
   eval_ready_future_.get();
+  const bool rate_limited = config_.PerformanceRateLimited();
+  const uint32_t request_per_second = config_.GetMaxProcessTxn();
+  auto next_batch_time = std::chrono::steady_clock::now();
   bool start = false;
   while (!stop_) {
     if (send_num_ > config_.GetMaxProcessTxn()) {
@@ -220,10 +226,31 @@ int PerformanceManager::BatchProposeMsg() {
       }
     }
     start = true;
+    if (rate_limited) {
+      if (request_per_second == 0) {
+        LOG(ERROR) << "max_process_txn must be greater than 0 for "
+                      "rate-limited performance";
+        return -2;
+      }
+      auto batch_interval =
+          std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+              std::chrono::duration<double>(
+                  static_cast<double>(batch_req.size()) / request_per_second));
+      if (batch_interval <= std::chrono::steady_clock::duration::zero()) {
+        batch_interval = std::chrono::steady_clock::duration(1);
+      }
+
+      std::this_thread::sleep_until(next_batch_time);
+      const auto now = std::chrono::steady_clock::now();
+      next_batch_time =
+          (next_batch_time < now ? now : next_batch_time) + batch_interval;
+    }
     for(int i = 0; i < 1;++i){
       int ret = DoBatch(batch_req);
     }
-    batch_req.clear();
+    if (!rate_limited) {
+      batch_req.clear();
+    }
   }
   return 0;
 }

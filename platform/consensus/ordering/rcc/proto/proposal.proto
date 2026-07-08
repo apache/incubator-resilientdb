@@ -17,6 +17,8 @@ enum ProposalType{
     Prepared = 1;
     Commit = 2;
     Ready_execute = 3;
+    RecoverySync = 4;
+    RecoveryAck = 5;
   };
 
 message Header {
@@ -27,6 +29,9 @@ message Header {
   int32 sender = 5;
   int64 create_time = 6;
   ProposalType status = 7;
+  int64 recovery_epoch = 8;
+  int64 recovery_round = 9;
+  int32 recovery_target = 10;
 }
 
 message Proposal {
@@ -41,5 +46,11 @@ enum MessageType {
   NewProposal = 0;
   ConsensusMsg = 1;
   ConsensusMsgExt = 2;
+  SeqSync = 3;
+};
+
+message SyncMsg {
+  int32 sender = 1;
+  int64 seq = 2;
 };
 

@@ -98,6 +98,8 @@ void AsyncReplicaClient::OnSend() {
 }
 
 void AsyncReplicaClient::ReConnect() {
+  boost::system::error_code ignored_error;
+  socket_.close(ignored_error);
   socket_.async_connect(endpoint_, [&](const boost::system::error_code& error) {
     if (!error) {
       status_ = 0;

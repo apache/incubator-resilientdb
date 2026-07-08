@@ -33,6 +33,12 @@ message Cert {
   repeated SignatureInfo sign = 1;
 }
 
+message QC {
+  repeated SignatureInfo signatures = 1;
+  int32 view = 2;
+  bytes hash = 3;
+}
+
 message Proposal {
   int32 slot_id = 1;
   int32 sender_id = 2;
@@ -41,6 +47,8 @@ message Proposal {
   SignatureInfo sign = 5;
   bytes hash = 6;
   Cert cert = 7;
+  bytes parent_hash = 8;
+  QC justify_qc = 9;
 };
 
 enum MessageType {
@@ -57,6 +65,13 @@ enum MessageType {
   CMD_SingleBlock = 10;
   CMD_ProposalQuery = 11;
   CMD_ProposalQueryResponse = 12;
+  CMD_NewLeader = 13;
+  CMD_BlockReq = 14;
+  CMD_BlockReqAck = 15;
+  CMD_StateReq = 16;
+  CMD_StateResp = 17;
+  CMD_BlockBatchReq = 18;
+  CMD_BlockBatchResp = 19;
 };
 
 message VoteMessage {
@@ -94,6 +109,8 @@ message Block {
   int64 create_time = 5;
   repeated SignInfo last_sign_info = 6;
   repeated SignInfo sign_info = 7;
+  optional int32 responder = 8;
+  optional bool is_recovery = 9;
 }
 
 message BlockACK {
@@ -102,6 +119,14 @@ message BlockACK {
   int32 local_id = 4;
   int32 responder = 5;
   SignInfo sign_info = 6;
+}
+
+message BlockBatch {
+  int32 sender_id = 1;
+  int32 owner_id = 2;
+  int32 start_id = 3;
+  int32 end_id = 4;
+  repeated Block block = 5;
 }
 
 message BlockQuery {
@@ -122,6 +147,20 @@ message ProposalQueryResp {
   repeated Proposal proposal = 1;
 }
 
+message BlockHeight {
+  int32 sender_id = 1;
+  int32 block_id = 2;
+}
+
+message RecoveryState {
+  int32 sender_id = 1;
+  QC high_qc = 2;
+  QC locked_qc = 3;
+  repeated Proposal proposal = 4;
+  repeated BlockHeight block_height = 5;
+  int32 committed_slot = 6;
+}
+
 message ProposalResponse {
   Header header = 1;
   int32 leader = 2;
@@ -130,4 +169,6 @@ message ProposalResponse {
 message VoteMsg {
   int32 slot_id = 1;
   int32 sender_id = 2;
+  int32 leader = 3;
+  QC high_qc = 4;
 }

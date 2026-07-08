@@ -13,7 +13,7 @@ namespace cassandra_recv {
 
 class ProposalManager {
  public:
-  ProposalManager(int32_t id, ProposalGraph* graph, int total_num);
+  ProposalManager(int32_t id, ProposalGraph* graph, int need_num, int num_replica);
 
   int VerifyProposal(const Proposal& proposal);
 
@@ -22,8 +22,12 @@ class ProposalManager {
   std::unique_ptr<Block> MakeBlock(
       std::vector<std::unique_ptr<Transaction>>& txn);
 
+
+  void ReceiveBlock(std::unique_ptr<Block> block);
+
   std::unique_ptr<Proposal> GenerateProposal(int round, bool need_empty);
   int CurrentRound();
+  int IncreaseRound();
 
   void ClearProposal(const Proposal& p);
   std::unique_ptr<Block> GetBlock(const std::string& hash, int sender);
@@ -32,6 +36,7 @@ class ProposalManager {
   bool ContainBlock(const std::string& hash, int sender);
   bool ContainBlock(const Block& block);
   bool WaitBlock();
+  bool WaitBlock(int round);
   void BlockReady(const std::string& hash, int local_id);
   const Block* QueryBlock(const std::string& hash);
   std::unique_ptr<ProposalQueryResp> QueryProposal(const std::string& hash);
@@ -42,9 +47,17 @@ class ProposalManager {
   void AddLocalProposal(const Proposal& proposal);
   void RemoveLocalProposal(const std::string& hash);
 
+
+  bool CheckLatestStrongestProposal(int round);
+
   int VerifyProposal(const ProposalQueryResp& resp);
+  void WaitCut();
 
   int GetBlockNum(const std::string& hash, int sender);
+
+  std::unique_ptr<Block>  GetSubBlockById(int sender, int64_t block_id);
+  Block*  GetReceivedBlock(int sender, int64_t block_id);
+  void AddSubBlock(std::unique_ptr<Block> block);
 
  private:
   void ObtainHistoryProposal(const Proposal* p,
@@ -53,6 +66,7 @@ class ProposalManager {
                              int current_height);
   Proposal* GetLocalProposal(const std::string& hash);
 
+  Block GetPrehash(int block_id);
  private:
   int32_t id_;
   ProposalGraph* graph_;
@@ -60,15 +74,25 @@ class ProposalManager {
 
   std::map<std::string, std::unique_ptr<Block>> pending_blocks_[512];
   std::list<std::unique_ptr<Block>> blocks_;
-  std::mutex mutex_, p_mutex_, q_mutex_;
-  std::condition_variable notify_;
+  std::mutex mutex_, p_mutex_, q_mutex_, block_mutex_, wait_block_mutex_;
+  std::condition_variable notify_, wait_notify_;
   std::map<int, std::unique_ptr<Block>> blocks_candidates_;
   std::map<std::string, std::unique_ptr<Proposal>> tmp_proposal_;
 
   std::mutex t_mutex_;
   std::map<std::string, std::unique_ptr<Proposal>> local_proposal_;
   Stats* global_stats_;
-  int total_num_;
+  int need_num_;
+  int total_num_;;
+  Block last_block_;
+
+
+  std::map<int, std::map<uint64_t, std::unique_ptr<Block>>> received_, new_received_;
+
+  bool start_wait_ = false;
+  std::set<int> received_sender_;
+  bool wait_done_ = false;
+  int f_;
 };
 
 }  // namespace cassandra_recv

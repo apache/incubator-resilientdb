@@ -14,6 +14,10 @@ int64_t ProposalManager::CurrentSeq(){
   return seq_;
 }
 
+void ProposalManager::SetSeq(int seq) {
+  seq_ = seq;
+}
+
 std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
     const std::vector<std::unique_ptr<Transaction>>& txns) {
   std::unique_ptr<Proposal> proposal = std::make_unique<Proposal>();

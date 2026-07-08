@@ -1,11 +1,5 @@
 #pragma once
 
-//#define GOPOA
-//#define GOTPOA
-//#define GOTPOR
-
-//#define NOPOA
-
 namespace resdb {
 namespace cassandra {
 

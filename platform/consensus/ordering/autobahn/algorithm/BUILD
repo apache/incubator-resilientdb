@@ -15,6 +15,7 @@ cc_library(
         "//platform/statistic:stats",
         "//common/crypto:signature_verifier",
         "//common/utils",
+        "//platform/proto:resdb_cc_proto",
         "//platform/consensus/ordering/autobahn/proto:proposal_cc_proto",
     ],
 )

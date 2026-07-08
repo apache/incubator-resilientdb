@@ -143,6 +143,7 @@ bool TransactionExecutor::NeedResponse() {
 
 int TransactionExecutor::Commit(std::unique_ptr<Request> message) {
   global_stats_->IncPendingExecute();
+  //LOG(ERROR)<<" add pending:"<<transaction_manager_->IsOutOfOrder();
   if (transaction_manager_ && transaction_manager_->IsOutOfOrder()) {
     // LOG(ERROR)<<"add out of order exe:"<<message->seq()<<" from
     // proxy:"<<message->proxy_id();
@@ -202,6 +203,7 @@ void TransactionExecutor::OrderMessage() {
 }
 
 void TransactionExecutor::AddExecuteMessage(std::unique_ptr<Request> message) {
+    //LOG(ERROR)<<" commit:"<<msg;
     global_stats_->IncCommit();
     message->set_commit_time(GetCurrentTime());
     execute_queue_.Push(std::move(message));

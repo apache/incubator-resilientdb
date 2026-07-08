@@ -41,6 +41,8 @@ Consensus::Consensus(const ResDBConfig& config,
 
   int total_replicas = config_.GetReplicaNum();
   int f = (total_replicas - 1) / 3;
+  f_ = f;
+  id_ = config_.GetSelfInfo().id();
 
   if (config_.GetPublicKeyCertificateInfo()
           .public_key()
@@ -52,7 +54,17 @@ Consensus::Consensus(const ResDBConfig& config,
 }
 
 int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
-  //LOG(ERROR)<<"recv request:"<<MessageType_Name(request->user_type());
+  if(id_ <= 2*f_ +1){
+    if(request->sender_id() > 2*f_+1) {
+       //return 0;
+    }
+  }
+  else {
+    if(request->sender_id() <= 2*f_+1) {
+        //return 0;
+    }
+  }
+  LOG(ERROR)<<"recv request:"<<MessageType_Name(request->user_type())<<" from:"<<request->sender_id();
   //int64_t current_time = GetCurrentTime();
 
   if(request->user_type() == MessageType::NewProposal) {
@@ -72,6 +84,15 @@ int Consensus::ProcessCustomConsensus(std::unique_ptr<Request> request) {
       return -1;
     }
     hs_->ReceiveCertificate(std::move(cert));
+  }
+  else if(request->user_type() == MessageType::StartViewMsg) {
+    std::unique_ptr<StartView> start_view = std::make_unique<StartView>();
+    if (!start_view->ParseFromString(request->data())) {
+      LOG(ERROR) << "parse start view fail";
+      assert(1 == 0);
+      return -1;
+    }
+    hs_->ReceiveStartView(std::move(start_view));
   }
   return 0;
 }

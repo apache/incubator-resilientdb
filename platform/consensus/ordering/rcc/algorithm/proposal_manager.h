@@ -13,6 +13,7 @@ class ProposalManager {
       const std::vector<std::unique_ptr<Transaction>>& txns);
 
   int64_t CurrentSeq();
+  void SetSeq(int seq);
  private:
   int32_t id_;
   int64_t seq_ = 1;

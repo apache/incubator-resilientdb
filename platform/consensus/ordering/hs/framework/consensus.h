@@ -47,6 +47,8 @@ class Consensus : public common::Consensus{
 
   private:
     std::unique_ptr<HotStuff> hs_;
+  int f_;
+  int id_;
 };
 
 }  // namespace tusk

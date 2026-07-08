@@ -15,6 +15,7 @@ class ProposalManager {
   bool VerifyCert(const Certificate& cert);
 
   int CurrentView();
+  void AdvanceView(int view);
 
   void AddQC(std::unique_ptr<QC> qc);
   std::unique_ptr<Proposal> AddProposal(std::unique_ptr<Proposal> proposal);

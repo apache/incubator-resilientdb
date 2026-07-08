@@ -3,25 +3,18 @@
 #include <glog/logging.h>
 #include "common/utils/utils.h"
 
-#define OP0
-#define OP2
-#define OP4
-
 namespace resdb {
 namespace rcc {
 
-RCC::RCC(int id, int f, int total_num, SignatureVerifier* verifier)
+RCC::RCC(int id, int f, int total_num, int block_size,
+         SignatureVerifier* verifier)
     : ProtocolBase(id, f, total_num), verifier_(verifier) {
   proposal_manager_ = std::make_unique<ProposalManager>(id);
   next_seq_ = 1;
   local_txn_id_ = 1;
   execute_id_ = 1;
   totoal_proposer_num_ = total_num_;
-  #ifdef OP4
-  batch_size_ = 10;
-  #else
-  batch_size_ = 10;
-  #endif
+  batch_size_ = block_size;
   queue_size_ = 0;
   global_stats_ = Stats::GetGlobalStats();
 
@@ -38,11 +31,47 @@ RCC::~RCC() {
   }
 }
 
+void RCC::Sync(int seq) {
+  SyncMsg sync_msg;
+  sync_msg.set_sender(id_);
+  sync_msg.set_seq(seq);
+  Broadcast(MessageType::SeqSync, sync_msg);
+}
+
+void RCC::ReceiveSyncMsg(const SyncMsg& sync_msg) {
+  std::unique_lock<std::mutex> lk(sync_mutex_);
+  LOG(ERROR)<<" receive sync msg from sender:"<<sync_msg.sender()<<" seq:"<<sync_msg.seq()<< "receive size:"<<receive_sync_.size()<<" next seq:"<<next_seq_;
+  receive_sync_[sync_msg.sender()] = sync_msg.seq();
+  if(receive_sync_.size()>=2*f_+1) {
+  int max_seq = 0;
+    for(auto it : receive_sync_) {
+      if(max_seq < it.second) {
+        max_seq = it.second;
+      }
+    }
+    if(max_seq > next_seq_){
+      proposal_manager_->SetSeq(max_seq);
+      next_seq_ = max_seq;
+      commited_seq_ = next_seq_;
+    }
+    receive_sync_.clear();
+  }
+}
+
 void RCC::AsyncCommit() {
   int64_t last_commit_time  = 0;
+  int64_t start_time = GetCurrentTime();
   while (!IsStop()) {
     std::unique_ptr<Proposal> msg = execute_queue_.Pop();
     if (msg == nullptr) {
+      int64_t current_time = GetCurrentTime();
+      if(current_time - start_time > 100000) {
+        int next_seq = next_seq_;
+        int curr_seq = proposal_manager_->CurrentSeq();
+        LOG(ERROR)<<" current time:"<<current_time <<" start time:"<<start_time<<" delta:"<<current_time - start_time<<" current seq:"<<curr_seq<<" next seq:"<<next_seq;
+        Sync(std::max(curr_seq, next_seq));
+        start_time = GetCurrentTime();
+      }
       // LOG(ERROR) << "execu timeout";
       continue;
     }
@@ -57,15 +86,14 @@ void RCC::AsyncCommit() {
     if(seq_set_[seq].size()==0){
       commit_time_[seq] = GetCurrentTime();
     }
-    //LOG(ERROR)<<" seq:"<<" proposer:"<<proposer<<" wait:"<<waiting_time;
+    //LOG(ERROR)<<" seq:"<<seq<<" proposer:"<<proposer<<" wait:"<<waiting_time<<" current seq:"<<next_seq_;
     seq_set_[seq][proposer] = std::move(msg);
     if(seq_set_[seq].size() == totoal_proposer_num_){
         //global_stats_->AddCommitWaitingLatency(commit_time - commit_time_[seq]);
     }
 
-    int last = next_seq_;
     while (!IsStop()) {
-      if (seq_set_[next_seq_].size() == totoal_proposer_num_) {
+      if (seq_set_[next_seq_].size() >= 2*f_+1) {
         int64_t commit_time = GetCurrentTime();
         global_stats_->AddCommitInterval(commit_time - last_commit_time);
         last_commit_time = commit_time;
@@ -86,21 +114,17 @@ void RCC::AsyncCommit() {
         seq_set_.erase(seq_set_.find(next_seq_));
         global_stats_->AddCommitTxn(num);
         global_stats_->AddCommitBlock(pro);
-        #ifdef OP1
         {
           std::unique_lock<std::mutex> lk(seq_mutex_);
           commited_seq_ = std::max(static_cast<int64_t>(next_seq_), commited_seq_);
           //LOG(ERROR)<<"update seq:"<<commited_seq_;
           vote_cv_.notify_all();
         }
-        #endif
         next_seq_++;
       } else {
         break;
       }
     }
-    int now_seq = next_seq_;
-    //LOG(ERROR)<<" execute seq interval:"<<(now_seq-last)<<" now:"<<now_seq<<" last:"<<last<<" next size:"<<seq_set_[next_seq_].size();
   }
 }
 
@@ -108,19 +132,10 @@ void RCC::CommitProposal(std::unique_ptr<Proposal> p) {
 
   {
     p->set_queuing_time(GetCurrentTime());
-    if(p->header().proposer_id() == id_) {
-    #ifdef OP0
-      std::unique_lock<std::mutex> lk(seq_mutex_);
-      commited_seq_ = std::max(static_cast<int64_t>(p->header().seq()), commited_seq_);
-      //LOG(ERROR)<<"update seq:"<<commited_seq_;
-      vote_cv_.notify_all();
-    #endif
-      global_stats_->AddCommitLatency(GetCurrentTime()- p->header().create_time());
-    }
     //std::unique_lock<std::mutex> lk(seq_mutex_);
     //commited_seq_ = std::max(static_cast<int64_t>(p->header().seq()), commited_seq_);
     //vote_cv_.notify_all();
-    //global_stats_->AddCommitLatency(GetCurrentTime()- p->header().create_time());
+    global_stats_->AddCommitLatency(GetCurrentTime()- p->header().create_time());
     //LOG(ERROR)<<" seq:"<<p->header().seq()<<" proposer:"<<p->header().proposer_id()<<" commit:"<<GetCurrentTime()<<" create time:"<<p->header().create_time()<<" commit time:"<<(GetCurrentTime() - p->header().create_time());
     //global_stats_->AddCommitWaitingLatency(GetCurrentTime() - last_commit_time_);
     //last_commit_time_ = GetCurrentTime();
@@ -131,6 +146,7 @@ void RCC::CommitProposal(std::unique_ptr<Proposal> p) {
 
 bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
   {
+    global_stats_->IncPendingExecute();
     txn->set_create_time(GetCurrentTime());
     std::unique_lock<std::mutex> lk(txn_mutex_);
     txn->set_id(local_txn_id_++);
@@ -142,7 +158,7 @@ bool RCC::ReceiveTransaction(std::unique_ptr<Transaction> txn) {
 
 void RCC::AsyncSend() {
 
-  int limit = 1000;
+  int limit = 2;
   bool start = false;
   int64_t last_time = 0;
 
@@ -169,6 +185,7 @@ void RCC::AsyncSend() {
     //LOG(ERROR)<<" committed seq:"<<commited_seq_<<" current:"<<proposal_manager_->CurrentSeq()<<" quueing time:"<<GetCurrentTime() - txn->create_time()<<" queue size:"<<queue_size_;
 
 
+
     txn->set_queuing_time(GetCurrentTime() - txn->create_time());
     global_stats_->AddQueuingLatency(GetCurrentTime() - txn->create_time());
 
@@ -176,13 +193,8 @@ void RCC::AsyncSend() {
     txns.push_back(std::move(txn));
     start = true;
 
-
     for (int i = 1; i < batch_size_; i++) {
-    #ifdef OP4
-      txn = txns_.Pop(10);
-    #else
-      txn = txns_.Pop(0);
-      #endif
+      txn = txns_.Pop(100);
       if (txn == nullptr) {
         break;
       }
@@ -198,24 +210,17 @@ void RCC::AsyncSend() {
 
     std::unique_ptr<Proposal> proposal =
         proposal_manager_->GenerateProposal(txns);
-    global_stats_->AddBlockSize(txns.size());
 
-    //LOG(ERROR) << "send proposal id:" << id_ << " seq:" << proposal->header().seq();
+    LOG(ERROR) << "send proposal id:" << id_ << " seq:" << proposal->header().seq();
+    //broadcast_call_(ProposalType::NewMsg, *proposal);
     broadcast_call_(MessageType::ConsensusMsg, *proposal);
   }
   return;
 }
 
-bool RCC::ReceiveProposalList(const Proposal& proposal){
-  for(const Proposal& p : proposal.proposals()){
-    ReceiveProposal(p);
-  }
-  return true;
-}
-
 bool RCC::ReceiveProposal(const Proposal& proposal) {
   int proposer = proposal.header().proposer_id();
-  int64_t seq = proposal.header().seq();
+  int seq = proposal.header().seq();
   int sender = proposal.header().sender();
   int status = proposal.header().status();
 
@@ -224,22 +229,27 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
 
   if (status == ProposalType::NewMsg) {
     data = std::make_unique<Proposal>(proposal);
+    global_stats_->IncPropose();
+  }
+  else {
+    global_stats_->IncPrepare();
+    //return true;
   }
 
   bool changed = false;
   {
-    //LOG(ERROR) << "received :" << seq
-    //            << " from:" << sender
-    //            << " proposer:"<< proposer
-    //            << " status:" << proposal.header().status()
-    //            << " delay:" << GetCurrentTime() - proposal.header().create_time();
+    LOG(ERROR) << "received :" << seq
+                << " from:" << sender
+                << " proposer:"<< proposer
+                << " status:" << proposal.header().status()
+                << " delay:" << GetCurrentTime() - proposal.header().create_time();
 
     std::unique_lock<std::mutex> lk(mutex_[0]);
     //std::unique_lock<std::mutex> lk(mutex_[proposer]);
 
     if (status != ProposalType::NewMsg) {
       if (is_commit_[proposer].find(seq) != is_commit_[proposer].end()) {
-        return false;
+        return 0;
       }
     }
 
@@ -264,13 +274,11 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
         status,
         [&](const google::protobuf::Message&, int received_count,
             std::atomic<TransactionStatue>* s) {
-          if (status == ProposalType::NewMsg || received_count >= total_num_) {
-          //if (status == ProposalType::NewMsg || received_count >= 2 * f_ + 1) {
+          if (status == ProposalType::NewMsg || received_count >= 2 * f_ + 1) {
             switch (status) {
               case ProposalType::NewMsg:
                 if (*s == TransactionStatue::None) {
                   *s = TransactionStatue::READY_PREPARE;
-                  //*s = TransactionStatue::READY_EXECUTE;
                   changed = true;
                 }
                 break;
@@ -293,19 +301,17 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
         });
   }
 
-  //LOG(ERROR)<<" changed:"<<changed;
   if (changed) {
-    std::unique_ptr<Proposal> new_proposal = std::make_unique<Proposal>();
-    *new_proposal->mutable_header() = proposal.header();
-    new_proposal->mutable_header()->set_sender(id_);
-    UpgradeState(new_proposal.get());
+    Proposal new_proposal;
+    *new_proposal.mutable_header() = proposal.header();
+    new_proposal.mutable_header()->set_sender(id_);
+    UpgradeState(&new_proposal);
     int64_t commit_time = GetCurrentTime();
-
-
-    
-
-    if (new_proposal->header().status() == ProposalType::Ready_execute) {
+    if (new_proposal.header().status() == ProposalType::Ready_execute) {
+      //global_stats_->AddCommitLatency(commit_time - proposal.header().create_time());
       std::unique_lock<std::mutex> lk(mutex_[0]);
+      //std::unique_lock<std::mutex> lk(mutex_[proposer]);
+      // LOG(ERROR)<<"obtaind ata proposer:"<<proposer<<" seq:"<<seq;
       auto it = collector_[proposer].find(hash);
       assert(it != collector_[proposer].end());
 
@@ -317,91 +323,16 @@ bool RCC::ReceiveProposal(const Proposal& proposal) {
 
       assert(raw_p != nullptr);
       is_commit_[proposer].insert(seq);
-      int max_s = 0, min_s = -1;
-      for(int i = 1; i <=total_num_;++i){
-        int s = 0;
-        if(is_commit_[i].empty()){
-          //LOG(ERROR)<<" proposer:"<<i<<" comit seq:"<<0;
-        }
-        else {
-          s = *(--is_commit_[i].end());
-          //LOG(ERROR)<<" proposer:"<<i<<" comit seq:"<<*(--is_commit_[i].end());
-        }
-        if(min_s == -1 || min_s > s) min_s = s;
-        max_s = max_s > s?max_s:s;
-        //LOG(ERROR)<<" proposer:"<<i<<" comit seq:"<<s;
-      }
-        //LOG(ERROR)<<" proposer gap:"<<max_s- min_s<<" max:"<<max_s<<" min:"<<min_s;
-        global_stats_->AddCommitRoundLatency(max_s - min_s);
 
       // LOG(ERROR)<<"commit type:"<<new_proposal.header().status()<<"
       // transaction size:"<<raw_p->transactions_size();
       CommitProposal(std::move(raw_p));
     } else {
-    #ifdef OP2
-    std::unique_lock<std::mutex> lk(mutex_[1]);
-    //LOG(ERROR)<<" seq:"<<seq<<" last num:"<<(seq==1?0:send_num_[status][seq-1])<<" status:"<<status;
-        assert(new_proposal != nullptr);
-    if(seq==1 || send_num_[status][seq-1] == total_num_){
       // LOG(ERROR)<<"bc type:"<<new_proposal.header().status();
-      //LOG(ERROR)<<" bc seq:"<<seq<<" status:"<<status;
-      assert(new_proposal != nullptr);
-      Proposal proposal_list;
-      
-      //Broadcast(MessageType::ConsensusMsg, *new_proposal);
-      *proposal_list.add_proposals() = *new_proposal;
-
-      send_num_[status][seq]++;
-      if(seq > 2){
-        if(send_num_[status].find(seq-2) != send_num_[status].end()){
-          send_num_[status].erase(send_num_[status].find(seq-2));
-        }
-      }
-      int64_t next_seq = seq+1;
-      while(send_num_[status][next_seq-1] == total_num_){
-        if(send_num_[status].find(next_seq-2) != send_num_[status].end()){
-          send_num_[status].erase(send_num_[status].find(next_seq-2));
-        }
-        //LOG(ERROR)<<" find next:"<<next_seq<<" send num:"<<send_num_[status][next_seq];
-        auto it = pending_msg_[status].find(next_seq);
-        if(it != pending_msg_[status].end()){
-          for(auto& p: it->second){
-            //LOG(ERROR)<<" bc next:"<<next_seq<<" status:"<<status;
-            assert(p != nullptr);
-            //Broadcast(MessageType::ConsensusMsg, *p);
-            *proposal_list.add_proposals() = *p;
-            send_num_[status][next_seq]++;
-          }
-          pending_msg_[status].erase(it);
-          //LOG(ERROR)<<" bc next :"<<next_seq<<" status:"<<status<<" send num:"<<send_num_[status][next_seq];
-          next_seq++;
-        }
-        else {
-          break;
-        }
-      }
-          Broadcast(MessageType::ConsensusMsgExt, proposal_list);
-      if(status == 0){
-      #ifdef OP3
-        {
-          std::unique_lock<std::mutex> lk(seq_mutex_);
-          commited_seq_ = std::max(static_cast<int64_t>(next_seq_), commited_seq_);
-          //LOG(ERROR)<<"update seq:"<<commited_seq_;
-          vote_cv_.notify_all();
-        }
-        #endif
-
-      }
-    }
-      else {
-        pending_msg_[status][seq].push_back(std::move(new_proposal));
-        //LOG(ERROR)<<" push pending, seq:"<<seq<<" size:"<< pending_msg_[status][seq].size();
-      }
-      #else
-        Broadcast(MessageType::ConsensusMsg, *new_proposal);
-      #endif
+      Broadcast(MessageType::ConsensusMsg, new_proposal);
     }
   }
+  // LOG(ERROR)<<"receive proposal done";
   return true;
 }
 
@@ -409,7 +340,6 @@ void RCC::UpgradeState(Proposal* proposal) {
   switch (proposal->header().status()) {
     case ProposalType::NewMsg:
       proposal->mutable_header()->set_status(ProposalType::Prepared);
-      //proposal->mutable_header()->set_status(ProposalType::Ready_execute);
       return;
     case ProposalType::Prepared:
       proposal->mutable_header()->set_status(ProposalType::Commit);

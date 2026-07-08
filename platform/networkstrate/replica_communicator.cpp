@@ -211,8 +211,6 @@ int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message) {
 
 int ReplicaCommunicator::SendMessage(const google::protobuf::Message& message,
                                      const ReplicaInfo& replica_info) {
-  return SendSingleMessage(message, replica_info);
-
   if (is_use_long_conn_) {
     std::string data = NetChannel::GetRawMessageString(message, verifier_);
     BroadcastData broadcast_data;

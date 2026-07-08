@@ -77,6 +77,7 @@ void ConsensusManager::Stop() {
 
 void ConsensusManager::Start() {
   ServiceInterface::Start();
+  LOG(ERROR)<<" consensus manaer";
   if (config_.HeartBeatEnabled() && verifier_) {
     heartbeat_thread_ =
         std::thread(&ConsensusManager::HeartBeat, this);  // pass by reference

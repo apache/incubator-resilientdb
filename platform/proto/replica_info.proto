@@ -47,6 +47,9 @@ message ResConfigData{
   optional int32 duplicate_check_frequency_useconds = 22;
   optional bool failure_mode = 23;
   optional int32 block_size = 24;
+  optional int32 water_mark = 25;
+  // Send performance batches uniformly at max_process_txn requests per second.
+  optional bool performance_rate_limited = 26;
 }
 
 message ReplicaStates {

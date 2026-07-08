@@ -51,8 +51,13 @@ message Proposal {
   bytes hash = 4;
 };
 
+message StartView {
+  int32 view = 1;
+  int32 sender_id = 2;
+}
+
 enum MessageType {
   NewProposal = 0;
   Vote = 1;
+  StartViewMsg = 2;
 };
-

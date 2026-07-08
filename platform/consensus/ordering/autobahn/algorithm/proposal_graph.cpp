@@ -227,7 +227,7 @@ int ProposalGraph::CheckState(NodeInfo* node_info, ProposalState state) {
 void ProposalGraph::Commit(const std::string& hash) {
   auto it = node_info_.find(hash);
   if (it == node_info_.end()) {
-    LOG(ERROR) << "node not found, hash:" << hash;
+    //LOG(ERROR) << "node not found, hash:" << hash;
     assert(1 == 0);
     return;
   }
@@ -250,7 +250,7 @@ void ProposalGraph::Commit(const std::string& hash) {
 
       auto it = node_info_.find(c_hash);
       if (it == node_info_.end()) {
-        LOG(ERROR) << "node not found, hash:";
+        //LOG(ERROR) << "node not found, hash:";
   #ifdef GOPOA
         commit_p.clear();
         break;

@@ -30,8 +30,8 @@ def read_tps(file):
                       tps.append(int(r.split(':')[1]))
                 except:
                   print("s:",s)
-            if l.find("client latency") > 0:
-                print("get lat:",s)
+            if l.find("client latency") > 0 and l.find("server") == 0:
+                #print("get lat:",s)
                 lat.append(float(s[-1].split(':')[-1]))
     return tps, lat
 

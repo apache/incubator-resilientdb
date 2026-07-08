@@ -206,6 +206,14 @@ void ResDBConfig::SetMaxProcessTxn(uint32_t num) {
   max_process_txn_ = num;
 }
 
+bool ResDBConfig::PerformanceRateLimited() const {
+  return config_data_.performance_rate_limited();
+}
+
+void ResDBConfig::SetPerformanceRateLimited(bool rate_limited) {
+  config_data_.set_performance_rate_limited(rate_limited);
+}
+
 uint32_t ResDBConfig::GetMaxClientComplaintNum() const {
   if (config_data_.max_client_complaint_num()) {
     return config_data_.max_client_complaint_num();

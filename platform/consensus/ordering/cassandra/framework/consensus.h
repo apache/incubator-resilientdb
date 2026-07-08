@@ -53,6 +53,8 @@ class Consensus : public common::Consensus {
   int64_t start_;
   std::mutex mutex_;
   int send_num_[200];
+  int f_;
+  int id_;
 };
 
 }  // namespace cassandra

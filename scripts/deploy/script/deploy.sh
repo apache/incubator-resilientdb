@@ -68,7 +68,7 @@ function run_cmd(){
   count=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${ip} "$1" &
     ((count++))
   done
 
@@ -80,7 +80,7 @@ function run_cmd(){
 
 function run_one_cmd(){
   echo " $1"
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${ip} "$1" 
+  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
@@ -94,8 +94,9 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
-  #scp -i ${key} -r ${bin_path} ${output_path}/server.config ubuntu@${ip}:/home/ubuntu/  > null 2>&1 &
+  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert junchao@${ip}:/users/junchao/  > null 2>&1 &
+  echo "scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert junchao@${ip}:/users/junchao/  > null 2>&1 &"
+  #scp -i ${key} -r ${bin_path} ${output_path}/server.config junchao@${ip}:/users/junchao/  > null 2>&1 &
   ((count++))
 done
 
@@ -128,7 +129,7 @@ function check(){
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ubuntu@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"` 
     if [ "$resp" = "" ]; then
       sleep 1
     else

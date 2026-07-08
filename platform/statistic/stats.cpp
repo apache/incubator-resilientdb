@@ -165,8 +165,9 @@ void Stats::MonitorGlobal() {
   uint64_t last_block_size_num = 0, last_block_size = 0;
 
   while (!stop_) {
-  monitor_sleep_time_ = 1;
-    sleep(monitor_sleep_time_);
+  //monitor_sleep_time_ = 1;
+    //sleep(monitor_sleep_time_);
+    usleep(800000);
     time += monitor_sleep_time_;
     seq_fail = seq_fail_;
     socket_recv = socket_recv_;
@@ -251,6 +252,18 @@ void Stats::MonitorGlobal() {
     num_transactions_time = num_transactions_time_;
     num_consumed_transactions_time = num_consumed_transactions_time_;
 
+    double cli_lat = 0;
+    if (run_req_num - last_run_req_num > 0) {
+      cli_lat = static_cast<double>(run_req_run_time -
+                                    last_run_req_run_time) /
+                (run_req_num - last_run_req_num) / 1000000.0;
+    }
+    double commit_lat = 0;
+    if (commit_num - last_commit_num > 0) {
+      commit_lat = static_cast<double>(commit_time - last_commit_time) /
+                   (commit_num - last_commit_num) / 1000000.0;
+    }
+
     LOG(ERROR) << "=========== monitor =========\n"
                << "server call:" << server_call - last_server_call
                << " server process:" << server_process - last_server_process
@@ -312,10 +325,7 @@ void Stats::MonitorGlobal() {
                  << static_cast<double>(round_time -
                                         last_round_time) /
                         (round_num - last_round_num) / 1000000.0
-               << " commit latency :"
-                 << static_cast<double>(commit_time -
-                                        last_commit_time) /
-                        (commit_num - last_commit_num) / 1000000.0
+               << " commit latency :" << commit_lat
 
               << " verify latency :"
                  << static_cast<double>(verify_time -
@@ -399,14 +409,8 @@ void Stats::MonitorGlobal() {
                         (commit_ratio_num - last_commit_ratio_num) / 1000000.0
               << " cpu usage:" 
                  << cpu_info_->GetCPUUsage()
-               << " "
-                  "\n--------------- monitor ------------";
-    if (run_req_num - last_run_req_num > 0) {
-      LOG(ERROR) << "  req client latency:"
-                 << static_cast<double>(run_req_run_time -
-                                        last_run_req_run_time) /
-                        (run_req_num - last_run_req_num) / 1000000.0;
-    }
+              << "  req client latency:"
+              << cli_lat;
 
     last_seq_fail = seq_fail;
     last_socket_recv = socket_recv;

@@ -17,7 +17,8 @@ namespace rcc {
 
 class RCC : public common::ProtocolBase {
  public:
-  RCC(int id, int f, int total_num, SignatureVerifier* verifier);
+  RCC(int id, int f, int total_num, int block_size,
+      SignatureVerifier* verifier);
   ~RCC();
 
   void AsyncSend();
@@ -26,9 +27,10 @@ class RCC : public common::ProtocolBase {
   bool ReceiveTransaction(std::unique_ptr<Transaction> txn);
   void SendTxn();
   bool ReceiveProposal(const Proposal& proposal);
-  bool ReceiveProposalList(const Proposal& proposal);
+  void ReceiveSyncMsg(const SyncMsg& sync_msg);
 
  private:
+  void Sync(int seq);
   void UpgradeState(Proposal* proposal);
 
  private:
@@ -41,9 +43,10 @@ class RCC : public common::ProtocolBase {
   std::thread commit_thread_;
 
   std::unique_ptr<ProposalManager> proposal_manager_;
-  std::mutex mutex_[1024], txn_mutex_, seq_mutex_;
+  std::mutex mutex_[1024], txn_mutex_, seq_mutex_, sync_mutex_;
   std::condition_variable vote_cv_;
 
+  std::map<int,int> receive_sync_;
   std::map<int, std::map<int, std::unique_ptr<Proposal>>> seq_set_;
   std::map<int, std::map<int, std::set<int>>> received_num_[1024];
   int next_seq_;
@@ -58,8 +61,6 @@ class RCC : public common::ProtocolBase {
   Stats* global_stats_;
   int64_t last_commit_time_ = 0;
   std::map<int,int64_t> commit_time_;
-  std::map<int64_t, int> send_num_[10];
-  std::map<int64_t, std::vector<std::unique_ptr<Proposal>> > pending_msg_[10];
 };
 
 }  // namespace rcc

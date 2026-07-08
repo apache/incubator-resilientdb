@@ -55,11 +55,13 @@ class Consensus : public ConsensusManager {
     virtual int ProcessCustomConsensus(std::unique_ptr<Request> request);
     virtual int ProcessNewTransaction(std::unique_ptr<Request> request);
     virtual int CommitMsg(const google::protobuf::Message& msg);
+    virtual int ResponseMsg(const BatchUserResponse& batch_resp);
+    virtual int ResponseMsg(const Request &request, const BatchUserResponse& batch_resp);
+    void SendFail(const int proxy_id, const std::string& hash);
 
  protected:
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);
   int Broadcast(int type, const google::protobuf::Message& msg);
-  int ResponseMsg(const BatchUserResponse& batch_resp);
   void AsyncSend();
   bool IsStop();
 

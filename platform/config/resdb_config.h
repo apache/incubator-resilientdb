@@ -103,6 +103,8 @@ class ResDBConfig {
   // The maximun transactions being processed.
   uint32_t GetMaxProcessTxn() const;
   void SetMaxProcessTxn(uint32_t num);
+  bool PerformanceRateLimited() const;
+  void SetPerformanceRateLimited(bool rate_limited);
 
   uint32_t GetMaxClientComplaintNum() const;
 

@@ -92,6 +92,7 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
       *proposal->mutable_header()->mutable_qc() = generic_qc_;
     }
 
+    proposal->mutable_header()->set_proposer_id(id_);
     proposal->mutable_header()->set_view(round_);
     proposal->set_sender(id_);
   }
@@ -102,6 +103,13 @@ std::unique_ptr<Proposal> ProposalManager::GenerateProposal(
 
 int ProposalManager::CurrentView(){
   return round_;
+}
+
+void ProposalManager::AdvanceView(int view) {
+  std::unique_lock<std::mutex> lk(txn_mutex_);
+  if (view > round_) {
+    round_ = view;
+  }
 }
 
 void ProposalManager::AddQC(std::unique_ptr<QC> qc){
