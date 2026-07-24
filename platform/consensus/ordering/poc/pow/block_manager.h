@@ -21,6 +21,7 @@
 
 #include <cstdint>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/status/status.h"
 #include "platform/config/resdb_poc_config.h"
 #include "platform/consensus/ordering/poc/pow/miner.h"
@@ -93,7 +94,7 @@ class BlockManager {
   std::unique_ptr<Miner> miner_;
   // Blocks that have been committed.
   // TODO move to executor and write to ds.
-  std::vector<std::unique_ptr<Block> > block_list_ GUARDED_BY(mtx_);
+  std::vector<std::unique_ptr<Block> > block_list_ ABSL_GUARDED_BY(mtx_);
   // The current minning block.
   std::unique_ptr<Block> new_mining_block_;
   BatchClientTransactions request_candidate_;

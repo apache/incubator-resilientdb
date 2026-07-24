@@ -102,6 +102,7 @@ cc_library(
         "//platform/consensus/ordering/poc/proto:pow_cc_proto",
         "//platform/proto:resdb_cc_proto",
         "//platform/statistic:stats",
+        "@com_google_absl//absl/base:core_headers",
     ],
 )
 
