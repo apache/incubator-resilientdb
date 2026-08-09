@@ -101,6 +101,22 @@ class DuckDB : public Storage {
 
   bool Flush() override { return true; }
 
+  // No-op overrides so DuckDB stays concrete: Storage declares these
+  // composite-key methods pure virtual, and without them DuckDB would be
+  // abstract and fail to compile. The SQL backend doesn't use them.
+  int CreateCompositeKey(const std::string&) override { return 0; }
+
+  int DeleteCompositeKey(const std::string&) override { return 0; }
+
+  std::vector<std::string> GetByCompositeKeyPrefix(
+      const std::string&) override {
+    return {};
+  }
+
+  int UpdateCompositeKey(const std::string&, const std::string&) override {
+    return 0;
+  }
+
  private:
   std::unique_ptr<duckdb::DuckDB> db_;
   std::unique_ptr<duckdb::Connection> conn_;

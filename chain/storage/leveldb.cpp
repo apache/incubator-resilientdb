@@ -23,7 +23,9 @@
 #include <unistd.h>
 
 #include <cstdint>
+#include <cstring>
 
+#include "chain/storage/composite_key_codec.h"
 #include "chain/storage/proto/kv.pb.h"
 #include "leveldb/options.h"
 
@@ -321,8 +323,16 @@ ResLevelDB::GetAllItemsWithSeq() {
 std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetAllItems() {
   std::map<std::string, std::pair<std::string, int>> resp;
 
+  // Hide composite-key index entries from user-facing scans.
+  const std::string ck_prefix =
+      std::string(kCompositeKeyNamespace) + kCompositeKeyDelim;
+
   leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    if (it->key().size() >= ck_prefix.size() &&
+        memcmp(it->key().data(), ck_prefix.data(), ck_prefix.size()) == 0) {
+      continue;
+    }
     ValueHistory history;
     if (!history.ParseFromString(it->value().ToString()) ||
         history.value_size() == 0) {
@@ -342,9 +352,17 @@ std::map<std::string, std::pair<std::string, int>> ResLevelDB::GetKeyRange(
     const std::string& min_key, const std::string& max_key) {
   std::map<std::string, std::pair<std::string, int>> resp;
 
+  // Hide composite-key index entries from user-facing scans.
+  const std::string ck_prefix =
+      std::string(kCompositeKeyNamespace) + kCompositeKeyDelim;
+
   leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
   for (it->Seek(min_key); it->Valid() && it->key().ToString() <= max_key;
        it->Next()) {
+    if (it->key().size() >= ck_prefix.size() &&
+        memcmp(it->key().data(), ck_prefix.data(), ck_prefix.size()) == 0) {
+      continue;
+    }
     ValueHistory history;
     if (!history.ParseFromString(it->value().ToString()) ||
         history.value_size() == 0) {
@@ -438,6 +456,45 @@ uint64_t ResLevelDB::GetLastCheckpoint() {
     return last_ckpt_;
   }
   return GetLastCheckpointInternal();
+}
+
+int ResLevelDB::CreateCompositeKey(const std::string& composite_key) {
+  leveldb::Status s = db_->Put(leveldb::WriteOptions(), composite_key, "");
+  return s.ok() ? 0 : -1;
+}
+
+int ResLevelDB::DeleteCompositeKey(const std::string& composite_key) {
+  leveldb::Status s = db_->Delete(leveldb::WriteOptions(), composite_key);
+  return s.ok() ? 0 : -1;
+}
+
+int ResLevelDB::UpdateCompositeKey(const std::string& old_composite_key,
+                                   const std::string& new_composite_key) {
+  // WriteBatch makes delete+put atomic.
+  leveldb::WriteBatch batch;
+  batch.Delete(old_composite_key);
+  batch.Put(new_composite_key, "");
+  leveldb::Status s = db_->Write(leveldb::WriteOptions(), &batch);
+  return s.ok() ? 0 : -1;
+}
+
+std::vector<std::string> ResLevelDB::GetByCompositeKeyPrefix(
+    const std::string& prefix) {
+  std::vector<std::string> out;
+  std::unique_ptr<leveldb::Iterator> it(
+      db_->NewIterator(leveldb::ReadOptions()));
+
+  // Seek lands on the first key >= prefix; sorted order lets us stop on the
+  // first non-match.
+  for (it->Seek(prefix); it->Valid(); it->Next()) {
+    leveldb::Slice key = it->key();
+    if (key.size() < prefix.size() ||
+        memcmp(key.data(), prefix.data(), prefix.size()) != 0) {
+      break;
+    }
+    out.emplace_back(key.data(), key.size());
+  }
+  return out;
 }
 
 }  // namespace storage

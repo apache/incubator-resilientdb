@@ -60,6 +60,13 @@ class MockStorage : public Storage {
   MOCK_METHOD(ValuesSeqType, GetAllItemsWithSeq, (), (override));
 
   MOCK_METHOD(bool, Flush, (), (override));
+
+  MOCK_METHOD(int, CreateCompositeKey, (const std::string&), (override));
+  MOCK_METHOD(int, DeleteCompositeKey, (const std::string&), (override));
+  MOCK_METHOD(std::vector<std::string>, GetByCompositeKeyPrefix,
+              (const std::string&), (override));
+  MOCK_METHOD(int, UpdateCompositeKey,
+              (const std::string&, const std::string&), (override));
 };
 
 }  // namespace resdb
