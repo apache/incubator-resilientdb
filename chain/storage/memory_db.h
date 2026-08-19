@@ -83,6 +83,7 @@ class MemoryDB : public Storage {
 
   std::vector<std::pair<std::string, int>> GetTopHistory(const std::string& key,
                                                          int number) override;
+  void Clear() override;
 
   // Composite key operations for secondary indexing.
   // Backed by an ordered std::map to mirror LevelDB's sorted key layout, which

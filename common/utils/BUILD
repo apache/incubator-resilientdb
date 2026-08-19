@@ -23,3 +23,8 @@ cc_library(
     srcs = ["utils.cpp"],
     hdrs = ["utils.h"],
 )
+
+cc_library(
+    name = "semaphore",
+    hdrs = ["semaphore.h"],
+)

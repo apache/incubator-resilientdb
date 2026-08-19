@@ -59,7 +59,7 @@ class MockStorage : public Storage {
   MOCK_METHOD(ItemsType, GetAllItems, (), (override));
   MOCK_METHOD(ValuesSeqType, GetAllItemsWithSeq, (), (override));
 
-  MOCK_METHOD(bool, Flush, (), (override));
+  MOCK_METHOD(bool, Flush, (bool should_sync), (override));
 
   MOCK_METHOD(int, CreateCompositeKey, (const std::string&), (override));
   MOCK_METHOD(int, DeleteCompositeKey, (const std::string&), (override));
@@ -67,6 +67,7 @@ class MockStorage : public Storage {
               (const std::string&), (override));
   MOCK_METHOD(int, UpdateCompositeKey,
               (const std::string&, const std::string&), (override));
+  MOCK_METHOD(void, Clear, (), (override));
 };
 
 }  // namespace resdb

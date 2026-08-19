@@ -53,7 +53,7 @@ class Consensus : public ConsensusManager {
  protected:
   int SendMsg(int type, const google::protobuf::Message& msg, int node_id);
   int Broadcast(int type, const google::protobuf::Message& msg);
-  int ResponseMsg(const BatchUserResponse& batch_resp);
+  virtual int ResponseMsg(const BatchUserResponse& batch_resp);
   void AsyncSend();
   bool IsStop();
 

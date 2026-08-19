@@ -138,7 +138,7 @@ class QueryTest : public Test {
   SystemInfo system_info_;
   CheckPointManager checkpoint_manager_;
   MessageManager message_manager_;
-  Recovery recovery_;
+  PBFTRecovery recovery_;
   Query query_;
   MockReplicaCommunicator replica_communicator_;
   MockSignatureVerifier verifier_;

@@ -19,7 +19,8 @@
 
 set -e
 
-export TEMPLATE_PATH=$PWD/config/pbft.config
+# Use pbft.config as a default if TEMPLATE_PATH is not already set
+export TEMPLATE_PATH=${TEMPLATE_PATH:-$PWD/config/pbft.config}
 
 # load environment parameters
 . ./script/env.sh
@@ -88,20 +89,20 @@ function run_cmd(){
   idx=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "cd ${main_folder}/$idx; $1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ConnectionAttempts=1 ${user}@${ip} "cd ${main_folder}/$idx; $1" &
     ((count++))
     ((idx++))
   done
 
   while [ $count -gt 0 ]; do
-        wait $pids
+        wait
         count=`expr $count - 1`
   done
 }
 
 function run_one_cmd(){
   echo "run one:"$1
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${user}@${ip} "$1" 
+  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ConnectionAttempts=1 ${user}@${ip} "$1" 
 }
 
 run_cmd "killall -9 ${server_bin}"
@@ -121,7 +122,7 @@ do
 done
 
 while [ $count -gt 0 ]; do
-  wait $pids
+  wait
   count=`expr $count - 1`
 done
 
@@ -143,7 +144,7 @@ do
 done
 
 while [ $count -gt 0 ]; do
-  wait $pids
+  wait
   count=`expr $count - 1`
 done
 
@@ -162,7 +163,7 @@ do
 done
 
 while [ $count -gt 0 ]; do
-  wait $pids
+  wait
   count=`expr $count - 1`
 done
 

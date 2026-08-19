@@ -84,6 +84,17 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "memory_db_test",
+    size = "small",  # Set the size to "small"
+    timeout = "short",  # Set the timeout to "short"
+    srcs = ["memory_db_test.cpp"],
+    deps = [
+        ":memory_db",
+        "//common/test:test_main",
+    ],
+)
+
 cc_library(
     name = "composite_key_codec",
     srcs = ["composite_key_codec.cpp"],

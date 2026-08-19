@@ -99,7 +99,7 @@ class DuckDB : public Storage {
     return {};
   }
 
-  bool Flush() override { return true; }
+  bool Flush(bool should_sync = false) override { return true; }
 
   // No-op overrides so DuckDB stays concrete: Storage declares these
   // composite-key methods pure virtual, and without them DuckDB would be

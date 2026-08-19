@@ -59,13 +59,17 @@ message ResConfigData{
   optional int32 recovery_ckpt_time_s = 20;
   optional bool enable_resview = 23;
   optional bool enable_faulty_switch = 24;
+  optional int32 min_client_receive_num = 26;
 
-// for hotstuff.
+  // for hotstuff.
   optional bool use_chain_hotstuff = 9;
 
   optional int32 max_client_complaint_num = 21;
 
   optional int32 duplicate_check_frequency_useconds = 22;
+
+  // for raft
+  optional int32 raft_follower_batch_timeout_ms = 27;
 }
 
 message ReplicaStates {

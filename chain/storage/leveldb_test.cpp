@@ -108,6 +108,27 @@ TEST_P(LevelDBTest, CacheEvictionPolicy) {
   }
 }
 
+TEST_P(LevelDBTest, Clear) {
+  std::string key1 = "clear_key_1";
+  std::string value1 = "clear_value_1";
+  std::string key2 = "clear_key_2";
+  std::string value2 = "clear_value_2";
+
+  EXPECT_EQ(storage->SetValue(key1, value1), 0);
+  EXPECT_EQ(storage->SetValue(key2, value2), 0);
+
+  EXPECT_TRUE(storage->Flush(true));
+
+  EXPECT_EQ(storage->GetValue(key1), value1);
+  EXPECT_EQ(storage->GetValue(key2), value2);
+
+  storage->Clear();
+
+  EXPECT_TRUE(storage->GetValue(key1).empty());
+  EXPECT_TRUE(storage->GetValue(key2).empty());
+  EXPECT_TRUE(storage->GetAllItems().empty());
+}
+
 INSTANTIATE_TEST_CASE_P(LevelDBTest, LevelDBTest,
                         ::testing::Values(CacheConfig::ENABLED,
                                           CacheConfig::DISABLED));

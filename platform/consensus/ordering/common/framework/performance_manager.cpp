@@ -42,7 +42,7 @@ PerformanceManager::PerformanceManager(
           .public_key()
           .public_key_info()
           .type() == CertificateKeyInfo::CLIENT) {
-    for (int i = 0; i < 1; ++i) {
+    for (int i = 0; i < num_consumer_threads_; ++i) {
       user_req_thread_[i] =
           std::thread(&PerformanceManager::BatchProposeMsg, this);
     }
@@ -52,22 +52,32 @@ PerformanceManager::PerformanceManager(
   total_num_ = 0;
   replica_num_ = config_.GetReplicaNum();
   id_ = config_.GetSelfInfo().id();
-  primary_ = id_ % replica_num_;
-  if (primary_ == 0) primary_ = replica_num_;
+  primary_.store(id_ % replica_num_);
+  if (primary_ == 0) primary_.store(replica_num_);
   local_id_ = 1;
   sum_ = 0;
 }
 
 PerformanceManager::~PerformanceManager() {
   stop_ = true;
-  for (int i = 0; i < 16; ++i) {
+  for (int i = 0; i < num_consumer_threads_; ++i) {
     if (user_req_thread_[i].joinable()) {
       user_req_thread_[i].join();
     }
   }
 }
 
-int PerformanceManager::GetPrimary() { return primary_; }
+int PerformanceManager::GetPrimary() { return primary_.load(); }
+
+void PerformanceManager::SetPrimary(int id) {
+  int curr_primary = primary_.load();
+  while (id != curr_primary) {
+    if (primary_.compare_exchange_strong(curr_primary, id)) {
+      LOG(INFO) << __FUNCTION__ << ": primary updated to " << id;
+      return;
+    }
+  }
+}
 
 int PerformanceManager::NeedResponse() {
   return config_.GetMinClientReceiveNum();  // f+1;
@@ -88,16 +98,25 @@ int PerformanceManager::StartEval() {
     return 0;
   }
   eval_started_ = true;
-  for (int i = 0; i < 100000000; ++i) {
-    std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
-    queue_item->context = nullptr;
-    queue_item->user_request = GenerateUserRequest();
-    batch_queue_.Push(std::move(queue_item));
-    if (i == 2000000) {
-      eval_ready_promise_.set_value(true);
-    }
+  for (int thread_index = 0; thread_index < num_producer_threads_;
+       ++thread_index) {
+    std::thread([this, thread_index]() {
+      for (int i = thread_index; i < 100000000; i += num_producer_threads_) {
+        batch_queue_slots_available_.Acquire();
+
+        std::unique_ptr<QueueItem> queue_item = std::make_unique<QueueItem>();
+        queue_item->context = nullptr;
+        queue_item->user_request = GenerateUserRequest();
+        batch_queue_.Push(std::move(queue_item));
+
+        int64_t pushed_count =
+            eval_ready_counter_.fetch_add(1, std::memory_order_relaxed) + 1;
+        if (pushed_count == 2000000) {
+          eval_ready_promise_.set_value(true);
+        }
+      }
+    }).detach();
   }
-  LOG(WARNING) << "start eval done";
   return 0;
 }
 
@@ -192,8 +211,8 @@ int PerformanceManager::BatchProposeMsg() {
   eval_ready_future_.get();
   bool start = false;
   while (!stop_) {
-    if (send_num_ > config_.GetMaxProcessTxn()) {
-      usleep(100000);
+    if (send_num_ >= config_.GetMaxProcessTxn()) {
+      usleep(100);
       continue;
     }
     if (batch_req.size() < config_.ClientBatchNum()) {
@@ -205,6 +224,7 @@ int PerformanceManager::BatchProposeMsg() {
         }
         continue;
       }
+      batch_queue_slots_available_.Release();
       batch_req.push_back(std::move(item));
       if (batch_req.size() < config_.ClientBatchNum()) {
         continue;

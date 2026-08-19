@@ -38,7 +38,7 @@ class TransactionManager {
   TransactionManager(bool is_out_of_order = false, bool need_response = true);
   virtual ~TransactionManager() = default;
 
-  std::unique_ptr<BatchUserResponse> ExecuteBatchWithSeq(
+  virtual std::unique_ptr<BatchUserResponse> ExecuteBatchWithSeq(
       uint64_t seq, const BatchUserRequest& request);
 
   virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(

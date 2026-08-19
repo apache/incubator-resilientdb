@@ -1,0 +1,257 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+package(default_visibility = ["//platform/consensus/ordering/raft:__subpackages__"])
+
+cc_library(
+    name = "raft",
+    srcs = [
+        "raft.cpp",
+        "leader_election_manager.cpp",
+    ],
+    hdrs = [
+        "raft.h",
+        "leader_election_manager.h",
+    ],
+    deps = [
+        "//common:comm",
+        "//common/crypto:signature_verifier",
+        "//platform/common/queue:lock_free_queue",
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
+        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
+        "//platform/statistic:stats",
+        "//platform/config:resdb_config",
+        "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/proto:viewchange_message_cc_proto",
+        "//platform/consensus/recovery:raft_recovery"
+    ],
+    visibility = ["//platform/consensus/ordering/raft:__subpackages__",
+                  "//platform/consensus/recovery:__subpackages__"],
+)
+
+cc_library(
+    name = "test_raft",
+    srcs = [
+        "raft.cpp",
+        "leader_election_manager.cpp",
+    ],
+    hdrs = [
+        "raft.h",
+        "leader_election_manager.h",
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    linkopts = ["-ldl"],
+    testonly = True,
+    deps = [
+        "//common:comm",
+        "//common/crypto:signature_verifier",
+        "//platform/common/queue:lock_free_queue",
+        "//platform/consensus/ordering/common/algorithm:protocol_base",
+        "//platform/consensus/ordering/raft/proto:proposal_cc_proto",
+        "//platform/statistic:stats",
+        "//platform/config:resdb_config",
+        "//platform/consensus/execution:system_info",
+        "//platform/networkstrate:replica_communicator",
+        "//platform/proto:viewchange_message_cc_proto",
+        "//platform/consensus/recovery:raft_recovery"
+    ],
+    visibility = ["//platform/consensus/ordering/raft:__subpackages__",
+                  "//platform/consensus/recovery:__subpackages__"],
+)
+
+cc_library(
+    name = "mock_raft",
+    hdrs = ["mock_raft.h"],
+    copts = ["-DRAFT_TEST_MODE"],
+    testonly = True,
+    deps = [
+        ":test_raft",
+    ],
+)
+
+cc_library(
+    name = "mock_leader_election_manager",
+    hdrs = ["mock_leader_election_manager.h"],
+    copts = ["-DRAFT_TEST_MODE"],
+    testonly = True,
+    deps = [
+        ":test_raft",
+    ],
+)
+
+cc_test(
+    name = "leader_election_test",
+    srcs = ["leader_election_manager_test.cpp"],
+    deps = [
+        ":test_raft",
+        ":mock_raft",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main"
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_transaction_test",
+    srcs = [
+        "raft_transaction_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_append_entries_test",
+    srcs = [
+        "raft_append_entries_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_append_entries_response_test",
+    srcs = [
+        "raft_append_entries_response_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_request_vote_test",
+    srcs = [
+        "raft_request_vote_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_request_vote_response_test",
+    srcs = [
+        "raft_request_vote_response_test.cpp",
+        "raft_tests.h",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:mock_raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_integration_test",
+    srcs = [
+        "raft_integration_test.cpp",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//platform/consensus/recovery:raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//platform/consensus/checkpoint:mock_checkpoint",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)
+
+cc_test(
+    name = "raft_send_snapshot_test",
+    srcs = [
+        "raft_send_snapshot_test.cpp",
+        "raft_test_util.h"
+    ],
+    copts = ["-DRAFT_TEST_MODE"],
+    deps = [
+        ":test_raft",
+        ":mock_leader_election_manager",
+        "//chain/storage:memory_db",
+        "//platform/consensus/recovery:raft_recovery",
+        "//platform/networkstrate:mock_replica_communicator",
+        "//platform/consensus/checkpoint:mock_checkpoint",
+        "//common/crypto:mock_signature_verifier",
+        "//platform/config:resdb_config_utils",
+        "//common/test:test_main",
+        "//platform/proto:client_test_cc_proto",
+    ],
+    size="small"
+)

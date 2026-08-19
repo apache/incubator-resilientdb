@@ -166,3 +166,9 @@ UseCRLF:         false
 UseTab:          Never
 ...
 
+---
+Language:        Proto
+BasedOnStyle:    Google
+IndentWidth:     2
+ColumnLimit:     80
+...

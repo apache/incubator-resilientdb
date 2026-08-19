@@ -38,6 +38,8 @@ class MockTransactionManager : public MockTransactionExecutorDataImpl {
       : MockTransactionExecutorDataImpl(is_out_of_order) {}
   MOCK_METHOD(std::unique_ptr<BatchUserResponse>, ExecuteBatch,
               (const BatchUserRequest&), (override));
+  MOCK_METHOD(std::unique_ptr<BatchUserResponse>, ExecuteBatchWithSeq,
+              (uint64_t, const BatchUserRequest&), (override));
 };
 
 }  // namespace resdb

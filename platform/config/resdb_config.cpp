@@ -122,6 +122,10 @@ int ResDBConfig::GetMinDataReceiveNum() const {
 }
 
 int ResDBConfig::GetMinClientReceiveNum() const {
+  if (config_data_.min_client_receive_num() > 0) {
+    return config_data_.min_client_receive_num();
+  }
+
   int f = (replicas_.size() - 1) / 3;
   return std::max(f + 1, 1);
 }

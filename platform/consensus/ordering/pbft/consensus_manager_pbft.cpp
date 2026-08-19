@@ -53,9 +53,9 @@ ConsensusManagerPBFT::ConsensusManagerPBFT(
       view_change_manager_(std::make_unique<ViewChangeManager>(
           config_, checkpoint_manager_.get(), message_manager_.get(),
           system_info_.get(), GetBroadCastClient(), GetSignatureVerifier())),
-      recovery_(std::make_unique<Recovery>(config_, checkpoint_manager_.get(),
-                                           system_info_.get(),
-                                           message_manager_->GetStorage())),
+      recovery_(std::make_unique<PBFTRecovery>(
+          config_, checkpoint_manager_.get(), system_info_.get(),
+          message_manager_->GetStorage())),
       query_(std::make_unique<Query>(config_, recovery_.get(),
                                      std::move(query_executor))) {
   LOG(INFO) << "is running is performance mode:"

@@ -277,6 +277,100 @@ TEST(TransactionExecutorTest, CallBack) {
   done_future.get();
 }
 
+TEST(TransactionExecutorTest, ExecuteRaftNoOpAdvancesSequence) {
+  Stats::GetGlobalStats()->Stop();
+  ResDBConfig config = GetResDBConfig();
+
+  SystemInfo system_info(config);
+  auto mock_executor = std::make_unique<MockTransactionManager>();
+
+  EXPECT_CALL(*mock_executor, ExecuteBatchWithSeq)
+      .Times(2)
+      .WillRepeatedly(Invoke([](int64_t seq, const BatchUserRequest&) {
+        EXPECT_TRUE(seq == 1 || seq == 3);
+        return nullptr;
+      }));
+
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+
+  TransactionExecutor executor(
+      config,
+      [&](std::unique_ptr<Request> request,
+          std::unique_ptr<BatchUserResponse> response) {
+        if (request->seq() == 3) {
+          done.set_value(true);
+        }
+      },
+      &system_info, std::move(mock_executor));
+
+  Request request;
+  request.set_seq(1);
+
+  BatchUserRequest batch_request;
+  batch_request.add_user_requests()->mutable_request()->set_data("execute_1");
+  batch_request.SerializeToString(request.mutable_data());
+
+  EXPECT_EQ(executor.Commit(std::make_unique<Request>(request)), 0);
+
+  request.set_seq(2);
+  request.set_data("RAFT_NO_OP");
+
+  EXPECT_EQ(executor.Commit(std::make_unique<Request>(request)), 0);
+
+  request.set_seq(3);
+  batch_request.clear_user_requests();
+  batch_request.add_user_requests()->mutable_request()->set_data("execute_3");
+  batch_request.SerializeToString(request.mutable_data());
+
+  EXPECT_EQ(executor.Commit(std::make_unique<Request>(request)), 0);
+
+  done_future.get();
+}
+
+TEST(TransactionExecutorTest, ExecuteRaftNoOpAsFirstRequest) {
+  Stats::GetGlobalStats()->Stop();
+  ResDBConfig config = GetResDBConfig();
+
+  SystemInfo system_info(config);
+  auto mock_executor = std::make_unique<MockTransactionManager>();
+
+  EXPECT_CALL(*mock_executor, ExecuteBatchWithSeq)
+      .WillOnce(Invoke([](int64_t seq, const BatchUserRequest&) {
+        EXPECT_EQ(seq, 2);
+        return nullptr;
+      }));
+
+  std::promise<bool> done;
+  std::future<bool> done_future = done.get_future();
+
+  TransactionExecutor executor(
+      config,
+      [&](std::unique_ptr<Request> request,
+          std::unique_ptr<BatchUserResponse> response) {
+        if (request->seq() == 2) {
+          done.set_value(true);
+        }
+      },
+      &system_info, std::move(mock_executor));
+
+  Request request;
+  request.set_seq(1);
+  request.set_data("RAFT_NO_OP");
+
+  EXPECT_EQ(executor.Commit(std::make_unique<Request>(request)), 0);
+
+  request.set_seq(2);
+
+  BatchUserRequest batch_request;
+  batch_request.add_user_requests()->mutable_request()->set_data("execute_2");
+  batch_request.SerializeToString(request.mutable_data());
+
+  EXPECT_EQ(executor.Commit(std::make_unique<Request>(request)), 0);
+
+  done_future.get();
+}
+
 }  // namespace
 
 }  // namespace resdb

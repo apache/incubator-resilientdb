@@ -41,6 +41,7 @@ cc_library(
         ":transaction_utils",
         "//platform/networkstrate:replica_communicator",
         "//platform/networkstrate:server_comm",
+        "//common/utils:semaphore"
     ],
 )
 

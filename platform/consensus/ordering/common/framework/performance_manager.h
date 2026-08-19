@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <future>
 
+#include "common/utils/semaphore.h"
 #include "platform/config/resdb_config.h"
 #include "platform/consensus/ordering/common/framework/transaction_utils.h"
 #include "platform/networkstrate/replica_communicator.h"
@@ -40,6 +41,7 @@ class PerformanceManager {
   virtual ~PerformanceManager();
 
   int StartEval();
+  void SetPrimary(int id);
 
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
@@ -72,7 +74,9 @@ class PerformanceManager {
 
  private:
   LockFreeQueue<QueueItem> batch_queue_;
-  std::thread user_req_thread_[16];
+  static constexpr int num_producer_threads_ = 1;
+  static constexpr int num_consumer_threads_ = 1;
+  std::thread user_req_thread_[num_consumer_threads_];
   std::atomic<bool> stop_;
   Stats* global_stats_;
   std::atomic<int> send_num_;
@@ -83,6 +87,7 @@ class PerformanceManager {
   std::function<std::string()> data_func_;
   std::future<bool> eval_ready_future_;
   std::promise<bool> eval_ready_promise_;
+  std::atomic<int64_t> eval_ready_counter_{0};
   std::atomic<bool> eval_started_;
   std::atomic<int> fail_num_;
   static const int response_set_size_ = 6000000;
@@ -90,9 +95,12 @@ class PerformanceManager {
   std::mutex response_lock_[response_set_size_];
   int replica_num_;
   int id_;
-  int primary_;
+  std::atomic<int> primary_;
   std::atomic<int> local_id_;
   std::atomic<int> sum_;
+
+  static constexpr int max_batch_queue_depth = 2000000;
+  Semaphore batch_queue_slots_available_{max_batch_queue_depth};
 };
 
 }  // namespace common

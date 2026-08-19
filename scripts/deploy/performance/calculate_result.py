@@ -53,7 +53,11 @@ def cal_lat(lat):
         lat_sum.append(v) 
 
     print("max latency:",lat_max)
-    print("average latency:",sum(lat_sum)/len(lat_sum))
+    if not len(lat_sum):
+        average_latency = 0
+    else:
+        average_latency = sum(lat_sum)/len(lat_sum)
+    print("average latency:", average_latency)
 
 if __name__ == '__main__':
     files = sys.argv[1:]
