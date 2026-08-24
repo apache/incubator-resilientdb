@@ -6,6 +6,11 @@ set -e
 # load ip list
 . ./script/load_config.sh $1
 
+# These can be overridden in the cluster configuration file.  The defaults
+# preserve the original deployment environment.
+ssh_user=${ssh_user:-junchao}
+remote_home=${remote_home:-/users/${ssh_user}}
+
 script_path=${BAZEL_WORKSPACE_PATH}/scripts
 
 if [[ -z $server ]];
@@ -68,7 +73,7 @@ function run_cmd(){
   count=1
   for ip in ${deploy_iplist[@]};
   do
-     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${ip} "$1" &
+     ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${ssh_user}@${ip} "$1" &
     ((count++))
   done
 
@@ -80,7 +85,7 @@ function run_cmd(){
 
 function run_one_cmd(){
   echo " $1"
-  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${ip} "$1" 
+  ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${ssh_user}@${ip} "$1"
 }
 
 run_cmd "killall -9 ${server_bin}"
@@ -94,9 +99,9 @@ echo "upload configs"
 count=0
 for ip in ${deploy_iplist[@]};
 do
-  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert junchao@${ip}:/users/junchao/  > null 2>&1 &
-  echo "scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert junchao@${ip}:/users/junchao/  > null 2>&1 &"
-  #scp -i ${key} -r ${bin_path} ${output_path}/server.config junchao@${ip}:/users/junchao/  > null 2>&1 &
+  scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ${ssh_user}@${ip}:${remote_home}/  > null 2>&1 &
+  echo "scp -i ${key} -r ${bin_path} ${BAZEL_WORKSPACE_PATH}/service/contract/benchmark/data/smallbank.json ${output_path}/server.config ${output_path}/cert ${ssh_user}@${ip}:${remote_home}/  > null 2>&1 &"
+  #scp -i ${key} -r ${bin_path} ${output_path}/server.config ${ssh_user}@${ip}:${remote_home}/  > null 2>&1 &
   ((count++))
 done
 
@@ -129,7 +134,7 @@ function check(){
   resp=""
   while [ "$resp" = "" ]
   do
-    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"` 
+    resp=`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${ssh_user}@${server_ip} "grep \"receive public size:${server_num}\" ${server_bin}.log"`
     if [ "$resp" = "" ]; then
       sleep 1
     else
@@ -147,4 +152,3 @@ done
 wait
 
 echo "Servers are running....."
-

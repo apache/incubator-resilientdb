@@ -10,6 +10,9 @@
 
 # ResilientDB: Global-Scale Sustainable Blockchain Fabric
 
+> **Cassandra paper artifact:** build, deployment, fault-injection, data, and
+> Figure 12 reproduction instructions are available in [ARTIFACT.md](ARTIFACT.md).
+
 **[ResilientDB](https://resilientdb.com/)** is a **High Throughput Yielding Permissioned Blockchain Fabric** founded by **[ExpoLab](https://expolab.org/)** at **[UC Davis](https://www.ucdavis.edu/)** in 2018. ResilientDB advocates a **system-centric** design by adopting a **multi-threaded architecture** that encompasses **deep pipelines**. Further, ResilientDB **separates** the ordering of client transactions from their execution, which allows it to **process messages out-of-order**.
 
 ### Quick Facts on ResilientDB

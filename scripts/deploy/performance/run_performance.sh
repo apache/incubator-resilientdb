@@ -6,6 +6,12 @@
 
 . ./script/load_config.sh $1
 
+# These can be overridden in the cluster configuration file.  The defaults
+# preserve the original deployment environment.
+ssh_user=${ssh_user:-junchao}
+remote_home=${remote_home:-/users/${ssh_user}}
+benchmark_seconds=${benchmark_seconds:-60}
+
 server_name=`echo "$server" | awk -F':' '{print $NF}'`
 server_bin=${server_name}
 
@@ -21,14 +27,14 @@ echo "get cofigfile:"$config_file
 ${BAZEL_WORKSPACE_PATH}/bazel-bin/benchmark/protocols/pbft/kv_service_tools $config_file
 done
 
-sleep 60
+sleep ${benchmark_seconds}
 
 echo "benchmark done"
 count=1
 for ip in ${iplist[@]};
 do
 echo "$ip"
-`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no junchao@${ip} "killall -9 ${server_bin}"` 
+`ssh -i ${key} -n -o BatchMode=yes -o StrictHostKeyChecking=no ${ssh_user}@${ip} "killall -9 ${server_bin}"`
 ((count++))
 done
 
@@ -43,8 +49,8 @@ cat $TEMPLATE_PATH
 echo "getting results"
 for ip in ${iplist[@]};
 do
-  echo "scp -i ${key} junchao@${ip}:/users/junchao/${server_bin}.log ./${ip}_log"
-  `scp -i ${key} junchao@${ip}:/users/junchao/${server_bin}.log result_${ip}_log`  &
+  echo "scp -i ${key} ${ssh_user}@${ip}:${remote_home}/${server_bin}.log ./${ip}_log"
+  `scp -i ${key} ${ssh_user}@${ip}:${remote_home}/${server_bin}.log result_${ip}_log`  &
 done
 
 wait
