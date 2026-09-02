@@ -91,6 +91,13 @@ message Request {
     int64 commit_time = 25;
     bytes data_hash = 26;
     bool force_recovery =27;
+    int64 execute_time = 28;
+    int32 group_id = 29;
+    int32 flag = 30;
+    int32 key = 31;
+    repeated int32 belong_shards = 32;
+    int32 shard_id = 33;
+    bool skip = 34;
 
 }
 
@@ -134,6 +141,7 @@ message BatchUserResponse {
   uint64 local_id = 7;
   bytes hash = 8;
   int32 primary_id = 9;
+  bool is_async = 10;
 }
 
 message HeartBeatInfo{
@@ -231,4 +239,3 @@ message BatchClientResponse {
   uint64 createtime = 6;
   uint64 local_id = 7;
 }
-

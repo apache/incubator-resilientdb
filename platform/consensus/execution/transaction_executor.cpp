@@ -320,6 +320,9 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
     if (execute_thread_num_ == 1) {
       response = transaction_manager_->ExecuteBatchWithSeq(request->seq(),
                                                            *batch_request_p);
+      if (request->flag() > 0 && user_func_) {
+        user_func_(request->flag());
+      }
     } else {
       std::vector<std::unique_ptr<std::string>> response_v;
 
@@ -349,6 +352,10 @@ void TransactionExecutor::Execute(std::unique_ptr<Request> request,
             request->seq(), *data_p);
       }
       FinishExecute(request->seq());
+
+      if (request->flag() > 0 && user_func_) {
+        user_func_(request->flag());
+      }
 
       if (response == nullptr) {
         response = std::make_unique<BatchUserResponse>();
