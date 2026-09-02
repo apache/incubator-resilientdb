@@ -1,3 +1,21 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -6,7 +24,7 @@ cc_library(
     hdrs = ["address_manager.h"],
     deps = [
         "//common:comm",
-        "//service/contract/executor/common:utils",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
     ],
 )
 
@@ -25,7 +43,7 @@ cc_library(
     hdrs = ["data_storage.h"],
     deps = [
         "//common:comm",
-        "//service/contract/executor/common:utils",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
     ],
 )
 
@@ -36,7 +54,7 @@ cc_library(
     deps = [
         ":data_storage",
         "//common:comm",
-        "//storage:res_leveldb",
+        "//chain/storage:leveldb",
     ],
 )
 
@@ -75,7 +93,7 @@ cc_library(
     deps = [
         ":data_storage",
         "//common:comm",
-        "//storage:res_leveldb",
+        "//chain/storage:leveldb",
     ],
 )
 
@@ -86,7 +104,7 @@ cc_library(
     deps = [
         ":data_storage",
         "//common:comm",
-        "//storage:res_leveldb",
+        "//chain/storage:leveldb",
     ],
 )
 
@@ -125,7 +143,7 @@ cc_library(
     hdrs = ["evm_state.h"],
     deps = [
         "//common:comm",
-        "//service/contract/executor/common:utils",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
     ],
 )
 
@@ -137,7 +155,7 @@ cc_library(
         ":evm_state",
         ":global_view",
         "//common:comm",
-        "//service/contract/executor/common:utils",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
     ],
 )
 
@@ -149,7 +167,7 @@ cc_library(
         ":evm_state",
         ":local_view",
         "//common:comm",
-        "//service/contract/executor/common:utils",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
     ],
 )
 
@@ -184,7 +202,7 @@ cc_library(
         ":two_phase_ooo_controller",
         "//common:comm",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -269,8 +287,8 @@ cc_library(
         ":concurrency_controller",
         ":evm_state",
         "//common:comm",
-        "//service/contract/executor/common:contract_execute_info",
-        "//service/contract/proto:func_params_cc_proto",
+        "//platform/consensus/ordering/thunderbolt/executor/common:contract_execute_info",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -288,8 +306,8 @@ cc_library(
     hdrs = ["contract_committer.h"],
     deps = [
         ":contract_executor",
-        "//service/contract/executor/common:contract_execute_info",
-        "//service/contract/proto:func_params_cc_proto",
+        "//platform/consensus/ordering/thunderbolt/executor/common:contract_execute_info",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -301,7 +319,7 @@ cc_library(
         ":committer_context",
         ":contract_committer",
         ":contract_executor",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -317,7 +335,7 @@ cc_library(
         ":ooo_controller",
         "//common:comm",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -333,7 +351,7 @@ cc_library(
         ":two_phase_controller",
         "//common:comm",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -341,7 +359,7 @@ cc_test(
     name = "two_phase_committer_test",
     srcs = ["two_phase_committer_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
     ],
     deps = [
         ":address_manager",
@@ -364,7 +382,7 @@ cc_library(
         ":sequential_cc_controller",
         "//common/utils",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -382,7 +400,7 @@ cc_library(
         ":x_controller",
         "//common/utils",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -419,7 +437,7 @@ cc_library(
         ":v_controller",
         "//common/utils",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -427,7 +445,7 @@ cc_test(
     name = "x_committer_test",
     srcs = ["x_committer_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
     ],
     deps = [
         ":address_manager",
@@ -442,8 +460,8 @@ cc_test(
     name = "x_verifier_test",
     srcs = ["x_verifier_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
-        "//service/contract/executor/manager/test_data:kv.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:kv.json",
     ],
     deps = [
         ":address_manager",
@@ -465,7 +483,7 @@ cc_library(
         ":contract_executor",
         ":global_state",
         "//common/utils",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -482,7 +500,7 @@ cc_library(
         ":streaming_dq_controller",
         "//common/utils",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -490,8 +508,8 @@ cc_test(
     name = "streaming_dq_committer_test",
     srcs = ["streaming_dq_committer_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
-        "//service/contract/executor/manager/test_data:kv.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:kv.json",
     ],
     deps = [
         ":address_manager",
@@ -506,7 +524,7 @@ cc_test(
     name = "sequential_concurrency_committer_test",
     srcs = ["sequential_concurrency_committer_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
     ],
     deps = [
         ":address_manager",
@@ -540,7 +558,7 @@ cc_library(
         ":streaming_controller",
         "//common/utils",
         "//platform/common/queue:lock_free_queue",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -554,7 +572,7 @@ cc_library(
         ":contract_executor",
         ":global_state",
         ":test_controller",
-        "//service/contract/proto:func_params_cc_proto",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -574,7 +592,7 @@ cc_test(
     name = "contract_deployer_test",
     srcs = ["contract_deployer_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
     ],
     deps = [
         ":contract_deployer",
@@ -602,8 +620,8 @@ cc_library(
         ":x_committer",
         ":x_verifier",
         "//common:comm",
-        "//service/contract/executor/common:utils",
-        "//service/contract/proto:func_params_cc_proto",
+        "//platform/consensus/ordering/thunderbolt/executor/common:utils",
+        "//proto/contract:func_params_cc_proto",
     ],
 )
 
@@ -611,7 +629,7 @@ cc_test(
     name = "contract_manager_test",
     srcs = ["contract_manager_test.cpp"],
     data = [
-        "//service/contract/executor/manager/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
     ],
     deps = [
         ":contract_manager",
