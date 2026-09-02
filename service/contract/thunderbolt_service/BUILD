@@ -51,7 +51,7 @@ cc_library(
         "//executor/common:transaction_manager",
         "//platform/consensus/ordering/thunderbolt/executor/x_manager:contract_manager",
         "//platform/consensus/ordering/thunderbolt/executor/x_manager:leveldb_storage",
-        "//platform/consensus/ordering/thunderbolt/executor/x_manager:streaming_committer",
+        "//platform/consensus/ordering/thunderbolt/executor/manager:streaming_committer",
         "//proto/contract:rpc_cc_proto",
     ],
 )

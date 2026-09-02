@@ -23,7 +23,7 @@
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/manager/streaming_committer.h"
 #include "proto/contract/func_params.pb.h"
 #include "proto/contract/rpc.pb.h"
 
