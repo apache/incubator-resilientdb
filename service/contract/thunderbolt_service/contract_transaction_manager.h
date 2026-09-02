@@ -18,13 +18,12 @@
  */
 #pragma once
 
-//#include "platform/config/resdb_config_utils.h"
-#include "chain/storage/storage.h"
+#include <functional>
+#include <memory>
+
 #include "executor/common/transaction_manager.h"
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/streaming_committer.h"
-#include "proto/contract/func_params.pb.h"
 #include "proto/contract/rpc.pb.h"
 
 namespace resdb {
@@ -32,40 +31,31 @@ namespace contract {
 
 class ContractTransactionManager : public TransactionManager {
  public:
-  ContractTransactionManager(Storage* storage);
-  virtual ~ContractTransactionManager() = default;
+  explicit ContractTransactionManager(Storage* storage);
+  ~ContractTransactionManager() override = default;
 
-  virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
+  std::unique_ptr<BatchUserResponse> ExecuteBatch(
       const BatchUserRequest& request) override;
-
-  bool VerifyAndExecuteRequest(const BatchUserRequest& batch_request);
+  std::unique_ptr<BatchUserResponse> ExecutePreparedData(
+      const BatchUserRequest& request) override;
 
   std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request) override;
 
-  std::unique_ptr<BatchUserResponse> ExecutePreparedData(
-      const BatchUserRequest& batch_request) override;
-
-  bool ExecuteRequest(const BatchUserRequest& batch_request);
-  void AsyncExe(std::unique_ptr<resdb::Request> request,
-                const BatchUserRequest& batch_request);
+  void SetAsyncCallback(
+      std::function<void(const BatchUserRequest, std::unique_ptr<resdb::Request>,
+                         std::unique_ptr<BatchUserResponse>)> callback) override;
 
  private:
-  void Execute(const Request& request);
+  bool ExecuteRequest(const BatchUserRequest& request);
+  bool ExecuteContractRequest(const Request& request, Response* response);
 
- private:
-  std::unique_ptr<resdb::contract::x_manager::ContractManager> manager_;
-  std::unique_ptr<resdb::contract::x_manager::AddressManager> address_manager_;
-
-  typedef std::map<int, std::pair<std::unique_ptr<ContractExecuteInfo>,
-                                  std::unique_ptr<ModifyMap>>>
-      DataType;
-  std::map<int, DataType> data_;
-  std::map<int, std::unique_ptr<resdb::Request>> req_seq_;
-  std::unique_ptr<resdb::contract::x_manager::StreamingCommitter> dg_committer_;
-  std::map<int, std::unique_ptr<BatchUserRequest>> batch_req_;
-
-  std::mutex mutex_, req_mutex_;
+  std::unique_ptr<x_manager::ContractManager> manager_;
+  std::unique_ptr<x_manager::AddressManager> address_manager_;
+  std::function<void(const BatchUserRequest, std::unique_ptr<resdb::Request>,
+                     std::unique_ptr<BatchUserResponse>)>
+      async_callback_;
+  std::mutex mutex_;
 };
 
 }  // namespace contract

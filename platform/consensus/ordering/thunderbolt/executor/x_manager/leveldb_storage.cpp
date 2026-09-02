@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+#include <mutex>
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/leveldb_storage.h"
 
 #include "glog/logging.h"
@@ -42,7 +44,9 @@ int GetHashKey(const uint256_t& address) {
 }
 }  // namespace
 
-LevelDBStorage ::LevelDBStorage() { db_ = std::make_unique<ResLevelDB>("./"); }
+LevelDBStorage::LevelDBStorage() {
+  db_ = std::make_unique<resdb::storage::ResLevelDB>();
+}
 
 void LevelDBStorage::Write(const uint256_t& key, const uint256_t& value,
                            int version) {
@@ -79,7 +83,7 @@ uint256_t LevelDBStorage::Read(const uint256_t& key) const {
 int64_t LevelDBStorage::Store(const uint256_t& key, const uint256_t& value,
                               bool) {
   int idx = GetHashKey(key);
-  std::unique_lock lock(mutex_[idx]);
+  std::unique_lock<std::shared_mutex> lock(mutex_[idx]);
   // LOG(ERROR)<<"store key:"<<key<<" value:"<<value;
   int64_t v = s[idx][key].second;
   s[idx][key] = std::make_pair(value, v + 1);
@@ -90,7 +94,7 @@ int64_t LevelDBStorage::Store(const uint256_t& key, const uint256_t& value,
 std::pair<uint256_t, int64_t> LevelDBStorage::Load(const uint256_t& key,
                                                    bool) const {
   int idx = GetHashKey(key);
-  std::shared_lock lock(mutex_[idx]);
+  std::shared_lock<std::shared_mutex> lock(mutex_[idx]);
   // LOG(ERROR)<<"load key:"<<key;
   auto e = s[idx].find(key);
   if (e == s[idx].end()) {
@@ -102,7 +106,7 @@ std::pair<uint256_t, int64_t> LevelDBStorage::Load(const uint256_t& key,
 
 bool LevelDBStorage::Remove(const uint256_t& key, bool) {
   int idx = GetHashKey(key);
-  std::unique_lock lock(mutex_[idx]);
+  std::unique_lock<std::shared_mutex> lock(mutex_[idx]);
   auto e = s[idx].find(key);
   if (e == s[idx].end()) return false;
   s[idx].erase(e);
@@ -111,13 +115,13 @@ bool LevelDBStorage::Remove(const uint256_t& key, bool) {
 
 bool LevelDBStorage::Exist(const uint256_t& key, bool) const {
   int idx = GetHashKey(key);
-  std::shared_lock lock(mutex_[idx]);
+  std::shared_lock<std::shared_mutex> lock(mutex_[idx]);
   return s[idx].find(key) != s[idx].end();
 }
 
 int64_t LevelDBStorage::GetVersion(const uint256_t& key, bool) const {
   int idx = GetHashKey(key);
-  std::shared_lock lock(mutex_[idx]);
+  std::shared_lock<std::shared_mutex> lock(mutex_[idx]);
   auto it = s[idx].find(key);
   if (it == s[idx].end()) {
     return 0;
@@ -129,7 +133,7 @@ int64_t LevelDBStorage::StoreWithVersion(const uint256_t& key,
                                          const uint256_t& value, int version,
                                          bool) {
   int idx = GetHashKey(key);
-  std::unique_lock lock(mutex_[idx]);
+  std::unique_lock<std::shared_mutex> lock(mutex_[idx]);
   s[idx][key] = std::make_pair(value, version);
   Write(key, value, version);
   return 0;

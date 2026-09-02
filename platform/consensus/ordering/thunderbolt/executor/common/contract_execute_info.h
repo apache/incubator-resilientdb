@@ -22,6 +22,7 @@
 #include "eEVM/address.h"
 #include "eEVM/opcode.h"
 #include "platform/consensus/ordering/thunderbolt/executor/common/utils.h"
+#include "platform/consensus/ordering/thunderbolt/executor/common/rws_types.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {
@@ -52,10 +53,11 @@ struct ExecuteResp {
   absl::Status state;
   int64_t commit_id;
   Address contract_address;
-  // ConcurrencyController :: ModifyMap rws;
+  ModifyMap rws;
   std::string result;
   int retry_time = 0;
   uint64_t user_id = 0;
+  int rank = 0;
   double runtime = 0;
   double delay = 0;
 };

@@ -37,7 +37,7 @@ struct ExecuteResp {
   absl::Status state;
   int64_t commit_id;
   Address contract_address;
-    ConcurrencyController :: ModifyMap rws;
+  ConcurrencyController::ModifyMap rws;
   std::string result;
   int retry_time = 0;
   uint64_t user_id = 0;

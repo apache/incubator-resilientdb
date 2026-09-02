@@ -47,6 +47,7 @@ message Request {
     optional string account = 6;
     // hex string
     optional string balance = 7;
+    optional Response resp = 8;
 }
 
 
@@ -56,4 +57,21 @@ message Response {
   optional Account account = 2;
   optional Contract contract = 3;
   optional string res = 4;
+}
+
+message RWS {
+  enum Type {
+    READ = 0;
+    WRITE = 1;
+  }
+  Type type = 1;
+  bytes address = 2;
+  bytes value = 3;
+  int64 version = 4;
+}
+
+message ResultInfo {
+  Response resp = 1;
+  int32 idx = 2;
+  repeated RWS rws = 3;
 }

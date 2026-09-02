@@ -89,7 +89,7 @@ FXCommitter::FXCommitter(DataStorage* storage, GlobalState* global_state,
           continue;
         }
         ExecutionContext* request = *request_ptr;
-        if (request->GetContractExecuteInfo()->func_params.is_only()) {
+        if (request->GetContractExecuteInfo()->is_only) {
           controller_->SetOnly(request->GetContractExecuteInfo()->commit_id);
         }
 

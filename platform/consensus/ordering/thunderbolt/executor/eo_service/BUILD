@@ -35,7 +35,7 @@ cc_test(
     name = "contract_transaction_manager_test",
     srcs = ["contract_transaction_manager_test.cpp"],
     data = [
-        "//platform/consensus/ordering/thunderbolt/executor/service/test_data:contract.json",
+        "//platform/consensus/ordering/thunderbolt/executor/eo_service/test_data:contract.json",
     ],
     deps = [
         ":contract_transaction_manager",

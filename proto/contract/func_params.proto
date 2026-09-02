@@ -24,6 +24,7 @@ package resdb.contract;
 message Params {
   repeated bytes param = 1;
   string func_name = 2;
+  bool is_only = 3;
 }
 
 message FuncInfo {
@@ -37,4 +38,3 @@ message DeployInfo {
   string contract_bin = 3;
   string contract_name = 4;
 }
-

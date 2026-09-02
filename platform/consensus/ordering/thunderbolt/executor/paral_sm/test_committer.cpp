@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/test_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/test_committer.h"
 
 #include "glog/logging.h"
 //#include "eEVM/processor.h"

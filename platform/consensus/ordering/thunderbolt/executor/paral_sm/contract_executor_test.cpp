@@ -21,9 +21,9 @@
 
 #include <fstream>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/address_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/multi_contract_executor.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/multi_contract_executor.h"
 
 namespace resdb {
 namespace contract {
@@ -33,7 +33,7 @@ using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
-                             "/platform/consensus/ordering/thunderbolt/executor/manager/";
+                             "/platform/consensus/ordering/thunderbolt/executor/paral_sm/";
 
 Address get_random_address() { return AddressManager().CreateRandomAddress(); }
 

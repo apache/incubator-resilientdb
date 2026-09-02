@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/manager/two_phase_ooo_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 namespace resdb {
@@ -27,7 +29,7 @@ TwoPhaseOOOController::TwoPhaseOOOController(DataStorage* storage)
     : ConcurrencyController(storage) {}
 
 void TwoPhaseOOOController::Clear() {
-  std::unique_lock lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   changes_list_.clear();
   first_commit_.clear();
 

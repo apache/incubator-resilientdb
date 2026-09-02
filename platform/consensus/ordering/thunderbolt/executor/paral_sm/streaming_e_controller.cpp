@@ -16,7 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_controller.h"
+
+#include <mutex>
 
 #include <glog/logging.h>
 
@@ -27,7 +29,7 @@
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 namespace {
 
@@ -204,7 +206,7 @@ void StreamingEController::AppendPreRecord(const uint256_t& address,
   {
     int hash_idx = GetHashKey(address);
     // std::lock_guard<std::mutex> lk(mutex_[hash_idx]);
-    std::unique_lock lock(mutex_[hash_idx]);
+    std::unique_lock<std::shared_mutex> lock(mutex_[hash_idx]);
 
     auto& commit_set = pre_commit_list_[hash_idx][address];
     auto it = commit_set.find(commit_id);
@@ -276,7 +278,7 @@ void StreamingEController::AppendPreRecord(
     const uint256_t& address, int hash_idx,
     const std::vector<int64_t>& commit_id) {
   // std::lock_guard<std::mutex> lk(mutex_[hash_idx]);
-  std::unique_lock lock(mutex_[hash_idx]);
+  std::unique_lock<std::shared_mutex> lock(mutex_[hash_idx]);
   auto& commit_set = pre_commit_list_[hash_idx][address];
   for (auto id : commit_id) {
     // LOG(ERROR)<<"roll back id:"<<id<<" idx:"<<hash_idx<<" address:"<<address;
@@ -289,7 +291,7 @@ int64_t StreamingEController::RemovePrecommitRecord(const uint256_t& address,
                                                     int64_t commit_id) {
   int idx = GetHashKey(address);
   // std::lock_guard<std::mutex> lk(mutex_[idx]);
-  std::unique_lock lock(mutex_[idx]);
+  std::unique_lock<std::shared_mutex> lock(mutex_[idx]);
   auto it = pre_commit_list_[idx].find(address);
   if (it == pre_commit_list_[idx].end()) {
     // LOG(ERROR)<<" remove address:"<<address<<" commit id:"<<commit_id<<" not
@@ -394,7 +396,7 @@ bool StreamingEController::CheckFirstFromPreCommit(const uint256_t& address,
   // LOG(ERROR)<<"check first:"<<commit_id;
   int idx = GetHashKey(address);
   // std::lock_guard<std::mutex> lk(mutex_[idx]);
-  std::shared_lock lock(mutex_[idx]);
+  std::shared_lock<std::shared_mutex> lock(mutex_[idx]);
   const auto& it = pre_commit_list_[idx].find(address);
   if (it == pre_commit_list_[idx].end()) {
     // LOG(ERROR)<<"no address:"<<commit_id<<" add:"<<address;
@@ -731,6 +733,6 @@ bool StreamingEController::Commit(int64_t commit_id) {
   return true;
 }
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

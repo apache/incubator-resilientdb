@@ -62,8 +62,8 @@ cc_binary(
     deps = [
         ":thunderbolt_service",
         "//platform/config:resdb_config_utils",
-        "//service/contract/benchmark:string_generator",
-        "//service/contract/benchmark:zipfian_generator",
+        "//service/contract/benchmark/generator:string_generator",
+        "//service/contract/benchmark/generator:zipfian_generator",
         "//platform/consensus/ordering/thunderbolt/executor/x_manager:leveldb_storage",
         "//service/contract/thunderbolt_service:contract_transaction_manager",
         "//service/utils:server_factory",

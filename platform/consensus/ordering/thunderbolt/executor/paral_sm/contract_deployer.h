@@ -18,13 +18,13 @@
  */
 #pragma once
 
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_committer.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/global_state.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/global_state.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class ContractDeployer {
  public:
@@ -51,6 +51,6 @@ class ContractDeployer {
   std::map<Address, std::map<std::string, std::string>> func_address_;
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/manager/two_phase_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 namespace resdb {
@@ -27,7 +29,7 @@ TwoPhaseController::TwoPhaseController(DataStorage* storage)
     : ConcurrencyController(storage) {}
 
 void TwoPhaseController::Clear() {
-  std::unique_lock lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   changes_list_.clear();
   first_commit_.clear();
 
@@ -46,7 +48,7 @@ void TwoPhaseController::PushCommit(int64_t commit_id,
 
   changes_list_[commit_id] = local_changes;
 
-  std::unique_lock lock(mutex_);
+  std::unique_lock<std::shared_mutex> lock(mutex_);
   for (auto it : local_changes) {
     auto first_it = first_commit_.find(it.first);
     bool is_all_read = true;
@@ -72,7 +74,7 @@ bool TwoPhaseController::CheckCommit(int64_t commit_id) {
     return false;
   }
 
-  std::shared_lock lock(mutex_);
+  std::shared_lock<std::shared_mutex> lock(mutex_);
   for (const auto& it : change_set) {
     auto first_it = first_commit_.find(it.first);
     if (first_it == first_commit_.end()) {

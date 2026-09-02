@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+#include <mutex>
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/leveldb_d_storage.h"
 
 #include "glog/logging.h"
@@ -40,7 +42,7 @@ int GetHashKey(const uint256_t& address) {
   return v % 1024;
 }
 void Write(const uint256_t& key, const uint256_t& value, int version,
-           ResLevelDB* db) {
+           resdb::storage::ResLevelDB* db) {
   std::string addr = eevm::to_hex_string(key);
 
   const uint8_t* bytes = intx::as_bytes(value);
@@ -49,7 +51,7 @@ void Write(const uint256_t& key, const uint256_t& value, int version,
   return;
 }
 
-uint256_t Read(const uint256_t& key, ResLevelDB* db) {
+uint256_t Read(const uint256_t& key, resdb::storage::ResLevelDB* db) {
   std::string addr = eevm::to_hex_string(key);
 
   std::string v = db->GetValue(addr);
@@ -65,8 +67,9 @@ uint256_t Read(const uint256_t& key, ResLevelDB* db) {
 void InternalReset(const uint256_t& key, const uint256_t& value,
                    int64_t version,
                    std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
-                   std::shared_mutex* mutex, ResLevelDB* storage) {
-  std::unique_lock lock(*mutex);
+                   std::shared_mutex* mutex,
+                   resdb::storage::ResLevelDB* storage) {
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   (*db)[key] = std::make_pair(value, version);
   if (storage) {
     Write(key, value, version, storage);
@@ -75,8 +78,9 @@ void InternalReset(const uint256_t& key, const uint256_t& value,
 
 int64_t InternalStore(const uint256_t& key, const uint256_t& value,
                       std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
-                      std::shared_mutex* mutex, ResLevelDB* storage) {
-  std::unique_lock lock(*mutex);
+                      std::shared_mutex* mutex,
+                      resdb::storage::ResLevelDB* storage) {
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   int64_t v = (*db)[key].second;
   (*db)[key] = std::make_pair(value, v + 1);
   if (storage) {
@@ -88,8 +92,8 @@ int64_t InternalStore(const uint256_t& key, const uint256_t& value,
 std::pair<uint256_t, int64_t> InternalLoad(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
-    std::shared_mutex* mutex, ResLevelDB* storage) {
-  std::shared_lock lock(*mutex);
+    std::shared_mutex* mutex, resdb::storage::ResLevelDB* storage) {
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) {
     if (storage) {
@@ -103,7 +107,7 @@ std::pair<uint256_t, int64_t> InternalLoad(
 bool InternalRemove(const uint256_t& key,
                     std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                     std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) return false;
   db->erase(e);
@@ -114,7 +118,7 @@ bool InternalExist(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   return db->find(key) != db->end();
 }
 
@@ -122,7 +126,7 @@ int64_t InternalGetVersion(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto it = db->find(key);
   if (it == db->end()) {
     return 0;
@@ -133,7 +137,7 @@ int64_t InternalGetVersion(
 }  // namespace
 
 LevelDB_D_Storage ::LevelDB_D_Storage() {
-  db_ = std::make_unique<ResLevelDB>("./");
+  db_ = std::make_unique<resdb::storage::ResLevelDB>();
 }
 
 int64_t LevelDB_D_Storage::StoreWithVersion(const uint256_t& key,
@@ -143,10 +147,10 @@ int64_t LevelDB_D_Storage::StoreWithVersion(const uint256_t& key,
   // local:"<<is_local;
   int idx = GetHashKey(key);
   if (is_local) {
-    std::unique_lock lock(mutex_[idx]);
+    std::unique_lock<std::shared_mutex> lock(mutex_[idx]);
     c_s_[idx][key] = std::make_pair(value, version);
   } else {
-    std::unique_lock lock(g_mutex_[idx]);
+    std::unique_lock<std::shared_mutex> lock(g_mutex_[idx]);
     g_s_[idx][key] = std::make_pair(value, version);
     Write(key, value, version, db_.get());
   }

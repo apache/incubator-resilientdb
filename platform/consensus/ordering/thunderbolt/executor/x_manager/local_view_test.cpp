@@ -16,15 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/local_view.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/local_view.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/two_phase_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/two_phase_controller.h"
 
 namespace resdb {
 namespace contract {
+using namespace x_manager;
 namespace {
 
 using ::testing::Test;

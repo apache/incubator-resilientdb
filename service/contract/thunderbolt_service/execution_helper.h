@@ -19,12 +19,18 @@
 #pragma once
 
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/concurrency_controller.h"
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
 #include "proto/contract/func_params.pb.h"
 #include "proto/contract/rpc.pb.h"
 
 namespace resdb {
 namespace contract {
+
+using Data = ::resdb::contract::Data;
+using ::resdb::contract::LOAD;
+using ::resdb::contract::STORE;
+using ModifyMap = x_manager::ConcurrencyController::ModifyMap;
 
 class ExecutionHelper {
  public:

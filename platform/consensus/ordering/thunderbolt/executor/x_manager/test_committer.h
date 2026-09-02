@@ -21,10 +21,10 @@
 #include <thread>
 
 #include "absl/status/statusor.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_committer.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_executor.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/global_state.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/test_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_executor.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/global_state.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/test_controller.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {

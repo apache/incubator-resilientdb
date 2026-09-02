@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/algorithm/transaction_collector.h"
+#include "platform/consensus/ordering/thunderbolt/protocol/transaction_collector.h"
 
 #include <glog/logging.h>
 

@@ -22,6 +22,7 @@
 
 #include "eEVM/storage.h"
 #include "platform/consensus/ordering/thunderbolt/executor/paral_sm/concurrency_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_controller.h"
 
 namespace resdb {
 namespace contract {
@@ -48,7 +49,7 @@ class DBView : public eevm::Storage {
   // void Abort();
 
  private:
-  ingEController* controller_;
+  StreamingEController* controller_;
   int64_t commit_id_;
   int version_;
   std::map<uint256_t, std::vector<Data>> local_changes_;

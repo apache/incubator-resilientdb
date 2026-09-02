@@ -64,18 +64,23 @@ class SequentialConcurrencyCommitterTest : public Test {
 
     EXPECT_CALL(*storage_, Load)
         .WillRepeatedly(
-            Invoke([&](const uint256_t& address) { return data_[address]; }));
+            Invoke([&](const uint256_t& address, bool) {
+              return data_[address];
+            }));
 
     EXPECT_CALL(*storage_, Store)
         .WillRepeatedly(
-            Invoke([&](const uint256_t& key, const uint256_t& value) {
+            Invoke([&](const uint256_t& key, const uint256_t& value, bool) {
               int v = data_[key].second;
               data_[key] = std::make_pair(value, v + 1);
+              return static_cast<int64_t>(v + 1);
             }));
 
     EXPECT_CALL(*storage_, GetVersion)
         .WillRepeatedly(
-            Invoke([&](const uint256_t& key) { return data_[key].second; }));
+            Invoke([&](const uint256_t& key, bool) {
+              return data_[key].second;
+            }));
 
     Init();
   }
@@ -186,7 +191,7 @@ TEST_F(SequentialConcurrencyCommitterTest, TwoTxnConflict) {
   bool start = false;
   std::map<uint256_t, int> load_time;
   EXPECT_CALL(*storage_, Load)
-      .WillRepeatedly(Invoke([&](const uint256_t& address) {
+      .WillRepeatedly(Invoke([&](const uint256_t& address, bool) {
         if (start) {
           load_time[address]++;
         }
@@ -194,7 +199,8 @@ TEST_F(SequentialConcurrencyCommitterTest, TwoTxnConflict) {
       }));
 
   EXPECT_CALL(*storage_, Store)
-      .WillRepeatedly(Invoke([&](const uint256_t& key, const uint256_t& value) {
+      .WillRepeatedly(Invoke([&](const uint256_t& key, const uint256_t& value,
+                                bool) {
         if (start) {
           bool done = false;
           while (!done) {
@@ -208,6 +214,7 @@ TEST_F(SequentialConcurrencyCommitterTest, TwoTxnConflict) {
         }
         int v = data_[key].second;
         data_[key] = std::make_pair(value, v + 1);
+        return static_cast<int64_t>(v + 1);
       }));
 
   Init();

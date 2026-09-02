@@ -37,7 +37,7 @@ class TestCommitter : public ContractCommitter {
   virtual ~TestCommitter();
 
   std::vector<std::unique_ptr<ExecuteResp>> ExecContract(
-      const std::vector<ContractExecuteInfo>& request);
+      std::vector<ContractExecuteInfo>& request) override;
 
   absl::StatusOr<std::string> ExecContract(const Address& caller_address,
                                            const Address& contract_address,

@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 #include <queue>
@@ -150,7 +152,7 @@ void StreamingEController::StoreInternal(const int64_t commit_id,
                                          const uint256_t& address,
                                          const uint256_t& value, int version) {
   {
-    std::unique_lock lock(valid_mutex_[commit_id & window_size_]);
+    std::unique_lock<std::mutex> lock(valid_mutex_[commit_id & window_size_]);
     if (is_invalid_[commit_id & window_size_]) {
       // LOG(ERROR)<<"aborted:"<<commit_id;
       throw eevm::Exception(eevm::Exception::Type::outOfGas, "Get lock fail");
@@ -166,7 +168,7 @@ uint256_t StreamingEController::LoadInternal(const int64_t commit_id,
                                              const uint256_t& address,
                                              int version) {
   {
-    std::unique_lock lock(valid_mutex_[commit_id & window_size_]);
+    std::unique_lock<std::mutex> lock(valid_mutex_[commit_id & window_size_]);
     if (is_invalid_[commit_id & window_size_]) {
       // LOG(ERROR)<<"aborted:"<<commit_id;
       throw eevm::Exception(eevm::Exception::Type::outOfGas, "Get lock fail");
@@ -230,8 +232,8 @@ void StreamingEController::AppendPreRecord(const uint256_t& address,
   {
     int idx = commit_id & window_size_;
     // std::lock_guard<std::mutex> lk(mutex_[hash_idx]);
-    std::unique_lock lock(g_mutex_);
-    // std::unique_lock lock(mutex_[hash_idx]);
+    std::unique_lock<std::mutex> lock(g_mutex_);
+    // std::unique_lock<std::mutex> lock(mutex_[hash_idx]);
     if (is_invalid_[commit_id]) {
 #ifdef CDebug
       LOG(ERROR) << "append commit id:" << commit_id << " address:" << address
@@ -436,7 +438,7 @@ void StreamingEController::Clear(int64_t commit_id) {
   LOG(ERROR) << "clear commit id:" << commit_id;
 #endif
 
-  std::unique_lock lock(g_mutex_);
+  std::unique_lock<std::mutex> lock(g_mutex_);
   int idx = commit_id & window_size_;
   for (auto it : changes_list_[idx]) {
     const uint256_t& address = it.first;
@@ -458,7 +460,7 @@ bool StreamingEController::PreCommit(int64_t commit_id) {
 #endif
   int idx = commit_id & window_size_;
 
-  std::unique_lock lock(g_mutex_);
+  std::unique_lock<std::mutex> lock(g_mutex_);
   wait_[idx] = false;
 
   if (is_invalid_[idx]) {

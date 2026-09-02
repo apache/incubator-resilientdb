@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/manager/sequential_cc_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 namespace resdb {
@@ -90,7 +92,7 @@ void SequentialCCController::PushCommit(int64_t commit_id,
     for(const auto& it : local_changes){
       int hash_idx = GetHashKey(it.first);
       //LOG(ERROR)<<"address:"<<it.first<<" idx:"<<hash_idx;
-      std::unique_lock lock(mutexs_[hash_idx]);
+      std::unique_lock<std::shared_mutex> lock(mutexs_[hash_idx]);
       //LOG(ERROR)<<"load idx:"<<hash_idx;
       auto& commit_set = commit_list_[hash_idx][it.first];
       commit_set.insert(commit_id);

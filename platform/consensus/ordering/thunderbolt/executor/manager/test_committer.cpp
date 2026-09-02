@@ -33,7 +33,7 @@ TestCommitter::TestCommitter(DataStorage* storage, GlobalState* global_state)
 TestCommitter::~TestCommitter() {}
 
 std::vector<std::unique_ptr<ExecuteResp>> TestCommitter::ExecContract(
-    const std::vector<ContractExecuteInfo>& requests) {
+    std::vector<ContractExecuteInfo>& requests) {
   std::vector<std::unique_ptr<ExecuteResp>> resp_list;
   for (const auto& request : requests) {
     std::unique_ptr<ExecuteResp> resp = std::make_unique<ExecuteResp>();

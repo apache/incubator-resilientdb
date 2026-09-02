@@ -51,7 +51,7 @@ class LevelDB_D_Storage : public DataStorage {
   std::map<uint256_t, std::pair<uint256_t, int64_t> > g_s_[1024];
   mutable std::shared_mutex g_mutex_[1024];
 
-  std::unique_ptr<ResLevelDB> db_;
+  std::unique_ptr<resdb::storage::ResLevelDB> db_;
 };
 
 }  // namespace contract

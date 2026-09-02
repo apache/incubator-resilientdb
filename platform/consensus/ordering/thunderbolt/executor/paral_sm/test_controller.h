@@ -21,7 +21,7 @@
 #include <map>
 #include <shared_mutex>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/concurrency_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/concurrency_controller.h"
 
 namespace resdb {
 namespace contract {

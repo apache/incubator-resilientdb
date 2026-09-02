@@ -51,7 +51,7 @@ class StreamingController : public ConcurrencyController {
   void Remove(int64_t commit_id);
 
   std::function<void(int64_t)> GetCommitCallBack(int64_t commit_id);
-  std::function<void(int64_t, int)> GetRedoCallBack(int64_t commit_id);
+  std::function<void(int64_t)> GetRedoCallBack(int64_t commit_id);
 
   void CommitDone(int64_t commit_id);
   void RedoCommit(int64_t commit_id, int flag);

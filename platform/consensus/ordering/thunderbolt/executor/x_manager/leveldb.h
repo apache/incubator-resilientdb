@@ -22,7 +22,7 @@
 #include <shared_mutex>
 
 #include "eEVM/util.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/data_storage.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/data_storage.h"
 #include "chain/storage/leveldb.h"
 
 namespace resdb {
@@ -36,7 +36,7 @@ class LevelDB : public DataStorage {
   virtual void Flush();
 
  private:
-  std::unique_ptr<ResLevelDB> db_;
+  std::unique_ptr<resdb::storage::ResLevelDB> db_;
 };
 
 }  // namespace contract

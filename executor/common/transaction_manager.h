@@ -51,7 +51,7 @@ class TransactionManager {
   }
 
   virtual void SetAsyncCallback(
-      std::function<void(const BatchUserRequest, std::unique_ptr<Request>,
+      std::function<void(const BatchUserRequest, std::unique_ptr<resdb::Request>,
                          std::unique_ptr<BatchUserResponse>)>) {}
 
   virtual void Attach(std::unique_ptr<Request> request) {
@@ -62,7 +62,7 @@ class TransactionManager {
     return std::move(request_);
   }
 
-  std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+  virtual std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request);
 
   std::vector<std::unique_ptr<std::string>> ExecuteBatchDataWithSeq(

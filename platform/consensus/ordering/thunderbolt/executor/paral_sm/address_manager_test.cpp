@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>

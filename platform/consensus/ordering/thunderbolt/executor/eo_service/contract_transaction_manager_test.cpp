@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/service/contract_transaction_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/eo_service/contract_transaction_manager.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
@@ -31,7 +31,7 @@ using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
-                             "/platform/consensus/ordering/thunderbolt/executor/service/";
+                             "/platform/consensus/ordering/thunderbolt/executor/eo_service/";
 
 std::string ToString(const Request& request) {
   std::string ret;

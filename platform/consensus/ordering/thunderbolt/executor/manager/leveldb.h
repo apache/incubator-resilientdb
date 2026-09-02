@@ -36,7 +36,7 @@ class LevelDB : public DataStorage {
   virtual void Flush();
 
  private:
-  std::unique_ptr<ResLevelDB> db_;
+  std::unique_ptr<resdb::storage::ResLevelDB> db_;
 };
 
 }  // namespace contract

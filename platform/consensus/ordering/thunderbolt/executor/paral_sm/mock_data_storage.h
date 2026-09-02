@@ -19,7 +19,7 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/data_storage.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/data_storage.h"
 
 namespace resdb {
 namespace contract {

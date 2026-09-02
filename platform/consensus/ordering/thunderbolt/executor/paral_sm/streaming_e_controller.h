@@ -24,12 +24,12 @@
 #include <thread>
 
 #include "platform/common/queue/lock_free_queue.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/concurrency_controller.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/d_storage.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/concurrency_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/d_storage.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class StreamingEController : public ConcurrencyController {
  public:
@@ -109,7 +109,7 @@ class StreamingEController : public ConcurrencyController {
   CommitList commit_list_[1024];
   int64_t last_commit_id_, current_commit_id_;
 
-  PreCommitList pre_commit_list_[1024] GUARDED_BY(mutex_);
+  PreCommitList pre_commit_list_[1024];
   int64_t last_pre_commit_id_;
 
   std::atomic<int> is_redo_[1024];
@@ -125,6 +125,6 @@ class StreamingEController : public ConcurrencyController {
   std::function<void(int64_t)> precommit_callback_;
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

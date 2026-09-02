@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/leveldb.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/leveldb.h"
 
 #include "glog/logging.h"
 
@@ -24,8 +24,7 @@ namespace resdb {
 namespace contract {
 
 LevelDB::LevelDB() {
-  db_ = std::make_unique<ResLevelDB>("./");
-  db_->SetBatchSize(10000);
+  db_ = std::make_unique<resdb::storage::ResLevelDB>();
 }
 
 void LevelDB::Flush() {

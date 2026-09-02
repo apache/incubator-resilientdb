@@ -62,8 +62,6 @@ XExecutor::XExecutor(
           continue;
         }
 
-        // std::unique_ptr<ExecutionContext> request = std::move(*request_ptr);
-
         LocalState local_state(controller_.get());
         local_state.Set(
             gs_->GetAccount(
@@ -126,142 +124,92 @@ XExecutor::~XExecutor() {
   }
 }
 
-/*
-void XExecutor::CallBack(uint64_t commit_id){
-  //LOG(ERROR)<<"call back:"<<commit_id;
-    int idx = commit_id%window_size_;
-    if(call_back_){
-      call_back_(std::move(resp_list_[idx]));
-    }
-    else {
-      resp_list_[idx] = nullptr;
-    }
-    is_done_[idx] = true;
-
-    //LOG(ERROR)<<"current commit done call back commit id:"<<commit_id<<"
-idx:"<<idx<<" first id:"<<first_id_; bool need_notify = false; while(first_id_ <
-last_id_ && is_done_[(first_id_+1)%window_size_]) {
-      is_done_[(first_id_+1)%window_size_] = false;
-      first_id_++;
-      //LOG(ERROR)<<"commit:"<<first_id_;
-      need_notify = true;
-    }
-
-    if(need_notify){
-      std::lock_guard<std::mutex> lk(mutex_);
-      cv_.notify_all();
-    }
-    //LOG(ERROR)<<"call back done:"<<first_id_<<" last id:"<<last_id_;
+void XExecutor::AddTask(int64_t commit_id,
+                        std::unique_ptr<ExecutionContext> context) {
+  context_list_[commit_id] = std::move(context);
 }
 
-bool XExecutor::WaitNext(){
-  while(!is_stop_) {
-    int timeout_ms = 10000;
-    std::unique_lock<std::mutex> lk(mutex_);
-    cv_.wait_for(lk, std::chrono::microseconds(timeout_ms), [&] {
-        return id_ - first_id_<window_size_;
-    });
-    if(id_ - first_id_<window_size_){
-      return true;
-    }
+void XExecutor::RemoveTask(int64_t commit_id) {
+  auto it = context_list_.find(commit_id);
+  if (it != context_list_.end()) {
+    context_list_.erase(it);
   }
-  return false;
 }
 
-bool XExecutor::WaitAll(){
-  while(!is_stop_) {
-    int timeout_ms = 10000;
-    std::unique_lock<std::mutex> lk(mutex_);
-    cv_.wait_for(lk, std::chrono::microseconds(timeout_ms), [&] {
-        return first_id_>0&&first_id_%500==0;
-        //return id_ - first_id_<window_size_;
-    });
-    if(id_ - first_id_<window_size_){
-      return true;
-    }
-  }
-  return false;
+ExecutionContext* XExecutor::GetTaskContext(int64_t commit_id) {
+  auto it = context_list_.find(commit_id);
+  return it == context_list_.end() ? nullptr : it->second.get();
 }
-*/
+
+void XExecutor::CallBack(uint64_t commit_id) {
+  const int idx = commit_id % window_size_;
+  if (call_back_) {
+    call_back_(std::move(resp_list_[idx]));
+  } else {
+    resp_list_[idx].reset();
+  }
+  is_done_[idx] = true;
+  first_id_ = std::max(first_id_.load(), commit_id);
+  cv_.notify_all();
+  RemoveTask(commit_id);
+}
+
+bool XExecutor::WaitNext() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return cv_.wait_for(lock, std::chrono::seconds(10), [&] {
+           return is_stop_ ||
+                  id_ - first_id_ < static_cast<uint64_t>(window_size_);
+         }) &&
+         !is_stop_;
+}
+
+bool XExecutor::WaitAll() {
+  std::unique_lock<std::mutex> lock(mutex_);
+  return cv_.wait_for(lock, std::chrono::seconds(10), [&] {
+           return is_stop_ || first_id_ >= id_;
+         }) &&
+         !is_stop_;
+}
 
 void XExecutor::ResponseProcess() {
-  auto resp = resp_queue_.Pop();
-  if (resp == nullptr) {
+  auto context = resp_queue_.Pop();
+  if (context == nullptr) {
     return;
   }
-  int64_t resp_commit_id = resp->commit_id;
-  int idx = resp->commit_id % window_size_;
-  // LOG(ERROR)<<"recv :"<<resp_commit_id<<" idx:"<<idx;
-  resp_list_[idx] = std::move(resp);
 
-  std::queue<int64_t> q;
-  q.push(resp_commit_id);
-  while (!q.empty()) {
-    int64_t next_id = q.front();
-    q.pop();
+  std::unique_ptr<ExecuteResp> result = context->FetchResult();
+  if (result == nullptr) {
+    return;
+  }
 
-    bool ret = controller_->Commit(next_id);
-    std::vector<int64_t> next_commit = controller_->GetRedo();
-    // LOG(ERROR)<<"redo size:"<<next_commit.size();
-    for (int64_t new_next : next_commit) {
-      if (next_id == new_next) {
-        auto context_ptr = GetTaskContext(new_next);
-        context_ptr->SetRedo();
-        // LOG(ERROR)<<"redo :"<<new_next;
-        request_queue_.Push(std::make_unique<ExecutionContext*>(context_ptr));
-      } else {
-        q.push(new_next);
+  const int64_t commit_id = result->commit_id;
+  resp_list_[commit_id % window_size_] = std::move(result);
+
+  if (!controller_->Commit(commit_id)) {
+    auto& redo = controller_->GetRedo();
+    if (!redo.empty() && redo.front() == commit_id) {
+      ExecutionContext* original = GetTaskContext(commit_id);
+      if (original != nullptr) {
+        original->SetRedo();
+        request_queue_.Push(std::make_unique<ExecutionContext>(
+            *original->GetContractExecuteInfo()));
       }
     }
-
-    std::vector<int64_t> done_list = controller_->GetDone();
-    for (int64_t done_id : done_list) {
-      // LOG(ERROR)<<"get doen id:"<<done_id;
-      CallBack(done_id);
-    }
-  }
-}
-//
-// LOG(ERROR)<<"last id:"<<last_id_;
-while (resp_list_[last_id_ % window_size_] != nullptr) {
-  int idx = last_id_ % window_size_;
-  int64_t current_commit_id = resp_list_[idx]->commit_id;
-  // LOG(ERROR)<<" !!!!! commit new resp:"<<current_commit_id;
-  bool ret = controller_->Commit(current_commit_id);
-  if (!ret) {
-    // LOG(ERROR)<<"redo size:"<<controller_->GetRedo().size();
-    if (controller_->GetRedo().size()) {
-      assert(controller_->GetRedo()[0] == current_commit_id);
-      // redo_list.push(commit_id);
-      // LOG(ERROR)<<"commit redo:"<<current_commit_id;
-      auto context_ptr = GetTaskContext(current_commit_id);
-      context_ptr->SetRedo();
-      // LOG(ERROR)<<"redo :"<<current_commit_id;
-      request_queue_.Push(std::make_unique<ExecutionContext*>(context_ptr));
-    }
-  } else {
-    std::vector<int64_t> list = controller_->GetRedo();
-    assert(list.empty());
   }
 
-  std::vector<int64_t> done_list = controller_->GetDone();
-  for (int64_t done_id : done_list) {
-    // LOG(ERROR)<<"get doen id:"<<done_id;
+  for (int64_t done_id : controller_->GetDone()) {
     CallBack(done_id);
   }
-
-  last_id_++;
 }
-//  LOG(ERROR)<<"last id:"<<last_id_;
-}  // namespace paral_sm
 
-* / void XExecutor::AsyncExecContract(
-        std::vector<ContractExecuteInfo>& requests) {
+void XExecutor::AsyncExecContract(std::vector<ContractExecuteInfo>& requests) {
   for (auto& request : requests) {
     if (!WaitNext()) {
       return;
     }
+    AddTask(request.commit_id, std::make_unique<ExecutionContext>(request));
     request_queue_.Push(std::make_unique<ExecutionContext>(request));
+    ++id_;
   }
 
   return;
@@ -274,6 +222,6 @@ absl::StatusOr<std::string> XExecutor::ExecContract(
                                  func_param, state);
 }
 
+}  // namespace paral_sm
 }  // namespace contract
-}  // namespace resdb
 }  // namespace resdb

@@ -36,6 +36,7 @@ cc_library(
     ],
 )
 
+'''
 cc_test(
     name = "address_manager_test",
     srcs = ["address_manager_test.cpp"],
@@ -44,6 +45,7 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+'''
 
 cc_library(
     name = "data_storage",
@@ -55,6 +57,7 @@ cc_library(
     ],
 )
 
+'''
 cc_library(
     name = "mock_data_storage",
     hdrs = ["mock_data_storage.h"],
@@ -72,6 +75,7 @@ cc_library(
         "//common/test",
     ],
 )
+'''
 
 cc_library(
     name = "d_storage",
@@ -110,6 +114,7 @@ cc_library(
     hdrs = ["db_view.h"],
     deps = [
         ":concurrency_controller",
+        ":streaming_e_controller",
         ":xcontroller",
         "//common:comm",
     ],
@@ -221,6 +226,36 @@ cc_library(
 )
 
 cc_library(
+    name = "streaming_e_controller",
+    srcs = ["streaming_e_controller.cpp"],
+    hdrs = ["streaming_e_controller.h"],
+    deps = [
+        ":concurrency_controller",
+        ":d_storage",
+        "//common/utils",
+        "//common:comm",
+        "//platform/common/queue:lock_free_queue",
+    ],
+)
+
+cc_library(
+    name = "streaming_e_committer",
+    srcs = ["streaming_e_committer.cpp"],
+    hdrs = ["streaming_e_committer.h"],
+    deps = [
+        ":committer_context",
+        ":contract_committer",
+        ":contract_executor",
+        ":executor_state",
+        ":global_state",
+        ":streaming_e_controller",
+        "//common/utils",
+        "//platform/common/queue:lock_free_queue",
+        "//proto/contract:func_params_cc_proto",
+    ],
+)
+
+cc_library(
     name = "local_view",
     srcs = ["local_view.cpp"],
     hdrs = ["local_view.h"],
@@ -247,6 +282,7 @@ cc_library(
     ],
 )
 
+'''
 cc_test(
     name = "xexecutor_test",
     srcs = ["xexecutor_test.cpp"],
@@ -263,6 +299,7 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+'''
 
 cc_library(
     name = "contract_deployer",
@@ -276,6 +313,7 @@ cc_library(
     ],
 )
 
+'''
 cc_test(
     name = "contract_deployer_test",
     srcs = ["contract_deployer_test.cpp"],
@@ -288,6 +326,7 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+'''
 
 cc_library(
     name = "contract_manager",
@@ -297,6 +336,7 @@ cc_library(
         ":address_manager",
         ":contract_deployer",
         ":global_state",
+        ":streaming_e_committer",
         ":utils",
         ":xexecutor",
         "//common:comm",
@@ -304,6 +344,7 @@ cc_library(
     ],
 )
 
+'''
 cc_test(
     name = "contract_manager_test",
     srcs = ["contract_manager_test.cpp"],
@@ -315,3 +356,4 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+'''

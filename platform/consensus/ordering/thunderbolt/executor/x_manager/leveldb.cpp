@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/leveldb.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/leveldb.h"
 
 #include "glog/logging.h"
 
@@ -24,13 +24,12 @@ namespace resdb {
 namespace contract {
 
 LevelDB::LevelDB() {
-  db_ = std::make_unique<ResLevelDB>("./");
-  db_->SetBatchSize(10000);
+  db_ = std::make_unique<resdb::storage::ResLevelDB>();
 }
 
 void LevelDB::Flush() {
   // LOG(ERROR)<<"flush";
-  for (const auto& it : s) {
+  for (const auto& it : s[0]) {
     std::string addr = eevm::to_hex_string(it.first);
     std::string value = eevm::to_hex_string(it.second.first);
     // LOG(ERROR)<<"addr:"<<addr<<" value:"<<value;

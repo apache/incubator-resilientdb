@@ -177,6 +177,7 @@ cc_library(
     hdrs = ["concurrency_controller.h"],
     deps = [
         ":data_storage",
+        "//platform/consensus/ordering/thunderbolt/executor/common:rws_types",
     ],
 )
 

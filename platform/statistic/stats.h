@@ -93,6 +93,20 @@ class Stats {
   void ChangePrimary(int primary_id);
 
   void AddLatency(uint64_t run_time);
+  void AddQueuingLatency(uint64_t value) { AddLatency(value); }
+  void AddRoundLatency(uint64_t value) { AddLatency(value); }
+  void AddCommitQueuingLatency(uint64_t value) { AddLatency(value); }
+  void AddCommitLatency(uint64_t value) { AddLatency(value); }
+  void AddCommitRoundLatency(uint64_t value) { AddLatency(value); }
+  void AddCommitRuntime(uint64_t value) { AddLatency(value); }
+  void AddExecutePrepareDelay(uint64_t value) { AddLatency(value); }
+  void AddCommitWaitingLatency(uint64_t value) { AddLatency(value); }
+  void AddVerifyLatency(uint64_t value) { AddLatency(value); }
+  void ConsumeTransactions(uint64_t) {}
+  void AddBlockSize(uint64_t) {}
+  void AddCommitTxn(uint64_t) {}
+  void AddCommitBlock(uint64_t) {}
+  void AddCommitInterval(uint64_t) {}
 
   void Monitor();
   void MonitorGlobal();

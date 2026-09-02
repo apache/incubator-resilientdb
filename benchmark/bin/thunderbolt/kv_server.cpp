@@ -30,7 +30,6 @@ using resdb::GenerateResDBConfig;
 using resdb::KVExecutor;
 using resdb::ResConfigData;
 using resdb::ResDBConfig;
-using resdb::ResDBServer;
 using resdb::Stats;
 using resdb::storage::MemoryDB;
 using resdb::thunderbolt::ThunderboltConsensus;

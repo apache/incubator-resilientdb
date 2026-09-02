@@ -21,11 +21,11 @@
 #include <filesystem>
 #include <fstream>
 
-#include "chain/chain/storage/leveldb.h"
+#include "chain/storage/leveldb.h"
 #include "platform/config/resdb_config_utils.h"
 #include "platform/statistic/stats.h"
-#include "service/contract/benchmark/string_generator.h"
-#include "service/contract/benchmark/zipfian_generator.h"
+#include "service/contract/benchmark/generator/string_generator.h"
+#include "service/contract/benchmark/generator/zipfian_generator.h"
 #include "service/contract/thunderbolt_service/contract_transaction_manager.h"
 #include "service/contract/thunderbolt_service/thunderbolt_service.h"
 #include "service/utils/server_factory.h"

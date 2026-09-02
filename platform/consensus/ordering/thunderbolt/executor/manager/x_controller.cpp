@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/manager/x_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 namespace resdb {

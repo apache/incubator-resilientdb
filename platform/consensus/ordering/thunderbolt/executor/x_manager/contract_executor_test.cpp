@@ -21,12 +21,13 @@
 
 #include <fstream>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/address_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/multi_contract_executor.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/multi_contract_executor.h"
 
 namespace resdb {
 namespace contract {
+using namespace x_manager;
 namespace {
 
 using ::testing::Test;

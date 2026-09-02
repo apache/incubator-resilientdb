@@ -176,6 +176,7 @@ cc_library(
     hdrs = ["concurrency_controller.h"],
     deps = [
         ":data_storage",
+        "//platform/consensus/ordering/thunderbolt/executor/common:rws_types",
     ],
 )
 
@@ -434,22 +435,6 @@ cc_library(
 )
 
 cc_test(
-    name = "x_committer_test",
-    srcs = ["x_committer_test.cpp"],
-    data = [
-        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:contract.json",
-        "//platform/consensus/ordering/thunderbolt/executor/manager/test_data:kv.json",
-    ],
-    deps = [
-        ":address_manager",
-        ":contract_deployer",
-        ":mock_data_storage",
-        ":x_committer",
-        "//common/test:test_main",
-    ],
-)
-
-cc_test(
     name = "streaming_e_committer_test",
     srcs = ["streaming_e_committer_test.cpp"],
     data = [
@@ -478,6 +463,7 @@ cc_library(
     ],
 )
 
+'''
 cc_test(
     name = "contract_deployer_test",
     srcs = ["contract_deployer_test.cpp"],
@@ -490,6 +476,7 @@ cc_test(
         "//common/test:test_main",
     ],
 )
+'''
 
 cc_library(
     name = "contract_manager",

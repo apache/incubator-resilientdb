@@ -83,7 +83,7 @@ class SequentialConcurrencyCommitter : public ContractCommitter {
   ExecutionContext* GetTaskContext(int64_t commit_id);
 
   void CommitCallBack(int64_t commit_id);
-  void RedoCallBack(int64_t commit_id, int flag);
+  void RedoCallBack(int64_t commit_id);
 
  private:
   std::unique_ptr<SequentialCCController> controller_;

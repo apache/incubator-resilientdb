@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/service/contract_transaction_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/eo_service/contract_transaction_manager.h"
 
 #include <glog/logging.h>
 

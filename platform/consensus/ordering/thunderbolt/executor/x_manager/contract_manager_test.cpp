@@ -16,17 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
 #include <fstream>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
 
 namespace resdb {
 namespace contract {
+using namespace x_manager;
 namespace {
 
 using ::testing::Test;

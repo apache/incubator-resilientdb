@@ -67,6 +67,7 @@ message Transaction{
   repeated int32 belong_shards = 8;
   int32 shard_id = 9;
   bool skip = 10;
+  int64 queuing_time = 11;
 }
 
 enum ProposalType{
@@ -95,6 +96,7 @@ message Proposal {
   bytes hash = 6;
   bool stop = 7;
   bool time_out = 8;
+  int64 queuing_time = 9;
 };
 
 enum MessageType {
@@ -116,4 +118,3 @@ message TPCRequest {
   bytes data = 6;
   bytes hash = 7;
 }
-

@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_deployer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_deployer.h"
 
 #include <glog/logging.h>
 
 #include "eEVM/processor.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 namespace {
 
 std::string U256ToString(uint256_t v) { return eevm::to_hex_string(v); }
@@ -118,6 +118,6 @@ absl::StatusOr<eevm::AccountState> ContractDeployer::GetContract(
   return gs_->get(address);
 }
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
 
 #include <glog/logging.h>
 
@@ -24,7 +24,7 @@
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 Address AddressManager::CreateRandomAddress() {
   std::vector<uint8_t> raw(20);
@@ -63,6 +63,6 @@ uint256_t AddressManager::AddressToSHAKey(const Address& address) {
   return eevm::from_big_endian(h, sizeof(h));
 }
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

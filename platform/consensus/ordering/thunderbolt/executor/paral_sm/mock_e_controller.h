@@ -19,11 +19,11 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_controller.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class MockEController : public StreamingEController {
  public:
@@ -38,6 +38,6 @@ class MockEController : public StreamingEController {
               (override));
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

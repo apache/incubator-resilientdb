@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/e_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 #include <queue>
@@ -154,7 +156,7 @@ void EController::Clear(int64_t commit_id) {
   // LOG(ERROR)<<"CLEAR id:"<<commit_id;
 #endif
 
-  std::unique_lock lock(g_mutex_);
+  std::unique_lock<std::mutex> lock(g_mutex_);
   int idx = commit_id & window_size_;
   for (auto it : changes_list_[idx]) {
     const uint256_t& address = it.first;
@@ -239,8 +241,8 @@ void EController::AppendPreRecord(const uint256_t& address, int64_t commit_id,
     int idx = commit_id & window_size_;
     int hash_idx = GetHashKey(address);
     // std::lock_guard<std::mutex> lk(mutex_[hash_idx]);
-    std::unique_lock lock(g_mutex_);
-    // std::unique_lock lock(mutex_[hash_idx]);
+    std::unique_lock<std::mutex> lock(g_mutex_);
+    // std::unique_lock<std::mutex> lock(mutex_[hash_idx]);
 
     auto& commit_set = pre_commit_list_[address];
 #ifdef CDebug
@@ -385,8 +387,8 @@ void EController::RemovePreRecord(const uint256_t& address, int64_t commit_id) {
     int idx = commit_id & window_size_;
     // int hash_idx = GetHashKey(address);
     // std::lock_guard<std::mutex> lk(mutex_[hash_idx]);
-    // std::unique_lock lock(g_mutex_);
-    // std::unique_lock lock(mutex_[hash_idx]);
+    // std::unique_lock<std::mutex> lock(g_mutex_);
+    // std::unique_lock<std::mutex> lock(mutex_[hash_idx]);
 
     auto& commit_set = pre_commit_list_[address];
     // LOG(ERROR)<<"remove commit set:"<<commit_id<<" address:"<<address<<"
@@ -510,7 +512,7 @@ bool EController::CommitUpdates(int64_t commit_id) {
   std::vector<std::pair<uint256_t, std::pair<uint256_t, uint64_t>>> tmp_data;
   //(std::make_pair(op.data, op.version));
   {
-    std::unique_lock lock1(g_mutex_);
+    std::unique_lock<std::mutex> lock1(g_mutex_);
     // std::vector<std::unique_ptr<std::unique_lock<std::mutex>>> lock_list;
     /*
     for(const auto& it : change_set){

@@ -27,10 +27,21 @@ cc_library(
 )
 
 cc_library(
-    name = "contract_execute_info",
-    hdrs = ["contract_execute_info.h"],
+    name = "rws_types",
+    hdrs = ["rws_types.h"],
     deps = [
         ":utils",
+    ],
+)
+
+cc_library(
+    name = "contract_execute_info",
+    hdrs = [
+        "contract_execute_info.h",
+        "rws_types.h",
+    ],
+    deps = [
+        ":rws_types",
         "//proto/contract:func_params_cc_proto",
     ],
 )

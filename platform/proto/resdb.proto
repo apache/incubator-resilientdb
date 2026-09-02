@@ -21,6 +21,7 @@ syntax = "proto3";
 
 import "platform/proto/replica_info.proto";
 import "common/proto/signature_info.proto";
+import "proto/contract/rpc.proto";
 
 package resdb;
 
@@ -98,6 +99,8 @@ message Request {
     repeated int32 belong_shards = 32;
     int32 shard_id = 33;
     bool skip = 34;
+    resdb.contract.Response resp = 35;
+    bytes ext_data = 36;
 
 }
 

@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/2pl_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 #include <queue>
@@ -155,7 +157,7 @@ void TwoPLController::AppendPreRecord(const uint256_t& address,
   // LOG(ERROR)<<"append address:"<<address<<" commit id:"<<commit_id<<"
   // state:"<<data.state;
   {
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::mutex> lock(g_mutex_);
     auto it = lock_table_.find(address);
     if (it != lock_table_.end() && it->second != commit_id) {
       // LOG(ERROR)<<"append address:"<<address<<" commit id:"<<commit_id<<"
@@ -197,7 +199,7 @@ void TwoPLController::ReleaseLock(int64_t commit_id) {
   }
   for (const auto& it : change_set) {
     const auto& address = it.first;
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::mutex> lock(g_mutex_);
     assert(lock_table_[address] == commit_id);
     lock_table_.erase(lock_table_.find(address));
     // LOG(ERROR)<<"release lock address:"<<address<<" commit id:"<<commit_id;
@@ -256,7 +258,7 @@ bool TwoPLController::CommitUpdates(int64_t commit_id) {
   }
   committed_[commit_id] = true;
   {
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::mutex> lock(g_mutex_);
 
     assert(CheckCommit(commit_id));
 

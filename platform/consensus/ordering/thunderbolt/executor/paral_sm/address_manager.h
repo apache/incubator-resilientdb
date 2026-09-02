@@ -20,11 +20,11 @@
 
 #include <set>
 
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/utils.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/utils.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class AddressManager {
  public:
@@ -45,6 +45,6 @@ class AddressManager {
   std::set<Address> users_;
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_deployer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_deployer.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
 #include <fstream>
 
-#include "platform/consensus/ordering/thunderbolt/executor/manager/address_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/manager/test_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/test_committer.h"
 
 namespace resdb {
 namespace contract {
@@ -34,7 +34,7 @@ using ::testing::Test;
 
 const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
                              std::string(getenv("TEST_WORKSPACE")) +
-                             "/platform/consensus/ordering/thunderbolt/executor/manager/";
+                             "/platform/consensus/ordering/thunderbolt/executor/paral_sm/";
 
 Address get_random_address() { return AddressManager().CreateRandomAddress(); }
 

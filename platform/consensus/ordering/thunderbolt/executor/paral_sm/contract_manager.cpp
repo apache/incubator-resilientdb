@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_manager.h"
 
 #include <glog/logging.h>
 
 #include "eEVM/processor.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_committer.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 ContractManager::ContractManager(std::unique_ptr<DataStorage> storage,
                                  int worker_num, Options op) {
@@ -106,6 +106,6 @@ absl::StatusOr<std::string> ContractManager::ExecContract(
   return result.status();
 }
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

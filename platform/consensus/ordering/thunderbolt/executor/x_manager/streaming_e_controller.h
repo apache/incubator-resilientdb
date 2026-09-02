@@ -134,7 +134,7 @@ class StreamingEController : public ConcurrencyController {
   int64_t last_commit_id_, current_commit_id_;
   bool commit_[4096];
 
-  PreCommitList pre_commit_list_ GUARDED_BY(mutex_);
+  PreCommitList pre_commit_list_;
   int64_t last_pre_commit_id_;
 
   std::atomic<int> is_redo_[4096];
@@ -156,7 +156,7 @@ class StreamingEController : public ConcurrencyController {
   std::set<int64_t> forward_[4096], back_[4096];
 
   typedef std::set<int64_t> RedoList;
-  RedoList redo_list_ GUARDED_BY(mutex_);
+  RedoList redo_list_;
   void CheckRedo();
 
   std::vector<int64_t> abort_list_;

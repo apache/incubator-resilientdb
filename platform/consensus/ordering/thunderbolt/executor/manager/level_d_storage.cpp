@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/manager/level_d_storage.h"
 
+#include <mutex>
+
 #include "glog/logging.h"
 
 namespace resdb {
@@ -29,14 +31,14 @@ void InternalReset(const uint256_t& key, const uint256_t& value,
                    int64_t version,
                    std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                    std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   (*db)[key] = std::make_pair(value, version);
 }
 
 int64_t InternalStore(const uint256_t& key, const uint256_t& value,
                       std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                       std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   int64_t v = (*db)[key].second;
   (*db)[key] = std::make_pair(value, v + 1);
   // LOG(ERROR)<<"store key:"<<key<<" v:"<<v+1;
@@ -47,7 +49,7 @@ std::pair<uint256_t, int64_t> InternalLoad(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) return std::make_pair(0, 0);
   return e->second;
@@ -56,7 +58,7 @@ std::pair<uint256_t, int64_t> InternalLoad(
 bool InternalRemove(const uint256_t& key,
                     std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                     std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) return false;
   db->erase(e);
@@ -67,7 +69,7 @@ bool InternalExist(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   return db->find(key) != db->end();
 }
 
@@ -75,7 +77,7 @@ int64_t InternalGetVersion(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto it = db->find(key);
   if (it == db->end()) {
     // LOG(ERROR)<<"get version key:"<<key<<" v:"<<0;
@@ -109,7 +111,7 @@ uint256_t GetValue(const std::string& value) {
 
 int64_t InternalStore(const uint256_t& key, const uint256_t& value,
                       ResLevelDB* db, std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   std::string old_value = db->GetValue(GetString(key));
   int64_t v = GetVersion(old_value);
   db->SetValue(GetString(key), GetData(value, v + 1));
@@ -119,34 +121,34 @@ int64_t InternalStore(const uint256_t& key, const uint256_t& value,
 
 std::pair<uint256_t, int64_t> InternalLoad(const uint256_t& key, ResLevelDB* db,
                                            std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   std::string value = db->GetValue(GetString(key));
   return std::make_pair(GetValue(value), GetVersion(value));
 }
 
 bool InternalRemove(const uint256_t& key, ResLevelDB* db,
                     std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   db->SetValue(GetString(key), "");
   return true;
 }
 
 bool InternalExist(const uint256_t& key, ResLevelDB* db,
                    std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   std::string value = db->GetValue(GetString(key));
   return value.empty();
 }
 
 void InternalReset(const uint256_t& key, const uint256_t& value,
                    int64_t version, ResLevelDB* db, std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   db->SetValue(GetString(key), GetData(value, version));
 }
 
 int64_t InternalGetVersion(const uint256_t& key, ResLevelDB* db,
                            std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   std::string value = db->GetValue(GetString(key));
   return GetVersion(value);
 }

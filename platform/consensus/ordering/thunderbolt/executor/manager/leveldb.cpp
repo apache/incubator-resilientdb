@@ -24,8 +24,7 @@ namespace resdb {
 namespace contract {
 
 LevelDB::LevelDB() {
-  db_ = std::make_unique<ResLevelDB>("./");
-  db_->SetBatchSize(10000);
+  db_ = std::make_unique<resdb::storage::ResLevelDB>();
 }
 
 void LevelDB::Flush() {

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_committer.h"
 
 #include <future>
 #include <queue>
@@ -24,11 +24,11 @@
 #include "common/utils/utils.h"
 #include "eEVM/processor.h"
 #include "glog/logging.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/executor_state.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/executor_state.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 StreamingECommitter::StreamingECommitter(
     DataStorage* storage, GlobalState* global_state, int window_size,
@@ -305,6 +305,6 @@ absl::StatusOr<std::string> StreamingECommitter::ExecContract(
                                  func_param, state);
 }
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

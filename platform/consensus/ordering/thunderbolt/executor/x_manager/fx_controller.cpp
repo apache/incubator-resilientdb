@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/x_manager/fx_controller.h"
 
+#include <mutex>
+
 #include <glog/logging.h>
 
 #include <queue>
@@ -145,7 +147,7 @@ void FXController::Clear(int64_t commit_id) {
 #ifdef CDebug
   LOG(ERROR) << "CLEAR id:" << commit_id;
 #endif
-  std::unique_lock lock(g_mutex_);
+  std::unique_lock<std::mutex> lock(g_mutex_);
   changes_list_[commit_id].clear();
   addr_changes_list_[commit_id].clear();
 
@@ -224,10 +226,10 @@ bool FXController::Remove(const int64_t commit_id, const uint256_t& key,
 int FXController::AddressToId(const uint256_t& key) {
   int key_idx = GetHashKey(key);
 
-  std::unique_lock lock(k_mutex_[key_idx]);
+  std::unique_lock<std::mutex> lock(k_mutex_[key_idx]);
   if (key_[key_idx].find(key) == key_[key_idx].end()) {
     {
-      // std::unique_lock lockx(abort_mutex_);
+      // std::unique_lock<std::mutex> lockx(abort_mutex_);
       // akey_[key_id_] = key;
       key_[key_idx][key] = key_id_++;
     }
@@ -237,7 +239,7 @@ int FXController::AddressToId(const uint256_t& key) {
 
 uint256_t& FXController::GetAddress(int key) {
   // int key_idx = GetHashKey(key);
-  std::unique_lock lockx(abort_mutex_);
+  std::unique_lock<std::mutex> lockx(abort_mutex_);
   return akey_[key];
 }
 
@@ -945,7 +947,7 @@ void FXController::ConnectSelf(int idx, int last_idx, const uint256_t& address,
 }
 
 void FXController::AttachReadOnly(int commit_id, const uint256_t& address) {
-  std::unique_lock lock(s_mutex_);
+  std::unique_lock<std::mutex> lock(s_mutex_);
   if (attach_[commit_id] != -2) {
     return;
   }
@@ -959,7 +961,7 @@ void FXController::AttachReadOnly(int commit_id, const uint256_t& address) {
 void FXController::ReadReadOnly(int commit_id, const uint256_t& address,
                                 Data& data) {
   {
-    std::unique_lock lock(s_mutex_);
+    std::unique_lock<std::mutex> lock(s_mutex_);
     int idx = attach_[commit_id];
 #ifdef CDebug
     LOG(ERROR) << "read snap:" << idx << " commit id:" << commit_id
@@ -991,7 +993,7 @@ void FXController::ReadReadOnly(int commit_id, const uint256_t& address,
 
 void FXController::AddDataSnap(int commit_idx, const uint256_t& address,
                                const uint256_t& data, int64_t version) {
-  std::unique_lock lock(s_mutex_);
+  std::unique_lock<std::mutex> lock(s_mutex_);
 #ifdef CDebug
   LOG(ERROR) << "add snap data idx:" << commit_idx << " address:" << address;
 #endif
@@ -1539,7 +1541,7 @@ void FXController::AppendPreRecord(const uint256_t& address, int64_t commit_id,
   int address_id = AddressToId(address);
   bool ret = true;
   {
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::mutex> lock(g_mutex_);
     // LOG(ERROR)<<" append commit id:"<<commit_id;
 #ifdef CDebug
     // LOG(ERROR)<<"append address:"<<address<<"
@@ -1700,7 +1702,7 @@ bool FXController::CommitUpdates(int64_t commit_id) {
     */
 
   {
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::mutex> lock(g_mutex_);
     // LOG(ERROR)<<" commit id :"<<commit_id;
 
     if (aborted_[commit_id]) {

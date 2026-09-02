@@ -84,7 +84,7 @@ class XExecutor : public ContractCommitter {
 
   LockFreeQueue<ExecutionContext> request_queue_;
   LockFreeQueue<ExecutionContext> resp_queue_;
-  std::vector<std::unique_ptr<ContractExecutor>> resp_list_;
+  std::vector<std::unique_ptr<ExecuteResp>> resp_list_;
   std::vector<bool> is_done_;
 
   std::map<int64_t, std::unique_ptr<ExecutionContext>> context_list_;

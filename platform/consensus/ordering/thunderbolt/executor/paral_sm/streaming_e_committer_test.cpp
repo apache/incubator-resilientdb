@@ -16,33 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_committer.h"
 
 #include <glog/logging.h>
 #include <gtest/gtest.h>
 
 #include <fstream>
 
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/address_manager.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_deployer.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/global_state.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/mock_d_storage.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/mock_e_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/address_manager.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_deployer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/global_state.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/mock_d_storage.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/mock_e_controller.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 namespace {
 
 using ::testing::Invoke;
 using ::testing::Test;
 
 const std::string test_dir =
-    "/home/ubuntu/nexres//platform/consensus/ordering/thunderbolt/executor/manager/";
+    "/home/ubuntu/nexres//platform/consensus/ordering/thunderbolt/executor/paral_sm/";
 // const std::string test_dir = std::string(getenv("TEST_SRCDIR")) + "/" +
 //                            std::string(getenv("TEST_WORKSPACE")) +
-//                           "/platform/consensus/ordering/thunderbolt/executor/manager/";
+//                           "/platform/consensus/ordering/thunderbolt/executor/paral_sm/";
 
 Address get_random_address() { return AddressManager().CreateRandomAddress(); }
 
@@ -897,6 +897,6 @@ TEST_F(StreamingECommitterTest, ExecConflictCommitContract2) {
 }
 
 }  // namespace
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

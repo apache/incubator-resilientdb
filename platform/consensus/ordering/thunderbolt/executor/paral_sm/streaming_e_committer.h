@@ -24,17 +24,17 @@
 #include "absl/status/statusor.h"
 #include "eEVM/opcode.h"
 #include "platform/common/queue/lock_free_queue.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/committer_context.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_committer.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/contract_executor.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/global_state.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/streaming_e_controller.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/utils.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/committer_context.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/contract_executor.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/global_state.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/streaming_e_controller.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/utils.h"
 #include "proto/contract/func_params.pb.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class StreamingECommitter : public ContractCommitter {
  public:
@@ -98,6 +98,6 @@ class StreamingECommitter : public ContractCommitter {
   std::mutex mutex_;
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

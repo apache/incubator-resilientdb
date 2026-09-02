@@ -68,7 +68,7 @@ SequentialConcurrencyCommitter::SequentialConcurrencyCommitter(
   SequentialCCController::CallBack callback;
   callback.redo_callback =
       std::bind(&SequentialConcurrencyCommitter::RedoCallBack, this,
-                std::placeholders::_1, std::placeholders::_2);
+                std::placeholders::_1);
   callback.committed_callback =
       std::bind(&SequentialConcurrencyCommitter::CommitCallBack, this,
                 std::placeholders::_1);
@@ -144,7 +144,7 @@ ExecutionContext* SequentialConcurrencyCommitter::GetTaskContext(
 
 void SequentialConcurrencyCommitter::CommitCallBack(int64_t commit_id) {}
 
-void SequentialConcurrencyCommitter::RedoCallBack(int64_t commit_id, int flag) {
+void SequentialConcurrencyCommitter::RedoCallBack(int64_t commit_id) {
 }
 
 std::vector<std::unique_ptr<ExecuteResp>>

@@ -18,6 +18,8 @@
  */
 #include "platform/consensus/ordering/thunderbolt/executor/paral_sm/d_storage.h"
 
+#include <mutex>
+
 #include "glog/logging.h"
 
 namespace resdb {
@@ -29,14 +31,14 @@ void InternalReset(const uint256_t& key, const uint256_t& value,
                    int64_t version,
                    std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                    std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   (*db)[key] = std::make_pair(value, version);
 }
 
 int64_t InternalStore(const uint256_t& key, const uint256_t& value,
                       std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                       std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   int64_t v = (*db)[key].second;
   (*db)[key] = std::make_pair(value, v + 1);
   return v + 1;
@@ -46,7 +48,7 @@ std::pair<uint256_t, int64_t> InternalLoad(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) return std::make_pair(0, 0);
   return e->second;
@@ -55,7 +57,7 @@ std::pair<uint256_t, int64_t> InternalLoad(
 bool InternalRemove(const uint256_t& key,
                     std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
                     std::shared_mutex* mutex) {
-  std::unique_lock lock(*mutex);
+  std::unique_lock<std::shared_mutex> lock(*mutex);
   auto e = db->find(key);
   if (e == db->end()) return false;
   db->erase(e);
@@ -66,7 +68,7 @@ bool InternalExist(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   return db->find(key) != db->end();
 }
 
@@ -74,7 +76,7 @@ int64_t InternalGetVersion(
     const uint256_t& key,
     const std::map<uint256_t, std::pair<uint256_t, int64_t> >* db,
     std::shared_mutex* mutex) {
-  std::shared_lock lock(*mutex);
+  std::shared_lock<std::shared_mutex> lock(*mutex);
   auto it = db->find(key);
   if (it == db->end()) {
     return 0;
@@ -90,10 +92,10 @@ int64_t D_Storage::StoreWithVersion(const uint256_t& key,
   // LOG(ERROR)<<"storage key:"<<key<<" value:"<<value<<" ver:"<<version<<" is
   // local:"<<is_local;
   if (is_local) {
-    std::unique_lock lock(mutex_);
+    std::unique_lock<std::shared_mutex> lock(mutex_);
     c_s_[key] = std::make_pair(value, version);
   } else {
-    std::unique_lock lock(g_mutex_);
+    std::unique_lock<std::shared_mutex> lock(g_mutex_);
     g_s_[key] = std::make_pair(value, version);
   }
   return 0;

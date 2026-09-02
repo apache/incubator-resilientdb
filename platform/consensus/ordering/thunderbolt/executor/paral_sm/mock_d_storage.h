@@ -19,11 +19,11 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "platform/consensus/ordering/thunderbolt/executor/x_manager/d_storage.h"
+#include "platform/consensus/ordering/thunderbolt/executor/paral_sm/d_storage.h"
 
 namespace resdb {
 namespace contract {
-namespace x_manager {
+namespace paral_sm {
 
 class MockDStorage : public D_Storage {
  public:
@@ -42,6 +42,6 @@ class MockDStorage : public D_Storage {
               (override));
 };
 
-}  // namespace x_manager
+}  // namespace paral_sm
 }  // namespace contract
 }  // namespace resdb

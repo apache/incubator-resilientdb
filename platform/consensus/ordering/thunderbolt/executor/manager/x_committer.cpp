@@ -159,7 +159,7 @@ std::vector<std::unique_ptr<ExecuteResp>> XCommitter::ExecContract(
     bool ret = controller_->Commit(resp_commit_id);
     // LOG(ERROR)<<"resp commit:"<<resp_commit_id<<" ret:"<<ret;
     if (ret) {
-      // resp->rws = *controller_->GetChangeList(resp_commit_id);
+      resp->rws = *controller_->GetChangeList(resp_commit_id);
       // LOG(ERROR)<<"get rws:"<<resp_commit_id<<" retry:"<<resp->retry_time;
       resp_list.push_back(std::move(resp));
       RemoveTask(resp_commit_id);

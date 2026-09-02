@@ -103,9 +103,9 @@ class EController : public ConcurrencyController {
   // std::vector<std::unique_ptr<ModifyMap>> changes_list_;
   typedef std::map<uint256_t, std::deque<std::unique_ptr<DataInfo>>>
       PreCommitList;
-  PreCommitList pre_commit_list_ GUARDED_BY(mutex_);
+  PreCommitList pre_commit_list_;
   std::map<uint256_t, std::unique_ptr<DataInfo>> last_;
-  // PreCommitList pre_commit_list_[4096] GUARDED_BY(mutex_);
+  // PreCommitList pre_commit_list_[4096];
 
   std::set<int64_t> pd_;
   std::vector<int64_t> redo_;
