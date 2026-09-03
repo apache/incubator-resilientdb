@@ -46,6 +46,8 @@ class PerformanceManager {
   int ProcessResponseMsg(std::unique_ptr<Context> context,
                          std::unique_ptr<Request> request);
   void SetDataFunc(std::function<std::string()> func);
+  void SetPreprocessFunc(
+      std::function<std::vector<std::string>()> preprocess_func);
 
  protected:
   virtual void SendMessage(const Request& request);
@@ -85,6 +87,7 @@ class PerformanceManager {
   SignatureVerifier* verifier_;
   SignatureInfo sig_;
   std::function<std::string()> data_func_;
+  std::function<std::vector<std::string>()> preprocess_func_;
   std::future<bool> eval_ready_future_;
   std::promise<bool> eval_ready_promise_;
   std::atomic<int64_t> eval_ready_counter_{0};

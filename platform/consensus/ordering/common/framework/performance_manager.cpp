@@ -93,6 +93,11 @@ void PerformanceManager::SetDataFunc(std::function<std::string()> func) {
   data_func_ = std::move(func);
 }
 
+void PerformanceManager::SetPreprocessFunc(
+    std::function<std::vector<std::string>()> preprocess_func) {
+  preprocess_func_ = std::move(preprocess_func);
+}
+
 int PerformanceManager::StartEval() {
   if (eval_started_) {
     return 0;

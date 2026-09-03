@@ -1,0 +1,88 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+#pragma once
+
+#include "absl/status/statusor.h"
+#include "eEVM/opcode.h"
+#include "platform/consensus/ordering/thunderbolt/executor/common/utils.h"
+#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_committer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_deployer.h"
+#include "platform/consensus/ordering/thunderbolt/executor/manager/contract_verifier.h"
+#include "platform/consensus/ordering/thunderbolt/executor/manager/global_state.h"
+#include "proto/contract/func_params.pb.h"
+
+namespace resdb {
+namespace contract {
+
+class ContractManager {
+ public:
+  enum Options {
+    TwoPL = 1,
+    SCC = 2,
+    OOO = 3,
+    TwoPLOOO = 4,
+    Streaming = 5,
+    SingleStreaming = 6,
+    MultiStreaming = 7,
+    XE = 8,
+    XEO = 9,
+  };
+  ContractManager(std::unique_ptr<DataStorage> storage, int worker_num = 2,
+                  Options op = TwoPL);
+
+ public:
+  Address DeployContract(const Address& owner_address,
+                         const DeployInfo& deploy_info);
+
+  bool DeployContract(const Address& owner_address,
+                      const DeployInfo& deploy_info,
+                      const Address& contract_address);
+
+  absl::StatusOr<eevm::AccountState> GetContract(const Address& address);
+
+  absl::StatusOr<std::string> ExecContract(const Address& caller_address,
+                                           const Address& contract_address,
+                                           const Params& func_param);
+
+  std::vector<std::unique_ptr<ExecuteResp>> ExecContract(
+      std::vector<ContractExecuteInfo>& execute_info);
+
+  void AsyncExecContract(std::vector<ContractExecuteInfo>& execute_info);
+
+  void SetExecuteCallBack(
+      std::function<void(std::unique_ptr<ExecuteResp> resp)> func);
+
+  bool VerifyContract(std::vector<ContractExecuteInfo>& ordered_info,
+                      std::vector<ConcurrencyController ::ModifyMap> rws_list);
+
+ private:
+  std::string GetFuncAddress(const Address& contract_address,
+                             const std::string& func_name);
+  void SetFuncAddress(const Address& contract_address, const FuncInfo& func);
+
+ private:
+  std::unique_ptr<DataStorage> storage_;
+  std::unique_ptr<GlobalState> gs_;
+  std::unique_ptr<ContractCommitter> committer_;
+  std::unique_ptr<ContractDeployer> deployer_;
+  std::unique_ptr<ContractVerifier> verifier_;
+};
+
+}  // namespace contract
+}  // namespace resdb

@@ -68,6 +68,7 @@ proto_library(
     deps = [
         ":replica_info_proto",
         "//common/proto:signature_info_proto",
+        "//proto/contract:rpc_proto",
     ],
 )
 

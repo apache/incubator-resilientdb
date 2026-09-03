@@ -72,6 +72,8 @@ class TransactionExecutor {
   void WaitForExecute(int64_t seq);
   void FinishExecute(int64_t seq);
 
+  void SetUserFunc(std::function<void(int)> func) { user_func_ = std::move(func); }
+
   void Prepare(std::unique_ptr<Request> request);
 
  private:
@@ -104,6 +106,7 @@ class TransactionExecutor {
   std::atomic<uint64_t> next_execute_seq_ = 1;
   PreExecuteFunc pre_exec_func_ = nullptr;
   SeqUpdateNotifyFunc seq_update_notify_func_ = nullptr;
+  std::function<void(int)> user_func_ = nullptr;
   PostExecuteFunc post_exec_func_ = nullptr;
   SystemInfo* system_info_ = nullptr;
   std::unique_ptr<TransactionManager> transaction_manager_ = nullptr;

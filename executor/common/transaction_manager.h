@@ -20,6 +20,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <memory>
 
 #include "chain/storage/storage.h"
@@ -44,7 +45,24 @@ class TransactionManager {
   virtual std::unique_ptr<BatchUserResponse> ExecuteBatch(
       const BatchUserRequest& request);
 
-  std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
+  virtual std::unique_ptr<BatchUserResponse> ExecutePreparedData(
+      const BatchUserRequest&) {
+    return nullptr;
+  }
+
+  virtual void SetAsyncCallback(
+      std::function<void(const BatchUserRequest, std::unique_ptr<resdb::Request>,
+                         std::unique_ptr<BatchUserResponse>)>) {}
+
+  virtual void Attach(std::unique_ptr<Request> request) {
+    request_ = std::move(request);
+  }
+
+  virtual std::unique_ptr<Request> FetchRequest() {
+    return std::move(request_);
+  }
+
+  virtual std::unique_ptr<std::vector<std::unique_ptr<google::protobuf::Message>>>
   Prepare(const BatchUserRequest& request);
 
   std::vector<std::unique_ptr<std::string>> ExecuteBatchDataWithSeq(
@@ -69,6 +87,7 @@ class TransactionManager {
   uint64_t seq_ = 0;
 
   std::unique_ptr<Storage> storage_;
+  std::unique_ptr<Request> request_;
 
  private:
   bool is_out_of_order_ = false;
