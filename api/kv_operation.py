@@ -55,6 +55,7 @@ def create_index_entry(index_name: str, attributes, primary_key: str,
 
     :param index_name: The index the entry belongs to, chosen by you.
     :param attributes: One attribute value, or a list of them for a multi-attribute index.
+                       Mixing the two forms in one call is not supported.
     :param primary_key: The key of the record being indexed. It must already exist.
     :param config_path: Path to the client config.
     :return: 0 on success, -3 if the servers rejected it, -1 or -2 if it could not be sent.
@@ -68,7 +69,8 @@ def delete_index_entry(index_name: str, attributes, primary_key: str,
     """
     Remove a secondary index entry. The record itself is not deleted.
 
-    :return: 0 on success, -3 if no such entry exists, -1 or -2 if it could not be sent.
+    :return: 0 on success, -3 if the servers rejected it (no such entry, empty index
+             name or primary key, or a zero byte in any part), -1 or -2 if it could not be sent.
     """
     return pybind_kv.delete_index_entry(index_name, attributes, str(primary_key),
                                         os.path.abspath(config_path))
@@ -80,7 +82,8 @@ def update_index_entry(index_name: str, old_attributes, new_attributes, primary_
     Move an entry to new attributes, e.g. when a record's city changes. The old entry is
     removed and the new one added in a single write.
 
-    :return: 0 on success, -3 if the old entry does not exist, -1 or -2 if it could not be sent.
+    :return: 0 on success, -3 if the servers rejected it (the old entry does not exist,
+             or the input was invalid), -1 or -2 if it could not be sent.
     """
     return pybind_kv.update_index_entry(index_name, old_attributes, new_attributes,
                                         str(primary_key), os.path.abspath(config_path))

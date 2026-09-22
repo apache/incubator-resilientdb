@@ -37,7 +37,6 @@ void SetIndexFields(const std::string& index_name,
 
 }  // namespace
 
-
 KVClient::KVClient(const ResDBConfig& config)
     : TransactionConstructor(config) {}
 
@@ -173,7 +172,6 @@ std::unique_ptr<std::string> KVClient::QueryResQL(const std::string& sql_query) 
   }
   return std::make_unique<std::string>();
 }
-
 
 int KVClient::CreateIndexEntry(const std::string& index_name,
                                const std::vector<std::string>& attributes,

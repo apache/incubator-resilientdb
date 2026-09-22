@@ -78,6 +78,8 @@ static struct option long_options[] = {
     {"attrs", required_argument, NULL, 'a'},
     {"new_attrs", required_argument, NULL, 'n'},
     {"pk", required_argument, NULL, 'p'},
+    // getopt_long reads until it finds this terminator.
+    {NULL, 0, NULL, 0},
 };
 
 // "shray,jpeg" -> {"shray", "jpeg"}; "" -> {} (meaning the whole index).
@@ -347,6 +349,7 @@ int main(int argc, char** argv) {
     printf("%s index = %s, attrs = %s, pk = %s, ret = %d%s\n", cmd.c_str(),
            index_name.c_str(), attrs.c_str(), pk.c_str(), ret,
            ret == -3 ? " (rejected by the servers)" : "");
+    return ret == 0 ? 0 : 1;
   } else if (cmd == "update_index_entry") {
     if (index_name.empty() || pk.empty()) {
       ShowUsage();
@@ -359,6 +362,7 @@ int main(int argc, char** argv) {
         "ret = %d%s\n",
         index_name.c_str(), attrs.c_str(), new_attrs.c_str(), pk.c_str(), ret,
         ret == -3 ? " (rejected by the servers)" : "");
+    return ret == 0 ? 0 : 1;
   } else if (cmd == "query_by_index") {
     if (index_name.empty()) {
       ShowUsage();
@@ -368,7 +372,7 @@ int main(int argc, char** argv) {
     if (res == nullptr) {
       printf("query_by_index index = %s, attrs = %s failed\n",
              index_name.c_str(), attrs.c_str());
-      return 0;
+      return 1;
     }
     printf("query_by_index index = %s, attrs = %s, %d result(s)\n",
            index_name.c_str(), attrs.c_str(), res->item_size());

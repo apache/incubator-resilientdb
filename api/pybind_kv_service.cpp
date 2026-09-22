@@ -141,8 +141,8 @@ std::vector<std::string> query_by_index_one(std::string index_name,
 PYBIND11_MODULE(pybind_kv, m) {
   m.def("get", &get, "A function that gets a value from the key-value store");
   m.def("set", &set, "A function that sets a value in the key-value store");
-  // The single-string overloads are registered first so "Davis" binds to them
-  // rather than being read as a list of characters.
+  // Each command has a single-string and a list overload: pybind never turns a
+  // str into a list of strings, so "Davis" needs its own signature.
   m.def("create_index_entry", &create_index_entry_one,
         "Add an index entry with one attribute");
   m.def("create_index_entry", &create_index_entry,

@@ -27,6 +27,14 @@
 
 set -u
 
+if [ ! -f WORKSPACE ]; then
+  echo "run this from the repository root"
+  exit 1
+fi
+
+# Leave no servers behind, even on Ctrl-C.
+trap 'killall -9 kv_service 2>/dev/null' EXIT INT TERM
+
 CONFIG=service/tools/config/interface/service.config
 CLI=bazel-bin/service/tools/kv/api_tools/kv_service_tools
 CERT_DIR=service/tools/data/cert
@@ -37,15 +45,25 @@ run() {
 }
 
 # Prints just the primary keys a query returned, sorted, space separated.
+# A request that never reached the servers must not look like "no matches",
+# so the header line has to be there before we strip it.
 query() {
   local index=$1
   local attrs=${2:-}
+  local out
   if [ -z "$attrs" ]; then
-    run --cmd query_by_index --index "$index" | tail -n +2 | sort | tr '\n' ' '
+    out=$(run --cmd query_by_index --index "$index")
   else
-    run --cmd query_by_index --index "$index" --attrs "$attrs" | tail -n +2 |
-      sort | tr '\n' ' '
+    out=$(run --cmd query_by_index --index "$index" --attrs "$attrs")
   fi
+  case "$out" in
+    *"result(s)"*) ;;
+    *)
+      echo "QUERY FAILED"
+      return
+      ;;
+  esac
+  echo "$out" | tail -n +2 | sort | tr '\n' ' '
 }
 
 check() {
@@ -136,6 +154,11 @@ check "the record itself is untouched" "$(run --cmd get --key photo:3)" \
 echo "== index entries stay out of normal reads =="
 check "get on a record is unaffected" "$(run --cmd get --key photo:1)" \
       "get key = photo:1 value = jpeg-1"
+# "ck\0..." sorts between the photo keys, and an index entry's value is empty,
+# so an unfiltered range scan would splice empty elements into this list.
+check "range scan hides index entries" \
+      "$(run --cmd get_key_range --min_key ' ' --max_key '~' | tr -d '\000' |
+         grep -acE '\[,|,,|,\]')" "0"
 
 echo "== restart: the index is on disk =="
 start_cluster
