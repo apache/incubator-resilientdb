@@ -21,7 +21,9 @@
 
 #include <map>
 #include <optional>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "chain/storage/storage.h"
 #include "executor/common/transaction_manager.h"
@@ -58,7 +60,34 @@ class KVExecutor : public TransactionManager {
   void GetTopHistory(const std::string& key, int top_number, Items* items);
   std::string ExecuteSQL(const std::string& sql_query);
 
+  // Secondary indexes (issue #180). An index entry says which attributes a
+  // record has, e.g. ("by_city", {"Davis"}) -> "user:1", and is stored as the
+  // key "ck\0by_city\0Davis\0user:1". Only these functions build such keys.
+
+  // Fails if the record (primary_key) doesn't exist.
+  bool CreateIndexEntry(const std::string& index_name,
+                        const std::vector<std::string>& attributes,
+                        const std::string& primary_key);
+  // Fails if the entry doesn't exist.
+  bool DeleteIndexEntry(const std::string& index_name,
+                        const std::vector<std::string>& attributes,
+                        const std::string& primary_key);
+  // Moves an entry to new attributes in one write. Fails if it doesn't exist.
+  bool UpdateIndexEntry(const std::string& index_name,
+                        const std::vector<std::string>& old_attributes,
+                        const std::vector<std::string>& new_attributes,
+                        const std::string& primary_key);
+  // Adds the primary keys of matching entries to `items`, each once, sorted.
+  void QueryByIndex(const std::string& index_name,
+                    const std::vector<std::string>& attribute_prefix,
+                    Items* items);
+
  private:
+  // Shared by ExecuteRequest and ExecuteData.
+  void ExecuteIndexCommand(const KVRequest& request, KVResponse* response);
+  bool PrimaryKeyExists(const std::string& key);
+  bool IndexEntryExists(const std::string& composite_key);
+
   std::unique_ptr<TransactionManager> contract_manager_;
 };
 
