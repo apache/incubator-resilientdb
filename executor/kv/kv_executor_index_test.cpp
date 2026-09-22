@@ -289,6 +289,24 @@ TEST_P(KVExecutorIndexTest, UpdateRejectsBadInput) {
   EXPECT_THAT(Query("by_city", {"Davis"}), ElementsAre("user:1"));
 }
 
+// Values are opaque bytes, so a record holding an image indexes like any other.
+TEST_P(KVExecutorIndexTest, IndexRecordWithBinaryValue) {
+  std::string image("\x89PNG\r\n\x1a\n", 8);  // PNG signature
+  image += std::string(3, '\0');              // zero bytes
+  image += std::string("\xff\xfe\xfd", 3);    // not valid text
+
+  Set("img:1", image);
+  EXPECT_EQ(Get("img:1"), image);
+  EXPECT_TRUE(Create("by_type", {"png"}, "img:1"));
+  EXPECT_THAT(Query("by_type", {"png"}), ElementsAre("img:1"));
+}
+
+// A record with an empty value can't be told apart from a missing one.
+TEST_P(KVExecutorIndexTest, CannotIndexRecordWithEmptyValue) {
+  Set("user:1", "");
+  EXPECT_FALSE(Create("by_city", {"Davis"}, "user:1"));
+}
+
 // SET and SET_WITH_VERSION must not be able to plant a fake index entry.
 TEST_P(KVExecutorIndexTest, SetCannotWriteIndexEntries) {
   const std::string forged = std::string("ck") + '\0' + "by_city" + '\0' +
