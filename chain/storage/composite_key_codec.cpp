@@ -75,8 +75,11 @@ std::string EncodeCompositeKeyPrefix(
     result.append(attribute_prefix[i]);
   }
 
-  // Trailing delimiter makes this a strict byte prefix of the full key.
-  result.push_back(kCompositeKeyDelim);
+  // End on a delimiter so "Davis" can't match "Davisville". With no
+  // attributes, the delimiter after index_name already does this.
+  if (!attribute_prefix.empty()) {
+    result.push_back(kCompositeKeyDelim);
+  }
   return result;
 }
 
@@ -90,7 +93,8 @@ bool DecodeCompositeKey(const std::string& encoded,
 
   size_t ns_len = std::strlen(kCompositeKeyNamespace);
   if (encoded.size() < ns_len + 1 ||
-      encoded.compare(0, ns_len, kCompositeKeyNamespace) != 0) {
+      encoded.compare(0, ns_len, kCompositeKeyNamespace) != 0 ||
+      encoded[ns_len] != kCompositeKeyDelim) {
     return false;
   }
 
