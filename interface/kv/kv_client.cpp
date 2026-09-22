@@ -22,6 +22,21 @@
 #include <glog/logging.h>
 
 namespace resdb {
+namespace {
+
+// Fills the parts every index command sends.
+void SetIndexFields(const std::string& index_name,
+                    const std::vector<std::string>& attributes,
+                    const std::string& primary_key, KVRequest* request) {
+  request->set_index_name(index_name);
+  for (const std::string& attribute : attributes) {
+    request->add_attributes(attribute);
+  }
+  request->set_primary_key(primary_key);
+}
+
+}  // namespace
+
 
 KVClient::KVClient(const ResDBConfig& config)
     : TransactionConstructor(config) {}
@@ -157,6 +172,75 @@ std::unique_ptr<std::string> KVClient::QueryResQL(const std::string& sql_query) 
     return std::make_unique<std::string>(response.value());
   }
   return std::make_unique<std::string>();
+}
+
+
+int KVClient::CreateIndexEntry(const std::string& index_name,
+                               const std::vector<std::string>& attributes,
+                               const std::string& primary_key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::CREATE_INDEX_ENTRY);
+  SetIndexFields(index_name, attributes, primary_key, &request);
+
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return ret;
+  }
+  return response.success() ? 0 : -3;
+}
+
+int KVClient::DeleteIndexEntry(const std::string& index_name,
+                               const std::vector<std::string>& attributes,
+                               const std::string& primary_key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::DELETE_INDEX_ENTRY);
+  SetIndexFields(index_name, attributes, primary_key, &request);
+
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return ret;
+  }
+  return response.success() ? 0 : -3;
+}
+
+int KVClient::UpdateIndexEntry(const std::string& index_name,
+                               const std::vector<std::string>& old_attributes,
+                               const std::vector<std::string>& new_attributes,
+                               const std::string& primary_key) {
+  KVRequest request;
+  request.set_cmd(KVRequest::UPDATE_INDEX_ENTRY);
+  SetIndexFields(index_name, old_attributes, primary_key, &request);
+  for (const std::string& attribute : new_attributes) {
+    request.add_new_attributes(attribute);
+  }
+
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return ret;
+  }
+  return response.success() ? 0 : -3;
+}
+
+std::unique_ptr<Items> KVClient::QueryByIndex(
+    const std::string& index_name,
+    const std::vector<std::string>& attribute_prefix) {
+  KVRequest request;
+  request.set_cmd(KVRequest::QUERY_BY_INDEX);
+  SetIndexFields(index_name, attribute_prefix, "", &request);
+
+  KVResponse response;
+  int ret = SendRequest(request, &response);
+  if (ret != 0) {
+    LOG(ERROR) << "send request fail, ret:" << ret;
+    return nullptr;
+  }
+  return std::make_unique<Items>(response.items());
 }
 
 }  // namespace resdb

@@ -19,6 +19,10 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "interface/rdbc/transaction_constructor.h"
 #include "proto/kv/kv.pb.h"
 
@@ -63,6 +67,25 @@ class KVClient : public TransactionConstructor {
 
   // Execute an arbitrary SQL query with the ReSQL query service, based on DuckDB.
   std::unique_ptr<std::string> QueryResQL(const std::string& sql_query);
+
+  // Secondary indexes (issue #180). The server builds the stored key from
+  // these parts. Return 0 on success, -3 if the servers rejected the request,
+  // or the send error from TransactionConstructor::SendRequest (-1, -2).
+  int CreateIndexEntry(const std::string& index_name,
+                       const std::vector<std::string>& attributes,
+                       const std::string& primary_key);
+  int DeleteIndexEntry(const std::string& index_name,
+                       const std::vector<std::string>& attributes,
+                       const std::string& primary_key);
+  int UpdateIndexEntry(const std::string& index_name,
+                       const std::vector<std::string>& old_attributes,
+                       const std::vector<std::string>& new_attributes,
+                       const std::string& primary_key);
+  // Primary keys whose entry starts with `attribute_prefix`, each once and
+  // sorted. Empty prefix means the whole index. nullptr if the send failed.
+  std::unique_ptr<Items> QueryByIndex(
+      const std::string& index_name,
+      const std::vector<std::string>& attribute_prefix);
 };
 
 }  // namespace resdb
