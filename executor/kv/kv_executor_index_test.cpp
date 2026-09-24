@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "chain/storage/leveldb.h"
@@ -130,6 +131,21 @@ class KVExecutorIndexTest
   bool Update(const std::string& index, const std::vector<std::string>& from,
               const std::vector<std::string>& to, const std::string& pk) {
     return IndexCommand(KVRequest::UPDATE_INDEX_ENTRY, index, from, pk, to);
+  }
+
+  std::vector<std::pair<std::string, std::string>> QueryWithValues(
+      const std::string& index, const std::vector<std::string>& attrs) {
+    KVRequest request;
+    request.set_cmd(KVRequest::QUERY_BY_INDEX);
+    request.set_index_name(index);
+    for (const auto& a : attrs) request.add_attributes(a);
+    request.set_with_values(true);
+    KVResponse response = Execute(request);
+    std::vector<std::pair<std::string, std::string>> records;
+    for (const Item& item : response.items().item()) {
+      records.push_back({item.key(), item.value_info().value()});
+    }
+    return records;
   }
 
   std::vector<std::string> Query(const std::string& index,
@@ -356,6 +372,45 @@ TEST_P(KVExecutorIndexTest, UpdateOntoExistingEntry) {
   EXPECT_TRUE(Update("by_city", {"Davis"}, {"Sacramento"}, "user:1"));
   EXPECT_THAT(Query("by_city", {"Davis"}), IsEmpty());
   EXPECT_THAT(Query("by_city", {"Sacramento"}), ElementsAre("user:1"));
+}
+
+TEST_P(KVExecutorIndexTest, QueryWithValuesReturnsRecords) {
+  Set("user:1", "Ana");
+  Set("user:2", "Bo");
+  EXPECT_TRUE(Create("by_city", {"Davis"}, "user:1"));
+  EXPECT_TRUE(Create("by_city", {"Davis"}, "user:2"));
+
+  EXPECT_THAT(QueryWithValues("by_city", {"Davis"}),
+              ElementsAre(std::make_pair("user:1", "Ana"),
+                          std::make_pair("user:2", "Bo")));
+}
+
+// Without the flag the values must stay out of the reply.
+TEST_P(KVExecutorIndexTest, QueryWithoutValuesReturnsKeysOnly) {
+  Set("user:1", "Ana");
+  EXPECT_TRUE(Create("by_city", {"Davis"}, "user:1"));
+
+  KVRequest request;
+  request.set_cmd(KVRequest::QUERY_BY_INDEX);
+  request.set_index_name("by_city");
+  request.add_attributes("Davis");
+  KVResponse response = Execute(request);
+  ASSERT_EQ(response.items().item_size(), 1);
+  EXPECT_EQ(response.items().item(0).key(), "user:1");
+  EXPECT_EQ(response.items().item(0).value_info().value(), "");
+}
+
+TEST_P(KVExecutorIndexTest, QueryWithValuesHandlesBinaryAndVersionedRecords) {
+  std::string image("\x89PNG\r\n\x1a\n", 8);
+  image += std::string(3, '\0');
+  Set("img:1", image);
+  SetWithVersion("user:5", "Eve");
+  EXPECT_TRUE(Create("by_type", {"png"}, "img:1"));
+  EXPECT_TRUE(Create("by_type", {"png"}, "user:5"));
+
+  EXPECT_THAT(QueryWithValues("by_type", {"png"}),
+              ElementsAre(std::make_pair("img:1", image),
+                          std::make_pair("user:5", "Eve")));
 }
 
 INSTANTIATE_TEST_SUITE_P(AllBackendsAndEntryPoints, KVExecutorIndexTest,

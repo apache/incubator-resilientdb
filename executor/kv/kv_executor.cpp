@@ -276,7 +276,8 @@ void KVExecutor::ExecuteIndexCommand(const KVRequest& request,
       break;
     }
     case KVRequest::QUERY_BY_INDEX:
-      QueryByIndex(request.index_name(), attributes, response->mutable_items());
+      QueryByIndex(request.index_name(), attributes, request.with_values(),
+                   response->mutable_items());
       break;
     default:
       break;
@@ -362,7 +363,7 @@ bool KVExecutor::UpdateIndexEntry(
 
 void KVExecutor::QueryByIndex(const std::string& index_name,
                               const std::vector<std::string>& attribute_prefix,
-                              Items* items) {
+                              bool with_values, Items* items) {
   if (index_name.empty()) {
     LOG(ERROR) << "QueryByIndex: index_name is required";
     return;
@@ -387,7 +388,16 @@ void KVExecutor::QueryByIndex(const std::string& index_name,
     }
   }
   for (const std::string& primary_key : primary_keys) {
-    items->add_item()->set_key(primary_key);
+    Item* item = items->add_item();
+    item->set_key(primary_key);
+    if (with_values) {
+      // Read here, so the caller doesn't send one request per match.
+      std::string value = Get(primary_key);
+      if (value.empty()) {
+        value = storage_->GetValueWithVersion(primary_key, 0).first;
+      }
+      item->mutable_value_info()->set_value(value);
+    }
   }
 }
 

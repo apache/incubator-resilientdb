@@ -78,9 +78,10 @@ class KVExecutor : public TransactionManager {
                         const std::vector<std::string>& new_attributes,
                         const std::string& primary_key);
   // Adds the primary keys of matching entries to `items`, each once, sorted.
+  // With `with_values`, each record's value is read and returned too.
   void QueryByIndex(const std::string& index_name,
                     const std::vector<std::string>& attribute_prefix,
-                    Items* items);
+                    bool with_values, Items* items);
 
  private:
   // Shared by ExecuteRequest and ExecuteData.

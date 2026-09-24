@@ -63,6 +63,9 @@ message KVRequest {
     string primary_key = 14;
     // For UPDATE_INDEX_ENTRY: the attributes to move the entry to.
     repeated string new_attributes = 15;
+    // For QUERY_BY_INDEX: also return each record's value, saving the caller
+    // one request per match.
+    bool with_values = 16;
 }
 
 message ValueInfo {
