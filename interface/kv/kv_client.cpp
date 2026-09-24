@@ -227,10 +227,11 @@ int KVClient::UpdateIndexEntry(const std::string& index_name,
 
 std::unique_ptr<Items> KVClient::QueryByIndex(
     const std::string& index_name,
-    const std::vector<std::string>& attribute_prefix) {
+    const std::vector<std::string>& attribute_prefix, bool with_values) {
   KVRequest request;
   request.set_cmd(KVRequest::QUERY_BY_INDEX);
   SetIndexFields(index_name, attribute_prefix, "", &request);
+  request.set_with_values(with_values);
 
   KVResponse response;
   int ret = SendRequest(request, &response);

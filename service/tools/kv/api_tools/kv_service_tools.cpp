@@ -57,6 +57,7 @@ void ShowUsage() {
       "--new_attrs the attributes to move the entry to, if cmd is "
       "update_index_entry\n"
       "--pk primary key of the record being indexed\n"
+      "--with_values return each record's value with query_by_index\n"
       "\n"
       "More examples can be found from README.\n");
 }
@@ -78,6 +79,7 @@ static struct option long_options[] = {
     {"attrs", required_argument, NULL, 'a'},
     {"new_attrs", required_argument, NULL, 'n'},
     {"pk", required_argument, NULL, 'p'},
+    {"with_values", no_argument, NULL, 'w'},
     // getopt_long reads until it finds this terminator.
     {NULL, 0, NULL, 0},
 };
@@ -158,6 +160,7 @@ int main(int argc, char** argv) {
   std::string attrs;
   std::string new_attrs;
   std::string pk;
+  bool with_values = false;
   std::string client_config_file;
   int top = 0;
   // getopt_long returns int and signals the end of the options with -1. Storing
@@ -221,6 +224,9 @@ int main(int argc, char** argv) {
         break;
       case 'p':
         pk = optarg;
+        break;
+      case 'w':
+        with_values = true;
         break;
       case 'h':
         ShowUsage();
@@ -368,7 +374,8 @@ int main(int argc, char** argv) {
       ShowUsage();
       return 0;
     }
-    auto res = client.QueryByIndex(index_name, SplitAttributes(attrs));
+    auto res = client.QueryByIndex(index_name, SplitAttributes(attrs),
+                                   with_values);
     if (res == nullptr) {
       printf("query_by_index index = %s, attrs = %s failed\n",
              index_name.c_str(), attrs.c_str());
@@ -377,7 +384,12 @@ int main(int argc, char** argv) {
     printf("query_by_index index = %s, attrs = %s, %d result(s)\n",
            index_name.c_str(), attrs.c_str(), res->item_size());
     for (const auto& item : res->item()) {
-      printf("%s\n", item.key().c_str());
+      if (with_values) {
+        printf("%s = %s\n", item.key().c_str(),
+               item.value_info().value().c_str());
+      } else {
+        printf("%s\n", item.key().c_str());
+      }
     }
   } else {
     ShowUsage();

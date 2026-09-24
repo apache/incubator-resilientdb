@@ -101,3 +101,16 @@ def query_by_index(index_name: str, attributes,
     :return: A list of primary keys, empty if nothing matched or the request failed.
     """
     return pybind_kv.query_by_index(index_name, attributes, os.path.abspath(config_path))
+
+
+def query_records_by_index(index_name: str, attributes,
+                           config_path: str = current_dir + "/ip_address.config") -> list:
+    """
+    Like query_by_index, but returns (key, value) pairs. The records are read on the
+    server and come back in the same reply, instead of one request per match.
+
+    :return: A list of (primary_key, value) tuples, empty if nothing matched or the
+             request failed.
+    """
+    return pybind_kv.query_records_by_index(index_name, attributes,
+                                            os.path.abspath(config_path))

@@ -83,9 +83,11 @@ class KVClient : public TransactionConstructor {
                        const std::string& primary_key);
   // Primary keys whose entry starts with `attribute_prefix`, each once and
   // sorted. Empty prefix means the whole index. nullptr if the send failed.
+  // With `with_values`, each record's value comes back in the same reply.
   std::unique_ptr<Items> QueryByIndex(
       const std::string& index_name,
-      const std::vector<std::string>& attribute_prefix);
+      const std::vector<std::string>& attribute_prefix,
+      bool with_values = false);
 };
 
 }  // namespace resdb

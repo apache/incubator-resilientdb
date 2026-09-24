@@ -138,6 +138,28 @@ std::vector<std::string> query_by_index_one(std::string index_name,
   return query_by_index(index_name, {attribute}, config_path);
 }
 
+// Same query, but each record's value comes back in the same reply instead of
+// one request per match.
+std::vector<std::pair<std::string, std::string>> query_records_by_index(
+    std::string index_name, std::vector<std::string> attributes,
+    std::string config_path) {
+  std::vector<std::pair<std::string, std::string>> records;
+  auto items =
+      MakeClient(config_path).QueryByIndex(index_name, attributes, true);
+  if (items == nullptr) {
+    return records;
+  }
+  for (const auto& item : items->item()) {
+    records.emplace_back(item.key(), item.value_info().value());
+  }
+  return records;
+}
+
+std::vector<std::pair<std::string, std::string>> query_records_by_index_one(
+    std::string index_name, std::string attribute, std::string config_path) {
+  return query_records_by_index(index_name, {attribute}, config_path);
+}
+
 PYBIND11_MODULE(pybind_kv, m) {
   m.def("get", &get, "A function that gets a value from the key-value store");
   m.def("set", &set, "A function that sets a value in the key-value store");
@@ -159,4 +181,8 @@ PYBIND11_MODULE(pybind_kv, m) {
         "Primary keys matching one attribute");
   m.def("query_by_index", &query_by_index,
         "Primary keys matching a list of attributes");
+  m.def("query_records_by_index", &query_records_by_index_one,
+        "(key, value) pairs matching one attribute");
+  m.def("query_records_by_index", &query_records_by_index,
+        "(key, value) pairs matching a list of attributes");
 }
