@@ -55,7 +55,7 @@ export function MainNavBar({ className }: MainNavBarProps) {
       hidden={isResearcher}
     >
       {/* <div className="flex gap-3">
-            <Image src="/resdb-logo.svg" alt="ResDB Logo" width={100} height={100} />
+            <Image src="/apache-resilientdb-white-TLP.png" alt="Apache ResilientDB" width={180} height={59} />
             <Image src="/expolab-icon.png" alt="ExpoLab Icon" width={100} height={100} />
         </div> */}
       <div className="flex items-center justify-center gap-3 bg-background/5 border border-border backdrop-blur-lg py-1 px-1 rounded-full shadow-lg w-fit mx-auto">
