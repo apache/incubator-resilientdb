@@ -307,7 +307,7 @@ under the License.
   
 	  <!-- Footer -->
 	  <footer class="py-2 px-4 bg-[#1e1e1e] text-sm flex items-center justify-center border-t border-gray-700">
-		© {new Date().getFullYear()} Apache ResilientDB (Incubating). All rights reserved.
+		© {new Date().getFullYear()} Apache ResilientDB. All rights reserved.
 	  </footer>
 	</div>
   {/if}

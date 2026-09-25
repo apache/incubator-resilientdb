@@ -61,7 +61,7 @@ export default function HeroContent() {
         <p style={{ fontSize: 14, fontWeight: 300, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.7 }}>
         Find all documentation related to ResilientDB, its applications, and ecosystem tools supported by the ResilientDB team. This site is your gateway to high-performance blockchain infrastructure, developer guides, and integration resources. To learn more about ResilientDB, visit the 
         <a 
-          href="https://resilientdb.incubator.apache.org/" 
+          href="https://resilientdb.apache.org/" 
           target="_blank"
           style={{ 
             color: '#00bfff', 

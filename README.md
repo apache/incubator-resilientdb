@@ -50,7 +50,6 @@ Download address for run-directly software package: https://downloads.apache.org
 <div align = "center">
 <img src="./img/resdb-v2.png" width="220">
 <img src="./img/apache-resdb.png" width="80">
-<img src="./img/apache-incubator.png" width="250">
 </div>
 
 ---

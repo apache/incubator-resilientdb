@@ -47,7 +47,7 @@ export function Welcome() {
 
           <Center>
             <Button
-              href="https://resilientdb.incubator.apache.org/"
+              href="https://resilientdb.apache.org/"
               component="a"
               rightSection={<IconExternalLink />}
               leftSection={<IconBrandGithub />}

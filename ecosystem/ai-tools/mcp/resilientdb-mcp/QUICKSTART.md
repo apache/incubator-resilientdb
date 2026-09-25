@@ -178,7 +178,7 @@ In Claude Desktop, you can now ask:
 ## Support
 
 For issues or questions:
-- Check the [ResilientDB Documentation](https://resilientdb.incubator.apache.org/)
+- Check the [ResilientDB Documentation](https://resilientdb.apache.org/)
 - Review [ResContract CLI Docs](https://beacon.resilientdb.com/docs/rescontract)
 - Check [ResilientDB GraphQL API](https://beacon.resilientdb.com/docs/resilientdb_graphql)
 

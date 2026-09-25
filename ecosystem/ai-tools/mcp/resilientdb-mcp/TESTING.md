@@ -468,7 +468,7 @@ curl -X POST http://localhost:8000/graphql \
 
 ## Additional Resources
 
-- [ResilientDB Documentation](https://resilientdb.incubator.apache.org/)
+- [ResilientDB Documentation](https://resilientdb.apache.org/)
 - [MCP Protocol Documentation](https://modelcontextprotocol.io/)
 - [Claude Desktop Setup Guide](https://docs.anthropic.com/claude/docs/claude-desktop)
 

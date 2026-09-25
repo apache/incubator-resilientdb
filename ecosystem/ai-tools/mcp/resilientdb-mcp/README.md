@@ -388,7 +388,7 @@ ResilientDB uses different services for different operations:
 ## References
 
 - [ResilientDB GitHub](https://github.com/apache/incubator-resilientdb)
-- [ResilientDB Documentation](https://resilientdb.incubator.apache.org/)
+- [ResilientDB Documentation](https://resilientdb.apache.org/)
 - [ResilientDB GraphQL API](https://beacon.resilientdb.com/docs/resilientdb_graphql)
 - [ResilientDB Quick Start](https://quickstart.resilientdb.com/)
 - [MCP Protocol Documentation](https://modelcontextprotocol.io/)

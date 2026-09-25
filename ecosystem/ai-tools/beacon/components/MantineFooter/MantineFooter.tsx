@@ -177,7 +177,7 @@ export const MantineFooter = () => (
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <a 
-                  href="https://resilientdb.incubator.apache.org/" 
+                  href="https://resilientdb.apache.org/" 
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ 
@@ -354,7 +354,7 @@ export const MantineFooter = () => (
           }}>
             Apache {new Date().getFullYear()} ©{' '}
             <a 
-              href="https://resilientdb.incubator.apache.org/" 
+              href="https://resilientdb.apache.org/" 
               style={{ 
                 color: 'rgba(255,255,255,0.6)',
                 transition: 'all 200ms ease',
@@ -378,22 +378,6 @@ export const MantineFooter = () => (
               opacity: 0.7
             }}>
               Licensed under Apache 2.0
-            </span>
-            <div
-              style={{
-                width: 4,
-                height: 4,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.3)',
-                opacity: 0.5,
-              }}
-            />
-            <span style={{ 
-              fontSize: 12, 
-              color: 'rgba(255,255,255,0.6)', 
-              opacity: 0.7
-            }}>
-              Incubating Project
             </span>
           </div>
         </div>

@@ -8,7 +8,6 @@ header:
     - '.**/**'
     - '**/*.sol'
     - CNAME
-    - DISCLAIMER
     - LICENSE
     - NOTICE
     - 'dev/.rat-excludes'
