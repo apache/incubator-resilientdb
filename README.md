@@ -48,8 +48,7 @@ Download address for run-directly software package: https://downloads.apache.org
 8. **[Historial Facts]** The ResilientDB project was founded by **[Mohammad Sadoghi](https://expolab.org/)** along with his students ([Suyash Gupta](https://gupta-suyash.github.io/index.html) as the lead Architect, [Sajjad Rahnama](https://sajjadrahnama.com/) as the lead System Designer, and [Jelle Hellings](https://www.jhellings.nl/)) at **[UC Davis](https://www.ucdavis.edu/)** in 2018 and was open-sourced in late 2019. On September 30, 2021, we released ResilientDB v-3.0. In 2022, ResilientDB was completely rewritten and re-architected ([Junchao Chen](https://github.com/cjcchen) as the lead Architect, [Dakai Kang](https://github.com/DakaiKang) as the lead Recovery Architect, along with the entire ResilientDB community, paving the way for a new sustainable foundation, referred to as NexRes (Next Generation ResilientDB). Thus, on September 30, 2022, NexRes-v1.0.0 was born, marking a new beginning for **[ResilientDB](https://resilientdb.com/)**. On October 21, 2023, **[ResilientDB](https://cwiki.apache.org/confluence/display/INCUBATOR/ResilientDBProposal)** was officially accepted into **[Apache Incubation](https://incubator.apache.org/projects/resilientdb.html)**. On September 16, 2026, Apache ResilientDB officially graduated as a Top-Level Project (TLP).
 
 <div align = "center">
-<img src="./img/resdb-v2.png" width="220">
-<img src="./img/apache-resdb.png" width="80">
+<img src="./img/apache-resilientdb-dark-TLP.png" width="255">
 </div>
 
 ---
