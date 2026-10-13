@@ -203,10 +203,18 @@ std::string ResLevelDB::GetValue(const std::string& key) {
 std::string ResLevelDB::GetRange(const std::string& min_key,
                                  const std::string& max_key) {
   std::string values = "[";
+  // Hide composite-key index entries from user-facing scans.
+  const std::string ck_prefix =
+      std::string(kCompositeKeyNamespace) + kCompositeKeyDelim;
+
   leveldb::Iterator* it = db_->NewIterator(leveldb::ReadOptions());
   bool first_iteration = true;
   for (it->Seek(min_key); it->Valid() && it->key().ToString() <= max_key;
        it->Next()) {
+    if (it->key().size() >= ck_prefix.size() &&
+        memcmp(it->key().data(), ck_prefix.data(), ck_prefix.size()) == 0) {
+      continue;
+    }
     if (!first_iteration) values.append(",");
     first_iteration = false;
     values.append(it->value().ToString());

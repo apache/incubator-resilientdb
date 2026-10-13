@@ -101,12 +101,11 @@ class DuckDB : public Storage {
 
   bool Flush(bool should_sync = false) override { return true; }
 
-  // No-op overrides so DuckDB stays concrete: Storage declares these
-  // composite-key methods pure virtual, and without them DuckDB would be
-  // abstract and fail to compile. The SQL backend doesn't use them.
-  int CreateCompositeKey(const std::string&) override { return 0; }
+  // Composite keys aren't supported on DuckDB. Return -1 (failure) so callers
+  // don't think an index entry was written.
+  int CreateCompositeKey(const std::string&) override { return -1; }
 
-  int DeleteCompositeKey(const std::string&) override { return 0; }
+  int DeleteCompositeKey(const std::string&) override { return -1; }
 
   std::vector<std::string> GetByCompositeKeyPrefix(
       const std::string&) override {
@@ -114,7 +113,7 @@ class DuckDB : public Storage {
   }
 
   int UpdateCompositeKey(const std::string&, const std::string&) override {
-    return 0;
+    return -1;
   }
 
  private:
