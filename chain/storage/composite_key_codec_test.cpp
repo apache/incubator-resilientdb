@@ -82,3 +82,19 @@ TEST(CompositeKeyCodecTest, EmptyAttributes) {
   EXPECT_EQ(attrs.size(), 0u);
   EXPECT_EQ(pk, "user:1");
 }
+
+TEST(CompositeKeyCodecTest, PrefixWithNoAttributesMatchesWholeIndex) {
+  std::string prefix = EncodeCompositeKeyPrefix("byCity", {});
+  EXPECT_EQ(EncodeCompositeKey("byCity", {"Davis"}, "user:1").find(prefix), 0u);
+  EXPECT_EQ(EncodeCompositeKey("byCity", {}, "user:2").find(prefix), 0u);
+  // Must not reach into another index whose name starts the same way.
+  EXPECT_NE(EncodeCompositeKey("byCity2", {"Davis"}, "user:3").find(prefix),
+            0u);
+}
+
+TEST(CompositeKeyCodecTest, DecodeRejectsMissingDelimiterAfterNamespace) {
+  std::string idx, pk;
+  std::vector<std::string> attrs;
+  std::string bad = std::string("ckX") + "idx" + kCompositeKeyDelim + "pk";
+  EXPECT_FALSE(DecodeCompositeKey(bad, &idx, &attrs, &pk));
+}

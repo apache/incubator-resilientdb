@@ -418,6 +418,20 @@ TEST_P(KVStorageTest, GetAllItemsExcludesCompositeKeys) {
   EXPECT_EQ(davis.size(), 1u);
 }
 
+// GetRange must not return index entries either. "ck\0..." sorts between
+// "apple" and "dog", so an unfiltered scan would include it.
+TEST_P(KVStorageTest, GetRangeExcludesCompositeKeys) {
+  EXPECT_EQ(storage->SetValue("apple", "1"), 0);
+  EXPECT_EQ(storage->SetValue("dog", "2"), 0);
+  EXPECT_EQ(storage->CreateCompositeKey(
+                EncodeCompositeKey("byCity", {"Davis"}, "apple")),
+            0);
+
+  // MemoryDB's GetRange is unordered, so accept either order.
+  std::string range = storage->GetRange("a", "z");
+  EXPECT_TRUE(range == "[1,2]" || range == "[2,1]") << range;
+}
+
 INSTANTIATE_TEST_CASE_P(KVStorageTest, KVStorageTest,
                         ::testing::Values(MEM, LEVELDB,
                                           LEVELDB_WITH_BLOCK_CACHE));

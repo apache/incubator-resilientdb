@@ -36,6 +36,11 @@ message KVRequest {
         GET_TOP = 10;
         // NEW: SQL command type
         SQL = 11;
+        // Secondary index (composite key) commands, see issue #180.
+        CREATE_INDEX_ENTRY = 12;
+        DELETE_INDEX_ENTRY = 13;
+        UPDATE_INDEX_ENTRY = 14;
+        QUERY_BY_INDEX = 15;
     }
     CMD cmd = 1;
     string key = 2;
@@ -52,6 +57,15 @@ message KVRequest {
     bytes smart_contract_request = 10;
      // NEW: raw SQL text for SQL commands (cmd == SQL)
     string sql_query = 11;
+    // NEW: For index commands. The server builds the stored key from these.
+    string index_name = 12;
+    repeated string attributes = 13;
+    string primary_key = 14;
+    // For UPDATE_INDEX_ENTRY: the attributes to move the entry to.
+    repeated string new_attributes = 15;
+    // For QUERY_BY_INDEX: also return each record's value, saving the caller
+    // one request per match.
+    bool with_values = 16;
 }
 
 message ValueInfo {
@@ -76,4 +90,6 @@ message KVResponse {
     bytes smart_contract_response = 10;
     // NEW: response payload for SQL commands
     string sql_response = 11;
+    // Whether CREATE/DELETE/UPDATE_INDEX_ENTRY made the change.
+    bool success = 12;
 }

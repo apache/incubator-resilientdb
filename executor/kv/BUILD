@@ -26,11 +26,23 @@ cc_library(
     hdrs = ["kv_executor.h"],
     deps = [
         "//chain/storage",
+        "//chain/storage:composite_key_codec",
         "//common:comm",
         "//executor/common:transaction_manager",
         "//executor/contract/executor:contract_executor",
         "//platform/config:resdb_config_utils",
         "//proto/kv:kv_cc_proto",
+    ],
+)
+
+cc_test(
+    name = "kv_executor_index_test",
+    srcs = ["kv_executor_index_test.cpp"],
+    deps = [
+        ":kv_executor",
+        "//chain/storage:leveldb",
+        "//chain/storage:memory_db",
+        "//common/test:test_main",
     ],
 )
 

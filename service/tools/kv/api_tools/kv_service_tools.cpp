@@ -40,7 +40,9 @@ void ShowUsage() {
       "--config: config path\n"
       "--cmd "
       "set/get/set_with_version/get_with_version/get_key_range/"
-      "get_key_range_with_version/get_top/get_history/sql\n"
+      "get_key_range_with_version/get_top/get_history/sql/"
+      "create_index_entry/delete_index_entry/update_index_entry/"
+      "query_by_index\n"
       "--key key\n"
       "--value value, if cmd is a get operation\n"
       "--sql SQL text, if cmd is sql\n"
@@ -50,6 +52,12 @@ void ShowUsage() {
       "--min_version, if cmd is get_history\n"
       "--max_version, if cmd is get_history\n"
       "--top, if cmd is get_top\n"
+      "--index index name, if cmd is an index command\n"
+      "--attrs comma-separated attribute values, e.g. Davis or shray,jpeg\n"
+      "--new_attrs the attributes to move the entry to, if cmd is "
+      "update_index_entry\n"
+      "--pk primary key of the record being indexed\n"
+      "--with_values return each record's value with query_by_index\n"
       "\n"
       "More examples can be found from README.\n");
 }
@@ -67,7 +75,33 @@ static struct option long_options[] = {
     {"max_key", required_argument, NULL, 'Y'},
     {"top", required_argument, NULL, 't'},
     {"sql", required_argument, NULL, 'q'},
+    {"index", required_argument, NULL, 'i'},
+    {"attrs", required_argument, NULL, 'a'},
+    {"new_attrs", required_argument, NULL, 'n'},
+    {"pk", required_argument, NULL, 'p'},
+    {"with_values", no_argument, NULL, 'w'},
+    // getopt_long reads until it finds this terminator.
+    {NULL, 0, NULL, 0},
 };
+
+// "shray,jpeg" -> {"shray", "jpeg"}; "" -> {} (meaning the whole index).
+std::vector<std::string> SplitAttributes(const std::string& text) {
+  std::vector<std::string> attributes;
+  if (text.empty()) {
+    return attributes;
+  }
+  size_t start = 0;
+  while (true) {
+    size_t comma = text.find(',', start);
+    if (comma == std::string::npos) {
+      attributes.push_back(text.substr(start));
+      break;
+    }
+    attributes.push_back(text.substr(start, comma - start));
+    start = comma + 1;
+  }
+  return attributes;
+}
 
 void OldAPI(char** argv) {
   std::string client_config_file = argv[1];
@@ -122,6 +156,11 @@ int main(int argc, char** argv) {
   std::string min_key, max_key;
   std::string value;
   std::string sql;
+  std::string index_name;
+  std::string attrs;
+  std::string new_attrs;
+  std::string pk;
+  bool with_values = false;
   std::string client_config_file;
   int top = 0;
   // getopt_long returns int and signals the end of the options with -1. Storing
@@ -173,6 +212,21 @@ int main(int argc, char** argv) {
         break;
       case 'q':
         sql = optarg;
+        break;
+      case 'i':
+        index_name = optarg;
+        break;
+      case 'a':
+        attrs = optarg;
+        break;
+      case 'n':
+        new_attrs = optarg;
+        break;
+      case 'p':
+        pk = optarg;
+        break;
+      case 'w':
+        with_values = true;
         break;
       case 'h':
         ShowUsage();
@@ -287,6 +341,55 @@ int main(int argc, char** argv) {
       printf("SQL result:\n%s\n", res->c_str());
     } else {
       printf("SQL query failed\n");
+    }
+  } else if (cmd == "create_index_entry" || cmd == "delete_index_entry") {
+    if (index_name.empty() || pk.empty()) {
+      ShowUsage();
+      return 0;
+    }
+    int ret = cmd == "create_index_entry"
+                  ? client.CreateIndexEntry(index_name, SplitAttributes(attrs),
+                                            pk)
+                  : client.DeleteIndexEntry(index_name, SplitAttributes(attrs),
+                                            pk);
+    printf("%s index = %s, attrs = %s, pk = %s, ret = %d%s\n", cmd.c_str(),
+           index_name.c_str(), attrs.c_str(), pk.c_str(), ret,
+           ret == -3 ? " (rejected by the servers)" : "");
+    return ret == 0 ? 0 : 1;
+  } else if (cmd == "update_index_entry") {
+    if (index_name.empty() || pk.empty()) {
+      ShowUsage();
+      return 0;
+    }
+    int ret = client.UpdateIndexEntry(index_name, SplitAttributes(attrs),
+                                      SplitAttributes(new_attrs), pk);
+    printf(
+        "update_index_entry index = %s, attrs = %s, new_attrs = %s, pk = %s, "
+        "ret = %d%s\n",
+        index_name.c_str(), attrs.c_str(), new_attrs.c_str(), pk.c_str(), ret,
+        ret == -3 ? " (rejected by the servers)" : "");
+    return ret == 0 ? 0 : 1;
+  } else if (cmd == "query_by_index") {
+    if (index_name.empty()) {
+      ShowUsage();
+      return 0;
+    }
+    auto res = client.QueryByIndex(index_name, SplitAttributes(attrs),
+                                   with_values);
+    if (res == nullptr) {
+      printf("query_by_index index = %s, attrs = %s failed\n",
+             index_name.c_str(), attrs.c_str());
+      return 1;
+    }
+    printf("query_by_index index = %s, attrs = %s, %d result(s)\n",
+           index_name.c_str(), attrs.c_str(), res->item_size());
+    for (const auto& item : res->item()) {
+      if (with_values) {
+        printf("%s = %s\n", item.key().c_str(),
+               item.value_info().value().c_str());
+      } else {
+        printf("%s\n", item.key().c_str());
+      }
     }
   } else {
     ShowUsage();
